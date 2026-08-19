@@ -11,6 +11,8 @@ import {
   PHASE_0_VALIDATORS,
   PLAYABILITY_VALIDATORS,
   SONG_VALIDATORS,
+  TONAL_VALIDATORS,
+  WARNING_VALIDATORS,
   hasErrors,
   runValidators,
 } from "@/lib/validators";
@@ -23,10 +25,16 @@ describe("validator chain (spec 10)", () => {
 
   it("runs the playability validators from the central chain by default", () => {
     expect(PLAYABILITY_VALIDATORS).toHaveLength(2);
-    expect(SONG_VALIDATORS).toHaveLength(7);
+    expect(TONAL_VALIDATORS).toHaveLength(1);
+    expect(WARNING_VALIDATORS).toHaveLength(1);
+    expect(SONG_VALIDATORS).toHaveLength(9);
     // Order is fixed, so the same song always reports in the same sequence.
-    expect(SONG_VALIDATORS.slice(0, 5)).toEqual(PHASE_0_VALIDATORS);
-    expect(SONG_VALIDATORS.slice(5)).toEqual(PLAYABILITY_VALIDATORS);
+    expect(SONG_VALIDATORS).toEqual([
+      ...PHASE_0_VALIDATORS,
+      ...PLAYABILITY_VALIDATORS,
+      ...TONAL_VALIDATORS,
+      ...WARNING_VALIDATORS,
+    ]);
   });
 
   it("reaches range and stringCollision without being asked for them", () => {
