@@ -67,7 +67,17 @@ export type DrumEventPlan = {
   gain: number;
 };
 
-export type BarMarker = { barKey: string; time: number; durationTicks: number };
+export type BarMarker = {
+  barKey: string;
+  sectionId: string;
+  /** 1-based across the song, matching what the tab view prints. */
+  barNumber: number;
+  time: number;
+  durationTicks: number;
+  slotCount: number;
+  timeSignature: readonly [number, number];
+  resolution: number;
+};
 
 export type SongPlan = {
   events: (NoteEventPlan | DrumEventPlan)[];
@@ -80,19 +90,27 @@ export function barTimeline(song: Song): BarMarker[] {
   const bars: BarMarker[] = [];
   let time = 0;
 
-  song.sections.forEach((section, sectionIndex) => {
+  let barNumber = 0;
+
+  for (const section of song.sections) {
     section.bars.forEach((bar, barIndex) => {
-      const slots = (bar.timeSignature[0] * bar.resolution) / bar.timeSignature[1];
-      const durationTicks = slots * ticksPerSlot(bar.resolution);
+      barNumber += 1;
+      const slotCount =
+        (bar.timeSignature[0] * bar.resolution) / bar.timeSignature[1];
+      const durationTicks = slotCount * ticksPerSlot(bar.resolution);
       bars.push({
         barKey: `${section.id}:${barIndex}`,
+        sectionId: section.id,
+        barNumber,
         time,
         durationTicks,
+        slotCount,
+        timeSignature: bar.timeSignature,
+        resolution: bar.resolution,
       });
       time += durationTicks;
-      void sectionIndex;
     });
-  });
+  }
 
   return bars;
 }

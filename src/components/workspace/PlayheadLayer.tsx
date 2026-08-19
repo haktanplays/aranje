@@ -1,30 +1,27 @@
-import { slotCentre } from "@/components/workspace/geometry";
+"use client";
 
-export type PlayheadPosition = { barKey: string; slotIndex: number };
+import type { RefObject } from "react";
 
 /**
- * Reserved layer for the vertical playhead.
+ * The vertical playhead.
  *
- * The transport arrives in the next checkpoint, so `position` is always null
- * for now and nothing is drawn. The layer exists so the tab body already has
- * the stacking context and the coordinate maths the playhead will use.
+ * One element for the whole canvas, moved by transform on an animation frame.
+ * It is never positioned from React state, so playback does not cost a render
+ * per frame.
  */
 export function PlayheadLayer({
-  position,
-  barKey,
+  layerRef,
   height,
 }: {
-  position: PlayheadPosition | null;
-  barKey: string;
+  layerRef: RefObject<HTMLDivElement | null>;
   height: number;
 }) {
-  if (!position || position.barKey !== barKey) return null;
-
   return (
     <div
+      ref={layerRef}
       aria-hidden
-      className="bg-steel pointer-events-none absolute top-0 w-px"
-      style={{ left: slotCentre(position.slotIndex), height }}
+      className="bg-steel pointer-events-none absolute top-0 left-0 z-20 w-0.5 opacity-0"
+      style={{ height, willChange: "transform" }}
     />
   );
 }

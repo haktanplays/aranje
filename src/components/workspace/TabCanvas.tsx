@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import { FrettedBarBlock } from "@/components/workspace/FrettedBarBlock";
 import {
@@ -10,8 +12,11 @@ import {
   STAFF_TOP_PADDING,
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
-import type { PlayheadPosition } from "@/components/workspace/PlayheadLayer";
+import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
+import { followScrollLeft, playheadX } from "@/components/workspace/playhead";
 import { frettedRowLabels } from "@/components/workspace/staff";
+import type { PlayPosition } from "@/lib/audio/position";
+import type { SongPlan } from "@/lib/audio/schedule";
 import type { SectionStatus } from "@/lib/song/schema";
 import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
 
@@ -56,17 +61,70 @@ function sectionIsSilent(
 
 export function TabCanvas({
   timeline,
-  selectedBarKey,
-  onSelectBar,
+  plan,
+  getPosition,
+  running,
+  activeBarKey,
+  onActiveBarChange,
+  onSeekBar,
   scrollRef,
 }: {
   timeline: TrackTimeline;
-  selectedBarKey: string | null;
-  onSelectBar: (barKey: string) => void;
+  plan: SongPlan;
+  getPosition: () => PlayPosition;
+  running: boolean;
+  activeBarKey: string | null;
+  onActiveBarChange: (barKey: string | null) => void;
+  onSeekBar: (barKey: string) => void;
   scrollRef: React.RefObject<HTMLDivElement | null>;
 }) {
-  // The transport is the next checkpoint, so no playhead is placed yet.
-  const playhead: PlayheadPosition | null = null;
+  const playheadRef = useRef<HTMLDivElement | null>(null);
+  const lastBarKey = useRef<string | null>(null);
+
+  /*
+   * The playhead is driven from the transport on an animation frame. Audio is
+   * never scheduled here, and the element is moved by transform rather than by
+   * React state, so a frame costs no render.
+   */
+  useEffect(() => {
+    let frame = 0;
+
+    const draw = () => {
+      const position = getPosition();
+      const x = playheadX(plan, position);
+      const element = playheadRef.current;
+
+      if (element) {
+        if (x === null) {
+          element.style.opacity = "0";
+        } else {
+          element.style.opacity = "1";
+          element.style.transform = `translateX(${x}px)`;
+        }
+      }
+
+      if (position.barKey !== lastBarKey.current) {
+        lastBarKey.current = position.barKey;
+        onActiveBarChange(position.barKey);
+      }
+
+      const scroller = scrollRef.current;
+      if (scroller && x !== null) {
+        const target = followScrollLeft(
+          x,
+          { scrollLeft: scroller.scrollLeft, clientWidth: scroller.clientWidth },
+          scroller.scrollWidth,
+        );
+        // Set directly: a smooth scroll every frame would trail the playhead.
+        if (target !== null) scroller.scrollLeft = target;
+      }
+
+      if (running) frame = requestAnimationFrame(draw);
+    };
+
+    frame = requestAnimationFrame(draw);
+    return () => cancelAnimationFrame(frame);
+  }, [running, plan, getPosition, onActiveBarChange, scrollRef]);
 
   if (timeline.kind === "unsupported") {
     return (
@@ -118,11 +176,18 @@ export function TabCanvas({
             </div>
             <div style={{ height: RHYTHM_ROW_HEIGHT }} />
 
-            {/* Notes scrolling past the labels fade out under this strip
-                instead of being sliced in half at the gutter edge. */}
+            {/* Notes scrolling past the labels disappear under this strip
+                instead of being sliced in half at the gutter edge. A fret
+                glyph is about 14px wide, so the solid part alone is wider than
+                any glyph can be. */}
             <span
               aria-hidden
-              className="from-app pointer-events-none absolute inset-y-0 left-full w-3 bg-gradient-to-r to-transparent"
+              className="bg-app pointer-events-none absolute inset-y-0 left-full w-2.5"
+            />
+            <span
+              aria-hidden
+              className="from-app pointer-events-none absolute inset-y-0 w-4 bg-gradient-to-r to-transparent"
+              style={{ left: "calc(100% + 0.625rem)" }}
             />
           </div>
 
@@ -132,9 +197,8 @@ export function TabCanvas({
                   <FrettedBarBlock
                     bar={bar}
                     stringCount={timeline.strings.length}
-                    selected={selectedBarKey === bar.key}
-                    playhead={playhead}
-                    onSelect={() => onSelectBar(bar.key)}
+                    selected={activeBarKey === bar.key}
+                    onSelect={() => onSeekBar(bar.key)}
                   />
                 </BarSlot>
               ))
@@ -143,12 +207,15 @@ export function TabCanvas({
                   <DrumBarBlock
                     bar={bar}
                     laneCount={timeline.lanes.length}
-                    selected={selectedBarKey === bar.key}
-                    playhead={playhead}
-                    onSelect={() => onSelectBar(bar.key)}
+                    selected={activeBarKey === bar.key}
+                    onSelect={() => onSeekBar(bar.key)}
                   />
                 </BarSlot>
               ))}
+          <PlayheadLayer
+            layerRef={playheadRef}
+            height={BAR_HEADER_HEIGHT + bodyHeight + RHYTHM_ROW_HEIGHT}
+          />
         </div>
       </div>
 

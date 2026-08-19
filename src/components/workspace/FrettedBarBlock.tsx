@@ -8,10 +8,6 @@ import {
   slotCentre,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
-import {
-  PlayheadLayer,
-  type PlayheadPosition,
-} from "@/components/workspace/PlayheadLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
@@ -20,13 +16,11 @@ export function FrettedBarBlock({
   bar,
   stringCount,
   selected,
-  playhead,
   onSelect,
 }: {
   bar: FrettedBar;
   stringCount: number;
   selected: boolean;
-  playhead: PlayheadPosition | null;
   onSelect: () => void;
 }) {
   const width = barWidth(bar.slotCount);
@@ -121,11 +115,6 @@ export function FrettedBarBlock({
           </>
         )}
 
-        <PlayheadLayer
-          position={playhead}
-          barKey={bar.key}
-          height={staffHeight}
-        />
       </div>
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }}>

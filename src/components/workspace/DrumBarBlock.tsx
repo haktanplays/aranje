@@ -6,10 +6,6 @@ import {
   barWidth,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
-import {
-  PlayheadLayer,
-  type PlayheadPosition,
-} from "@/components/workspace/PlayheadLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { drumRhythm, type DrumBar } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/song/schema";
@@ -34,13 +30,11 @@ export function DrumBarBlock({
   bar,
   laneCount,
   selected,
-  playhead,
   onSelect,
 }: {
   bar: DrumBar;
   laneCount: number;
   selected: boolean;
-  playhead: PlayheadPosition | null;
   onSelect: () => void;
 }) {
   const width = barWidth(bar.slotCount);
@@ -92,11 +86,6 @@ export function DrumBarBlock({
           </span>
         ))}
 
-        <PlayheadLayer
-          position={playhead}
-          barKey={bar.key}
-          height={gridHeight}
-        />
       </div>
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }}>

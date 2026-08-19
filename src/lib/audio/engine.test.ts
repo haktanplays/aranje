@@ -36,18 +36,27 @@ describe("no stale context singletons (spec 8.3)", () => {
     expect(code).toContain("context.destination");
   });
 
-  it("builds nodes on the injected context", () => {
-    // Every node constructor in the engine passes the context through.
-    const constructors = code.match(/new Tone\.\w+\(\{/g) ?? [];
+  it("builds every node on the injected context", () => {
+    // Nodes come from the lazily loaded module, and each constructor is handed
+    // the context as its first option.
+    const constructors = code.match(/new tone\.\w+\(\{/g) ?? [];
     expect(constructors.length).toBeGreaterThan(5);
-    const withoutContext = code.match(/new Tone\.\w+\((?!\{\s*\n?\s*context)/g);
+    const withoutContext = code.match(/new tone\.\w+\((?!\{\s*\n?\s*context)/g);
     expect(withoutContext).toBeNull();
   });
 
   it("starts the context only through the live entry point", () => {
-    // Tone.start() belongs to the gesture-driven path, nowhere else.
-    expect(code.match(/Tone\.start\(\)/g)).toHaveLength(1);
+    // Starting the context belongs to the gesture-driven path, nowhere else.
+    expect(code.match(/tone\.start\(\)/g)).toHaveLength(1);
     expect(code).toContain("createLiveEngine");
+  });
+
+  it("keeps Tone out of the server render", () => {
+    // A value import would pull Tone in during prerender, where there is no
+    // window. The module is fetched on demand instead.
+    expect(code).toContain('import type * as Tone from "tone"');
+    expect(/^import \* as Tone from "tone"/m.test(code)).toBe(false);
+    expect(code).toContain('import("tone")');
   });
 });
 

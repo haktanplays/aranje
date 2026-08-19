@@ -20,10 +20,12 @@ function statusRing(status: SectionStatus, active: boolean): string {
 export function SectionChips({
   runs,
   activeSectionId,
+  loopSectionId,
   onJump,
 }: {
   runs: readonly SectionRun[];
   activeSectionId: string | null;
+  loopSectionId?: string | null;
   onJump: (sectionId: string) => void;
 }) {
   return (
@@ -42,6 +44,11 @@ export function SectionChips({
           <span className="text-muted ml-1.5 tabular-nums">
             {run.barCount} ölçü
           </span>
+          {loopSectionId === run.sectionId ? (
+            <span aria-label="Loop" className="text-bronze ml-1.5">
+              &#8635;
+            </span>
+          ) : null}
         </button>
       ))}
     </div>
