@@ -117,6 +117,13 @@ export function TabCanvas({
               ))}
             </div>
             <div style={{ height: RHYTHM_ROW_HEIGHT }} />
+
+            {/* Notes scrolling past the labels fade out under this strip
+                instead of being sliced in half at the gutter edge. */}
+            <span
+              aria-hidden
+              className="from-app pointer-events-none absolute inset-y-0 left-full w-3 bg-gradient-to-r to-transparent"
+            />
           </div>
 
           {timeline.kind === "fretted"

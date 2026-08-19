@@ -60,6 +60,7 @@ export type TabSpan = {
   /** null when no playable placement exists for the written pitch. */
   fret: number | null;
   pitch: string;
+  velocity?: number;
   articulation?: Articulation;
   startSlot: number;
   /** Inclusive. */
@@ -74,6 +75,7 @@ export type DrumMark = {
   slotIndex: number;
   laneIndex: number;
   piece: DrumPiece;
+  velocity?: number;
   articulation?: "normal" | "ghost" | "accent";
 };
 
@@ -95,6 +97,7 @@ type OpenSpan = {
   stringIndex: number;
   fret: number | null;
   pitch: string;
+  velocity?: number;
   articulation?: Articulation;
   startSlot: number;
   endSlot: number;
@@ -199,6 +202,7 @@ function buildFretted(
           stringIndex: entry.position?.string ?? -1,
           fret: entry.position?.fret ?? null,
           pitch: entry.note.pitch,
+          velocity: entry.note.velocity,
           articulation: entry.note.articulation,
           startSlot: slotIndex,
           endSlot: slotIndex,
@@ -217,12 +221,15 @@ function buildFretted(
     }
 
     carried = continues
-      ? stillOpen.map(({ stringIndex, fret, pitch, articulation }) => ({
-          stringIndex,
-          fret,
-          pitch,
-          articulation,
-        }))
+      ? stillOpen.map(
+          ({ stringIndex, fret, pitch, velocity, articulation }) => ({
+            stringIndex,
+            fret,
+            pitch,
+            velocity,
+            articulation,
+          }),
+        )
       : [];
 
     bars.push({ ...rest, silent: false, spans, rests });
@@ -275,6 +282,7 @@ function buildDrums(song: Song, track: Track): {
           slotIndex,
           laneIndex: lane,
           piece: hit.piece,
+          velocity: hit.velocity,
           articulation: hit.articulation,
         });
       }

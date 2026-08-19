@@ -31,13 +31,23 @@ describe("brand name (spec 1.4)", () => {
     expect(/^[a-z]+$/.test(BRAND_SLUG)).toBe(true);
   });
 
-  it("has no raw accented character anywhere under src or public", () => {
+  it("has no raw accented character in any file name under src or public", () => {
     const files = [...walk("src"), ...walk("public")];
     expect(files.length).toBeGreaterThan(0);
+    expect(files.filter((file) => file.includes(ACCENTED))).toEqual([]);
+  });
 
-    const offenders = files.filter(
-      (file) =>
-        file.includes(ACCENTED) || readFileSync(file, "utf8").includes(ACCENTED),
+  it("has no raw accented character in any source file", () => {
+    // Only text is scanned. A binary asset is not source, and reading one as
+    // UTF-8 can turn arbitrary bytes into the character we are looking for.
+    const TEXT = /\.(ts|tsx|js|jsx|mjs|cjs|css|json|md|html|svg|txt)$/;
+    const sources = [...walk("src"), ...walk("public")].filter((file) =>
+      TEXT.test(file),
+    );
+    expect(sources.length).toBeGreaterThan(0);
+
+    const offenders = sources.filter((file) =>
+      readFileSync(file, "utf8").includes(ACCENTED),
     );
 
     expect(offenders).toEqual([]);

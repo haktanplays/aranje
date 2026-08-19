@@ -1,0 +1,140 @@
+/**
+ * Offline render of the demo song, used to produce a listenable preview before
+ * any transport UI exists. Runs the real engine, not a copy of it.
+ */
+import * as Tone from "tone";
+
+import { createEngine, scheduleSong } from "@/lib/audio/engine";
+import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
+import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { songSchema, type Song } from "@/lib/song/schema";
+
+function encodeWav(channels: Float32Array[], sampleRate: number): Uint8Array {
+  const channelCount = channels.length;
+  const frames = channels[0]?.length ?? 0;
+  const dataBytes = frames * channelCount * 2;
+  const view = new DataView(new ArrayBuffer(44 + dataBytes));
+
+  const ascii = (offset: number, text: string) => {
+    for (let i = 0; i < text.length; i += 1) {
+      view.setUint8(offset + i, text.charCodeAt(i));
+    }
+  };
+
+  ascii(0, "RIFF");
+  view.setUint32(4, 36 + dataBytes, true);
+  ascii(8, "WAVE");
+  ascii(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, channelCount, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * channelCount * 2, true);
+  view.setUint16(32, channelCount * 2, true);
+  view.setUint16(34, 16, true);
+  ascii(36, "data");
+  view.setUint32(40, dataBytes, true);
+
+  let offset = 44;
+  for (let frame = 0; frame < frames; frame += 1) {
+    for (let channel = 0; channel < channelCount; channel += 1) {
+      const sample = channels[channel]?.[frame] ?? 0;
+      const clamped = Math.max(-1, Math.min(1, sample));
+      view.setInt16(offset, Math.round(clamped * 32767), true);
+      offset += 2;
+    }
+  }
+
+  return new Uint8Array(view.buffer);
+}
+
+export async function renderDemo(input?: unknown) {
+  const song: Song = input ? songSchema.parse(input) : SAMPLE_SONG;
+  const plan = buildSongPlan(song);
+  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+
+  const diagnostics: Record<string, unknown> = {};
+
+  const buffer = await Tone.Offline(async (context) => {
+    const engine = await createEngine(song, {
+      destination: context.destination,
+    });
+    diagnostics.voices = [...engine.voices.values()].map((voice) => ({
+      trackId: voice.trackId,
+      kind: voice.kind,
+      loaded: voice.kind === "sampler" ? voice.sampler.loaded : null,
+      channelVolume: voice.channel.volume.value,
+    }));
+    diagnostics.contextIsOffline = Tone.getContext().isOffline;
+    scheduleSong(engine, song.bpm, context.transport);
+    context.transport.start(0);
+  }, seconds);
+
+  const channels = buffer.toArray() as Float32Array | Float32Array[];
+  const list = Array.isArray(channels) ? channels : [channels];
+
+  // Peak per track family, so a silent instrument cannot hide in the mix.
+  let peak = 0;
+  let sumSquares = 0;
+  let samples = 0;
+  for (const channel of list) {
+    for (const value of channel) {
+      peak = Math.max(peak, Math.abs(value));
+      sumSquares += value * value;
+      samples += 1;
+    }
+  }
+
+  const secondsPerBar =
+    (plan.bars[0]?.durationTicks ?? PPQ * 4) / PPQ / (song.bpm / 60);
+  const barLevels = plan.bars.map((bar, index) => {
+    const from = Math.floor(index * secondsPerBar * buffer.sampleRate);
+    const to = Math.floor((index + 1) * secondsPerBar * buffer.sampleRate);
+    let sum = 0;
+    let count = 0;
+    for (const channel of list) {
+      for (let i = from; i < to && i < channel.length; i += 1) {
+        sum += (channel[i] ?? 0) ** 2;
+        count += 1;
+      }
+    }
+    return { bar: index + 1, rms: Math.sqrt(sum / Math.max(1, count)) };
+  });
+
+  const wav = encodeWav(list, buffer.sampleRate);
+  let binary = "";
+  for (const byte of wav) binary += String.fromCharCode(byte);
+
+  return {
+    wavBase64: btoa(binary),
+    sampleRate: buffer.sampleRate,
+    channels: list.length,
+    seconds: buffer.duration,
+    peak,
+    rms: Math.sqrt(sumSquares / Math.max(1, samples)),
+    events: plan.events.length,
+    barLevels,
+    diagnostics,
+  };
+}
+
+/** Renders one track alone, to prove nothing is silently missing. */
+export async function renderSolo(trackId: string) {
+  const solo: Song = {
+    ...SAMPLE_SONG,
+    tracks: SAMPLE_SONG.tracks.filter((track) => track.id === trackId),
+  };
+  return renderDemo(solo);
+}
+
+declare global {
+  interface Window {
+    aranjeRenderDemo: typeof renderDemo;
+    aranjeRenderSolo: typeof renderSolo;
+    aranjeTrackIds: string[];
+  }
+}
+
+window.aranjeRenderDemo = renderDemo;
+window.aranjeRenderSolo = renderSolo;
+window.aranjeTrackIds = SAMPLE_SONG.tracks.map((track) => track.id);
