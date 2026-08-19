@@ -11,14 +11,29 @@ import {
   meteringEventSchema,
   type MeteringEvent,
 } from "@/lib/metering/events";
+import { arrangeAnswer } from "@/lib/ai/fake-skills";
 import {
   FIXED_NOW,
   TEST_SONG,
-  generationRequest,
-  modelAnswer,
+  arrangeRequest,
+  mainSection,
   testConfig,
   usage,
 } from "@/test/copilot-fixtures";
+
+/** What the drum skill would answer for the fixture's main section. */
+function modelAnswer(): string {
+  const section = mainSection();
+  const target = TEST_SONG.tracks.find((track) => track.id === "drums");
+  if (!target) throw new Error("fixture has no drum track");
+  return arrangeAnswer({
+    song: TEST_SONG,
+    section,
+    target,
+    skill: "drums",
+    sectionId: section.id,
+  });
+}
 
 const SAMPLE: MeteringEvent = {
   requestId: "req-1",
@@ -89,7 +104,7 @@ describe("metering event model (spec 12.4)", () => {
     const clock = createFakeClock(FIXED_NOW);
     const kv = createMemoryKv(clock);
     const meter = createMemoryMeter();
-    const request = generationRequest();
+    const request = arrangeRequest("drums");
 
     await runCopilot(
       {
@@ -110,7 +125,7 @@ describe("metering event model (spec 12.4)", () => {
     expect(meter.events).toHaveLength(1);
 
     for (const secret of [
-      request.prompt,
+      request.instruction ?? "",
       request.subjectId,
       request.idempotencyKey,
       TEST_SONG.title,
@@ -138,7 +153,7 @@ describe("metering event model (spec 12.4)", () => {
         newRequestId: () => "req-1",
         newPatchId: () => "patch-1",
       },
-      generationRequest(),
+      arrangeRequest("drums"),
     );
 
     const serialised = JSON.stringify(meter.events);

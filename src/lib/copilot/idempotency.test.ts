@@ -5,7 +5,7 @@ import { TTL } from "@/lib/budget/keys";
 import { createMemoryKv } from "@/lib/budget/memory-kv";
 import { canonicalJson, requestFingerprint } from "@/lib/copilot/fingerprint";
 import { claim, complete, fail, release } from "@/lib/copilot/idempotency";
-import { FIXED_NOW, TEST_SONG, generationRequest } from "@/test/copilot-fixtures";
+import { FIXED_NOW, TEST_SONG, arrangeRequest } from "@/test/copilot-fixtures";
 
 function setup() {
   const clock = createFakeClock(FIXED_NOW);
@@ -24,33 +24,58 @@ describe("request fingerprint", () => {
   });
 
   it("is the same for the same question", async () => {
-    const first = await requestFingerprint(generationRequest());
-    const second = await requestFingerprint(generationRequest());
+    const first = await requestFingerprint(arrangeRequest("drums"));
+    const second = await requestFingerprint(arrangeRequest("drums"));
     expect(first).toBe(second);
   });
 
-  it("changes when the prompt, the anchor or the song changes", async () => {
-    const base = await requestFingerprint(generationRequest());
-    expect(await requestFingerprint(generationRequest({ prompt: "baska" }))).not.toBe(base);
+  it("covers every field the answer depends on (K-18)", async () => {
+    const base = await requestFingerprint(arrangeRequest("drums"));
+
+    // A different skill, target, section, locked surface, instruction or
+    // song is a different question.
+    expect(await requestFingerprint(arrangeRequest("bass"))).not.toBe(base);
+    expect(
+      await requestFingerprint(arrangeRequest("drums", { sectionId: "main-riff" })),
+    ).not.toBe(base);
+    expect(
+      await requestFingerprint(arrangeRequest("drums", { lockedTrackIds: [] })),
+    ).not.toBe(base);
+    expect(
+      await requestFingerprint(arrangeRequest("drums", { instruction: "baska" })),
+    ).not.toBe(base);
     expect(
       await requestFingerprint(
-        generationRequest({ song: { ...TEST_SONG, bpm: TEST_SONG.bpm + 1 } }),
+        arrangeRequest("drums", {
+          song: { ...TEST_SONG, bpm: TEST_SONG.bpm + 1 },
+        }),
       ),
     ).not.toBe(base);
   });
 
-  it("does not change when only the label or the caller changes", async () => {
-    const base = await requestFingerprint(generationRequest());
+  it("does not change when only the order of the locked list changes", async () => {
+    const base = await requestFingerprint(
+      arrangeRequest("drums", { lockedTrackIds: ["gtr", "bass", "acc"] }),
+    );
     expect(
-      await requestFingerprint(generationRequest({ idempotencyKey: "idem-key-9999" })),
+      await requestFingerprint(
+        arrangeRequest("drums", { lockedTrackIds: ["acc", "gtr", "bass"] }),
+      ),
+    ).toBe(base);
+  });
+
+  it("does not change when only the label or the caller changes", async () => {
+    const base = await requestFingerprint(arrangeRequest("drums"));
+    expect(
+      await requestFingerprint(arrangeRequest("drums", { idempotencyKey: "idem-key-9999" })),
     ).toBe(base);
     expect(
-      await requestFingerprint(generationRequest({ subjectId: "device-zzz" })),
+      await requestFingerprint(arrangeRequest("drums", { subjectId: "device-zzz" })),
     ).toBe(base);
   });
 
   it("is a hash, so no song text is carried into a key", async () => {
-    const print = await requestFingerprint(generationRequest());
+    const print = await requestFingerprint(arrangeRequest("drums"));
     expect(print).toMatch(/^[0-9a-f]{32}$/);
     expect(print).not.toContain(TEST_SONG.title);
   });

@@ -324,6 +324,30 @@ export function isDrumInstrument(instrumentId: string): boolean {
   return getInstrument(instrumentId)?.kind === "drums";
 }
 
+/**
+ * How an instrument is played, as far as anything outside this file needs to
+ * care. Two callers need the same answer and must not disagree about it: the
+ * copilot's skill/target check (spec 11.1, K-18) and the hand-position warning
+ * of spec 10.3, whose thresholds differ for a guitar and a bass.
+ *
+ * "other" is every phase 2.5 melodic instrument with no fretboard. It is not a
+ * gap to be filled in with a guess; it means neither of those callers has
+ * anything to say about the instrument yet.
+ */
+export type InstrumentFamily = "guitar" | "bass" | "drums" | "other";
+
+const FAMILIES: Readonly<Record<string, InstrumentFamily>> = {
+  electric_guitar: "guitar",
+  steel_acoustic: "guitar",
+  nylon_guitar: "guitar",
+  electric_bass: "bass",
+  drum_kit: "drums",
+};
+
+export function instrumentFamily(instrumentId: string): InstrumentFamily {
+  return FAMILIES[instrumentId] ?? "other";
+}
+
 export function listInstruments(): readonly InstrumentDefinition[] {
   return DEFINITIONS;
 }

@@ -46,6 +46,10 @@ export const COPILOT_ERROR_CODES = [
   "provider_output_invalid",
   /** The patch changes more bars than one patch may (spec 10.1). */
   "patch_too_large",
+  /** The answer does not describe the surface it was asked about (K-18). */
+  "patch_out_of_scope",
+  /** Applying it would have moved something outside the target track (K-18). */
+  "locked_surface_violation",
   /** The patch still fails validation after the correction rounds. */
   "patch_invalid",
   /** Anything unforeseen. The client is told nothing else. */
@@ -72,6 +76,8 @@ const SAFE_MESSAGES: Readonly<Record<CopilotErrorCode, string>> = {
   request_aborted: "İstek iptal edildi.",
   provider_output_invalid: "AI beklenen biçimde bir öneri üretemedi.",
   patch_too_large: "Öneri tek seferde değiştirilebilecekten fazla bar içeriyor.",
+  patch_out_of_scope: "Öneri istenen bölüm ve track dışına çıkıyor.",
+  locked_surface_violation: "Öneri kilitli bir alanı değiştirmeye çalıştı.",
   patch_invalid: "Öneri kontrollerden geçmedi.",
   internal_error: "Beklenmeyen bir hata oluştu.",
 } as const;
@@ -128,6 +134,8 @@ export function httpStatusFor(code: CopilotErrorCode): number {
     case "provider_error":
     case "provider_output_invalid":
     case "patch_too_large":
+    case "patch_out_of_scope":
+    case "locked_surface_violation":
     case "patch_invalid":
     case "internal_error":
       return 502;

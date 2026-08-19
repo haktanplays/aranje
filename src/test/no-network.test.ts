@@ -8,13 +8,28 @@ import { createFakeClock } from "@/lib/budget/clock";
 import { createMemoryKv } from "@/lib/budget/memory-kv";
 import { runCopilot } from "@/lib/copilot/pipeline";
 import { createMemoryMeter } from "@/lib/metering/events";
+import { arrangeAnswer } from "@/lib/ai/fake-skills";
 import {
   FIXED_NOW,
-  generationRequest,
-  modelAnswer,
+  TEST_SONG,
+  arrangeRequest,
+  mainSection,
   testConfig,
   usage,
 } from "@/test/copilot-fixtures";
+
+function modelAnswer(): string {
+  const section = mainSection();
+  const target = TEST_SONG.tracks.find((track) => track.id === "drums");
+  if (!target) throw new Error("fixture has no drum track");
+  return arrangeAnswer({
+    song: TEST_SONG,
+    section,
+    target,
+    skill: "drums",
+    sectionId: section.id,
+  });
+}
 
 function walk(dir: string): string[] {
   let entries: string[];
@@ -52,7 +67,7 @@ describe("the tests reach no network", () => {
           newRequestId: () => "req-1",
           newPatchId: () => "patch-1",
         },
-        generationRequest(),
+        arrangeRequest("drums"),
       );
       expect(outcome.ok).toBe(true);
     } finally {

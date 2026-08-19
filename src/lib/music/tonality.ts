@@ -1,26 +1,24 @@
 /**
- * The allowed tonal set of spec 10.4.
+ * Tonal core and colour tones (spec 10.4, decision K-17).
  *
- * Spec 10.4 names the members in words: "Natural / harmonic / melodic minor,
- * major borrowings, b5 and neighbouring chromatic passing tones." Each of
- * those is written out below as the scale it is, so the set can be read
- * against the sentence that defines it. No degree is invented here.
+ * The earlier reading of spec 10.4 unioned three minor scales, the parallel
+ * major and the flat fifth into one set, which admitted eleven of the twelve
+ * pitch classes and left `tonalMajority` with almost nothing to refuse. K-17
+ * replaces it with a narrow core and an explicit colour class:
  *
- * Two things follow from taking the sentence literally, and both are
- * deliberate rather than hidden:
+ * - **Core** is the seven-note scale the song declares, and only that: the
+ *   major scale for a major key, the natural minor for a minor key.
+ * - **Colour** is everything else — the harmonic minor's raised seventh, the
+ *   melodic minor's raised sixth and seventh, the flat fifth, borrowings from
+ *   the parallel mode, and chromatic passing tones.
  *
- * 1. The fixed part of the set covers eleven of the twelve pitch classes.
- *    Only the flat second is left out. That is what the union of three minor
- *    scales, the parallel major and the flat fifth adds up to; spec 10.4 is a
- *    permissive rule by design, and 10.1 blocks only when more than half of a
- *    bar sits outside it.
- * 2. "Neighbouring chromatic" is not a pitch class, it is a relationship. A
- *    note outside the fixed set is admitted when the note struck just before
- *    or just after it lies a semitone away and is itself inside the set,
- *    which is what makes it a passing tone rather than a wrong note.
+ * A colour tone is never an error on its own. It simply does not count towards
+ * the majority, which is what lets one blue note through and stops a bar that
+ * is mostly outside the key.
  *
- * The key is written on the Song (spec 5.1), so the set can only be decided
- * with the whole song in hand, never from a patch on its own.
+ * There is deliberately **no** function here that returns one set containing
+ * both. Merging them again is exactly the mistake K-17 undid, so the only way
+ * to ask about a pitch is to ask which of the two it is.
  */
 import { KEY_PATTERN } from "@/lib/song/schema";
 import { pitchToMidi } from "@/lib/music/pitch";
@@ -33,39 +31,51 @@ export type ParsedKey = {
   mode: Mode;
 };
 
-/** Scale degrees in semitones above the tonic. */
-const NATURAL_MINOR = [0, 2, 3, 5, 7, 8, 10];
-const HARMONIC_MINOR = [0, 2, 3, 5, 7, 8, 11];
-const MELODIC_MINOR = [0, 2, 3, 5, 7, 9, 11];
-const MAJOR = [0, 2, 4, 5, 7, 9, 11];
+/** The declared scale, in semitones above the tonic. Nothing else is core. */
+export const CORE_MAJOR: readonly number[] = [0, 2, 4, 5, 7, 9, 11];
+export const CORE_NATURAL_MINOR: readonly number[] = [0, 2, 3, 5, 7, 8, 10];
+
+const CORE_SETS: Readonly<Record<Mode, ReadonlySet<number>>> = {
+  major: new Set(CORE_MAJOR),
+  minor: new Set(CORE_NATURAL_MINOR),
+};
+
+/** Semitones above the tonic that count towards the majority (spec 10.4). */
+export function coreIntervals(mode: Mode): ReadonlySet<number> {
+  return CORE_SETS[mode];
+}
+
 /**
- * Modal mixture the other way round. Spec 10.4 is written from a minor key's
- * point of view ("major borrowings"); in a major key the borrowing that
- * mirrors it is from the parallel minor. This mirroring is the one inference
- * this file makes, and it is stated here rather than buried in the union.
+ * Why a pitch is a colour tone. The names say where the note comes from, so a
+ * message can tell a musician something more useful than "outside the key".
  */
-const MINOR_BORROWINGS = [3, 8, 10];
-/** Named on its own in spec 10.4. */
-const FLAT_FIFTH = [6];
+export type ColourReason =
+  /** Minor key, raised seventh: harmonic and melodic minor both use it. */
+  | "raised_seventh"
+  /** Minor key, raised sixth: melodic minor. */
+  | "raised_sixth"
+  /** The flat fifth, named on its own in spec 10.4. */
+  | "flat_five"
+  /** Taken from the parallel mode. */
+  | "borrowed"
+  /** Anything left: a chromatic step. */
+  | "chromatic";
 
-function setOf(...groups: readonly (readonly number[])[]): ReadonlySet<number> {
-  return new Set(groups.flat());
-}
+const MINOR_COLOURS: Readonly<Record<number, ColourReason>> = {
+  1: "chromatic",
+  4: "borrowed", // major third of the parallel major
+  6: "flat_five",
+  9: "raised_sixth",
+  11: "raised_seventh",
+};
 
-const MINOR_SET = setOf(
-  NATURAL_MINOR,
-  HARMONIC_MINOR,
-  MELODIC_MINOR,
-  MAJOR, // major borrowings into a minor key
-  FLAT_FIFTH,
-);
-
-const MAJOR_SET = setOf(MAJOR, MINOR_BORROWINGS, FLAT_FIFTH);
-
-/** Semitones above the tonic that spec 10.4 admits without any context. */
-export function allowedIntervals(mode: Mode): ReadonlySet<number> {
-  return mode === "minor" ? MINOR_SET : MAJOR_SET;
-}
+const MAJOR_COLOURS: Readonly<Record<number, ColourReason>> = {
+  1: "chromatic",
+  3: "borrowed", // minor third of the parallel minor
+  6: "flat_five",
+  8: "borrowed",
+  10: "borrowed",
+};
 
 const LETTER_PC: Readonly<Record<string, number>> = {
   C: 0,
@@ -104,40 +114,25 @@ export function intervalFromTonic(pitch: string, key: ParsedKey): number | null 
   return (((midi - key.tonicPc) % 12) + 12) % 12;
 }
 
-/** Inside the fixed part of the set, before any passing-tone allowance. */
-export function isDiatonic(pitch: string, key: ParsedKey): boolean {
+export type ToneClass =
+  | { kind: "core"; interval: number }
+  | { kind: "colour"; interval: number; reason: ColourReason }
+  | { kind: "unreadable" };
+
+/** The only way to ask about a pitch: core, colour, or not a pitch at all. */
+export function classifyTone(pitch: string, key: ParsedKey): ToneClass {
   const interval = intervalFromTonic(pitch, key);
-  if (interval === null) return false;
-  return allowedIntervals(key.mode).has(interval);
+  if (interval === null) return { kind: "unreadable" };
+  if (coreIntervals(key.mode).has(interval)) return { kind: "core", interval };
+  const table = key.mode === "minor" ? MINOR_COLOURS : MAJOR_COLOURS;
+  return {
+    kind: "colour",
+    interval,
+    reason: table[interval] ?? "chromatic",
+  };
 }
 
-/**
- * A chromatic neighbour in the sense of spec 10.4: one semitone from a note
- * struck immediately before or after it, which is itself inside the set.
- */
-export function isChromaticNeighbour(
-  pitch: string,
-  neighbours: readonly string[],
-  key: ParsedKey,
-): boolean {
-  const midi = pitchToMidi(pitch);
-  if (midi === null) return false;
-
-  return neighbours.some((other) => {
-    const otherMidi = pitchToMidi(other);
-    if (otherMidi === null) return false;
-    if (Math.abs(otherMidi - midi) !== 1) return false;
-    return isDiatonic(other, key);
-  });
-}
-
-/** The full spec 10.4 test: fixed set first, passing tone second. */
-export function isInTonalSet(
-  pitch: string,
-  neighbours: readonly string[],
-  key: ParsedKey,
-): boolean {
-  return (
-    isDiatonic(pitch, key) || isChromaticNeighbour(pitch, neighbours, key)
-  );
+/** True only for the seven notes of the declared scale. */
+export function isCoreTone(pitch: string, key: ParsedKey): boolean {
+  return classifyTone(pitch, key).kind === "core";
 }

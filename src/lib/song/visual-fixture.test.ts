@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { songSchema } from "@/lib/song/schema";
-import { hasErrors, runValidators } from "@/lib/validators";
+import { errorsOnly, hasErrors, runValidators, warningsOnly } from "@/lib/validators";
 import { buildTrackTimeline, frettedRhythm } from "@/lib/tab/timeline";
 import fixture from "@/lib/song/visual-fixture.json";
 
@@ -25,10 +25,27 @@ describe("visual fixture", () => {
     expect(songSchema.safeParse(fixture).success).toBe(true);
   });
 
-  it("passes every validator", () => {
+  it("passes every validator that can block", () => {
     const issues = runValidators(SONG);
-    expect(issues).toEqual([]);
+    expect(errorsOnly(issues)).toEqual([]);
     expect(hasErrors(issues)).toBe(false);
+  });
+
+  it("carries exactly the fret jumps it was built to draw", () => {
+    // The fixture exists to exercise single and double digit fret glyphs, so
+    // it deliberately leaps between position 0 and position 12. Spec 10.3
+    // warns about that and is right to; the fixture is not wrong either.
+    // Pinning the warnings keeps both facts visible.
+    const jumps = warningsOnly(runValidators(SONG)).filter(
+      (issue) => issue.code === "fretJump",
+    );
+    expect(
+      jumps.map((issue) => [issue.sectionId, issue.barIndex, issue.slotIndex]),
+    ).toEqual([
+      ["fret-range", 1, 0],
+      ["tie-over", 0, 3],
+      ["tie-over", 0, 6],
+    ]);
   });
 
   it("covers the single and double digit frets", () => {

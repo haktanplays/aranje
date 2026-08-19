@@ -21,6 +21,7 @@ import {
 } from "@/lib/copilot/errors";
 import { runCopilot } from "@/lib/copilot/pipeline";
 import { resolveRuntime } from "@/lib/copilot/runtime";
+import { readStyleCards } from "@/lib/copilot/style-cards.server";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,7 @@ export async function POST(request: Request): Promise<Response> {
       meter: () => {},
       newRequestId: () => crypto.randomUUID(),
       newPatchId: () => crypto.randomUUID(),
+      styleCards: readStyleCards(),
     },
     body,
     { signal: request.signal },

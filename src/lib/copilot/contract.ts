@@ -1,84 +1,102 @@
 /**
- * The /api/copilot wire contract (spec 11.1).
+ * The /api/copilot wire contract (spec 11.1, decision K-18).
  *
- * "AI sağlayıcısı değişse bile istemcinin gördüğü bu sözleşme değişmez"
- * (spec 11.1). The provider lives behind the adapter; this file is what the
- * phone sees, and it is written against the Song Contract of spec 5 rather
- * than against any second, parallel song type.
+ * The first thing a musician can ask for is not "write me a section" but
+ * "arrange this one track for me". K-18 made that the public operation and
+ * removed `insert_section` / `replace_section` from the public route: with no
+ * outside users yet, there was nothing to be gained by keeping the wider,
+ * riskier contract alive for compatibility.
  *
  * Everything is a `strictObject`, so an unknown field is a rejected request
  * and not a silently ignored one. That matters in both directions: an unknown
  * field from the client is a version mismatch, and an unknown field from the
  * model is an answer we did not ask for.
+ *
+ * Slot types are **derived** from the Song Contract of spec 5.4. There is no
+ * second definition of what a slot is anywhere in this file.
  */
 import { z } from "zod";
 
-import { sectionSchema, songSchema } from "@/lib/song/schema";
+import { songLimits } from "@/lib/limits";
+import {
+  drumSlotSchema,
+  noteEventSchema,
+  songSchema,
+} from "@/lib/song/schema";
 import type { ValidationIssue } from "@/lib/validators/types";
 
+/** The three things the copilot can be asked to arrange (spec 11.1, K-18). */
+export const ARRANGE_SKILLS = ["drums", "bass", "harmony"] as const;
+export type ArrangeSkill = (typeof ARRANGE_SKILLS)[number];
+
 /**
- * The section a patch carries is always `pending` (spec 11.1). The user
- * accepts it before the canonical song changes (spec 11.4/7), so a model that
- * hands back an already-accepted section is answering a different question.
+ * What the model may say about a note.
+ *
+ * `position` is omitted, not optional: spec 11.1 keeps string and fret
+ * placement with the deterministic engine of spec 9.2, so a model that offers
+ * one is answering a question it was not asked. Because the source schema is
+ * strict, omitting the key turns a written position into a rejected field
+ * rather than an ignored one.
  */
-export const patchSectionSchema = sectionSchema.extend({
-  status: z.literal("pending"),
+export const modelNoteEventSchema = noteEventSchema.omit({ position: true });
+
+/** Derived from spec 5.4's melodic slot, minus the position (see above). */
+export const modelMelodicSlotSchema = z.union([
+  z.null(),
+  z.literal("-"),
+  z.strictObject({ notes: z.array(modelNoteEventSchema).min(1) }),
+]);
+
+export const modelBarSchema = z.strictObject({
+  barIndex: z.number().int().min(0).max(songLimits.barsPerSection - 1),
+  /** Melodic for a melodic target, drums for a drum target; never mixed. */
+  slots: z.union([
+    z.array(modelMelodicSlotSchema),
+    z.array(drumSlotSchema),
+  ]),
 });
 
 /**
- * What the model is allowed to produce. No `id`: spec 11.1 puts id generation
- * on the server, so an `id` coming back from the model is an extra field and
- * `strictObject` rejects it.
+ * What the model is allowed to produce: the target track's slots inside one
+ * section, and nothing else. No section, no track metadata, no other track's
+ * content, no id — spec 11.1 puts id generation on the server.
  */
-export const modelPatchSchema = z.discriminatedUnion("action", [
-  z.strictObject({
-    action: z.literal("insert_section"),
-    /** Required for insert (spec 11.1). */
-    afterSectionId: z.string().min(1),
-    section: patchSectionSchema,
-    explanation: z.string().min(1).max(400),
-  }),
-  z.strictObject({
-    action: z.literal("replace_section"),
-    /** Required for replace (spec 11.1). */
-    targetSectionId: z.string().min(1),
-    section: patchSectionSchema,
-    explanation: z.string().min(1).max(400),
-  }),
-]);
+export const modelPatchSchema = z.strictObject({
+  operation: z.literal("arrange_track"),
+  sectionId: z.string().min(1),
+  targetTrackId: z.string().min(1),
+  bars: z.array(modelBarSchema).min(1).max(songLimits.barsPerSection),
+  explanation: z.string().min(1).max(400),
+});
 
 export type ModelPatch = z.infer<typeof modelPatchSchema>;
-/** A Section whose status is fixed to "pending" (spec 11.1). */
-export type PatchSection = z.infer<typeof patchSectionSchema>;
+export type ModelBar = z.infer<typeof modelBarSchema>;
 
 /** The same patch after the server has stamped its id (spec 11.1). */
-export const copilotPatchSchema = z.discriminatedUnion("action", [
-  z.strictObject({
-    id: z.string().min(1),
-    action: z.literal("insert_section"),
-    afterSectionId: z.string().min(1),
-    section: patchSectionSchema,
-    explanation: z.string().min(1).max(400),
-  }),
-  z.strictObject({
-    id: z.string().min(1),
-    action: z.literal("replace_section"),
-    targetSectionId: z.string().min(1),
-    section: patchSectionSchema,
-    explanation: z.string().min(1).max(400),
-  }),
-]);
+export const copilotPatchSchema = modelPatchSchema.extend({
+  id: z.string().min(1),
+});
 
 export type CopilotPatch = z.infer<typeof copilotPatchSchema>;
 
-/**
- * The two request kinds, mirroring the two patch actions one to one so the
- * client cannot ask for one thing and be handed the other:
- *
- *   generation -> insert_section, anchored after an existing section
- *   edit       -> replace_section, aimed at an existing section
- */
-const requestBase = {
+export const copilotRequestSchema = z.strictObject({
+  operation: z.literal("arrange_track"),
+  skill: z.enum(ARRANGE_SKILLS),
+  /** The section to work inside. Must exist in the song. */
+  sectionId: z.string().min(1),
+  /** The one track that may change. Must exist and suit the skill. */
+  targetTrackId: z.string().min(1),
+  /**
+   * Tracks the caller is declaring untouchable. This is extra clarity, never
+   * the boundary itself: every non-target track is locked by the server
+   * whether or not it appears here (spec 11.1, K-18), so a short list cannot
+   * widen the change surface.
+   */
+  lockedTrackIds: z.array(z.string().min(1)).max(songLimits.maxTracks),
+  /** What the musician typed. Carried as data, never as instruction. */
+  instruction: z.string().min(1).max(2000).optional(),
+
+  // --- transport ---------------------------------------------------------
   /**
    * Opaque caller identity: a device or user id. It is hashed before it
    * reaches any counter key (spec 12.2 stores no user data).
@@ -86,42 +104,13 @@ const requestBase = {
   subjectId: z.string().min(1).max(200),
   /** Retry marker (spec 12.3). Same key + same payload = same answer. */
   idempotencyKey: z.string().min(8).max(200),
-  /** What the musician typed. Carried as data, never as instruction. */
-  prompt: z.string().min(1).max(2000),
   /** The whole song, as the Song Contract defines it (spec 5). */
   song: songSchema,
-  /** Optional style card name (spec 11.7); absent means no card. */
+  /** Optional style card id (spec 11.7); absent means no card. */
   styleId: z.string().min(1).max(80).optional(),
-};
-
-export const copilotRequestSchema = z.discriminatedUnion("kind", [
-  z.strictObject({
-    kind: z.literal("generation"),
-    afterSectionId: z.string().min(1),
-    ...requestBase,
-  }),
-  z.strictObject({
-    kind: z.literal("edit"),
-    targetSectionId: z.string().min(1),
-    ...requestBase,
-  }),
-]);
+});
 
 export type CopilotRequest = z.infer<typeof copilotRequestSchema>;
-
-/** The patch action a request kind is allowed to come back as. */
-export function expectedAction(
-  request: CopilotRequest,
-): CopilotPatch["action"] {
-  return request.kind === "generation" ? "insert_section" : "replace_section";
-}
-
-/** The section id the patch must be anchored to, whichever kind it is. */
-export function anchorSectionId(request: CopilotRequest): string {
-  return request.kind === "generation"
-    ? request.afterSectionId
-    : request.targetSectionId;
-}
 
 /** What a successful call returns. Warnings travel; they do not block. */
 export type CopilotSuccessBody = {

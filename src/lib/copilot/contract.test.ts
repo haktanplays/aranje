@@ -1,60 +1,87 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  anchorSectionId,
+  ARRANGE_SKILLS,
+  copilotPatchSchema,
   copilotRequestSchema,
-  expectedAction,
   modelPatchSchema,
 } from "@/lib/copilot/contract";
-import {
-  TEST_SONG,
-  generationRequest,
-  pendingSection,
-} from "@/test/copilot-fixtures";
+import { arrangeRequest, TEST_SONG } from "@/test/copilot-fixtures";
 
-const anchor = TEST_SONG.sections[0]?.id ?? "intro";
+function drumBars(count = 4, slots = 8) {
+  return Array.from({ length: count }, (_, barIndex) => ({
+    barIndex,
+    slots: Array.from({ length: slots }, () => [{ piece: "kick" }]),
+  }));
+}
 
-function modelAnswer(overrides: Record<string, unknown> = {}) {
+function answer(overrides: Record<string, unknown> = {}) {
   return {
-    action: "insert_section",
-    afterSectionId: anchor,
-    section: pendingSection(),
-    explanation: "Kisa bir gecis.",
+    operation: "arrange_track",
+    sectionId: "intro-riff",
+    targetTrackId: "drums",
+    bars: drumBars(),
+    explanation: "Deterministik davul.",
     ...overrides,
   };
 }
 
-describe("request contract (spec 11.1)", () => {
-  it("accepts a well-formed generation request", () => {
-    expect(copilotRequestSchema.safeParse(generationRequest()).success).toBe(true);
+describe("request contract (spec 11.1, K-18)", () => {
+  it("accepts a well-formed arrange_track request", () => {
+    expect(copilotRequestSchema.safeParse(arrangeRequest("drums")).success).toBe(
+      true,
+    );
+  });
+
+  it("offers exactly three skills", () => {
+    expect([...ARRANGE_SKILLS]).toEqual(["drums", "bass", "harmony"]);
+  });
+
+  it("takes no operation but arrange_track", () => {
+    for (const operation of ["insert_section", "replace_section", "generation"]) {
+      const request = { ...arrangeRequest("drums"), operation };
+      expect(copilotRequestSchema.safeParse(request).success).toBe(false);
+    }
+  });
+
+  it("has no trace of the section-wide contract left in it", () => {
+    // The fields the old public flow was built on are gone, not deprecated.
+    const shape = Object.keys(copilotRequestSchema.shape).sort();
+    for (const removed of [
+      "kind",
+      "afterSectionId",
+      "targetSectionId",
+      "prompt",
+    ]) {
+      expect(shape).not.toContain(removed);
+    }
+    expect(shape).toContain("skill");
+    expect(shape).toContain("targetTrackId");
+    expect(shape).toContain("lockedTrackIds");
   });
 
   it("rejects an unknown field instead of ignoring it", () => {
-    const withExtra = { ...generationRequest(), temperature: 0.9 };
+    const withExtra = { ...arrangeRequest("drums"), temperature: 0.9 };
     expect(copilotRequestSchema.safeParse(withExtra).success).toBe(false);
   });
 
-  it("requires the anchor that matches the request kind", () => {
-    const withoutAnchor: Record<string, unknown> = { ...generationRequest() };
-    delete withoutAnchor.afterSectionId;
-    expect(copilotRequestSchema.safeParse(withoutAnchor).success).toBe(false);
-
-    const edit = {
-      ...withoutAnchor,
-      kind: "edit",
-      targetSectionId: anchor,
-    };
-    expect(copilotRequestSchema.safeParse(edit).success).toBe(true);
+  it("requires a section, a target and a locked list", () => {
+    for (const field of ["sectionId", "targetTrackId", "lockedTrackIds"]) {
+      const request: Record<string, unknown> = { ...arrangeRequest("drums") };
+      delete request[field];
+      expect(copilotRequestSchema.safeParse(request).success).toBe(false);
+    }
   });
 
-  it("will not take a generation request wearing an edit's anchor", () => {
-    const mixed = { ...generationRequest(), targetSectionId: anchor };
-    expect(copilotRequestSchema.safeParse(mixed).success).toBe(false);
+  it("treats the instruction as optional", () => {
+    const request: Record<string, unknown> = { ...arrangeRequest("drums") };
+    delete request.instruction;
+    expect(copilotRequestSchema.safeParse(request).success).toBe(true);
   });
 
   it("reuses the Song Contract rather than a second song type", () => {
     const broken = {
-      ...generationRequest(),
+      ...arrangeRequest("drums"),
       song: { ...TEST_SONG, bpm: 9000 },
     };
     const result = copilotRequestSchema.safeParse(broken);
@@ -62,82 +89,98 @@ describe("request contract (spec 11.1)", () => {
     if (result.success) return;
     expect(result.error.issues[0]?.path[0]).toBe("song");
   });
-
-  it("maps each request kind to exactly one patch action", () => {
-    expect(expectedAction(generationRequest())).toBe("insert_section");
-    const edit = copilotRequestSchema.parse({
-      kind: "edit",
-      targetSectionId: anchor,
-      subjectId: "device-abc",
-      idempotencyKey: "idem-key-0001",
-      prompt: "Bu bolumu sadelestir",
-      song: TEST_SONG,
-    });
-    expect(expectedAction(edit)).toBe("replace_section");
-    expect(anchorSectionId(edit)).toBe(anchor);
-  });
 });
 
-describe("model output contract (spec 11.1)", () => {
+describe("model output contract (spec 11.1, K-18)", () => {
   it("accepts the shape the model is asked for", () => {
-    expect(modelPatchSchema.safeParse(modelAnswer()).success).toBe(true);
+    expect(modelPatchSchema.safeParse(answer()).success).toBe(true);
   });
 
   it("refuses a patch id from the model, because the server makes it", () => {
-    expect(modelPatchSchema.safeParse(modelAnswer({ id: "x" })).success).toBe(
-      false,
+    expect(modelPatchSchema.safeParse(answer({ id: "x" })).success).toBe(false);
+    // The server-stamped form is the one that carries an id.
+    expect(copilotPatchSchema.safeParse({ ...answer(), id: "p1" }).success).toBe(
+      true,
     );
   });
 
-  it("refuses any status other than pending", () => {
-    for (const status of ["fixed", "accepted"]) {
-      const answer = modelAnswer({
-        section: { ...pendingSection(), status },
-      });
-      expect(modelPatchSchema.safeParse(answer).success).toBe(false);
+  it("has no way to say anything about a section", () => {
+    for (const field of ["section", "name", "status", "timeSignature"]) {
+      expect(
+        modelPatchSchema.safeParse(answer({ [field]: "whatever" })).success,
+      ).toBe(false);
     }
   });
 
-  it("refuses an insert with no anchor and a replace with no target", () => {
-    expect(
-      modelPatchSchema.safeParse(modelAnswer({ afterSectionId: undefined })).success,
-    ).toBe(false);
-    expect(
-      modelPatchSchema.safeParse({
-        action: "replace_section",
-        section: pendingSection(),
-        explanation: "x",
-      }).success,
-    ).toBe(false);
+  it("has no way to say anything about a track other than which one", () => {
+    for (const field of ["tracks", "instrumentId", "tuning", "capo", "volumeDb"]) {
+      expect(
+        modelPatchSchema.safeParse(answer({ [field]: "whatever" })).success,
+      ).toBe(false);
+    }
   });
 
-  it("refuses an unknown action", () => {
-    expect(
-      modelPatchSchema.safeParse(modelAnswer({ action: "delete_section" })).success,
-    ).toBe(false);
+  it("refuses a written string and fret on a melodic note", () => {
+    const positioned = answer({
+      targetTrackId: "gtr2",
+      bars: [
+        {
+          barIndex: 0,
+          slots: [
+            { notes: [{ pitch: "G2", position: { string: 0, fret: 3 } }] },
+            ...Array.from({ length: 7 }, () => null),
+          ],
+        },
+      ],
+    });
+    expect(modelPatchSchema.safeParse(positioned).success).toBe(false);
+
+    // The same note without a position is fine: placement is the engine's job.
+    const unpositioned = answer({
+      targetTrackId: "gtr2",
+      bars: [
+        {
+          barIndex: 0,
+          slots: [
+            { notes: [{ pitch: "G2" }] },
+            ...Array.from({ length: 7 }, () => null),
+          ],
+        },
+      ],
+    });
+    expect(modelPatchSchema.safeParse(unpositioned).success).toBe(true);
+  });
+
+  it("still accepts the note detail the model is allowed to choose", () => {
+    const expressive = answer({
+      targetTrackId: "gtr2",
+      bars: [
+        {
+          barIndex: 0,
+          slots: [
+            { notes: [{ pitch: "G2", velocity: 96, articulation: "palm_mute" }] },
+            "-",
+            ...Array.from({ length: 6 }, () => null),
+          ],
+        },
+      ],
+    });
+    expect(modelPatchSchema.safeParse(expressive).success).toBe(true);
   });
 
   it("refuses extra fields the model was not asked for", () => {
-    expect(
-      modelPatchSchema.safeParse(modelAnswer({ confidence: 0.8 })).success,
-    ).toBe(false);
+    expect(modelPatchSchema.safeParse(answer({ confidence: 0.8 })).success).toBe(
+      false,
+    );
+    const extraInBar = answer({
+      bars: [{ barIndex: 0, slots: [], tempo: 120 }],
+    });
+    expect(modelPatchSchema.safeParse(extraInBar).success).toBe(false);
   });
 
-  it("refuses a section that breaks the Song Contract", () => {
-    const answer = modelAnswer({
-      section: {
-        ...pendingSection(),
-        bars: [
-          {
-            timeSignature: [4, 4],
-            resolution: 8,
-            // Seven slots where 4/4 at 1/8 needs eight (spec 5.5).
-            slots: { gtr: Array.from({ length: 7 }, () => null) },
-          },
-        ],
-      },
-    });
-    // The bar shape parses; slotCount is a validator, not a schema rule.
-    expect(modelPatchSchema.safeParse(answer).success).toBe(true);
+  it("refuses more bars than a section may hold", () => {
+    expect(modelPatchSchema.safeParse(answer({ bars: drumBars(9) })).success).toBe(
+      false,
+    );
   });
 });

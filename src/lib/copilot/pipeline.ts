@@ -44,14 +44,14 @@ import {
 import type { CopilotConfig } from "@/lib/config/copilot";
 import { applyPatch } from "@/lib/copilot/apply";
 import {
-  anchorSectionId,
   copilotRequestSchema,
-  expectedAction,
   modelPatchSchema,
   type CopilotPatch,
   type CopilotRequest,
   type CopilotSuccessBody,
 } from "@/lib/copilot/contract";
+import { resolveTarget, validateArrangeOutput } from "@/lib/copilot/arrange";
+import { checkLockedSurface, surfaceDigest } from "@/lib/copilot/scope";
 import { checkPhase2EntryGate } from "@/lib/copilot/entry-gate";
 import {
   failure,
@@ -98,6 +98,13 @@ export type PipelineDeps = {
    */
   patchValidators?: readonly PatchValidator[];
   songValidators?: readonly Validator[];
+  /**
+   * Injectable so the locked-surface guard can be exercised with an apply step
+   * that misbehaves on purpose. The default is the real one, which writes to a
+   * single surface by construction — which is exactly why the guard needs a
+   * way to be tested against something that does not.
+   */
+  applyPatch?: typeof applyPatch;
 };
 
 export type PipelineOutcome =
@@ -173,9 +180,10 @@ export async function runCopilot(
   const request = parsed.request;
 
   // --- preflight ----------------------------------------------------------
-  const anchorId = anchorSectionId(request);
-  if (!request.song.sections.some((section) => section.id === anchorId)) {
-    return refuse(failure("invalid_request", `anchor section ${anchorId} not in song`));
+  // Section, track and skill/instrument fit, all before any provider call.
+  const target = resolveTarget(request);
+  if (!target.ok) {
+    return refuse(failure("invalid_request", target.reason));
   }
 
   const styleCard = request.styleId
@@ -582,6 +590,19 @@ async function runRounds(
     }
 
     // --- validate patch, before applying anything ------------------------
+    // Shape first: does the answer describe the surface it was asked about,
+    // with the right bars in the right order at the right slot count?
+    const shapeIssues = validateArrangeOutput(request, patch.patch);
+    if (shapeIssues.length > 0) {
+      corrections = shapeIssues.map((issue) => issue.message);
+      lastFailure = {
+        code: "patch_out_of_scope",
+        diagnostic: shapeIssues.map((issue) => issue.message).join(" | "),
+        billed: true,
+      };
+      continue;
+    }
+
     const patchValidators = deps.patchValidators ?? [validatePatchSize];
     const sizeIssues = patchValidators.flatMap((validate) =>
       validate(request.song, patch.patch),
@@ -597,15 +618,40 @@ async function runRounds(
     }
 
     // --- apply in memory --------------------------------------------------
-    const applied = applyPatch(request.song, patch.patch);
+    const before = surfaceDigest(request.song);
+    const applied = (deps.applyPatch ?? applyPatch)(request.song, patch.patch);
     if (!applied.ok) {
-      corrections = ["Hedef bolum id'si sarkida bulunamadi."];
+      corrections = ["Hedef bolum veya track sarkida bulunamadi."];
       lastFailure = {
         code: "provider_output_invalid",
         diagnostic: applied.reason,
         billed: true,
       };
       continue;
+    }
+
+    // --- locked surface ---------------------------------------------------
+    // Defence in depth (K-18). The schema is already too narrow to say most of
+    // this, and `applyPatch` writes to one place by construction; this is the
+    // check that neither of those was enough, including if the fault is ours.
+    const moved = checkLockedSurface(before, surfaceDigest(applied.song), {
+      sectionId: request.sectionId,
+      targetTrackId: request.targetTrackId,
+    });
+    if (moved.length > 0) {
+      // Not a correction round: a locked surface moving is not something the
+      // model can be asked to try again more carefully.
+      return finishFailed(
+        {
+          code: "locked_surface_violation",
+          diagnostic: moved
+            .map((violation) => `${violation.field}: ${violation.detail}`)
+            .join(" | "),
+          billed: true,
+        },
+        "failed",
+        ["locked_surface_violation"],
+      );
     }
 
     // --- validate the resulting song --------------------------------------
@@ -713,25 +759,20 @@ function parseModelOutput(
     };
   }
 
-  const wanted = expectedAction(request);
-  if (parsed.data.action !== wanted) {
+  // The narrow schema cannot express "the same section the request named", so
+  // the two identifiers are checked here, before the id is stamped.
+  if (parsed.data.sectionId !== request.sectionId) {
     return {
       ok: false,
-      diagnostic: `expected ${wanted}, got ${parsed.data.action}`,
-      corrections: [`action alani ${wanted} olmali.`],
+      diagnostic: `expected section ${request.sectionId}`,
+      corrections: [`sectionId alani ${request.sectionId} olmali.`],
     };
   }
-
-  const anchor = anchorSectionId(request);
-  const given =
-    parsed.data.action === "insert_section"
-      ? parsed.data.afterSectionId
-      : parsed.data.targetSectionId;
-  if (given !== anchor) {
+  if (parsed.data.targetTrackId !== request.targetTrackId) {
     return {
       ok: false,
-      diagnostic: "patch anchored to a different section",
-      corrections: [`Hedef bolum id'si ${anchor} olmali.`],
+      diagnostic: `expected track ${request.targetTrackId}`,
+      corrections: [`targetTrackId alani ${request.targetTrackId} olmali.`],
     };
   }
 

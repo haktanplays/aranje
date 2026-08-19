@@ -9,6 +9,7 @@
  * applied (see `@/lib/validators/patchSize`).
  */
 import { validateDrumVocab } from "@/lib/validators/drumVocab";
+import { validateFretJump } from "@/lib/validators/fretJump";
 import { validateFretboardIntegrity } from "@/lib/validators/fretboardIntegrity";
 import { validateRange } from "@/lib/validators/range";
 import { validateSlotCount } from "@/lib/validators/slotCount";
@@ -39,7 +40,10 @@ export const PLAYABILITY_VALIDATORS: readonly Validator[] = [
 export const TONAL_VALIDATORS: readonly Validator[] = [validateTonalMajority];
 
 /** Informative, never blocking (spec 10.3). */
-export const WARNING_VALIDATORS: readonly Validator[] = [validateUnplaceable];
+export const WARNING_VALIDATORS: readonly Validator[] = [
+  validateUnplaceable,
+  validateFretJump,
+];
 
 /** The central chain. Everything that validates a whole song runs this. */
 export const SONG_VALIDATORS: readonly Validator[] = [
@@ -58,6 +62,7 @@ export function runValidators(
 
 export {
   validateDrumVocab,
+  validateFretJump,
   validateFretboardIntegrity,
   validateRange,
   validateSlotCount,
@@ -67,7 +72,7 @@ export {
   validateTrackReferences,
   validateUnplaceable,
 };
-export { validatePatchSize, changedBarCount } from "@/lib/validators/patchSize";
+export { validatePatchSize, touchedBars } from "@/lib/validators/patchSize";
 export type { PatchValidator } from "@/lib/validators/patchSize";
 export { rangeSupportFor } from "@/lib/validators/range";
 export type { RangeSupport } from "@/lib/validators/range";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { coreIntervals } from "@/lib/music/tonality";
 import type { Bar, DrumSlot, MelodicSlot, NoteEvent, Track } from "@/lib/song/schema";
 import {
   drumTrack,
@@ -9,13 +10,24 @@ import {
   section,
   song,
 } from "@/lib/song/fixtures";
-import { validateTonalMajority } from "@/lib/validators/tonalMajority";
+import {
+  MIN_ONSETS_FOR_VERDICT,
+  validateTonalMajority,
+} from "@/lib/validators/tonalMajority";
 
 function notes(...pitches: readonly string[]): MelodicSlot {
   return { notes: pitches.map((pitch): NoteEvent => ({ pitch })) };
 }
 
-/** A bar written for several tracks at once. */
+/** Fill the first slots of a guitar bar and rest for the remainder. */
+function line(...values: readonly MelodicSlot[]): MelodicSlot[] {
+  const slots = restSlots(8);
+  values.forEach((value, index) => {
+    slots[index] = value;
+  });
+  return slots;
+}
+
 function sharedBar(
   slots: Record<string, readonly (MelodicSlot | DrumSlot)[]>,
 ): Bar {
@@ -26,15 +38,6 @@ function sharedBar(
       Object.entries(slots).map(([id, value]) => [id, [...value]]),
     ) as Bar["slots"],
   };
-}
-
-/** Fill the first slots of a guitar bar and rest for the remainder. */
-function line(...values: readonly MelodicSlot[]): MelodicSlot[] {
-  const slots = restSlots(8);
-  values.forEach((value, index) => {
-    slots[index] = value;
-  });
-  return slots;
 }
 
 const BASS: Track = {
@@ -50,24 +53,20 @@ function eMinor(bars: readonly Bar[], tracks: readonly Track[] = [guitarTrack()]
   return song(tracks, [section([...bars])], { key: "E minor" });
 }
 
-describe("tonalMajority validator (spec 10.1, set from 10.4)", () => {
-  it("does not block a bar for one colour note", () => {
-    // F is the flat second of E minor and the only note outside the set;
-    // one note in three is not a majority (spec 10.4).
+// E natural minor core: E F# G A B C D. Colour tones used below:
+//   D#  raised seventh   C#  raised sixth   Bb  flat five
+//   G#  borrowed         F   chromatic
+describe("tonalMajority (spec 10.1, core from 10.4, K-17)", () => {
+  it("passes three core notes against two colour notes", () => {
     const subject = eMinor([
-      melodicBar("gtr", line(notes("F2"), notes("A3"), notes("B3"))),
+      melodicBar("gtr", line(notes("E2"), notes("G2"), notes("B2"), notes("F2"), notes("Bb2"))),
     ]);
     expect(validateTonalMajority(subject)).toEqual([]);
   });
 
-  it("does not block an even split either", () => {
-    const subject = eMinor([melodicBar("gtr", line(notes("F2"), notes("A3")))]);
-    expect(validateTonalMajority(subject)).toEqual([]);
-  });
-
-  it("blocks a bar once more than half of it sits outside", () => {
+  it("fails an even split of two core and two colour notes", () => {
     const subject = eMinor([
-      melodicBar("gtr", line(notes("F2"), notes("F2"), notes("A3"))),
+      melodicBar("gtr", line(notes("E2"), notes("G2"), notes("F2"), notes("Bb2"))),
     ]);
     const issues = validateTonalMajority(subject);
     expect(issues).toHaveLength(1);
@@ -77,58 +76,128 @@ describe("tonalMajority validator (spec 10.1, set from 10.4)", () => {
       sectionId: "s1",
       barIndex: 0,
     });
-    expect(issues[0]?.message).toContain("F2");
-    expect(issues[0]?.message).toContain("E minor");
+    expect(issues[0]?.message).toContain("4 melodik notanın yalnız 2");
   });
 
-  it("lets a chromatic step through, and stops a stack of them", () => {
-    // E - F - F#: the F is a passing tone between two notes of the set.
+  it("passes two core notes against one colour note", () => {
+    const subject = eMinor([
+      melodicBar("gtr", line(notes("E2"), notes("G2"), notes("F2"))),
+    ]);
+    expect(validateTonalMajority(subject)).toEqual([]);
+  });
+
+  it("gives no verdict on a bar of one or two notes", () => {
+    expect(MIN_ONSETS_FOR_VERDICT).toBe(3);
+
+    // Every note colour, and still no issue: one or two notes are not
+    // evidence of a tonality either way.
+    expect(validateTonalMajority(eMinor([melodicBar("gtr", line(notes("F2")))]))).toEqual([]);
+    expect(
+      validateTonalMajority(
+        eMinor([melodicBar("gtr", line(notes("F2"), notes("Bb2")))]),
+      ),
+    ).toEqual([]);
+
+    // A third colour note is enough evidence, and now it fails.
+    expect(
+      validateTonalMajority(
+        eMinor([melodicBar("gtr", line(notes("F2"), notes("Bb2"), notes("C#3")))]),
+      ),
+    ).toHaveLength(1);
+  });
+
+  it("lets a single harmonic-minor raised seventh through", () => {
+    // D# is not in the natural minor, so it is colour; the other three are
+    // core and carry the majority.
+    expect(coreIntervals("minor").has(11)).toBe(false);
+    const subject = eMinor([
+      melodicBar("gtr", line(notes("E2"), notes("B2"), notes("G2"), notes("D#3"))),
+    ]);
+    expect(validateTonalMajority(subject)).toEqual([]);
+  });
+
+  it("lets a single flat five through", () => {
+    const subject = eMinor([
+      melodicBar("gtr", line(notes("E2"), notes("B2"), notes("A2"), notes("Bb2"))),
+    ]);
+    expect(validateTonalMajority(subject)).toEqual([]);
+  });
+
+  it("does not count a chromatic step as core, even between two core notes", () => {
+    // E - F - F#: under the old rule the F was admitted for having core
+    // neighbours. It is colour now, and the bar passes on the core majority
+    // rather than on an exception.
     const passing = eMinor([
       melodicBar("gtr", line(notes("E2"), notes("F2"), notes("F#2"))),
     ]);
     expect(validateTonalMajority(passing)).toEqual([]);
 
-    // The same pitch with no step around it is just outside the set.
-    const stranded = eMinor([
-      melodicBar("gtr", line(notes("F2"), notes("F2"), notes("F2"))),
+    // Take the core majority away and the same neighbours no longer save it:
+    // E and F# are core, the other four are colour.
+    const surrounded = eMinor([
+      melodicBar(
+        "gtr",
+        line(
+          notes("E2"),
+          notes("F2"),
+          notes("F#2"),
+          notes("G#2"),
+          notes("Bb2"),
+          notes("C#3"),
+        ),
+      ),
     ]);
-    expect(validateTonalMajority(stranded)).toHaveLength(1);
+    expect(validateTonalMajority(surrounded)).toHaveLength(1);
   });
 
-  it("counts every note of a chord, not every slot", () => {
-    // One slot, three notes, two of them outside.
-    const subject = eMinor([melodicBar("gtr", line(notes("F2", "F3", "A3")))]);
-    expect(validateTonalMajority(subject)).toHaveLength(1);
-  });
-
-  it("does not count a tie as a second note", () => {
-    // Without the tie rule this bar would read as four outside notes.
+  it("fails a bar that is mostly chromatic", () => {
     const subject = eMinor([
-      melodicBar("gtr", line(notes("F2"), "-", "-", notes("A3"))),
+      melodicBar("gtr", line(notes("F2"), notes("G#2"), notes("Bb2"), notes("E2"))),
     ]);
-    expect(validateTonalMajority(subject)).toEqual([]);
-  });
-
-  it("counts the whole bar, across every melodic track", () => {
-    const bar = sharedBar({
-      gtr: line(notes("A3")),
-      bass: line(notes("F2"), notes("F2")),
-    });
-    const subject = eMinor([bar], [guitarTrack(), BASS]);
-
-    // Two outside of three: a majority only when both tracks are counted.
     const issues = validateTonalMajority(subject);
     expect(issues).toHaveLength(1);
-    expect(issues[0]?.message).toContain("3 notanın 2");
+    expect(issues[0]?.message).toContain("F2");
+    expect(issues[0]?.message).toContain("G#2");
   });
 
-  it("ignores drum hits, which have no pitch", () => {
+  it("reads major and natural minor from the song's own key", () => {
+    const bars = [
+      melodicBar("gtr", line(notes("C3"), notes("E3"), notes("A3"), notes("B3"))),
+    ];
+    // All four are degrees of C major.
+    expect(
+      validateTonalMajority(song([guitarTrack()], [section(bars)], { key: "C major" })),
+    ).toEqual([]);
+    // In C natural minor only the tonic is core; E, A and B are all borrowed
+    // from the parallel major.
+    expect(
+      validateTonalMajority(song([guitarTrack()], [section(bars)], { key: "C minor" })),
+    ).toHaveLength(1);
+  });
+
+  it("counts every melodic track in the bar together", () => {
     const bar = sharedBar({
-      gtr: line(notes("F2"), notes("A3")),
+      gtr: line(notes("F2"), notes("Bb2")),
+      bass: line(notes("E1"), notes("G1")),
+    });
+    // Two core and two colour across the two tracks: an even split fails, and
+    // it only reads as one bar because both tracks are counted.
+    expect(validateTonalMajority(eMinor([bar], [guitarTrack(), BASS]))).toHaveLength(1);
+
+    const better = sharedBar({
+      gtr: line(notes("F2")),
+      bass: line(notes("E1"), notes("G1")),
+    });
+    expect(validateTonalMajority(eMinor([better], [guitarTrack(), BASS]))).toEqual([]);
+  });
+
+  it("ignores drum hits, which carry no pitch", () => {
+    const bar = sharedBar({
+      gtr: line(notes("F2"), notes("Bb2"), notes("E2")),
       drums: [
         [{ piece: "kick" as const }],
         [{ piece: "snare" as const }],
-        [],
+        [{ piece: "kick" as const }],
         [],
         [],
         [],
@@ -136,43 +205,39 @@ describe("tonalMajority validator (spec 10.1, set from 10.4)", () => {
         [],
       ],
     });
-    const subject = eMinor([bar], [guitarTrack(), drumTrack()]);
-    // Still one outside of two melodic notes; the drums do not tip it over.
+    // One core in three melodic notes fails; the drums neither rescue it nor
+    // change the count.
+    const issues = validateTonalMajority(eMinor([bar], [guitarTrack(), drumTrack()]));
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.message).toContain("3 melodik notanın yalnız 1");
+  });
+
+  it("does not count a tie as a second onset", () => {
+    // Held colour notes would tip this bar if a tie counted again.
+    const subject = eMinor([
+      melodicBar("gtr", line(notes("F2"), "-", "-", notes("E2"), notes("G2"))),
+    ]);
     expect(validateTonalMajority(subject)).toEqual([]);
   });
 
-  it("reads the key off the song rather than assuming one", () => {
-    const bars = [melodicBar("gtr", line(notes("F2"), notes("F3")))];
-    // F is the flat second in E minor.
-    expect(validateTonalMajority(eMinor(bars))).toHaveLength(1);
-    // In F major the same notes are the tonic.
-    expect(
-      validateTonalMajority(
-        song([guitarTrack()], [section(bars)], { key: "F major" }),
-      ),
-    ).toEqual([]);
+  it("counts every note of a chord, not every slot", () => {
+    // One slot, four notes, three of them colour.
+    const subject = eMinor([
+      melodicBar("gtr", line(notes("F2", "Bb2", "G#2", "E3"))),
+    ]);
+    expect(validateTonalMajority(subject)).toHaveLength(1);
   });
 
   it("says nothing when the key cannot be read", () => {
     const subject = {
-      ...eMinor([melodicBar("gtr", line(notes("F2"), notes("F3")))]),
+      ...eMinor([melodicBar("gtr", line(notes("F2"), notes("Bb2"), notes("G#2")))]),
       key: "not a key",
     };
     expect(validateTonalMajority(subject)).toEqual([]);
   });
 
-  it("needs the surrounding song, not the bar alone", () => {
-    // The F sits at the start of bar 2; its step down from E is the last note
-    // of bar 1. Judged bar by bar in isolation it would look outside.
-    const subject = eMinor([
-      melodicBar("gtr", line(notes("A3"), notes("B3"), notes("E2"))),
-      melodicBar("gtr", line(notes("F2"), notes("F#2"))),
-    ]);
-    expect(validateTonalMajority(subject)).toEqual([]);
-  });
-
   it("reports in section and bar order, and repeats itself exactly", () => {
-    const bad = melodicBar("gtr", line(notes("F2"), notes("F2")));
+    const bad = melodicBar("gtr", line(notes("F2"), notes("Bb2"), notes("G#2")));
     const subject = song(
       [guitarTrack()],
       [

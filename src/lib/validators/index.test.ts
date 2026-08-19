@@ -26,8 +26,8 @@ describe("validator chain (spec 10)", () => {
   it("runs the playability validators from the central chain by default", () => {
     expect(PLAYABILITY_VALIDATORS).toHaveLength(2);
     expect(TONAL_VALIDATORS).toHaveLength(1);
-    expect(WARNING_VALIDATORS).toHaveLength(1);
-    expect(SONG_VALIDATORS).toHaveLength(9);
+    expect(WARNING_VALIDATORS).toHaveLength(2);
+    expect(SONG_VALIDATORS).toHaveLength(10);
     // Order is fixed, so the same song always reports in the same sequence.
     expect(SONG_VALIDATORS).toEqual([
       ...PHASE_0_VALIDATORS,
@@ -37,7 +37,7 @@ describe("validator chain (spec 10)", () => {
     ]);
   });
 
-  it("reaches range and stringCollision without being asked for them", () => {
+  it("reaches every added validator without being asked for them", () => {
     const broken = {
       ...SAMPLE_SONG,
       sections: [
@@ -58,7 +58,11 @@ describe("validator chain (spec 10)", () => {
                       { pitch: "A2", position: { string: 0, fret: 5 } },
                     ],
                   },
-                  ...Array.from({ length: 6 }, () => null),
+                  // Two pitches that live only on the thickest string.
+                  { notes: [{ pitch: "E2" }, { pitch: "F2" }] },
+                  // A fourteen-fret leap from the note before it.
+                  { notes: [{ pitch: "F#3", position: { string: 0, fret: 14 } }] },
+                  ...Array.from({ length: 4 }, () => null),
                 ],
               },
             },
@@ -69,6 +73,8 @@ describe("validator chain (spec 10)", () => {
     const codes = new Set(runValidators(broken).map((issue) => issue.code));
     expect(codes.has("range")).toBe(true);
     expect(codes.has("stringCollision")).toBe(true);
+    expect(codes.has("unplaceable")).toBe(true);
+    expect(codes.has("fretJump")).toBe(true);
   });
 
   it("finds nothing wrong with the sample song", () => {

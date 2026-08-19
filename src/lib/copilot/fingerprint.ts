@@ -2,7 +2,8 @@
  * A stable fingerprint of what was asked (spec 12.3 idempotency).
  *
  * Two requests are "the same request" when they would produce the same answer.
- * That is everything the model sees — the kind, the anchor, the prompt, the
+ * That is everything the question is made of — the operation, the skill, the
+ * section, the target track, the declared locked surface, the instruction, the
  * style card and the song — and nothing else. The idempotency key itself is
  * not part of it (it is the label, not the content) and neither is the caller
  * identity (it is the namespace the label lives in).
@@ -31,15 +32,16 @@ export function canonicalJson(value: unknown): string {
 export async function requestFingerprint(
   request: CopilotRequest,
 ): Promise<string> {
-  const anchor =
-    request.kind === "generation"
-      ? { kind: request.kind, afterSectionId: request.afterSectionId }
-      : { kind: request.kind, targetSectionId: request.targetSectionId };
-
   return stableHash(
     canonicalJson({
-      ...anchor,
-      prompt: request.prompt,
+      operation: request.operation,
+      skill: request.skill,
+      sectionId: request.sectionId,
+      targetTrackId: request.targetTrackId,
+      // The declared locked surface is part of the question, so widening it
+      // is a different question and must not replay an earlier answer.
+      lockedTrackIds: [...request.lockedTrackIds].sort(),
+      instruction: request.instruction ?? null,
       styleId: request.styleId ?? null,
       song: request.song,
     }),

@@ -24,3 +24,22 @@ export const volumeDbRange = { min: -60, max: 6 } as const;
 
 /** MIDI velocity bounds (spec 5.4). */
 export const velocityRange = { min: 1, max: 127 } as const;
+
+/**
+ * Hand-position warning thresholds (spec 10.3, K-17).
+ *
+ * A jump larger than this between two neighbouring onsets is unusual but
+ * playable, so it is a warning and never a block. The numbers live here with
+ * the other limits rather than inside the validator, so there is one place to
+ * change them and no magic number scattered through the check.
+ *
+ * They are a visible flag for a known risk, not an ergonomic model: a real
+ * placement engine that minimises hand travel is a later quality checkpoint
+ * (spec 9.2, K-4).
+ */
+export const handPositionLimits = {
+  /** Physical frets a guitarist may shift between neighbouring onsets. */
+  guitarMaxShift: 7,
+  /** The same for a bass, whose frets are further apart. */
+  bassMaxShift: 5,
+} as const;

@@ -1,9 +1,9 @@
 /**
- * The compact transport format of spec 11.5.
+ * The compact transport format (spec 11.5), narrowed to one section and to
+ * what a given skill actually needs (decision K-18).
  *
  * "Modele ham Song JSON gönderilmez." The canonical model stays detailed; what
- * travels to the provider is one line per track, exactly the shape spec 11.5
- * prints:
+ * travels is one line per track, in the shape spec 11.5 prints:
  *
  *   gtr: E2 E2 . G2 - - A2 G2
  *   drm: K+H H S+H H K+H H S+H H
@@ -12,12 +12,20 @@
  * `+` stacks simultaneous events, and everything else is a written pitch or a
  * drum letter.
  *
- * What the format drops, deliberately: velocity, articulation and written
- * positions. Spec 11.5 makes the transport format compact and leaves the
- * canonical model detailed, and the position engine is deterministic code
- * (spec 11.2/5) rather than something the model should be reasoning about.
+ * What the format drops, deliberately: written positions, because spec 11.1
+ * keeps placement with the deterministic engine, and any track the skill has
+ * no business reading. A `drums` request is not shown the bass line.
  */
-import type { DrumPiece, MelodicSlot, Section, Song } from "@/lib/song/schema";
+import { instrumentFamily } from "@/lib/instruments/registry";
+import { slotCount } from "@/lib/music/timing";
+import type {
+  DrumPiece,
+  DrumSlot,
+  MelodicSlot,
+  Section,
+  Song,
+  Track,
+} from "@/lib/song/schema";
 
 /**
  * One letter per drum piece. Spec 11.5's example fixes K, S and H; the rest
@@ -46,60 +54,81 @@ function melodicToken(slot: MelodicSlot): string {
   return slot.notes.map((note) => note.pitch).join("+");
 }
 
-/** One line per track that sounds in the bar, in the song's track order. */
-export function compactBar(song: Song, barIndex: number, section: Section): string[] {
-  const bar = section.bars[barIndex];
-  if (!bar) return [];
-
-  const lines: string[] = [];
-  for (const track of song.tracks) {
-    const slots = bar.slots[track.id];
-    // A track with no key in the bar is silent there (spec 5.5) and is left
-    // out rather than sent as a row of rests.
-    if (slots === undefined) continue;
-
-    const tokens = slots.map((slot) => {
-      if (Array.isArray(slot)) {
-        if (slot.length === 0) return REST;
-        return slot.map((hit) => DRUM_LETTERS[hit.piece]).join("+");
-      }
-      return melodicToken(slot);
-    });
-
-    lines.push(`${track.id}: ${tokens.join(" ")}`);
-  }
-
-  return lines;
+function drumToken(slot: DrumSlot): string {
+  if (slot.length === 0) return REST;
+  return slot.map((hit) => DRUM_LETTERS[hit.piece]).join("+");
 }
 
-/** A whole section: a header line, then one block per bar. */
-export function compactSection(song: Song, section: Section): string {
-  const head = `# ${section.id} "${section.name}" (${section.bars.length} bar)`;
-  const bars = section.bars.map((bar, index) => {
-    const meta = `bar ${index + 1} ${bar.timeSignature[0]}/${bar.timeSignature[1]} 1/${bar.resolution}`;
-    return [meta, ...compactBar(song, index, section)].join("\n");
+/** The pitches and rhythm of one track through a section, bar by bar. */
+export function trackLines(section: Section, trackId: string): string[] {
+  return section.bars.map((bar, index) => {
+    const slots = bar.slots[trackId];
+    // A track with no key in the bar is silent there (spec 5.5).
+    if (slots === undefined) return `bar ${index + 1}: -sus-`;
+    const tokens = slots.map((slot) =>
+      Array.isArray(slot) ? drumToken(slot) : melodicToken(slot),
+    );
+    return `bar ${index + 1}: ${tokens.join(" ")}`;
   });
-  return [head, ...bars].join("\n");
-}
-
-/** The one-line song meta spec 11.5 allows beside the sections. */
-export function compactSongMeta(song: Song): string {
-  const tracks = song.tracks
-    .map((track) => `${track.id}=${track.instrumentId}/${track.presetId}`)
-    .join(" ");
-  return `title="${song.title}" bpm=${song.bpm} key=${song.key} tracks: ${tracks}`;
 }
 
 /**
- * Target section plus one either side, and nothing else (spec 11.5).
- * Returns them in playing order so the model reads them as music.
+ * Where the notes fall, without saying which notes they are. This is what a
+ * drum skill needs: onsets, held notes, rests and accents, and nothing about
+ * pitch it has no use for.
  */
-export function neighbourhood(song: Song, anchorSectionId: string): Section[] {
-  const index = song.sections.findIndex(
-    (section) => section.id === anchorSectionId,
-  );
-  if (index < 0) return [];
+export function rhythmLines(section: Section, trackId: string): string[] {
+  return section.bars.map((bar, index) => {
+    const slots = bar.slots[trackId];
+    if (slots === undefined) return `bar ${index + 1}: -sus-`;
 
-  return [song.sections[index - 1], song.sections[index], song.sections[index + 1]]
-    .filter((section): section is Section => section !== undefined);
+    const tokens = slots.map((slot) => {
+      if (Array.isArray(slot)) return slot.length === 0 ? REST : "x";
+      if (slot === null) return REST;
+      if (slot === "-") return TIE;
+      const accented = slot.notes.some(
+        (note) => note.articulation === "accent" || (note.velocity ?? 0) >= 100,
+      );
+      return accented ? "X" : "x";
+    });
+    return `bar ${index + 1}: ${tokens.join(" ")}`;
+  });
+}
+
+/** Bar shapes of the section: what the answer must match slot for slot. */
+export function barShapeLines(section: Section): string[] {
+  return section.bars.map((bar, index) => {
+    const count = slotCount(bar.timeSignature, bar.resolution);
+    return (
+      `bar ${index + 1}: ${bar.timeSignature[0]}/${bar.timeSignature[1]} ` +
+      `1/${bar.resolution} ${count} slot`
+    );
+  });
+}
+
+/** How the target track is tuned, when that changes what can be written. */
+export function tuningLine(track: Track): string | null {
+  if (!track.fretboard) return null;
+  return `akort: ${track.fretboard.tuning.join(" ")} capo ${track.fretboard.capo}`;
+}
+
+/**
+ * The guitar a bass or harmony part is written against: the first guitar-family
+ * track in the song that is not the target itself.
+ */
+export function primaryGuitar(song: Song, targetTrackId: string): Track | undefined {
+  return song.tracks.find(
+    (track) =>
+      track.id !== targetTrackId &&
+      instrumentFamily(track.instrumentId) === "guitar",
+  );
+}
+
+/** The first drum track, for a skill that needs to hear the groove. */
+export function primaryDrums(song: Song, targetTrackId: string): Track | undefined {
+  return song.tracks.find(
+    (track) =>
+      track.id !== targetTrackId &&
+      instrumentFamily(track.instrumentId) === "drums",
+  );
 }

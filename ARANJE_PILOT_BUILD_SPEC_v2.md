@@ -579,17 +579,41 @@ iki gitarın aynı power chord'u çalması sahte hata üretir.
 
 ### §10.3 Warning üretenler
 
-- İzinli tonal küme dışındaki **tekil** nota.
-- Olağandışı ama çalınabilir fret sıçraması.
-- Çok düşük / çok yüksek velocity.
+- Tonal çekirdek dışındaki **tekil** renk notası (§10.4).
+- Olağandışı ama çalınabilir fret sıçraması. Eşikler tek merkezi kaynakta
+  tutulur: gitarda **> 7**, basta **> 5** fiziksel fret'lik el pozisyonu
+  değişimi (§19 K-17). Bu bir uyarıdır, patch'i bloklamaz.
 - `position` boş olduğu için otomatik yerleştirilen nota; greedy uygun yerleşim
   bulamadıysa nota positionsız çalınır.
 
-### §10.4 İzinli tonal küme
+### §10.4 Tonal çekirdek ve renk notaları (§19 K-17)
 
-Doğal / armonik / melodik minör, majör ödünçleri, b5 ve komşu kromatik
-geçişler. **Tek bir "renk notası" patch'i engellemez** — engelleyen §10.1'deki
-`tonalMajority` eşiğidir.
+**Tonal çekirdek yalnız deklarasyondaki yedi notalı dizidir:**
+
+| `Song.key` modu | Çekirdek (tonik'ten yarım ton) |
+|---|---|
+| `major` | 0, 2, 4, 5, 7, 9, 11 |
+| `minor` | 0, 2, 3, 5, 7, 8, 10 (doğal minör) |
+
+Bunun dışındaki her şey **renk notasıdır**: harmonik minörün yükseltilmiş 7'si,
+melodik minörün yükseltilmiş 6/7'si, `b5`, ödünç alınan notalar ve kromatik
+geçişler.
+
+- Renk notası **tek başına error değildir**; §10.1'deki `tonalMajority` eşiği
+  engeller.
+- Renk notası çoğunluk hesabının **payına eklenmez.**
+- Stil kartının önerdiği renk notaları da çekirdek sayılmaz.
+- "Komşusu kromatikse otomatik tonal say" istisnası **yoktur.**
+
+**`tonalMajority` sayımı:**
+
+- Payda: bardaki **bütün melodik track'lerin vurulan pitched onset'leri.**
+  Tie/sustain yeniden onset sayılmaz; davul ve pitch taşımayan event sayılmaz.
+- Validator yalnız **en az 3 pitched onset** bulunan barda karar verir. Bir
+  veya iki nota tonal çoğunluk için yeterli kanıt değildir; bar atlanır.
+- Geçmek için çekirdek onset sayısı toplam pitched onset sayısının
+  **%50'sinden kesinlikle fazla** olmalıdır. Tam %50 başarısızdır.
+- Karar tam candidate Song üzerinde verilir.
 
 ### §10.5 Uygulama alanı
 
@@ -600,24 +624,49 @@ Validator'lar hem AI patch'lerine hem manuel düzenlemeye uygulanır. Backend'de
 
 ## §11 AI copilot
 
-### §11.1 Sözleşme
+### §11.1 Sözleşme — track-scoped `arrange_track` (§19 K-18)
+
+İlk kullanıcı ürünü, section'ın tamamını değiştiren bir üretim değil, **yalnız
+hedef track'i düzenleyen** bir co-arranger'dır.
 
 ```ts
+type CopilotRequest = {
+  operation: "arrange_track";
+  skill: "drums" | "bass" | "harmony";
+  sectionId: string;
+  targetTrackId: string;
+  lockedTrackIds: string[];
+  instruction?: string;
+};
+
 type CopilotPatch = {
-  id: string;                                   // sunucuda üretilir
-  action: "insert_section" | "replace_section";
-  targetSectionId?: string;                     // replace için zorunlu
-  afterSectionId?: string;                      // insert için zorunlu
-  section: Section;                             // status her zaman "pending"
-  explanation: string;                          // kullanıcıya 1-2 cümle
+  id: string;                 // sunucuda üretilir
+  operation: "arrange_track";
+  sectionId: string;
+  targetTrackId: string;
+  bars: { barIndex: number; slots: MelodicSlot[] | DrumSlot[] }[];
+  explanation: string;        // kullanıcıya 1-2 cümle
 };
 ```
 
 - `id` **sunucuda** üretilir, modele bırakılmaz. `aranje.history` bu id'yi
   loglar (§5.6).
-- `action`'a göre zorunlu alan farkı zod'da **discriminated union** ile
-  zorlanır.
+- Slot tipleri §5.4'ten türetilir; **ikinci bir slot tanımı yoktur.**
+- Skill ile hedef track uyumu zorunludur: `drums` → davul track'i, `bass` →
+  fretted bas, `harmony` → fretted gitar.
+- **Section'daki target dışı bütün track'ler sunucu tarafından kilitli kabul
+  edilir.** `lockedTrackIds` yalnız ek açıklıktır; güvenlik sınırının tek
+  kaynağı değildir.
+- Model **yeni Track oluşturamaz**; section adı, id'si, bar sayısı, ölçü ve
+  diğer metadata'sı değiştirilemez.
+- Melodik çıktıda **explicit `position` kabul edilmez**; tel/perde yerleşimini
+  §9.2 deterministik motoru yapar.
+- Bar sayısı hedef section'ın bar sayısıyla aynı olmalı, her `barIndex` tam bir
+  kez ve sıralı bulunmalıdır.
 - **AI sağlayıcısı değişse bile istemcinin gördüğü bu sözleşme değişmez.**
+
+`insert_section` / `replace_section` public route'tan **kaldırılmıştır**
+(§19 K-18).
 
 ### §11.2 Model stratejisi — NİHAİ (§19 K-1)
 
@@ -731,10 +780,14 @@ humanization · kullanıcının kabul-ret geçmişi.
 
 ### §11.7 Stil kartları
 
-- `content/styles/*.md`. Pilotta 2 kart: `opeth-acoustic.md`,
-  `generic-metal.md`.
+- `content/styles/*.md`. Pilotta 2 kart: `generic-metal.md`,
+  `progressive-atmospheric-acoustic.md` (§19 K-18).
+- **Kartlar özellik tabanlıdır.** Sanatçı, grup, şarkı veya telifli eser adı
+  kullanılmaz; kart bir sanatçıyı taklit etme talimatı değil, doku tarifidir.
 - Kart formatı: tonalite eğilimleri, ritmik karakter, tempo aralığı, doku
-  tarifi + **Song JSON formatında 2 somut örnek pasaj** (few-shot).
+  tarifi.
+- Kart içeriği **talimat katmanındadır** (sistem promptu); kullanıcı ve Song
+  verisi **veri katmanındadır** (data fence). İkisi karışmaz.
 - Route, prompt içinde stil adı geçerse ilgili kartı sistem promptuna ekler;
   geçmezse kart eklenmez.
 - Kart içerikleri route/build zamanında fs ile okunur.
@@ -966,8 +1019,8 @@ korunur" dese de verdiği hex'ler nötrdür; somut olan hex'ler esas alınmışt
 
 **Taşınır:** pending kesikli çerçeve + breathe animasyonu ve reduced-motion
 guard'ı · `playing-now` inset ring · ret scale-out animasyonu · örnek şarkının
-nota içeriği (E doğal minör metal riff + akustik pasaj — hem demo şarkısı hem
-`opeth-acoustic.md` few-shot kaynağı).
+nota içeriği (E doğal minör metal riff + akustik pasaj — demo şarkısı ve
+stil kartlarının doku referansı; kartlar sanatçı adı taşımaz, §19 K-18).
 
 **Taşınmaz:** `Tone.Draw.schedule(fn, Tone.now())` (§8.3) · mutlak saniye
 aritmetiği (§8.3) · davulun procedural üretilmesi — davul veri modelinin
@@ -1061,9 +1114,10 @@ Kapsam:
 
 **FAZ 2 ÇIKIŞ KAPISI — bunlar sağlanmadan Faz 2.5'e BAŞLANMAZ:**
 
-- [ ] Telefonda web demo uçtan uca çalışıyor: metal şarkı çalıyor; "Opeth tarzı
-      akustik pasaj ekle" promptu akustik gitarlı pending section üretiyor;
-      pasaj dinleniyor, kabul ediliyor ve kalıcı oluyor.
+- [ ] Telefonda web demo uçtan uca çalışıyor: metal şarkı çalıyor; bir section
+      seçilip `arrange_track` ile `harmony` (veya `bass` / `drums`) çalıştırılıyor;
+      yalnız hedef track değişiyor, kaynak gitar aynı kalıyor, sonuç dinleniyor,
+      kabul ediliyor ve kalıcı oluyor (§19 K-18).
 - [ ] Kasıtlı bozuk patch anlaşılır hata veriyor.
 - [ ] Açık position çakışması hard error üretiyor (§10.2 kapsamıyla).
 - [ ] §14.6'nın Faz 1 performans testi yeşil.
@@ -1217,6 +1271,8 @@ maliyettir** (§11.2/7).
 | **K-14** | §18'deki tahmini maliyet rakamları **kaldırıldı**; ölçüme dayanmıyorlardı. Yöntem/formül kaldı, değerler Faz 2'de gerçek token ve cache istatistikleriyle doldurulacak. O tarihe kadar patch/gün kapasite tahmini verilmez. | Haktan, 19.08.2026 |
 | **K-15** | Sample manifestine `licenseSpdx`, `licenseTextPath` ve `attribution` alanları eklendi; build çıktısına `THIRD_PARTY_NOTICES.md` üretilir. | Haktan tavsiyesi, 19.08.2026 |
 | **K-16** | Belirsizlik kuralı tersine çevrildi: **kullanım doğrulanamıyorsa rezervasyon harcanmış sayılır**; uzlaştırma yalnız aşağı yönlü ve yalnız doğrulanmış kullanımla yapılır; belirsiz rezervasyon bütçe penceresi kapanmadan serbest bırakılmaz; rezervasyon süresi ile idempotency/cache TTL'i ayrı kavramlardır. Ayrıca adapter'ın somut token tavanları ve `worstCaseReservation <= dailyBudget` başlangıç invariant'ı Faz 2 başlama koşulu yapıldı; §18'de patch maliyeti tur sayısıyla çarpım yerine **turların toplamı** olarak düzeltildi; `lib/brand.ts` örneğindeki yorum ASCII'ye çevrildi. | Haktan, 19.08.2026 |
+| **K-17** | `tonalMajority` için 11/12 perde sınıfını kapsayan birleşik küme **kaldırıldı**. Tonal çekirdek yalnız deklarasyondaki yedi notalı majör veya doğal minör dizidir; harmonik/melodik minör yükseltmeleri, `b5`, ödünç notalar ve kromatik geçişler **renk notasıdır** ve çoğunluk payına eklenmez. "Komşusu kromatikse otomatik tonal say" istisnası kaldırıldı. Validator yalnız **en az 3 pitched onset** bulunan barda karar verir; geçmek için çekirdek oran **kesinlikle %50'den fazla** olmalıdır. Ayrıca §10.3'te ertelenen olağandışı fret sıçraması uyarısı uygulandı; eşikler tek merkezi kaynakta (gitar > 7, bas > 5 fiziksel fret). | Haktan, 19.08.2026 |
+| **K-18** | İlk kullanıcı ürünü, section'ın tamamını değiştiren `replace_section` değil, yalnız hedef track'i düzenleyen **`arrange_track`** oldu. Public `/api/copilot` strict şeması yalnız `arrange_track` kabul eder; `insert_section` / `replace_section` public route'tan kaldırıldı (dış kullanıcı olmadığı için geniş contract backward compatibility uğruna korunmadı). Sağlayıcı çıktısı section'ın tamamını değil **yalnız hedef track'in slotlarını** döndürür; melodik çıktıda explicit `position` reddedilir. Target dışı bütün track'ler sunucu tarafında kilitlidir; `lockedTrackIds` yalnızca ek açıklıktır. `patchSize` artık target track içinde dokunulan bar sayısını ölçer. Stil kartları sanatçıya değil **özelliğe** dayanır; `opeth-acoustic.md` yerine `progressive-atmospheric-acoustic.md`. | Haktan, 19.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
