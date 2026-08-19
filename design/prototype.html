@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riff Copilot — Sesli Prototip</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<style>
+  :root{
+    --bg:#15130F;
+    --panel:#1E1A14;
+    --line:#3A332A;
+    --text:#EDE6D8;
+    --muted:#9C917E;
+    --steel:#8FA3B0;
+    --bronze:#C98F3D;
+    --bronze-soft:rgba(201,143,61,.14);
+    --red:#A85A4A;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px 16px 60px;
+  }
+  header{width:100%;max-width:860px;margin-bottom:22px}
+  .eyebrow{
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--bronze);font-weight:600;margin-bottom:6px;
+  }
+  h1{
+    font-family:'Fraunces',serif;font-weight:700;font-size:clamp(26px,5vw,38px);
+    line-height:1.1;
+  }
+  h1 em{font-style:italic;color:var(--bronze)}
+  .sub{color:var(--muted);font-size:14px;margin-top:8px;max-width:56ch;line-height:1.5}
+
+  .chat{
+    width:100%;max-width:860px;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;margin-bottom:26px;
+  }
+  .msg{display:flex;gap:10px;font-size:14px;line-height:1.45}
+  .msg + .msg{margin-top:12px}
+  .who{
+    flex:0 0 auto;font-size:11px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;padding:3px 8px;border-radius:6px;height:fit-content;
+  }
+  .who.user{background:#2A2620;color:var(--muted)}
+  .who.ai{background:var(--bronze-soft);color:var(--bronze)}
+  .msg p{color:var(--text)}
+  .msg .note{color:var(--muted);font-size:12.5px;margin-top:3px}
+
+  .timeline{
+    width:100%;max-width:860px;
+    display:flex;gap:14px;align-items:stretch;
+    overflow-x:auto;padding:4px 2px 14px;
+  }
+  .section{
+    flex:1 1 0;min-width:200px;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 14px 12px;
+    position:relative;
+    transition:border-color .25s, box-shadow .25s, opacity .3s, transform .3s;
+  }
+  .section.metal{border-top:3px solid var(--steel)}
+  .section.acoustic{border-top:3px solid var(--bronze)}
+  .section.pending{
+    border:1.5px dashed var(--bronze);
+    background:linear-gradient(180deg, var(--bronze-soft), var(--panel) 65%);
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .section.pending{animation:breathe 2.6s ease-in-out infinite}
+    @keyframes breathe{
+      0%,100%{box-shadow:0 0 0 0 rgba(201,143,61,0)}
+      50%{box-shadow:0 0 22px 0 rgba(201,143,61,.22)}
+    }
+  }
+  .section.playing-now{box-shadow:0 0 0 2px var(--bronze) inset}
+  .section.removed{opacity:0;transform:scale(.92);pointer-events:none}
+
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+  .sec-name{font-family:'Fraunces',serif;font-size:15px;font-weight:500}
+  .sec-tag{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .sec-tag.ai{color:var(--bronze);font-weight:600}
+
+  .tab{position:relative;height:96px;margin-bottom:4px}
+  .string{position:absolute;left:0;right:0;height:1px;background:var(--line)}
+  .bar-split{position:absolute;top:0;bottom:0;width:1px;background:var(--line);left:50%}
+  .dot{
+    position:absolute;width:11px;height:11px;border-radius:50%;
+    transform:translate(-50%,-50%);
+    background:var(--steel);
+  }
+  .acoustic .dot{background:var(--bronze)}
+  .pending .dot{background:transparent;border:1.5px solid var(--bronze)}
+  .dot.hit{outline:2px solid var(--text);outline-offset:1px}
+
+  .sec-actions{display:flex;gap:8px;margin-top:12px}
+  button{
+    font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
+    border:1px solid var(--line);border-radius:9px;
+    background:#26211A;color:var(--text);
+    padding:8px 14px;cursor:pointer;
+    transition:background .15s,border-color .15s;
+  }
+  button:hover{border-color:var(--muted)}
+  button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
+  button.primary{background:var(--bronze);border-color:var(--bronze);color:#1A1409}
+  button.primary:hover{background:#DBA153}
+  button.ghost-danger{color:#D89A8C}
+  button.ghost-danger:hover{border-color:var(--red)}
+  button:disabled{opacity:.45;cursor:default}
+
+  .transport{
+    width:100%;max-width:860px;
+    display:flex;align-items:center;gap:14px;
+    margin-top:10px;
+  }
+  .transport .big{padding:12px 26px;font-size:15px}
+  .status{color:var(--muted);font-size:13px}
+  .decided{
+    margin-top:16px;font-size:13.5px;color:var(--muted);
+    max-width:860px;width:100%;line-height:1.5;
+  }
+  .decided strong{color:var(--bronze)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Sesli Prototip · Konsept Demosu</div>
+  <h1>Riff Copilot — <em>öner, dinle, kabul et</em></h1>
+  <p class="sub">Metal riff'in ortasına AI'nın önerdiği akustik pasaj eklendi. Tamamını çal, ya da sadece öneriyi dinle — sonra karar ver. Tüm sesler tarayıcıda anlık sentezleniyor, hazır kayıt yok.</p>
+</header>
+
+<div class="chat" aria-label="Komut geçmişi">
+  <div class="msg">
+    <span class="who user">Sen</span>
+    <p>şarkıda şuraya Opeth gibi akustik bir pasaj ekle</p>
+  </div>
+  <div class="msg">
+    <span class="who ai">Copilot</span>
+    <div>
+      <p>Em tonalitesinde, add9 renkli parmak arpejli 2 barlık akustik pasaj öneriyorum. Riff ile aynı tempoda, tonalite doğrulamasından geçti.</p>
+      <p class="note">✓ Ölçü kontrolü: 2/2 bar dolu &nbsp;·&nbsp; ✓ Tonalite: E minör içinde &nbsp;·&nbsp; ✓ Geçiş notası uyumlu</p>
+    </div>
+  </div>
+</div>
+
+<div class="timeline" id="timeline"></div>
+
+<div class="transport">
+  <button class="primary big" id="playBtn">▶ Şarkıyı Çal</button>
+  <button id="stopBtn" disabled>■ Durdur</button>
+  <span class="status" id="status">Hazır — ses için bir kez dokunman yeterli.</span>
+</div>
+
+<p class="decided" id="verdict"></p>
+
+<script>
+"use strict";
+
+/* ---------- Şarkı verisi (sembolik temsil = "kaynak dosya") ---------- */
+const BPM = 132;
+const EIGHTH = (60 / BPM) / 2;
+const BAR = EIGHTH * 8;
+
+// Her bar = 8 sekizlik. null = sus.
+const SONG = [
+  {
+    id: "riff-a", name: "Metal Riff", kind: "metal", status: "fixed",
+    bars: [
+      ["E2","E2","E2","G2","E2","E2","A2","G2"],
+      ["E2","E2","G2","A2","C3","B2","G2","E2"],
+    ],
+  },
+  {
+    id: "ai-1", name: "Akustik Pasaj", kind: "acoustic", status: "pending",
+    bars: [
+      ["E3","B3","E4","F#4","G4","F#4","E4","B3"],
+      ["A2","E3","A3","C4","E4","C4","B3","G3"],
+    ],
+  },
+  {
+    id: "riff-b", name: "Metal Riff · devam", kind: "metal", status: "fixed",
+    bars: [
+      ["E2","E2","G2","A2","C3","B2","G2","E2"],
+      ["E2","E2","E2","G2","E2","D3","B2","E2"],
+    ],
+  },
+];
+
+/* ---------- Enstrümanlar ---------- */
+let audioReady = false;
+let guitar, pluck, kick, snare, hat, acMeter;
+
+function buildInstruments() {
+  const dist = new Tone.Distortion(0.55).toDestination();
+  const gtrFilter = new Tone.Filter(1400, "lowpass").connect(dist);
+  guitar = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: "sawtooth" },
+    envelope: { attack: 0.004, decay: 0.14, sustain: 0.18, release: 0.05 },
+  }).connect(gtrFilter);
+  guitar.volume.value = -10;
+
+  // Teshis surumu: akustik ses, metal riff'te KANITLANMIS bilesenlerle kuruldu
+  // (ayni PolySynth+Synth, efekt yok, dogrudan cikis). Tek fark yumusak tini.
+  // acMeter durum satirina gercek cikis seviyesini (dB) yazar.
+  pluck = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.005, decay: 0.4, sustain: 0.08, release: 0.35 },
+  }).toDestination();
+  pluck.volume.value = 0;
+  acMeter = new Tone.Meter({ smoothing: 0.6 });
+  pluck.connect(acMeter);
+
+  kick = new Tone.MembraneSynth({
+    pitchDecay: 0.04, octaves: 6,
+    envelope: { attack: 0.001, decay: 0.28, sustain: 0 },
+  }).toDestination();
+  kick.volume.value = -6;
+
+  const snFilter = new Tone.Filter(1800, "highpass").toDestination();
+  snare = new Tone.NoiseSynth({
+    envelope: { attack: 0.001, decay: 0.13, sustain: 0 },
+  }).connect(snFilter);
+  snare.volume.value = -10;
+
+  const hatFilter = new Tone.Filter(7000, "highpass").toDestination();
+  hat = new Tone.NoiseSynth({
+    envelope: { attack: 0.001, decay: 0.035, sustain: 0 },
+  }).connect(hatFilter);
+  hat.volume.value = -18;
+}
+
+/* ---------- Zamanlama ---------- */
+function scheduleMetalBar(t0, notes, secId, barIdx) {
+  notes.forEach((n, i) => {
+    const t = t0 + i * EIGHTH;
+    if (n) {
+      // power chord: kök + beşli
+      const fifth = Tone.Frequency(n).transpose(7).toNote();
+      Tone.Transport.schedule(tt => guitar.triggerAttackRelease([n, fifth], 0.11, tt), t);
+    }
+    Tone.Transport.schedule(tt => { kick.triggerAttackRelease("C1", 0.05, tt); }, t); // eighth-note double kick hissi
+    Tone.Transport.schedule(tt => hat.triggerAttackRelease(0.03, tt), t);
+    Tone.Transport.schedule(tt => markDot(secId, barIdx, i), t);
+  });
+  // snare: 2 ve 4. vuruş
+  [2, 6].forEach(i => {
+    Tone.Transport.schedule(tt => snare.triggerAttackRelease(0.1, tt), t0 + i * EIGHTH);
+  });
+}
+
+function scheduleAcousticBar(t0, notes, secId, barIdx) {
+  notes.forEach((n, i) => {
+    const t = t0 + i * EIGHTH;
+    if (n) Tone.Transport.schedule(tt => {
+      try { pluck.triggerAttackRelease(n, 0.55, tt); }
+      catch (e) { setStatus("Ses hatası (akustik): " + e.message); }
+    }, t);
+    // Teshis: notadan hemen sonra olculen cikis seviyesini goster.
+    Tone.Transport.schedule(tt => {
+      Tone.Draw.schedule(() => {
+        const db = acMeter ? acMeter.getValue() : null;
+        if (db !== null) setStatus(
+          "Akustik çalıyor · ölçülen seviye: " +
+          (db === -Infinity || db < -90 ? "SİNYAL YOK (-∞ dB)" : db.toFixed(1) + " dB")
+        );
+      }, tt);
+    }, t + 0.12);
+    Tone.Transport.schedule(tt => markDot(secId, barIdx, i), t);
+  });
+}
+
+function activeSections() {
+  return SONG.filter(s => s.status !== "rejected");
+}
+
+function scheduleSong(onlySectionId = null) {
+  Tone.Transport.cancel();
+  let t = 0.05;
+  const list = onlySectionId
+    ? SONG.filter(s => s.id === onlySectionId)
+    : activeSections();
+
+  list.forEach(sec => {
+    Tone.Transport.schedule(() => setPlayingSection(sec.id), t);
+    sec.bars.forEach((bar, bi) => {
+      if (sec.kind === "metal") scheduleMetalBar(t, bar, sec.id, bi);
+      else scheduleAcousticBar(t, bar, sec.id, bi);
+      t += BAR;
+    });
+  });
+  Tone.Transport.schedule(() => stopPlayback(true), t + 0.2);
+  return t;
+}
+
+async function startPlayback(onlySectionId = null) {
+  if (!audioReady) {
+    await Tone.start();
+    buildInstruments();
+    audioReady = true;
+  }
+  stopPlayback(false);
+  scheduleSong(onlySectionId);
+  Tone.Transport.bpm.value = BPM;
+  Tone.Transport.start();
+  document.getElementById("playBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
+  setStatus(onlySectionId ? "Öneri çalıyor…" : "Şarkı çalıyor…");
+}
+
+function stopPlayback(natural) {
+  Tone.Transport.stop();
+  Tone.Transport.cancel();
+  document.getElementById("playBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+  setPlayingSection(null);
+  clearDots();
+  setStatus(natural ? "Bitti. Tekrar çalabilir ya da karar verebilirsin." : "Hazır.");
+}
+
+/* ---------- UI ---------- */
+const NOTE_MIDI = n => Tone.Frequency(n).toMidi();
+
+function renderTimeline() {
+  const tl = document.getElementById("timeline");
+  tl.innerHTML = "";
+  SONG.forEach(sec => {
+    if (sec.status === "rejected") return;
+    const el = document.createElement("div");
+    el.className = `section ${sec.kind}${sec.status === "pending" ? " pending" : ""}`;
+    el.id = `sec-${sec.id}`;
+
+    const tag = sec.status === "pending"
+      ? `<span class="sec-tag ai">AI önerisi</span>`
+      : `<span class="sec-tag">${sec.kind === "metal" ? "Distortion" : "Akustik"}</span>`;
+
+    el.innerHTML = `
+      <div class="sec-head">
+        <span class="sec-name">${sec.name}</span>${tag}
+      </div>
+      <div class="tab" id="tab-${sec.id}"></div>
+    `;
+
+    // 6 tel + bar bölücü
+    const tab = el.querySelector(".tab");
+    for (let s = 0; s < 6; s++) {
+      const line = document.createElement("div");
+      line.className = "string";
+      line.style.top = `${(s / 5) * 100}%`;
+      tab.appendChild(line);
+    }
+    tab.insertAdjacentHTML("beforeend", `<div class="bar-split"></div>`);
+
+    // nota noktaları — pitch aralığını 6 tele oranla
+    const all = sec.bars.flat().filter(Boolean).map(NOTE_MIDI);
+    const lo = Math.min(...all), hi = Math.max(...all);
+    sec.bars.forEach((bar, bi) => {
+      bar.forEach((n, i) => {
+        if (!n) return;
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        dot.id = `dot-${sec.id}-${bi}-${i}`;
+        const x = ((bi * 8 + i) + 0.5) / 16 * 100;
+        const ratio = hi === lo ? 0.5 : (NOTE_MIDI(n) - lo) / (hi - lo);
+        dot.style.left = `${x}%`;
+        dot.style.top = `${(1 - ratio) * 100}%`;
+        tab.appendChild(dot);
+      });
+    });
+
+    if (sec.status === "pending") {
+      const actions = document.createElement("div");
+      actions.className = "sec-actions";
+      actions.innerHTML = `
+        <button class="primary" data-act="accept">✓ Kabul et</button>
+        <button data-act="listen">▶ Sadece öneriyi dinle</button>
+        <button class="ghost-danger" data-act="reject">✕ Reddet</button>
+      `;
+      actions.addEventListener("click", e => {
+        const act = e.target.dataset.act;
+        if (act === "listen") startPlayback(sec.id);
+        if (act === "accept") decide(sec, true);
+        if (act === "reject") decide(sec, false);
+      });
+      el.appendChild(actions);
+    }
+    tl.appendChild(el);
+  });
+}
+
+function decide(sec, accepted) {
+  stopPlayback(false);
+  if (accepted) {
+    sec.status = "accepted";
+    setVerdict(`<strong>Kabul edildi.</strong> Pasaj artık şarkının parçası — gerçek üründe bu an, alphaTex dosyasına diff'in commit'lendiği andır. Copilot ayrıca bir zevk sinyali kaydetti: bu kullanıcı Em-add9 arpejli dokuları onaylıyor.`);
+  } else {
+    const el = document.getElementById(`sec-${sec.id}`);
+    el.classList.add("removed");
+    setTimeout(() => { sec.status = "rejected"; renderTimeline(); }, 320);
+    setVerdict(`<strong>Reddedildi.</strong> Pasaj kaldırıldı, riff'ler yeniden birleşti. Gerçek üründe copilot bu reddi de öğrenir: "akustik ara istenmedi" sinyaliyle bir sonraki önerisini değiştirir.`);
+  }
+  renderTimeline();
+}
+
+function setPlayingSection(id) {
+  document.querySelectorAll(".section").forEach(el => el.classList.remove("playing-now"));
+  if (id) {
+    const el = document.getElementById(`sec-${id}`);
+    if (el) el.classList.add("playing-now");
+  }
+}
+
+let litDots = [];
+function markDot(secId, barIdx, i) {
+  Tone.Draw.schedule(() => {
+    const d = document.getElementById(`dot-${secId}-${barIdx}-${i}`);
+    if (!d) return;
+    d.classList.add("hit");
+    litDots.push(d);
+    setTimeout(() => d.classList.remove("hit"), 180);
+  }, Tone.now());
+}
+function clearDots() {
+  litDots.forEach(d => d.classList.remove("hit"));
+  litDots = [];
+}
+
+function setStatus(msg) { document.getElementById("status").textContent = msg; }
+function setVerdict(html) { document.getElementById("verdict").innerHTML = html; }
+
+document.getElementById("playBtn").addEventListener("click", () => startPlayback());
+document.getElementById("stopBtn").addEventListener("click", () => stopPlayback(false));
+
+renderTimeline();
+</script>
+</body>
+</html>
