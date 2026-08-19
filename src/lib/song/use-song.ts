@@ -1,34 +1,52 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
-import { loadSong, type LoadResult } from "@/lib/song/storage";
+import {
+  getSongStore,
+  type SongStoreSnapshot,
+} from "@/lib/song/song-store";
+import type { Song } from "@/lib/song/schema";
 
 /*
  * localStorage is an external store, so it is read through useSyncExternalStore
- * rather than an effect. The read happens once and the result is cached, since
- * getSnapshot must return a stable value.
- *
- * Nothing changes the song yet, so there is nothing to subscribe to.
+ * rather than an effect. Since phase 2C the song can also be written, so the
+ * store publishes to subscribers and the snapshot is whatever it last set.
  */
-const NO_CHANGES = () => () => {};
-
-let clientSnapshot: LoadResult | null = null;
-
-function getClientSnapshot(): LoadResult {
-  clientSnapshot ??= loadSong();
-  return clientSnapshot;
-}
 
 /* Prerender and hydration show the sample song; the stored song replaces it as
    soon as the client can reach storage. */
-const SERVER_SNAPSHOT: LoadResult = { song: SAMPLE_SONG, outcome: "empty" };
+const SERVER_SNAPSHOT: SongStoreSnapshot = {
+  song: SAMPLE_SONG,
+  canUndo: false,
+  persisted: true,
+};
 
-function getServerSnapshot(): LoadResult {
-  return SERVER_SNAPSHOT;
-}
+export type SongHandle = SongStoreSnapshot & {
+  commit(next: Song): void;
+  undo(): void;
+};
 
-export function useSong(): LoadResult {
-  return useSyncExternalStore(NO_CHANGES, getClientSnapshot, getServerSnapshot);
+export function useSong(): SongHandle {
+  const store = typeof window === "undefined" ? null : getSongStore();
+
+  const snapshot = useSyncExternalStore(
+    store ? store.subscribe : () => () => {},
+    store ? store.getSnapshot : () => SERVER_SNAPSHOT,
+    () => SERVER_SNAPSHOT,
+  );
+
+  const commit = useCallback(
+    (next: Song) => {
+      store?.commit(next);
+    },
+    [store],
+  );
+
+  const undo = useCallback(() => {
+    store?.undo();
+  }, [store]);
+
+  return { ...snapshot, commit, undo };
 }

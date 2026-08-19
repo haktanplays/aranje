@@ -14,6 +14,12 @@
  *
  * The bodies are read from `content/styles/*.md` by the caller; this module
  * only says which cards exist, so nothing in the pure path touches a file.
+ *
+ * Each card carries two worked examples, as spec 11.7 asks for. They are
+ * written in the narrow `arrange_track` output shape so a test can parse them
+ * against the same strict schema a provider answer goes through — a card that
+ * shows a model an example the contract would reject teaches it the wrong
+ * thing. `extractExamples` is how that test reads them back out.
  */
 import type { StyleCard } from "@/lib/copilot/prompt";
 
@@ -45,4 +51,16 @@ export function styleCardRegistry(
     if (body !== undefined) registry[id] = { id, body };
   }
   return registry;
+}
+
+/** Fenced JSON blocks in a card body, in the order they appear. */
+export function extractExamples(body: string): unknown[] {
+  const blocks: unknown[] = [];
+  const fence = /```json\n([\s\S]*?)```/g;
+  for (const match of body.matchAll(fence)) {
+    const text = match[1];
+    if (text === undefined) continue;
+    blocks.push(JSON.parse(text) as unknown);
+  }
+  return blocks;
 }

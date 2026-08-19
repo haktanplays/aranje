@@ -31,3 +31,61 @@ towards a favourite.
 - Harmony guitar: tonal thirds and sixths are available. Do not transpose the
   whole line in parallel; move with the part, not alongside it.
 - Keep the rests. A riff that never breathes stops sounding heavy.
+
+## Example: a low riff that leaves gaps
+
+Palm-muted repeated root, an accent where the line moves, and a rest before it
+turns around. E natural minor, one bar of 4/4 at eighth-note resolution.
+
+```json
+{
+  "operation": "arrange_track",
+  "sectionId": "ornek-bolum",
+  "targetTrackId": "ornek-gitar",
+  "bars": [
+    {
+      "barIndex": 0,
+      "slots": [
+        { "notes": [{ "pitch": "E2", "velocity": 104, "articulation": "palm_mute" }] },
+        { "notes": [{ "pitch": "E2", "velocity": 88, "articulation": "palm_mute" }] },
+        null,
+        { "notes": [{ "pitch": "G2", "velocity": 112, "articulation": "accent" }] },
+        "-",
+        null,
+        { "notes": [{ "pitch": "A2", "velocity": 104 }] },
+        { "notes": [{ "pitch": "G2", "velocity": 96 }] }
+      ]
+    }
+  ],
+  "explanation": "Kok notada palm mute, hareket eden notada aksan, donusten once sus."
+}
+```
+
+## Example: drums that answer the riff rather than fill it
+
+Kick under the two accents of the riff above, snare on the backbeat, hats
+marking the beat, and one slot left empty so the bar breathes.
+
+```json
+{
+  "operation": "arrange_track",
+  "sectionId": "ornek-bolum",
+  "targetTrackId": "ornek-davul",
+  "bars": [
+    {
+      "barIndex": 0,
+      "slots": [
+        [{ "piece": "kick", "velocity": 108 }, { "piece": "closed_hat" }],
+        [{ "piece": "closed_hat", "velocity": 72 }],
+        [{ "piece": "snare", "velocity": 104 }, { "piece": "closed_hat" }],
+        [{ "piece": "closed_hat", "velocity": 72 }],
+        [{ "piece": "kick", "velocity": 108 }, { "piece": "closed_hat" }],
+        [],
+        [{ "piece": "snare", "velocity": 104 }, { "piece": "closed_hat" }],
+        [{ "piece": "closed_hat", "velocity": 72 }]
+      ]
+    }
+  ],
+  "explanation": "Kick riffin aksanlarinda, snare backbeat'te, bir slot bos birakildi."
+}
+```

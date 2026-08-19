@@ -3,7 +3,10 @@
 import { useEffect, useRef } from "react";
 
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
-import { FrettedBarBlock } from "@/components/workspace/FrettedBarBlock";
+import {
+  FrettedBarBlock,
+  type CellSelection,
+} from "@/components/workspace/FrettedBarBlock";
 import {
   BAR_HEADER_HEIGHT,
   DRUM_ROW_HEIGHT,
@@ -68,6 +71,9 @@ export function TabCanvas({
   onActiveBarChange,
   onSeekBar,
   scrollRef,
+  editing = false,
+  selectedCell = null,
+  onCellSelect,
 }: {
   timeline: TrackTimeline;
   plan: SongPlan;
@@ -77,6 +83,10 @@ export function TabCanvas({
   onActiveBarChange: (barKey: string | null) => void;
   onSeekBar: (barKey: string) => void;
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  /** Edit mode turns each bar into a grid of cells (spec 13.1). */
+  editing?: boolean;
+  selectedCell?: (CellSelection & { barKey: string }) | null;
+  onCellSelect?: (cell: CellSelection & { barKey: string }) => void;
 }) {
   const playheadRef = useRef<HTMLDivElement | null>(null);
   const lastBarKey = useRef<string | null>(null);
@@ -199,6 +209,13 @@ export function TabCanvas({
                     stringCount={timeline.strings.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}
+                    editing={editing}
+                    selectedCell={
+                      selectedCell?.barKey === bar.key ? selectedCell : null
+                    }
+                    onCellSelect={(cell) =>
+                      onCellSelect?.({ ...cell, barKey: bar.key })
+                    }
                   />
                 </BarSlot>
               ))

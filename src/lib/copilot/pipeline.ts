@@ -45,12 +45,14 @@ import type { CopilotConfig } from "@/lib/config/copilot";
 import { applyPatch } from "@/lib/copilot/apply";
 import {
   copilotRequestSchema,
-  modelPatchSchema,
-  type CopilotPatch,
   type CopilotRequest,
   type CopilotSuccessBody,
 } from "@/lib/copilot/contract";
-import { resolveTarget, validateArrangeOutput } from "@/lib/copilot/arrange";
+import {
+  parseArrangePatch,
+  resolveTarget,
+  validateArrangeOutput,
+} from "@/lib/copilot/arrange";
 import { checkLockedSurface, surfaceDigest } from "@/lib/copilot/scope";
 import { checkPhase2EntryGate } from "@/lib/copilot/entry-gate";
 import {
@@ -578,7 +580,7 @@ async function runRounds(
     }
 
     // --- parse output ----------------------------------------------------
-    const patch = parseModelOutput(result.raw, request, deps.newPatchId);
+    const patch = parseArrangePatch(result.raw, request, deps.newPatchId);
     if (!patch.ok) {
       corrections = patch.corrections;
       lastFailure = {
@@ -719,64 +721,6 @@ async function runRounds(
     billed: false,
   };
   return finishFailed(failed, "failed", [failed.code]);
-}
-
-type ParsedOutput =
-  | { ok: true; patch: CopilotPatch }
-  | { ok: false; diagnostic: string; corrections: string[] };
-
-/**
- * Nothing the provider says is used before it has parsed. The patch id is
- * stamped here, on the server, because spec 11.1 does not let the model
- * choose one.
- */
-function parseModelOutput(
-  raw: string,
-  request: CopilotRequest,
-  newPatchId: () => string,
-): ParsedOutput {
-  let json: unknown;
-  try {
-    json = JSON.parse(raw);
-  } catch {
-    return {
-      ok: false,
-      diagnostic: "output was not JSON",
-      corrections: ["Cikti gecerli JSON degildi. Yalnizca JSON uret."],
-    };
-  }
-
-  const parsed = modelPatchSchema.safeParse(json);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      diagnostic: parsed.error.issues
-        .map((issue) => `${issue.path.join(".")}: ${issue.code}`)
-        .join("; "),
-      corrections: parsed.error.issues.map(
-        (issue) => `${issue.path.join(".") || "kok"}: ${issue.message}`,
-      ),
-    };
-  }
-
-  // The narrow schema cannot express "the same section the request named", so
-  // the two identifiers are checked here, before the id is stamped.
-  if (parsed.data.sectionId !== request.sectionId) {
-    return {
-      ok: false,
-      diagnostic: `expected section ${request.sectionId}`,
-      corrections: [`sectionId alani ${request.sectionId} olmali.`],
-    };
-  }
-  if (parsed.data.targetTrackId !== request.targetTrackId) {
-    return {
-      ok: false,
-      diagnostic: `expected track ${request.targetTrackId}`,
-      corrections: [`targetTrackId alani ${request.targetTrackId} olmali.`],
-    };
-  }
-
-  return { ok: true, patch: { id: newPatchId(), ...parsed.data } };
 }
 
 export type { ValidationIssue };

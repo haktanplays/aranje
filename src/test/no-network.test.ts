@@ -77,7 +77,17 @@ describe("the tests reach no network", () => {
     expect(calls).toEqual([]);
   });
 
-  it("has no HTTP client anywhere in the copilot, budget or adapter code", () => {
+  /**
+   * Exactly two files may call `fetch`, and only to reach our own route. The
+   * server side may not call it at all: a provider call would have to start
+   * there, and there is no provider.
+   */
+  const FETCH_ALLOWED = [
+    "src/lib/copilot/client.ts",
+    "src/lib/copilot/use-co-arranger.ts",
+  ];
+
+  it("has no HTTP client in any server-side or pure module", () => {
     const sources = [
       ...walk("src/lib/ai"),
       ...walk("src/lib/budget"),
@@ -85,11 +95,12 @@ describe("the tests reach no network", () => {
       ...walk("src/lib/config"),
       ...walk("src/lib/metering"),
       ...walk("src/app/api"),
-    ].filter((file) => file.endsWith(".ts"));
+    ].filter((file) => file.endsWith(".ts") && !file.endsWith(".test.ts"));
 
     expect(sources.length).toBeGreaterThan(10);
 
     const offenders = sources.filter((file) => {
+      if (FETCH_ALLOWED.includes(file)) return false;
       const text = readFileSync(file, "utf8");
       return (
         /\bfetch\s*\(/.test(text) ||
@@ -100,8 +111,20 @@ describe("the tests reach no network", () => {
       );
     });
 
-    // Not one line of this checkpoint talks to a provider.
     expect(offenders).toEqual([]);
+  });
+
+  it("lets the two client files reach nothing but our own route", () => {
+    for (const file of FETCH_ALLOWED) {
+      const text = readFileSync(file, "utf8");
+      // Same-origin only: no absolute URL, no other host, no provider domain.
+      expect(text).not.toMatch(/https?:\/\//);
+      expect(text).not.toContain("anthropic");
+      expect(text).not.toContain("openai");
+    }
+    expect(readFileSync("src/lib/copilot/client.ts", "utf8")).toContain(
+      '"/api/copilot"',
+    );
   });
 
   it("declares no provider SDK as a dependency", () => {

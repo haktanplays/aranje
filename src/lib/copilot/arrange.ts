@@ -18,7 +18,12 @@
  */
 import { instrumentFamily, isDrumInstrument } from "@/lib/instruments/registry";
 import { slotCount } from "@/lib/music/timing";
-import type { ArrangeSkill, CopilotPatch, CopilotRequest } from "@/lib/copilot/contract";
+import {
+  modelPatchSchema,
+  type ArrangeSkill,
+  type CopilotPatch,
+  type CopilotRequest,
+} from "@/lib/copilot/contract";
 import type { Section, Song, Track } from "@/lib/song/schema";
 import type { ValidationIssue } from "@/lib/validators/types";
 
@@ -184,4 +189,68 @@ export function validateArrangeOutput(
   });
 
   return issues;
+}
+
+export type ParsedArrangeOutput =
+  | { ok: true; patch: CopilotPatch }
+  | { ok: false; diagnostic: string; corrections: string[] };
+
+/**
+ * Turn a provider's raw text into a patch, or say why it is not one.
+ *
+ * Nothing anywhere uses an answer that has not been through here. Both the
+ * server pipeline and the demo path call this same function, so "the demo is
+ * looser than the real thing" cannot become true by drift: there is only one
+ * implementation to be loose.
+ *
+ * The id is stamped here, on our side, because spec 11.1 does not let the
+ * model choose one.
+ */
+export function parseArrangePatch(
+  raw: string,
+  request: CopilotRequest,
+  newPatchId: () => string,
+): ParsedArrangeOutput {
+  let json: unknown;
+  try {
+    json = JSON.parse(raw);
+  } catch {
+    return {
+      ok: false,
+      diagnostic: "output was not JSON",
+      corrections: ["Cikti gecerli JSON degildi. Yalnizca JSON uret."],
+    };
+  }
+
+  const parsed = modelPatchSchema.safeParse(json);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      diagnostic: parsed.error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.code}`)
+        .join("; "),
+      corrections: parsed.error.issues.map(
+        (issue) => `${issue.path.join(".") || "kok"}: ${issue.message}`,
+      ),
+    };
+  }
+
+  // The narrow schema cannot express "the same section the request named", so
+  // the two identifiers are checked here, before the id is stamped.
+  if (parsed.data.sectionId !== request.sectionId) {
+    return {
+      ok: false,
+      diagnostic: `expected section ${request.sectionId}`,
+      corrections: [`sectionId alani ${request.sectionId} olmali.`],
+    };
+  }
+  if (parsed.data.targetTrackId !== request.targetTrackId) {
+    return {
+      ok: false,
+      diagnostic: `expected track ${request.targetTrackId}`,
+      corrections: [`targetTrackId alani ${request.targetTrackId} olmali.`],
+    };
+  }
+
+  return { ok: true, patch: { id: newPatchId(), ...parsed.data } };
 }

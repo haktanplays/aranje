@@ -41,8 +41,11 @@ describe("backend secrets stay on the backend (spec 12.1)", () => {
     for (const file of SOURCES) {
       const text = readFileSync(file, "utf8");
       for (const match of text.matchAll(/NEXT_PUBLIC_[A-Z0-9_]+/g)) {
-        // Spec 14.2 allows exactly one public variable, the API base URL.
+        // Two public names are allowed, and both are deliberate: spec 14.2's
+        // API base URL, and the demo flag of phase 2C, which turns nothing on
+        // by itself and carries no secret.
         if (match[0] === "NEXT_PUBLIC_ARANJE_API_BASE") continue;
+        if (match[0] === "NEXT_PUBLIC_ARANJE_COPILOT_DEMO") continue;
         offenders.push(`${file}: ${match[0]}`);
       }
     }
@@ -53,8 +56,12 @@ describe("backend secrets stay on the backend (spec 12.1)", () => {
     const readers = SOURCES.filter((file) =>
       /process\.env/.test(readFileSync(file, "utf8")),
     );
-    // Only the route handler, which never runs in a browser.
-    expect(readers).toEqual(["src/app/api/copilot/route.ts"]);
+    // The route handler, which never runs in a browser, and the one module
+    // that reads the single public flag. Nothing else touches the environment.
+    expect(readers.sort()).toEqual([
+      "src/app/api/copilot/route.ts",
+      "src/lib/copilot/public-env.ts",
+    ]);
   });
 
   it("keeps every client component clear of the server modules", () => {

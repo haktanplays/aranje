@@ -3,7 +3,14 @@
 import { instrumentLabel, presetLabel } from "@/lib/instruments/registry";
 import type { Track } from "@/lib/song/schema";
 
-/** Quick switch between the tracks of the song. Touch targets stay 44px. */
+/**
+ * Quick switch between the tracks of the song. Touch targets stay 44px.
+ *
+ * The chips wrap rather than scroll. At 320px four track names do not fit on
+ * one line, and a second horizontal scroller beside the tab would give the
+ * screen two things that slide sideways — the tab is meant to be the only one.
+ * A second row of chips costs a little height and reads unambiguously.
+ */
 export function TrackSelector({
   tracks,
   selectedTrackId,
@@ -20,7 +27,7 @@ export function TrackSelector({
       <div
         role="tablist"
         aria-label="Track"
-        className="flex min-w-0 flex-1 gap-1 overflow-x-auto"
+        className="flex min-w-0 flex-1 flex-wrap gap-1"
       >
         {tracks.map((track) => {
           const selected = track.id === selectedTrackId;
@@ -31,7 +38,7 @@ export function TrackSelector({
               role="tab"
               aria-selected={selected}
               onClick={() => onSelect(track.id)}
-              className={`min-h-11 flex-1 rounded-lg px-3 text-sm whitespace-nowrap transition-colors ${
+              className={`min-h-11 grow basis-20 rounded-lg px-2 text-sm whitespace-nowrap transition-colors ${
                 selected
                   ? "bg-raised text-bronze border-bronze/50 border font-semibold"
                   : "text-muted border border-transparent"

@@ -12,27 +12,43 @@ import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 
+export type CellSelection = { slotIndex: number; stringIndex: number };
+
 export function FrettedBarBlock({
   bar,
   stringCount,
   selected,
   onSelect,
+  editing = false,
+  selectedCell = null,
+  onCellSelect,
 }: {
   bar: FrettedBar;
   stringCount: number;
   selected: boolean;
   onSelect: () => void;
+  /** In edit mode the bar is a grid of cells rather than one seek target. */
+  editing?: boolean;
+  selectedCell?: CellSelection | null;
+  onCellSelect?: (cell: CellSelection) => void;
 }) {
   const width = barWidth(bar.slotCount);
   const staffHeight = stringCount * STRING_ROW_HEIGHT;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
 
+  const Frame = editing ? "div" : "button";
+  const frameProps = editing
+    ? ({} as Record<string, unknown>)
+    : {
+        type: "button" as const,
+        onClick: onSelect,
+        "aria-pressed": selected,
+        "aria-label": `Bar ${bar.barNumber}`,
+      };
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={selected}
-      aria-label={`Bar ${bar.barNumber}`}
+    <Frame
+      {...frameProps}
       className={`relative shrink-0 border-r text-left ${
         selected ? "bg-steel/8 border-steel" : "border-line bg-transparent"
       }`}
@@ -115,11 +131,43 @@ export function FrettedBarBlock({
           </>
         )}
 
+        {/* Edit mode: one hit target per string and slot. The grid sits above
+            the staff so a tap lands on a cell rather than on the bar. */}
+        {editing
+          ? Array.from({ length: bar.slotCount }, (_, slotIndex) =>
+              Array.from({ length: stringCount }, (__, stringIndex) => {
+                const isSelected =
+                  selectedCell?.slotIndex === slotIndex &&
+                  selectedCell.stringIndex === stringIndex;
+                return (
+                  <button
+                    key={`cell-${slotIndex}-${stringIndex}`}
+                    type="button"
+                    data-cell={`${slotIndex}:${stringIndex}`}
+                    aria-pressed={isSelected}
+                    aria-label={`Bar ${bar.barNumber}, slot ${slotIndex + 1}, tel ${stringIndex + 1}`}
+                    onClick={() => onCellSelect?.({ slotIndex, stringIndex })}
+                    className={`absolute rounded-sm ${
+                      isSelected
+                        ? "ring-bronze bg-bronze/15 ring-2"
+                        : "hover:bg-steel/10"
+                    }`}
+                    style={{
+                      left: slotIndex * SLOT_WIDTH,
+                      top: rowOffset(stringCount, stringIndex, STRING_ROW_HEIGHT),
+                      width: SLOT_WIDTH,
+                      height: STRING_ROW_HEIGHT,
+                    }}
+                  />
+                );
+              }),
+            )
+          : null}
       </div>
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }}>
         <RhythmStrip states={frettedRhythm(bar)} slotsPerBeat={beat} />
       </div>
-    </button>
+    </Frame>
   );
 }

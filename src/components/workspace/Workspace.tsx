@@ -2,7 +2,11 @@
 
 import { useCallback, useMemo, useRef, useState } from "react";
 
+import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
+import { EditToolbar } from "@/components/workspace/EditToolbar";
+import { FretSheet, type FretSheetTarget } from "@/components/workspace/FretSheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
+import { PreviewSheet } from "@/components/workspace/PreviewSheet";
 import { SectionChips } from "@/components/workspace/SectionChips";
 import { BAR_KEY_ATTRIBUTE, TabCanvas } from "@/components/workspace/TabCanvas";
 import { GUTTER_WIDTH } from "@/components/workspace/geometry";
@@ -12,12 +16,17 @@ import { TransportBar } from "@/components/workspace/TransportBar";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { BRAND_NAME } from "@/lib/brand";
+import { availableSkills, targetsFor } from "@/lib/copilot/ui-options";
+import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { formatTimeSignature } from "@/lib/music/timing";
+import { applyEdit, isEditableTrack, type EditCommand } from "@/lib/song/edit";
 import { useSong } from "@/lib/song/use-song";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 
+type Cell = { barKey: string; slotIndex: number; stringIndex: number };
+
 export function Workspace() {
-  const { song, message } = useSong();
+  const { song, message, canUndo, persisted, commit, undo } = useSong();
   const { controller, state } = usePlayback(song);
   useDebugHandle(controller);
 
@@ -27,10 +36,39 @@ export function Workspace() {
   const [trackSheetOpen, setTrackSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
 
+  const [editing, setEditing] = useState(false);
+  const [cell, setCell] = useState<Cell | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const track =
     song.tracks.find((entry) => entry.id === selectedTrackId) ?? song.tracks[0];
+
+  const copilot = useCoArranger(song, {
+    onApply: commit,
+    onBeforePreviewPlay: () => controller.pause(),
+  });
+  const previewOpen =
+    copilot.state.status === "preview_ready" ||
+    copilot.state.status === "preview_playing" ||
+    copilot.state.status === "applying";
+  const arrangeOpen =
+    copilot.state.status === "editing_request" ||
+    copilot.state.status === "submitting" ||
+    copilot.state.status === "error";
+
+  const skills = useMemo(() => availableSkills(song), [song]);
+  const [form, setForm] = useState<ArrangeForm>(() => {
+    const skill = skills[0] ?? "drums";
+    return {
+      sectionId: song.sections[0]?.id ?? "",
+      skill,
+      targetTrackId: targetsFor(song, skill)[0]?.id ?? "",
+      styleId: null,
+      instruction: "",
+    };
+  });
 
   const timeline = useMemo(
     () => buildTrackTimeline(song, track?.id ?? ""),
@@ -62,15 +100,95 @@ export function Workspace() {
   );
 
   const toggleLoop = useCallback(() => {
-    // Loops follow the section the playhead is in, or the first one.
-    const current =
-      activeBarKey?.split(":")[0] ?? runs[0]?.sectionId ?? null;
+    const current = activeBarKey?.split(":")[0] ?? runs[0]?.sectionId ?? null;
     controller.setLoopSection(state.loopSectionId ? null : current);
   }, [activeBarKey, controller, runs, state.loopSectionId]);
+
+  // Editing and a candidate never share the screen: a candidate is measured
+  // against the song as it was when it was asked for.
+  const canEdit = track !== undefined && isEditableTrack(track) && !previewOpen;
+  const editDisabledReason =
+    track === undefined
+      ? null
+      : canEdit
+        ? null
+        : `"${track.name}" bu ekrandan düzenlenemiyor. Şimdilik yalnız akordu olan telli track'ler düzenlenebiliyor.`;
+
+  const toggleEdit = useCallback(() => {
+    setEditError(null);
+    setCell(null);
+    setEditing((was) => {
+      // Editing and playback do not share the screen (spec 13.1).
+      if (!was) controller.pause();
+      return !was;
+    });
+  }, [controller]);
+
+  const currentFret = useMemo(() => {
+    if (!cell || timeline.kind !== "fretted") return null;
+    const bar = timeline.bars.find((entry) => entry.key === cell.barKey);
+    const span = bar?.spans.find(
+      (entry) =>
+        entry.startSlot === cell.slotIndex &&
+        !entry.openStart &&
+        entry.stringIndex === cell.stringIndex,
+    );
+    return span?.fret ?? null;
+  }, [cell, timeline]);
+
+  const fretTarget: FretSheetTarget | null = useMemo(() => {
+    if (!cell || timeline.kind !== "fretted") return null;
+    const bar = timeline.bars.find((entry) => entry.key === cell.barKey);
+    if (!bar) return null;
+    return {
+      barNumber: bar.barNumber,
+      slotIndex: cell.slotIndex,
+      stringIndex: cell.stringIndex,
+      currentFret,
+    };
+  }, [cell, currentFret, timeline]);
+
+  const runCommand = useCallback(
+    (build: (target: { sectionId: string; barIndex: number }) => EditCommand) => {
+      if (!cell || !track) return;
+      const [sectionId, barIndexText] = cell.barKey.split(":");
+      const barIndex = Number(barIndexText);
+      if (!sectionId || !Number.isInteger(barIndex)) return;
+
+      const result = applyEdit(song, build({ sectionId, barIndex }));
+      if (!result.ok) {
+        setEditError(result.error.message);
+        return;
+      }
+      setEditError(null);
+      commit(result.song);
+    },
+    [cell, commit, song, track],
+  );
+
+  const nudge = useCallback(
+    (delta: { slot?: number; string?: number }) => {
+      if (!cell || timeline.kind !== "fretted") return;
+      const bar = timeline.bars.find((entry) => entry.key === cell.barKey);
+      if (!bar) return;
+      const slotIndex = Math.min(
+        bar.slotCount - 1,
+        Math.max(0, cell.slotIndex + (delta.slot ?? 0)),
+      );
+      const stringIndex = Math.min(
+        timeline.strings.length - 1,
+        Math.max(0, cell.stringIndex + (delta.string ?? 0)),
+      );
+      setEditError(null);
+      setCell({ ...cell, slotIndex, stringIndex });
+    },
+    [cell, timeline],
+  );
 
   const activeSectionId = activeBarKey?.split(":")[0] ?? null;
   const firstBar = song.sections[0]?.bars[0];
   const meter = firstBar ? formatTimeSignature(firstBar.timeSignature) : "";
+  const fretboard = track?.fretboard;
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -107,6 +225,15 @@ export function Workspace() {
         </p>
       ) : null}
 
+      {!persisted ? (
+        <p
+          role="status"
+          className="border-reject/50 bg-raised border-b px-3 py-2 text-xs"
+        >
+          Değişiklikler kaydedilemiyor; bu oturumda bellekte tutuluyor.
+        </p>
+      ) : null}
+
       <SectionChips
         runs={runs}
         activeSectionId={activeSectionId}
@@ -124,6 +251,12 @@ export function Workspace() {
           onActiveBarChange={setActiveBarKey}
           onSeekBar={seekToBar}
           scrollRef={scrollRef}
+          editing={editing}
+          selectedCell={cell}
+          onCellSelect={(next) => {
+            setEditError(null);
+            setCell(next);
+          }}
         />
       </main>
 
@@ -133,10 +266,30 @@ export function Workspace() {
         </p>
       ) : null}
 
+      <EditToolbar
+        editing={editing}
+        canEdit={canEdit}
+        editDisabledReason={editDisabledReason}
+        onToggleEdit={toggleEdit}
+        onArrange={() => {
+          controller.pause();
+          setEditing(false);
+          setCell(null);
+          copilot.open();
+        }}
+        arrangeDisabled={skills.length === 0 || previewOpen}
+        canUndo={canUndo}
+        onUndo={undo}
+      />
+
       <TrackSelector
         tracks={song.tracks}
         selectedTrackId={track?.id ?? ""}
-        onSelect={setSelectedTrackId}
+        onSelect={(id) => {
+          setEditing(false);
+          setCell(null);
+          setSelectedTrackId(id);
+        }}
         onOpenDetails={() => setTrackSheetOpen(true)}
       />
 
@@ -157,6 +310,105 @@ export function Workspace() {
           onClose={() => setTrackSheetOpen(false)}
         />
       ) : null}
+
+      {editing && fretboard && track ? (
+        <FretSheet
+          key={`${cell?.barKey}:${cell?.slotIndex}:${cell?.stringIndex}:${currentFret}`}
+          open={cell !== null && !previewOpen}
+          fretboard={fretboard}
+          target={fretTarget}
+          error={editError}
+          onClose={() => {
+            setCell(null);
+            setEditError(null);
+          }}
+          onNudge={nudge}
+          onCommit={(fret) =>
+            runCommand(({ sectionId, barIndex }) => ({
+              kind: "set_note",
+              target: {
+                sectionId,
+                trackId: track.id,
+                barIndex,
+                slotIndex: cell?.slotIndex ?? 0,
+              },
+              stringIndex: cell?.stringIndex ?? 0,
+              fret,
+            }))
+          }
+          onClearString={() =>
+            runCommand(({ sectionId, barIndex }) => ({
+              kind: "clear_string",
+              target: {
+                sectionId,
+                trackId: track.id,
+                barIndex,
+                slotIndex: cell?.slotIndex ?? 0,
+              },
+              stringIndex: cell?.stringIndex ?? 0,
+            }))
+          }
+          onRest={() =>
+            runCommand(({ sectionId, barIndex }) => ({
+              kind: "set_rest",
+              target: {
+                sectionId,
+                trackId: track.id,
+                barIndex,
+                slotIndex: cell?.slotIndex ?? 0,
+              },
+            }))
+          }
+          onTie={() =>
+            runCommand(({ sectionId, barIndex }) => ({
+              kind: "set_tie",
+              target: {
+                sectionId,
+                trackId: track.id,
+                barIndex,
+                slotIndex: cell?.slotIndex ?? 0,
+              },
+            }))
+          }
+        />
+      ) : null}
+
+      <ArrangeSheet
+        open={arrangeOpen}
+        song={song}
+        form={form}
+        onChange={setForm}
+        onClose={copilot.close}
+        submitting={copilot.state.status === "submitting"}
+        demo={copilot.demo}
+        error={copilot.state.error?.message ?? null}
+        onSubmit={() =>
+          copilot.submit({
+            operation: "arrange_track",
+            skill: form.skill,
+            sectionId: form.sectionId,
+            targetTrackId: form.targetTrackId,
+            ...(form.styleId ? { styleId: form.styleId } : {}),
+            ...(form.instruction.trim()
+              ? { instruction: form.instruction.trim() }
+              : {}),
+          })
+        }
+      />
+
+      <PreviewSheet
+        open={previewOpen}
+        status={copilot.state.status}
+        source={copilot.state.source}
+        diff={copilot.state.diff}
+        warnings={copilot.state.warnings}
+        error={copilot.state.error?.message ?? null}
+        stale={copilot.isStaleNow}
+        onPlay={copilot.play}
+        onStop={copilot.stop}
+        onApply={copilot.apply}
+        onReject={copilot.close}
+      />
 
       <InfoSheet open={infoOpen} onClose={() => setInfoOpen(false)} />
     </div>
