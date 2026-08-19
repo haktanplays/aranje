@@ -2,27 +2,41 @@ import { SLOT_WIDTH } from "@/components/workspace/geometry";
 import type { SlotState } from "@/lib/tab/timeline";
 
 /**
- * Thin strip under the staff that separates an attack from a held note and
- * from a rest. Without it the tab cannot say how long a note lasts.
+ * Thin strip under the staff that carries the timing information the staff
+ * itself cannot: where a note is struck, where it is still ringing, and where
+ * the bar is silent. Beat positions get a slightly taller tick, which replaces
+ * the full-height grid lines a spreadsheet would use.
  */
-export function RhythmStrip({ states }: { states: readonly SlotState[] }) {
+export function RhythmStrip({
+  states,
+  slotsPerBeat,
+}: {
+  states: readonly SlotState[];
+  slotsPerBeat: number;
+}) {
   return (
-    <div className="relative h-full border-t border-line">
-      {states.map((state, slotIndex) => (
-        <div
-          key={slotIndex}
-          className="absolute inset-y-0 flex items-center justify-center"
-          style={{ left: slotIndex * SLOT_WIDTH, width: SLOT_WIDTH }}
-        >
-          {state === "onset" ? (
-            <span className="bg-bronze block h-2.5 w-px" />
-          ) : state === "sustain" ? (
-            <span className="bg-bronze/50 block h-px w-4" />
-          ) : state === "rest" ? (
-            <span className="bg-muted/50 block h-px w-2" />
-          ) : null}
-        </div>
-      ))}
+    <div className="relative h-full">
+      {states.map((state, slotIndex) => {
+        const onBeat = slotIndex % slotsPerBeat === 0;
+        return (
+          <div
+            key={slotIndex}
+            className="absolute inset-y-0 flex flex-col items-center justify-start"
+            style={{ left: slotIndex * SLOT_WIDTH, width: SLOT_WIDTH }}
+          >
+            <span
+              className={onBeat ? "bg-line block h-1.5 w-px" : "bg-line/50 block h-1 w-px"}
+            />
+            <span className="mt-1 flex h-2 items-center">
+              {state === "onset" ? (
+                <span className="bg-text/70 block size-1 rounded-full" />
+              ) : state === "sustain" ? (
+                <span className="bg-muted/45 block h-px w-3" />
+              ) : null}
+            </span>
+          </div>
+        );
+      })}
     </div>
   );
 }

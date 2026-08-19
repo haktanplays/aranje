@@ -4,6 +4,7 @@ import {
   RHYTHM_ROW_HEIGHT,
   SLOT_WIDTH,
   barWidth,
+  slotsPerBeat,
 } from "@/components/workspace/geometry";
 import {
   PlayheadLayer,
@@ -20,17 +21,13 @@ const HATS = new Set<DrumPiece>(["closed_hat", "open_hat"]);
 function Glyph({ piece }: { piece: DrumPiece }) {
   if (HATS.has(piece)) {
     return (
-      <span className="text-bronze text-[11px] leading-none font-semibold">
-        x
-      </span>
+      <span className="text-text/80 font-mono text-[11px] leading-none">x</span>
     );
   }
   if (CYMBALS.has(piece)) {
-    return (
-      <span className="border-bronze block size-2.5 rotate-45 border" />
-    );
+    return <span className="border-text/70 block size-2 rotate-45 border" />;
   }
-  return <span className="bg-bronze block size-2.5 rounded-full" />;
+  return <span className="bg-text/80 block size-2 rounded-full" />;
 }
 
 export function DrumBarBlock({
@@ -48,6 +45,7 @@ export function DrumBarBlock({
 }) {
   const width = barWidth(bar.slotCount);
   const gridHeight = Math.max(laneCount, 1) * DRUM_ROW_HEIGHT;
+  const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
 
   return (
     <button
@@ -56,48 +54,27 @@ export function DrumBarBlock({
       aria-pressed={selected}
       aria-label={`Bar ${bar.barNumber}`}
       className={`relative shrink-0 border-r text-left ${
-        selected ? "bg-raised border-steel" : "border-line bg-transparent"
+        selected ? "bg-steel/8 border-steel" : "border-line bg-transparent"
       }`}
       style={{ width }}
     >
       <div
-        className="flex items-center gap-1.5 overflow-hidden border-b border-line px-1.5"
+        className="flex items-center gap-1.5 overflow-hidden px-1.5"
         style={{ height: BAR_HEADER_HEIGHT }}
       >
-        <span className="text-muted text-[10px] tabular-nums">
+        <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}
         </span>
-        {bar.isSectionStart ? (
-          <span className="text-bronze truncate text-[9px] font-semibold tracking-[0.12em] uppercase">
-            {bar.sectionName}
-          </span>
-        ) : null}
       </div>
 
       <div className="relative" style={{ height: gridHeight }}>
         {Array.from({ length: laneCount }, (_, laneIndex) => (
           <div
             key={laneIndex}
-            className="bg-line/60 absolute right-0 left-0 h-px"
+            className="bg-line/70 absolute right-0 left-0 h-px"
             style={{ top: laneIndex * DRUM_ROW_HEIGHT + DRUM_ROW_HEIGHT / 2 }}
           />
         ))}
-
-        {Array.from({ length: bar.slotCount }, (_, slotIndex) =>
-          slotIndex === 0 ? null : (
-            <div
-              key={`tick-${slotIndex}`}
-              className="bg-line/40 absolute top-0 bottom-0 w-px"
-              style={{ left: slotIndex * SLOT_WIDTH }}
-            />
-          ),
-        )}
-
-        {bar.silent ? (
-          <span className="text-muted/50 absolute inset-0 flex items-center justify-center text-[10px] tracking-[0.2em] uppercase">
-            sus
-          </span>
-        ) : null}
 
         {bar.marks.map((mark, index) => (
           <span
@@ -123,7 +100,7 @@ export function DrumBarBlock({
       </div>
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }}>
-        <RhythmStrip states={drumRhythm(bar)} />
+        <RhythmStrip states={drumRhythm(bar)} slotsPerBeat={beat} />
       </div>
     </button>
   );

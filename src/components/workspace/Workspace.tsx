@@ -4,6 +4,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 
 import { SectionChips } from "@/components/workspace/SectionChips";
 import { BAR_KEY_ATTRIBUTE, TabCanvas } from "@/components/workspace/TabCanvas";
+import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import { TrackSelector, trackSummary } from "@/components/workspace/TrackSelector";
 import { TrackSheet } from "@/components/workspace/TrackSheet";
 import { BRAND_NAME } from "@/lib/brand";
@@ -31,13 +32,16 @@ export function Workspace() {
   const runs = useMemo(() => sectionRuns(song), [song]);
 
   const jumpToSection = useCallback((sectionId: string) => {
-    const target = scrollRef.current?.querySelector(
+    const scroller = scrollRef.current;
+    const target = scroller?.querySelector<HTMLElement>(
       `[${BAR_KEY_ATTRIBUTE}="${sectionId}:0"]`,
     );
-    target?.scrollIntoView({
+    if (!scroller || !target) return;
+    // offsetLeft includes the sticky gutter, so subtracting its width lands the
+    // bar just clear of it instead of underneath it.
+    scroller.scrollTo({
+      left: Math.max(0, target.offsetLeft - GUTTER_WIDTH),
       behavior: "smooth",
-      inline: "start",
-      block: "nearest",
     });
   }, []);
 

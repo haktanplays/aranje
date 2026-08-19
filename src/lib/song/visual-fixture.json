@@ -1,0 +1,98 @@
+{
+  "version": 2,
+  "title": "Gorsel Fikstur",
+  "bpm": 120,
+  "key": "E minor",
+  "tracks": [
+    {
+      "id": "gtr",
+      "name": "Gitar",
+      "instrumentId": "electric_guitar",
+      "presetId": "clean",
+      "volumeDb": -6,
+      "fretboard": {
+        "tuning": ["E2", "A2", "D3", "G3", "B3", "E4"],
+        "capo": 0
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "fret-range",
+      "name": "Perde Araligi",
+      "status": "fixed",
+      "bars": [
+        {
+          "timeSignature": [4, 4],
+          "resolution": 8,
+          "slots": {
+            "gtr": [
+              { "notes": [{ "pitch": "E2", "position": { "string": 0, "fret": 0 } }] },
+              null,
+              { "notes": [{ "pitch": "G2", "position": { "string": 0, "fret": 3 } }] },
+              null,
+              { "notes": [{ "pitch": "D3", "position": { "string": 0, "fret": 10 } }] },
+              null,
+              { "notes": [{ "pitch": "E3", "position": { "string": 0, "fret": 12 } }] },
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [4, 4],
+          "resolution": 8,
+          "slots": {
+            "gtr": [
+              {
+                "notes": [
+                  { "pitch": "E2", "position": { "string": 0, "fret": 0 } },
+                  { "pitch": "B2", "position": { "string": 1, "fret": 2 } },
+                  { "pitch": "G3", "position": { "string": 3, "fret": 0 } }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              null,
+              { "notes": [{ "pitch": "E3", "position": { "string": 2, "fret": 2 } }] },
+              "-",
+              "-"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "tie-over",
+      "name": "Bag",
+      "status": "fixed",
+      "bars": [
+        {
+          "timeSignature": [4, 4],
+          "resolution": 8,
+          "slots": {
+            "gtr": [
+              "-",
+              "-",
+              null,
+              { "notes": [{ "pitch": "A3", "position": { "string": 1, "fret": 12 } }] },
+              "-",
+              null,
+              { "notes": [{ "pitch": "E2", "position": { "string": 0, "fret": 0 } }] },
+              null
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "silent",
+      "name": "Sus",
+      "status": "fixed",
+      "bars": [
+        { "timeSignature": [4, 4], "resolution": 8, "slots": {} },
+        { "timeSignature": [4, 4], "resolution": 8, "slots": {} }
+      ]
+    }
+  ]
+}
