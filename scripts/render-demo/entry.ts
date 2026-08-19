@@ -1,13 +1,18 @@
 /**
  * Offline render of the demo song, used to produce a listenable preview before
- * any transport UI exists. Runs the real engine, not a copy of it.
+ * any transport UI exists.
+ *
+ * This runs the real engine and the real scheduling core. The only thing that
+ * differs from live playback is the context, which Tone.Offline hands to the
+ * callback and which is passed straight through to the engine.
  */
 import * as Tone from "tone";
 
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
+import { drumTrackIds, melodicTrackIds } from "@/lib/audio/tracks";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
-import { songSchema, type Song } from "@/lib/song/schema";
+import type { Song } from "@/lib/song/schema";
 
 function encodeWav(channels: Float32Array[], sampleRate: number): Uint8Array {
   const channelCount = channels.length;
@@ -48,32 +53,45 @@ function encodeWav(channels: Float32Array[], sampleRate: number): Uint8Array {
   return new Uint8Array(view.buffer);
 }
 
-export async function renderDemo(input?: unknown) {
-  const song: Song = input ? songSchema.parse(input) : SAMPLE_SONG;
+export type RenderVariant = "full" | "melodic" | "drums";
+
+function excludedFor(song: Song, variant: RenderVariant): string[] {
+  if (variant === "melodic") return drumTrackIds(song);
+  if (variant === "drums") return melodicTrackIds(song);
+  return [];
+}
+
+export async function renderVariant(variant: RenderVariant = "full") {
+  const song = SAMPLE_SONG;
   const plan = buildSongPlan(song);
   const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+  const excludeTrackIds = excludedFor(song, variant);
 
-  const diagnostics: Record<string, unknown> = {};
+  const diagnostics: Record<string, unknown> = { variant, excludeTrackIds };
 
   const buffer = await Tone.Offline(async (context) => {
-    const engine = await createEngine(song, {
-      destination: context.destination,
-    });
+    // The engine only ever sees this context: nodes are built on it, the
+    // master lands on its destination, and events go on its transport.
+    const engine = await createEngine(song, context, { excludeTrackIds });
+
+    diagnostics.contextIsOffline = context.isOffline;
+    diagnostics.expectedBuffers = engine.expectedBuffers;
+    diagnostics.loadedBuffers = engine.loadedBuffers;
     diagnostics.voices = [...engine.voices.values()].map((voice) => ({
       trackId: voice.trackId,
       kind: voice.kind,
       loaded: voice.kind === "sampler" ? voice.sampler.loaded : null,
-      channelVolume: voice.channel.volume.value,
     }));
-    diagnostics.contextIsOffline = Tone.getContext().isOffline;
-    scheduleSong(engine, song.bpm, context.transport);
+
+    // Samples are decoded by the time createEngine resolves, so scheduling and
+    // starting the transport happen strictly afterwards.
+    diagnostics.scheduledTicks = scheduleSong(engine, song.bpm);
     context.transport.start(0);
   }, seconds);
 
-  const channels = buffer.toArray() as Float32Array | Float32Array[];
-  const list = Array.isArray(channels) ? channels : [channels];
+  const raw = buffer.toArray() as Float32Array | Float32Array[];
+  const list = Array.isArray(raw) ? raw : [raw];
 
-  // Peak per track family, so a silent instrument cannot hide in the mix.
   let peak = 0;
   let sumSquares = 0;
   let samples = 0;
@@ -101,18 +119,23 @@ export async function renderDemo(input?: unknown) {
     return { bar: index + 1, rms: Math.sqrt(sum / Math.max(1, count)) };
   });
 
+  const playedEvents = plan.events.filter(
+    (event) => !excludeTrackIds.includes(event.trackId),
+  ).length;
+
   const wav = encodeWav(list, buffer.sampleRate);
   let binary = "";
   for (const byte of wav) binary += String.fromCharCode(byte);
 
   return {
+    variant,
     wavBase64: btoa(binary),
     sampleRate: buffer.sampleRate,
     channels: list.length,
     seconds: buffer.duration,
     peak,
     rms: Math.sqrt(sumSquares / Math.max(1, samples)),
-    events: plan.events.length,
+    events: playedEvents,
     barLevels,
     diagnostics,
   };
@@ -120,21 +143,53 @@ export async function renderDemo(input?: unknown) {
 
 /** Renders one track alone, to prove nothing is silently missing. */
 export async function renderSolo(trackId: string) {
-  const solo: Song = {
-    ...SAMPLE_SONG,
-    tracks: SAMPLE_SONG.tracks.filter((track) => track.id === trackId),
+  const song = SAMPLE_SONG;
+  const plan = buildSongPlan(song);
+  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+  const excludeTrackIds = song.tracks
+    .map((track) => track.id)
+    .filter((id) => id !== trackId);
+
+  const buffer = await Tone.Offline(async (context) => {
+    const engine = await createEngine(song, context, { excludeTrackIds });
+    scheduleSong(engine, song.bpm);
+    context.transport.start(0);
+  }, seconds);
+
+  const raw = buffer.toArray() as Float32Array | Float32Array[];
+  const list = Array.isArray(raw) ? raw : [raw];
+  let peak = 0;
+  let sumSquares = 0;
+  let samples = 0;
+  for (const channel of list) {
+    for (const value of channel) {
+      peak = Math.max(peak, Math.abs(value));
+      sumSquares += value * value;
+      samples += 1;
+    }
+  }
+
+  const wav = encodeWav(list, buffer.sampleRate);
+  let binary = "";
+  for (const byte of wav) binary += String.fromCharCode(byte);
+
+  return {
+    trackId,
+    wavBase64: btoa(binary),
+    peak,
+    rms: Math.sqrt(sumSquares / Math.max(1, samples)),
+    events: plan.events.filter((event) => event.trackId === trackId).length,
   };
-  return renderDemo(solo);
 }
 
 declare global {
   interface Window {
-    aranjeRenderDemo: typeof renderDemo;
+    aranjeRenderVariant: typeof renderVariant;
     aranjeRenderSolo: typeof renderSolo;
     aranjeTrackIds: string[];
   }
 }
 
-window.aranjeRenderDemo = renderDemo;
+window.aranjeRenderVariant = renderVariant;
 window.aranjeRenderSolo = renderSolo;
 window.aranjeTrackIds = SAMPLE_SONG.tracks.map((track) => track.id);

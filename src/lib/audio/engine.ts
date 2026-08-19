@@ -1,13 +1,18 @@
 /**
  * Tone.js signal graph and transport wiring (spec 8).
  *
- * Only the proven nodes are used: Sampler, MembraneSynth, NoiseSynth, Filter,
- * Channel, Gain, Destination and Meter. Reverb, PluckSynth, FMSynth, Convolver
- * and worklet chains stay out.
+ * The engine never touches Tone's module-level `Transport` or `Destination`
+ * exports. Those are bound to whichever context existed when the module was
+ * first imported, so under an offline render they point at the wrong graph and
+ * nothing sounds. Everything here comes from a context that is handed in:
+ * nodes are constructed with `{ context }`, the master gain lands on
+ * `context.destination`, and events are placed on `context.transport`.
  *
- * Every track gets its own Channel and all channels meet at one master Gain.
- * Scheduling is done with note-derived tick values, never with seconds, and
- * Tone.start() is the caller's job so it can happen inside a user gesture.
+ * Online and offline use the same code and the same scheduling core. The only
+ * difference is which context is injected.
+ *
+ * Only the proven nodes are used: Sampler, MembraneSynth, NoiseSynth, Filter,
+ * Channel, Gain, Destination and Meter (spec 8.1).
  */
 import * as Tone from "tone";
 
@@ -16,58 +21,96 @@ import { samplePackFor } from "@/lib/audio/packs";
 import { buildSongPlan, ticks, type SongPlan } from "@/lib/audio/schedule";
 import type { DrumPiece, Song, Track } from "@/lib/song/schema";
 
+/** Anything that can host the graph: a live context or an offline one. */
+export type AudioRuntime = Tone.BaseContext;
+
 export type DrumVoices = {
   kick: Tone.MembraneSynth;
   snare: Tone.NoiseSynth;
   hat: Tone.NoiseSynth;
   cymbal: Tone.NoiseSynth;
-  nodes: (Tone.Filter | Tone.Gain)[];
+  filters: Tone.Filter[];
 };
 
 export type TrackVoice =
-  | { kind: "sampler"; trackId: string; sampler: Tone.Sampler; channel: Tone.Channel }
+  | {
+      kind: "sampler";
+      trackId: string;
+      sampler: Tone.Sampler;
+      channel: Tone.Channel;
+      bufferCount: number;
+    }
   | { kind: "drums"; trackId: string; drums: DrumVoices; channel: Tone.Channel };
 
 export type Engine = {
+  context: AudioRuntime;
   master: Tone.Gain;
   voices: Map<string, TrackVoice>;
   meters: Map<string, Tone.Meter>;
   plan: SongPlan;
+  /** How many sample buffers this graph expects, and how many arrived. */
+  expectedBuffers: number;
+  loadedBuffers: number;
   dispose(): void;
 };
 
+export type CreateEngineOptions = {
+  debug?: boolean;
+  /** Tracks to leave out of the graph entirely, for isolated renders. */
+  excludeTrackIds?: readonly string[];
+};
+
 /** Kick, snare, hats and cymbals from the allowed synth nodes (spec 8.1). */
-function buildDrums(destination: Tone.InputNode): DrumVoices {
+function buildDrums(
+  context: AudioRuntime,
+  destination: Tone.InputNode,
+): DrumVoices {
   const kick = new Tone.MembraneSynth({
+    context,
+    volume: -5,
     pitchDecay: 0.04,
     octaves: 6,
     envelope: { attack: 0.001, decay: 0.28, sustain: 0 },
   });
-  kick.volume.value = -5;
   kick.connect(destination);
 
-  const snareFilter = new Tone.Filter(1800, "highpass");
+  const snareFilter = new Tone.Filter({
+    context,
+    frequency: 1800,
+    type: "highpass",
+  });
   snareFilter.connect(destination);
   const snare = new Tone.NoiseSynth({
+    context,
+    volume: -11,
     envelope: { attack: 0.001, decay: 0.14, sustain: 0 },
   });
-  snare.volume.value = -11;
   snare.connect(snareFilter);
 
-  const hatFilter = new Tone.Filter(7000, "highpass");
+  const hatFilter = new Tone.Filter({
+    context,
+    frequency: 7000,
+    type: "highpass",
+  });
   hatFilter.connect(destination);
   const hat = new Tone.NoiseSynth({
+    context,
+    volume: -21,
     envelope: { attack: 0.001, decay: 0.035, sustain: 0 },
   });
-  hat.volume.value = -21;
   hat.connect(hatFilter);
 
-  const cymbalFilter = new Tone.Filter(5200, "highpass");
+  const cymbalFilter = new Tone.Filter({
+    context,
+    frequency: 5200,
+    type: "highpass",
+  });
   cymbalFilter.connect(destination);
   const cymbal = new Tone.NoiseSynth({
+    context,
+    volume: -19,
     envelope: { attack: 0.002, decay: 1.1, sustain: 0 },
   });
-  cymbal.volume.value = -19;
   cymbal.connect(cymbalFilter);
 
   return {
@@ -75,19 +118,34 @@ function buildDrums(destination: Tone.InputNode): DrumVoices {
     snare,
     hat,
     cymbal,
-    nodes: [snareFilter, hatFilter, cymbalFilter],
+    filters: [snareFilter, hatFilter, cymbalFilter],
   };
 }
 
-/** Builds the graph for one track. */
-function buildVoice(track: Track, master: Tone.Gain): TrackVoice | null {
-  const channel = new Tone.Channel({ volume: track.volumeDb });
+type VoiceBuild = { voice: TrackVoice; loaded: Promise<void> };
+
+/** Builds the graph for one track, plus a promise for its samples. */
+function buildVoice(
+  context: AudioRuntime,
+  track: Track,
+  master: Tone.Gain,
+): VoiceBuild | null {
+  const channel = new Tone.Channel({ context, volume: track.volumeDb });
   if (track.pan !== undefined) channel.pan.value = track.pan;
   if (track.muted) channel.mute = true;
   channel.connect(master);
 
   if (isDrumInstrument(track.instrumentId)) {
-    return { kind: "drums", trackId: track.id, drums: buildDrums(channel), channel };
+    return {
+      voice: {
+        kind: "drums",
+        trackId: track.id,
+        drums: buildDrums(context, channel),
+        channel,
+      },
+      // Synthesised, so there is nothing to download.
+      loaded: Promise.resolve(),
+    };
   }
 
   const pack = samplePackFor(track.instrumentId, track.presetId);
@@ -96,57 +154,92 @@ function buildVoice(track: Track, master: Tone.Gain): TrackVoice | null {
     return null;
   }
 
-  const sampler = new Tone.Sampler({ urls: pack.urls, baseUrl: pack.baseUrl });
-  sampler.volume.value = pack.trimDb;
+  let settle: () => void = () => {};
+  const loaded = new Promise<void>((resolve) => {
+    settle = resolve;
+  });
+
+  const sampler = new Tone.Sampler({
+    context,
+    urls: pack.urls,
+    baseUrl: pack.baseUrl,
+    volume: pack.trimDb,
+    // Fires once every buffer of this sampler has decoded.
+    onload: () => settle(),
+  });
   sampler.connect(channel);
-  return { kind: "sampler", trackId: track.id, sampler, channel };
+
+  return {
+    voice: {
+      kind: "sampler",
+      trackId: track.id,
+      sampler,
+      channel,
+      bufferCount: Object.keys(pack.urls).length,
+    },
+    loaded,
+  };
 }
 
-export type CreateEngineOptions = {
-  debug?: boolean;
-  /**
-   * Where the master gain lands. Defaults to the destination of whichever
-   * context is current, which matters because an offline render swaps the
-   * context underneath us.
-   */
-  destination?: Tone.InputNode;
-};
-
 /**
- * Builds the graph and waits for every sample to decode. The caller is
- * responsible for having started the audio context first.
+ * Builds the graph on the given context and waits for every sample of every
+ * sampler to decode. Nothing is scheduled here; the caller schedules once this
+ * resolves.
  */
 export async function createEngine(
   song: Song,
+  context: AudioRuntime,
   options: CreateEngineOptions = {},
 ): Promise<Engine> {
-  const master = new Tone.Gain(1);
-  // Tone's `Destination` and `Transport` exports bind to the context that was
-  // current when the module was imported. The accessors resolve the context
-  // that is current now, which is what an offline render needs.
-  master.connect(options.destination ?? Tone.getDestination());
+  const excluded = new Set(options.excludeTrackIds ?? []);
+
+  const master = new Tone.Gain({ context, gain: 1 });
+  master.connect(context.destination);
 
   const voices = new Map<string, TrackVoice>();
   const meters = new Map<string, Tone.Meter>();
+  const loads: Promise<void>[] = [];
 
   for (const track of song.tracks) {
-    const voice = buildVoice(track, master);
-    if (!voice) continue;
-    voices.set(track.id, voice);
+    if (excluded.has(track.id)) continue;
+    const built = buildVoice(context, track, master);
+    if (!built) continue;
+
+    voices.set(track.id, built.voice);
+    loads.push(built.loaded);
+
     if (options.debug) {
-      const meter = new Tone.Meter({ smoothing: 0.6 });
-      voice.channel.connect(meter);
+      const meter = new Tone.Meter({ context, smoothing: 0.6 });
+      built.voice.channel.connect(meter);
       meters.set(track.id, meter);
     }
   }
 
-  await Tone.loaded();
+  // Await these samplers, not a global download registry.
+  await Promise.all(loads);
+
+  const samplers = [...voices.values()].filter(
+    (voice) => voice.kind === "sampler",
+  );
+  const expectedBuffers = samplers.reduce(
+    (total, voice) => total + (voice.kind === "sampler" ? voice.bufferCount : 0),
+    0,
+  );
+  const loadedBuffers = samplers.reduce(
+    (total, voice) =>
+      total +
+      (voice.kind === "sampler" && voice.sampler.loaded ? voice.bufferCount : 0),
+    0,
+  );
 
   return {
+    context,
     master,
     voices,
     meters,
     plan: buildSongPlan(song),
+    expectedBuffers,
+    loadedBuffers,
     dispose() {
       for (const voice of voices.values()) {
         if (voice.kind === "sampler") voice.sampler.dispose();
@@ -155,7 +248,7 @@ export async function createEngine(
           voice.drums.snare.dispose();
           voice.drums.hat.dispose();
           voice.drums.cymbal.dispose();
-          for (const node of voice.drums.nodes) node.dispose();
+          for (const filter of voice.drums.filters) filter.dispose();
         }
         voice.channel.dispose();
       }
@@ -166,14 +259,24 @@ export async function createEngine(
 }
 
 /**
- * Places every event of the plan on the transport. Times are ticks derived
- * from note values, so a tempo change rescales them for free.
+ * Starts the audio context from a user gesture and builds the engine on it.
+ * This is the only entry point the interface should use.
  */
-export function scheduleSong(
-  engine: Engine,
-  bpm: number,
-  transport: ReturnType<typeof Tone.getTransport> = Tone.getTransport(),
-): number {
+export async function createLiveEngine(
+  song: Song,
+  options: CreateEngineOptions = {},
+): Promise<Engine> {
+  // Spec 8.3: the context may only be started inside a user gesture.
+  await Tone.start();
+  return createEngine(song, Tone.getContext(), options);
+}
+
+/**
+ * Places every event of the plan on the engine's own transport. Times are
+ * ticks derived from note values, so a tempo change rescales them for free.
+ */
+export function scheduleSong(engine: Engine, bpm: number): number {
+  const transport = engine.context.transport;
   transport.cancel();
   transport.PPQ = 192;
   // Tempo is set before anything is scheduled (spec 8.3).
