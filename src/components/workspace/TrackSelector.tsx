@@ -1,6 +1,6 @@
 "use client";
 
-import { getInstrument } from "@/lib/instruments/registry";
+import { instrumentLabel, presetLabel } from "@/lib/instruments/registry";
 import type { Track } from "@/lib/song/schema";
 
 /** Quick switch between the tracks of the song. Touch targets stay 44px. */
@@ -56,8 +56,10 @@ export function TrackSelector({
 
 /** One-line summary of what the selected track is, shown in the top bar. */
 export function trackSummary(track: Track): string {
-  const instrument = getInstrument(track.instrumentId);
-  const parts = [instrument?.displayName ?? track.instrumentId, track.presetId];
+  const parts = [
+    instrumentLabel(track.instrumentId),
+    presetLabel(track.instrumentId, track.presetId),
+  ];
   if (track.fretboard) parts.push(`${track.fretboard.tuning.length} tel`);
   return parts.join(" · ");
 }

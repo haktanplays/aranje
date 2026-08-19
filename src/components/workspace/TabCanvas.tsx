@@ -10,12 +10,8 @@ import {
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
 import type { PlayheadPosition } from "@/components/workspace/PlayheadLayer";
+import { frettedRowLabels } from "@/components/workspace/staff";
 import type { TrackTimeline } from "@/lib/tab/timeline";
-
-/** Shortest readable label for a string, e.g. "E2" -> "E". */
-function stringLabel(pitch: string): string {
-  return pitch.replace(/[0-9-]/g, "");
-}
 
 const DRUM_LABEL: Record<string, string> = {
   crash: "CR",
@@ -60,8 +56,10 @@ export function TabCanvas({
   const rowHeight = isFretted ? STRING_ROW_HEIGHT : DRUM_ROW_HEIGHT;
   const bodyHeight = Math.max(rows, 1) * rowHeight;
 
+  // Fretted staves read thinnest string first; drum lanes keep their own
+  // cymbal-to-kick order untouched.
   const labels = isFretted
-    ? [...timeline.strings].map(stringLabel)
+    ? frettedRowLabels(timeline.strings)
     : timeline.lanes.map((lane) => DRUM_LABEL[lane] ?? lane.slice(0, 2));
 
   return (

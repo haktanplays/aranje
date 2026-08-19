@@ -1,6 +1,10 @@
 "use client";
 
-import { getInstrument, getPreset } from "@/lib/instruments/registry";
+import {
+  getPreset,
+  instrumentLabel,
+  presetLabel,
+} from "@/lib/instruments/registry";
 import type { Track } from "@/lib/song/schema";
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -24,7 +28,6 @@ export function TrackSheet({
 }) {
   if (!open) return null;
 
-  const instrument = getInstrument(track.instrumentId);
   const preset = getPreset(track.instrumentId, track.presetId);
 
   return (
@@ -39,13 +42,10 @@ export function TrackSheet({
         <div className="bg-line mx-auto mb-3 h-1 w-10 rounded-full" />
         <h2 className="font-display mb-2 text-lg">{track.name}</h2>
         <dl className="divide-y divide-line">
-          <Row
-            label="Enstrüman"
-            value={instrument?.displayName ?? track.instrumentId}
-          />
+          <Row label="Enstrüman" value={instrumentLabel(track.instrumentId)} />
           <Row
             label="Varyasyon"
-            value={`${preset?.displayName ?? track.presetId}${
+            value={`${presetLabel(track.instrumentId, track.presetId)}${
               preset?.scope === "core" ? "" : " (Faz 2.5)"
             }`}
           />

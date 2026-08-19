@@ -10,6 +10,7 @@ import {
   PlayheadLayer,
   type PlayheadPosition,
 } from "@/components/workspace/PlayheadLayer";
+import { rowOffset } from "@/components/workspace/staff";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 
@@ -68,7 +69,9 @@ export function FrettedBarBlock({
             key={stringIndex}
             className="bg-line absolute right-0 left-0 h-px"
             style={{
-              top: stringIndex * STRING_ROW_HEIGHT + STRING_ROW_HEIGHT / 2,
+              top:
+                rowOffset(stringCount, stringIndex, STRING_ROW_HEIGHT) +
+                STRING_ROW_HEIGHT / 2,
             }}
           />
         ))}
@@ -100,7 +103,11 @@ export function FrettedBarBlock({
                   className="bg-bronze/60 absolute h-px"
                   style={{
                     top:
-                      span.stringIndex * STRING_ROW_HEIGHT +
+                      rowOffset(
+                        stringCount,
+                        span.stringIndex,
+                        STRING_ROW_HEIGHT,
+                      ) +
                       STRING_ROW_HEIGHT / 2,
                     left: span.openStart ? 0 : slotCentre(span.startSlot),
                     width:
@@ -123,7 +130,11 @@ export function FrettedBarBlock({
                   )}`}
                   style={{
                     left: span.startSlot * SLOT_WIDTH,
-                    top: span.stringIndex * STRING_ROW_HEIGHT,
+                    top: rowOffset(
+                      stringCount,
+                      span.stringIndex,
+                      STRING_ROW_HEIGHT,
+                    ),
                     width: SLOT_WIDTH,
                     height: STRING_ROW_HEIGHT,
                   }}

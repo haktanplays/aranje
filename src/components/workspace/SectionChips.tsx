@@ -40,7 +40,7 @@ export function SectionChips({
         >
           {run.name}
           <span className="text-muted ml-1.5 tabular-nums">
-            {run.barCount} bar
+            {run.barCount} ölçü
           </span>
         </button>
       ))}

@@ -332,6 +332,19 @@ export function coreInstruments(): readonly InstrumentDefinition[] {
   return DEFINITIONS.filter((definition) => definition.scope === "core");
 }
 
+/**
+ * Reader-facing name of an instrument. Components never show a raw id, and
+ * never map ids to text themselves.
+ */
+export function instrumentLabel(instrumentId: string): string {
+  return getInstrument(instrumentId)?.displayName ?? instrumentId;
+}
+
+/** Reader-facing name of a preset, e.g. "high_gain" reads "High gain". */
+export function presetLabel(instrumentId: string, presetId: string): string {
+  return getPreset(instrumentId, presetId)?.displayName ?? presetId;
+}
+
 /** Presets of an instrument that are available in the core scope (spec 2.5). */
 export function corePresets(instrumentId: string): readonly InstrumentPreset[] {
   return (
