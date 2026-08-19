@@ -7,12 +7,60 @@ import {
   type Resolution,
   type TimeSignature,
 } from "@/lib/song/schema";
-import { PHASE_0_VALIDATORS, hasErrors, runValidators } from "@/lib/validators";
+import {
+  PHASE_0_VALIDATORS,
+  PLAYABILITY_VALIDATORS,
+  SONG_VALIDATORS,
+  hasErrors,
+  runValidators,
+} from "@/lib/validators";
 import { errorsOnly, warningsOnly } from "@/lib/validators/types";
 
 describe("validator chain (spec 10)", () => {
   it("runs every phase 0 validator", () => {
     expect(PHASE_0_VALIDATORS).toHaveLength(5);
+  });
+
+  it("runs the playability validators from the central chain by default", () => {
+    expect(PLAYABILITY_VALIDATORS).toHaveLength(2);
+    expect(SONG_VALIDATORS).toHaveLength(7);
+    // Order is fixed, so the same song always reports in the same sequence.
+    expect(SONG_VALIDATORS.slice(0, 5)).toEqual(PHASE_0_VALIDATORS);
+    expect(SONG_VALIDATORS.slice(5)).toEqual(PLAYABILITY_VALIDATORS);
+  });
+
+  it("reaches range and stringCollision without being asked for them", () => {
+    const broken = {
+      ...SAMPLE_SONG,
+      sections: [
+        {
+          id: "bad",
+          name: "Bozuk",
+          status: "fixed" as const,
+          bars: [
+            {
+              timeSignature: [4, 4] as TimeSignature,
+              resolution: 8 as Resolution,
+              slots: {
+                gtr: [
+                  { notes: [{ pitch: "C0" }] },
+                  {
+                    notes: [
+                      { pitch: "G2", position: { string: 0, fret: 3 } },
+                      { pitch: "A2", position: { string: 0, fret: 5 } },
+                    ],
+                  },
+                  ...Array.from({ length: 6 }, () => null),
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
+    const codes = new Set(runValidators(broken).map((issue) => issue.code));
+    expect(codes.has("range")).toBe(true);
+    expect(codes.has("stringCollision")).toBe(true);
   });
 
   it("finds nothing wrong with the sample song", () => {

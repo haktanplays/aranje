@@ -44,6 +44,8 @@ export type BarMeta = {
   key: string;
   /** 1-based, counted across the whole song. */
   barNumber: number;
+  /** 0-based, counted inside its own section; the validator issue path. */
+  barIndex: number;
   sectionId: string;
   sectionName: string;
   sectionStatus: SectionStatus;
@@ -124,6 +126,7 @@ function barMeta(song: Song): MetaEntry[] {
         meta: {
           key: `${section.id}:${barIndex}`,
           barNumber,
+          barIndex,
           sectionId: section.id,
           sectionName: section.name,
           sectionStatus: section.status,

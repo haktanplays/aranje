@@ -87,14 +87,18 @@ export function isPlayablePosition(
 export function fretboardRange(
   fretboard: Fretboard,
 ): { lowMidi: number; highMidi: number } | null {
-  const lowestString = fretboard.tuning[0];
-  const highestString = fretboard.tuning[fretboard.tuning.length - 1];
-  if (lowestString === undefined || highestString === undefined) return null;
-  const lowMidi = pitchToMidi(lowestString);
-  const highMidi = pitchToMidi(highestString);
-  if (lowMidi === null || highMidi === null) return null;
+  // Taken over every string rather than the outer two, because an alternate
+  // tuning need not put its extremes on the first and last string.
+  const open = fretboard.tuning
+    .map((pitch) => pitchToMidi(pitch))
+    .filter((midi): midi is number => midi !== null);
+  if (open.length !== fretboard.tuning.length || open.length === 0) return null;
+
   return {
-    lowMidi: lowMidi + fretboard.capo,
-    highMidi: highMidi + MAX_PHYSICAL_FRET,
+    // A capo raises the lowest reachable pitch...
+    lowMidi: Math.min(...open) + fretboard.capo,
+    // ...but not the highest: the writable fret range shrinks by the same
+    // amount the capo raises the open string (spec 9.1).
+    highMidi: Math.max(...open) + MAX_PHYSICAL_FRET,
   };
 }

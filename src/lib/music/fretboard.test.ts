@@ -94,6 +94,28 @@ describe("capo-relative fret semantics (spec 9.1)", () => {
     expect(range?.highMidi).toBe((pitchToMidi("E4") ?? 0) + MAX_PHYSICAL_FRET);
   });
 
+  it("takes the extremes over every string, not over the outer two", () => {
+    // A tuning whose lowest and highest strings are not first and last.
+    const odd: Fretboard = { tuning: ["E2", "A1", "E5", "D3"], capo: 0 };
+    const range = fretboardRange(odd);
+    expect(range?.lowMidi).toBe(pitchToMidi("A1"));
+    expect(range?.highMidi).toBe((pitchToMidi("E5") ?? 0) + MAX_PHYSICAL_FRET);
+  });
+
+  it("raises the floor with the capo but leaves the ceiling where it was", () => {
+    const open = fretboardRange(E_STANDARD);
+    const capoed = fretboardRange({ ...E_STANDARD, capo: 3 });
+    // The frets above the capo are lost exactly as fast as the open string
+    // rises, so the highest reachable pitch does not move (spec 9.1).
+    expect(capoed?.lowMidi).toBe((open?.lowMidi ?? 0) + 3);
+    expect(capoed?.highMidi).toBe(open?.highMidi);
+  });
+
+  it("refuses a tuning it cannot read", () => {
+    expect(fretboardRange({ tuning: ["E2", "H9"], capo: 0 })).toBeNull();
+    expect(fretboardRange({ tuning: [], capo: 0 })).toBeNull();
+  });
+
   it("keeps the bass tuning at four strings", () => {
     expect(TUNING_PRESETS.bass_standard?.tuning).toEqual([
       "E1",
