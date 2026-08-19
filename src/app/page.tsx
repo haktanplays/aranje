@@ -1,5 +1,5 @@
-import { SongTimeline } from "@/components/SongTimeline";
+import { Workspace } from "@/components/workspace/Workspace";
 
 export default function Home() {
-  return <SongTimeline />;
+  return <Workspace />;
 }

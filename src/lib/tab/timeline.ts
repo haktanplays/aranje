@@ -1,0 +1,398 @@
+/**
+ * Render model for the tab workspace.
+ *
+ * A pure transform from the Song Contract to what the tab view draws. It owns
+ * no layout numbers and no React; the view decides pixels.
+ *
+ * Positions come from the note itself when written out, otherwise from the
+ * greedy engine (spec 9.2). A tie chain that reaches the first slot of a bar
+ * continues the previous bar, so sounding state is carried across bars exactly
+ * as the voice counter does (spec 6).
+ */
+import { isDrumInstrument } from "@/lib/instruments/registry";
+import type { Fretboard } from "@/lib/music/fretboard";
+import { resolveSlotPositions } from "@/lib/music/position";
+import { slotCount } from "@/lib/music/timing";
+import type {
+  Articulation,
+  Bar,
+  DrumPiece,
+  DrumSlot,
+  MelodicSlot,
+  Resolution,
+  SectionStatus,
+  Song,
+  TimeSignature,
+  Track,
+} from "@/lib/song/schema";
+
+/** Top-to-bottom lane order, following drum notation habit. */
+const DRUM_LANE_ORDER: readonly DrumPiece[] = [
+  "crash",
+  "china",
+  "ride",
+  "open_hat",
+  "closed_hat",
+  "tom_high",
+  "tom_mid",
+  "tom_floor",
+  "snare",
+  "kick",
+];
+
+export type BarMeta = {
+  key: string;
+  /** 1-based, counted across the whole song. */
+  barNumber: number;
+  sectionId: string;
+  sectionName: string;
+  sectionStatus: SectionStatus;
+  isSectionStart: boolean;
+  timeSignature: TimeSignature;
+  resolution: Resolution;
+  slotCount: number;
+  /** The track writes nothing in this bar, so it is silent here (spec 5.5). */
+  silent: boolean;
+};
+
+export type TabSpan = {
+  stringIndex: number;
+  /** null when no playable placement exists for the written pitch. */
+  fret: number | null;
+  pitch: string;
+  articulation?: Articulation;
+  startSlot: number;
+  /** Inclusive. */
+  endSlot: number;
+  /** Already sounding when the bar began. */
+  openStart: boolean;
+  /** Still sounding when the bar ended. */
+  openEnd: boolean;
+};
+
+export type DrumMark = {
+  slotIndex: number;
+  laneIndex: number;
+  piece: DrumPiece;
+  articulation?: "normal" | "ghost" | "accent";
+};
+
+export type FrettedBar = BarMeta & { spans: TabSpan[]; rests: number[] };
+export type DrumBar = BarMeta & { marks: DrumMark[]; rests: number[] };
+
+export type TrackTimeline =
+  | {
+      kind: "fretted";
+      trackId: string;
+      strings: readonly string[];
+      capo: number;
+      bars: FrettedBar[];
+    }
+  | { kind: "drums"; trackId: string; lanes: DrumPiece[]; bars: DrumBar[] }
+  | { kind: "unsupported"; trackId: string; reason: string };
+
+type OpenSpan = {
+  stringIndex: number;
+  fret: number | null;
+  pitch: string;
+  articulation?: Articulation;
+  startSlot: number;
+  endSlot: number;
+  openStart: boolean;
+};
+
+function isMelodicSlot(
+  slot: MelodicSlot | DrumSlot | undefined,
+): slot is MelodicSlot {
+  return !Array.isArray(slot);
+}
+
+type MetaEntry = { meta: Omit<BarMeta, "silent">; bar: Bar };
+
+function barMeta(song: Song): MetaEntry[] {
+  const entries: MetaEntry[] = [];
+  let barNumber = 0;
+
+  for (const section of song.sections) {
+    section.bars.forEach((bar, barIndex) => {
+      barNumber += 1;
+      entries.push({
+        bar,
+        meta: {
+          key: `${section.id}:${barIndex}`,
+          barNumber,
+          sectionId: section.id,
+          sectionName: section.name,
+          sectionStatus: section.status,
+          isSectionStart: barIndex === 0,
+          timeSignature: bar.timeSignature,
+          resolution: bar.resolution,
+          slotCount: slotCount(bar.timeSignature, bar.resolution),
+        },
+      });
+    });
+  }
+
+  return entries;
+}
+
+function buildFretted(
+  song: Song,
+  track: Track,
+  fretboard: Fretboard,
+): FrettedBar[] {
+  const metas = barMeta(song);
+  const bars: FrettedBar[] = [];
+
+  // What is still sounding when the previous bar ended.
+  let carried: Omit<OpenSpan, "startSlot" | "endSlot" | "openStart">[] = [];
+
+  metas.forEach((entry, index) => {
+    const slots = entry.bar.slots[track.id];
+    const rest = entry.meta;
+
+    if (slots === undefined) {
+      bars.push({ ...rest, silent: true, spans: [], rests: [] });
+      carried = [];
+      return;
+    }
+
+    const spans: TabSpan[] = [];
+    const rests: number[] = [];
+    let open: OpenSpan[] = [];
+
+    const closeOpen = () => {
+      for (const span of open) {
+        spans.push({ ...span, openEnd: false });
+      }
+      open = [];
+    };
+
+    for (let slotIndex = 0; slotIndex < slots.length; slotIndex += 1) {
+      const slot = slots[slotIndex];
+      if (!isMelodicSlot(slot)) continue; // shape errors are the validator's job
+
+      if (slot === null) {
+        closeOpen();
+        rests.push(slotIndex);
+        continue;
+      }
+
+      if (slot === "-") {
+        if (open.length === 0 && slotIndex === 0 && carried.length > 0) {
+          open = carried.map((span) => ({
+            ...span,
+            startSlot: 0,
+            endSlot: 0,
+            openStart: true,
+          }));
+        }
+        for (const span of open) span.endSlot = slotIndex;
+        continue;
+      }
+
+      closeOpen();
+      const resolved = resolveSlotPositions(fretboard, slot.notes);
+      open = resolved
+        .filter((entry) => entry.position !== null || entry.source === "none")
+        .map((entry) => ({
+          stringIndex: entry.position?.string ?? -1,
+          fret: entry.position?.fret ?? null,
+          pitch: entry.note.pitch,
+          articulation: entry.note.articulation,
+          startSlot: slotIndex,
+          endSlot: slotIndex,
+          openStart: false,
+        }));
+    }
+
+    // Anything still open runs to the end of the bar.
+    const stillOpen = open;
+    const nextEntry = metas[index + 1];
+    const nextSlots = nextEntry?.bar.slots[track.id];
+    const continues = nextSlots !== undefined && nextSlots[0] === "-";
+
+    for (const span of stillOpen) {
+      spans.push({ ...span, openEnd: continues });
+    }
+
+    carried = continues
+      ? stillOpen.map(({ stringIndex, fret, pitch, articulation }) => ({
+          stringIndex,
+          fret,
+          pitch,
+          articulation,
+        }))
+      : [];
+
+    bars.push({ ...rest, silent: false, spans, rests });
+  });
+
+  return bars;
+}
+
+function buildDrums(song: Song, track: Track): {
+  lanes: DrumPiece[];
+  bars: DrumBar[];
+} {
+  const metas = barMeta(song);
+
+  // Lanes are the pieces the song actually uses, in notation order. Adding
+  // lanes through the UI is phase 2.5; this only mirrors the data.
+  const used = new Set<DrumPiece>();
+  for (const entry of metas) {
+    const slots = entry.bar.slots[track.id];
+    if (slots === undefined) continue;
+    for (const slot of slots) {
+      if (!Array.isArray(slot)) continue;
+      for (const hit of slot) used.add(hit.piece);
+    }
+  }
+  const lanes = DRUM_LANE_ORDER.filter((piece) => used.has(piece));
+  const laneIndex = new Map(lanes.map((piece, index) => [piece, index]));
+
+  const bars: DrumBar[] = metas.map((entry) => {
+    const slots = entry.bar.slots[track.id];
+    const rest = entry.meta;
+
+    if (slots === undefined) {
+      return { ...rest, silent: true, marks: [], rests: [] };
+    }
+
+    const marks: DrumMark[] = [];
+    const rests: number[] = [];
+
+    slots.forEach((slot, slotIndex) => {
+      if (!Array.isArray(slot)) return; // shape errors are the validator's job
+      if (slot.length === 0) {
+        rests.push(slotIndex);
+        return;
+      }
+      for (const hit of slot) {
+        const lane = laneIndex.get(hit.piece);
+        if (lane === undefined) continue;
+        marks.push({
+          slotIndex,
+          laneIndex: lane,
+          piece: hit.piece,
+          articulation: hit.articulation,
+        });
+      }
+    });
+
+    return { ...rest, silent: false, marks, rests };
+  });
+
+  return { lanes, bars };
+}
+
+/** Build what the workspace draws for one track. */
+export function buildTrackTimeline(
+  song: Song,
+  trackId: string,
+): TrackTimeline {
+  const track = song.tracks.find((entry) => entry.id === trackId);
+  if (!track) {
+    return {
+      kind: "unsupported",
+      trackId,
+      reason: "Bu track şarkıda bulunmuyor.",
+    };
+  }
+
+  if (isDrumInstrument(track.instrumentId)) {
+    const { lanes, bars } = buildDrums(song, track);
+    return { kind: "drums", trackId, lanes, bars };
+  }
+
+  if (!track.fretboard) {
+    return {
+      kind: "unsupported",
+      trackId,
+      reason: "Bu enstrüman için tab görünümü sonraki fazda geliyor.",
+    };
+  }
+
+  return {
+    kind: "fretted",
+    trackId,
+    strings: track.fretboard.tuning,
+    capo: track.fretboard.capo,
+    bars: buildFretted(song, track, track.fretboard),
+  };
+}
+
+/** Section runs across the flattened bar stream, for the chip row. */
+export function sectionRuns(
+  song: Song,
+): { sectionId: string; name: string; status: SectionStatus; firstBar: number; barCount: number }[] {
+  let barNumber = 0;
+  return song.sections.map((section) => {
+    const firstBar = barNumber + 1;
+    barNumber += section.bars.length;
+    return {
+      sectionId: section.id,
+      name: section.name,
+      status: section.status,
+      firstBar,
+      barCount: section.bars.length,
+    };
+  });
+}
+
+/**
+ * What each slot of a bar does, for the rhythm strip under the staff. This is
+ * how a rest is told apart from a sustained note and from an empty grid cell.
+ */
+export type SlotState = "onset" | "sustain" | "rest" | "empty";
+
+export function frettedRhythm(bar: FrettedBar): SlotState[] {
+  const states: SlotState[] = Array.from(
+    { length: bar.slotCount },
+    () => "empty",
+  );
+  if (bar.silent) return states;
+
+  for (const span of bar.spans) {
+    for (let slot = span.startSlot; slot <= span.endSlot; slot += 1) {
+      if (slot < 0 || slot >= states.length) continue;
+      const isOnset = slot === span.startSlot && !span.openStart;
+      if (isOnset) {
+        states[slot] = "onset";
+      } else if (states[slot] !== "onset") {
+        states[slot] = "sustain";
+      }
+    }
+  }
+
+  for (const slot of bar.rests) {
+    if (slot >= 0 && slot < states.length && states[slot] === "empty") {
+      states[slot] = "rest";
+    }
+  }
+
+  return states;
+}
+
+export function drumRhythm(bar: DrumBar): SlotState[] {
+  const states: SlotState[] = Array.from(
+    { length: bar.slotCount },
+    () => "empty",
+  );
+  if (bar.silent) return states;
+
+  for (const mark of bar.marks) {
+    if (mark.slotIndex >= 0 && mark.slotIndex < states.length) {
+      states[mark.slotIndex] = "onset";
+    }
+  }
+  for (const slot of bar.rests) {
+    if (slot >= 0 && slot < states.length && states[slot] === "empty") {
+      states[slot] = "rest";
+    }
+  }
+
+  return states;
+}
+
+export const __testing = { DRUM_LANE_ORDER };
