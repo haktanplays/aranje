@@ -73,7 +73,7 @@ render edilen marka adı tek bir sabitten gelir ve `é` orada **unicode kaçış
 yazılır.
 
 ```ts
-// lib/brand.ts — projede é'nin geçmesine izin verilen TEK yer
+// lib/brand.ts - the only place the escaped brand character may appear
 export const BRAND_NAME = "Aranj\u00E9";
 ```
 
@@ -665,6 +665,10 @@ ARANJE_MODEL_ESCALATION=
 - Adapter, model kimliğine göre desteklenen request payload'ını kurar. Route
   farklı capability'lere sahip modellere aynı ham payload'ı göndermez.
 - Adapter her model için **golden request snapshot birim testi** taşır.
+- Adapter, girdi ve çıktı token tavanlarını **somut sayı olarak** zorlar:
+  `ARANJE_MAX_INPUT_TOKENS` ve `ARANJE_MAX_OUTPUT_TOKENS`. Bu iki değer
+  **Faz 2 başlamadan önce belirlenir** (§14.5) ve §12.3'teki rezervasyon
+  hesabının girdisidir. Tavanı aşan istek adapter seviyesinde reddedilir.
 - README; Messages API, tool use, prompt caching, streaming ve model migration
   dokümanlarına referans verir.
 
@@ -779,13 +783,24 @@ Fail-closed garantisi ancak rezervasyonla gerçek olur.
   içinde kontrol edilir ve artırılır. Kontrol ile artırma arasında başka bir
   isteğin araya girebileceği bir pencere bırakılmaz.
 - **Rezervasyon sığmıyorsa istek reddedilir** ve sağlayıcıya hiç gidilmez.
-- **Uzlaştırma:** çağrı tamamlanınca rezervasyon **gerçek maliyetle
-  uzlaştırılır**; fark (fazla rezerve edilen kısım) bütçeye geri verilir,
-  gerçek maliyet metering'e yazılır.
-- **Belirsiz durum:** timeout, ağ hatası veya sonucu bilinmeyen her durumda
-  rezervasyon **hemen silinmez.** TTL'i dolana kadar rezerve kalır ve ancak
-  sağlayıcı tarafındaki gerçek kullanım doğrulanabildiğinde uzlaştırılır.
-  Şüphede bütçe aleyhine değil, **lehine** karar verilir.
+- **Uzlaştırma yalnız aşağı yönlüdür ve yalnız doğrulanmış kullanımla yapılır.**
+  Çağrı tamamlanıp sağlayıcıdan gerçek token kullanımı alınabildiyse rezervasyon
+  gerçek maliyete indirilir, fark bütçeye geri verilir ve gerçek maliyet
+  metering'e yazılır.
+- **Kullanım doğrulanamıyorsa rezervasyon HARCANMIŞ kabul edilir.** Timeout, ağ
+  hatası, kesilen bağlantı veya sonucu bilinmeyen her durumda rezerve edilen
+  tutar bütçeden düşülmüş sayılır. Gerekçe: sağlayıcı o çağrıyı ücretlendirmiş
+  olabilir; doğrulanamayan kullanımı "harcanmadı" saymak bütçeyi sessizce
+  aşmanın yoludur.
+- **Belirsiz rezervasyon, ilgili günlük/aylık bütçe penceresi kapanmadan
+  serbest bırakılmaz.** Rezervasyonun serbest kalması için tek yol, gerçek
+  kullanımın doğrulanıp aşağı yönlü uzlaştırılmasıdır. Pencere kapandığında
+  sayaç zaten sıfırlandığı için ayrıca bir geri verme işlemi gerekmez.
+- **Rezervasyon süresi ile idempotency/sonuç cache TTL'i ayrı kavramlardır.**
+  Idempotency key'in ve sonuç cache'inin TTL'i istemci retry penceresine göre
+  belirlenir (dakikalar); bütçe rezervasyonu ise bütçe penceresine bağlıdır
+  (gün/ay). Biri diğerinin süresini belirlemez; ikisi ayrı anahtarlarda
+  tutulur.
 - **Idempotency:** her istek bir **idempotency key** taşır. Aynı key ile gelen
   retry **ikinci kez rezervasyon yapmaz**; var olan rezervasyonu ve varsa
   sonucunu kullanır.
@@ -794,6 +809,29 @@ Fail-closed garantisi ancak rezervasyonla gerçek olur.
 
 Kullanıcı kotası (`ARANJE_FREE_PATCHES_PER_USER_PER_DAY`) ve "kullanıcı başına
 aynı anda tek istek" kilidi de aynı atomik işlemin parçasıdır.
+
+#### Rezervasyon üst sınırı ve başlangıç invariant'ı (§19 K-16)
+
+Ölçüm tamamlanana kadar (§18) ön rezervasyon **en kötü durum** varsayımıyla
+hesaplanır: 3 tur, cache isabeti yok, adapter'ın izin verdiği maksimum token.
+
+```txt
+worstCaseReservation =
+  3 × ( ARANJE_MAX_INPUT_TOKENS  × girdi fiyatı
+      + ARANJE_MAX_OUTPUT_TOKENS × çıktı fiyatı )
+```
+
+**Başlangıç invariant'ı — birim testlidir ve backend açılışında da doğrulanır:**
+
+```txt
+worstCaseReservation <= ARANJE_DAILY_AI_BUDGET_USD
+```
+
+Bu invariant sağlanmazsa **hiçbir istek geçemez**: ilk rezervasyon günlük
+bütçeye sığmadığı için sistem her isteği reddeder ve dışarıdan "AI hiç
+çalışmıyor" gibi görünür. İhlal hâlinde tek doğru çözüm ya
+`ARANJE_MAX_OUTPUT_TOKENS` tavanını düşürmek ya da günlük bütçeyi yükseltmektir;
+invariant testi devre dışı bırakılamaz.
 
 ### §12.4 Davranış kuralları
 
@@ -1005,6 +1043,15 @@ listeleniyor; `é` lint testi yeşil.
 
 ### §14.5 Faz 2 — Copilot ve ÇEKİRDEK MÜZİKAL KANIT
 
+**FAZ 2 BAŞLAMA KOŞULU (§19 K-16):**
+
+- [ ] Adapter'ın somut `ARANJE_MAX_INPUT_TOKENS` ve `ARANJE_MAX_OUTPUT_TOKENS`
+      tavanları belirlendi (§11.3).
+- [ ] `worstCaseReservation <= ARANJE_DAILY_AI_BUDGET_USD` invariant'ı birim
+      testiyle doğrulandı (§12.3).
+
+Kapsam:
+
 - `/api/copilot` çalışıyor; §11 akışı uçtan uca; SSE durum olayları gerçek.
 - 2 stil kartı aktif.
 - Küçük müzikal eval seti; `ARANJE_MODEL_ESCALATION` kararı burada verilir.
@@ -1133,16 +1180,17 @@ istek maliyeti =
   + (cache yazma token × cache yazma fiyatı)
   + (çıktı token × çıktı fiyatı)
 
-patch maliyeti  = istek maliyeti × gerçekleşen tur sayısı (1..3)
+patch maliyeti  = Σ (her turun gerçek istek maliyeti)      // tur sayısı 1..3
 kabul başına    = toplam patch maliyeti / kabul edilen patch sayısı
 günlük kapasite = ARANJE_DAILY_AI_BUDGET_USD / ölçülen ortalama patch maliyeti
 ```
 
 Ölçüm girdileri metering'den gelir (§12.4): istek başına gerçek
 input / output / cache_read / cache_write token sayıları ve tur sayısı.
-`ARANJE_MODEL_DEFAULT` için ön rezervasyon üst sınırı (§12.3) **ölçüm
-tamamlanana kadar en kötü durum varsayımıyla** hesaplanır: 3 tur, cache isabeti
-yok, adapter'daki maksimum çıktı token sınırı.
+Turlar aynı maliyette değildir — düzeltme turları farklı girdi ve farklı cache
+isabeti taşır — bu yüzden patch maliyeti tur sayısıyla çarpılarak değil,
+**turların gerçek maliyetleri toplanarak** bulunur. Ön rezervasyon üst sınırı
+ve başlangıç invariant'ı §12.3'tedir.
 
 Asıl karar metriği istek başına maliyet değil, **kabul edilen patch başına
 maliyettir** (§11.2/7).
@@ -1168,6 +1216,7 @@ maliyettir** (§11.2/7).
 | **K-13** | Marka adı çelişkisi çözüldü: `lib/brand.ts` içinde `BRAND_NAME = "Aranj\u00E9"`. Lint yalnız **ham** `é`'yi yasaklar; kullanıcı yine Aranjé görür. | Haktan, 19.08.2026 |
 | **K-14** | §18'deki tahmini maliyet rakamları **kaldırıldı**; ölçüme dayanmıyorlardı. Yöntem/formül kaldı, değerler Faz 2'de gerçek token ve cache istatistikleriyle doldurulacak. O tarihe kadar patch/gün kapasite tahmini verilmez. | Haktan, 19.08.2026 |
 | **K-15** | Sample manifestine `licenseSpdx`, `licenseTextPath` ve `attribution` alanları eklendi; build çıktısına `THIRD_PARTY_NOTICES.md` üretilir. | Haktan tavsiyesi, 19.08.2026 |
+| **K-16** | Belirsizlik kuralı tersine çevrildi: **kullanım doğrulanamıyorsa rezervasyon harcanmış sayılır**; uzlaştırma yalnız aşağı yönlü ve yalnız doğrulanmış kullanımla yapılır; belirsiz rezervasyon bütçe penceresi kapanmadan serbest bırakılmaz; rezervasyon süresi ile idempotency/cache TTL'i ayrı kavramlardır. Ayrıca adapter'ın somut token tavanları ve `worstCaseReservation <= dailyBudget` başlangıç invariant'ı Faz 2 başlama koşulu yapıldı; §18'de patch maliyeti tur sayısıyla çarpım yerine **turların toplamı** olarak düzeltildi; `lib/brand.ts` örneğindeki yorum ASCII'ye çevrildi. | Haktan, 19.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
