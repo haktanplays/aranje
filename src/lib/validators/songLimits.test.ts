@@ -100,7 +100,7 @@ describe("songLimits validator (spec 10.1, values 6)", () => {
 });
 
 describe("voice counting (spec 6)", () => {
-  const { voicesAt } = __testing;
+  const { voicesAt, carryOut } = __testing;
 
   it("counts a rest as no voices", () => {
     expect(voicesAt([null], 0)).toBe(0);
@@ -129,7 +129,122 @@ describe("voice counting (spec 6)", () => {
     expect(voicesAt(slots, 2)).toBe(0);
   });
 
-  it("contributes nothing when a bar opens with a tie", () => {
+  it("continues the previous bar when a bar opens with a tie", () => {
+    expect(voicesAt(["-"], 0, 3)).toBe(3);
+    expect(voicesAt(["-", "-"], 1, 3)).toBe(3);
+  });
+
+  it("carries nothing in when the previous bar left nothing sounding", () => {
+    expect(voicesAt(["-"], 0, 0)).toBe(0);
     expect(voicesAt(["-"], 0)).toBe(0);
+  });
+
+  it("ignores the carry once a real event starts in this bar", () => {
+    const slots: MelodicSlot[] = [{ notes: [{ pitch: "E2" }] }, "-"];
+    expect(voicesAt(slots, 1, 9)).toBe(1);
+  });
+
+  it("reports what is still sounding when a bar ends", () => {
+    expect(carryOut([{ notes: [{ pitch: "E2" }, { pitch: "B2" }] }, "-"])).toBe(2);
+    expect(carryOut([{ notes: [{ pitch: "E2" }] }, null])).toBe(0);
+    expect(carryOut(["-", "-"], 4)).toBe(4);
+    expect(carryOut([])).toBe(0);
+  });
+});
+
+describe("voice counting across bars (spec 6)", () => {
+  /** A bar whose last slot holds `count` simultaneous notes. */
+  function barEndingWithChord(count: number) {
+    const slots = restSlots(8);
+    slots[7] = {
+      notes: Array.from({ length: count }, () => ({ pitch: "E2" })),
+    };
+    return melodicBar("gtr", slots);
+  }
+
+  /** A bar that opens with a tie and then rests. */
+  function barOpeningWithTie() {
+    const slots = restSlots(8);
+    slots[0] = "-";
+    return melodicBar("gtr", slots);
+  }
+
+  it("keeps a tie at the start of a bar sounding the previous bar's event", () => {
+    const over = songLimits.maxVoicesPerSlot + 1;
+    const subject = song(
+      [guitarTrack()],
+      [section([barEndingWithChord(over), barOpeningWithTie()])],
+    );
+    const issues = validateSongLimits(subject);
+
+    // Both the originating slot and the tied slot in the next bar are over.
+    expect(issues).toHaveLength(2);
+    expect(issues[0]?.barIndex).toBe(0);
+    expect(issues[0]?.slotIndex).toBe(7);
+    expect(issues[1]?.barIndex).toBe(1);
+    expect(issues[1]?.slotIndex).toBe(0);
+  });
+
+  it("carries across a section boundary too", () => {
+    const over = songLimits.maxVoicesPerSlot + 1;
+    const subject = song(
+      [guitarTrack()],
+      [
+        section([barEndingWithChord(over)], { id: "s1" }),
+        section([barOpeningWithTie()], { id: "s2" }),
+      ],
+    );
+    const issues = validateSongLimits(subject);
+
+    expect(issues).toHaveLength(2);
+    expect(issues[1]?.sectionId).toBe("s2");
+    expect(issues[1]?.barIndex).toBe(0);
+    expect(issues[1]?.slotIndex).toBe(0);
+  });
+
+  it("stays quiet when the carried event is inside the limit", () => {
+    const subject = song(
+      [guitarTrack()],
+      [section([barEndingWithChord(2), barOpeningWithTie()])],
+    );
+    expect(validateSongLimits(subject)).toEqual([]);
+  });
+
+  it("drops the carry when the next bar omits the track", () => {
+    const over = songLimits.maxVoicesPerSlot + 1;
+    const silentBar = melodicBar("other", restSlots(8));
+    const subject = song(
+      [guitarTrack(), guitarTrack({ id: "other" })],
+      [
+        section([
+          barEndingWithChord(over),
+          silentBar,
+          barOpeningWithTie(),
+        ]),
+      ],
+    );
+    const issues = validateSongLimits(subject);
+
+    // Only the originating slot; the track was silent in between, so the tie
+    // in the third bar has nothing to continue.
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.barIndex).toBe(0);
+  });
+
+  it("drops the carry when a rest ends the previous bar", () => {
+    const over = songLimits.maxVoicesPerSlot + 1;
+    const slots = restSlots(8);
+    slots[6] = {
+      notes: Array.from({ length: over }, () => ({ pitch: "E2" })),
+    };
+    const subject = song(
+      [guitarTrack()],
+      [section([melodicBar("gtr", slots), barOpeningWithTie()])],
+    );
+    const issues = validateSongLimits(subject);
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.barIndex).toBe(0);
+    expect(issues[0]?.slotIndex).toBe(6);
   });
 });

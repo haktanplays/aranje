@@ -17,18 +17,29 @@ export type InstrumentEngine =
 
 export type InstrumentKind = "melodic" | "drums";
 
+export type PhaseScope = "core" | "phase_2_5";
+
 export type InstrumentPreset = {
   id: string;
   displayName: string;
   engine: InstrumentEngine;
+  /**
+   * Scope is per preset, not per instrument. A core instrument may still carry
+   * presets that only open up in phase 2.5 (spec 2.5 lists the core variants).
+   */
+  scope: PhaseScope;
 };
 
 export type InstrumentDefinition = {
   id: string;
   displayName: string;
   kind: InstrumentKind;
-  /** Available in the core scope (spec 2.5) or deferred to phase 2.5. */
-  scope: "core" | "phase_2_5";
+  /**
+   * Whether the instrument itself is part of the core demo (spec 2.4). An
+   * instrument in core scope does not make all of its presets core; see
+   * InstrumentPreset.scope.
+   */
+  scope: PhaseScope;
   presets: readonly InstrumentPreset[];
   /**
    * Fretted instruments derive their playable range from tuning and fret count
@@ -68,9 +79,24 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     scope: "core",
     defaultTuningPresetId: TUNING_PRESETS.e_standard?.id ?? "e_standard",
     presets: [
-      { id: "clean", displayName: "Clean", engine: "sampler" },
-      { id: "crunch", displayName: "Crunch", engine: "sampler_fx" },
-      { id: "high_gain", displayName: "High gain", engine: "sampler_fx" },
+      {
+        id: "clean",
+        displayName: "Clean",
+        engine: "sampler",
+        scope: "core",
+      },
+      {
+        id: "crunch",
+        displayName: "Crunch",
+        engine: "sampler_fx",
+        scope: "phase_2_5",
+      },
+      {
+        id: "high_gain",
+        displayName: "High gain",
+        engine: "sampler_fx",
+        scope: "core",
+      },
     ],
   },
   {
@@ -80,8 +106,18 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     scope: "core",
     defaultTuningPresetId: TUNING_PRESETS.e_standard?.id ?? "e_standard",
     presets: [
-      { id: "finger", displayName: "Finger", engine: "sampler" },
-      { id: "pick", displayName: "Pick", engine: "sampler" },
+      {
+        id: "finger",
+        displayName: "Finger",
+        engine: "sampler",
+        scope: "core",
+      },
+      {
+        id: "pick",
+        displayName: "Pick",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -91,9 +127,24 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     scope: "core",
     defaultTuningPresetId: TUNING_PRESETS.bass_standard?.id ?? "bass_standard",
     presets: [
-      { id: "finger", displayName: "Finger", engine: "sampler" },
-      { id: "pick", displayName: "Pick", engine: "sampler" },
-      { id: "driven", displayName: "Driven", engine: "sampler_fx" },
+      {
+        id: "finger",
+        displayName: "Finger",
+        engine: "sampler",
+        scope: "core",
+      },
+      {
+        id: "pick",
+        displayName: "Pick",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
+      {
+        id: "driven",
+        displayName: "Driven",
+        engine: "sampler_fx",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -102,9 +153,24 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     kind: "drums",
     scope: "core",
     presets: [
-      { id: "rock", displayName: "Rock", engine: "sampler_kit" },
-      { id: "metal", displayName: "Metal", engine: "sampler_kit" },
-      { id: "electronic", displayName: "Electronic", engine: "sampler_kit" },
+      {
+        id: "rock",
+        displayName: "Rock",
+        engine: "sampler_kit",
+        scope: "core",
+      },
+      {
+        id: "metal",
+        displayName: "Metal",
+        engine: "sampler_kit",
+        scope: "phase_2_5",
+      },
+      {
+        id: "electronic",
+        displayName: "Electronic",
+        engine: "sampler_kit",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -114,8 +180,18 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     scope: "phase_2_5",
     defaultTuningPresetId: TUNING_PRESETS.e_standard?.id ?? "e_standard",
     presets: [
-      { id: "warm", displayName: "Warm", engine: "sampler" },
-      { id: "bright", displayName: "Bright", engine: "sampler" },
+      {
+        id: "warm",
+        displayName: "Warm",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
+      {
+        id: "bright",
+        displayName: "Bright",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -124,8 +200,18 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     kind: "melodic",
     scope: "phase_2_5",
     presets: [
-      { id: "grand", displayName: "Grand", engine: "sampler" },
-      { id: "upright", displayName: "Upright", engine: "sampler" },
+      {
+        id: "grand",
+        displayName: "Grand",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
+      {
+        id: "upright",
+        displayName: "Upright",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -134,8 +220,18 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     kind: "melodic",
     scope: "phase_2_5",
     presets: [
-      { id: "soft", displayName: "Soft", engine: "sampler" },
-      { id: "bright", displayName: "Bright", engine: "sampler" },
+      {
+        id: "soft",
+        displayName: "Soft",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
+      {
+        id: "bright",
+        displayName: "Bright",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -144,8 +240,18 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     kind: "melodic",
     scope: "phase_2_5",
     presets: [
-      { id: "rock", displayName: "Rock", engine: "sampler" },
-      { id: "church", displayName: "Church", engine: "sampler" },
+      {
+        id: "rock",
+        displayName: "Rock",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
+      {
+        id: "church",
+        displayName: "Church",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -154,8 +260,18 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     kind: "melodic",
     scope: "phase_2_5",
     presets: [
-      { id: "sustain", displayName: "Sustain", engine: "sampler" },
-      { id: "staccato", displayName: "Staccato", engine: "sampler" },
+      {
+        id: "sustain",
+        displayName: "Sustain",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
+      {
+        id: "staccato",
+        displayName: "Staccato",
+        engine: "sampler",
+        scope: "phase_2_5",
+      },
     ],
   },
   {
@@ -164,9 +280,24 @@ const DEFINITIONS: readonly InstrumentDefinition[] = [
     kind: "melodic",
     scope: "phase_2_5",
     presets: [
-      { id: "lead", displayName: "Lead", engine: "polysynth" },
-      { id: "warm_pad", displayName: "Warm pad", engine: "polysynth" },
-      { id: "dark_pad", displayName: "Dark pad", engine: "polysynth" },
+      {
+        id: "lead",
+        displayName: "Lead",
+        engine: "polysynth",
+        scope: "phase_2_5",
+      },
+      {
+        id: "warm_pad",
+        displayName: "Warm pad",
+        engine: "polysynth",
+        scope: "phase_2_5",
+      },
+      {
+        id: "dark_pad",
+        displayName: "Dark pad",
+        engine: "polysynth",
+        scope: "phase_2_5",
+      },
     ],
   },
 ];
@@ -199,4 +330,25 @@ export function listInstruments(): readonly InstrumentDefinition[] {
 
 export function coreInstruments(): readonly InstrumentDefinition[] {
   return DEFINITIONS.filter((definition) => definition.scope === "core");
+}
+
+/** Presets of an instrument that are available in the core scope (spec 2.5). */
+export function corePresets(instrumentId: string): readonly InstrumentPreset[] {
+  return (
+    getInstrument(instrumentId)?.presets.filter(
+      (preset) => preset.scope === "core",
+    ) ?? []
+  );
+}
+
+/** Ids of the core presets, keyed by instrument. */
+export function corePresetIds(instrumentId: string): readonly string[] {
+  return corePresets(instrumentId).map((preset) => preset.id);
+}
+
+/** True when this instrument/preset pair may be used in the core scope. */
+export function isCorePreset(instrumentId: string, presetId: string): boolean {
+  const instrument = getInstrument(instrumentId);
+  if (!instrument || instrument.scope !== "core") return false;
+  return getPreset(instrumentId, presetId)?.scope === "core";
 }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { isCorePreset } from "@/lib/instruments/registry";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import {
   songSchema,
@@ -75,6 +76,12 @@ describe("sample song content (spec 2.4)", () => {
       0,
     );
     expect(bars).toBe(8);
+  });
+
+  it("uses only core-scope instruments and presets (spec 2.5)", () => {
+    for (const track of SAMPLE_SONG.tracks) {
+      expect(isCorePreset(track.instrumentId, track.presetId)).toBe(true);
+    }
   });
 
   it("is written in E minor", () => {
