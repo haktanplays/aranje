@@ -66,10 +66,23 @@ KISS'in uygulamadaki karşılıkları:
 Marka adı her kullanıcıya görünen yerde **"Aranjé"** (é ile) yazılır. Teknik her
 bağlamda — repo adı, `package.json` `name`, klasör/dosya adları, route'lar, env
 prefix'leri, localStorage anahtarları, CSS sınıfları — ASCII **`aranje`**
-kullanılır. **é karakteri koda asla girmez.**
+kullanılır. **Ham `é` karakteri teknik kaynağa girmez.**
 
-Bu kural bir birim testiyle zorlanır: `src/**` ve `public/**` altındaki hiçbir
-dosya adı ve hiçbir tanımlayıcı `é` içeremez.
+Kural kendi içinde çelişmemesi için tek bir kaçış noktası tanımlanır: kullanıcıya
+render edilen marka adı tek bir sabitten gelir ve `é` orada **unicode kaçışıyla**
+yazılır.
+
+```ts
+// lib/brand.ts — projede é'nin geçmesine izin verilen TEK yer
+export const BRAND_NAME = "Aranj\u00E9";
+```
+
+- UI'da marka adı her zaman `BRAND_NAME` üzerinden basılır; hiçbir bileşen
+  string'i elle yazmaz.
+- Lint/birim testi **yalnız ham `é` karakterini** yasaklar: `src/**` ve
+  `public/**` altındaki hiçbir dosya adı ve hiçbir kaynak dosya ham `é`
+  içeremez. `\u00E9` kaçışı serbesttir.
+- Sonuç: teknik kaynak tamamen ASCII kalır, kullanıcı yine **Aranjé** görür.
 
 ---
 
@@ -129,8 +142,11 @@ değildir. Fixture verisi sekiz track'e kadar açılır ve test edilir (§14.6).
 - **Cila maddeleri** (v1.2 §14 Faz 3'ten taşındı — §19 K-2):
   - Ret animasyonu ve `prefers-reduced-motion` desteği.
   - Son 10 karar geçmişi görünümü.
-  - Sample loading / error / offline durum ekranları.
-  - Lighthouse mobile performance hedefi (§14.5).
+  - Kapsamlı görsel cila.
+
+**Faz 2.5'te olmayanlar:** sample yükleme / ses hata durumları **Faz 1**'e,
+anlaşılır AI/patch hata durumları ve **Lighthouse mobile ≥ 80** hedefi
+**Faz 2 çıkış kapısı**na aittir (§14.4, §14.5).
 
 Faz 2.5'te kullanıcı track ekler veya çoğaltır; AI bu track'lere içerik
 yazabilir. **AI'ın kendi kararıyla yeni track oluşturması pilot sonrasıdır.**
@@ -383,8 +399,27 @@ verir).
 **CC BY-NC, belirsiz lisans veya yalnız "kişisel kullanım" izinli sesler ürüne
 alınmaz.**
 
-Her sample/paket için manifestte saklanır: kaynak URL, üretici, lisans,
-orijinal dosya adı, işlenmiş dosya adı, checksum.
+Her sample/paket için manifestte saklanır (§19 K-15):
+
+```ts
+type SampleManifestEntry = {
+  sourceUrl: string;
+  producer: string;
+  licenseSpdx: string;        // "CC0-1.0", "CC-BY-3.0" — SPDX kimliği
+  licenseTextPath: string;    // repodaki tam lisans metninin yolu
+  attribution: string;        // CC BY için gereken atıf satırı
+  originalFileName: string;
+  processedFileName: string;
+  checksum: string;           // sha256
+};
+```
+
+- `licenseSpdx` serbest metin değil, **SPDX kimliğidir**; izinli küme §7.3'ün
+  öncelik sırasıyla sınırlıdır ve bir birim testiyle zorlanır.
+- Build çıktısına manifestten **`THIRD_PARTY_NOTICES.md`** üretilir: her paket
+  için üretici, SPDX kimliği, atıf satırı ve lisans metninin yolu. Bu dosya
+  hem web dağıtımına hem APK'ya girer.
+- Lisans metni repoda tutulur; yalnız URL'e link verilmez.
 
 Başlangıç kaynak adayları:
 
@@ -681,7 +716,7 @@ Hâlâ geçmiyorsa kullanıcıya anlaşılır hata döner (hangi nota, hangi bar
 - Düzeltme turu **en fazla 2**'dir.
 - Prompt ve output token sınırları adapter seviyesinde zorunludur.
 - Aynı prompt + section hash'i için kısa süreli cache kullanılabilir (§12.2).
-- Kullanım ve tahmini maliyet loglanır (§12.3).
+- Kullanım ve tahmini maliyet loglanır (§12.4).
 
 ### §11.6 Müzikal kalite
 
@@ -731,7 +766,36 @@ tutulur (Vercel KV / Upstash Redis).
   fail-closed garantisi kâğıt üstünde kalır.
 - Bu, "backend DB yok" ilkesine bilinçli ve **dar** bir istisnadır.
 
-### §12.3 Davranış kuralları
+### §12.3 Atomik bütçe rezervasyonu (§19 K-12)
+
+"Önce kontrol et, sonra çağır, sonra maliyeti yaz" sırası eşzamanlı isteklerde
+bütçeyi aşar: iki istek aynı anda kontrolü geçip ikisi de sağlayıcıya gider.
+Fail-closed garantisi ancak rezervasyonla gerçek olur.
+
+- **Ön rezervasyon:** sağlayıcıya gitmeden önce, bu isteğin **en fazla üç model
+  çağrısının** (ilk üretim + en fazla 2 düzeltme turu, §11.4) tahmini **üst**
+  maliyeti atomik olarak rezerve edilir.
+- **Tek işlem:** günlük ve aylık bütçe **aynı transaction / Lua script'i**
+  içinde kontrol edilir ve artırılır. Kontrol ile artırma arasında başka bir
+  isteğin araya girebileceği bir pencere bırakılmaz.
+- **Rezervasyon sığmıyorsa istek reddedilir** ve sağlayıcıya hiç gidilmez.
+- **Uzlaştırma:** çağrı tamamlanınca rezervasyon **gerçek maliyetle
+  uzlaştırılır**; fark (fazla rezerve edilen kısım) bütçeye geri verilir,
+  gerçek maliyet metering'e yazılır.
+- **Belirsiz durum:** timeout, ağ hatası veya sonucu bilinmeyen her durumda
+  rezervasyon **hemen silinmez.** TTL'i dolana kadar rezerve kalır ve ancak
+  sağlayıcı tarafındaki gerçek kullanım doğrulanabildiğinde uzlaştırılır.
+  Şüphede bütçe aleyhine değil, **lehine** karar verilir.
+- **Idempotency:** her istek bir **idempotency key** taşır. Aynı key ile gelen
+  retry **ikinci kez rezervasyon yapmaz**; var olan rezervasyonu ve varsa
+  sonucunu kullanır.
+- **KV erişilemiyorsa AI çağrısı yapılmaz.** Sayaç deposuna ulaşılamaması
+  "limit yok" anlamına gelmez; istek fail-closed reddedilir.
+
+Kullanıcı kotası (`ARANJE_FREE_PATCHES_PER_USER_PER_DAY`) ve "kullanıcı başına
+aynı anda tek istek" kilidi de aynı atomik işlemin parçasıdır.
+
+### §12.4 Davranış kuralları
 
 - Günlük ya da aylık global tavan dolduğunda sistem **fail closed** davranır:
   yeni AI isteği **sağlayıcıya hiç gitmeden** reddedilir, anlaşılır kota
@@ -747,7 +811,7 @@ tutulur (Vercel KV / Upstash Redis).
 - Bütçe, kota ve escalation için **backend kill-switch** bulunur.
 - İnternet yoksa AI düğmesi bunu açıkça söyler; editör ve playback çalışır.
 
-### §12.4 Monetizasyon yolu (pilotta uygulanmaz, yön olarak kayıtlı)
+### §12.5 Monetizasyon yolu (pilotta uygulanmaz, yön olarak kayıtlı)
 
 - Kapalı pilot ücretsizdir; ödeme entegrasyonu ürün kanıtını geciktirmez.
 - İlk ticari model **Free + Pro**; reklam kullanılmaz. Temel akort, tel
@@ -931,6 +995,8 @@ listeleniyor; `é` lint testi yeşil.
 - Play/stop, bar highlight, section loop.
 - Section timeline, mini şeritler (§13.5), bottom sheet'ler (§13.1).
 - Track ayarı: volume/mute + akort preset seçimi.
+- **Sample yükleme / ses hata / offline durum ekranları** (yükleniyor, sample
+  indirilemedi, ses bağlamı başlamadı, çevrimdışı).
 - Debug metreleri ve sayaçları (§8.4).
 
 **KABUL:** telefonda örnek şarkı 4 enstrümanla baştan sona duyuluyor;
@@ -942,7 +1008,9 @@ listeleniyor; `é` lint testi yeşil.
 - `/api/copilot` çalışıyor; §11 akışı uçtan uca; SSE durum olayları gerçek.
 - 2 stil kartı aktif.
 - Küçük müzikal eval seti; `ARANJE_MODEL_ESCALATION` kararı burada verilir.
-- Rate limit, kota, bütçe tavanı ve metering çalışıyor (§12).
+- Rate limit, kota, atomik bütçe rezervasyonu ve metering çalışıyor (§12).
+- **Anlaşılır AI/patch hata durumları:** validator hatası (hangi nota, hangi
+  bar), kota dolu, sağlayıcı hatası, zaman aşımı, çevrimdışı.
 
 **FAZ 2 ÇIKIŞ KAPISI — bunlar sağlanmadan Faz 2.5'e BAŞLANMAZ:**
 
@@ -954,6 +1022,11 @@ listeleniyor; `é` lint testi yeşil.
 - [ ] §14.6'nın Faz 1 performans testi yeşil.
 - [ ] Build, tsc, test ve lint yeşil.
 - [ ] Metering çalışıyor; istek başına token ve tahmini maliyet loglanıyor.
+- [ ] Atomik bütçe rezervasyonu (§12.3) çalışıyor; eşzamanlı istek testinde
+      tavan aşılmıyor, KV erişilemezken istek reddediliyor.
+- [ ] **Lighthouse mobile performance ≥ 80.**
+- [ ] §18'deki maliyet tablosu gerçek serializer token sayıları ve cache
+      istatistikleriyle dolduruldu.
 
 ### §14.6 Ölçülebilir performans protokolü
 
@@ -972,8 +1045,8 @@ listeleniyor; `é` lint testi yeşil.
 
 ### §14.7 Faz 2.5 — pilot genişletmesi
 
-§3'teki kapsam (cila maddeleri dahil). Lighthouse mobile performance hedefi
-**≥ 80** burada ölçülür.
+§3'teki kapsam (cila maddeleri dahil). Lighthouse hedefi burada **değil**,
+Faz 2 çıkış kapısındadır (§14.5).
 
 ### §14.8 Faz 3 — Android pilotu
 
@@ -1031,8 +1104,9 @@ sorumluluğundadır.** Claude Code altyapıyı hazırlar, ölçümü sahip yür�
   ≈ 8 MB hedefi (§7.2).
 - **§17.4 Model JSON disiplini** → structured output + zod + en fazla 2
   düzeltme turu (§11.4–11.5).
-- **§17.5 Prompt cache sırasının bozulması** maliyeti 3–4 katına çıkarır.
-  §11.5'teki prefix sırası bir birim testiyle korunur.
+- **§17.5 Prompt cache sırasının bozulması** girdi maliyetini belirgin biçimde
+  artırır; etkisi Faz 2 metering'inde ölçülür (§18). §11.5'teki prefix sırası
+  bir birim testiyle korunur.
 - **§17.6 iOS sessiz mod anahtarı** sesi kesebilir → ilk çalmada "sesi açık
   tuttuğundan emin ol" ipucu gösterilir.
 - **§17.7 Aylık bütçe** günlük tavan tam dolarsa 10 günde biter (§12.1).
@@ -1040,20 +1114,38 @@ sorumluluğundadır.** Claude Code altyapıyı hazırlar, ölçümü sahip yür�
 
 ---
 
-## §18 Maliyet referansı (bilgi amaçlı, kod fiyat konfigünden okur)
+## §18 Maliyet referansı — Faz 2'de ölçümle doldurulur (§19 K-14)
 
-Fiyatlar §12.3 gereği sürümlenebilir backend konfigürasyonundan okunur; buradaki
-tablo yalnız büyüklük hissi içindir ve **kaynak değildir.**
+Fiyatlar §12.4 gereği sürümlenebilir backend konfigürasyonundan okunur; bu bölüm
+**kaynak değildir.**
 
-Kompakt bağlam (§11.5) ve cache isabeti ile bir patch isteği kabaca:
+**Bu spec tahmini rakam vermez.** Maliyet değerleri, Faz 2'de gerçek serializer
+token sayıları ve gerçek cache istatistikleri ölçüldükten sonra doldurulur.
+**O tarihe kadar bütçe kapasitesi için patch/gün veya kullanıcı/gün tahmini
+verilmez** — ölçülmemiş rakam plan yapmak için kullanılamaz.
 
-| Senaryo | Yaklaşık |
-|---|---|
-| Cache isabetli tek turlu istek | ~$0.02 |
-| 2 düzeltme turlu worst case | ~$0.06 |
+Ölçüm yöntemi (Faz 2'de uygulanacak):
 
-`ARANJE_DAILY_AI_BUDGET_USD=2` bu aralıkta günde kabaca 30–100 patch, kullanıcı
-başına 3 patch kotasıyla 10–33 kullanıcı demektir.
+```txt
+istek maliyeti =
+    (taze girdi token × girdi fiyatı)
+  + (cache okuma token × cache okuma fiyatı)
+  + (cache yazma token × cache yazma fiyatı)
+  + (çıktı token × çıktı fiyatı)
+
+patch maliyeti  = istek maliyeti × gerçekleşen tur sayısı (1..3)
+kabul başına    = toplam patch maliyeti / kabul edilen patch sayısı
+günlük kapasite = ARANJE_DAILY_AI_BUDGET_USD / ölçülen ortalama patch maliyeti
+```
+
+Ölçüm girdileri metering'den gelir (§12.4): istek başına gerçek
+input / output / cache_read / cache_write token sayıları ve tur sayısı.
+`ARANJE_MODEL_DEFAULT` için ön rezervasyon üst sınırı (§12.3) **ölçüm
+tamamlanana kadar en kötü durum varsayımıyla** hesaplanır: 3 tur, cache isabeti
+yok, adapter'daki maksimum çıktı token sınırı.
+
+Asıl karar metriği istek başına maliyet değil, **kabul edilen patch başına
+maliyettir** (§11.2/7).
 
 ---
 
@@ -1062,16 +1154,20 @@ başına 3 patch kotasıyla 10–33 kullanıcı demektir.
 | # | Karar | Kaynak |
 |---|---|---|
 | **K-1** | Model stratejisi: müzikal patch üretimi **doğrudan `ARANJE_MODEL_DEFAULT`** ile. "Önce ucuz model" yaklaşımı kaldırıldı; `ARANJE_ENABLE_CHEAP_ROUTING=false` eklendi. v1.5 §7.4'teki "ucuz model önce denenir" ifadesi §11.2 ile değiştirildi. | Haktan, 19.08.2026 |
-| **K-2** | v1.2 §14 Faz 3'ün cila maddeleri **Faz 2.5**'e taşındı. | Haktan, 19.08.2026 |
-| **K-3** | `stringCollision` hard error'ı **track bazında** kapsandı. Aksi hâlde iki rhythm gitar sahte hata üretirdi. | Claude Code önerisi |
-| **K-4** | Greedy pozisyon kuralının **tel değişimini minimize etmediği** açıkça kayda geçti; v1.2 §6.2'nin maliyet listesi pilot sonrasına taşındı. | Claude Code önerisi |
+| **K-2** | v1.2 §14 Faz 3'ün maddeleri fazlara **ayrıştırıldı**: sample yükleme/ses hata durumları → **Faz 1**; anlaşılır AI/patch hata durumları ve Lighthouse mobile ≥ 80 → **Faz 2 çıkış kapısı**; ret animasyonu, son 10 karar ve kapsamlı görsel cila → **Faz 2.5**. | Haktan, 19.08.2026 |
+| **K-3** | `stringCollision` hard error'ı **track bazında** kapsandı. Aksi hâlde iki rhythm gitar sahte hata üretirdi. | Claude Code önerisi — **Haktan onayladı 19.08.2026** |
+| **K-4** | Greedy pozisyon kuralının **tel değişimini minimize etmediği** açıkça kayda geçti; v1.2 §6.2'nin maliyet listesi pilot sonrasına taşındı. | Claude Code önerisi — **Haktan onayladı 19.08.2026** |
 | **K-5** | Pilotta **yalnız Anthropic adapter'ı** implemente edilir; sözleşme sağlayıcıdan bağımsız kalır. v1.2 §11.4–11.5'teki OpenAI linkleri emsaldir. | Haktan, 19.08.2026 |
-| **K-6** | tonejs-instruments **tek lisans altında sayılmaz**; dosya bazında provenance doğrulaması zorunlu. | Claude Code önerisi |
+| **K-6** | tonejs-instruments **tek lisans altında sayılmaz**; dosya bazında provenance doğrulaması zorunlu. | Claude Code önerisi — **Haktan onayladı 19.08.2026** |
 | **K-7** | Kota/bütçe/rate-limit sayaçları **KV store**'da tutulur; "backend DB yok" ilkesine dar istisna. | Haktan, 19.08.2026 |
 | **K-8** | Görsel kimlik prototipin sıcak paletinden v1.2 §5.1'in nötr **Dark Workshop** paletine geçer. | v1.2 §5.1 |
-| **K-9** | Statik export + API aynı build'de olamaz → **iki build hedefi** ve `NEXT_PUBLIC_ARANJE_API_BASE`. | Teknik zorunluluk |
+| **K-9** | Statik export + API aynı build'de olamaz → **iki build hedefi** ve `NEXT_PUBLIC_ARANJE_API_BASE`. | Teknik zorunluluk — **Haktan onayladı 19.08.2026** |
 | **K-10** | Faz 0 kapısı, v1.2 §17 ve v1.5 §8 checklist'lerinin **birleşimidir**; çakışan rakamlarda v1.5 değeri geçerlidir. | v1.5 §0 |
 | **K-11** | `ARANJE_MODEL_CHEAP` tarihli ID olarak korunur; **cheap routing açılmadan önce Models API ile doğrulanır** (§11.2/4). | Haktan + Claude Code notu |
+| **K-12** | Bütçe tavanı **atomik rezervasyonla** uygulanır: ön rezervasyon, tek transaction/Lua'da günlük+aylık kontrol, gerçek maliyetle uzlaştırma, belirsizlikte rezervasyonu bekletme, idempotency key, KV erişilemezse çağrı yok. Fail-closed ancak böyle gerçektir. | Haktan, 19.08.2026 |
+| **K-13** | Marka adı çelişkisi çözüldü: `lib/brand.ts` içinde `BRAND_NAME = "Aranj\u00E9"`. Lint yalnız **ham** `é`'yi yasaklar; kullanıcı yine Aranjé görür. | Haktan, 19.08.2026 |
+| **K-14** | §18'deki tahmini maliyet rakamları **kaldırıldı**; ölçüme dayanmıyorlardı. Yöntem/formül kaldı, değerler Faz 2'de gerçek token ve cache istatistikleriyle doldurulacak. O tarihe kadar patch/gün kapasite tahmini verilmez. | Haktan, 19.08.2026 |
+| **K-15** | Sample manifestine `licenseSpdx`, `licenseTextPath` ve `attribution` alanları eklendi; build çıktısına `THIRD_PARTY_NOTICES.md` üretilir. | Haktan tavsiyesi, 19.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
@@ -1128,7 +1224,7 @@ kullanılmıştır.
 - [x] §7.1 env varsayılanları ve §7.2 adapter işlendi. → §11.2, §11.3
 - [x] Telefon → backend → model → validated patch mimarisi işlendi. → §11.4, §14.2
 - [x] §7.4 global bütçe tavanı, kullanıcı kotası, rate limit, kill-switch ve fail-closed davranışı işlendi. → §12
-- [x] Free + Pro abonelik ve kota temelli monetizasyon yolu işlendi. → §12.4
+- [x] Free + Pro abonelik ve kota temelli monetizasyon yolu işlendi. → §12.5
 - [x] Audio import pilot sonrası deney olarak yazıldı. → §4
 
 **Faz kabulü**
