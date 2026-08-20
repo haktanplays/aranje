@@ -12,6 +12,7 @@ import {
 } from "@/lib/audio/expression-plan";
 import { chainIdFor, desiredGlideSeconds, glideFor } from "@/lib/audio/legato-chain";
 import { buildSongPlan } from "@/lib/audio/schedule";
+import { validateArticulationContext } from "@/lib/validators";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import {
   REST,
@@ -996,5 +997,53 @@ describe("the notes it plans are the notes that would have been played", () => {
 
     expect(expression.length).toBe(scheduled.length);
     expect(expression.map(key).sort()).toEqual(scheduled.map(key).sort());
+  });
+});
+
+describe("a note can be refused and still be a chain's source (spec 8.5, K-26)", () => {
+  /**
+   * `A3` then a pull-off to `B3` (wrong direction — refused), then a real
+   * hammer-on from that B3. The middle note is both the refused target and
+   * the source of the chain that follows.
+   */
+  const both = () =>
+    song([bar(slots([A3(), B3("pull_off"), note("C#4", 1, 16, "hammer_on")]))]);
+
+  it("keeps both facts, rather than letting the chain hide the refusal", () => {
+    const plan = buildExpressionPlan(both());
+    const middle = plan.notes.find((entry) => entry.pitch === "B3");
+
+    // It is played: it is the note the hammer-on is hammered off.
+    expect(middle?.chainRole).toBe("source");
+    // And its own pull-off was refused, which nothing may swallow.
+    expect(middle?.fallbackReason).toBe("wrong_direction");
+  });
+
+  it("counts it, so a coverage report cannot read zero", () => {
+    expect(buildExpressionPlan(both()).fallbacks).toBe(1);
+  });
+
+  it("agrees with the validator, note for note", () => {
+    const fixture = both();
+    const refused = buildExpressionPlan(fixture)
+      .notes.filter((entry) => entry.fallbackReason !== undefined)
+      .map((entry) => `${entry.barKey}:${entry.slotIndex}`)
+      .sort();
+    const warned = validateArticulationContext(fixture)
+      .map((issue) => `${issue.sectionId}:${issue.barIndex}:${issue.slotIndex}`)
+      .sort();
+
+    expect(refused).toHaveLength(1);
+    expect(warned).toHaveLength(1);
+    // Same note: section "s1", bar 0, slot 1.
+    expect(refused[0]).toBe("s1:0:1");
+    expect(warned[0]).toBe("s1:0:1");
+  });
+
+  it("still plays the chain it is the source of", () => {
+    const plan = buildExpressionPlan(both());
+    expect(plan.chains).toHaveLength(1);
+    expect(plan.chains[0]?.sourcePitch).toBe("B3");
+    expect(plan.chains[0]?.transitions[0]?.kind).toBe("hammer_on");
   });
 });

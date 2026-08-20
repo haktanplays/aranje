@@ -163,11 +163,14 @@ function buildFretted(
   const bars: FrettedBar[] = [];
 
   // Placement happens once, over the whole track, before any span is built.
-  const { onsets, bars: placementBars } = trackPlacementInput(song, track.id);
+  const { onsets, bars: placementBars, slurs } = trackPlacementInput(song, track.id);
   const placement = placeTrack({
     fretboard,
     onsets,
     bars: placementBars,
+    // Slurred pairs are placed together rather than checked afterwards
+    // (spec 8.5, 9.2, K-27).
+    slurs,
     // A family with no threshold still needs a number to compare against;
     // the guitar's is the safe one to fall back on.
     maxShift: maxShiftFor(track.instrumentId) ?? maxShiftFor("electric_guitar") ?? 7,

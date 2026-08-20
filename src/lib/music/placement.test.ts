@@ -93,14 +93,14 @@ function largeShifts(path: readonly number[], maxShift: number): number {
 describe("the cost tuple", () => {
   it("compares left to right, and never as a weighted sum", () => {
     // One extra big jump loses, however much better everything else is.
-    const oneJump = [1, 0, 0, 0, 0, 0, 0, "a"] as const;
-    const noJump = [0, 99, 99, 99, 99, 99, 99, "z"] as const;
+    const oneJump = [1, 0, 0, 0, 0, 0, 0, 0, "a"] as const;
+    const noJump = [0, 0, 99, 99, 99, 99, 99, 99, "z"] as const;
     expect(compareCost(noJump, oneJump)).toBeLessThan(0);
   });
 
   it("falls back on the canonical signature only at a total tie", () => {
-    const a = [0, 0, 0, 0, 0, 0, 0, "a"] as const;
-    const b = [0, 0, 0, 0, 0, 0, 0, "b"] as const;
+    const a = [0, 0, 0, 0, 0, 0, 0, 0, "a"] as const;
+    const b = [0, 0, 0, 0, 0, 0, 0, 0, "b"] as const;
     expect(compareCost(a, b)).toBeLessThan(0);
     expect(compareCost(a, a)).toBe(0);
   });

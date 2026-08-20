@@ -633,18 +633,39 @@ export function buildExpressionPlan(
       const member = built.membership.get(index);
       const refusal = built.refusals.get(index);
 
-      if (member) {
-        notes.push({
-          ...note,
-          // A source is struck by its chain; a target is not struck at all.
-          expressive: true,
-          chainId: member.chainId,
-          chainRole: member.role,
-        });
-        return;
-      }
-
-      notes.push(refusal ? { ...note, fallbackReason: refusal } : note);
+      /*
+       * A note can be two things at once, and phase 2F.2 only recorded one of
+       * them (spec 8.5, K-26).
+       *
+       * `7p5 h7` is the case: the middle note's own pull-off can be refused —
+       * nothing to pull off from, or the placement engine put the two on
+       * different strings — while it is still a perfectly good *source* for
+       * the hammer-on that follows. Membership won, `fallbackReason` was
+       * dropped, and the planner then disagreed with the validator about a
+       * note the validator was warning about.
+       *
+       * The audio was never wrong: such a note is struck as a chain source,
+       * which is exactly what falling back to an ordinary onset sounds like.
+       * What was wrong is that nothing downstream could see it had happened,
+       * so the coverage report and the render diagnostics both counted zero
+       * fallbacks on a song that had one.
+       *
+       * The two facts are independent, so they are recorded independently:
+       * the chain says what will be *played*, the refusal says what was
+       * *asked for and not given*.
+       */
+      notes.push({
+        ...note,
+        ...(member
+          ? {
+              // A source is struck by its chain; a target is not struck at all.
+              expressive: true,
+              chainId: member.chainId,
+              chainRole: member.role,
+            }
+          : {}),
+        ...(refusal ? { fallbackReason: refusal } : {}),
+      });
     });
   }
 
