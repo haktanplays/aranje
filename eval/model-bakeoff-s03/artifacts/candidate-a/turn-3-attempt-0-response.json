@@ -1,0 +1,110 @@
+```json
+{
+  "operation": "arrange_track",
+  "sectionId": "sec-2",
+  "targetTrackId": "rhythm_guitar",
+  "bars": [
+    {
+      "barIndex": 0,
+      "slots": [
+        { "notes": [ { "pitch": "E2", "velocity": 122, "articulation": "accent" }, { "pitch": "B2", "velocity": 116, "articulation": "accent" } ] },
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 84, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 88, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 82, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 86, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 120, "articulation": "accent" }, { "pitch": "B2", "velocity": 112, "articulation": "accent" } ] },
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 84, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 88, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "F2", "velocity": 94, "articulation": "palm_mute" } ] }
+      ]
+    },
+    {
+      "barIndex": 1,
+      "slots": [
+        { "notes": [ { "pitch": "E2", "velocity": 121, "articulation": "accent" }, { "pitch": "B2", "velocity": 114, "articulation": "accent" } ] },
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 84, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 88, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 82, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 86, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 119, "articulation": "accent" }, { "pitch": "B2", "velocity": 111, "articulation": "accent" } ] },
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 90, "articulation": "sustain" } ] },
+        "-",
+        { "notes": [ { "pitch": "G2", "velocity": 96, "articulation": "slide" } ] },
+        null
+      ]
+    },
+    {
+      "barIndex": 2,
+      "slots": [
+        { "notes": [ { "pitch": "E2", "velocity": 123, "articulation": "accent" }, { "pitch": "B2", "velocity": 116, "articulation": "accent" } ] },
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 85, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 89, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 83, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 87, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 121, "articulation": "accent" }, { "pitch": "B2", "velocity": 113, "articulation": "accent" } ] },
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 86, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "F2", "velocity": 92, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "F2", "velocity": 104, "articulation": "accent" } ] }
+      ]
+    },
+    {
+      "barIndex": 3,
+      "slots": [
+        { "notes": [ { "pitch": "E2", "velocity": 125, "articulation": "accent" }, { "pitch": "B2", "velocity": 118, "articulation": "accent" } ] },
+        "-",
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 84, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 80, "articulation": "palm_mute" } ] },
+        null,
+        null,
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 86, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 82, "articulation": "palm_mute" } ] },
+        null,
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 88, "articulation": "palm_mute" } ] },
+        null,
+        null,
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 122, "articulation": "accent" }, { "pitch": "B2", "velocity": 114, "articulation": "accent" } ] },
+        "-",
+        "-",
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 84, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 78, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 82, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 86, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 90, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 94, "articulation": "palm_mute" } ] },
+        { "notes": [ { "pitch": "E2", "velocity": 98, "articulation": "palm_mute" } ] },
+        null,
+        { "notes": [ { "pitch": "E2", "velocity": 124, "articulation": "accent" }, { "pitch": "B2", "velocity": 116, "articulation": "accent" } ] }
+      ]
+    }
+  ],
+  "explanation": "E tonik pedali korunuyor; 1. vurusta tam slam, 3. vurus bilerek 16'lik geciktirilerek daha sert oturuyor. Muted ikili kume her barda tekrarlanip hucreyi sikistiriyor, F2 kromatik itisle bar sonlari baglaniyor. 2. barda tek ve genis bir E2-G2 kaymasi var, merkezi numara degil. 4. bar 1/32 gridde ayni hucreyi seyreltip son vurusta kisa bir muted burst ve slam ile bolumu kapatiyor; 4/4 hissi bozulmuyor."
+}
+```
