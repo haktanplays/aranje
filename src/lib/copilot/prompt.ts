@@ -37,7 +37,7 @@ import { MODEL_PATCH_JSON_SCHEMA } from "@/lib/copilot/output-schema";
 import type { ArrangeSkill, CopilotRequest } from "@/lib/copilot/contract";
 import { resolveTarget } from "@/lib/copilot/arrange";
 import { coreIntervals, parseKey } from "@/lib/music/tonality";
-import type { Section, Song, Track } from "@/lib/song/schema";
+import type { Song } from "@/lib/song/schema";
 
 const FENCE_OPEN = "<aranje:data>";
 const FENCE_CLOSE = "</aranje:data>";
