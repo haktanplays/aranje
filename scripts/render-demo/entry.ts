@@ -13,9 +13,11 @@ import {
   BEND_DEMOS,
   EXPRESSION_DEMOS,
   LEGATO_DEMOS,
+  SLIDE_DEMOS,
   type ExpressionDemo,
 } from "@/lib/audio/expression-demos";
 import { bendStages, buildExpressionPlan } from "@/lib/audio/expression-plan";
+import { desiredGlideSeconds } from "@/lib/audio/legato-chain";
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { drumTrackIds, melodicTrackIds } from "@/lib/audio/tracks";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
@@ -257,6 +259,7 @@ declare global {
     aranjeExpressionDemoCount: number;
     aranjeLegatoDemoCount: number;
     aranjeBendDemoCount: number;
+    aranjeSlideDemoCount: number;
     aranjeTrackIds: string[];
   }
 }
@@ -398,6 +401,50 @@ export async function renderExpressionDemo(index: number, pack: DemoPack = "expr
         ? bendCurve[bendCurve.length - 1]?.timeSeconds ?? null
         : null;
 
+  /**
+   * What each slide actually did, in the plan the render used.
+   *
+   * A slide is the one articulation whose *timing* is the claim being made, so
+   * both ends of the travel are reported: where the hand set off and where it
+   * arrived. The arrival is checked against the target note's own written
+   * start, because that is what phase 2F.2 changed (spec 8.5, K-23).
+   */
+  const slides = expression.chains.flatMap((chain) =>
+    chain.transitions
+      .filter((entry) => entry.kind === "slide")
+      .map((entry) => {
+        const target = expression.notes.find((note) => note.id === entry.noteId);
+        const semitones = entry.intervalCents / 100;
+        return {
+          noteId: entry.noteId,
+          fromPitch: entry.fromPitch,
+          toPitch: entry.toPitch,
+          intervalSemitones: semitones,
+          desiredGlideSeconds: desiredGlideSeconds(semitones),
+          actualGlideSeconds: entry.transitionSeconds,
+          startsAtSeconds: chain.startSeconds + entry.atSeconds,
+          arrivesAtSeconds: chain.startSeconds + entry.arrivesAtSeconds,
+          targetWrittenStartSeconds: target?.startSeconds ?? null,
+          arrivesOnTheWrittenNote:
+            target !== undefined &&
+            Math.abs(
+              chain.startSeconds + entry.arrivesAtSeconds - target.startSeconds,
+            ) < 1e-6,
+          automationPoints: entry.points.length,
+          centsAtArrival: entry.points[entry.points.length - 1]?.cents ?? null,
+          /** A target is never struck again; a restrike would show here. */
+          targetChainRole: target?.chainRole ?? null,
+        };
+      }),
+  );
+
+  /** The old shape, for the legacy comparison render, which builds no chain. */
+  const legacySlideCurve =
+    expression.chains.length > 0
+      ? null
+      : (expression.notes.find((note) => note.articulation === "slide")
+          ?.pitchAutomation ?? null);
+
   const steady = expression.notes.filter(
     (note) =>
       note.articulation === undefined &&
@@ -440,18 +487,22 @@ export async function renderExpressionDemo(index: number, pack: DemoPack = "expr
     bendPeakCents: bendPeak,
     bendDurationSeconds: bendNote?.durationSeconds ?? null,
     steadyNoteAutomationPoints: steady.map((note) => note.pitchAutomation.length),
+    slides,
+    legacySlideCurve,
     diagnostics,
   };
 }
 
-export type DemoPack = "expression" | "legato" | "bend";
+export type DemoPack = "expression" | "legato" | "bend" | "slide";
 
 function demoPack(pack: DemoPack): readonly ExpressionDemo[] {
   if (pack === "legato") return LEGATO_DEMOS;
   if (pack === "bend") return BEND_DEMOS;
+  if (pack === "slide") return SLIDE_DEMOS;
   return EXPRESSION_DEMOS;
 }
 
 window.aranjeRenderExpressionDemo = renderExpressionDemo;
 window.aranjeLegatoDemoCount = LEGATO_DEMOS.length;
 window.aranjeBendDemoCount = BEND_DEMOS.length;
+window.aranjeSlideDemoCount = SLIDE_DEMOS.length;

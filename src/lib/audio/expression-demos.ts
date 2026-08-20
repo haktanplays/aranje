@@ -25,6 +25,7 @@ if (!GUITAR) throw new Error("demo song has no guitar");
 
 const TRACK_ID = "gtr";
 const TIE = "-" as MelodicSlot;
+const REST = null as unknown as MelodicSlot;
 
 function event(
   pitch: string,
@@ -146,6 +147,100 @@ function riff(): Bar[] {
   ];
 }
 
+/**
+ * Two notes on one string an interval apart, the second sliding into the first.
+ *
+ * The source is held over four slots so the hand has somewhere to travel: a
+ * slide arrives at the target's written time, so the travel happens before it
+ * (spec 8.5, K-23).
+ */
+function slideCase(
+  fromPitch: string,
+  fromFret: number,
+  toPitch: string,
+  toFret: number,
+  articulation?: Articulation,
+): Bar {
+  return bar([
+    { notes: [event(fromPitch, 1, fromFret)] },
+    TIE, TIE, TIE,
+    { notes: [event(toPitch, 1, toFret, articulation)] },
+    TIE, TIE, TIE,
+  ]);
+}
+
+/**
+ * Two notes so close together there is no time to hear a hand move.
+ *
+ * Sixteenths at 200bpm are 75ms apart, and 20ms of that belongs to the source
+ * note, so 55ms of travel is left — well under the audible floor.
+ */
+function slideTooFast(): Bar {
+  return {
+    timeSignature: [4, 4],
+    resolution: 16,
+    slots: {
+      [TRACK_ID]: [
+        { notes: [event("G3", 1, 10)] },
+        { notes: [event("B3", 1, 14, "slide")] },
+        ...Array.from({ length: 14 }, () => TIE),
+      ],
+    },
+  };
+}
+
+/** A slide whose source is in the section before it (spec 8.5: a line alone
+ * ends nothing). */
+function slideAcrossSections(): [Bar, Bar] {
+  return [
+    bar([REST, REST, REST, REST, { notes: [event("G3", 1, 10)] }, TIE, TIE, TIE]),
+    bar([{ notes: [event("B3", 1, 14, "slide")] }, TIE, TIE, TIE, TIE, TIE, TIE, TIE]),
+  ];
+}
+
+/** Up and straight back down: one chain, two slides, one struck note. */
+function slideRun(): Bar {
+  return bar([
+    { notes: [event("G3", 1, 10)] },
+    TIE, TIE,
+    { notes: [event("B3", 1, 14, "slide")] },
+    TIE, TIE,
+    { notes: [event("G3", 1, 10, "slide")] },
+    TIE,
+  ]);
+}
+
+/** One string slides, the other is held: the isolation case for a slide. */
+function chordWithSlide(): Bar {
+  return bar([
+    { notes: [event("E3", 0, 12), event("G3", 1, 10)] },
+    TIE, TIE, TIE,
+    { notes: [event("B3", 1, 14, "slide")] },
+    TIE, TIE, TIE,
+  ]);
+}
+
+/** The expressive riff with a slide written into it. */
+function slideRiff(): Bar[] {
+  return [
+    bar([
+      { notes: [event("E3", 0, 12, "accent")] },
+      TIE,
+      { notes: [event("E3", 0, 12, "palm_mute")] },
+      { notes: [event("G3", 1, 10)] },
+      TIE, TIE,
+      { notes: [event("B3", 1, 14, "slide")] },
+      TIE,
+    ]),
+    bar([
+      { notes: [event("A3", 1, 12, "bend_full")] },
+      TIE, TIE, TIE,
+      { notes: [event("A3", 1, 12, "vibrato")] },
+      TIE, TIE, TIE,
+    ]),
+  ];
+}
+
 function demoSong(bars: readonly Bar[], title: string): Song {
   const parsed = songSchema.safeParse({
     version: 2,
@@ -154,6 +249,37 @@ function demoSong(bars: readonly Bar[], title: string): Song {
     key: "E minor",
     tracks: [GUITAR],
     sections: [{ id: "demo", name: "Demo", status: "fixed", bars: [...bars] }],
+  });
+  if (!parsed.success) throw new Error(`${title} does not parse`);
+  return parsed.data;
+}
+
+/** The same song at a tempo nobody can slide at. */
+function fastDemoSong(bars: readonly Bar[], title: string): Song {
+  const parsed = songSchema.safeParse({
+    version: 2,
+    title,
+    bpm: 200,
+    key: "E minor",
+    tracks: [GUITAR],
+    sections: [{ id: "demo", name: "Demo", status: "fixed", bars: [...bars] }],
+  });
+  if (!parsed.success) throw new Error(`${title} does not parse`);
+  return parsed.data;
+}
+
+/** The same thing in two sections, so a section line really is crossed. */
+function twoSectionSong(bars: readonly [Bar, Bar], title: string): Song {
+  const parsed = songSchema.safeParse({
+    version: 2,
+    title,
+    bpm: 96,
+    key: "E minor",
+    tracks: [GUITAR],
+    sections: [
+      { id: "one", name: "Bir", status: "fixed", bars: [bars[0]] },
+      { id: "two", name: "Iki", status: "fixed", bars: [bars[1]] },
+    ],
   });
   if (!parsed.success) throw new Error(`${title} does not parse`);
   return parsed.data;
@@ -222,4 +348,27 @@ export const BEND_DEMOS: readonly ExpressionDemo[] = [
   { id: "08-bend-full-long", pairsWith: "05-bend-full-tight", label: "Tam bend, uzun sustain", song: demoSong([held("bend_full"), held()], "Bend full long") },
   { id: "09-chord-one-bend-one-steady", pairsWith: null, label: "Akor: biri bend, biri düz", song: demoSong([chordWithBend()], "Chord bend") },
   { id: "10-expressive-riff-bend-v2", pairsWith: null, label: "Bend v2 ile expressive riff", song: demoSong(riff(), "Expressive riff bend v2") },
+];
+
+/**
+ * Phase 2F.2: the slide, before and after (spec 8.5, K-23).
+ *
+ * The question these are here to answer is one a measurement cannot: in the
+ * old renders the hand movement was hidden under the target's own attack and
+ * the pair came out sounding like an ordinary restrike. What is being listened
+ * for is a pitch that is already moving *before* the target's written time and
+ * a target that is not struck again when it arrives.
+ */
+export const SLIDE_DEMOS: readonly ExpressionDemo[] = [
+  { id: "01-normal-two-notes", pairsWith: null, label: "Normal iki nota", song: demoSong([slideCase("G3", 10, "B3", 14)], "Normal iki nota") },
+  { id: "02-slide-old-80ms", pairsWith: "03-slide-up-4st-continuous", label: "Slide (eski 2F, 80 ms)", song: demoSong([slideCase("G3", 10, "B3", 14, "slide")], "Slide old"), options: { comparison: { legacySlide: true } } },
+  { id: "03-slide-up-4st-continuous", pairsWith: "01-normal-two-notes", label: "Slide yukarı 4 yarım ton", song: demoSong([slideCase("G3", 10, "B3", 14, "slide")], "Slide up 4st") },
+  { id: "04-slide-down-4st-continuous", pairsWith: "03-slide-up-4st-continuous", label: "Slide aşağı 4 yarım ton", song: demoSong([slideCase("B3", 14, "G3", 10, "slide")], "Slide down 4st") },
+  { id: "05-slide-up-7st-continuous", pairsWith: "03-slide-up-4st-continuous", label: "Slide yukarı 7 yarım ton", song: demoSong([slideCase("A3", 12, "E4", 19, "slide")], "Slide up 7st") },
+  { id: "06-slide-down-7st-continuous", pairsWith: "05-slide-up-7st-continuous", label: "Slide aşağı 7 yarım ton", song: demoSong([slideCase("E4", 19, "A3", 12, "slide")], "Slide down 7st") },
+  { id: "07-slide-fast-invalid-fallback", pairsWith: "03-slide-up-4st-continuous", label: "Çok hızlı pasaj: normale düşer", song: fastDemoSong([slideTooFast()], "Slide too fast") },
+  { id: "08-slide-section-boundary", pairsWith: "03-slide-up-4st-continuous", label: "Section sınırını geçen slide", song: twoSectionSong(slideAcrossSections(), "Slide across sections") },
+  { id: "09-slide-chain-up-down", pairsWith: "01-normal-two-notes", label: "Zincir: yukarı ve geri aşağı", song: demoSong([slideRun()], "Slide chain") },
+  { id: "10-chord-one-slide-one-steady", pairsWith: null, label: "Akor: biri slide, biri sabit", song: demoSong([chordWithSlide()], "Chord slide") },
+  { id: "11-expressive-riff-slide-v2", pairsWith: null, label: "Slide v2 ile expressive riff", song: demoSong(slideRiff(), "Expressive riff slide v2") },
 ];
