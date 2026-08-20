@@ -153,6 +153,20 @@ describe("bends", () => {
     expect(stages.reachedAtSeconds).toBeLessThan(0.4);
   });
 
+  it("takes its rise from the note itself between the floor and the ceiling", () => {
+    // Long notes are clamped by the ceiling and short ones by the floor, so
+    // the fraction only shows in between. This is that range.
+    const stages = bendStages(0.8);
+
+    expect(stages.riseSeconds).toBeCloseTo(0.8 * expressionPresets.bend.riseFraction, 6);
+    expect(stages.riseSeconds).toBeGreaterThan(expressionPresets.bend.riseMinSeconds);
+    expect(stages.riseSeconds).toBeLessThan(expressionPresets.bend.riseMaxSeconds);
+    expect(stages.releaseSeconds).toBeCloseTo(
+      0.8 * expressionPresets.bend.releaseFraction,
+      6,
+    );
+  });
+
   it("squeezes the stages into a note too short to hold them all", () => {
     const stages = bendStages(0.1);
 

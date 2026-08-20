@@ -36,7 +36,7 @@ type FakeSource = {
 
 function fakeTone() {
   const sources: FakeSource[] = [];
-  const gains: { id: number; calls: Call[]; disposed: number }[] = [];
+  const gains: { id: number; calls: Call[]; disposed: number; gainAtBuild: number }[] = [];
   const filters: { id: number; disposed: number }[] = [];
 
   const param = (): FakeParam & {
@@ -61,8 +61,18 @@ function fakeTone() {
       gain = param();
       disposed = 0;
       calls = this.gain.calls;
-      constructor() {
-        gains.push(this as unknown as { id: number; calls: Call[]; disposed: number });
+      /** The level it was constructed with, before any automation. */
+      gainAtBuild = 0;
+      constructor(options?: { gain?: number }) {
+        this.gainAtBuild = options?.gain ?? 0;
+        gains.push(
+          this as unknown as {
+            id: number;
+            calls: Call[];
+            disposed: number;
+            gainAtBuild: number;
+          },
+        );
       }
       connect() {}
       dispose() {
@@ -394,6 +404,21 @@ describe("a legato chain is one voice", () => {
     expect(aux?.started?.duration ?? 1).toBeLessThan(
       (primary?.started?.duration ?? 0) / 4,
     );
+  });
+
+  it("keeps the pull-off click far below the note it sits on", () => {
+    const { pool, gains } = harness();
+    const chain = chainOf(song([bar(slots([B3(), note("G3", 1, 10, "pull_off")]))]));
+    pool.playChain(chain, 0);
+
+    // The chain's own gain, then the click's.
+    const primaryLevel = gains[0]?.calls[0]?.value ?? 0;
+    const auxLevel = gains[1]?.gainAtBuild ?? 0;
+
+    expect(primaryLevel).toBeGreaterThan(0);
+    expect(auxLevel).toBeGreaterThan(0);
+    // A finger coming off the string is a hint, not an attack.
+    expect(auxLevel).toBeLessThan(primaryLevel / 4);
   });
 
   it("steps the level down at each transition, on its own gain", () => {
