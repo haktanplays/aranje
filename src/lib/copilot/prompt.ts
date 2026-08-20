@@ -230,16 +230,25 @@ function sourceBlocks(context: ArrangementContext): string[] {
  * one needs. It is a summary, not the Song.
  */
 function formBlock(context: ArrangementContext): string {
-  const lines = context.form.map(
-    (entry) =>
-      `${entry.target ? "->" : "  "} ${entry.id} "${entry.name}" ` +
-      `${entry.bars} bar, ${entry.bpm} bpm`,
+  /*
+   * Written on one line, with explicit separators.
+   *
+   * The data fence strips control characters, newlines included, so a block
+   * built out of lines arrives as one run of text anyway. Better to choose
+   * the separators than to have them chosen — and the target marker has to
+   * survive too, which rules out anything with an angle bracket in it.
+   */
+  const sections = context.form
+    .map(
+      (entry) =>
+        `${entry.target ? "*" : ""}${entry.id} "${entry.name}" ` +
+        `${entry.bars} bar ${entry.bpm} bpm`,
+    )
+    .join(" | ");
+  return (
+    `${sections} // * = bu tur. toplam ${context.totalSeconds.toFixed(1)} sn; ` +
+    `bu bolum ${context.targetStartSeconds.toFixed(1)} sn'de basliyor`
   );
-  lines.push(
-    `toplam ${context.totalSeconds.toFixed(1)} sn; bu bolum ` +
-      `${context.targetStartSeconds.toFixed(1)} sn'de basliyor`,
-  );
-  return lines.join("\n");
 }
 
 /** The seven core degrees of the declared key, for the harmony skill. */

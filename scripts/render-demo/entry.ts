@@ -75,7 +75,9 @@ function excludedFor(song: Song, variant: RenderVariant): string[] {
 export async function renderVariant(variant: RenderVariant = "full") {
   const song = SAMPLE_SONG;
   const plan = buildSongPlan(song);
-  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+  // The tempo map, not the global tempo: a song may change tempo, and
+  // the old formula truncated whatever ran slower (spec 8.3, K-25).
+  const seconds = buildTempoMap(song).totalSeconds + 2.5;
   const excludeTrackIds = excludedFor(song, variant);
 
   const diagnostics: Record<string, unknown> = { variant, excludeTrackIds };
@@ -156,7 +158,9 @@ export async function renderVariant(variant: RenderVariant = "full") {
 export async function renderSolo(trackId: string) {
   const song = SAMPLE_SONG;
   const plan = buildSongPlan(song);
-  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+  // The tempo map, not the global tempo: a song may change tempo, and
+  // the old formula truncated whatever ran slower (spec 8.3, K-25).
+  const seconds = buildTempoMap(song).totalSeconds + 2.5;
   const excludeTrackIds = song.tracks
     .map((track) => track.id)
     .filter((id) => id !== trackId);
@@ -210,7 +214,9 @@ export async function renderStyleExample(
 
   const song = example.song;
   const plan = buildSongPlan(song);
-  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+  // The tempo map, not the global tempo: a song may change tempo, and
+  // the old formula truncated whatever ran slower (spec 8.3, K-25).
+  const seconds = buildTempoMap(song).totalSeconds + 2.5;
 
   const buffer = await Tone.Offline(async (context) => {
     const engine = await createEngine(song, context);
@@ -289,7 +295,9 @@ export async function renderExpressionDemo(index: number, pack: DemoPack = "expr
   const options = demo.options ?? {};
   const plan = buildSongPlan(song);
   const expression = buildExpressionPlan(song, options);
-  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+  // The tempo map, not the global tempo: a song may change tempo, and
+  // the old formula truncated whatever ran slower (spec 8.3, K-25).
+  const seconds = buildTempoMap(song).totalSeconds + 2.5;
 
   let requests = 0;
   const originalFetch = window.fetch.bind(window);

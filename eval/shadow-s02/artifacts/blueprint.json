@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "targetDurationSeconds": 60,
+  "durationToleranceSeconds": 5,
+  "tonalCenter": "D minor",
+  "tuningIntent": "drop D",
+  "resolution": 16,
+  "referenceTraits": [
+    "syncopated stop-start groove in the low register",
+    "chromatic tension against a tonic pedal",
+    "half-time drum backbone with controlled double kick",
+    "blues-inflected expressive lead over a thinned backing",
+    "dark open-string acoustic coda",
+    "dynamic hard-to-clean transition at the end of the piece"
+  ],
+  "tracks": [
+    {
+      "role": "rhythm_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "amplified, high gain",
+      "tuningIntent": "drop D",
+      "playsInSections": ["break", "bridge", "solo"],
+      "energyJob": "Ritim gitar",
+      "required": true,
+      "rationale": "Ana riff ve dusuk-tel agirligi bu track'te. Drop D acik dusuk teli parcanin low-end'ini tasiyor."
+    },
+    {
+      "role": "lead_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "amplified, high gain",
+      "tuningIntent": "drop D",
+      "playsInSections": ["solo"],
+      "energyJob": "Solo gitar",
+      "required": true,
+      "rationale": "Yalniz solo bolumunde var; oncesinde susmasi soloyu bir olay yapiyor."
+    },
+    {
+      "role": "drums",
+      "instrumentFamily": "drums",
+      "presetIntent": "rock kit",
+      "tuningIntent": "n/a",
+      "playsInSections": ["break", "bridge", "solo"],
+      "energyJob": "Davul",
+      "required": true,
+      "rationale": "Half-time omurga ve gecisleri tasiyor; akustik bolumde tamamen susuyor."
+    },
+    {
+      "role": "acoustic_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "steel string, fingerpicked",
+      "tuningIntent": "standard",
+      "playsInSections": ["coda"],
+      "energyJob": "Akustik gitar",
+      "required": true,
+      "rationale": "Kapanisin tamami; baska hicbir track o bolumde yazili degil."
+    }
+  ],
+  "motifs": [
+    {
+      "key": "cell",
+      "rhythmSignature": "attacks on 0, 3, 6, 10, 12 of a sixteenth grid; the rest empty",
+      "accentStructure": "accents on 0, 6 and 12; the attacks between them choked",
+      "pitchContour": "stays on scale degree 1; the low open string throughout",
+      "spaceCharacter": "eleven of sixteen slots are silent, and the silence is the riff",
+      "rationale": "3+3+2 gruplamasi nabzi iki kez itip 4. vurusta geri oturuyor."
+    },
+    {
+      "key": "answer",
+      "rhythmSignature": "three sixteenths in a row landing on the beat before the bar ends",
+      "accentStructure": "unaccented approach, accented landing",
+      "pitchContour": "b3 - 2 - 1, a chromatic descent onto the tonic",
+      "spaceCharacter": "fills a gap the cell left, then stops",
+      "rationale": "Hucrenin cevap cumlesi; kromatik gerilim buradan geliyor."
+    }
+  ],
+  "sections": [
+    {
+      "key": "break",
+      "displayName": "Break",
+      "formRole": "break",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "energy": "high",
+      "density": "medium",
+      "tonalJob": "tonic pedal, no harmonic movement at all",
+      "motifKey": "cell",
+      "motifTransformation": "stated plainly; the answer phrase arrives every second bar",
+      "entryIntent": "starts on the downbeat with no count-in",
+      "exitIntent": "lands on a held tonic the bridge can cut into",
+      "linkToPrevious": "",
+      "linkToNext": "the same attack points survive into the bridge",
+      "activeRoles": ["rhythm_guitar", "drums"],
+      "silentRoles": ["lead_guitar", "acoustic_guitar"]
+    },
+    {
+      "key": "bridge",
+      "displayName": "Heavy Bridge",
+      "formRole": "bridge",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "energy": "high",
+      "density": "high",
+      "tonalJob": "tritone tension against the pedal, unresolved into the solo",
+      "motifKey": "cell",
+      "motifTransformation": "same attack points, gaps closing, chromatic descent extended to the tritone",
+      "entryIntent": "cuts in on the held tonic with a crash",
+      "exitIntent": "stops on an unresolved tritone",
+      "linkToPrevious": "the cell's 0/3/6 attacks are unchanged",
+      "linkToNext": "the tritone is the question the solo answers",
+      "activeRoles": ["rhythm_guitar", "drums"],
+      "silentRoles": ["lead_guitar", "acoustic_guitar"]
+    },
+    {
+      "key": "solo",
+      "displayName": "Solo",
+      "formRole": "solo",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "energy": "high",
+      "density": "medium",
+      "tonalJob": "resolves the tritone, peaks on the octave, lands on the tonic",
+      "motifKey": "cell",
+      "motifTransformation": "the cell's rhythm becomes melody in the lead; the backing thins to its attack points",
+      "entryIntent": "the lead answers the bridge's unresolved tritone",
+      "exitIntent": "settles on a sustained tonic",
+      "linkToPrevious": "same rhythmic cell, now sung rather than chugged",
+      "linkToNext": "the tonic it lands on is the note the acoustic takes over",
+      "activeRoles": ["rhythm_guitar", "lead_guitar", "drums"],
+      "silentRoles": ["acoustic_guitar"]
+    },
+    {
+      "key": "coda",
+      "displayName": "Acoustic Outro",
+      "formRole": "outro",
+      "bars": 6,
+      "timeSignature": [4, 4],
+      "bpm": 69,
+      "energy": "low",
+      "density": "low",
+      "tonalJob": "the same tonic, held open, resolving to the minor third",
+      "motifKey": "cell",
+      "motifTransformation": "the cell's attack points return plucked and quiet; the notes are new, the rhythm is the quotation",
+      "entryIntent": "takes over the tonic the solo left ringing",
+      "exitIntent": "left ringing, resolved but not cheerful",
+      "linkToPrevious": "common tone on the tonic, and the pulse is exactly half the heavy tempo",
+      "linkToNext": "",
+      "activeRoles": ["acoustic_guitar"],
+      "silentRoles": ["rhythm_guitar", "lead_guitar", "drums"]
+    }
+  ],
+  "requestedTechniques": [
+    { "technique": "palm_mute", "sectionKey": "break", "purpose": "Pedal notayi bogup hucreye dur-kalk karakteri veriyor." },
+    { "technique": "accent", "sectionKey": "break", "purpose": "Hucrenin 0/6/12 vuruslarini one cikariyor." },
+    { "technique": "sustain", "sectionKey": "break", "purpose": "Son bar uzayan tonic ile bridge'e baglaniyor." },
+    { "technique": "staccato", "sectionKey": "bridge", "purpose": "Yogunlasan barlarda kisa stab'lar." },
+    { "technique": "slide", "sectionKey": "bridge", "purpose": "Kromatik gerilimi tritone'a tasiyan tek hareket." },
+    { "technique": "hammer_on", "sectionKey": "solo", "purpose": "Cumle icinde yukari baglanti." },
+    { "technique": "pull_off", "sectionKey": "solo", "purpose": "Inen cumlelerin dogal bagi." },
+    { "technique": "bend_half", "sectionKey": "solo", "purpose": "Yazili b5 yerine blues rengini bend ile getiriyor." },
+    { "technique": "bend_full", "sectionKey": "solo", "purpose": "Tepe noktasi: oktav tonige ulasip geri donuyor." },
+    { "technique": "vibrato", "sectionKey": "solo", "purpose": "Tepe sonrasi oturan notayi canli tutuyor." }
+  ],
+  "omittedRequests": [
+    {
+      "request": "bas track'i (kullanici 'paslayabilirsin' dedi)",
+      "reason": "Eklenmedi. Low-end'i Drop D ritim gitarinin acik dusuk D teli tasiyor; mevcut pack'teki parmak basi distorted gitarin altinda tanim eklemeden bulanikliga katki yapardi. Dort track'lik bir mikste telefon hoparlorunde netlik agirliktan onemli."
+    },
+    {
+      "request": "zengin davul",
+      "reason": "Kismen karsilandi. Nota cesitliligi verildi (kick, snare, hat, open hat, crash, tom'lar) fakat motorda crash/ride/china ayni synth cymbal voice'una dusuyor, yani notasyon cesitliligi isitsel cesitlilige birebir cevrilmiyor. Yeni sample pack bu checkpoint'in kapsami disinda."
+    }
+  ]
+}

@@ -56,15 +56,15 @@ export type Cut = {
 };
 
 export const CUTS: readonly Cut[] = [
-  { id: "shadow-s01-full-mix", sectionId: null, trackId: null },
-  { id: "shadow-s01-break", sectionId: "break", trackId: null },
-  { id: "shadow-s01-heavy-bridge", sectionId: "heavy_bridge", trackId: null },
-  { id: "shadow-s01-solo", sectionId: "solo", trackId: null },
-  { id: "shadow-s01-acoustic-outro", sectionId: "acoustic_outro", trackId: null },
-  { id: "shadow-s01-rhythm-guitar", sectionId: null, trackId: "rhythm_gtr" },
-  { id: "shadow-s01-lead-guitar", sectionId: null, trackId: "lead_gtr" },
-  { id: "shadow-s01-drums", sectionId: null, trackId: "drums" },
-  { id: "shadow-s01-acoustic", sectionId: null, trackId: "acoustic_gtr" },
+  { id: "shadow-s02-full-mix", sectionId: null, trackId: null },
+  { id: "shadow-s02-break", sectionId: "sec-1", trackId: null },
+  { id: "shadow-s02-heavy-bridge", sectionId: "sec-2", trackId: null },
+  { id: "shadow-s02-solo", sectionId: "sec-3", trackId: null },
+  { id: "shadow-s02-acoustic-outro", sectionId: "sec-4", trackId: null },
+  { id: "shadow-s02-rhythm-guitar", sectionId: null, trackId: "rhythm_guitar" },
+  { id: "shadow-s02-lead-guitar", sectionId: null, trackId: "lead_guitar" },
+  { id: "shadow-s02-drums", sectionId: null, trackId: "drums" },
+  { id: "shadow-s02-acoustic", sectionId: null, trackId: "acoustic_guitar" },
 ];
 
 function songFor(cut: Cut): Song {
@@ -184,9 +184,9 @@ export async function renderCut(index: number) {
 
 declare global {
   interface Window {
-    aranjeShadowRenderCut: typeof renderCut;
-    aranjeShadowCutCount: number;
+    aranjeS02RenderCut: typeof renderCut;
+    aranjeS02CutCount: number;
   }
 }
-window.aranjeShadowRenderCut = renderCut;
-window.aranjeShadowCutCount = CUTS.length;
+window.aranjeS02RenderCut = renderCut;
+window.aranjeS02CutCount = CUTS.length;

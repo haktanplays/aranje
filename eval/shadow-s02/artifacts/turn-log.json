@@ -1,0 +1,82 @@
+[
+  {
+    "turn": 1,
+    "label": "Break / rhythm",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p1-1",
+    "touchedBars": 8,
+    "explanation": "Acik dusuk D uzerinde 0/3/6/10/12 vuruslu hucre; aradaki slotlar bos, dur-kalk karakter oradan geliyor. Tek barlar hucreyi duz soyluyor, cift barlar F-E-D kromatik cevabiyla karsilik veriyor. 8. bar uzayan tonic ile sonraki bolume birakiyor.",
+    "warnings": []
+  },
+  {
+    "turn": 2,
+    "label": "Break / drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p2-1",
+    "touchedBars": 8,
+    "explanation": "Half-time omurga: snare 3. vuruşta, hat sekizlikleri tutuyor. Kick gitarin aksanlarini (0, 6, 12) izliyor, palm mute onaltiliklarini kopyalamiyor. Cift barlarda 9-10'da kontrollu double-kick kromatik cevabin altina biniyor. Crash yalniz bolum basinda. 8. bar kisa snare fill ile donuyor.",
+    "warnings": []
+  },
+  {
+    "turn": 3,
+    "label": "Bridge / rhythm",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p3-1",
+    "touchedBars": 8,
+    "explanation": "Ayni hucre: 0/3/6 vuruslari sekiz barin hepsinde duruyor, boylece onceki bolum taniniyor. Yogunluk artiyor; A-Ab-G kromatik inisi pedalin ustune biniyor. 4. barda F2 iki slot tutuluyor ve el 10. slotta Ab2'ye variyor. 8. bar cozulmemis tritone Ab2 uzerinde kaliyor: Solo'nun cevaplayacagi soru.",
+    "warnings": []
+  },
+  {
+    "turn": 4,
+    "label": "Bridge / drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p4-1",
+    "touchedBars": 8,
+    "explanation": "Break'ten yogun: kick 10. slotta da devrede, open hat itisleri isaretliyor, hayalet snare'ler groove'u dolduruyor. Cift barlarda 9-10-11 double-kick kromatik inise biniyor. 4. bar bilerek seyreliyor: gitarin kaydigi yerde yalniz hat var. 8. bar snare'den tom'lara inen fill ile Solo'ya bagliyor.",
+    "warnings": []
+  },
+  {
+    "turn": 5,
+    "label": "Solo / rhythm",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p5-1",
+    "touchedBars": 8,
+    "explanation": "Hucrenin sadelestirilmis hali: yalniz 0, 6 ve 12 vurus noktalari kaldi, aradaki onaltiliklar tamamen bosaltildi. Nabiz ve enerji duruyor fakat lead'in kullandigi register bos. 6. bar en seyrek yer: solonun tepe noktasi orada. 8. barda uzayan dusuk D lead'in tonigi altinda oktav kapanisi yapiyor.",
+    "warnings": []
+  },
+  {
+    "turn": 6,
+    "label": "Solo / lead",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p6-1",
+    "touchedBars": 8,
+    "explanation": "Hucrenin vurus noktalari melodiye tasindi: 1-2. bar D-F-E cumlesi, blues rengi yazili b5 degil G uzerindeki yarim bend. 3. bar G-A figuru (slide, pull-off, hammer-on) ayni el pozisyonunda. 5-7. bar tepe: C5 tam bend oktav tonige ulasip donuyor, sonra vibratolu A. 8. bar kontrollu inis, D sustain: akustik devralir.",
+    "warnings": []
+  },
+  {
+    "turn": 7,
+    "label": "Solo / drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p7-1",
+    "touchedBars": 8,
+    "explanation": "Bolumun en hareketli davulu: snare artik 4 ve 12'de de var, kick gitarin biraktigi bosluklari dolduruyor. 5. barda crash tam bendin ustune dusuyor, 6. barda davul uzayan notanin uzerine calmak yerine cekiliyor. 8. bar giderek seyreliyor ve 8. slottan sonra tamamen susuyor: akustik bolume yer aciliyor.",
+    "warnings": []
+  },
+  {
+    "turn": 8,
+    "label": "Coda / acoustic",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s02-p8-1",
+    "touchedBars": 6,
+    "explanation": "Ilk akorun ust sesi D4: solonun biraktigi nota. Acik D teli pedal, uzerinde Dm(add9) arpeji. 3. ve 5. bar hucrenin 0/3/6 vurus noktalarini sessizce geri getiriyor; alinti ritim, notalar degil. Son bar acik Dsus2 ile asili kaliyor, sonra minor uclu F geliyor ve cinlamaya birakiliyor.",
+    "warnings": []
+  }
+]

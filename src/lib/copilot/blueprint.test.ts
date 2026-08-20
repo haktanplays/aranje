@@ -307,3 +307,47 @@ describe("artist names do not survive into the plan", () => {
     expect(JSON.stringify(plan)).not.toMatch(/in the style of/i);
   });
 });
+
+describe("the skeleton places tracks in the stereo field (K-31)", () => {
+  it("separates two amplified guitars", () => {
+    const withLead = blueprint({
+      tracks: [
+        ...blueprint().tracks,
+        {
+          role: "lead_guitar" as const,
+          instrumentFamily: "guitar" as const,
+          presetIntent: "amplified, high gain",
+          tuningIntent: "drop D",
+          playsInSections: ["a"],
+          energyJob: "Solo gitar",
+          required: true,
+          rationale: "Solo cizgisi.",
+        },
+      ],
+      sections: blueprint().sections.map((s, i) =>
+        i === 0
+          ? { ...s, activeRoles: ["rhythm_guitar", "drums", "lead_guitar"] as const }
+          : s,
+      ),
+    });
+    const result = materializeSongSkeleton(withLead, { title: "T" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const rhythm = result.song.tracks.find((t) => t.id === "rhythm_guitar");
+    const lead = result.song.tracks.find((t) => t.id === "lead_guitar");
+    expect(rhythm?.pan).toBeLessThan(0);
+    expect(lead?.pan).toBeGreaterThan(0);
+    // Wide enough to hear, never hard-panned.
+    expect(Math.abs(rhythm?.pan ?? 0)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(lead?.pan ?? 0)).toBeLessThanOrEqual(0.5);
+  });
+
+  it("leaves the centre to whatever holds it alone", () => {
+    const result = materializeSongSkeleton(blueprint(), { title: "T" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // Drums carry the middle; an absent pan is the centre.
+    expect(result.song.tracks.find((t) => t.id === "drums")?.pan).toBeUndefined();
+  });
+});

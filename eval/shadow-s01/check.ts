@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { songSchema, type Song } from "@/lib/song/schema";
 import { runValidators } from "@/lib/validators";
 import { buildSongPlan, PPQ } from "@/lib/audio/schedule";
+import { buildTempoMap, secondsAtTicks } from "@/lib/audio/tempo";
 import { isDrumInstrument } from "@/lib/instruments/registry";
 
 const HERE = new URL(".", import.meta.url).pathname;
@@ -72,7 +73,7 @@ const bass = song.tracks.filter((t) => t.instrumentId.includes("bass"));
 check("no bass track", bass.length === 0, `${bass.length}`);
 
 const plan = buildSongPlan(song);
-const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm);
+const seconds = buildTempoMap(song).totalSeconds;
 check(
   "duration 55–65 s",
   seconds >= 55 && seconds <= 65,
@@ -80,11 +81,12 @@ check(
 );
 
 // Section start times, for the full-mix report.
+const tempoMap = buildTempoMap(song);
 let tick = 0;
 const starts: string[] = [];
 for (const section of song.sections) {
   starts.push(
-    `${section.name}: ${((tick / PPQ) * (60 / song.bpm)).toFixed(3)} s`,
+    `${section.name}: ${secondsAtTicks(tempoMap, tick).toFixed(3)} s`,
   );
   for (const bar of section.bars) {
     tick += (PPQ * 4 * bar.timeSignature[0]) / bar.timeSignature[1];
