@@ -13,7 +13,7 @@
  * not writable, because that is a hole a block may not be dropped into (spec
  * 5.5) — not a gap to be silently skipped over.
  */
-import { slotCount } from "@/lib/music/timing";
+import { slotCount, ticksPerSlot } from "@/lib/music/timing";
 import { isDrumSlotArray, type MelodicSlot, type Section, type Song } from "@/lib/song/schema";
 
 /** One slot of one track inside a section. */
@@ -25,6 +25,17 @@ export type SlotPosition = OnsetRef & {
   writable: boolean;
   /** The slot as written, or undefined where the track is not written. */
   slot: MelodicSlot | undefined;
+  /**
+   * Where this slot begins, in ticks from the start of the section.
+   *
+   * Bars no longer share a grid (spec 5.5, K-34), so a slot index means
+   * nothing on its own: slot 8 is beat three of a 1/16 bar and beat two of a
+   * 1/32 one. Anything that moves music in *time* has to work from this
+   * rather than from the index.
+   */
+  startTicks: number;
+  /** How long this slot lasts, on its own bar's grid. */
+  durationTicks: number;
 };
 
 export type OnsetBlock = {
@@ -57,10 +68,12 @@ export function sectionSlotStream(
   trackId: string,
 ): SlotPosition[] {
   const stream: SlotPosition[] = [];
+  let barStartTicks = 0;
 
   section.bars.forEach((bar, barIndex) => {
     const slots = bar.slots[trackId];
     const count = slotCount(bar.timeSignature, bar.resolution);
+    const step = ticksPerSlot(bar.resolution);
     // A drum slot array is not this track's shape; it is treated as unwritable
     // rather than pretending a melodic block could land in it.
     const writable = slots !== undefined && !isDrumSlotArray(slots);
@@ -72,11 +85,26 @@ export function sectionSlotStream(
         slotIndex,
         writable,
         slot: writable ? (melodic?.[slotIndex] ?? null) : undefined,
+        startTicks: barStartTicks + slotIndex * step,
+        durationTicks: step,
       });
     }
+
+    barStartTicks += count * step;
   });
 
   return stream;
+}
+
+/** Where each bar of a section begins, in ticks from the section's start. */
+export function sectionBarStartTicks(section: Section): number[] {
+  const starts: number[] = [];
+  let ticks = 0;
+  for (const bar of section.bars) {
+    starts.push(ticks);
+    ticks += slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
+  }
+  return starts;
 }
 
 /** The section with this id, or null. */

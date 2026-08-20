@@ -5,6 +5,7 @@
  * real, and bars written slot by slot so each test says exactly what it means.
  */
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import type { Resolution } from "@/lib/music/timing";
 import { songSchema, type Bar, type MelodicSlot, type Song } from "@/lib/song/schema";
 
 const GUITAR = SAMPLE_SONG.tracks.find((track) => track.id === "gtr");
@@ -27,12 +28,12 @@ export function slots(prefix: readonly MelodicSlot[], count = 8): MelodicSlot[] 
   ];
 }
 
-export function bar(written: readonly MelodicSlot[], resolution: 8 | 16 = 8): Bar {
+export function bar(written: readonly MelodicSlot[], resolution: Resolution = 8): Bar {
   return { timeSignature: [4, 4], resolution, slots: { gtr: [...written] } };
 }
 
 /** A bar the guitar is not written in at all (spec 5.5). */
-export function emptyBar(resolution: 8 | 16 = 8): Bar {
+export function emptyBar(resolution: Resolution = 8): Bar {
   return { timeSignature: [4, 4], resolution, slots: {} };
 }
 

@@ -96,6 +96,8 @@ export type EditErrorCode =
   | "pitch_unreadable"
   | "no_note_on_string"
   | "orphan_tie"
+  /** The move's moment does not exist on the grid it would land on (K-34). */
+  | "target_grid_incompatible"
   | "validation_failed";
 
 export type EditFailure = {

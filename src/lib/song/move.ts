@@ -18,13 +18,24 @@
  *    schema and the validator chain, and hand it back for a single commit.
  *
  * A move never changes pitch, order, explicit position, velocity, articulation
- * or tie length. It changes when a block starts and nothing else.
+ * or how long the block sounds. It changes when a block starts and nothing
+ * else.
+ *
+ * "How long it sounds" is measured in ticks, not in slots (spec 5.5, K-34).
+ * Bars no longer share a grid, so a block landing in a bar written on a
+ * different one is re-notated there — one 1/16 slot becomes two 1/32 slots,
+ * four 1/32 slots become one 1/8 slot — and the sound is identical. When the
+ * target grid cannot write the length at all, the move is refused with
+ * `target_grid_incompatible` rather than rounded to the nearest slot: a
+ * rounded move puts the musician's note somewhere they did not ask for and
+ * leaves them nothing to notice it by.
  */
 import {
   blockContaining,
   canonicalRefs,
   findSection,
   refKey,
+  sectionBarStartTicks,
   sectionOnsetBlocks,
   sectionSlotStream,
   type OnsetBlock,
@@ -87,6 +98,19 @@ function fail(message: string): MoveResult {
   return { ok: false, error: { code: "validation_failed", message } };
 }
 
+/**
+ * The move cannot be expressed on the grid it would land on (spec 5.5, K-34).
+ *
+ * Its own code because it is the one refusal that is not about what is in the
+ * way: nothing is occupied, nothing is out of range, the music simply does
+ * not exist at that moment on that grid. The alternative — snapping to the
+ * nearest slot — would move the musician's note somewhere they did not ask
+ * for and give them no way to tell that it happened.
+ */
+function gridIncompatible(message: string): MoveResult {
+  return { ok: false, error: { code: "target_grid_incompatible", message } };
+}
+
 type BarLabel = (barIndex: number) => string;
 
 const SECTION_BAR_LABEL: BarLabel = (barIndex) => `bar ${barIndex + 1}`;
@@ -99,12 +123,24 @@ function place(label: BarLabel, ref: OnsetRef): string {
 /** Where a block lands, or why it cannot. */
 type Destination =
   | { ok: true; refs: readonly OnsetRef[]; indices: readonly number[] }
-  | { ok: false; message: string };
+  | { ok: false; message: string; grid?: true };
+
+/** Total sounding length of a run of stream entries, in ticks. */
+function ticksOf(
+  stream: readonly SlotPosition[],
+  indices: readonly number[],
+): number {
+  return indices.reduce(
+    (total, index) => total + (stream[index]?.durationTicks ?? 0),
+    0,
+  );
+}
 
 function destinationFor(
   block: OnsetBlock,
   movement: OnsetMovement,
   stream: readonly SlotPosition[],
+  barStarts: readonly number[],
   label: BarLabel,
 ): Destination {
   let startIndex: number;
@@ -112,32 +148,76 @@ function destinationFor(
   if (movement === "previous_slot" || movement === "next_slot") {
     startIndex = block.startIndex + (movement === "next_slot" ? 1 : -1);
   } else {
-    // A bar move keeps the slot and changes the bar. The neighbouring bar must
-    // actually have that slot: nothing here assumes 4/4 or eight slots.
+    /*
+     * A bar move keeps the *moment* and changes the bar, and a moment is a
+     * tick, not a slot index (spec 5.5, K-34). Slot 8 is beat three of a 1/16
+     * bar and beat two of a 1/32 one, so keeping the index would silently move
+     * the music to a different beat whenever the two bars differ.
+     *
+     * So: read the source's offset into its own bar in ticks, and look for
+     * exactly that offset in the target bar. If the target's grid has no slot
+     * there, the move is refused rather than rounded.
+     */
     const step = movement === "next_bar" ? 1 : -1;
     const targetBar = block.start.barIndex + step;
+    const source = stream[block.startIndex];
+    const sourceBarStart = barStarts[block.start.barIndex];
+    const targetBarStart = barStarts[targetBar];
+
+    if (source === undefined || sourceBarStart === undefined || targetBarStart === undefined) {
+      return {
+        ok: false,
+        message: `${place(label, block.start)} bu bölümün dışına taşınamaz.`,
+      };
+    }
+
+    const offset = source.startTicks - sourceBarStart;
+    const wanted = targetBarStart + offset;
     const found = stream.findIndex(
-      (entry) =>
-        entry.barIndex === targetBar && entry.slotIndex === block.start.slotIndex,
+      (entry) => entry.barIndex === targetBar && entry.startTicks === wanted,
     );
     if (found < 0) {
       const neighbour = stream.some((entry) => entry.barIndex === targetBar);
+      if (!neighbour) {
+        return {
+          ok: false,
+          message: `${place(label, block.start)} bu bölümün dışına taşınamaz.`,
+        };
+      }
       return {
         ok: false,
-        message: neighbour
-          ? `${label(targetBar)} ${block.start.slotIndex + 1}. slotu taşımıyor, ` +
-            `bu yüzden ${place(label, block.start)} taşınamadı.`
-          : `${place(label, block.start)} bu bölümün dışına taşınamaz.`,
+        grid: true,
+        message:
+          `${label(targetBar)} farklı bir ritmik grid'de ve ` +
+          `${place(label, block.start)} konumundaki an orada bir slota ` +
+          `denk gelmiyor. En yakın slota yuvarlanmadı; taşıma yapılmadı.`,
       };
     }
     startIndex = found;
   }
 
+  /*
+   * How far the block reaches is measured in ticks, not in slots.
+   *
+   * A block is a struck slot plus the tie run holding it, and what the
+   * musician hears is its *length in time*. Landing on a finer grid, the same
+   * length is more slots; on a coarser one, fewer. So the destination run is
+   * filled until it has accumulated exactly as much time as the source did —
+   * which re-notates the block on the new grid without changing a note of it,
+   * and which is also what catches the case where the new grid cannot express
+   * the length at all (a 1/32 note has no notation in a 1/8 bar).
+   */
+  const wanted = ticksOf(
+    stream,
+    Array.from({ length: block.length }, (_, offset) => block.startIndex + offset),
+  );
+
   const indices: number[] = [];
   const refs: OnsetRef[] = [];
+  let covered = 0;
+  let index = startIndex;
 
-  for (let offset = 0; offset < block.length; offset += 1) {
-    const index = startIndex + offset;
+  while (covered < wanted) {
     const entry = index < 0 ? undefined : stream[index];
     if (!entry) {
       return {
@@ -155,6 +235,19 @@ function destinationFor(
     }
     indices.push(index);
     refs.push({ barIndex: entry.barIndex, slotIndex: entry.slotIndex });
+    covered += entry.durationTicks;
+    index += 1;
+  }
+
+  if (covered !== wanted) {
+    return {
+      ok: false,
+      grid: true,
+      message:
+        `${place(label, block.start)} taşınacağı yerdeki ritmik grid bu ` +
+        `sesin süresini yazamıyor; süresi değişirdi, o yüzden taşıma ` +
+        `yapılmadı.`,
+    };
   }
 
   return { ok: true, refs, indices };
@@ -214,6 +307,7 @@ export function applyMoveOnsetGroup(
   if (origins.length === 0) return fail("Taşınacak akor seçilmedi.");
 
   const stream = sectionSlotStream(section, command.trackId);
+  const barStarts = sectionBarStartTicks(section);
   const blocks = sectionOnsetBlocks(section, command.trackId);
 
   // Every origin must be a real onset start. A tie or a rest is not something
@@ -241,8 +335,18 @@ export function applyMoveOnsetGroup(
   const plans: { block: OnsetBlock; refs: readonly OnsetRef[]; indices: readonly number[] }[] = [];
 
   for (const block of chosen) {
-    const destination = destinationFor(block, command.movement, stream, label);
-    if (!destination.ok) return fail(destination.message);
+    const destination = destinationFor(
+      block,
+      command.movement,
+      stream,
+      barStarts,
+      label,
+    );
+    if (!destination.ok) {
+      return destination.grid
+        ? gridIncompatible(destination.message)
+        : fail(destination.message);
+    }
 
     for (const index of destination.indices) {
       const other = claimed.get(index);

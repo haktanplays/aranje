@@ -230,7 +230,12 @@ describe("what it refuses, atomically", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("refuses a bar move when the neighbouring bar has no such slot", () => {
+  it("refuses a bar move that would change how long the note sounds", () => {
+    /*
+     * Slot 13 of a 1/16 bar is the same moment as slot 7 of a 1/8 bar, so the
+     * move *is* expressible — but one slot of 1/8 is twice one slot of 1/16,
+     * and a move may not quietly double a note (spec 5.5, K-34).
+     */
     const before = song([
       bar(slots([]), 8),
       bar(slots([...Array.from({ length: 12 }, () => REST), A3()], 16), 16),
@@ -239,7 +244,8 @@ describe("what it refuses, atomically", () => {
 
     expect(result.ok).toBe(false);
     if (result.ok) return;
-    expect(result.error.message).toContain("13. slotu");
+    expect(result.error.code).toBe("target_grid_incompatible");
+    expect(result.error.message).toContain("süresi değişirdi");
   });
 
   it("refuses to move into a bar the track is not written in", () => {
