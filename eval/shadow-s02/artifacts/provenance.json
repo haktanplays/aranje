@@ -5,6 +5,18 @@
     "exactModelId": "claude-opus-5",
     "modelIdVerified": true,
     "providerInvocation": false,
+    "operation": "composition_blueprint",
+    "attempt": 0,
+    "requestHash": "75ddc6c4135367eb",
+    "responseHash": "c33ed9eaa5c03a24",
+    "generatedAt": "2026-08-20T16:30:00Z"
+  },
+  {
+    "generationMode": "coding_agent_simulation",
+    "codingModelLabel": "claude-opus-5",
+    "exactModelId": "claude-opus-5",
+    "modelIdVerified": true,
+    "providerInvocation": false,
     "operation": "arrange_track",
     "skillOrRole": "rhythm_guitar",
     "attempt": 0,

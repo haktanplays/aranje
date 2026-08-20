@@ -89,3 +89,44 @@ export function provenanceFor(input: {
     generatedAt: input.generatedAt,
   };
 }
+
+/** Words a run may be written up with, given how it was actually produced. */
+export const MODE_LABELS: Readonly<Record<GenerationMode, string>> = {
+  provider: "provider eval",
+  separate_shadow_model: "separate shadow model eval",
+  coding_agent_simulation: "coding agent simulation (no provider call)",
+  fixture: "recorded fixture replay",
+};
+
+/**
+ * The one rule that would have caught the S-01 write-up.
+ *
+ * A record may not claim a provider unless a provider was actually invoked,
+ * and an invocation has to name the provider it went to. Everything else in
+ * this module is bookkeeping; this is the part that makes the bookkeeping
+ * mean something, so it throws rather than returning a boolean nobody reads.
+ */
+export function assertHonestProvenance(entry: ShadowProvenance): void {
+  const claimsProvider =
+    entry.generationMode === "provider" || entry.generationMode === "separate_shadow_model";
+  if (claimsProvider !== entry.providerInvocation) {
+    throw new Error(
+      `provenance claims ${entry.generationMode} but providerInvocation=${entry.providerInvocation}`,
+    );
+  }
+  if (entry.providerInvocation && !entry.providerName) {
+    throw new Error("a provider invocation has to name the provider");
+  }
+  if (!entry.providerInvocation && entry.providerName) {
+    throw new Error("no provider was called, so there is no provider to name");
+  }
+  if (entry.exactModelId && !entry.modelIdVerified) {
+    throw new Error("an exact model id may only come from runtime metadata");
+  }
+}
+
+/** How this run may be described in a report. Never upgradeable by hand. */
+export function labelFor(entry: ShadowProvenance): string {
+  assertHonestProvenance(entry);
+  return MODE_LABELS[entry.generationMode];
+}

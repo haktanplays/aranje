@@ -17,6 +17,8 @@ const ARTIFACTS = join(HERE, "artifacts");
 mkdirSync(ARTIFACTS, { recursive: true });
 const write = (name: string, body: string) => writeFileSync(join(ARTIFACTS, name), body);
 
+const provenance: unknown[] = [];
+const STAMP = "2026-08-20T16:30:00Z";
 const blueprint = compositionBlueprintSchema.parse(
   JSON.parse(readFileSync(join(ARTIFACTS, "blueprint.json"), "utf8")),
 );
@@ -30,14 +32,25 @@ console.log(
 );
 write("skeleton.json", JSON.stringify(built.song, null, 2));
 
+// The blueprint is an answer too, and it gets a record of its own: without
+// one, a blueprint could be swapped by hand between runs and nothing would
+// show it.
+provenance.push(
+  provenanceFor({
+    operation: "composition_blueprint",
+    attempt: 0,
+    request: readFileSync(join(ARTIFACTS, "raw-request.json"), "utf8"),
+    response: JSON.stringify(blueprint),
+    generatedAt: STAMP,
+  }),
+);
+
 const only = process.argv.includes("--payload")
   ? Number(process.argv[process.argv.indexOf("--payload") + 1])
   : null;
 
 let song: Song = built.song;
 const log: unknown[] = [];
-const provenance: unknown[] = [];
-const STAMP = "2026-08-20T16:30:00Z";
 
 for (const turn of TURNS) {
   const attempts: { corrections: string[] }[] = [];

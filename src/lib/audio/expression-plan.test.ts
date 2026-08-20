@@ -930,6 +930,61 @@ describe("practice speed", () => {
   });
 });
 
+describe("a section's own tempo reaches the expression plan (spec 8.3, K-25)", () => {
+  /*
+   * Expression is written in seconds, so the planner has to ask the tempo
+   * timeline rather than divide by `song.bpm`. Before phase 2G there was only
+   * one tempo and the shortcut was invisible; a song whose second section runs
+   * at half speed makes it audible — every note in it would be half as long as
+   * written, and the automation on it would run twice as fast.
+   */
+  const twoTempos = (): Song => {
+    const base = song(
+      [bar(slots([A3("bend_full")]))],
+      [bar(slots([A3("bend_full"), A3("bend_full")]))],
+    );
+    return {
+      ...base,
+      sections: base.sections.map((section) =>
+        section.id === "s2" ? { ...section, bpmOverride: 60 } : section,
+      ),
+    };
+  };
+
+  const planAt = (barKey: string, slotIndex: number) => {
+    const found = planOf(twoTempos()).find(
+      (entry) => entry.barKey === barKey && entry.slotIndex === slotIndex,
+    );
+    if (!found) throw new Error(`no plan at ${barKey}:${slotIndex}`);
+    return found;
+  };
+
+  it("makes a note in the half-tempo section twice as long", () => {
+    expect(planAt("s2:0", 0).durationSeconds).toBeCloseTo(
+      planAt("s1:0", 0).durationSeconds * 2,
+      5,
+    );
+  });
+
+  it("places the second note of the slow bar at the slow bar's spacing", () => {
+    // One 4/4 bar at 120 bpm is 2 s, so the slow section starts at 2 s either
+    // way. The difference shows up inside it: an eighth note is 0.5 s at 60
+    // bpm and 0.25 s at 120, so the global-tempo shortcut lands at 2.25.
+    expect(planAt("s2:0", 0).startSeconds).toBeCloseTo(2, 3);
+    expect(planAt("s2:0", 1).startSeconds).toBeCloseTo(2.5, 3);
+  });
+
+  it("stretches the automation on that note with it", () => {
+    const slow = planAt("s2:0", 0);
+    const fast = planAt("s1:0", 0);
+    const spanOf = (plan: ExpressiveNotePlan) => {
+      const times = plan.pitchAutomation.map((point) => point.timeSeconds);
+      return Math.max(...times) - Math.min(...times);
+    };
+    expect(spanOf(slow)).toBeCloseTo(spanOf(fast) * 2, 4);
+  });
+});
+
 describe("determinism and independence", () => {
   it("gives the same plan every time", () => {
     const runs = Array.from({ length: 5 }, () =>
