@@ -150,3 +150,31 @@ describe("the tests reach no network", () => {
     }
   });
 });
+
+describe("the memoryless baseline stays out of production", () => {
+  it("is imported by nothing outside the test tree", () => {
+    const production = [...walk("src/lib"), ...walk("src/components"), ...walk("src/app")]
+      .filter((file) => /\.tsx?$/.test(file))
+      .filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));
+
+    expect(production.length).toBeGreaterThan(30);
+    const offenders = production.filter((file) =>
+      readFileSync(file, "utf8").includes("@/test/legacy-greedy"),
+    );
+    // Spec 9.2, K-19: the old engine is a test baseline, never a second
+    // production behaviour and never something a build can switch back to.
+    expect(offenders).toEqual([]);
+  });
+
+  it("leaves no dead reference to the module it replaced", () => {
+    const gone = ["@", "/lib/music/position"].join("");
+    const sources = [...walk("src")]
+      .filter((file) => /\.tsx?$/.test(file))
+      // This file names the path in order to look for it.
+      .filter((file) => file !== "src/test/no-network.test.ts");
+    const offenders = sources.filter((file) =>
+      readFileSync(file, "utf8").includes(gone),
+    );
+    expect(offenders).toEqual([]);
+  });
+});

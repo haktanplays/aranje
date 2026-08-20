@@ -8,6 +8,7 @@
  */
 import * as Tone from "tone";
 
+import { styleExampleSongs } from "@/lib/copilot/style-examples";
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { drumTrackIds, melodicTrackIds } from "@/lib/audio/tracks";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
@@ -182,14 +183,74 @@ export async function renderSolo(trackId: string) {
   };
 }
 
+/**
+ * Render one style card example on its own (spec 11.7, phase 2C).
+ *
+ * The same engine, the same samples and the same scheduler as everything
+ * else: no new sample pack and no synth fallback. These are listening
+ * outputs for the owner, not an automated judgement of anything musical.
+ */
+export async function renderStyleExample(
+  bodies: Record<string, string>,
+  index: number,
+) {
+  const examples = styleExampleSongs(bodies);
+  const example = examples[index];
+  if (!example) throw new Error(`no style example at index ${index}`);
+
+  const song = example.song;
+  const plan = buildSongPlan(song);
+  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+
+  const buffer = await Tone.Offline(async (context) => {
+    const engine = await createEngine(song, context);
+    scheduleSong(engine, song.bpm);
+    context.transport.start(0);
+  }, seconds);
+
+  const raw = buffer.toArray() as Float32Array | Float32Array[];
+  const list = Array.isArray(raw) ? raw : [raw];
+
+  let peak = 0;
+  let sumSquares = 0;
+  let samples = 0;
+  for (const channel of list) {
+    for (const value of channel) {
+      peak = Math.max(peak, Math.abs(value));
+      sumSquares += value * value;
+      samples += 1;
+    }
+  }
+
+  const wav = encodeWav(list, buffer.sampleRate);
+  let binary = "";
+  for (const byte of wav) binary += String.fromCharCode(byte);
+
+  return {
+    id: example.id,
+    cardId: example.cardId,
+    exampleIndex: example.exampleIndex,
+    targetTrackId: example.targetTrackId,
+    wavBase64: btoa(binary),
+    sampleRate: buffer.sampleRate,
+    channels: list.length,
+    seconds: buffer.duration,
+    peak,
+    rms: Math.sqrt(sumSquares / Math.max(1, samples)),
+    events: plan.events.length,
+  };
+}
+
 declare global {
   interface Window {
     aranjeRenderVariant: typeof renderVariant;
     aranjeRenderSolo: typeof renderSolo;
+    aranjeRenderStyleExample: typeof renderStyleExample;
     aranjeTrackIds: string[];
   }
 }
 
 window.aranjeRenderVariant = renderVariant;
 window.aranjeRenderSolo = renderSolo;
+window.aranjeRenderStyleExample = renderStyleExample;
 window.aranjeTrackIds = SAMPLE_SONG.tracks.map((track) => track.id);

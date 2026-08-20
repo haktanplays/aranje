@@ -30,37 +30,25 @@
  *   before is not a free bar: the hand is still holding it, so the anchor
  *   carries and the next jump is measured from it.
  *
- * Thresholds live in `songLimits`' neighbour `handPositionLimits`, not here.
+ * Thresholds live in `songLimits`' neighbour `handPositionLimits`, not here,
+ * and the anchor is measured by the same helper the placement engine uses
+ * (spec 9.2, K-19). The engine cannot "solve" a jump it was measuring
+ * differently from the validator that reports it.
  */
-import { handPositionLimits } from "@/lib/limits";
-import { instrumentFamily } from "@/lib/instruments/registry";
+import {
+  anchorOf,
+  isLargeShift,
+  maxShiftFor,
+  medianOf,
+  type HandNote,
+} from "@/lib/music/hand-position";
 import { buildTrackTimeline, type FrettedBar } from "@/lib/tab/timeline";
 import type { Song } from "@/lib/song/schema";
 import type { Validator, ValidationIssue } from "@/lib/validators/types";
 
 export const FRET_JUMP_CODE = "fretJump";
 
-/** How far this instrument's hand may travel between neighbouring onsets. */
-export function maxShiftFor(instrumentId: string): number | null {
-  switch (instrumentFamily(instrumentId)) {
-    case "guitar":
-      return handPositionLimits.guitarMaxShift;
-    case "bass":
-      return handPositionLimits.bassMaxShift;
-    default:
-      // Drums have no frets; a phase 2.5 instrument with no fretboard has no
-      // hand position to speak of yet.
-      return null;
-  }
-}
-
-/** The median of a list of numbers; the lower middle for an even count. */
-export function medianOf(values: readonly number[]): number | null {
-  if (values.length === 0) return null;
-  const sorted = [...values].sort((a, b) => a - b);
-  const middle = Math.floor((sorted.length - 1) / 2);
-  return sorted[middle] ?? null;
-}
+export { maxShiftFor, medianOf };
 
 type Anchor = {
   fret: number;
@@ -74,23 +62,23 @@ type Anchor = {
 
 /** The anchor of every struck onset in one bar, in slot order. */
 function anchorsIn(bar: FrettedBar, capo: number): Anchor[] {
-  const bySlot = new Map<number, number[]>();
+  const bySlot = new Map<number, HandNote[]>();
 
   for (const span of bar.spans) {
     // Struck here, not carried in: a tie repeats no hand movement.
     if (span.openStart || span.startSlot < 0) continue;
     if (span.fret === null) continue; // unplaceable; `unplaceable` owns it
     const group = bySlot.get(span.startSlot) ?? [];
-    group.push(capo + span.fret);
+    group.push({ stringIndex: span.stringIndex, physicalFret: capo + span.fret });
     bySlot.set(span.startSlot, group);
   }
 
   return [...bySlot.entries()]
     .sort((a, b) => a[0] - b[0])
-    .map(([slotIndex, frets]) => ({
-      // An open-strings-only onset anchors at 0, which medianOf gives us for
-      // free: every fret in it is capo + 0.
-      fret: medianOf(frets) ?? 0,
+    .map(([slotIndex, notes]) => ({
+      // Measured by the shared helper, so this and the placement engine can
+      // never disagree about where the hand is.
+      fret: anchorOf(notes),
       barKey: bar.key,
       sectionId: bar.sectionId,
       barIndex: bar.barIndex,
@@ -131,7 +119,7 @@ export const validateFretJump: Validator = (song: Song) => {
       for (const anchor of anchors) {
         if (previous !== null) {
           const shift = Math.abs(anchor.fret - previous.fret);
-          if (shift > maxShift) {
+          if (isLargeShift(previous.fret, anchor.fret, maxShift)) {
             issues.push({
               code: FRET_JUMP_CODE,
               severity: "warning",

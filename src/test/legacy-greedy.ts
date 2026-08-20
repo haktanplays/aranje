@@ -1,5 +1,16 @@
 /**
- * Deterministic greedy position engine (spec 9.2).
+ * The memoryless greedy engine, kept **only as a test baseline** (spec 9.2,
+ * K-19).
+ *
+ * This is what production used before Ergonomic Placement v2. It is no longer
+ * reachable from `src/lib` or `src/components` and is not a selectable second
+ * behaviour: it lives under `src/test` so the quality comparison has something
+ * honest to measure against, and a test asserts that nothing outside the test
+ * tree imports it.
+ *
+ * Original documentation follows.
+ *
+ * Deterministic greedy position engine.
  *
  * Rules, in order:
  *   1. Consider positions inside the valid capo-relative fret range.
@@ -15,14 +26,15 @@
  * A position the user or the model wrote out always wins over the computed one.
  */
 import {
-  maxCapoRelativeFret,
   physicalFret,
   soundingMidi,
   type Fretboard,
   type Position,
 } from "@/lib/music/fretboard";
-import { pitchToMidi } from "@/lib/music/pitch";
+import { candidatePositions } from "@/lib/music/voicing";
 import type { NoteEvent } from "@/lib/song/schema";
+
+export { candidatePositions };
 
 export type ResolvedPosition = {
   note: NoteEvent;
@@ -30,31 +42,6 @@ export type ResolvedPosition = {
   /** Where the position came from; "none" means no playable placement exists. */
   source: "explicit" | "computed" | "none";
 };
-
-/** Every string that can sound this pitch, lowest string first (rule 1). */
-export function candidatePositions(
-  fretboard: Fretboard,
-  pitch: string,
-): Position[] {
-  const target = pitchToMidi(pitch);
-  if (target === null) return [];
-
-  const positions: Position[] = [];
-  const maxFret = maxCapoRelativeFret(fretboard.capo);
-
-  for (let string = 0; string < fretboard.tuning.length; string += 1) {
-    const openString = fretboard.tuning[string];
-    if (openString === undefined) continue;
-    const openMidi = pitchToMidi(openString);
-    if (openMidi === null) continue;
-
-    const fret = target - openMidi - fretboard.capo;
-    if (fret < 0 || fret > maxFret) continue;
-    positions.push({ string, fret });
-  }
-
-  return positions;
-}
 
 type Candidate = { index: number; options: Position[] };
 

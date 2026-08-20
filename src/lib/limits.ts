@@ -43,3 +43,22 @@ export const handPositionLimits = {
   /** The same for a bass, whose frets are further apart. */
   bassMaxShift: 5,
 } as const;
+
+/**
+ * Ergonomic placement search (spec 9.2, K-19).
+ *
+ * `beamWidth` is how many partial placements the search keeps alive at each
+ * onset. It lives here, with the other limits, for the same reason they do:
+ * one place to change it, and no way for a deployment to quietly widen or
+ * narrow the search. It is deliberately not an environment variable — the same
+ * song must place the same way everywhere, including on a phone.
+ *
+ * 64 is wide enough that the reference width of 256 finds nothing better on
+ * the fixtures (see the phase 2D report), and narrow enough that a bar of
+ * dense chords stays cheap.
+ */
+export const placementLimits = {
+  beamWidth: 64,
+  /** Reference width used only by tests, to check 64 is not too narrow. */
+  referenceBeamWidth: 256,
+} as const;

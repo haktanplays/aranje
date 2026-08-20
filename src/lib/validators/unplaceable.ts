@@ -22,7 +22,7 @@
  * One slot, one issue: a chord that does not fit is a single musical problem,
  * however many of its notes end up without a string.
  */
-import { candidatePositions } from "@/lib/music/position";
+import { candidatePositions } from "@/lib/music/voicing";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 import type { Fretboard, Song } from "@/lib/song/schema";
 import type { Validator, ValidationIssue } from "@/lib/validators/types";

@@ -510,22 +510,70 @@ Eb Standard, D Standard, Drop C, Open G ve 7-telli preset'ler açılır; tel
 sayısını değiştirmeyen manuel akort da Faz 2.5'tedir. **Tel ekle/çıkar pilot
 sonrasıdır** (§4).
 
-### §9.2 Deterministik greedy pozisyon kuralı
+### §9.2 Deterministik pozisyon motoru — Ergonomic Placement v2 (§19 K-19)
 
-1. Geçerli capo-relative fret aralığındaki pozisyonları bul.
-2. Bir akorda her tel en fazla bir kez kullanılır.
-3. En düşük **maksimum fiziksel fret**i seç.
-4. Eşitse **toplam fiziksel fret** değeri en düşük olanı seç.
-5. Yine eşitse **en düşük tel numarası**yla deterministik karar ver.
+`position` yazılmamış fretted melodik onset'ler, track'in **zaman sıralı
+bağlamı** içinde deterministic beam-search / dynamic-programming ile
+yerleştirilir. K-4'ün hafızasız greedy kuralı üretimden kaldırılmıştır.
 
-Bu kural birim testlidir.
+**Aday üretimi (onset başına):**
 
-**Açık sınır (§19 K-4):** Bu kural hafızasızdır — bir önceki notanın
-pozisyonunu dikkate almaz, dolayısıyla **tel değişimini ve perde sıçramasını
-minimize etmez.** v1.2 §6.2'nin "büyük perde sıçraması / gereksiz tel değişimi
-minimize edilir" hedefi bu spec'te geçerli değildir; gelişmiş pozisyon motoru
-pilot sonrasıdır (§4). İleride "spec tel değişimini minimize et demişti"
-tartışması çıkmasın diye bu sınır burada açıkça kayıt altına alınmıştır.
+1. Geçerli capo-relative fret aralığındaki bütün pozisyonlar bulunur.
+   `fret 0` capo'nun bastığı sestir (§9.1); alternate tuning ayrı dal kullanmaz.
+2. Bir akorda her tel en fazla bir bağımsız nota taşır. Aynı pitch'in farklı
+   tellerde bilinçli doubling'i geçerlidir.
+3. Explicit `position` **aynen korunur** ve telini rezerve eder; kalan
+   notalar onun etrafına yerleştirilir. Explicit pitch/tel/perde tutarsızlığı
+   düzeltilmez — `fretboardIntegrity`'nin sorumluluğudur. İki explicit nota
+   aynı teli kullanıyorsa taşınmaz — `stringCollision` raporlar.
+4. Hiç tam voicing bulunamazsa sahte pozisyon üretilmez ve bu bir çakışma
+   olarak etiketlenmez; `unplaceable` (§10.3) raporlar.
+
+**El konumu ölçüleri** — `fretJump` (§10.3) ile **aynı** yardımcıdan gelir:
+
+- **Anchor:** basılan (capo-relative fret > 0) notaların fiziksel perdelerinin
+  medyanı. Yalnız açık teller varsa 0; karışık akorda açık teller medyanı
+  aşağı çekmez.
+- **Chord span:** basılan notaların en yüksek ve en düşük fiziksel perdesi
+  arasındaki fark; tek veya sıfır basılı notada 0.
+- **String center:** kullanılan `stringIndex` değerlerinin medyanı (veri
+  modelindeki tel indeksleri; görsel satır değil).
+
+**Maliyet — ağırlıklı skor değil, lexicographic tuple.** Sırasıyla:
+
+1. Büyük sıçrama sayısı (gitar > 7, bas > 5 fiziksel fret; eşikler §6)
+2. Eşik üzerindeki toplam fazla perde
+3. Toplam anchor hareketi
+4. Toplam chord span
+5. Toplam string-center hareketi
+6. Toplam maksimum fiziksel perde
+7. Toplam fiziksel perde yükü
+8. Canonical voicing/yol imzası
+
+İlk onset'te ve reset sonrası hareket maliyeti yoktur; orada eski kuralın ruhu
+korunur — daha dar span, daha düşük maksimum perde, daha düşük toplam perde,
+son olarak canonical imza.
+
+**Reset semantiği** — Faz 0 carry davranışıyla aynı yardımcıdan gelir. El
+bağlamı yalnız şu üç durumda sıfırlanır: track bir sonraki section'da hiç
+anılmıyorsa, taşınan ses de onset de olmayan **tam bir bar** varsa, ve şarkının
+başında. Section sınırı tek başına, kısa sus, bar boyu süren tie/sustain reset
+**değildir**.
+
+Onset ve sessizlik okuması tek bir saf modülde (`lib/tab/placement-input`)
+toplanır; tab timeline ve yerleşim motoru aynı okumayı paylaşır. O okumanın üç
+kuralı: tie (`"-"`) yeni onset değildir; bir ses sonraki bar'a **yalnız** o bar
+tie ile açılıyorsa taşınır; track'in hiç yazılmadığı bar sessizdir ve taşınan
+sesi keser (§5.5).
+
+**Bu sürümün iddiası olmayanlar:** parmak numarası, barre tespiti, parmak
+bağımsızlığı, legato/picking ergonomisi, tel atlama tekniği ve insan gitarist
+seviyesinde kusursuz fingering. Motor yalnız pozisyon türetir; pitch, onset,
+süre, velocity, articulation ve playback event zamanları değişmez.
+
+**§19 K-4 kaydı:** eski hafızasız kuralın sınırı bu karara kadar geçerliydi;
+K-19 ile üretimden kaldırıldı. Kalan büyük sıçramalar için `fretJump` uyarısı
+kalite güvenlik ağı olarak yerinde kalır.
 
 ---
 
@@ -1273,6 +1321,7 @@ maliyettir** (§11.2/7).
 | **K-16** | Belirsizlik kuralı tersine çevrildi: **kullanım doğrulanamıyorsa rezervasyon harcanmış sayılır**; uzlaştırma yalnız aşağı yönlü ve yalnız doğrulanmış kullanımla yapılır; belirsiz rezervasyon bütçe penceresi kapanmadan serbest bırakılmaz; rezervasyon süresi ile idempotency/cache TTL'i ayrı kavramlardır. Ayrıca adapter'ın somut token tavanları ve `worstCaseReservation <= dailyBudget` başlangıç invariant'ı Faz 2 başlama koşulu yapıldı; §18'de patch maliyeti tur sayısıyla çarpım yerine **turların toplamı** olarak düzeltildi; `lib/brand.ts` örneğindeki yorum ASCII'ye çevrildi. | Haktan, 19.08.2026 |
 | **K-17** | `tonalMajority` için 11/12 perde sınıfını kapsayan birleşik küme **kaldırıldı**. Tonal çekirdek yalnız deklarasyondaki yedi notalı majör veya doğal minör dizidir; harmonik/melodik minör yükseltmeleri, `b5`, ödünç notalar ve kromatik geçişler **renk notasıdır** ve çoğunluk payına eklenmez. "Komşusu kromatikse otomatik tonal say" istisnası kaldırıldı. Validator yalnız **en az 3 pitched onset** bulunan barda karar verir; geçmek için çekirdek oran **kesinlikle %50'den fazla** olmalıdır. Ayrıca §10.3'te ertelenen olağandışı fret sıçraması uyarısı uygulandı; eşikler tek merkezi kaynakta (gitar > 7, bas > 5 fiziksel fret). | Haktan, 19.08.2026 |
 | **K-18** | İlk kullanıcı ürünü, section'ın tamamını değiştiren `replace_section` değil, yalnız hedef track'i düzenleyen **`arrange_track`** oldu. Public `/api/copilot` strict şeması yalnız `arrange_track` kabul eder; `insert_section` / `replace_section` public route'tan kaldırıldı (dış kullanıcı olmadığı için geniş contract backward compatibility uğruna korunmadı). Sağlayıcı çıktısı section'ın tamamını değil **yalnız hedef track'in slotlarını** döndürür; melodik çıktıda explicit `position` reddedilir. Target dışı bütün track'ler sunucu tarafında kilitlidir; `lockedTrackIds` yalnızca ek açıklıktır. `patchSize` artık target track içinde dokunulan bar sayısını ölçer. Stil kartları sanatçıya değil **özelliğe** dayanır; `opeth-acoustic.md` yerine `progressive-atmospheric-acoustic.md`. | Haktan, 19.08.2026 |
+| **K-19** | **Ergonomic Placement v2.** `position` yazılmamış fretted melodik onset'ler artık hafızasız greedy ile tek tek değil, track'in zaman sıralı bağlamı içinde deterministic beam-search / dynamic-programming ile yerleştirilir (§9.2). Maliyet ağırlıklı bir skor değil, **lexicographic tuple**'dır; eşikler `limits.ts`'teki tek merkezi kaynaktan gelir ve beam width orada sabittir (runtime env ayarı yok). El konumu ölçüleri (anchor, chord span, string center) ve reset/carry semantiği `fretJump` ile **aynı** yardımcıdan gelir; tab, validator, preview ve playback tek yerleşim modelini kullanır. Explicit `position` her zaman korunur ve motor tarafından değiştirilemez. K-4'ün hafızasız kuralı üretimden kaldırıldı; parmak numarası, barre analizi ve picking ergonomisi bu sürümün iddiası değildir. | Haktan, 19.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 

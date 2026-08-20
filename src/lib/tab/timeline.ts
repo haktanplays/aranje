@@ -5,13 +5,23 @@
  * no layout numbers and no React; the view decides pixels.
  *
  * Positions come from the note itself when written out, otherwise from the
- * greedy engine (spec 9.2). A tie chain that reaches the first slot of a bar
- * continues the previous bar, so sounding state is carried across bars exactly
- * as the voice counter does (spec 6).
+ * ergonomic placement engine (spec 9.2, K-19), which reads the whole track in
+ * time rather than one chord at a time. A tie chain that reaches the first
+ * slot of a bar continues the previous bar, so sounding state is carried
+ * across bars exactly as the voice counter does (spec 6).
+ *
+ * This is the only place placement happens. The tab, the validators, the
+ * copilot preview and the audio scheduler all read the timeline, so they
+ * cannot disagree about where a note is played.
  */
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import type { Fretboard } from "@/lib/music/fretboard";
-import { resolveSlotPositions } from "@/lib/music/position";
+import { maxShiftFor } from "@/lib/music/hand-position";
+import {
+  placeTrack,
+  type PlacementDiagnostics,
+} from "@/lib/music/placement";
+import { trackPlacementInput } from "@/lib/tab/placement-input";
 import { slotCount } from "@/lib/music/timing";
 import type {
   Articulation,
@@ -91,6 +101,8 @@ export type TrackTimeline =
       strings: readonly string[];
       capo: number;
       bars: FrettedBar[];
+      /** What the placement search did. Never written to the Song (K-19). */
+      placement: PlacementDiagnostics;
     }
   | { kind: "drums"; trackId: string; lanes: DrumPiece[]; bars: DrumBar[] }
   | { kind: "unsupported"; trackId: string; reason: string };
@@ -146,9 +158,20 @@ function buildFretted(
   song: Song,
   track: Track,
   fretboard: Fretboard,
-): FrettedBar[] {
+): { bars: FrettedBar[]; diagnostics: PlacementDiagnostics } {
   const metas = barMeta(song);
   const bars: FrettedBar[] = [];
+
+  // Placement happens once, over the whole track, before any span is built.
+  const { onsets, bars: placementBars } = trackPlacementInput(song, track.id);
+  const placement = placeTrack({
+    fretboard,
+    onsets,
+    bars: placementBars,
+    // A family with no threshold still needs a number to compare against;
+    // the guitar's is the safe one to fall back on.
+    maxShift: maxShiftFor(track.instrumentId) ?? maxShiftFor("electric_guitar") ?? 7,
+  });
 
   // What is still sounding when the previous bar ended.
   let carried: Omit<OpenSpan, "startSlot" | "endSlot" | "openStart">[] = [];
@@ -198,19 +221,29 @@ function buildFretted(
       }
 
       closeOpen();
-      const resolved = resolveSlotPositions(fretboard, slot.notes);
-      open = resolved
-        .filter((entry) => entry.position !== null || entry.source === "none")
-        .map((entry) => ({
-          stringIndex: entry.position?.string ?? -1,
-          fret: entry.position?.fret ?? null,
-          pitch: entry.note.pitch,
-          velocity: entry.note.velocity,
-          articulation: entry.note.articulation,
+      const outcome = placement.byOnset.get(`${entry.meta.key}:${slotIndex}`);
+      // A partial outcome still carries its written positions; only the notes
+      // that found no string come back without one.
+      const placed =
+        outcome?.kind === "placed" || outcome?.kind === "partial"
+          ? outcome.voicing.notes
+          : null;
+
+      open = slot.notes.map((note, noteIndex) => {
+        const position = placed?.find((entry) => entry.noteIndex === noteIndex);
+        return {
+          // An onset the engine could not place keeps its pitch and loses only
+          // its position; `unplaceable` reports it (spec 10.3).
+          stringIndex: position?.stringIndex ?? -1,
+          fret: position?.fret ?? null,
+          pitch: note.pitch,
+          velocity: note.velocity,
+          articulation: note.articulation,
           startSlot: slotIndex,
           endSlot: slotIndex,
           openStart: false,
-        }));
+        };
+      });
     }
 
     // Anything still open runs to the end of the bar.
@@ -238,7 +271,7 @@ function buildFretted(
     bars.push({ ...rest, silent: false, spans, rests });
   });
 
-  return bars;
+  return { bars, diagnostics: placement.diagnostics };
 }
 
 function buildDrums(song: Song, track: Track): {
@@ -324,12 +357,14 @@ export function buildTrackTimeline(
     };
   }
 
+  const fretted = buildFretted(song, track, track.fretboard);
   return {
     kind: "fretted",
     trackId,
     strings: track.fretboard.tuning,
     capo: track.fretboard.capo,
-    bars: buildFretted(song, track, track.fretboard),
+    bars: fretted.bars,
+    placement: fretted.diagnostics,
   };
 }
 

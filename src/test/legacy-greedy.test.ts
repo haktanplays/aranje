@@ -7,7 +7,7 @@ import {
   resolveNotePosition,
   resolveSlotPositions,
   resolvedSoundsAs,
-} from "@/lib/music/position";
+} from "@/test/legacy-greedy";
 
 const GUITAR: Fretboard = {
   tuning: TUNING_PRESETS.e_standard?.tuning ?? [],
