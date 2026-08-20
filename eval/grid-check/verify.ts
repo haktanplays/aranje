@@ -13,6 +13,7 @@ import { buildTempoMap, secondsAtTicks } from "@/lib/audio/tempo";
 import { positionAtTicks } from "@/lib/audio/position";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 import { barWidth } from "@/components/workspace/geometry";
+import { rhythmReport, usedResolutions } from "@/lib/copilot/rhythm-report";
 import {
   PPQ,
   isTripletGrid,
@@ -120,3 +121,25 @@ for (const bar of plan.bars) {
   }
 }
 console.log(`  slots checked: ${plan.bars.reduce((n, b) => n + b.slotCount, 0)}, mismatches: ${mismatches}`);
+
+console.log("\n--- rhythmic vocabulary (reporting only, never a score) ---");
+const report = rhythmReport(song);
+console.log(
+  `  grids ${usedResolutions(report.grid).map((r) => resolutionLabel(r)).join(", ")} · ` +
+    `triplet bars ${report.grid.tripletBars} · 1/32 bars ${report.grid.thirtySecondBars} · ` +
+    `fine bars that did not need it ${report.grid.unusedFineBars}/${report.grid.highResolutionBars}`,
+);
+for (const speed of report.speed) {
+  console.log(
+    `  ${speed.trackId.padEnd(6)} onsets ${String(speed.onsets).padStart(3)} · ` +
+      `fastest gap ${speed.fastestGapSeconds === null ? "-" : `${(speed.fastestGapSeconds * 1000).toFixed(1)}ms`} ` +
+      `(${speed.fastestOnsetsPerSecond === null ? "-" : speed.fastestOnsetsPerSecond.toFixed(1)}/s) · ` +
+      `longest burst ${speed.longestBurst} · bursts of 4+ ${speed.burstCount}`,
+  );
+}
+for (const run of report.scalarRuns) {
+  console.log(
+    `  scalar-run candidate: ${run.trackId} bar ${run.barNumber} slot ${run.startSlot + 1} ` +
+      `${run.length} nota ${run.direction} — ${run.pitches.join(" ")}`,
+  );
+}

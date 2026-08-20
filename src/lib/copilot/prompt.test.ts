@@ -13,7 +13,8 @@ import { barShapeLines, rhythmLines, trackLines } from "@/lib/copilot/compact";
 import { ARRANGE_SKILLS } from "@/lib/copilot/contract";
 import { readStyleCards } from "@/lib/copilot/style-cards.server";
 import { STYLE_CARD_IDS, styleCardPath, styleCardRegistry } from "@/lib/copilot/style-cards";
-import type { Song } from "@/lib/song/schema";
+import { songSchema, type Song } from "@/lib/song/schema";
+import { songLimits } from "@/lib/limits";
 import {
   HARMONY_SONG,
   TEST_SONG,
@@ -349,6 +350,63 @@ describe("the worst case still fits under the ceiling (spec 11.3, K-32)", () => 
     }
     expect(worst).toBeLessThan(8000);
     // And not so close that a small addition silently breaks it.
+    expect(worst).toBeLessThan(8000 * 0.7);
+  });
+
+  it("still fits with the biggest song on the finest grid (K-34)", () => {
+    /*
+     * The five grids doubled how many slots a section can carry, so the
+     * ceiling was re-measured rather than raised (spec 11.3, 10). Four
+     * sections of eight 1/32 bars, densely written, is the largest thing the
+     * contract allows; measured worst case is about 3870 of 8000.
+     */
+    const bars = Array.from({ length: songLimits.barsPerSection }, () => ({
+      timeSignature: [4, 4] as const,
+      resolution: 32 as const,
+      slots: {
+        gtr: Array.from({ length: 32 }, () => ({
+          notes: [{ pitch: "D2", velocity: 100, articulation: "palm_mute" as const }],
+        })),
+        drums: Array.from({ length: 32 }, () => [{ piece: "kick" as const }]),
+      },
+    }));
+    const dense = songSchema.parse({
+      version: 2,
+      title: "dense",
+      bpm: 138,
+      key: "D minor",
+      tracks: TEST_SONG.tracks.filter((track) =>
+        ["gtr", "drums"].includes(track.id),
+      ),
+      sections: Array.from({ length: 4 }, (_, index) => ({
+        id: `sec-${index + 1}`,
+        name: `S${index + 1}`,
+        status: "fixed" as const,
+        bars,
+      })),
+    });
+
+    const cards = readStyleCards();
+    let worst = 0;
+    for (const role of ARRANGE_SKILLS) {
+      for (const cardId of [null, ...STYLE_CARD_IDS]) {
+        const card = cardId ? cards[cardId] : undefined;
+        const built = buildPrompt({
+          request: arrangeRequest(role, {
+            song: dense,
+            sectionId: "sec-1",
+            targetTrackId: role === "drums" ? "drums" : "gtr",
+            lockedTrackIds: ["gtr", "drums"].filter((id) =>
+              role === "drums" ? id !== "drums" : id !== "gtr",
+            ),
+            instruction: "x".repeat(2000),
+          }),
+          ...(card ? { styleCard: card } : {}),
+        });
+        worst = Math.max(worst, built.estimatedInputTokens);
+      }
+    }
+    expect(worst).toBeLessThan(8000);
     expect(worst).toBeLessThan(8000 * 0.7);
   });
 });
