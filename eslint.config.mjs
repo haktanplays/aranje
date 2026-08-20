@@ -6,6 +6,7 @@ const config = [
     ignores: [
       ".next/**",
       ".render-demo/**",
+      ".shadow-eval/**",
       "node_modules/**",
       "design/**",
       "public/**",

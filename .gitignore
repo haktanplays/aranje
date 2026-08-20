@@ -5,4 +5,5 @@ next-env.d.ts
 *.tsbuildinfo
 .env*.local
 .DS_Store
-.render-demo/
+.render-demo
+.shadow-eval/
