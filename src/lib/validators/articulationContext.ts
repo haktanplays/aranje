@@ -20,6 +20,7 @@
  *   hammer-on does not fill the list.
  */
 import { isDrumInstrument } from "@/lib/instruments/registry";
+import { legatoDecision } from "@/lib/audio/legato-chain";
 import { legatoLink, trackLegatoOnsets } from "@/lib/music/legato";
 import { isExpressive, needsPrevious } from "@/lib/audio/expression";
 import { expressionPresets } from "@/lib/audio/expression";
@@ -110,28 +111,26 @@ export const validateArticulationContext: Validator = (song: Song) => {
       // and on this track every note has one by construction.
       if (!needsPrevious(articulation)) return;
 
-      const link = legatoLink(onsets, index);
       const name = articulationLabel(articulation);
 
-      if (link.kind === "other_string") {
-        report(
-          `${where}: ${onset.pitch} notasındaki ${name} için önceki nota aynı ` +
-            `telde değil; normal çalınacak.`,
-        );
-        return;
-      }
-      if (link.kind === "none") {
-        report(
-          `${where}: ${onset.pitch} notasındaki ${name} bir önceki nota ile ` +
-            `bağlanamıyor; normal çalınacak.`,
-        );
-        return;
-      }
-
-      const previous = link.previous;
-      if (previous.midi === null || onset.midi === null) return;
-
       if (articulation === "slide") {
+        const link = legatoLink(onsets, index);
+        if (link.kind === "other_string") {
+          report(
+            `${where}: ${onset.pitch} notasındaki ${name} için önceki nota aynı ` +
+              `telde değil; normal çalınacak.`,
+          );
+          return;
+        }
+        if (link.kind === "none") {
+          report(
+            `${where}: ${onset.pitch} notasındaki ${name} bir önceki nota ile ` +
+              `bağlanamıyor; normal çalınacak.`,
+          );
+          return;
+        }
+        const previous = link.previous;
+        if (previous.midi === null || onset.midi === null) return;
         const interval = Math.abs(previous.midi - onset.midi);
         if (interval > expressionPresets.slide.maxIntervalSemitones) {
           report(
@@ -142,19 +141,45 @@ export const validateArticulationContext: Validator = (song: Song) => {
         return;
       }
 
-      if (articulation === "hammer_on" && onset.midi <= previous.midi) {
-        report(
-          `${where}: ${name} yalnız yukarı yönde çalınır; ${previous.pitch} ` +
-            `sonrası ${onset.pitch} normal çalınacak.`,
-        );
-        return;
-      }
+      // Hammer-on and pull-off are decided by the same helper the renderer
+      // uses, so a warning here and a fallback there can never disagree.
+      const decision = legatoDecision(onsets, index);
+      if (!decision || decision.kind === "joined") return;
 
-      if (articulation === "pull_off" && onset.midi >= previous.midi) {
-        report(
-          `${where}: ${name} yalnız aşağı yönde çalınır; ${previous.pitch} ` +
-            `sonrası ${onset.pitch} normal çalınacak.`,
-        );
+      switch (decision.reason) {
+        case "previous_note_other_string":
+          report(
+            `${where}: ${onset.pitch} notasındaki ${name} için önceki nota aynı ` +
+              `telde değil; normal çalınacak.`,
+          );
+          return;
+        case "no_previous_note":
+          report(
+            `${where}: ${onset.pitch} notasındaki ${name} bir önceki nota ile ` +
+              `bağlanamıyor; normal çalınacak.`,
+          );
+          return;
+        case "wrong_direction":
+          report(
+            articulation === "hammer_on"
+              ? `${where}: ${name} yalnız yukarı yönde çalınır; ${onset.pitch} ` +
+                  `normal çalınacak.`
+              : `${where}: ${name} yalnız aşağı yönde çalınır; ${onset.pitch} ` +
+                  `normal çalınacak.`,
+          );
+          return;
+        case "interval_too_wide":
+          report(
+            `${where}: ${name} en fazla ` +
+              `${expressionPresets.legato.maxIntervalSemitones} yarım ton ` +
+              `uzağa bağlanır; ${onset.pitch} normal çalınacak.`,
+          );
+          return;
+        default:
+          report(
+            `${where}: ${onset.pitch} notasındaki ${name} bu bağlamda ` +
+              `çalınamıyor; normal çalınacak.`,
+          );
       }
     });
   }

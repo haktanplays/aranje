@@ -14,6 +14,12 @@ import { sectionLoopBounds } from "@/lib/audio/position";
 import { effectiveBpm } from "@/lib/audio/practice-rate";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { bar, note, slots, song } from "@/test/expression-fixtures";
+
+/** Two notes on one string, the second hammered on to the first. */
+function legatoSong() {
+  return song([bar(slots([note("G3", 1, 10), note("B3", 1, 14, "hammer_on")]))]);
+}
 
 type FakeTransport = {
   ticks: number;
@@ -24,6 +30,7 @@ type FakeTransport = {
   loopStart: string;
   loopEnd: string;
   scheduled: number[];
+  callbacks: ((time: number) => void)[];
   listeners: string[];
   cancels: number;
   starts: number;
@@ -46,12 +53,14 @@ function fakeTransport(): FakeTransport {
     loopStart: "",
     loopEnd: "",
     scheduled: [],
+    callbacks: [],
     listeners: [],
     cancels: 0,
     starts: 0,
     pauses: 0,
-    schedule() {
+    schedule(callback) {
       transport.scheduled.push(transport.scheduled.length);
+      transport.callbacks.push(callback);
       return transport.scheduled.length;
     },
     on(event) {
@@ -84,6 +93,7 @@ function fakeExpression() {
     },
     getPlan: () => plan,
     play: () => false,
+    playChain: () => false,
     stopAll: () => {
       log.stops += 1;
     },
@@ -345,5 +355,75 @@ describe("the expressive layer's lifetime", () => {
     await controller.play();
     controller.dispose();
     expect(expression.log.disposals).toBe(1);
+  });
+});
+
+describe("what the scheduler does with a legato chain (spec 8.5, K-22)", () => {
+  /** A fake sampler voice that records every restrike asked of it. */
+  function legatoHarness() {
+    const transport = fakeTransport();
+    const struck: string[] = [];
+    const chained: string[] = [];
+
+    const fixture = legatoSong();
+    const plan = buildExpressionPlan(fixture);
+
+    const engine = {
+      context: { transport },
+      metronome: { click: { triggerAttackRelease: () => {} } },
+      voices: new Map([
+        [
+          "gtr",
+          {
+            kind: "sampler",
+            trackId: "gtr",
+            sampler: {
+              triggerAttackRelease: (pitch: string) => struck.push(pitch),
+            },
+          },
+        ],
+      ]),
+      plan: buildSongPlan(fixture),
+      expression: {
+        getPlan: () => plan,
+        setPlan: () => {},
+        play: () => false,
+        playChain: (chain: { chainId: string }) => {
+          chained.push(chain.chainId);
+          return true;
+        },
+        stopAll: () => {},
+        counts: { active: 0, started: 0, disposed: 0, primary: 0, auxiliaryTransient: 0 },
+        fetchedUrls: 0,
+        dispose: () => {},
+      },
+    } as unknown as Engine;
+
+    return { engine, transport, struck, chained, plan };
+  }
+
+  it("plays the chain once and never restrikes its target", () => {
+    const { engine, transport, struck, chained, plan } = legatoHarness();
+    scheduleSong(engine, 120);
+
+    expect(plan.chains).toHaveLength(1);
+    // Every scheduled callback fires, as the transport would.
+    for (const callback of transport.callbacks) callback(0);
+
+    expect(chained).toEqual([plan.chains[0]?.chainId]);
+    // Only the notes outside the chain are struck; the chain's two notes are
+    // its own, and its target is not struck at all.
+    expect(struck).toEqual([]);
+  });
+
+  it("still strikes an ordinary note beside a chain", () => {
+    const { engine, transport, struck } = legatoHarness();
+    scheduleSong(engine, 120);
+    for (const callback of transport.callbacks) callback(0);
+
+    // The fixture is two notes, both in the chain, so nothing is struck. A
+    // third note outside it would be — that is what this guards.
+    expect(struck).toHaveLength(0);
+    expect(transport.callbacks.length).toBeGreaterThan(0);
   });
 });

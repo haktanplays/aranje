@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 
 import { ExpressiveVoicePool, type VoiceHost } from "@/lib/audio/expressive-voice";
 import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
+import type { LegatoChain } from "@/lib/audio/legato-chain";
 import { sampleEntries } from "@/lib/audio/sample-map";
 import { bar, note, slots, song } from "@/test/expression-fixtures";
 
@@ -298,5 +299,167 @@ describe("the offline renderer's rule", () => {
     pool.dispose();
     expect(sources.every((source) => source.disposed === 1)).toBe(true);
     expect(pool.counts.disposed).toBe(sources.length);
+  });
+});
+
+/** The chain for a fixture, plus a pool to play it on. */
+function chainOf(fixture: ReturnType<typeof song>): LegatoChain {
+  const chain = buildExpressionPlan(fixture).chains[0];
+  if (!chain) throw new Error("no chain");
+  return chain;
+}
+
+const G3 = () => note("G3", 1, 10);
+const B3 = (a?: Parameters<typeof note>[3]) => note("B3", 1, 14, a);
+
+describe("a legato chain is one voice", () => {
+  it("starts a single source for a hammer-on pair", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+
+    expect(pool.playChain(chain, 0)).toBe(true);
+
+    expect(sources).toHaveLength(1);
+    expect(pool.counts.primary).toBe(1);
+    expect(pool.counts.auxiliaryTransient).toBe(0);
+  });
+
+  it("never starts a second source at the hammer-on target", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+    pool.playChain(chain, 0);
+
+    // One source, started once, for the whole chain.
+    expect(sources).toHaveLength(1);
+    expect(sources[0]?.started?.duration).toBeCloseTo(
+      chain.endSeconds - chain.startSeconds,
+      6,
+    );
+  });
+
+  it("moves the pitch of the voice that is already ringing", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+    pool.playChain(chain, 0);
+
+    const calls = sources[0]?.playbackRate.calls ?? [];
+    const ramps = calls.filter((call) => call.kind === "ramp");
+    expect(ramps).toHaveLength(1);
+
+    // Four semitones up: the rate rises by 2^(4/12).
+    const start = calls[0]?.value ?? 0;
+    expect(ramps[0]?.value ?? 0).toBeCloseTo(start * Math.pow(2, 4 / 12), 8);
+    expect(ramps[0]?.time).toBeCloseTo(
+      (chain.transitions[0]?.atSeconds ?? 0) +
+        (chain.transitions[0]?.transitionSeconds ?? 0),
+      6,
+    );
+  });
+
+  it("keeps 5h7p5 on one source with two transitions", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(
+      song([bar(slots([G3(), B3("hammer_on"), note("G3", 1, 10, "pull_off")]))]),
+    );
+    pool.playChain(chain, 0);
+
+    // One primary, plus the pull-off's own short click.
+    expect(pool.counts.primary).toBe(1);
+    expect(pool.counts.auxiliaryTransient).toBe(1);
+    expect(sources.filter((entry) => entry.started !== null)).toHaveLength(2);
+
+    const ramps = (sources[0]?.playbackRate.calls ?? []).filter(
+      (call) => call.kind === "ramp",
+    );
+    expect(ramps).toHaveLength(2);
+    // It comes back to exactly where it started.
+    expect(ramps[1]?.value ?? 0).toBeCloseTo(
+      sources[0]?.playbackRate.calls[0]?.value ?? 0,
+      8,
+    );
+  });
+
+  it("gives a pull-off one short quiet click, not a second note", () => {
+    const { pool, sources, filters } = harness();
+    const chain = chainOf(song([bar(slots([B3(), note("G3", 1, 10, "pull_off")]))]));
+    pool.playChain(chain, 0);
+
+    expect(pool.counts.primary).toBe(1);
+    expect(pool.counts.auxiliaryTransient).toBe(1);
+    expect(filters).toHaveLength(1);
+
+    const aux = sources[1];
+    const primary = sources[0];
+    expect(aux?.started?.duration).toBeLessThanOrEqual(0.035);
+    expect(aux?.started?.duration ?? 1).toBeLessThan(
+      (primary?.started?.duration ?? 0) / 4,
+    );
+  });
+
+  it("steps the level down at each transition, on its own gain", () => {
+    const { pool, gains } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+    pool.playChain(chain, 0);
+
+    const calls = gains[0]?.calls ?? [];
+    const ramps = calls.filter((call) => call.kind === "ramp");
+    expect(ramps).toHaveLength(1);
+    expect(ramps[0]?.value ?? 0).toBeLessThan(calls[0]?.value ?? 0);
+  });
+
+  it("does not touch any other string", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+    // A steady note on another string, playing at the same time.
+    const steady = buildExpressionPlan(
+      song([bar(slots([note("E3", 0, 12, "accent")]))]),
+    ).notes[0];
+    if (!steady) throw new Error("no steady note");
+
+    pool.playChain(chain, 0);
+    pool.play("gtr", steady, 0);
+
+    const other = sources[1];
+    expect(other?.playbackRate.calls.filter((call) => call.kind === "ramp")).toEqual([]);
+  });
+
+  it("refuses a track it has no samples for", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+    expect(pool.playChain({ ...chain, trackId: "bass" }, 0)).toBe(false);
+    expect(sources).toHaveLength(0);
+  });
+
+  it("releases the chain once, at its end", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(
+      song([bar(slots([G3(), B3("hammer_on"), note("G3", 1, 10, "pull_off")]))]),
+    );
+    pool.playChain(chain, 0);
+
+    for (const source of sources) source.onended();
+
+    expect(pool.counts.active).toBe(0);
+    expect(sources.every((source) => source.disposed === 1)).toBe(true);
+    expect(pool.counts.disposed).toBe(pool.counts.started);
+  });
+
+  it("takes the whole chain away on a stop", () => {
+    const { pool, sources } = harness();
+    pool.playChain(chainOf(song([bar(slots([B3(), note("G3", 1, 10, "pull_off")]))])), 0);
+    expect(pool.counts.active).toBe(2);
+
+    pool.stopAll();
+
+    expect(pool.counts.active).toBe(0);
+    expect(sources.every((source) => source.disposed === 1)).toBe(true);
+  });
+
+  it("plays nothing once the pool is closed", () => {
+    const { pool } = harness();
+    pool.dispose();
+    expect(pool.playChain(chainOf(song([bar(slots([G3(), B3("hammer_on")]))])), 0)).toBe(
+      false,
+    );
   });
 });

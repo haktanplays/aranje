@@ -23,6 +23,7 @@ import {
   type ExpressionPlan,
   type ExpressiveNotePlan,
 } from "@/lib/audio/expression-plan";
+import type { LegatoChain } from "@/lib/audio/legato-chain";
 import {
   ExpressiveVoicePool,
   type VoiceHost,
@@ -111,6 +112,8 @@ export type ExpressionRuntime = {
   getPlan(): ExpressionPlan;
   /** Start one note in a voice of its own. False when it cannot be played. */
   play(note: ExpressiveNotePlan, time: number): boolean;
+  /** Start a whole legato chain on one voice (spec 8.5, K-22). */
+  playChain(chain: LegatoChain, time: number): boolean;
   /** Every voice currently sounding, gone. */
   stopAll(): void;
   readonly counts: VoicePoolCounts;
@@ -425,6 +428,7 @@ export async function createEngine(
     },
     getPlan: () => expressionPlan,
     play: (note, time) => pool.play(note.trackId, note, time),
+    playChain: (chain, time) => pool.playChain(chain, time),
     stopAll: () => pool.stopAll(),
     get counts() {
       return pool.counts;
@@ -516,7 +520,30 @@ export function scheduleSong(
    * the expression plan adds is what each note should *do*. Scheduling notes
    * from it is what makes online and offline share one path (spec 8.5).
    */
-  for (const note of engine.expression.getPlan().notes) {
+  const plan = engine.expression.getPlan();
+
+  /*
+   * A legato chain is one voice, so it is scheduled once, at the note that is
+   * actually struck. Its targets are still notes of the song and still in the
+   * plan; they are simply not struck again (spec 8.5, K-22).
+   */
+  for (const chain of plan.chains) {
+    const voice = engine.voices.get(chain.trackId);
+    if (!voice || voice.kind !== "sampler") continue;
+    const chainId = chain.chainId;
+
+    transport.schedule((time) => {
+      const current = engine.expression
+        .getPlan()
+        .chains.find((entry) => entry.chainId === chainId);
+      if (current) engine.expression.playChain(current, time);
+    }, ticks(chain.startTicks));
+  }
+
+  for (const note of plan.notes) {
+    // The chain plays this one.
+    if (note.chainId !== undefined) continue;
+
     const voice = engine.voices.get(note.trackId);
     if (!voice || voice.kind !== "sampler") continue;
 
@@ -527,9 +554,13 @@ export function scheduleSong(
     transport.schedule((time) => {
       // Read at trigger time, so a speed change reaches notes that have not
       // sounded yet without rebuilding anything.
+      const currentPlan = engine.expression.getPlan();
       const current =
-        engine.expression.getPlan().notes.find((entry) => entry.id === noteId) ??
-        note;
+        currentPlan.notes.find((entry) => entry.id === noteId) ?? note;
+
+      // A speed change can rebuild the plan; if this note has since joined a
+      // chain, the chain owns it.
+      if (current.chainId !== undefined) return;
 
       if (current.expressive) {
         const played = engine.expression.play(current, time);

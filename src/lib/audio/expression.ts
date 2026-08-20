@@ -27,13 +27,41 @@ export const expressionPresets = {
     /** How finely the sine is written out as automation points. */
     pointsPerCycle: 12,
   },
+  /**
+   * Bend v2 (spec 8.5, K-22).
+   *
+   * v1 split the note into fixed percentages, which is wrong for a long one:
+   * a four-second sustain spent more than two seconds climbing, and a bend
+   * that takes two seconds to arrive does not sound like a hand, it sounds
+   * like a machine. So the shape still scales with the music, but the rise and
+   * the release have real floors and ceilings in seconds.
+   */
   bend: {
     halfCents: CENTS_PER_SEMITONE,
     fullCents: CENTS_PER_SEMITONE * 2,
-    /** Rise, hold, release — as fractions of the note's own length. */
-    riseFraction: 0.55,
-    holdFraction: 0.3,
-    releaseFraction: 0.15,
+    /** The pick lands before the hand starts pushing. */
+    settleSeconds: 0.035,
+    /** On a very short note the settle cannot eat the whole note. */
+    settleMaxFraction: 0.08,
+    riseFraction: 0.22,
+    riseMinSeconds: 0.08,
+    riseMaxSeconds: 0.28,
+    releaseFraction: 0.12,
+    releaseMinSeconds: 0.06,
+    releaseMaxSeconds: 0.18,
+    /** How finely the eased rise and release are written out. */
+    curvePoints: 6,
+    /**
+     * The "expressive" profile only. Not a second articulation and never
+     * written to the song: it is a playback character for the same bend.
+     */
+    top: {
+      depthCents: 10,
+      rateHz: 5,
+      /** The hand settles on the target before it starts moving again. */
+      startDelaySeconds: 0.04,
+      pointsPerCycle: 10,
+    },
   },
   slide: {
     maxGlideSeconds: 0.16,
@@ -41,12 +69,36 @@ export const expressionPresets = {
     /** Further than this and it is a jump, not a slide (spec 8.5). */
     maxIntervalSemitones: 12,
   },
+  /**
+   * Hammer-on and pull-off (spec 8.5, K-22).
+   *
+   * v1 played the target as a quieter copy of the same onset, which is exactly
+   * what a hammer-on is not: the string never stops, and the finger changes
+   * the pitch of a note that is already ringing. So these numbers describe a
+   * **transition on a voice that keeps playing**, not a second attack.
+   */
   legato: {
-    /** Hammer-on and pull-off share the same short transition. */
-    maxTransitionSeconds: 0.045,
-    transitionFraction: 0.2,
-    /** The note is not picked again, so it starts from under the last one. */
-    attackGain: 0.55,
+    hammerOn: {
+      transitionSeconds: 0.022,
+      /** What the ringing voice keeps after the finger lands. */
+      levelAfter: 0.88,
+    },
+    pullOff: {
+      transitionSeconds: 0.028,
+      levelAfter: 0.78,
+      /**
+       * A pull-off plucks the string sideways on the way off, so it has a
+       * little more bite than a hammer-on. This is that click — short, quiet
+       * and filtered, and never a stand-in for the note itself.
+       */
+      auxiliary: {
+        gain: 0.16,
+        maxSeconds: 0.035,
+        filterHz: 4500,
+      },
+    },
+    /** Further than this and the hand is jumping, not slurring. */
+    maxIntervalSemitones: 5,
   },
   palmMute: {
     /** At most this much of the written length, and never longer than the cap. */

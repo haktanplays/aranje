@@ -27,8 +27,12 @@ import {
   bendTargetCents,
   expressionPresets,
   isExpressive,
-  needsPrevious,
 } from "@/lib/audio/expression";
+import {
+  buildLegatoChains,
+  type ChainRole,
+  type LegatoChain,
+} from "@/lib/audio/legato-chain";
 import {
   legatoLink,
   trackLegatoOnsets,
@@ -82,6 +86,16 @@ export type ExpressiveNotePlan = {
   fallbackReason?: ExpressionFallbackReason;
   /** True when this note needs a voice of its own rather than the sampler. */
   expressive: boolean;
+  /**
+   * Set when this note is part of a legato chain (spec 8.5, K-22).
+   *
+   * A `source` is struck and starts the chain's voice. A `target` is **not**
+   * struck at all: the chain moves the pitch of the voice that is already
+   * ringing. The note stays in the plan either way — it is still a note of the
+   * song — but a target is rendered by its chain rather than on its own.
+   */
+  chainId?: string;
+  chainRole?: ChainRole;
   /** Where it is, for a diagnostic that has to point at something. */
   barKey: string;
   slotIndex: number;
@@ -89,15 +103,42 @@ export type ExpressiveNotePlan = {
 
 export type ExpressionPlan = {
   notes: ExpressiveNotePlan[];
+  /** Every legato chain, in playing order (spec 8.5, K-22). */
+  chains: LegatoChain[];
   /** Notes that asked for something the context could not give them. */
   fallbacks: number;
   /** Notes that will be played by a voice of their own. */
   expressiveNotes: number;
 };
 
+/**
+ * Ways of planning that exist **only** so a render can be compared with
+ * another render (spec 8.5, K-22).
+ *
+ * None of these is reachable from the interface, and there is no setting for
+ * any of them. A selectable "old engine" in the product would mean shipping
+ * two answers to the same question and having to defend both; what is wanted
+ * is one engine and a way to hear what changed.
+ */
+export type ExpressionComparisonOptions = {
+  /** Phase 2F's hammer-on and pull-off: a quieter restrike, no chain. */
+  legacyLegato?: boolean;
+  /** Phase 2F's bend curve: fixed percentages of the note. */
+  legacyBend?: boolean;
+  /** Off renders a pull-off with no finger click at all. */
+  pullOffAuxiliary?: boolean;
+};
+
 export type ExpressionPlanOptions = {
   /** Whole percent of the song's own tempo (spec 13.8). */
   practicePercent?: number;
+  /**
+   * Which bend character to plan. `tight` is what ships; `expressive` exists
+   * for the listening renders and is not reachable from the interface.
+   */
+  bendProfile?: BendProfile;
+  /** Render-only comparisons. Never set by the app (see the type above). */
+  comparison?: ExpressionComparisonOptions;
 };
 
 function noteSeconds(ticks: number, secondsPerTick: number): number {
@@ -147,16 +188,98 @@ export function vibratoAutomation(durationSeconds: number): PitchPoint[] {
   return points;
 }
 
-/** Rise to the target, sit on it, then come back down (spec 8.5). */
-export function bendAutomation(
+/**
+ * The four stages of a bend, in seconds (spec 8.5, K-22).
+ *
+ * Exported because the render harness reports them and the tests read them
+ * back: a bend that arrives in 280ms rather than 1.2s is the whole point of
+ * v2, and "how long did the rise take" has to be answerable without listening.
+ */
+export type BendStages = {
+  settleSeconds: number;
+  riseSeconds: number;
+  holdSeconds: number;
+  releaseSeconds: number;
+  /** When the target pitch is first reached, from the note's start. */
+  reachedAtSeconds: number;
+};
+
+/**
+ * How long each stage lasts.
+ *
+ * The rise and the release scale with the note but are clamped into a range a
+ * hand can actually do. When the note is too short to hold all three, they are
+ * squeezed **proportionally** — deterministic, and never producing a negative
+ * hold or automation that runs off the end of the note.
+ *
+ * `timeScale` is the practice-speed factor: at half speed the musical gesture
+ * is twice as long, so its real-time floors and ceilings stretch with it.
+ */
+export function bendStages(
+  durationSeconds: number,
+  timeScale = 1,
+): BendStages {
+  const preset = expressionPresets.bend;
+
+  let settle = Math.min(
+    preset.settleSeconds * timeScale,
+    durationSeconds * preset.settleMaxFraction,
+  );
+  let rise = Math.min(
+    preset.riseMaxSeconds * timeScale,
+    Math.max(preset.riseMinSeconds * timeScale, durationSeconds * preset.riseFraction),
+  );
+  let release = Math.min(
+    preset.releaseMaxSeconds * timeScale,
+    Math.max(
+      preset.releaseMinSeconds * timeScale,
+      durationSeconds * preset.releaseFraction,
+    ),
+  );
+
+  const needed = settle + rise + release;
+  if (needed > durationSeconds && needed > 0) {
+    const squeeze = durationSeconds / needed;
+    settle *= squeeze;
+    rise *= squeeze;
+    release *= squeeze;
+  }
+
+  const hold = Math.max(0, durationSeconds - settle - rise - release);
+
+  return {
+    settleSeconds: round(settle),
+    riseSeconds: round(rise),
+    holdSeconds: round(hold),
+    releaseSeconds: round(release),
+    reachedAtSeconds: round(settle + rise),
+  };
+}
+
+/** Fast away from the start, controlled as it arrives. */
+function easeOut(t: number): number {
+  return 1 - (1 - t) * (1 - t);
+}
+
+/** Gentle at both ends, so the return does not snap. */
+function easeInOut(t: number): number {
+  return t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t);
+}
+
+/**
+ * Phase 2F's bend, kept only so a listener can hear what v2 changed.
+ *
+ * Fixed percentages of the note: on a long sustain the rise alone took over a
+ * second, which is the fault v2 exists to fix. Nothing in the app can select
+ * this.
+ */
+export function legacyBendAutomation(
   durationSeconds: number,
   articulation: Articulation,
 ): PitchPoint[] {
   const target = bendTargetCents(articulation);
-  const { riseFraction, holdFraction } = expressionPresets.bend;
-
-  const rise = durationSeconds * riseFraction;
-  const hold = durationSeconds * (riseFraction + holdFraction);
+  const rise = durationSeconds * 0.55;
+  const hold = durationSeconds * 0.85;
 
   return [
     { timeSeconds: 0, cents: 0, curve: "step" },
@@ -164,6 +287,98 @@ export function bendAutomation(
     { timeSeconds: round(hold), cents: target, curve: "linear" },
     { timeSeconds: round(durationSeconds), cents: 0, curve: "linear" },
   ];
+}
+
+/**
+ * Phase 2F's hammer-on and pull-off, kept for the same reason: the target was
+ * struck again, only quieter. Render comparisons only.
+ */
+export function legacyLegatoGain(
+  durationSeconds: number,
+  gain: number,
+): GainPoint[] {
+  const transition = Math.min(0.045, durationSeconds * 0.2);
+  return [
+    { timeSeconds: 0, value: round(gain * 0.55) },
+    { timeSeconds: round(transition), value: round(gain) },
+  ];
+}
+
+/** Which character a bend is played with. Tight is what ships (spec 8.5). */
+export type BendProfile = "tight" | "expressive";
+
+/**
+ * Settle, rise, hold, release (spec 8.5, K-22).
+ *
+ * The target is exact: a half bend arrives at +100 cents and a full one at
+ * +200, never at 97 or 205. The shape between the corners is eased; the
+ * corners themselves are the numbers.
+ */
+export function bendAutomation(
+  durationSeconds: number,
+  articulation: Articulation,
+  options: { timeScale?: number; profile?: BendProfile } = {},
+): PitchPoint[] {
+  const target = bendTargetCents(articulation);
+  const timeScale = options.timeScale ?? 1;
+  const profile = options.profile ?? "tight";
+  const stages = bendStages(durationSeconds, timeScale);
+  const { curvePoints, top } = expressionPresets.bend;
+
+  const points: PitchPoint[] = [{ timeSeconds: 0, cents: 0, curve: "step" }];
+
+  if (stages.settleSeconds > 0) {
+    points.push({ timeSeconds: round(stages.settleSeconds), cents: 0, curve: "linear" });
+  }
+
+  for (let step = 1; step <= curvePoints; step += 1) {
+    const t = step / curvePoints;
+    points.push({
+      timeSeconds: round(stages.settleSeconds + stages.riseSeconds * t),
+      cents: round(target * easeOut(t)),
+      curve: "linear",
+    });
+  }
+
+  const holdEnd = stages.reachedAtSeconds + stages.holdSeconds;
+
+  if (profile === "expressive" && stages.holdSeconds > top.startDelaySeconds * timeScale) {
+    // The hand does not sit perfectly still on the target, but it does arrive
+    // there first: the movement starts after the delay and stops when the
+    // release does.
+    const delay = top.startDelaySeconds * timeScale;
+    points.push({
+      timeSeconds: round(stages.reachedAtSeconds + delay),
+      cents: target,
+      curve: "linear",
+    });
+    const step = 1 / (top.rateHz * top.pointsPerCycle * (1 / timeScale));
+    const moving = stages.holdSeconds - delay;
+    for (let time = step; time <= moving + 1e-9; time += step) {
+      points.push({
+        timeSeconds: round(stages.reachedAtSeconds + delay + time),
+        cents: round(
+          target + top.depthCents * Math.sin((2 * Math.PI * top.rateHz * time) / timeScale),
+        ),
+        curve: "sine",
+      });
+    }
+  }
+
+  if (holdEnd > stages.reachedAtSeconds) {
+    points.push({ timeSeconds: round(holdEnd), cents: target, curve: "linear" });
+  }
+
+  for (let step = 1; step <= curvePoints; step += 1) {
+    const t = step / curvePoints;
+    points.push({
+      timeSeconds: round(holdEnd + stages.releaseSeconds * t),
+      cents: round(target * (1 - easeInOut(t))),
+      curve: "linear",
+    });
+  }
+
+  return points;
 }
 
 /** Start where the last note was and arrive at this one (spec 8.5). */
@@ -182,21 +397,6 @@ export function slideAutomation(
       curve: "step",
     },
     { timeSeconds: round(glide), cents: 0, curve: "linear" },
-  ];
-}
-
-/** No new pick attack: the note rises out of the one before it. */
-export function legatoGain(durationSeconds: number, gain: number): GainPoint[] {
-  const { maxTransitionSeconds, transitionFraction, attackGain } =
-    expressionPresets.legato;
-  const transition = Math.min(
-    maxTransitionSeconds,
-    durationSeconds * transitionFraction,
-  );
-
-  return [
-    { timeSeconds: 0, value: round(gain * attackGain) },
-    { timeSeconds: round(transition), value: round(gain) },
   ];
 }
 
@@ -225,9 +425,14 @@ export function accentGain(gain: number): number {
 
 function planFor(
   onset: LegatoOnset,
-  onsets: readonly LegatoOnset[],
+  allOnsets: readonly LegatoOnset[],
   index: number,
   secondsPerTick: number,
+  options: {
+    timeScale: number;
+    profile: BendProfile;
+    comparison: ExpressionComparisonOptions;
+  },
 ): ExpressiveNotePlan {
   const startSeconds = round(noteSeconds(onset.timeTicks, secondsPerTick));
   let durationSeconds = round(noteSeconds(onset.durationTicks, secondsPerTick));
@@ -295,27 +500,30 @@ function planFor(
     return {
       ...base,
       expressive: true,
-      pitchAutomation: bendAutomation(durationSeconds, articulation),
+      pitchAutomation: options.comparison.legacyBend
+        ? legacyBendAutomation(durationSeconds, articulation)
+        : bendAutomation(durationSeconds, articulation, {
+            timeScale: options.timeScale,
+            profile: options.profile,
+          }),
     };
-  }
-
-  if (!needsPrevious(articulation)) return base;
-
-  const link = legatoLink(onsets, index);
-  if (link.kind !== "joined") {
-    return {
-      ...base,
-      fallbackReason:
-        link.kind === "other_string" ? "previous_note_other_string" : "no_previous_note",
-    };
-  }
-
-  const previous = link.previous;
-  if (previous.midi === null) {
-    return { ...base, fallbackReason: "no_previous_note" };
   }
 
   if (articulation === "slide") {
+    const link = legatoLink(allOnsets, index);
+    if (link.kind !== "joined") {
+      return {
+        ...base,
+        fallbackReason:
+          link.kind === "other_string"
+            ? "previous_note_other_string"
+            : "no_previous_note",
+      };
+    }
+    const previous = link.previous;
+    if (previous.midi === null) {
+      return { ...base, fallbackReason: "no_previous_note" };
+    }
     const interval = Math.abs(previous.midi - onset.midi);
     if (interval > expressionPresets.slide.maxIntervalSemitones) {
       return { ...base, fallbackReason: "interval_too_wide" };
@@ -327,17 +535,37 @@ function planFor(
     };
   }
 
-  const rising = onset.midi > previous.midi;
-  if ((articulation === "hammer_on" && !rising) ||
-      (articulation === "pull_off" && onset.midi >= previous.midi)) {
-    return { ...base, fallbackReason: "wrong_direction" };
+  // Hammer-on and pull-off are not decided here: they belong to a chain, and
+  // the chain builder is what knows whether one can form (spec 8.5, K-22).
+  // The one exception is the render comparison, which reproduces v1.
+  if (options.comparison.legacyLegato) {
+    const link = legatoLink(allOnsets, index);
+    if (link.kind !== "joined") {
+      return {
+        ...base,
+        fallbackReason:
+          link.kind === "other_string"
+            ? "previous_note_other_string"
+            : "no_previous_note",
+      };
+    }
+    const previous = link.previous;
+    if (previous.midi === null) return { ...base, fallbackReason: "no_previous_note" };
+    const rising = onset.midi > previous.midi;
+    if (
+      (articulation === "hammer_on" && !rising) ||
+      (articulation === "pull_off" && onset.midi >= previous.midi)
+    ) {
+      return { ...base, fallbackReason: "wrong_direction" };
+    }
+    return {
+      ...base,
+      expressive: true,
+      gainEnvelope: legacyLegatoGain(durationSeconds, gain),
+    };
   }
 
-  return {
-    ...base,
-    expressive: true,
-    gainEnvelope: legatoGain(durationSeconds, gain),
-  };
+  return base;
 }
 
 /**
@@ -353,25 +581,73 @@ export function buildExpressionPlan(
   const percent = options.practicePercent ?? DEFAULT_PRACTICE_PERCENT;
   const bpm = effectiveBpm(song.bpm, percent);
   const secondsPerTick = 60 / (bpm * PPQ);
+  // A gesture is musical, so at half speed it takes twice as long in seconds.
+  const timeScale = DEFAULT_PRACTICE_PERCENT / percent;
+  const profile = options.bendProfile ?? "tight";
+  const comparison = options.comparison ?? {};
 
   const notes: ExpressiveNotePlan[] = [];
+  const chains: LegatoChain[] = [];
 
   for (const track of song.tracks) {
     const onsets = trackLegatoOnsets(song, track.id);
-    onsets.forEach((onset, index) => {
-      const plan = planFor(onset, onsets, index, secondsPerTick);
-      notes.push({
-        ...plan,
-        trackId: track.id,
-        id: `${track.id}:${onset.timeTicks}:${onset.stringIndex}:${onset.pitch}`,
-      });
+    const noteIds = onsets.map(
+      (onset) => `${track.id}:${onset.timeTicks}:${onset.stringIndex}:${onset.pitch}`,
+    );
+    const planned = onsets.map((onset, index) => ({
+      ...planFor(onset, onsets, index, secondsPerTick, {
+        timeScale,
+        profile,
+        comparison,
+      }),
+      trackId: track.id,
+      id: noteIds[index] ?? "",
+    }));
+
+    const built = comparison.legacyLegato
+      ? { chains: [], membership: new Map(), refusals: new Map() }
+      : buildLegatoChains({
+          trackId: track.id,
+          onsets,
+          secondsPerTick,
+          timeScale,
+          noteIds,
+          gains: planned.map((note) => note.gain),
+          withAuxiliary: comparison.pullOffAuxiliary ?? true,
+        });
+    chains.push(...built.chains);
+
+    planned.forEach((note, index) => {
+      const member = built.membership.get(index);
+      const refusal = built.refusals.get(index);
+
+      if (member) {
+        notes.push({
+          ...note,
+          // A source is struck by its chain; a target is not struck at all.
+          expressive: true,
+          chainId: member.chainId,
+          chainRole: member.role,
+        });
+        return;
+      }
+
+      notes.push(refusal ? { ...note, fallbackReason: refusal } : note);
     });
   }
 
-  notes.sort((a, b) => a.startSeconds - b.startSeconds || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  notes.sort(
+    (a, b) => a.startSeconds - b.startSeconds || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  chains.sort(
+    (a, b) =>
+      a.startSeconds - b.startSeconds ||
+      (a.chainId < b.chainId ? -1 : a.chainId > b.chainId ? 1 : 0),
+  );
 
   return {
     notes,
+    chains,
     fallbacks: notes.filter((note) => note.fallbackReason !== undefined).length,
     expressiveNotes: notes.filter((note) => note.expressive).length,
   };

@@ -503,14 +503,38 @@ component, scheduler ve voice sınıflarında sayı tekrarlanmaz.
 | Vibrato | ±35 cent derinlik, 5.5 Hz, gecikme `min(120 ms, süre × 0.25)`, nota sonuna kadar sinüs |
 | Bend half | +100 cent |
 | Bend full | +200 cent |
-| Bend eğrisi | ilk %55 hedefe yüksel · sonraki %30 hedefte kal · son %15 başlangıca dön |
+| Bend eğrisi (v2) | settle **35 ms** (≤ sürenin %8'i) · rise süre × %22, **80–280 ms** arası, ease-out · hold kalan orta bölüm, hedef tam korunur · release süre × %12, **60–180 ms** arası, ease-in-out, 0 cent'e döner (§19 K-22) |
 | Slide | önceki pitch'ten hedefe, glide `min(160 ms, süre × 0.35)`, sonra normal pitch |
-| Hammer-on / pull-off | geçiş `min(45 ms, süre × 0.20)`, yumuşatılmış attack, yeni pena atağı yok |
+| Hammer-on | geçiş **22 ms**, geçiş sonrası enerji **%88** (§19 K-22) |
+| Pull-off | geçiş **28 ms**, enerji **%78**, kısa yardımcı transient: gain 0.16, ≤35 ms, low-pass 4500 Hz (§19 K-22) |
+| Legato aralığı | en fazla **5 yarım ton** (§19 K-22) |
 | Palm mute | gövde en fazla süre × %45, üst sınır 180 ms, kısa release, kontrollü low-pass |
 | Accent | merkezî gain sabiti, limiter öncesi clipping üretmeyen muhafazakâr değer |
 
 Bu sayılar "gerçekçilik kesinleşti" kararı değildir; WAV insan kabulünden sonra
 ayarlanabilir.
+
+**Legato zinciri (§19 K-22).** Hammer-on ve pull-off *ayrı bir onset değildir*.
+Aynı telde birbirine değen notalar tek bir **zincir** oluşturur: primary source
+yalnız ilk notada başlar, zincirin sonuna kadar canlı kalır, her transition'da
+o source'un **kendi** pitch parametresi hedef perdeye automate edilir ve hedefte
+ikinci tam sustain sample başlatılmaz. `5h7p5` tek primary voice ve iki
+transition'dır. Pitch automation **cumulative**'dir: değerler zincirin
+başladığı perdeye göre sayılır ve her transition hedefte kararlı biter, vibrato
+gibi salınmaz.
+
+Zincir aynı track ve aynı `stringIndex` içinde kalır. Kaynak onset normal
+articulation taşısa bile arkasından geçerli bir hammer/pull geliyorsa primary
+voice'a yükseltilir. Hedef nota **logical Song/timeline event'i olarak
+korunur**; scheduler'ın pitch/onset anlık görüntüsünden silinmez, yalnız audio
+rendering'de yeniden vurulmaz. Tie yeni transition değildir; gerçek sus, eksik
+track anahtarı ve farklı tel zinciri keser; section sınırı tek başına kesmez.
+Chain ID canonical ve deterministic'tir. Zincir kurulamayan her durumda mevcut
+`articulationContext` uyarısı ve normal onset'e fallback korunur.
+
+Pull-off'un yardımcı transient'i primary zincirin parçası **değildir** ve
+diagnostic'te ayrıca `auxiliaryTransient` olarak sayılır; primary voice'ın
+yerine geçmez ve full restrike gibi duyulmamalıdır.
 
 **Saf Expression Planner.** Audio node'larından bağımsız bir katman her nota
 için pitch automation, gain envelope ve gerekiyorsa filter preset üretir.
@@ -1497,6 +1521,7 @@ maliyettir** (§11.2/7).
 | **K-19** | **Ergonomic Placement v2.** `position` yazılmamış fretted melodik onset'ler artık hafızasız greedy ile tek tek değil, track'in zaman sıralı bağlamı içinde deterministic beam-search / dynamic-programming ile yerleştirilir (§9.2). Maliyet ağırlıklı bir skor değil, **lexicographic tuple**'dır; eşikler `limits.ts`'teki tek merkezi kaynaktan gelir ve beam width orada sabittir (runtime env ayarı yok). El konumu ölçüleri (anchor, chord span, string center) ve reset/carry semantiği `fretJump` ile **aynı** yardımcıdan gelir; tab, validator, preview ve playback tek yerleşim modelini kullanır. Explicit `position` her zaman korunur ve motor tarafından değiştirilemez. K-4'ün hafızasız kuralı üretimden kaldırıldı; parmak numarası, barre analizi ve picking ergonomisi bu sürümün iddiası değildir. | Haktan, 19.08.2026 |
 | **K-20** | **Çalışma hızı ve akor grubu taşıma (§13.8).** Transport'un mutlak BPM kaydırıcısı kaldırıldı; yerine şarkının kendi `bpm`'ini değiştirmeyen bir **practice rate** geldi (%50–%150, %5 adım, varsayılan %100; `limits.ts` tek kaynak). İkinci bir tempo sistemi yoktur: tek transport, tek scheduler, tick tabanlı zamanlama. Rate Song Contract'a yazılmaz, song/Copilot fingerprint'ine girmez ve Song'dan ayrı, strict doğrulanan bir ayar anahtarında saklanır; bozuk ayar %100'e döner ve Song karantinasını tetiklemez. Zaman ekseninde taşımanın birimi **onset block**'tur (onset + akor notaları + kesintisiz tie zinciri) ve saf `move_onset_group` komutu atomiktir: kısmi taşıma, üzerine yazma ve yetim tie yoktur, bütün grup tek storage write ve tek undo adımıdır. Bu sürümde serbest drag-and-drop yoktur. | Haktan, 20.08.2026 |
 | **K-21** | **Expressive Playback v1 (§8.5, §10.3, §13.9).** `NoteEvent.articulation` artık yalnız görsel metadata değil, nota bazında duyulan davranıştır. Pilot sözlüğü sekiz değerdir ve bir nota aynı anda yalnız birini taşır; kombinasyon kapsam dışıdır. Mantıksal pitch değişmez, bend miktarı sabittir (+100 / +200 cent), bütün başlangıç değerleri tek saf preset modülünde durur. Saf bir Expression Planner audio node'larından bağımsız olarak pitch automation ve gain envelope üretir; geçersiz bağlamda exception değil `articulationContext` uyarısı ve normal onset'e fallback verir. **Modulation nota-sahiplidir:** paylaşılan sampler'da global detune kullanılmaz; §8.1 allow-list'i bu yüzden `ToneAudioBuffers` ve `ToneBufferSource` ile açıkça genişletildi ve çözülmüş sample'lar tek bank'ten paylaşılır. Online ve offline aynı planner ve aynı scheduling yolunu kullanır. | Haktan, 20.08.2026 |
+| **K-22** | **Gerçek legato voice zinciri ve Bend v2 (§8.5).** Hammer-on/pull-off, hedefin daha kısık yeniden tetiklenmesi olmaktan çıkarıldı: aynı telde birbirine değen notalar tek bir primary voice'ta yaşar, transition'da o voice'un kendi pitch parametresi cumulative olarak hedef perdeye gider ve hedefte ikinci tam sample başlatılmaz. Hammer 22 ms / %88, pull 28 ms / %78; pull ayrıca ayrı sayılan kısa bir yardımcı transient alabilir (0.16 gain, ≤35 ms, 4500 Hz). Pilot legato aralığı en fazla 5 yarım tondur; aşan aralık uyarı + normal fallback üretir. Bend eğrisi yalnız yüzdeye bağlı olmaktan çıkarıldı: settle/rise/hold/release, rise 80–280 ms ve release 60–180 ms gerçek zaman sınırlarıyla, kısa notada deterministic oransal sıkıştırma ile. Üretim profili **tight**; **expressive** üst salınım yalnız render/test preset injection yolunda yaşar, UI seçici yoktur. Faz 2F'nin eski legato ve bend eğrileri yalnız dinleme karşılaştırması için durur, üretimde seçilebilir bir legacy motor yoktur. | Haktan, 20.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 

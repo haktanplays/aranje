@@ -178,3 +178,56 @@ describe("the memoryless baseline stays out of production", () => {
     expect(offenders).toEqual([]);
   });
 });
+
+describe("the old expression engine stays out of the product", () => {
+  /** Everything the app itself can reach. */
+  const productionFiles = [
+    ...walk("src/lib"),
+    ...walk("src/components"),
+    ...walk("src/app"),
+  ].filter(
+    (file) =>
+      !file.endsWith(".test.ts") &&
+      !file.endsWith(".test.tsx") &&
+      // The planner is where the comparison options are declared; the point is
+      // that nothing *uses* them.
+      !file.endsWith("expression-plan.ts") &&
+      !file.endsWith("expression-demos.ts"),
+  );
+
+  it("is looking at the whole product, not an empty list", () => {
+    expect(productionFiles.length).toBeGreaterThan(30);
+    expect(productionFiles.some((file) => file.includes("Workspace"))).toBe(true);
+  });
+
+  it("has no caller of the phase 2F legato or bend curves", () => {
+    // A selectable legacy engine would mean shipping two answers to the same
+    // question. The old curves exist for one purpose: a listening comparison
+    // in the render harness (spec 8.5, K-22).
+    const offenders = productionFiles.filter((file) => {
+      const source = readFileSync(file, "utf8");
+      return (
+        source.includes("legacyLegato") ||
+        source.includes("legacyBend") ||
+        source.includes("legacyBendAutomation") ||
+        source.includes("legacyLegatoGain")
+      );
+    });
+
+    expect(offenders).toEqual([]);
+  });
+
+  it("has no interface path that sets a render comparison", () => {
+    const offenders = [...walk("src/components"), ...walk("src/app")].filter(
+      (file) => readFileSync(file, "utf8").includes("comparison:"),
+    );
+    expect(offenders).toEqual([]);
+  });
+
+  it("offers no bend profile switch outside the render harness", () => {
+    const offenders = [...walk("src/components"), ...walk("src/app")].filter(
+      (file) => readFileSync(file, "utf8").includes("bendProfile"),
+    );
+    expect(offenders).toEqual([]);
+  });
+});

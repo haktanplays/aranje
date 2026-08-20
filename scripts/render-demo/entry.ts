@@ -9,8 +9,13 @@
 import * as Tone from "tone";
 
 import { styleExampleSongs } from "@/lib/copilot/style-examples";
-import { EXPRESSION_DEMOS } from "@/lib/audio/expression-demos";
-import { buildExpressionPlan } from "@/lib/audio/expression-plan";
+import {
+  BEND_DEMOS,
+  EXPRESSION_DEMOS,
+  LEGATO_DEMOS,
+  type ExpressionDemo,
+} from "@/lib/audio/expression-demos";
+import { bendStages, buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { drumTrackIds, melodicTrackIds } from "@/lib/audio/tracks";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
@@ -250,6 +255,8 @@ declare global {
     aranjeRenderStyleExample: typeof renderStyleExample;
     aranjeRenderExpressionDemo: typeof renderExpressionDemo;
     aranjeExpressionDemoCount: number;
+    aranjeLegatoDemoCount: number;
+    aranjeBendDemoCount: number;
     aranjeTrackIds: string[];
   }
 }
@@ -269,13 +276,15 @@ window.aranjeExpressionDemoCount = EXPRESSION_DEMOS.length;
  * many sample requests the engine made, and how far the pitch was actually
  * moved. None of it is a judgement about how it sounds.
  */
-export async function renderExpressionDemo(index: number) {
-  const demo = EXPRESSION_DEMOS[index];
-  if (!demo) throw new Error(`no expression demo at index ${index}`);
+export async function renderExpressionDemo(index: number, pack: DemoPack = "expression") {
+  const demos = demoPack(pack);
+  const demo = demos[index];
+  if (!demo) throw new Error(`no ${pack} demo at index ${index}`);
 
   const song = demo.song;
+  const options = demo.options ?? {};
   const plan = buildSongPlan(song);
-  const expression = buildExpressionPlan(song);
+  const expression = buildExpressionPlan(song, options);
   const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
 
   let requests = 0;
@@ -290,6 +299,8 @@ export async function renderExpressionDemo(index: number) {
 
   const buffer = await Tone.Offline(async (context) => {
     const engine = await createEngine(song, context);
+    // Render comparisons plan differently; live playback never does.
+    engine.expression.setPlan(buildExpressionPlan(song, options));
     scheduleSong(engine, song.bpm);
     context.transport.start(0);
 
@@ -338,6 +349,61 @@ export async function renderExpressionDemo(index: number) {
   const cents = expression.notes.flatMap((note) =>
     note.pitchAutomation.map((point) => point.cents),
   );
+  const chainCents = expression.chains.flatMap((chain) =>
+    chain.transitions.flatMap((entry) => [0, entry.cumulativeCents]),
+  );
+  const allCents = [...cents, ...chainCents];
+
+  /**
+   * Peak and level in a short window around the second onset.
+   *
+   * This is where a restrike and a slur differ: a restrike puts a fresh attack
+   * there, a hammer-on does not.
+   */
+  const secondOnset = [...expression.notes]
+    .map((note) => note.startSeconds)
+    .filter((start) => start > 0)
+    .sort((a, b) => a - b)[0];
+  const onsetWindow = { peak: 0, rms: 0, atSeconds: secondOnset ?? 0 };
+  if (secondOnset !== undefined) {
+    const from = Math.floor((secondOnset - 0.01) * buffer.sampleRate);
+    const to = Math.floor((secondOnset + 0.09) * buffer.sampleRate);
+    let sum = 0;
+    let count = 0;
+    for (const channel of list) {
+      for (let i = Math.max(0, from); i < to && i < channel.length; i += 1) {
+        const value = channel[i] ?? 0;
+        onsetWindow.peak = Math.max(onsetWindow.peak, Math.abs(value));
+        sum += value * value;
+        count += 1;
+      }
+    }
+    onsetWindow.rms = Math.sqrt(sum / Math.max(1, count));
+  }
+
+  const bendNote = expression.notes.find(
+    (note) => note.articulation === "bend_half" || note.articulation === "bend_full",
+  );
+  // The planned stages describe v2. What was actually rendered is read back off
+  // the automation, so a legacy comparison reports its own timing rather than
+  // borrowing v2's (spec 8.5, K-22).
+  const stages = bendNote ? bendStages(bendNote.durationSeconds) : null;
+  const bendCurve = bendNote?.pitchAutomation ?? [];
+  const bendPeak = bendCurve.length === 0 ? 0 : Math.max(...bendCurve.map((p) => p.cents));
+  const reachedAt = bendCurve.find((point) => point.cents === bendPeak)?.timeSeconds ?? null;
+  const returnedAt =
+    bendCurve.length === 0
+      ? null
+      : bendCurve[bendCurve.length - 1]?.cents === 0
+        ? bendCurve[bendCurve.length - 1]?.timeSeconds ?? null
+        : null;
+
+  const steady = expression.notes.filter(
+    (note) =>
+      note.articulation === undefined &&
+      note.chainId === undefined &&
+      note.pitchAutomation.length === 1,
+  );
 
   const wav = encodeWav(list, buffer.sampleRate);
   let binary = "";
@@ -355,9 +421,37 @@ export async function renderExpressionDemo(index: number) {
     rms: Math.sqrt(sumSquares / Math.max(1, samples)),
     events: plan.events.length,
     sampleRequests: requests,
-    centsRange: cents.length === 0 ? [0, 0] : [Math.min(...cents), Math.max(...cents)],
+    centsRange:
+      allCents.length === 0 ? [0, 0] : [Math.min(...allCents), Math.max(...allCents)],
+    chains: expression.chains.length,
+    transitions: expression.chains.reduce(
+      (total, chain) => total + chain.transitions.length,
+      0,
+    ),
+    transitionSeconds: expression.chains.flatMap((chain) =>
+      chain.transitions.map((entry) => entry.transitionSeconds),
+    ),
+    /** Notes struck with a full-length source of their own. */
+    fullRestrikes: expression.notes.filter((note) => note.chainRole !== "target").length,
+    secondOnsetWindow: onsetWindow,
+    bendStages: stages,
+    bendReachedAtSeconds: reachedAt,
+    bendReturnedAtSeconds: returnedAt,
+    bendPeakCents: bendPeak,
+    bendDurationSeconds: bendNote?.durationSeconds ?? null,
+    steadyNoteAutomationPoints: steady.map((note) => note.pitchAutomation.length),
     diagnostics,
   };
 }
 
+export type DemoPack = "expression" | "legato" | "bend";
+
+function demoPack(pack: DemoPack): readonly ExpressionDemo[] {
+  if (pack === "legato") return LEGATO_DEMOS;
+  if (pack === "bend") return BEND_DEMOS;
+  return EXPRESSION_DEMOS;
+}
+
 window.aranjeRenderExpressionDemo = renderExpressionDemo;
+window.aranjeLegatoDemoCount = LEGATO_DEMOS.length;
+window.aranjeBendDemoCount = BEND_DEMOS.length;

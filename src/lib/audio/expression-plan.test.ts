@@ -4,7 +4,12 @@
 import { describe, expect, it } from "vitest";
 
 import { expressionPresets } from "@/lib/audio/expression";
-import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
+import {
+  bendAutomation,
+  bendStages,
+  buildExpressionPlan,
+  type ExpressiveNotePlan,
+} from "@/lib/audio/expression-plan";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import {
@@ -112,24 +117,110 @@ describe("bends", () => {
     expect(Math.max(...plan.pitchAutomation.map((p) => p.cents))).toBe(200);
   });
 
-  it("rises, holds and comes back", () => {
+  it("settles, rises, holds and comes back", () => {
     const plan = at(song([bar(slots([A3("bend_full")]))]), 0);
-    const [start, rise, hold, end] = plan.pitchAutomation;
+    const stages = bendStages(plan.durationSeconds);
+    const cents = plan.pitchAutomation.map((point) => point.cents);
 
-    expect(start).toMatchObject({ timeSeconds: 0, cents: 0 });
-    expect(rise?.cents).toBe(200);
-    expect(hold?.cents).toBe(200);
-    expect(end?.cents).toBe(0);
-    expect(rise?.timeSeconds).toBeCloseTo(
-      plan.durationSeconds * expressionPresets.bend.riseFraction,
-      5,
+    // Flat while the pick lands.
+    expect(plan.pitchAutomation[0]).toMatchObject({ timeSeconds: 0, cents: 0 });
+    expect(stages.settleSeconds).toBeGreaterThan(0);
+
+    // Arrives exactly, and stays there.
+    expect(Math.max(...cents)).toBe(200);
+    const reached = plan.pitchAutomation.find((point) => point.cents === 200);
+    expect(reached?.timeSeconds).toBeCloseTo(stages.reachedAtSeconds, 5);
+
+    // Comes back to where it started, at the end of the note.
+    expect(cents[cents.length - 1]).toBe(0);
+    expect(
+      plan.pitchAutomation[plan.pitchAutomation.length - 1]?.timeSeconds,
+    ).toBeCloseTo(plan.durationSeconds, 4);
+  });
+
+  it("arrives within the real-time ceiling however long the note is", () => {
+    const held = [A3("bend_full"), TIE, TIE, TIE, TIE, TIE, TIE, TIE];
+    const plan = at(song([bar(held)]), 0);
+    const stages = bendStages(plan.durationSeconds);
+
+    expect(plan.durationSeconds).toBeGreaterThan(1);
+    expect(stages.riseSeconds).toBeLessThanOrEqual(
+      expressionPresets.bend.riseMaxSeconds,
     );
-    expect(hold?.timeSeconds).toBeCloseTo(
-      plan.durationSeconds *
-        (expressionPresets.bend.riseFraction + expressionPresets.bend.holdFraction),
-      5,
+    expect(stages.releaseSeconds).toBeLessThanOrEqual(
+      expressionPresets.bend.releaseMaxSeconds,
     );
-    expect(end?.timeSeconds).toBeCloseTo(plan.durationSeconds, 5);
+    expect(stages.reachedAtSeconds).toBeLessThan(0.4);
+  });
+
+  it("squeezes the stages into a note too short to hold them all", () => {
+    const stages = bendStages(0.1);
+
+    expect(stages.holdSeconds).toBeGreaterThanOrEqual(0);
+    expect(
+      stages.settleSeconds + stages.riseSeconds + stages.holdSeconds + stages.releaseSeconds,
+    ).toBeCloseTo(0.1, 5);
+    expect(bendAutomation(0.1, "bend_full").every((point) => point.timeSeconds <= 0.1 + 1e-6)).toBe(true);
+  });
+
+  it("never leaves a negative hold, at any length", () => {
+    for (const duration of [0.02, 0.05, 0.1, 0.25, 0.5, 1, 4]) {
+      const stages = bendStages(duration);
+      expect(stages.holdSeconds).toBeGreaterThanOrEqual(0);
+      expect(stages.reachedAtSeconds).toBeLessThanOrEqual(duration + 1e-9);
+    }
+  });
+
+  it("stretches with the practice speed", () => {
+    const fixture = song([bar(slots([A3("bend_full")]))]);
+    const full = at(fixture, 0, 100);
+    const half = at(fixture, 0, 50);
+    const fast = at(fixture, 0, 150);
+
+    const fullStages = bendStages(full.durationSeconds, 1);
+    const halfStages = bendStages(half.durationSeconds, 2);
+    const fastStages = bendStages(fast.durationSeconds, 100 / 150);
+
+    expect(halfStages.riseSeconds).toBeGreaterThan(fullStages.riseSeconds);
+    expect(fastStages.riseSeconds).toBeLessThan(fullStages.riseSeconds);
+    // The target itself never moves.
+    expect(Math.max(...half.pitchAutomation.map((p) => p.cents))).toBe(200);
+    expect(Math.max(...fast.pitchAutomation.map((p) => p.cents))).toBe(200);
+  });
+
+  it("holds the target dead still in the profile that ships", () => {
+    const held = [A3("bend_full"), TIE, TIE, TIE, TIE, TIE, TIE, TIE];
+    const plan = at(song([bar(held)]), 0);
+    const stages = bendStages(plan.durationSeconds);
+
+    const duringHold = plan.pitchAutomation.filter(
+      (point) =>
+        point.timeSeconds > stages.reachedAtSeconds + 1e-6 &&
+        point.timeSeconds < stages.reachedAtSeconds + stages.holdSeconds - 1e-6,
+    );
+    expect(duringHold.every((point) => point.cents === 200)).toBe(true);
+    expect(plan.pitchAutomation.some((point) => point.curve === "sine")).toBe(false);
+  });
+
+  it("moves a little around the target in the expressive profile only", () => {
+    const held = [A3("bend_full"), TIE, TIE, TIE, TIE, TIE, TIE, TIE];
+    const fixture = song([bar(held)]);
+    const plan = buildExpressionPlan(fixture, { bendProfile: "expressive" }).notes[0];
+    if (!plan) throw new Error("no plan");
+    const stages = bendStages(plan.durationSeconds);
+    const depth = expressionPresets.bend.top.depthCents;
+
+    const moving = plan.pitchAutomation.filter((point) => point.curve === "sine");
+    expect(moving.length).toBeGreaterThan(0);
+    for (const point of moving) {
+      expect(Math.abs(point.cents - 200)).toBeLessThanOrEqual(depth + 1e-6);
+    }
+
+    // It starts after the target is reached, and stops before the release.
+    const first = moving[0]?.timeSeconds ?? 0;
+    const last = moving[moving.length - 1]?.timeSeconds ?? 0;
+    expect(first).toBeGreaterThan(stages.reachedAtSeconds);
+    expect(last).toBeLessThanOrEqual(stages.reachedAtSeconds + stages.holdSeconds + 1e-6);
   });
 
   it("does not change the note that is written", () => {
@@ -180,36 +271,200 @@ describe("slide", () => {
   });
 });
 
-describe("hammer-on and pull-off", () => {
-  it("hammers on upwards, with a softened attack instead of a pick", () => {
-    const plan = at(song([bar(slots([G3(), B3("hammer_on")]))]), 1);
+describe("hammer-on and pull-off become a chain", () => {
+  it("makes one chain out of the pair, with the first note as its source", () => {
+    const plan = buildExpressionPlan(song([bar(slots([G3(), B3("hammer_on")]))]));
 
-    expect(plan.fallbackReason).toBeUndefined();
-    expect(plan.expressive).toBe(true);
-    expect(plan.gainEnvelope[0]?.value).toBeLessThan(plan.gain);
-    expect(plan.gainEnvelope[1]?.value).toBeCloseTo(plan.gain, 5);
-    expect(plan.gainEnvelope[1]?.timeSeconds).toBeLessThanOrEqual(
-      expressionPresets.legato.maxTransitionSeconds,
-    );
-    // The pitch does not glide: a hammer-on lands on the fret.
-    expect(plan.pitchAutomation).toEqual([{ timeSeconds: 0, cents: 0, curve: "step" }]);
+    expect(plan.chains).toHaveLength(1);
+    const chain = plan.chains[0];
+    expect(chain?.sourcePitch).toBe("G3");
+    expect(chain?.stringIndex).toBe(1);
+    expect(chain?.transitions).toHaveLength(1);
+    expect(chain?.transitions[0]).toMatchObject({
+      kind: "hammer_on",
+      fromPitch: "G3",
+      toPitch: "B3",
+    });
   });
+
+  it("marks the source struck and the target as belonging to the chain", () => {
+    const plan = buildExpressionPlan(song([bar(slots([G3(), B3("hammer_on")]))]));
+    const source = plan.notes.find((note) => note.pitch === "G3");
+    const targetNote = plan.notes.find((note) => note.pitch === "B3");
+
+    expect(source?.chainRole).toBe("source");
+    expect(targetNote?.chainRole).toBe("target");
+    expect(source?.chainId).toBe(targetNote?.chainId);
+    // The target is still a note of the song; it is only rendered differently.
+    expect(targetNote?.pitch).toBe("B3");
+    expect(targetNote?.timeTicks).toBeGreaterThan(source?.timeTicks ?? 0);
+  });
+
+  it("pulls off downwards, with its own transition time and level", () => {
+    const plan = buildExpressionPlan(song([bar(slots([B3(), G3("pull_off")]))]));
+    const transition = plan.chains[0]?.transitions[0];
+
+    expect(transition?.kind).toBe("pull_off");
+    expect(transition?.intervalCents).toBe(-400);
+    expect(transition?.transitionSeconds).toBeCloseTo(
+      expressionPresets.legato.pullOff.transitionSeconds,
+      6,
+    );
+    expect(transition?.levelAfter).toBe(expressionPresets.legato.pullOff.levelAfter);
+  });
+
+  it("gives a hammer-on the shorter transition and the higher level", () => {
+    const plan = buildExpressionPlan(song([bar(slots([G3(), B3("hammer_on")]))]));
+    const transition = plan.chains[0]?.transitions[0];
+
+    expect(transition?.transitionSeconds).toBeCloseTo(
+      expressionPresets.legato.hammerOn.transitionSeconds,
+      6,
+    );
+    expect(transition?.levelAfter).toBe(expressionPresets.legato.hammerOn.levelAfter);
+    expect(expressionPresets.legato.hammerOn.transitionSeconds).toBeLessThan(
+      expressionPresets.legato.pullOff.transitionSeconds,
+    );
+    expect(expressionPresets.legato.hammerOn.levelAfter).toBeGreaterThan(
+      expressionPresets.legato.pullOff.levelAfter,
+    );
+  });
+
+  it("gives a pull-off a short quiet transient and a hammer-on none", () => {
+    const pull = buildExpressionPlan(song([bar(slots([B3(), G3("pull_off")]))]));
+    const hammer = buildExpressionPlan(song([bar(slots([G3(), B3("hammer_on")]))]));
+
+    const aux = pull.chains[0]?.transitions[0]?.auxiliary;
+    expect(aux?.gain).toBe(expressionPresets.legato.pullOff.auxiliary.gain);
+    expect(aux?.durationSeconds).toBeCloseTo(
+      expressionPresets.legato.pullOff.auxiliary.maxSeconds,
+      6,
+    );
+    expect(hammer.chains[0]?.transitions[0]?.auxiliary).toBeUndefined();
+  });
+
+  it("keeps 5h7p5 as one chain with two transitions", () => {
+    // A3 (fret 10) up to B3 (14) and back down again, all on one string.
+    const run = song([bar(slots([G3(), B3("hammer_on"), G3("pull_off")]))]);
+    const plan = buildExpressionPlan(run);
+
+    expect(plan.chains).toHaveLength(1);
+    const chain = plan.chains[0];
+    expect(chain?.transitions).toHaveLength(2);
+    expect(chain?.noteIds).toHaveLength(3);
+    expect(chain?.transitions.map((entry) => entry.kind)).toEqual([
+      "hammer_on",
+      "pull_off",
+    ]);
+  });
+
+  it("counts cents from the note the chain started on", () => {
+    const run = song([bar(slots([G3(), B3("hammer_on"), G3("pull_off")]))]);
+    const chain = buildExpressionPlan(run).chains[0];
+
+    // G3 -> B3 is four semitones up, then back to where it began.
+    expect(chain?.transitions[0]?.cumulativeCents).toBe(400);
+    expect(chain?.transitions[1]?.cumulativeCents).toBe(0);
+    expect(chain?.transitions[1]?.intervalCents).toBe(-400);
+  });
+
+  it("stretches the transition with the practice speed", () => {
+    const fixture = song([bar(slots([G3(), B3("hammer_on")]))]);
+    const full = buildExpressionPlan(fixture, { practicePercent: 100 });
+    const half = buildExpressionPlan(fixture, { practicePercent: 50 });
+
+    expect(half.chains[0]?.transitions[0]?.transitionSeconds).toBeCloseTo(
+      (full.chains[0]?.transitions[0]?.transitionSeconds ?? 0) * 2,
+      6,
+    );
+  });
+
+  it("names a chain the same way every time", () => {
+    const fixture = song([bar(slots([G3(), B3("hammer_on")]))]);
+    const ids = Array.from(
+      { length: 5 },
+      () => buildExpressionPlan(fixture).chains[0]?.chainId,
+    );
+    expect(new Set(ids).size).toBe(1);
+    expect(ids[0]).toBe("gtr:1:0");
+  });
+});
+
+describe("when a chain cannot form", () => {
+  const noChain = (fixture: Song) => {
+    const plan = buildExpressionPlan(fixture);
+    expect(plan.chains).toEqual([]);
+    return plan;
+  };
 
   it("refuses a hammer-on that goes down", () => {
-    const plan = at(song([bar(slots([B3(), G3("hammer_on")]))]), 1);
-    expect(plan.fallbackReason).toBe("wrong_direction");
-    expect(plan.expressive).toBe(false);
-  });
-
-  it("pulls off downwards", () => {
-    const plan = at(song([bar(slots([B3(), G3("pull_off")]))]), 1);
-    expect(plan.fallbackReason).toBeUndefined();
-    expect(plan.gainEnvelope[0]?.value).toBeLessThan(plan.gain);
+    const plan = noChain(song([bar(slots([B3(), G3("hammer_on")]))]));
+    expect(at(song([bar(slots([B3(), G3("hammer_on")]))]), 1).fallbackReason).toBe(
+      "wrong_direction",
+    );
+    expect(plan.notes.every((note) => note.chainId === undefined)).toBe(true);
   });
 
   it("refuses a pull-off that goes up", () => {
-    const plan = at(song([bar(slots([G3(), B3("pull_off")]))]), 1);
-    expect(plan.fallbackReason).toBe("wrong_direction");
+    noChain(song([bar(slots([G3(), B3("pull_off")]))]));
+    expect(at(song([bar(slots([G3(), B3("pull_off")]))]), 1).fallbackReason).toBe(
+      "wrong_direction",
+    );
+  });
+
+  it("refuses a slur wider than the pilot allows", () => {
+    // Six semitones: a stretch, not a slur.
+    const wide = song([bar(slots([note("E3", 1, 7), note("A#3", 1, 13, "hammer_on")]))]);
+    noChain(wide);
+    expect(at(wide, 1).fallbackReason).toBe("interval_too_wide");
+  });
+
+  it("accepts exactly the limit", () => {
+    const edge = song([bar(slots([note("E3", 1, 7), note("A3", 1, 12, "hammer_on")]))]);
+    expect(buildExpressionPlan(edge).chains).toHaveLength(1);
+  });
+
+  it("refuses across a real rest", () => {
+    const broken = song([bar(slots([G3(), REST, B3("hammer_on")]))]);
+    noChain(broken);
+    expect(at(broken, 2).fallbackReason).toBe("no_previous_note");
+  });
+
+  it("refuses across a bar the track is not written in", () => {
+    const across = song([
+      bar(slots([REST, REST, REST, REST, REST, REST, REST, G3()])),
+      emptyBar(),
+      bar(slots([B3("hammer_on")])),
+    ]);
+    noChain(across);
+  });
+
+  it("refuses across strings", () => {
+    const across = song([
+      bar(slots([note("E3", 0, 12), note("A3", 1, 12, "hammer_on")])),
+    ]);
+    noChain(across);
+  });
+
+  it("carries on across a section line", () => {
+    const across = song(
+      [bar(slots([REST, REST, REST, REST, REST, REST, REST, G3()]))],
+      [bar(slots([B3("hammer_on")]))],
+    );
+    expect(buildExpressionPlan(across).chains).toHaveLength(1);
+  });
+
+  it("does not make a tie into a transition", () => {
+    const held = song([bar(slots([G3(), TIE, B3("hammer_on"), TIE]))]);
+    const plan = buildExpressionPlan(held);
+    expect(plan.chains).toHaveLength(1);
+    expect(plan.chains[0]?.transitions).toHaveLength(1);
+  });
+
+  it("leaves two ordinary notes as two ordinary onsets", () => {
+    const plain = buildExpressionPlan(song([bar(slots([G3(), B3()]))]));
+    expect(plain.chains).toEqual([]);
+    expect(plain.notes.every((note) => note.expressive === false)).toBe(true);
   });
 });
 

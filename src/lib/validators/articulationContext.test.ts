@@ -99,6 +99,33 @@ describe("hammer-on and pull-off", () => {
   });
 });
 
+describe("the slur distance limit", () => {
+  it("accepts a hammer-on at exactly the limit", () => {
+    const edge = song([
+      bar(slots([note("E3", 1, 7), note("A3", 1, 12, "hammer_on")])),
+    ]);
+    expect(issuesOf(edge)).toEqual([]);
+  });
+
+  it("warns one semitone past it, and says the number", () => {
+    const wide = song([
+      bar(slots([note("E3", 1, 7), note("A#3", 1, 13, "hammer_on")])),
+    ]);
+    const issues = issuesOf(wide);
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.severity).toBe("warning");
+    expect(issues[0]?.message).toContain("5 yarım ton");
+  });
+
+  it("holds a pull-off to the same limit", () => {
+    const wide = song([
+      bar(slots([note("A#3", 1, 13), note("E3", 1, 7, "pull_off")])),
+    ]);
+    expect(issuesOf(wide)).toHaveLength(1);
+  });
+});
+
 describe("what breaks a connection", () => {
   it("a real rest does", () => {
     const issues = issuesOf(song([bar(slots([G3(), REST, B3("hammer_on")]))]));

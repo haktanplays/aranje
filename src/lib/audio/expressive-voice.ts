@@ -20,6 +20,7 @@ import type * as Tone from "tone";
 
 import { expressionPresets } from "@/lib/audio/expression";
 import type { ExpressiveNotePlan } from "@/lib/audio/expression-plan";
+import type { LegatoChain, LegatoTransition } from "@/lib/audio/legato-chain";
 import { nearestSample, playbackRateFor, type SampleEntry } from "@/lib/audio/sample-map";
 import { pitchToMidi } from "@/lib/music/pitch";
 
@@ -49,6 +50,8 @@ type Voice = {
   ended: boolean;
   /** Its nodes have been freed. */
   disposed: boolean;
+  /** A note or a whole chain, or the short click of a pull-off. */
+  kind: "primary" | "auxiliary";
 };
 
 export type VoicePoolCounts = {
@@ -57,6 +60,10 @@ export type VoicePoolCounts = {
   /** Every voice ever started, so a leak shows up as a rising floor. */
   started: number;
   disposed: number;
+  /** Sources that carry a note or a whole legato chain (spec 8.5, K-22). */
+  primary: number;
+  /** Short pull-off clicks. Counted apart so they are never mistaken for one. */
+  auxiliaryTransient: number;
 };
 
 /**
@@ -80,6 +87,8 @@ export class ExpressiveVoicePool {
   private readonly spent = new Set<Voice>();
   private started = 0;
   private disposedCount = 0;
+  private primaryCount = 0;
+  private auxiliaryCount = 0;
   private closed = false;
 
   constructor(
@@ -93,8 +102,11 @@ export class ExpressiveVoicePool {
       active: this.voices.size,
       started: this.started,
       disposed: this.disposedCount,
+      primary: this.primaryCount,
+      auxiliaryTransient: this.auxiliaryCount,
     };
   }
+
 
   /**
    * Start one note at the transport time it was scheduled for.
@@ -141,7 +153,14 @@ export class ExpressiveVoicePool {
     });
     source.connect(filter ?? gain);
 
-    const voice: Voice = { source, gain, filter, ended: false, disposed: false };
+    const voice: Voice = {
+      source,
+      gain,
+      filter,
+      ended: false,
+      disposed: false,
+      kind: "primary",
+    };
 
     // Pitch: written on this source's own rate, never on a shared node.
     plan.pitchAutomation.forEach((point, index) => {
@@ -166,7 +185,151 @@ export class ExpressiveVoicePool {
 
     this.voices.add(voice);
     this.started += 1;
+    this.primaryCount += 1;
     return true;
+  }
+
+  /**
+   * Play a whole legato chain on **one** voice (spec 8.5, K-22).
+   *
+   * The source is struck once. Each transition moves that voice's own pitch to
+   * the target and steps its level down; no second sample is started, because
+   * a hammer-on is not a second attack. A pull-off may add one short, quiet,
+   * filtered click, which is counted separately so it can never be mistaken
+   * for the note itself.
+   */
+  playChain(chain: LegatoChain, time: number): boolean {
+    if (this.closed) return false;
+
+    const host = this.hosts.get(chain.trackId);
+    if (!host) return false;
+
+    const sourceMidi = pitchToMidi(chain.sourcePitch);
+    if (sourceMidi === null) return false;
+
+    const sample = nearestSample(host.entries, sourceMidi);
+    if (!sample || !host.buffers.has(sample.note)) return false;
+
+    const level = host.trimGain;
+    const gain = new this.tone.Gain({
+      context: this.context,
+      gain: chain.gain * level,
+    });
+    gain.connect(host.destination);
+
+    const source = new this.tone.ToneBufferSource({
+      context: this.context,
+      url: host.buffers.get(sample.note),
+      playbackRate: playbackRateFor(sample.midi, sourceMidi),
+    });
+    source.connect(gain);
+
+    const voice: Voice = {
+      source,
+      gain,
+      filter: null,
+      ended: false,
+      disposed: false,
+      kind: "primary",
+    };
+
+    source.playbackRate.setValueAtTime(
+      playbackRateFor(sample.midi, sourceMidi),
+      time,
+    );
+    gain.gain.setValueAtTime(chain.gain * level, time);
+
+    let carried = 1;
+    for (const transition of chain.transitions) {
+      const at = time + transition.atSeconds;
+      const settled = at + transition.transitionSeconds;
+
+      // Hold the pitch it has until the finger moves, then slide to the new
+      // one. Both calls are on this source and nothing else.
+      source.playbackRate.setValueAtTime(
+        playbackRateFor(
+          sample.midi,
+          sourceMidi,
+          transition.cumulativeCents - transition.intervalCents,
+        ),
+        at,
+      );
+      source.playbackRate.linearRampToValueAtTime(
+        playbackRateFor(sample.midi, sourceMidi, transition.cumulativeCents),
+        settled,
+      );
+
+      // Hold the level it had until the finger lands, then step down. The
+      // value is tracked here rather than read back off the param: a param
+      // reports where it is *now*, not where it will be at `at`.
+      gain.gain.setValueAtTime(chain.gain * carried * level, at);
+      carried *= transition.levelAfter;
+      gain.gain.linearRampToValueAtTime(chain.gain * carried * level, settled);
+
+      if (transition.auxiliary) this.playAuxiliary(host, transition, at, chain.gain);
+    }
+
+    source.onended = () => this.finish(voice);
+    source.start(time, 0, chain.endSeconds - chain.startSeconds);
+
+    this.voices.add(voice);
+    this.started += 1;
+    this.primaryCount += 1;
+    return true;
+  }
+
+  /** The click of a finger coming off the string. Never a note on its own. */
+  private playAuxiliary(
+    host: VoiceHost,
+    transition: LegatoTransition,
+    time: number,
+    chainGain: number,
+  ): void {
+    const auxiliary = transition.auxiliary;
+    if (!auxiliary) return;
+
+    const targetMidi = pitchToMidi(transition.toPitch);
+    if (targetMidi === null) return;
+
+    const sample = nearestSample(host.entries, targetMidi);
+    if (!sample || !host.buffers.has(sample.note)) return;
+
+    const gain = new this.tone.Gain({
+      context: this.context,
+      gain: auxiliary.gain * chainGain * host.trimGain,
+    });
+    gain.connect(host.destination);
+
+    const filter = new this.tone.Filter({
+      context: this.context,
+      type: "lowpass",
+      frequency: auxiliary.filterHz,
+      Q: 0.7,
+    });
+    filter.connect(gain);
+
+    const source = new this.tone.ToneBufferSource({
+      context: this.context,
+      url: host.buffers.get(sample.note),
+      playbackRate: playbackRateFor(sample.midi, targetMidi),
+    });
+    source.connect(filter);
+
+    const voice: Voice = {
+      source,
+      gain,
+      filter,
+      ended: false,
+      disposed: false,
+      kind: "auxiliary",
+    };
+
+    source.onended = () => this.finish(voice);
+    source.start(time, 0, auxiliary.durationSeconds);
+
+    this.voices.add(voice);
+    this.started += 1;
+    this.auxiliaryCount += 1;
   }
 
   /** Everything currently sounding, gone. Safe to call when there is nothing. */
