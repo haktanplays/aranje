@@ -7,6 +7,7 @@ const config = [
       ".next/**",
       ".render-demo/**",
       ".shadow-eval/**",
+      ".shadow-eval-s02/**",
       "node_modules/**",
       "design/**",
       "public/**",
