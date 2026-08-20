@@ -1,3 +1,7 @@
+"use client";
+
+import { useCallback, useRef } from "react";
+
 import { FretGlyph } from "@/components/workspace/FretGlyph";
 import {
   BAR_HEADER_HEIGHT,
@@ -14,6 +18,21 @@ import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
 
+/** How long a press has to be held before it means "select this chord". */
+export const LONG_PRESS_MS = 400;
+
+/** What the bar knows about the group selection sitting on it (spec 13.1). */
+export type OnsetSelection = {
+  /** Slots in this bar that start a chord, so a tap has something to take. */
+  onsetSlots: ReadonlySet<number>;
+  /** Slots drawn as selected: the chosen chords and the ties they hold. */
+  selectedSlots: ReadonlySet<number>;
+  /** True once a selection exists, when a plain tap toggles rather than edits. */
+  active: boolean;
+  onToggle: (slotIndex: number) => void;
+  onLongPress: (slotIndex: number) => void;
+};
+
 export function FrettedBarBlock({
   bar,
   stringCount,
@@ -22,6 +41,7 @@ export function FrettedBarBlock({
   editing = false,
   selectedCell = null,
   onCellSelect,
+  onsets = null,
 }: {
   bar: FrettedBar;
   stringCount: number;
@@ -31,10 +51,34 @@ export function FrettedBarBlock({
   editing?: boolean;
   selectedCell?: CellSelection | null;
   onCellSelect?: (cell: CellSelection) => void;
+  onsets?: OnsetSelection | null;
 }) {
   const width = barWidth(bar.slotCount);
   const staffHeight = stringCount * STRING_ROW_HEIGHT;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
+
+  // A long press has to suppress the click that follows it, or picking a chord
+  // up would also open the fret sheet behind it.
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const held = useRef(false);
+
+  const cancelHold = useCallback(() => {
+    if (holdTimer.current !== null) clearTimeout(holdTimer.current);
+    holdTimer.current = null;
+  }, []);
+
+  const startHold = useCallback(
+    (slotIndex: number) => {
+      if (!onsets?.onsetSlots.has(slotIndex)) return;
+      held.current = false;
+      cancelHold();
+      holdTimer.current = setTimeout(() => {
+        held.current = true;
+        onsets.onLongPress(slotIndex);
+      }, LONG_PRESS_MS);
+    },
+    [cancelHold, onsets],
+  );
 
   const Frame = editing ? "div" : "button";
   const frameProps = editing
@@ -139,18 +183,50 @@ export function FrettedBarBlock({
                 const isSelected =
                   selectedCell?.slotIndex === slotIndex &&
                   selectedCell.stringIndex === stringIndex;
+                const inGroup = onsets?.selectedSlots.has(slotIndex) ?? false;
+                const isOnset = onsets?.onsetSlots.has(slotIndex) ?? false;
+                const groupActive = onsets?.active ?? false;
+                const label = [
+                  `Bar ${bar.barNumber}, slot ${slotIndex + 1}, tel ${stringIndex + 1}`,
+                  isOnset ? "akor başlangıcı" : null,
+                  inGroup ? "seçili" : null,
+                ]
+                  .filter(Boolean)
+                  .join(", ");
                 return (
                   <button
                     key={`cell-${slotIndex}-${stringIndex}`}
                     type="button"
                     data-cell={`${slotIndex}:${stringIndex}`}
-                    aria-pressed={isSelected}
-                    aria-label={`Bar ${bar.barNumber}, slot ${slotIndex + 1}, tel ${stringIndex + 1}`}
-                    onClick={() => onCellSelect?.({ slotIndex, stringIndex })}
+                    data-onset={isOnset ? "" : undefined}
+                    data-group-selected={inGroup ? "" : undefined}
+                    aria-pressed={isSelected || inGroup}
+                    aria-label={label}
+                    onPointerDown={() => startHold(slotIndex)}
+                    onPointerUp={cancelHold}
+                    onPointerLeave={cancelHold}
+                    onPointerCancel={cancelHold}
+                    onClick={() => {
+                      cancelHold();
+                      // The press that opened the selection is not also a tap.
+                      if (held.current) {
+                        held.current = false;
+                        return;
+                      }
+                      if (groupActive) {
+                        // A rest or a tie is not a chord of its own, so a tap
+                        // on one changes nothing (spec 13.1).
+                        if (isOnset) onsets?.onToggle(slotIndex);
+                        return;
+                      }
+                      onCellSelect?.({ slotIndex, stringIndex });
+                    }}
                     className={`absolute rounded-sm ${
-                      isSelected
-                        ? "ring-bronze bg-bronze/15 ring-2"
-                        : "hover:bg-steel/10"
+                      inGroup
+                        ? "ring-accept bg-accept/15 ring-2 ring-offset-0"
+                        : isSelected
+                          ? "ring-bronze bg-bronze/15 ring-2"
+                          : "hover:bg-steel/10"
                     }`}
                     style={{
                       left: slotIndex * SLOT_WIDTH,

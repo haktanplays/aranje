@@ -35,7 +35,8 @@ export type PlacementMetrics = {
   unresolvedOnsets: number;
   /** Only meaningful for the ergonomic engine. */
   candidateVoicings?: number;
-  maxBeamStates?: number;
+  maxExpandedStates?: number;
+  maxRetainedBeamStates?: number;
   resets?: number;
 };
 
@@ -129,7 +130,8 @@ export function ergonomicMetrics(song: Song, track: Track): PlacementMetrics | n
   return {
     ...measure(sequence, maxShift),
     candidateVoicings: result.diagnostics.totalCandidateVoicings,
-    maxBeamStates: result.diagnostics.maxBeamStates,
+    maxExpandedStates: result.diagnostics.maxExpandedStates,
+    maxRetainedBeamStates: result.diagnostics.maxRetainedBeamStates,
     resets: result.diagnostics.resets,
   };
 }

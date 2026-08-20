@@ -11,6 +11,11 @@
  * the interface reads its tick position on an animation frame, and a tempo
  * change moves the sound, the playhead, the active bar and the loop boundaries
  * together because all of them are expressed in ticks.
+ *
+ * Tempo comes from two numbers that never get mixed up (spec 13.8): the song's
+ * own `bpm`, which belongs to the music and is never written to from here, and
+ * the practice rate, which belongs to the session. What the transport runs at
+ * is the one derived from both, through the same helper the preview uses.
  */
 import {
   SampleLoadError,
@@ -25,8 +30,12 @@ import {
   type PlayPosition,
 } from "@/lib/audio/position";
 import { NOWHERE } from "@/lib/audio/position";
+import {
+  DEFAULT_PRACTICE_PERCENT,
+  clampPercent,
+  effectiveBpm,
+} from "@/lib/audio/practice-rate";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
-import { bpmRange } from "@/lib/limits";
 import type { Song } from "@/lib/song/schema";
 
 export type PlaybackStatus =
@@ -42,11 +51,28 @@ export type LoadProgress = { buffers: number; totalBuffers: number };
 
 export type PlaybackState = {
   status: PlaybackStatus;
+  /** The song's own tempo. Read-only here: the music owns it (spec 5.1). */
+  songBpm: number;
+  /** Whole percent of the song's tempo this session is practising at. */
+  practicePercent: number;
+  /** What the transport actually runs at: `songBpm * practicePercent / 100`. */
   bpm: number;
   loopSectionId: string | null;
   metronome: boolean;
   progress: LoadProgress | null;
   error: string | null;
+};
+
+export type EngineFactory = (
+  song: Song,
+  options: { onProgress?: (buffers: number, total: number) => void },
+) => Promise<Engine>;
+
+export type PlaybackOptions = {
+  /** Where this session starts. The preview is handed the song's own value. */
+  practicePercent?: number;
+  /** Injected so the controller can be driven without an audio context. */
+  createEngine?: EngineFactory;
 };
 
 export class PlaybackController {
@@ -55,17 +81,34 @@ export class PlaybackController {
   private disposed = false;
   private state: PlaybackState;
   private readonly plan: SongPlan;
+  private readonly createEngine: EngineFactory;
+  /** How many times an engine was built. A rate change must never raise it. */
+  private builds = 0;
 
-  constructor(private readonly song: Song) {
+  constructor(
+    private readonly song: Song,
+    options: PlaybackOptions = {},
+  ) {
     this.plan = buildSongPlan(song);
+    this.createEngine = options.createEngine ?? createLiveEngine;
+    const practicePercent = clampPercent(
+      options.practicePercent ?? DEFAULT_PRACTICE_PERCENT,
+    );
     this.state = {
       status: "idle",
-      bpm: song.bpm,
+      songBpm: song.bpm,
+      practicePercent,
+      bpm: effectiveBpm(song.bpm, practicePercent),
       loopSectionId: null,
       metronome: false,
       progress: null,
       error: null,
     };
+  }
+
+  /** Engines built so far, for the proof that a tempo change does not rebuild. */
+  getEngineBuilds(): number {
+    return this.builds;
   }
 
   getPlan(): SongPlan {
@@ -117,10 +160,11 @@ export class PlaybackController {
 
     // Tone.start() runs inside the click that called play(), which is what the
     // browser requires to open an audio context.
-    const engine = await createLiveEngine(this.song, {
+    const engine = await this.createEngine(this.song, {
       onProgress: (buffers, totalBuffers) =>
         this.set({ progress: { buffers, totalBuffers } }),
     });
+    this.builds += 1;
 
     if (this.disposed) {
       engine.dispose();
@@ -234,13 +278,26 @@ export class PlaybackController {
     this.set({ metronome: on });
   }
 
-  setBpm(bpm: number): void {
-    const clamped = Math.min(bpmRange.max, Math.max(bpmRange.min, Math.round(bpm)));
+  /**
+   * Change the practice speed (spec 13.8).
+   *
+   * The engine is not rebuilt and nothing is rescheduled: every event and both
+   * loop edges are already in ticks, so moving the transport's tempo moves the
+   * sound, the playhead, the active bar, the metronome and the loop together.
+   * That is also why this may be called while the transport is running.
+   *
+   * The song's own `bpm` is not written to, here or anywhere else.
+   */
+  setPracticePercent(percent: number): void {
+    const practicePercent = clampPercent(percent);
+    const bpm = effectiveBpm(this.state.songBpm, practicePercent);
     const transport = this.engine?.context.transport;
-    // Everything is scheduled in ticks, so the tempo alone moves the whole
-    // timeline: sound, playhead, active bar and loop edges together.
-    if (transport) transport.bpm.value = clamped;
-    this.set({ bpm: clamped });
+    if (transport) transport.bpm.value = bpm;
+    this.set({ practicePercent, bpm });
+  }
+
+  getPracticePercent(): number {
+    return this.state.practicePercent;
   }
 
   private fail(error: unknown) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { bpmRange } from "@/lib/limits";
+import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
 import type { PlaybackState } from "@/lib/audio/playback";
 import type { SectionRun } from "@/components/workspace/SectionChips";
 
@@ -65,7 +65,7 @@ export function TransportBar({
   onRewind,
   onToggleLoop,
   onToggleMetronome,
-  onBpmChange,
+  onPracticePercentChange,
 }: {
   state: PlaybackState;
   runs: readonly SectionRun[];
@@ -73,7 +73,7 @@ export function TransportBar({
   onRewind: () => void;
   onToggleLoop: () => void;
   onToggleMetronome: () => void;
-  onBpmChange: (bpm: number) => void;
+  onPracticePercentChange: (percent: number) => void;
 }) {
   const busy = BUSY.includes(state.status);
   const playing = state.status === "playing";
@@ -123,22 +123,14 @@ export function TransportBar({
           <span aria-hidden>&#9834;</span>
         </IconButton>
 
-        <label className="ml-auto flex items-center gap-2">
-          <span className="sr-only">Tempo</span>
-          <input
-            type="range"
-            min={bpmRange.min}
-            max={bpmRange.max}
-            step={1}
-            value={state.bpm}
-            onChange={(event) => onBpmChange(Number(event.target.value))}
-            className="accent-bronze h-11 w-20"
-            aria-label="Tempo"
-          />
-          <span className="text-text w-14 shrink-0 text-right font-mono text-xs tabular-nums">
-            {state.bpm} BPM
-          </span>
-        </label>
+      </div>
+
+      <div className="px-3 pb-2">
+        <PracticeRateControl
+          songBpm={state.songBpm}
+          percent={state.practicePercent}
+          onChange={onPracticePercentChange}
+        />
       </div>
 
       <p className="text-muted/80 px-3 pb-2 text-[11px]">

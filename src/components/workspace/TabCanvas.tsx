@@ -6,6 +6,7 @@ import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import {
   FrettedBarBlock,
   type CellSelection,
+  type OnsetSelection,
 } from "@/components/workspace/FrettedBarBlock";
 import {
   BAR_HEADER_HEIGHT,
@@ -74,6 +75,7 @@ export function TabCanvas({
   editing = false,
   selectedCell = null,
   onCellSelect,
+  onsetsForBar,
 }: {
   timeline: TrackTimeline;
   plan: SongPlan;
@@ -87,6 +89,8 @@ export function TabCanvas({
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
   onCellSelect?: (cell: CellSelection & { barKey: string }) => void;
+  /** The group selection, resolved for one bar at a time (spec 13.1). */
+  onsetsForBar?: (bar: FrettedBar) => OnsetSelection | null;
 }) {
   const playheadRef = useRef<HTMLDivElement | null>(null);
   const lastBarKey = useRef<string | null>(null);
@@ -216,6 +220,7 @@ export function TabCanvas({
                     onCellSelect={(cell) =>
                       onCellSelect?.({ ...cell, barKey: bar.key })
                     }
+                    onsets={onsetsForBar?.(bar) ?? null}
                   />
                 </BarSlot>
               ))

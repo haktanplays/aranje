@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
 import { EditToolbar } from "@/components/workspace/EditToolbar";
@@ -8,27 +8,52 @@ import { FretSheet, type FretSheetTarget } from "@/components/workspace/FretShee
 import { InfoSheet } from "@/components/workspace/InfoSheet";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
 import { SectionChips } from "@/components/workspace/SectionChips";
+import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { BAR_KEY_ATTRIBUTE, TabCanvas } from "@/components/workspace/TabCanvas";
 import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import { TrackSelector, trackSummary } from "@/components/workspace/TrackSelector";
 import { TrackSheet } from "@/components/workspace/TrackSheet";
 import { TransportBar } from "@/components/workspace/TransportBar";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
+import { useSettings } from "@/lib/settings/use-settings";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { BRAND_NAME } from "@/lib/brand";
 import { availableSkills, targetsFor } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { formatTimeSignature } from "@/lib/music/timing";
 import { applyEdit, isEditableTrack, type EditCommand } from "@/lib/song/edit";
+import { applyMoveOnsetGroup, type OnsetMovement } from "@/lib/song/move";
+import {
+  blockContaining,
+  findSection,
+  sectionOnsetBlocks,
+  type OnsetRef,
+} from "@/lib/song/onset-block";
+import {
+  chooseOnset,
+  type SelectMode,
+  type Selection,
+} from "@/lib/song/selection";
 import { useSong } from "@/lib/song/use-song";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 
 type Cell = { barKey: string; slotIndex: number; stringIndex: number };
 
+/** One frozen empty set, so a bar with nothing in it does not allocate. */
+const EMPTY_SLOTS: ReadonlySet<number> = new Set<number>();
+
 export function Workspace() {
   const { song, message, canUndo, persisted, commit, undo } = useSong();
-  const { controller, state } = usePlayback(song);
+  const { practiceRatePercent, setPracticeRatePercent } = useSettings();
+  const { controller, state } = usePlayback(song, practiceRatePercent);
   useDebugHandle(controller);
+
+  // The setting is the source of truth; the controller is the audio system it
+  // is applied to. Retuning a running transport is not a re-render, and it
+  // never rebuilds the engine or reschedules an event (spec 13.8).
+  useEffect(() => {
+    controller.setPracticePercent(practiceRatePercent);
+  }, [controller, practiceRatePercent]);
 
   const firstTrackId = song.tracks[0]?.id ?? "";
   const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId);
@@ -40,6 +65,16 @@ export function Workspace() {
   const [cell, setCell] = useState<Cell | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
 
+  // A group selection belongs to one track and one section at a time, so the
+  // section it was made in is part of the state rather than derived (spec 13.1).
+  const [selection, setSelection] = useState<Selection | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
+
+  const clearSelection = useCallback(() => {
+    setSelection(null);
+    setMoveError(null);
+  }, []);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const track =
@@ -48,6 +83,7 @@ export function Workspace() {
   const copilot = useCoArranger(song, {
     onApply: commit,
     onBeforePreviewPlay: () => controller.pause(),
+    practicePercent: state.practicePercent,
   });
   const previewOpen =
     copilot.state.status === "preview_ready" ||
@@ -117,12 +153,13 @@ export function Workspace() {
   const toggleEdit = useCallback(() => {
     setEditError(null);
     setCell(null);
+    clearSelection();
     setEditing((was) => {
       // Editing and playback do not share the screen (spec 13.1).
       if (!was) controller.pause();
       return !was;
     });
-  }, [controller]);
+  }, [clearSelection, controller]);
 
   const currentFret = useMemo(() => {
     if (!cell || timeline.kind !== "fretted") return null;
@@ -185,6 +222,100 @@ export function Workspace() {
     [cell, timeline],
   );
 
+  /**
+   * The onset blocks of the section a selection is in, so the tab knows which
+   * slots may be picked up and which are already part of the selection. The
+   * tie tail is drawn as selected too: it is the same sound.
+   */
+  const selectionView = useMemo(() => {
+    if (!selection || !track) return null;
+    const section = findSection(song, selection.sectionId);
+    if (!section) return null;
+
+    const blocks = sectionOnsetBlocks(section, track.id);
+    const selected = new Map<number, Set<number>>();
+    for (const ref of selection.refs) {
+      const block = blockContaining(blocks, ref);
+      if (!block) continue;
+      for (const slot of [block.start, ...block.tail]) {
+        const bucket = selected.get(slot.barIndex) ?? new Set<number>();
+        bucket.add(slot.slotIndex);
+        selected.set(slot.barIndex, bucket);
+      }
+    }
+
+    const onsets = new Map<number, Set<number>>();
+    for (const block of blocks) {
+      const bucket = onsets.get(block.start.barIndex) ?? new Set<number>();
+      bucket.add(block.start.slotIndex);
+      onsets.set(block.start.barIndex, bucket);
+    }
+
+    return { sectionId: selection.sectionId, onsets, selected };
+  }, [selection, song, track]);
+
+  /** Every onset of the section a bar belongs to, whether or not one is chosen. */
+  const onsetsOfSection = useMemo(() => {
+    const byBar = new Map<string, Set<number>>();
+    if (!track) return byBar;
+    for (const section of song.sections) {
+      for (const block of sectionOnsetBlocks(section, track.id)) {
+        const key = `${section.id}:${block.start.barIndex}`;
+        const bucket = byBar.get(key) ?? new Set<number>();
+        bucket.add(block.start.slotIndex);
+        byBar.set(key, bucket);
+      }
+    }
+    return byBar;
+  }, [song, track]);
+
+  const pickOnset = useCallback(
+    (sectionId: string, ref: OnsetRef, mode: SelectMode) => {
+      setMoveError(null);
+      setSelection((current) => chooseOnset(current, sectionId, ref, mode));
+    },
+    [],
+  );
+
+  const moveSelection = useCallback(
+    (movement: OnsetMovement) => {
+      if (!selection || !track) return;
+      // Moving music while it is playing would leave the ear behind the eye.
+      controller.pause();
+
+      const result = applyMoveOnsetGroup(song, {
+        kind: "move_onset_group",
+        sectionId: selection.sectionId,
+        trackId: track.id,
+        origins: selection.refs,
+        movement,
+        // The message has to name the bar the musician can see, which is the
+        // tab's running number, not the section's own count.
+        barLabel: (barIndex) => {
+          const bar =
+            timeline.kind === "fretted"
+              ? timeline.bars.find(
+                  (entry) =>
+                    entry.sectionId === selection.sectionId &&
+                    entry.barIndex === barIndex,
+                )
+              : undefined;
+          return `Bar ${bar?.barNumber ?? barIndex + 1}`;
+        },
+      });
+
+      if (!result.ok) {
+        setMoveError(result.error.message);
+        return;
+      }
+      setMoveError(null);
+      // One commit: one storage write and one step of history (spec 5.6).
+      commit(result.song);
+      setSelection({ sectionId: selection.sectionId, refs: result.origins });
+    },
+    [commit, controller, selection, song, timeline, track],
+  );
+
   const activeSectionId = activeBarKey?.split(":")[0] ?? null;
   const firstBar = song.sections[0]?.bars[0];
   const meter = firstBar ? formatTimeSignature(firstBar.timeSignature) : "";
@@ -204,7 +335,7 @@ export function Workspace() {
         <p className="text-muted shrink-0 text-right text-[11px] tabular-nums">
           {song.key}
           <br />
-          {state.bpm} BPM · {meter}
+          {song.bpm} BPM · {meter}
         </p>
         <button
           type="button"
@@ -257,6 +388,32 @@ export function Workspace() {
             setEditError(null);
             setCell(next);
           }}
+          onsetsForBar={(bar) => {
+            const onsetSlots =
+              onsetsOfSection.get(`${bar.sectionId}:${bar.barIndex}`) ??
+              EMPTY_SLOTS;
+            const selectedSlots =
+              (selectionView?.sectionId === bar.sectionId
+                ? selectionView.selected.get(bar.barIndex)
+                : undefined) ?? EMPTY_SLOTS;
+            return {
+              onsetSlots,
+              selectedSlots,
+              active: selection !== null,
+              onToggle: (slotIndex) =>
+                pickOnset(
+                  bar.sectionId,
+                  { barIndex: bar.barIndex, slotIndex },
+                  "toggle",
+                ),
+              onLongPress: (slotIndex) =>
+                pickOnset(
+                  bar.sectionId,
+                  { barIndex: bar.barIndex, slotIndex },
+                  selection?.sectionId === bar.sectionId ? "toggle" : "replace",
+                ),
+            };
+          }}
         />
       </main>
 
@@ -264,6 +421,17 @@ export function Workspace() {
         <p className="text-muted truncate border-t border-line px-3 py-1.5 text-[11px]">
           {trackSummary(track)}
         </p>
+      ) : null}
+
+      {editing ? (
+        <SelectionBar
+          count={selection?.refs.length ?? 0}
+          error={moveError}
+          onMove={moveSelection}
+          onClear={clearSelection}
+          onUndo={undo}
+          canUndo={canUndo}
+        />
       ) : null}
 
       <EditToolbar
@@ -275,11 +443,13 @@ export function Workspace() {
           controller.pause();
           setEditing(false);
           setCell(null);
+          clearSelection();
           copilot.open();
         }}
         arrangeDisabled={skills.length === 0 || previewOpen}
         canUndo={canUndo}
         onUndo={undo}
+        showUndo={selection === null}
       />
 
       <TrackSelector
@@ -288,6 +458,7 @@ export function Workspace() {
         onSelect={(id) => {
           setEditing(false);
           setCell(null);
+          clearSelection();
           setSelectedTrackId(id);
         }}
         onOpenDetails={() => setTrackSheetOpen(true)}
@@ -300,7 +471,7 @@ export function Workspace() {
         onRewind={() => controller.rewind()}
         onToggleLoop={toggleLoop}
         onToggleMetronome={() => controller.setMetronome(!state.metronome)}
-        onBpmChange={(bpm) => controller.setBpm(bpm)}
+        onPracticePercentChange={setPracticeRatePercent}
       />
 
       {track ? (

@@ -348,21 +348,42 @@ describe("determinism and diagnostics", () => {
     expect(result.diagnostics.onsets).toBe(4);
     expect(result.diagnostics.totalCandidateVoicings).toBeGreaterThan(0);
     expect(result.diagnostics.maxCandidateVoicings).toBeGreaterThan(0);
-    expect(result.diagnostics.maxBeamStates).toBeGreaterThan(0);
+    expect(result.diagnostics.maxExpandedStates).toBeGreaterThan(0);
+    expect(result.diagnostics.maxRetainedBeamStates).toBeGreaterThan(0);
     expect(result.diagnostics.unresolvedOnsets).toBe(0);
     expect(result.diagnostics.truncated).toBe(false);
   });
 
-  it("keeps the beam within the configured width", () => {
+  it("expands more states than it keeps, and says which is which", () => {
     const dense = onsetsOf(
       Array.from({ length: 12 }, () => ["E3", "G3", "B3"] as readonly string[]),
     );
     const result = place(GUITAR, dense);
-    // States are generated then trimmed; what is generated stays bounded by
-    // the width times the widest candidate set.
-    expect(result.diagnostics.maxBeamStates).toBeLessThanOrEqual(
+
+    // Expansion is the work done: the surviving beam times the candidates of
+    // one onset. It is expected to be wider than the beam, and it is not a
+    // beam width.
+    expect(result.diagnostics.maxExpandedStates).toBeGreaterThan(
+      placementLimits.beamWidth,
+    );
+    expect(result.diagnostics.maxExpandedStates).toBeLessThanOrEqual(
       placementLimits.beamWidth * result.diagnostics.maxCandidateVoicings,
     );
+    // What is carried forward is the beam, and it obeys the central width.
+    expect(result.diagnostics.maxRetainedBeamStates).toBe(
+      placementLimits.beamWidth,
+    );
+  });
+
+  it("never retains more states than the width it was given", () => {
+    const dense = onsetsOf(
+      Array.from({ length: 12 }, () => ["E3", "G3", "B3"] as readonly string[]),
+    );
+
+    for (const width of [1, 8, placementLimits.beamWidth, placementLimits.referenceBeamWidth]) {
+      const result = place(GUITAR, dense, { beamWidth: width });
+      expect(result.diagnostics.maxRetainedBeamStates).toBeLessThanOrEqual(width);
+    }
   });
 
   it("does not touch the onsets it was given", () => {

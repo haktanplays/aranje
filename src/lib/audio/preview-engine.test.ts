@@ -8,6 +8,7 @@ type FakePlayback = PreviewPlayback & {
   readonly log: string[];
   readonly song: Song;
   disposed: boolean;
+  percent: number | null;
 };
 
 function harness() {
@@ -19,6 +20,11 @@ function harness() {
       log,
       song,
       disposed: false,
+      percent: null,
+      setPracticePercent(percent) {
+        playback.percent = percent;
+        log.push(`rate:${percent}`);
+      },
       seekToBar(barKey) {
         log.push(`seek:${barKey}`);
       },
@@ -115,5 +121,26 @@ describe("the preview engine's lifetime", () => {
     const { engine } = harness();
     expect(engine.start(CANDIDATE, SECTION, () => {})).toBeUndefined();
     expect(engine.stop()).toBeUndefined();
+  });
+});
+
+describe("practice speed", () => {
+  it("hands the candidate the speed the song is being practised at", () => {
+    const { engine, built } = harness();
+    engine.start(SAMPLE_SONG, "intro", () => {}, 75);
+    expect(built[0]?.percent).toBe(75);
+  });
+
+  it("follows a change made while the candidate is playing", () => {
+    const { engine, built } = harness();
+    engine.start(SAMPLE_SONG, "intro", () => {}, 100);
+    engine.setPracticePercent(60);
+    expect(built[0]?.percent).toBe(60);
+  });
+
+  it("has nothing to change when no candidate is playing", () => {
+    const { engine, built } = harness();
+    engine.setPracticePercent(60);
+    expect(built).toHaveLength(0);
   });
 });

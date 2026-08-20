@@ -15,6 +15,7 @@ export function EditToolbar({
   arrangeDisabled,
   canUndo,
   onUndo,
+  showUndo = true,
 }: {
   editing: boolean;
   canEdit: boolean;
@@ -25,6 +26,8 @@ export function EditToolbar({
   arrangeDisabled: boolean;
   canUndo: boolean;
   onUndo: () => void;
+  /** Hidden while the selection strip carries its own undo (spec 13.8). */
+  showUndo?: boolean;
 }) {
   return (
     <div className="border-line flex flex-col gap-1 border-t px-3 py-1.5">
@@ -48,15 +51,17 @@ export function EditToolbar({
         >
           Aranje et
         </button>
-        <button
-          type="button"
-          onClick={onUndo}
-          disabled={!canUndo}
-          aria-label="Son değişikliği geri al"
-          className="text-muted min-h-11 min-w-11 rounded-lg border border-line text-sm disabled:opacity-40"
-        >
-          <span aria-hidden>&#8630;</span>
-        </button>
+        {showUndo ? (
+          <button
+            type="button"
+            onClick={onUndo}
+            disabled={!canUndo}
+            aria-label="Son değişikliği geri al"
+            className="text-muted min-h-11 min-w-11 rounded-lg border border-line text-sm disabled:opacity-40"
+          >
+            <span aria-hidden>&#8630;</span>
+          </button>
+        ) : null}
       </div>
       {editDisabledReason ? (
         <p role="status" className="text-muted text-[11px]">

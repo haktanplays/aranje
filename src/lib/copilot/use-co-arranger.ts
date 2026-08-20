@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 import { PlaybackController } from "@/lib/audio/playback";
+import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 import { PreviewEngine } from "@/lib/audio/preview-engine";
 import {
   createDemoClient,
@@ -85,10 +86,13 @@ export function useCoArranger(
   {
     onApply,
     onBeforePreviewPlay,
+    practicePercent = DEFAULT_PRACTICE_PERCENT,
   }: {
     onApply: (candidate: Song) => void;
     /** Called before the preview engine starts, to stop the song's own. */
     onBeforePreviewPlay: () => void;
+    /** The speed the song is being practised at (spec 13.8). */
+    practicePercent?: number;
   },
 ): CoArrangerHandle {
   const [state, dispatch] = useReducer(previewReducer, initialPreviewState);
@@ -106,6 +110,15 @@ export function useCoArranger(
   const [engine] = useState(
     () => new PreviewEngine((candidate) => new PlaybackController(candidate)),
   );
+
+  // The candidate is heard at the same speed as the song. The value is read
+  // through a ref so a change reaches a preview that is already playing
+  // without rebuilding the engine that is playing it.
+  const percentRef = useRef(practicePercent);
+  useEffect(() => {
+    percentRef.current = practicePercent;
+    engine.setPracticePercent(practicePercent);
+  }, [engine, practicePercent]);
 
   const disposePreview = useCallback(() => {
     engine.stop();
@@ -192,7 +205,12 @@ export function useCoArranger(
 
     // The holder stops the song's own playback and disposes any earlier
     // preview before it builds this one.
-    engine.start(candidate, request.sectionId, onBeforePreviewPlay);
+    engine.start(
+      candidate,
+      request.sectionId,
+      onBeforePreviewPlay,
+      percentRef.current,
+    );
     dispatch({ type: "play" });
   }, [engine, onBeforePreviewPlay, state.candidate, state.request]);
 

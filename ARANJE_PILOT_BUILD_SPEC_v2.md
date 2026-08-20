@@ -554,6 +554,12 @@ yerleştirilir. K-4'ün hafızasız greedy kuralı üretimden kaldırılmıştı
 korunur — daha dar span, daha düşük maksimum perde, daha düşük toplam perde,
 son olarak canonical imza.
 
+**Arama teşhisleri iki ayrı büyüklüktür ve karıştırılmaz:**
+`maxExpandedStates` pruning **öncesi** üretilen ardıl state sayısıdır (yapılan
+işin ölçüsü; üst sınırı `beamWidth × aday sayısı`). `maxRetainedBeamStates`
+pruning **sonrası** taşınan gerçek beam'dir ve her zaman
+`<= placementLimits.beamWidth`'tir.
+
 **Reset semantiği** — Faz 0 carry davranışıyla aynı yardımcıdan gelir. El
 bağlamı yalnız şu üç durumda sıfırlanır: track bir sonraki section'da hiç
 anılmıyorsa, taşınan ses de onset de olmayan **tam bir bar** varsa, ve şarkının
@@ -1063,6 +1069,65 @@ Tipografi ve biçim:
 `#1E1A14`) nötr mavi-siyaha geçiştir. v1.2 §5 "sıcak/karanlık karakter
 korunur" dese de verdiği hex'ler nötrdür; somut olan hex'ler esas alınmıştır.
 
+### §13.8 Çalışma hızı ve akor grubu taşıma (§19 K-20)
+
+**Çalışma hızı (practice rate).** Şarkının `bpm` değeri eserin canonical
+temposudur ve bu kontrol onu **değiştirmez**. Çalınan tempo:
+
+    effectiveBpm = song.bpm * practiceRate
+
+- Sınırlar `limits.ts`'teki `practiceRateLimits`'ten gelir: **%50–%150**, adım
+  **%5**, varsayılan **%100**. Sayılar component içine yazılmaz.
+- Practice rate Song Contract'a yazılmaz, song fingerprint'ini değiştirmez,
+  Copilot request/prompt/idempotency fingerprint'ine girmez, patch veya
+  validator sonucunu etkilemez.
+- Tercih Song'dan **ayrı** bir ayar anahtarında (`aranje.settings`) strict
+  şemayla saklanır. Bozuk ayar sessizce %100'e döner ve **Song karantina
+  sistemini tetiklemez**; bunlar ayrı depolama sorumluluklarıdır.
+- Tek transport, tek scheduler. Hız değişimi engine'i yeniden kurmaz,
+  sample'ları yeniden yüklemez ve hiçbir event'i yeniden schedule etmez:
+  playback, metronom, section loop, seek, playhead ve bar highlight tick
+  cinsinden yazıldığı için tempo ile birlikte hareket eder.
+- Preview playback ile mevcut playback aynı hesabı ve aynı ayarı kullanır.
+- UI şarkının gerçek BPM'si, oran ve efektif BPM'i birlikte gösterir
+  (`132 BPM · %75 → 99 BPM`), %100'e dönüş kontrolü bulunur ve dokunma
+  hedefleri 44 px'tir. Ondalıklı efektif BPM hesapta korunur, ekranda en fazla
+  bir ondalık gösterilir.
+
+**Onset block.** Zaman ekseninde taşımanın birimi nota değil **onset**'tir:
+bir `MelodicSlot` onset'i, içindeki bütün akor notaları ve onu sürdüren
+kesintisiz tie zinciri. Akorun tek teli zaman ekseninde bağımsız taşınmaz —
+tek tel düzenlemesi FretSheet'in sorumluluğudur. Taşıma pitch, nota sırası,
+explicit position, velocity, articulation ve tie süresini **değiştirmez**;
+yalnız zaman konumunu değiştirir.
+
+**`move_onset_group`.** Saf komut: `{ sectionId, trackId, origins, movement }`.
+`movement` ∈ `previous_slot | next_slot | previous_bar | next_bar`. Slot
+hareketi section içindeki bar'ları flatten ederek bir slot kaydırır ve bar
+sınırını geçebilir; bar hareketi her bloğu komşu barın **aynı** `slotIndex`
+konumuna taşır. Bar'lar kendi `timeSignature`/`resolution` değerleriyle
+sayılır; 4/4 veya 8 slot varsayımı yoktur.
+
+İşlem **atomiktir** ve şu sırayla yürür: kaynak alanları belirlenir → kaynaklar
+geçici olarak boş kabul edilir → bütün hedefler hesaplanır → hepsi doğrulanır →
+ancak hepsi geçerliyse yeni Song kurulur → şema ve validator zinciri çalışır →
+tek storage commit yapılır. Seçili blokların birbirlerinin boşalttığı alana
+kayması geçerlidir. Dolu hedef, seçime ait olmayan tie, section dışı, uyumsuz
+slot yapısı, track'in yazılı olmadığı bar ve iki bloğun aynı hedefe düşmesi
+işlemi **tümüyle** reddeder; kısmi taşıma ve üzerine yazma yoktur. Yetim tie
+ne bırakılır ne oluşturulur. Hata kullanıcıya engelleyen bar/slot'u söyler.
+Warning engellemez, error engeller. Bütün grup taşıma **tek** undo adımıdır.
+
+**Çoklu seçim.** Yalnız aktif fretted melodic track'te ve tek section içinde
+çalışır. Uzun basmak seçimi açar; akorun hangi teline basıldığı önemsizdir.
+Sonraki onset'lere dokunmak seçime ekler/çıkarır. Sus veya tie slot'una tek
+başına dokunmak yeni onset seçmez; seçili bir onset'in tie kuyruğu görsel
+olarak seçimin parçası gösterilir. Track, section veya edit modu değişince ve
+preview açılınca seçim temizlenir. Taşımadan önce playback durdurulur. Seçili
+durum yalnız renkle değil outline ve erişilebilir metinle de anlatılır. Bu
+sürümde serbest drag-and-drop **yoktur**: tab'ın yatay scroll hareketiyle
+çakışma riski fiziksel cihaz görülmeden alınmaz.
+
 ### §13.7 Prototipten taşınan / taşınmayanlar
 
 **Taşınır:** pending kesikli çerçeve + breathe animasyonu ve reduced-motion
@@ -1322,6 +1387,7 @@ maliyettir** (§11.2/7).
 | **K-17** | `tonalMajority` için 11/12 perde sınıfını kapsayan birleşik küme **kaldırıldı**. Tonal çekirdek yalnız deklarasyondaki yedi notalı majör veya doğal minör dizidir; harmonik/melodik minör yükseltmeleri, `b5`, ödünç notalar ve kromatik geçişler **renk notasıdır** ve çoğunluk payına eklenmez. "Komşusu kromatikse otomatik tonal say" istisnası kaldırıldı. Validator yalnız **en az 3 pitched onset** bulunan barda karar verir; geçmek için çekirdek oran **kesinlikle %50'den fazla** olmalıdır. Ayrıca §10.3'te ertelenen olağandışı fret sıçraması uyarısı uygulandı; eşikler tek merkezi kaynakta (gitar > 7, bas > 5 fiziksel fret). | Haktan, 19.08.2026 |
 | **K-18** | İlk kullanıcı ürünü, section'ın tamamını değiştiren `replace_section` değil, yalnız hedef track'i düzenleyen **`arrange_track`** oldu. Public `/api/copilot` strict şeması yalnız `arrange_track` kabul eder; `insert_section` / `replace_section` public route'tan kaldırıldı (dış kullanıcı olmadığı için geniş contract backward compatibility uğruna korunmadı). Sağlayıcı çıktısı section'ın tamamını değil **yalnız hedef track'in slotlarını** döndürür; melodik çıktıda explicit `position` reddedilir. Target dışı bütün track'ler sunucu tarafında kilitlidir; `lockedTrackIds` yalnızca ek açıklıktır. `patchSize` artık target track içinde dokunulan bar sayısını ölçer. Stil kartları sanatçıya değil **özelliğe** dayanır; `opeth-acoustic.md` yerine `progressive-atmospheric-acoustic.md`. | Haktan, 19.08.2026 |
 | **K-19** | **Ergonomic Placement v2.** `position` yazılmamış fretted melodik onset'ler artık hafızasız greedy ile tek tek değil, track'in zaman sıralı bağlamı içinde deterministic beam-search / dynamic-programming ile yerleştirilir (§9.2). Maliyet ağırlıklı bir skor değil, **lexicographic tuple**'dır; eşikler `limits.ts`'teki tek merkezi kaynaktan gelir ve beam width orada sabittir (runtime env ayarı yok). El konumu ölçüleri (anchor, chord span, string center) ve reset/carry semantiği `fretJump` ile **aynı** yardımcıdan gelir; tab, validator, preview ve playback tek yerleşim modelini kullanır. Explicit `position` her zaman korunur ve motor tarafından değiştirilemez. K-4'ün hafızasız kuralı üretimden kaldırıldı; parmak numarası, barre analizi ve picking ergonomisi bu sürümün iddiası değildir. | Haktan, 19.08.2026 |
+| **K-20** | **Çalışma hızı ve akor grubu taşıma (§13.8).** Transport'un mutlak BPM kaydırıcısı kaldırıldı; yerine şarkının kendi `bpm`'ini değiştirmeyen bir **practice rate** geldi (%50–%150, %5 adım, varsayılan %100; `limits.ts` tek kaynak). İkinci bir tempo sistemi yoktur: tek transport, tek scheduler, tick tabanlı zamanlama. Rate Song Contract'a yazılmaz, song/Copilot fingerprint'ine girmez ve Song'dan ayrı, strict doğrulanan bir ayar anahtarında saklanır; bozuk ayar %100'e döner ve Song karantinasını tetiklemez. Zaman ekseninde taşımanın birimi **onset block**'tur (onset + akor notaları + kesintisiz tie zinciri) ve saf `move_onset_group` komutu atomiktir: kısmi taşıma, üzerine yazma ve yetim tie yoktur, bütün grup tek storage write ve tek undo adımıdır. Bu sürümde serbest drag-and-drop yoktur. | Haktan, 20.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
@@ -1332,7 +1398,7 @@ maliyettir** (§11.2/7).
 | Ölçüler | 4/4, 3/4, 6/8, 7/8 hepsi pilotta | **4/4 + 6/8 çekirdek**, kalanı Faz 2.5 |
 | Tel ekle/çıkar, 7/8 telli gitar, 5/6 telli bas | Pilotta gelişmiş ayar | **Pilot sonrası** |
 | Tel tel manuel akort, pan/solo, davul lane | Faz 1 | **Faz 2.5** |
-| Pozisyon motoru | 4 maliyeti minimize eden motor | **Deterministik greedy** (§9.2) |
+| Pozisyon motoru | 4 maliyeti minimize eden motor | **Ergonomic Placement v2** (§9.2, K-19) |
 
 ---
 

@@ -62,3 +62,20 @@ export const placementLimits = {
   /** Reference width used only by tests, to check 64 is not too narrow. */
   referenceBeamWidth: 256,
 } as const;
+
+/**
+ * Practice speed (spec 13.8, phase 2E).
+ *
+ * This is a **playback** setting, not a property of the music: the song keeps
+ * its own `bpm` as the tempo the piece is written at, and this scales what the
+ * transport runs at. Everything is kept in whole percent so a step never lands
+ * on a number nobody asked for: 100 is the song's real tempo, and the bounds
+ * are wide enough to slow a fast riff right down without turning the sample
+ * playback into something unrecognisable.
+ */
+export const practiceRateLimits = {
+  minPercent: 50,
+  maxPercent: 150,
+  stepPercent: 5,
+  defaultPercent: 100,
+} as const;

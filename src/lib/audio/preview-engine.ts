@@ -21,6 +21,8 @@ export type PreviewPlayback = {
   seekToBar(barKey: string): void;
   play(): Promise<void>;
   dispose(): void;
+  /** The candidate is practised at the same speed as the song (spec 13.8). */
+  setPracticePercent(percent: number): void;
 };
 
 export type PreviewEngineFactory = (song: Song) => PreviewPlayback;
@@ -41,14 +43,30 @@ export class PreviewEngine {
    * stays here — host first, then any earlier preview, then the new one — and
    * the caller does not have to remember it.
    */
-  start(candidate: Song, sectionId: string, stopHost: () => void): void {
+  start(
+    candidate: Song,
+    sectionId: string,
+    stopHost: () => void,
+    practicePercent?: number,
+  ): void {
     stopHost();
     this.stop();
 
     const playback = this.factory(candidate);
+    if (practicePercent !== undefined) playback.setPracticePercent(practicePercent);
     this.current = playback;
     playback.seekToBar(`${sectionId}:0`);
     void playback.play();
+  }
+
+  /**
+   * Follow a speed change while the candidate is playing.
+   *
+   * The same setting drives both engines, through the same helper, so the
+   * candidate and the song are never heard at two different tempos.
+   */
+  setPracticePercent(percent: number): void {
+    this.current?.setPracticePercent(percent);
   }
 
   /** Dispose the preview engine. Safe to call when there is none. */

@@ -283,8 +283,14 @@ function isResolved(value: Resolved | EditResult): value is Resolved {
   return !("ok" in value);
 }
 
-/** Run the finished song past the schema and the whole validator chain. */
-function settle(next: Song): EditResult {
+/**
+ * Run the finished song past the schema and the whole validator chain.
+ *
+ * Exported because every editing command settles the same way: schema first,
+ * then the validators, errors block and warnings ride along. A second copy of
+ * this would be a second definition of "did the edit hold".
+ */
+export function settle(next: Song): EditResult {
   const parsed = songSchema.safeParse(next);
   if (!parsed.success) {
     return fail(

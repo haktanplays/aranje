@@ -75,7 +75,18 @@ export type PlacementDiagnostics = {
   onsets: number;
   totalCandidateVoicings: number;
   maxCandidateVoicings: number;
-  maxBeamStates: number;
+  /**
+   * The widest the search ever got **before** pruning: how many successor
+   * states one onset produced from the whole surviving beam. This is a measure
+   * of the work done, and it is bounded by `beamWidth * candidates`, not by
+   * `beamWidth`.
+   */
+  maxExpandedStates: number;
+  /**
+   * The most states ever **carried forward** after pruning. This is the beam
+   * itself, and it can never exceed `placementLimits.beamWidth`.
+   */
+  maxRetainedBeamStates: number;
   resets: number;
   unresolvedOnsets: number;
   /** True when any onset hit the enumeration cap. */
@@ -239,7 +250,8 @@ export function placeTrack(input: PlacementInput): PlacementResult {
     onsets: input.onsets.length,
     totalCandidateVoicings: 0,
     maxCandidateVoicings: 0,
-    maxBeamStates: 0,
+    maxExpandedStates: 0,
+    maxRetainedBeamStates: 0,
     resets: 0,
     unresolvedOnsets: 0,
     truncated: false,
@@ -303,8 +315,15 @@ export function placeTrack(input: PlacementInput): PlacementResult {
     // Stable and canonical: equal costs never fall back on insertion order,
     // because the eighth element of the cost is the path's own signature.
     next.sort((a, b) => compareCost(a.cost, b.cost));
-    diagnostics.maxBeamStates = Math.max(diagnostics.maxBeamStates, next.length);
+    diagnostics.maxExpandedStates = Math.max(
+      diagnostics.maxExpandedStates,
+      next.length,
+    );
     beam = next.slice(0, beamWidth);
+    diagnostics.maxRetainedBeamStates = Math.max(
+      diagnostics.maxRetainedBeamStates,
+      beam.length,
+    );
     previousBarNumber = onset.barNumber;
   });
 
