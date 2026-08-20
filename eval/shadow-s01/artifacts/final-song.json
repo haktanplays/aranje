@@ -1,0 +1,2384 @@
+{
+  "version": 2,
+  "title": "Shadow Eval S-01",
+  "bpm": 64,
+  "key": "D minor",
+  "tracks": [
+    {
+      "id": "rhythm_gtr",
+      "name": "Rhythm Guitar",
+      "instrumentId": "electric_guitar",
+      "presetId": "high_gain",
+      "volumeDb": -3,
+      "pan": -0.3,
+      "fretboard": {
+        "tuning": [
+          "D2",
+          "A2",
+          "D3",
+          "G3",
+          "B3",
+          "E4"
+        ],
+        "capo": 0
+      }
+    },
+    {
+      "id": "lead_gtr",
+      "name": "Lead Guitar",
+      "instrumentId": "electric_guitar",
+      "presetId": "high_gain",
+      "volumeDb": -4,
+      "pan": 0.25,
+      "fretboard": {
+        "tuning": [
+          "D2",
+          "A2",
+          "D3",
+          "G3",
+          "B3",
+          "E4"
+        ],
+        "capo": 0
+      }
+    },
+    {
+      "id": "drums",
+      "name": "Drums",
+      "instrumentId": "drum_kit",
+      "presetId": "rock",
+      "volumeDb": -5
+    },
+    {
+      "id": "acoustic_gtr",
+      "name": "Acoustic Guitar",
+      "instrumentId": "steel_acoustic",
+      "presetId": "finger",
+      "volumeDb": -2,
+      "fretboard": {
+        "tuning": [
+          "E2",
+          "A2",
+          "D3",
+          "G3",
+          "B3",
+          "E4"
+        ],
+        "capo": 0
+      }
+    }
+  ],
+  "sections": [
+    {
+      "id": "break",
+      "name": "Break",
+      "status": "fixed",
+      "bars": [
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 90,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 112
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 115
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "F2",
+                    "velocity": 96,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "Eb2",
+                    "velocity": 94,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 88,
+                    "articulation": "staccato"
+                  }
+                ]
+              },
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 115
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 96
+                }
+              ],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 64,
+                  "articulation": "ghost"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 90,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 115
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "F2",
+                    "velocity": 96,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "Eb2",
+                    "velocity": 94,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 120,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-"
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 115
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 96
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 92
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 104
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 120,
+                  "articulation": "accent"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "heavy_bridge",
+      "name": "Heavy Bridge",
+      "status": "fixed",
+      "bars": [
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 120,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 94,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 96,
+                    "articulation": "staccato"
+                  }
+                ]
+              },
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 118
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 84
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 120
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 66,
+                  "articulation": "ghost"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 120,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 94,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 100,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "Ab2",
+                    "velocity": 98,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "G2",
+                    "velocity": 96,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 96,
+                    "articulation": "staccato"
+                  }
+                ]
+              },
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 120
+                },
+                {
+                  "piece": "open_hat",
+                  "velocity": 84
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 98
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 72
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 66,
+                  "articulation": "ghost"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 120,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 94,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "F2",
+                    "velocity": 108,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "Ab2",
+                    "velocity": 110,
+                    "articulation": "slide"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 72
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 66
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 66
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 120,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 94,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 92,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "G2",
+                    "velocity": 98,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "Ab2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-"
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 120
+                },
+                {
+                  "piece": "open_hat",
+                  "velocity": 88
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 96
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 104
+                }
+              ],
+              [
+                {
+                  "piece": "tom_high",
+                  "velocity": 110
+                }
+              ],
+              [
+                {
+                  "piece": "tom_mid",
+                  "velocity": 112
+                }
+              ],
+              [
+                {
+                  "piece": "tom_floor",
+                  "velocity": 114
+                }
+              ],
+              [
+                {
+                  "piece": "tom_floor",
+                  "velocity": 122,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 118
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "solo",
+      "name": "Solo",
+      "status": "fixed",
+      "bars": [
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 90,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 86,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 110,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null
+            ],
+            "lead_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F4",
+                    "velocity": 100,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 92,
+                    "articulation": "pull_off"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 106,
+                    "articulation": "bend_half"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              null,
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 116
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 116
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 84
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 120
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 110
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 98
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 90,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 88,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              null
+            ],
+            "lead_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 110,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 104,
+                    "articulation": "slide"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 94,
+                    "articulation": "pull_off"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 100,
+                    "articulation": "hammer_on"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              null,
+              null,
+              null
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 116
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "open_hat",
+                  "velocity": 82
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 120
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 110
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 88,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "lead_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "C5",
+                    "velocity": 118,
+                    "articulation": "bend_full"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 100,
+                    "articulation": "vibrato"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 82
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 114
+                },
+                {
+                  "piece": "snare",
+                  "velocity": 118
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 110
+                }
+              ],
+              [],
+              [],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 116
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 68
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 72
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 68
+                }
+              ],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              null,
+              null,
+              null,
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 90,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D2",
+                    "velocity": 104,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
+            ],
+            "lead_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 108,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 94,
+                    "articulation": "pull_off"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F4",
+                    "velocity": 100,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 88,
+                    "articulation": "pull_off"
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 104,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-"
+            ],
+            "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 114
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 68
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 104
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 72
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 96
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 66
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 92
+                },
+                {
+                  "piece": "crash",
+                  "velocity": 88
+                }
+              ],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "acoustic_outro",
+      "name": "Acoustic Outro",
+      "status": "fixed",
+      "bars": [
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 78,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "D4",
+                    "velocity": 88,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A3",
+                    "velocity": 70
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 74
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F4",
+                    "velocity": 76
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 70
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 72
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A3",
+                    "velocity": 66
+                  }
+                ]
+              },
+              "-"
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 76,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A3",
+                    "velocity": 68
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 72
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F4",
+                    "velocity": 74
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 80
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F4",
+                    "velocity": 72
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 68
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 70
+                  }
+                ]
+              },
+              "-"
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 82
+                  },
+                  {
+                    "pitch": "D4",
+                    "velocity": 78
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "A3",
+                    "velocity": 66
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 74
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F4",
+                    "velocity": 68
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 76
+                  },
+                  {
+                    "pitch": "A3",
+                    "velocity": 64
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-"
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_gtr": [
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 78,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "A3",
+                    "velocity": 68,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "E4",
+                    "velocity": 72,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 70
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 74,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "F4",
+                    "velocity": 72,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

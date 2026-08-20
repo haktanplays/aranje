@@ -1,0 +1,113 @@
+[
+  {
+    "turn": 1,
+    "label": "Break / Rhythm Guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p1-1",
+    "touchedBars": 4,
+    "explanation": "Acilis riff'i: acik dusuk D uzerinde 3+3+2 gruplu syncopated bir hucre (vurus 0, 3, 6, 10, 12). Aradaki slotlar bos birakildi, dur-kalk karakter buradan geliyor. Palm mute bogulmus pedal, accent ana vurgular. 2. ve 4. bar ayni ilk uc vurusla basliyor, sonra F-Eb-D kromatik kuyrukla cevap veriyor; Eb tek renk notasi ve tonige gecis notasi. 4. bar uzayan D ile sonraki bolume baglaniyor.",
+    "warnings": []
+  },
+  {
+    "turn": 2,
+    "label": "Break / Drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p2-1",
+    "touchedBars": 4,
+    "explanation": "Half-time omurga: snare her barin 3. vurusunda, hat sekizlikleri tutuyor. Kick gitarin accent'lerini (0, 6, 12) izliyor, palm mute onaltiliklarini kopyalamiyor. 2. ve 4. barda 10-11'de kontrollu double-kick gitarin kromatik kuyruguna cevap veriyor. Crash yalniz bolum basinda. 4. bar sonunda kisa snare fill sonraki bolume gecisi hazirliyor.",
+    "warnings": []
+  },
+  {
+    "turn": 3,
+    "label": "Heavy Bridge / Rhythm Guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p3-1",
+    "touchedBars": 4,
+    "explanation": "Ayni hucre: 0, 3, 6 vurus noktalari korundu, boylece onceki bolum taniniyor. Yogunluk 2. bardan itibaren artiyor; A-Ab-G kromatik inisi pedalin uzerine biniyor. 3. barda F2 sustain 9. slota kadar tutuluyor ve el 10. slotta Ab2'ye variyor: slide baglami ayni telde ve arada sus yok. 4. bar cozulmemis tritone Ab2 uzerinde kalarak Solo'ya gerilim birakiyor.",
+    "warnings": []
+  },
+  {
+    "turn": 4,
+    "label": "Heavy Bridge / Drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p4-1",
+    "touchedBars": 4,
+    "explanation": "Break'ten daha yogun: kick 10. slotta da devrede, open hat itislari isaretliyor, hayalet snare'ler groove'u dolduruyor. 2. barda 9-10-11 kontrollu double-kick gitarin kromatik inisine biniyor. 3. bar bilerek seyreliyor: gitarin kaydigi yerde yalniz hat var, davul sonra cevap veriyor. 4. bar snare'den tom'lara inen fill ile Solo'ya baglaniyor.",
+    "warnings": []
+  },
+  {
+    "turn": 5,
+    "label": "Solo / Rhythm Guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p5-1",
+    "touchedBars": 4,
+    "explanation": "Motifin sadelestirilmis hali: 0, 6 ve 12 vurus noktalari kaldi, aradaki onaltiliklar tamamen bosaltildi. Boylece nabiz ve enerji duruyor fakat lead'in kullandigi register bos. 3. bar en seyrek yer: solonun tepe noktasi orada. 4. barda uzayan dusuk D lead'in D'sinin altinda oktav kapanisi yapip birakiyor.",
+    "warnings": []
+  },
+  {
+    "turn": 6,
+    "label": "Solo / Lead Guitar",
+    "attempt": 0,
+    "result": "rejected",
+    "stage": "parse",
+    "diagnostic": "explanation: too_big"
+  },
+  {
+    "turn": 6,
+    "label": "Solo / Lead Guitar",
+    "attempt": 1,
+    "result": "rejected",
+    "stage": "articulationWarning",
+    "diagnostic": "\"Solo\" bölümü, bar 1, slot 4: F4 notasındaki Hammer-on için önceki nota aynı telde değil; normal çalınacak. | \"Solo\" bölümü, bar 2, slot 11: F4 notasındaki Pull-off bir önceki nota ile bağlanamıyor; normal çalınacak."
+  },
+  {
+    "turn": 6,
+    "label": "Solo / Lead Guitar",
+    "attempt": 2,
+    "result": "accepted",
+    "patchId": "shadow-s01-p6-1",
+    "touchedBars": 4,
+    "explanation": "Riff'in 0/3/6 vurus noktalari melodiye tasindi. Blues rengi yazili b5 degil, G uzerindeki yarim bend. 2. bar G-A figuru: slide, pull-off, hammer-on ayni el pozisyonunda. 3. bar tepe: C5 tam bend oktav D'ye ulasip donuyor, sonra vibratolu A. 4. bar kontrollu inis, D sustain: akustik bolum bu notayi devralir.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 2, slot 7: G4 notasındaki Pull-off bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
+  },
+  {
+    "turn": 7,
+    "label": "Solo / Drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p7-1",
+    "touchedBars": 4,
+    "explanation": "Bolumun en hareketli davulu: snare artik 4 ve 12'de de var, kick gitarin biraktigi bosluklari dolduruyor. 2. barda open hat lead'in itisini isaretliyor. 3. barda crash tam bendin ustune dusuyor, sonra davul uzayan notanin uzerine calmak yerine cekiliyor. 4. bar giderek seyreliyor ve 8. slottan sonra tamamen susuyor: akustik bolume yer aciliyor.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 2, slot 7: G4 notasındaki Pull-off bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
+  },
+  {
+    "turn": 8,
+    "label": "Acoustic Outro / Acoustic Guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "shadow-s01-p8-1",
+    "touchedBars": 4,
+    "explanation": "Ilk akorun ust sesi D4: solonun bittigi nota. Acik D teli pedal, uzerinde Dm(add9) arpeji (D-F-A-E). 3. bar riff'in 0/3/6/10/12 vurus noktalarini sessizce geri getiriyor; alinti ritim, notalar degil. 4. bar acik Dsus2 ile asili kaliyor, sonra minor uclu F geliyor ve cinlamaya birakiliyor: cozulmus ama mutlu degil.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 2, slot 7: G4 notasındaki Pull-off bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
+  }
+]
