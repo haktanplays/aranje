@@ -600,18 +600,82 @@ export async function renderTempoProof() {
     }
   }
 
+  const notes = expression.notes
+    .slice()
+    .sort((a, b) => a.startSeconds - b.startSeconds);
+
+  /*
+   * Reported in separate layers, because they are separate claims.
+   *
+   * The tempo claim is about **musical time**: which second a tick falls on.
+   * The release tail is about the *sample*, and it is nobody's evidence about
+   * tempo — a decaying guitar note rings for as long as it rings whatever the
+   * tempo is. Conflating the two would let a long tail flatter a wrong clock.
+   *
+   * What actually proves the tempo is the **interval between onsets**, not
+   * any absolute reading: a constant detector offset cancels out of a
+   * difference, and a doubling cannot be faked by a tail.
+   */
+  const musical = notes.map((n) => ({
+    pitch: n.pitch,
+    timeTicks: n.timeTicks,
+    durationTicks: n.durationTicks,
+    /** Where the timeline says the note begins. */
+    notatedOnsetSeconds: Number(n.startSeconds.toFixed(4)),
+    /** How long the timeline says it sounds, articulation hold included. */
+    notatedDurationSeconds: Number(n.durationSeconds.toFixed(4)),
+    notatedEndSeconds: Number((n.startSeconds + n.durationSeconds).toFixed(4)),
+  }));
+
+  const diff = (xs: number[]) =>
+    xs.slice(1).map((x, i) => Number((x - (xs[i] ?? 0)).toFixed(4)));
+
+  const predictedOnsets = musical.map((m) => m.notatedOnsetSeconds);
+  const measuredAttacks = attacks.map((t) => Number(t.toFixed(4)));
+
+  // Where the audio actually falls silent, so the tail can be named and then
+  // set aside rather than quietly counted as music.
+  const floor = 0.002;
+  let lastLoud = 0;
+  for (let i = 0; i < channel.length; i += 1) {
+    if (Math.abs(channel[i] ?? 0) > floor) lastLoud = i;
+  }
+  const audibleEndSeconds = Number((lastLoud / rate).toFixed(4));
+  const lastNotatedEnd = musical[musical.length - 1]?.notatedEndSeconds ?? 0;
+
   return {
-    predicted: expression.notes
-      .slice()
-      .sort((a, b) => a.startSeconds - b.startSeconds)
-      .map((n) => Number(n.startSeconds.toFixed(4))),
-    measured: attacks.map((t) => Number(t.toFixed(4))),
     tempoSegments: tempo.segments.map((s) => ({
       sectionId: s.sectionId,
       bpm: s.bpm,
+      startTicks: s.startTicks,
       startSeconds: Number(s.startSeconds.toFixed(4)),
+      secondsPerTick: Number(s.secondsPerTick.toFixed(7)),
     })),
-    totalSeconds: Number(tempo.totalSeconds.toFixed(4)),
+
+    /** Layer 1: musical time. Ticks to seconds, and nothing else. */
+    musical,
+
+    /** Layer 2: what the rendered audio's attacks measure. */
+    measuredAttacks,
+
+    /**
+     * Layer 3: the claim itself. Differences, so a constant detector offset
+     * cancels; the second gap doubling is the tempo change.
+     */
+    predictedGaps: diff(predictedOnsets),
+    measuredGaps: diff(measuredAttacks),
+    detectorOffsets: measuredAttacks.map((m, i) =>
+      Number((m - (predictedOnsets[i] ?? 0)).toFixed(4)),
+    ),
+
+    /** Layer 4: the release tail, named so it is not mistaken for evidence. */
+    lastNotatedEndSeconds: lastNotatedEnd,
+    audibleEndSeconds,
+    releaseTailSeconds: Number((audibleEndSeconds - lastNotatedEnd).toFixed(4)),
+    /** Silence the harness appends after the music, for the tail to decay in. */
+    renderPadSeconds: Number((seconds - tempo.totalSeconds).toFixed(4)),
+    musicalTotalSeconds: Number(tempo.totalSeconds.toFixed(4)),
+    renderedFileSeconds: Number(buffer.duration.toFixed(4)),
   };
 }
 

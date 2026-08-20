@@ -16,7 +16,14 @@ import {
   ticksAtSeconds,
 } from "@/lib/audio/tempo";
 import { PPQ } from "@/lib/audio/schedule";
-import { songSchema, type Bar, type Section, type Song } from "@/lib/song/schema";
+import {
+  barSchema,
+  sectionSchema,
+  songSchema,
+  type Bar,
+  type Section,
+  type Song,
+} from "@/lib/song/schema";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 
 const GUITAR = SAMPLE_SONG.tracks.find((t) => t.id === "gtr");
@@ -195,5 +202,98 @@ describe("the demo song still reads the way it always did", () => {
     const map = buildTempoMap(SAMPLE_SONG);
     const flat = (map.totalTicks / PPQ) * (60 / SAMPLE_SONG.bpm);
     expect(map.totalSeconds).toBeCloseTo(flat, 9);
+  });
+});
+
+describe("where tempo lives, and only there (spec 5.1, 8.3, K-25)", () => {
+  const oneBar = () => ({
+    timeSignature: [4, 4] as const,
+    resolution: 8 as const,
+    slots: { gtr: Array.from({ length: 8 }, () => null) },
+  });
+
+  const withSection = (extra: Record<string, unknown>) => ({
+    version: 2,
+    title: "ownership",
+    bpm: 120,
+    key: "E minor",
+    tracks: [GUITAR],
+    sections: [
+      { id: "a", name: "A", status: "fixed", bars: [oneBar()], ...extra },
+    ],
+  });
+
+  it("is a property of a Section", () => {
+    expect(songSchema.safeParse(withSection({ bpmOverride: 90 })).success).toBe(true);
+    expect(Object.keys(sectionSchema.shape)).toContain("bpmOverride");
+  });
+
+  it("is not a property of a Bar", () => {
+    // The Song Contract has exactly one place to write a tempo. A second one
+    // would be a second answer to the same question (K-25).
+    expect(Object.keys(barSchema.shape)).not.toContain("bpmOverride");
+    expect(Object.keys(barSchema.shape).sort()).toEqual([
+      "resolution",
+      "slots",
+      "timeSignature",
+    ]);
+  });
+
+  it("refuses a bar that tries to carry one, rather than ignoring it", () => {
+    /*
+     * Phase 2G removed a bar-level `bpmOverride` that was declared, locked and
+     * read by nothing. There is deliberately **no migration shim**: nothing in
+     * the product could ever have written such a song — the model's bar schema
+     * has only barIndex and slots, and no editor path builds a bar literal —
+     * so a normalisation step would be dead code that has to be maintained
+     * forever, and it would be the second tempo path this decision exists to
+     * prevent. A hand-edited store is quarantined, which is the right outcome.
+     */
+    const song = {
+      version: 2,
+      title: "old",
+      bpm: 120,
+      key: "E minor",
+      tracks: [GUITAR],
+      sections: [
+        {
+          id: "a",
+          name: "A",
+          status: "fixed",
+          bars: [{ ...oneBar(), bpmOverride: 60 }],
+        },
+      ],
+    };
+    const parsed = songSchema.safeParse(song);
+    expect(parsed.success).toBe(false);
+    if (parsed.success) return;
+    expect(parsed.error.issues[0]?.path).toContain("bars");
+  });
+
+  it("falls back to the song's own tempo, which is never optional", () => {
+    expect(Object.keys(songSchema.shape)).toContain("bpm");
+    const plain = songSchema.safeParse(withSection({}));
+    expect(plain.success).toBe(true);
+    if (!plain.success) return;
+    expect(plain.data.sections[0]?.bpmOverride).toBeUndefined();
+    expect(sectionBpm(plain.data, "a")).toBe(120);
+  });
+
+  it("changes tempo only at a section's first tick", () => {
+    // v1 has one shape of change and no other: no ramp, no rubato, nothing
+    // inside a bar.
+    const stepped = song([
+      { id: "a", bars: 2 },
+      { id: "b", bars: 2, bpm: 60 },
+    ]);
+    const map = buildTempoMap(stepped);
+    // One segment per section, and a segment is constant throughout.
+    expect(map.segments).toHaveLength(2);
+    for (const segment of map.segments) {
+      const mid = Math.floor((segment.startTicks + segment.endTicks) / 2);
+      expect(tempoAtTicks(map, segment.startTicks)).toBe(segment.bpm);
+      expect(tempoAtTicks(map, mid)).toBe(segment.bpm);
+      expect(tempoAtTicks(map, segment.endTicks - 1)).toBe(segment.bpm);
+    }
   });
 });
