@@ -13,6 +13,7 @@
  * fourth attempt and no manual patch.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { unwrapProviderEnvelope } from "./envelope.js";
 import { join } from "node:path";
 
 import { compositionBlueprintSchema } from "@/lib/copilot/blueprint";
@@ -109,6 +110,9 @@ function waitFor(what: string, payloadName: string, payload: unknown): never {
 }
 
 // ---------------------------------------------------------------- blueprint
+/** Every attempt whose answer arrived inside a markdown fence. */
+const envelopeUnwraps: string[] = [];
+
 let blueprintRaw: string | null = null;
 let blueprintAttempt = 0;
 const blueprintCorrections: string[] = [];
@@ -126,7 +130,11 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
     break;
   }
   blueprintAttempt = attempt;
-  blueprintRaw = readFileSync(answer, "utf8");
+  {
+    const envelope = unwrapProviderEnvelope(readFileSync(answer, "utf8"));
+    if (envelope.unwrapped) envelopeUnwraps.push(`blueprint-attempt-${attempt}`);
+    blueprintRaw = envelope.text;
+  }
 
   let parsedJson: unknown;
   try {
@@ -254,6 +262,7 @@ for (const turn of TURNS) {
     if (!existsSync(answerPath)) {
       write("state.json", JSON.stringify(song, null, 2));
       write("turn-log.json", JSON.stringify(log, null, 2));
+  write("envelope-unwraps.json", JSON.stringify(envelopeUnwraps, null, 2));
       waitFor(
         `turn ${turn.index} (${turn.label}) attempt ${attempt}`,
         `${stem}-payload.json`,
@@ -266,8 +275,9 @@ for (const turn of TURNS) {
       );
     }
 
-    const raw = readFileSync(answerPath, "utf8");
-    const outcome = runTurn(song, turn, candidate, raw);
+    const envelope = unwrapProviderEnvelope(readFileSync(answerPath, "utf8"));
+    if (envelope.unwrapped) envelopeUnwraps.push(`turn-${turn.index}-attempt-${attempt}`);
+    const outcome = runTurn(song, turn, candidate, envelope.text);
 
     if (outcome.ok) {
       song = outcome.song;
@@ -312,12 +322,14 @@ for (const turn of TURNS) {
     );
     write("final-song.json", JSON.stringify(song, null, 2));
     write("turn-log.json", JSON.stringify(log, null, 2));
+  write("envelope-unwraps.json", JSON.stringify(envelopeUnwraps, null, 2));
     process.exit(1);
   }
 }
 
 write("final-song.json", JSON.stringify(song, null, 2));
 write("turn-log.json", JSON.stringify(log, null, 2));
+write("envelope-unwraps.json", JSON.stringify(envelopeUnwraps, null, 2));
 
 const issues = runValidators(song);
 console.log(

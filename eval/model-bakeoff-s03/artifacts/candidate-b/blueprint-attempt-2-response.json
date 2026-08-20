@@ -1,0 +1,302 @@
+```json
+{
+  "version": 1,
+  "targetDurationSeconds": 60,
+  "durationToleranceSeconds": 5,
+  "tonalCenter": "E minor",
+  "tuningIntent": "Düşük akortlu ağır elektrik tonu; akustikte sıcak açık tel karakteri",
+  "resolution": 16,
+  "referenceTraits": [
+    "Sıkı palm-mute'lu, senkoplu düz-16'lık ağır groove dokusu",
+    "Unison gitar-bas vurgularıyla güçlendirilmiş sert ritim karakteri",
+    "Kick/snare ilişkisi zengin, çeşitli groove rolleri taşıyan bateri anlatımı",
+    "Nefes alan, aşırı frenlenmemiş melodik solo cümleleri",
+    "Solo altında lead'i örtmeyen, seyrek ve geniş voicing'li destek dokusu",
+    "Karanlık, açık tel rezonanslı, çözümsüz bırakılan temiz akustik kapanış",
+    "Modal gerilimi çözmeden bırakan tonal karakter"
+  ],
+  "tracks": [
+    {
+      "role": "rhythm_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Sıkı palm-mute'lu, kalın ve agresif ritim gitar tonu",
+      "tuningIntent": "Düşük akortlu, kalın alt register",
+      "playsInSections": ["break", "bridge", "solo"],
+      "energyJob": "Senkoplu palm-mute groove'u kurar, solo altında seyrekleşerek destek verir",
+      "required": true,
+      "rationale": "Break ve bridge'in ritmik omurgasını oluşturur; solo altında seyrek backing fikrini korumak için yoğunluğunu düşürür ama tamamen susmaz",
+      "additionalProperties": false
+    },
+    {
+      "role": "lead_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Kesin, orta-yüksek register'da sert ama net lead/unison tonu",
+      "tuningIntent": "Düşük akortlu, break'te rhythm ile aynı register",
+      "playsInSections": ["break", "bridge", "solo"],
+      "energyJob": "Break'te unison vurgu, bridge'te motif gelişimi, solo'da nefes alan melodik cümleler taşır",
+      "required": true,
+      "rationale": "Break'te rhythm_guitar ile unison vurgularla ağırlık katar, bridge'te motifi tanınabilir şekilde geliştirir, solo'da frenlenmeden nefes alan melodik gelişimi taşır"
+    },
+    {
+      "role": "bass",
+      "instrumentFamily": "bass",
+      "presetIntent": "Sade, temel odaklı, düşük register'da destekleyici bas tonu",
+      "tuningIntent": "Rhythm gitarla eşleşen düşük akort",
+      "playsInSections": ["break", "bridge", "solo"],
+      "energyJob": "Groove'u kalınlaştıran ama sade kalan, rhythm_guitar'ı büyük ölçüde takip eden bas hattı",
+      "required": true,
+      "rationale": "Bas yazımı sade tutuldu; kendi başına hareketlenmek yerine palm-mute ritmine yaslanan bir zemin görevi görür, gitarın sertliğini büyütür"
+    },
+    {
+      "role": "drums",
+      "instrumentFamily": "drums",
+      "presetIntent": "Zengin, dinamik ve geçişli akustik davul seti tonu",
+      "tuningIntent": "Standart akustik davul seti akordu",
+      "playsInSections": ["break", "bridge", "solo"],
+      "energyJob": "Bölüm bazında farklı groove rolleri, değişen kick/snare ilişkileri ve geçiş fill'leriyle varlığını çeşitlendirir",
+      "required": true,
+      "rationale": "Yalnızca vuruş sayısını artırmak yerine groove rolü çeşitliliği, kick/snare ilişkisi ve fill'lerle gerçek bir anlatım kurar; break/bridge/solo arasında farklı karakterler taşır"
+    },
+    {
+      "role": "harmony",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Geniş, açık voicing'li seyrek destek dokusu",
+      "tuningIntent": "Lead gitarla uyumlu düşük akort",
+      "playsInSections": ["solo"],
+      "energyJob": "Solo altında seyrek, geniş aralıklı destek sağlar; lead'in register'ını asla örtmez",
+      "required": false,
+      "rationale": "Solo altı seyrek backing fikrini korumak için eklendi; düşük yoğunlukla lead'i örtmeden duyulabilir kalır"
+    },
+    {
+      "role": "acoustic_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Temiz, sıcak ama karanlık tonlu akustik gitar",
+      "tuningIntent": "Standart akort, açık tellerin rezonansına izin veren",
+      "playsInSections": ["acoustic_outro"],
+      "energyJob": "Karanlık, açık tel karakterli, çözümsüz bırakılan sade kapanış dokusu taşır",
+      "required": true,
+      "rationale": "Davulsuz, elektrik gitarsız, yalnızca akustik gitarla kurulan temiz kapanışı karşılar; core_riff'in aralık kimliğini karanlık açık tel dokusuna taşır"
+    }
+  ],
+  "motifs": [
+    {
+      "key": "core_riff",
+      "rhythmSignature": "Senkoplu 16'lık palm-mute vuruşlar; vuruş 1 ve 2. vuruşun 'and'inde ağırlık, düz 4/4 nabız korunur",
+      "accentStructure": "Güçlü vuruş 1'de, senkoplu ikinci vurgu 2. vuruşun 'and'inde; 3-4 arası kısa nefes boşluğu bırakılır",
+      "pitchContour": "Dar aralıklı, tek perde etrafında dönen pedal hareketi; kısa üst komşu nota çıkışları",
+      "spaceCharacter": "Vuruşlar arası kısa susuşlarla nefes alan, yoğun ama tıkanmayan bir doku",
+      "rationale": "Break'in temel kimliği; senkoplu palm-mute dilini additive/prog hissi olmadan, düz 4/4 groove içinde kurar"
+    },
+    {
+      "key": "lead_theme",
+      "rhythmSignature": "core_riff'in senkopundan doğan, uzun tutulan notalarla nefes alan 16'lık cümleler",
+      "accentStructure": "Cümle başlarında güçlü giriş, ardından legato ile yumuşayan iç vurgular",
+      "pitchContour": "core_riff'in dar aralığından açılan, register değişimiyle yukarı taşınan geniş yaylı bir hat",
+      "spaceCharacter": "Nefes alan, cümleler arası belirgin susuşlarla frenlenmeden ilerleyen bir akış",
+      "rationale": "Solo'nun ana fikri; break motifinin pitch konturunu miras alır ama melodik ve register olarak genişleterek gerçek bir gelişim sağlar, fazla frenlenmeden nefes alır"
+    },
+    {
+      "key": "acoustic_theme",
+      "rhythmSignature": "Serbest, uzun sustain'li akorlar ve seyrek arpej hareketleri; sabit vuruş baskısı yok",
+      "accentStructure": "Vurgular yumuşak, akor değişimlerinde hafif öne çıkma dışında düz dinamik",
+      "pitchContour": "core_riff'in aralık iskeletini açık tellere taşıyan, aşağı çekilmiş karanlık bir kontur",
+      "spaceCharacter": "Geniş, rezonans dolu boşluklarla nefes alan, çözümsüz bırakılan karanlık bir doku",
+      "rationale": "Akustik kapanış; core_riff'in aralık kimliğini karanlık açık tel rezonansına taşıyarak parçayı çözümsüz ama tanınabilir biçimde kapatır"
+    }
+  ],
+  "sections": [
+    {
+      "key": "break",
+      "displayName": "Break",
+      "formRole": "break",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 132,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 7,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Bridge geçişine hazırlayan yoğun tom/snare fill'i; break'in senkoplu vurgusunu bridge'e taşır"
+        }
+      ],
+      "energy": "high",
+      "density": "high",
+      "tonalJob": "Tonik pedal üzerinde sert, senkoplu bir gerilim kurar; 4/4 nabzı hiç bırakmadan ağırlığı ilan eder",
+      "motifKey": "core_riff",
+      "motifTransformation": "core_riff ilk kez, unison gitar-bas vurgularıyla sert ve kesik biçimde sunulur",
+      "entryIntent": "Soğuk, ani ve sert bir unison vuruşla açılır; giriş öncesi boşluk yok",
+      "exitIntent": "Davul fill'i gerilimi biriktirip bridge'e sarsılmadan taşır",
+      "linkToPrevious": "Parçanın ilk bölümü; önceki bir pasaj yok, doğrudan sert girişle başlar",
+      "linkToNext": "Fill sonundaki son vuruş bridge'in girişine doğrudan bağlanır, tempo ve nabız sabit kalır",
+      "activeRoles": ["rhythm_guitar", "lead_guitar", "bass", "drums"],
+      "silentRoles": ["acoustic_guitar", "harmony"]
+    },
+    {
+      "key": "bridge",
+      "displayName": "Bridge",
+      "formRole": "bridge",
+      "bars": 6,
+      "timeSignature": [4, 4],
+      "bpm": 132,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 4,
+          "resolution": 32,
+          "intent": "scalar_run",
+          "purpose": "Kısa, belirgin bir scale-run; break'in statik pedalinden ayrılıp gerilimi Solo'ya taşır"
+        },
+        {
+          "barIndex": 5,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Solo girişine hazırlayan geçiş fill'i; bridge'in gelişimini net biçimde kapatır"
+        }
+      ],
+      "energy": "medium",
+      "density": "medium",
+      "tonalJob": "core_riff'i register ve armonik hareketle genişletip gerçek bir gerilim biriktirir",
+      "motifKey": "core_riff",
+      "motifTransformation": "core_riff'in aralıkları yukarı register'a taşınır, call-response yapısıyla lead_guitar tarafından genişletilir; break'in statik pedalinden ayrışır",
+      "entryIntent": "Break'in son vuruşundan kesintisiz devam eder, ritim aynı kalır ama doku açılmaya başlar",
+      "exitIntent": "Fill ve scale-run ile biriken gerilim, Solo'nun girişine net bir sıçrama bırakır",
+      "linkToPrevious": "Break'in senkoplu pedalinden doğrudan devam eder; tempo ve groove hissi kesilmez",
+      "linkToNext": "Son fill, Solo'nun ilk vuruşuna kesintisiz teslim olur",
+      "activeRoles": ["rhythm_guitar", "lead_guitar", "bass", "drums"],
+      "silentRoles": ["acoustic_guitar", "harmony"]
+    },
+    {
+      "key": "solo",
+      "displayName": "Solo",
+      "formRole": "solo",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 132,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 1,
+          "resolution": 32,
+          "intent": "legato_burst",
+          "purpose": "Hammer-on/pull-off ile açılan akıcı bir cümle başlangıcı; nefes alan bir giriş kurar"
+        },
+        {
+          "barIndex": 4,
+          "resolution": 32,
+          "intent": "scalar_run",
+          "purpose": "Kısa, keskin bir scale-run; alt registerdan üst registera geçişi belirginleştirir"
+        },
+        {
+          "barIndex": 6,
+          "resolution": 32,
+          "intent": "arpeggio",
+          "purpose": "Register değişimi taşıyan gelişmiş bir arpej figürü; son cümleden önce gerilimi tazeler"
+        }
+      ],
+      "energy": "high",
+      "density": "high",
+      "tonalJob": "lead_theme'i frenlenmeden geliştirir, register değişimi ve gerilim çözümüyle gerçek bir doruk kurar",
+      "motifKey": "lead_theme",
+      "motifTransformation": "core_riff'in konturundan doğan lead_theme, geniş nefeslerle, register değişimiyle ve tek bir geniş aralıklı slide'la melodik olarak genişler",
+      "entryIntent": "Bridge'in bıraktığı gerilimi karşılayan güçlü bir giriş cümlesi",
+      "exitIntent": "Son cümle nefesini bırakır, acoustic bölüme geçişi hazırlayan bir sükunetle söner",
+      "linkToPrevious": "Bridge'in fill'inden kesintisiz devam eder, aynı tempo ve groove ile başlar",
+      "linkToNext": "Son notanın sönüşü, Solo'dan acoustic bölüme yumuşak bir geçiş bırakır",
+      "activeRoles": ["rhythm_guitar", "lead_guitar", "bass", "drums", "harmony"],
+      "silentRoles": ["acoustic_guitar"]
+    },
+    {
+      "key": "acoustic_outro",
+      "displayName": "Acoustic Outro",
+      "formRole": "outro",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 92,
+      "resolution": 8,
+      "gridAccents": [
+        {
+          "barIndex": 5,
+          "resolution": 16,
+          "intent": "arpeggio",
+          "purpose": "Ana motifin aralık iskeletini yansıtan kısa, yumuşak arpej hareketi; karanlık açık tel karakterini bozmadan hafif hareket katar"
+        }
+      ],
+      "energy": "low",
+      "density": "low",
+      "tonalJob": "Modal gerilimi çözmeden bırakan, karanlık açık tel rezonansıyla kapanan sade bir doku",
+      "motifKey": "acoustic_theme",
+      "motifTransformation": "core_riff'in aralık iskeleti açık tel akustik dokuya taşınır; karanlık ve sade biçimde yeniden yorumlanır",
+      "entryIntent": "Solo'nun sönüşünden süzülen sessiz bir akustik akort geçişi",
+      "exitIntent": "Açık tel rezonansı sürerken çözümsüz biçimde söner",
+      "linkToPrevious": "Solo'nun son nefesinden doğrudan, davulsuz ve elektriksiz bir sükunete geçer",
+      "linkToNext": "Parça bu rezonansla sona erer",
+      "activeRoles": ["acoustic_guitar"],
+      "silentRoles": ["rhythm_guitar", "lead_guitar", "bass", "drums", "harmony"]
+    }
+  ],
+  "requestedTechniques": [
+    {
+      "technique": "palm_mute",
+      "sectionKey": "break",
+      "purpose": "Senkoplu riflerin sıkı, kesik dokusunu kurar; groove'un temelini oluşturur"
+    },
+    {
+      "technique": "accent",
+      "sectionKey": "break",
+      "purpose": "Senkoplu vurguları öne çıkararak 4/4 nabzı kaybetmeden sertlik katar"
+    },
+    {
+      "technique": "staccato",
+      "sectionKey": "bridge",
+      "purpose": "Motifin gelişiminde kesik artikülasyonla break'ten farklılaşan bir doku sağlar"
+    },
+    {
+      "technique": "hammer_on",
+      "sectionKey": "solo",
+      "purpose": "Legato patlamasında akıcı, nefes alan bir cümle başlangıcı kurar"
+    },
+    {
+      "technique": "pull_off",
+      "sectionKey": "solo",
+      "purpose": "Legato hattını tamamlayarak scale-run'ın akıcılığını sürdürür"
+    },
+    {
+      "technique": "bend_half",
+      "sectionKey": "solo",
+      "purpose": "Yakın aralıklı gerilim için ince bir renk katar, slide'dan ayrışan net bir ifade"
+    },
+    {
+      "technique": "bend_full",
+      "sectionKey": "solo",
+      "purpose": "Cümle doruğunda güçlü, belirgin bir gerilim anı yaratır"
+    },
+    {
+      "technique": "vibrato",
+      "sectionKey": "solo",
+      "purpose": "Uzun tutulan notalarda nefes ve ifade katar, cümleyi frenlemeden besler"
+    },
+    {
+      "technique": "slide",
+      "sectionKey": "solo",
+      "purpose": "Tek, geniş aralıklı (yaklaşık 7 perde) hareket; merkezi bir numara değil, bend ile karışmayan nadir bir renk"
+    },
+    {
+      "technique": "sustain",
+      "sectionKey": "acoustic_outro",
+      "purpose": "Açık tel akorların rezonansını uzatarak karanlık, çözümsüz kapanışı destekler"
+    }
+  ],
+  "omittedRequests": [
+    {
+      "request": "Sweep picking ile hızlı arpej geçişleri",
+      "reason": "Bu çıktı sözleşmesinde nota başına tek artikülasyon var ve sweep picking gerçekten ifade edilemiyor; taklit edilmedi, gelişmiş arpej fikri normal artikülasyon ve ince gridle (arpeggio intent) karşılandı"
+    },
+    {
+      "request": "Grace note / flam süslemeleri",
+      "reason": "Mevcut artikülasyon sözleşmesi grace note ve flam'i desteklemiyor; bu istek varmış gibi anlatılmadı, benzer enerji drum_fill ve ornamented grid niyetleriyle sağlandı"
+    }
+  ]
+}
+```

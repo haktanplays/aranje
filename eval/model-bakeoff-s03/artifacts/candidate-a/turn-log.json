@@ -28,6 +28,26 @@
     "attempt": 0,
     "result": "rejected",
     "stage": "parse",
-    "diagnostic": "output was not JSON"
+    "diagnostic": "explanation: too_big"
+  },
+  {
+    "turn": 3,
+    "label": "Break / rhythm_guitar",
+    "role": "rhythm_guitar",
+    "attempt": 1,
+    "result": "rejected",
+    "stage": "validators",
+    "diagnostic": "range: \"Break\" bölümü, bar 3, slot 16: D2 notası \"Holds the 4/4 floor and the riff weight;\" track'inin aralığının altında. Bu akort ve capo 0 ile çalınabilir aralık E2 - E6."
+  },
+  {
+    "turn": 3,
+    "label": "Break / rhythm_guitar",
+    "role": "rhythm_guitar",
+    "attempt": 2,
+    "result": "accepted",
+    "patchId": "s03-a-p3-1",
+    "touchedBars": 4,
+    "explanation": "Tonik E2 pedali korunuyor; 1. vurusta tam slam, mute kumesi ikizlenip 3. vurus gecikmeli ve daha sert iniyor. Fraz uzunlugu dort kare kaliyor, gerilim yerlesimden geliyor. F2 komsu nota cumle sonunu kapatiyor, 3. barda G2 tek seferlik kaldirma. Son bar 1/32 gridde daha seyrek nefes alip kapanis slam'iyle bitiyor.",
+    "warnings": []
   }
 ]
