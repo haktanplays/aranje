@@ -27,7 +27,6 @@ import {
 } from "@/lib/audio/tempo";
 import {
   DEFAULT_PRACTICE_PERCENT,
-  effectiveBpm,
 } from "@/lib/audio/practice-rate";
 import {
   bendTargetCents,
@@ -152,9 +151,6 @@ export type ExpressionPlanOptions = {
   comparison?: ExpressionComparisonOptions;
 };
 
-function noteSeconds(ticks: number, secondsPerTick: number): number {
-  return ticks * secondsPerTick;
-}
 
 /** Rounded so a plan compares equal across runs without float noise. */
 function round(value: number): number {
