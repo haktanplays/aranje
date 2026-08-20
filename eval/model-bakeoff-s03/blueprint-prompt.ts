@@ -22,6 +22,43 @@ export const BLUEPRINT_JSON_SCHEMA = z.toJSONSchema(compositionBlueprintSchema, 
   io: "input",
 });
 
+/**
+ * Character limits, written out in prose (run 1 finding).
+ *
+ * They are in the JSON Schema as `maxLength`, and both candidates in the
+ * first run lost their opening attempt to nothing but overruns — one of them
+ * was eventually eliminated by two characters. A limit a reader has to find
+ * by walking a nested schema is a limit that will be broken, so the tight
+ * ones are also stated as text. Derived from the schema so the two cannot
+ * drift apart.
+ */
+function maxLengthsFrom(schema: unknown): string[] {
+  const found = new Map<string, number>();
+
+  const walk = (node: unknown, path: string) => {
+    if (!node || typeof node !== "object") return;
+    const record = node as Record<string, unknown>;
+
+    if (typeof record.maxLength === "number" && path) {
+      found.set(path, record.maxLength);
+    }
+    const properties = record.properties as Record<string, unknown> | undefined;
+    if (properties) {
+      for (const [key, value] of Object.entries(properties)) {
+        walk(value, path ? `${path}.${key}` : key);
+      }
+    }
+    if (record.items) walk(record.items, path ? `${path}[]` : "[]");
+  };
+
+  walk(schema, "");
+  return [...found.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([field, limit]) => `${field} <= ${limit}`);
+}
+
+export const FIELD_LIMIT_LINES = maxLengthsFrom(BLUEPRINT_JSON_SCHEMA);
+
 const gridLine = RESOLUTIONS.map(
   (resolution) => `${resolutionPromptLabel(resolution)} (${resolution})`,
 ).join(" · ");
@@ -44,6 +81,15 @@ export const BLUEPRINT_SYSTEM = [
   "8. Bir bolumde calmayan rol `activeRoles` icinde olmaz; sessizlik yokluktur.",
   "9. Karsilanmayan her istegi `omittedRequests` icinde gerekcesiyle yaz.",
   "   Sessizce dusurme.",
+  "10. `tonalCenter` bir Song tonalitesidir ve SU BICIMDE yazilmalidir:",
+  "    bir nota adi (A-G), istege bagli # veya b, bosluk, minor veya major.",
+  "    Gecerli: \"D minor\", \"C# minor\", \"Bb major\".",
+  "    Gecersiz: \"C# minor / frigyen renkli merkez\", \"E minor, karanlik\".",
+  "    Tonalitenin rengini anlatmak istersen `referenceTraits` veya",
+  "    `sections[].tonalJob` icine yaz; `tonalCenter` yalnizca bu kaliptir.",
+  "",
+  "Karakter sinirlari (asilirsa cevap reddedilir):",
+  ...FIELD_LIMIT_LINES.map((line) => `- ${line}`),
   "",
   "Ritmik grid:",
   `- Kullanilabilir grid'ler: ${gridLine}.`,

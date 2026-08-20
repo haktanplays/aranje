@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "turn": 1,
+    "label": "Intro / rhythm_guitar",
+    "role": "rhythm_guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p1-1",
+    "touchedBars": 4,
+    "explanation": "Low-E pedal riff: accented downbeat hit opens cold, palm-muted 16ths carry the floor, F2 appears only as passing colour into E. Bar 3 develops the cell with B2/A2 at the end. Bar 4 shifts the same cell into triplet subdivision, then beat 4 is left completely empty so the break lands naked.",
+    "warnings": []
+  }
+]

@@ -56,6 +56,51 @@ write(
 
 const MAX_ATTEMPT = 2; // attempts 0, 1, 2 — two corrections
 
+/**
+ * Say a materialiser failure in the model's own vocabulary (run 1 finding).
+ *
+ * The materialiser copies blueprint fields into a Song and validates the
+ * Song, so its errors carry *Song* paths. In run 1 a candidate was told
+ * `path: ["key"], pattern /^[A-G](#|b)? (minor|major)$/` — and the contract
+ * it had been given has no `key` at the root at all. It could not map the
+ * correction onto anything it controlled and returned the same document
+ * unchanged. A correction naming a field the answerer cannot see is not a
+ * correction; it is noise with a rejection attached.
+ */
+const SONG_FIELD_TO_BLUEPRINT: Readonly<Record<string, string>> = {
+  key: "tonalCenter",
+  bpm: "sections[].bpm",
+  title: "(sunucu belirler; senin alanin degil)",
+  tracks: "tracks[]",
+  sections: "sections[]",
+};
+
+function asBlueprintCorrection(reason: string): string[] {
+  const lines: string[] = [];
+  const parsed = reason.match(/\[[\s\S]*\]/);
+  if (parsed) {
+    try {
+      const issues = JSON.parse(parsed[0]) as {
+        path?: string[];
+        message?: string;
+        pattern?: string;
+      }[];
+      for (const issue of issues) {
+        const songField = issue.path?.[0] ?? "";
+        const blueprintField = SONG_FIELD_TO_BLUEPRINT[songField] ?? songField;
+        lines.push(
+          `${blueprintField}: ${issue.message ?? "gecersiz"}` +
+            (issue.pattern ? ` (beklenen bicim: ${issue.pattern})` : ""),
+        );
+      }
+    } catch {
+      // Fall through to the raw reason below.
+    }
+  }
+  if (lines.length === 0) lines.push(`Iskelet kurulamadi: ${reason}`);
+  return lines;
+}
+
 function waitFor(what: string, payloadName: string, payload: unknown): never {
   write(payloadName, JSON.stringify(payload, null, 2));
   console.log(`\nWAITING ${what}`);
@@ -125,8 +170,9 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
   const built = materializeSongSkeleton(parsed.data, { title: `Bake-off ${candidate}` });
   if (!built.ok) {
     blueprintCorrections.length = 0;
-    blueprintCorrections.push(`Iskelet kurulamadi: ${built.reason}`);
-    console.log(`blueprint attempt ${attempt}: REJECTED at materialise — ${built.reason}`);
+    blueprintCorrections.push(...asBlueprintCorrection(built.reason));
+    console.log(`blueprint attempt ${attempt}: REJECTED at materialise`);
+    for (const line of blueprintCorrections) console.log(`    ${line}`);
     blueprintRaw = null;
     continue;
   }

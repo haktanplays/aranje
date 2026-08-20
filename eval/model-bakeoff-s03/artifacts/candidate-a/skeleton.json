@@ -2,11 +2,11 @@
   "version": 2,
   "title": "Bake-off A",
   "bpm": 138,
-  "key": "C# minor",
+  "key": "E minor",
   "tracks": [
     {
       "id": "rhythm_guitar",
-      "name": "Groove'un iskeletini ve boslugun konumun",
+      "name": "Holds the 4/4 floor and the riff weight;",
       "instrumentId": "electric_guitar",
       "presetId": "high_gain",
       "volumeDb": -4,
@@ -25,7 +25,7 @@
     },
     {
       "id": "lead_guitar",
-      "name": "Bridge'de gerilimi acar, Solo'da cumle y",
+      "name": "Turns the riff cell into a singing line ",
       "instrumentId": "electric_guitar",
       "presetId": "high_gain",
       "volumeDb": -4,
@@ -43,8 +43,26 @@
       }
     },
     {
+      "id": "acoustic_guitar",
+      "name": "Carries the entire final third alone: da",
+      "instrumentId": "steel_acoustic",
+      "presetId": "finger",
+      "volumeDb": -4,
+      "fretboard": {
+        "tuning": [
+          "E2",
+          "A2",
+          "D3",
+          "G3",
+          "B3",
+          "E4"
+        ],
+        "capo": 0
+      }
+    },
+    {
       "id": "harmony",
-      "name": "Bridge'de motifin ikinci sesini tasir; S",
+      "name": "Adds a second acoustic line and interval",
       "instrumentId": "electric_guitar",
       "presetId": "clean",
       "volumeDb": -4,
@@ -63,28 +81,10 @@
     },
     {
       "id": "drums",
-      "name": "Her bolumde groove rolu degisir: pedal-k",
+      "name": "Changes groove role per section: plain p",
       "instrumentId": "drum_kit",
       "presetId": "rock",
       "volumeDb": -4
-    },
-    {
-      "id": "acoustic_guitar",
-      "name": "Elektrik dokuyu tamamen devralir; karanl",
-      "instrumentId": "steel_acoustic",
-      "presetId": "finger",
-      "volumeDb": -4,
-      "fretboard": {
-        "tuning": [
-          "E2",
-          "A2",
-          "D3",
-          "G3",
-          "B3",
-          "E4"
-        ],
-        "capo": 0
-      }
     }
   ],
   "sections": [
@@ -233,17 +233,9 @@
             4,
             4
           ],
-          "resolution": 32,
+          "resolution": 24,
           "slots": {
             "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
               null,
               null,
               null,
@@ -293,14 +285,6 @@
               [],
               [],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
               []
             ]
           }
@@ -309,7 +293,7 @@
     },
     {
       "id": "sec-2",
-      "name": "Verse",
+      "name": "Break",
       "status": "fixed",
       "bars": [
         {
@@ -528,257 +512,6 @@
     },
     {
       "id": "sec-3",
-      "name": "Break",
-      "status": "fixed",
-      "bars": [
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 16,
-          "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 16,
-          "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 32,
-          "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 32,
-          "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "sec-4",
       "name": "Bridge",
       "status": "fixed",
       "bars": [
@@ -825,7 +558,52 @@
               null,
               null
             ],
-            "harmony": [
+            "drums": [
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "lead_guitar": [
               null,
               null,
               null,
@@ -906,24 +684,6 @@
               null,
               null
             ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
             "drums": [
               [],
               [],
@@ -949,17 +709,9 @@
             4,
             4
           ],
-          "resolution": 32,
+          "resolution": 24,
           "slots": {
             "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
               null,
               null,
               null,
@@ -1009,204 +761,9 @@
               null,
               null,
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
               null
             ],
             "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 32,
-          "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "lead_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
               [],
               [],
               [],
@@ -1237,7 +794,7 @@
       ]
     },
     {
-      "id": "sec-5",
+      "id": "sec-4",
       "name": "Solo",
       "status": "fixed",
       "bars": [
@@ -1284,7 +841,52 @@
               null,
               null
             ],
-            "harmony": [
+            "drums": [
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "rhythm_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "lead_guitar": [
               null,
               null,
               null,
@@ -1364,40 +966,6 @@
               null
             ],
             "lead_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "harmony": [
               null,
               null,
               null,
@@ -1510,24 +1078,6 @@
               null,
               null
             ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
             "drums": [
               [],
               [],
@@ -1553,17 +1103,9 @@
             4,
             4
           ],
-          "resolution": 32,
+          "resolution": 24,
           "slots": {
             "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
               null,
               null,
               null,
@@ -1613,59 +1155,9 @@
               null,
               null,
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
               null
             ],
             "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
               [],
               [],
               [],
@@ -1736,24 +1228,6 @@
               null,
               null
             ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
             "drums": [
               [],
               [],
@@ -1779,17 +1253,9 @@
             4,
             4
           ],
-          "resolution": 32,
+          "resolution": 24,
           "slots": {
             "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
               null,
               null,
               null,
@@ -1839,6 +1305,59 @@
               null,
               null,
               null,
+              null
+            ],
+            "drums": [
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              [],
+              []
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 24,
+          "slots": {
+            "rhythm_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
               null,
               null,
               null,
@@ -1849,15 +1368,7 @@
               null,
               null
             ],
-            "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+            "lead_guitar": [
               null,
               null,
               null,
@@ -1907,15 +1418,60 @@
               [],
               [],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
               []
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "sec-5",
+      "name": "Acoustic Bridge",
+      "status": "fixed",
+      "bpmOverride": 116,
+      "bars": [
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
             ]
           }
         },
@@ -1926,25 +1482,7 @@
           ],
           "resolution": 16,
           "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "lead_guitar": [
+            "acoustic_guitar": [
               null,
               null,
               null,
@@ -1979,24 +1517,6 @@
               null,
               null,
               null
-            ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
             ]
           }
         },
@@ -2005,51 +1525,9 @@
             4,
             4
           ],
-          "resolution": 32,
+          "resolution": 24,
           "slots": {
-            "rhythm_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ],
-            "lead_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+            "acoustic_guitar": [
               null,
               null,
               null,
@@ -2099,6 +1577,25 @@
               null,
               null,
               null,
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
               null,
               null,
               null,
@@ -2109,39 +1606,113 @@
               null,
               null
             ],
-            "drums": [
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
             ]
           }
         }
@@ -2149,133 +1720,9 @@
     },
     {
       "id": "sec-6",
-      "name": "Acoustic Bridge",
-      "status": "fixed",
-      "bpmOverride": 126,
-      "bars": [
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 16,
-          "slots": {
-            "acoustic_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 16,
-          "slots": {
-            "acoustic_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 24,
-          "slots": {
-            "acoustic_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 16,
-          "slots": {
-            "acoustic_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "id": "sec-7",
       "name": "Acoustic Outro",
       "status": "fixed",
-      "bpmOverride": 114,
+      "bpmOverride": 104,
       "bars": [
         {
           "timeSignature": [
@@ -2301,25 +1748,8 @@
               null,
               null,
               null
-            ]
-          }
-        },
-        {
-          "timeSignature": [
-            4,
-            4
-          ],
-          "resolution": 24,
-          "slots": {
-            "acoustic_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+            ],
+            "harmony": [
               null,
               null,
               null,
@@ -2363,6 +1793,24 @@
               null,
               null,
               null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
             ]
           }
         },
@@ -2374,6 +1822,159 @@
           "resolution": 16,
           "slots": {
             "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ]
+          }
+        },
+        {
+          "timeSignature": [
+            4,
+            4
+          ],
+          "resolution": 16,
+          "slots": {
+            "acoustic_guitar": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "harmony": [
               null,
               null,
               null,

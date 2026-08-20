@@ -1,48 +1,47 @@
 {
-  "attempt": 2,
+  "attempt": 0,
   "duration": {
-    "seconds": 57.779230685409175,
-    "target": 60,
-    "tolerance": 6,
+    "seconds": 61.042555645254296,
+    "target": 61,
+    "tolerance": 5,
     "withinTolerance": true,
-    "driftSeconds": -2.220769314590825
+    "driftSeconds": 0.04255564525429634
   },
   "gridUsage": {
     "totalBars": 32,
     "byResolution": {
-      "16": 20,
-      "24": 2,
-      "32": 10
+      "16": 24,
+      "24": 6,
+      "32": 2
     },
-    "tripletBars": 2,
-    "highResolutionBars": 12,
-    "thirtySecondBars": 10,
+    "tripletBars": 6,
+    "highResolutionBars": 8,
+    "thirtySecondBars": 2,
     "byIntent": {
       "scalar_run": 1,
-      "legato_burst": 0,
-      "arpeggio": 3,
+      "legato_burst": 1,
+      "arpeggio": 2,
       "triplet_groove": 0,
-      "drum_fill": 5,
-      "tremolo_burst": 1,
-      "ornamented_transition": 2
+      "drum_fill": 3,
+      "tremolo_burst": 0,
+      "ornamented_transition": 1
     },
-    "accentedShare": 0.375,
+    "accentedShare": 0.25,
     "singleGrid": false
   },
   "sectionIdByKey": {
     "intro": "sec-1",
-    "verse": "sec-2",
-    "hard_break": "sec-3",
-    "bridge_lift": "sec-4",
-    "solo": "sec-5",
-    "clean_bridge": "sec-6",
-    "clean_outro": "sec-7"
+    "break": "sec-2",
+    "bridge": "sec-3",
+    "solo": "sec-4",
+    "acoustic_bridge": "sec-5",
+    "outro": "sec-6"
   },
   "trackIdByRole": {
     "rhythm_guitar": "rhythm_guitar",
     "lead_guitar": "lead_guitar",
+    "acoustic_guitar": "acoustic_guitar",
     "harmony": "harmony",
-    "drums": "drums",
-    "acoustic_guitar": "acoustic_guitar"
+    "drums": "drums"
   }
 }
