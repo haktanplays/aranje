@@ -311,6 +311,56 @@ describe("slide arrives at the note it is written on", () => {
     expect(points.every((point) => point.timeSeconds <= (transition?.arrivesAtSeconds ?? 0) + 1e-9)).toBe(true);
   });
 
+  it("eases away and eases in, rather than travelling at one speed", () => {
+    // This is the difference between a hand and a pitch knob. A single linear
+    // ramp covers a quarter of the distance in a quarter of the time; an eased
+    // one is still behind at that point and has overtaken by three quarters.
+    const transition = buildExpressionPlan(upward()).chains[0]?.transitions[0];
+    const points = transition?.points ?? [];
+    const span = transition?.transitionSeconds ?? 1;
+    const start = transition?.atSeconds ?? 0;
+    const total = points[points.length - 1]?.cents ?? 0;
+
+    const covered = (fraction: number) => {
+      const at = start + span * fraction;
+      const point = points.reduce((best, candidate) =>
+        Math.abs(candidate.timeSeconds - at) < Math.abs(best.timeSeconds - at)
+          ? candidate
+          : best,
+      );
+      return point.cents / total;
+    };
+
+    expect(covered(0.25)).toBeLessThan(0.25);
+    expect(covered(0.5)).toBeCloseTo(0.5, 6);
+    expect(covered(0.75)).toBeGreaterThan(0.75);
+  });
+
+  it("is written out finely enough to be a curve at all", () => {
+    const points = buildExpressionPlan(upward()).chains[0]?.transitions[0]?.points ?? [];
+    // A single ramp is two points. Six is the floor the spec sets.
+    expect(points.length).toBeGreaterThanOrEqual(6);
+    expect(points.filter((point) => point.curve === "linear").length).toBe(
+      points.length - 1,
+    );
+    // Time only ever moves forwards.
+    for (let i = 1; i < points.length; i += 1) {
+      expect(points[i]!.timeSeconds).toBeGreaterThan(points[i - 1]!.timeSeconds);
+    }
+  });
+
+  it("has the same shape going down as going up", () => {
+    const up = buildExpressionPlan(upward()).chains[0]?.transitions[0]?.points ?? [];
+    const down = buildExpressionPlan(downward()).chains[0]?.transitions[0]?.points ?? [];
+
+    expect(down).toHaveLength(up.length);
+    for (let i = 0; i < up.length; i += 1) {
+      expect(down[i]!.timeSeconds).toBeCloseTo(up[i]!.timeSeconds, 9);
+      // Mirrored: the same fraction of the journey, the other way.
+      expect(down[i]!.cents).toBeCloseTo(-up[i]!.cents, 9);
+    }
+  });
+
   it("never overshoots on the way", () => {
     for (const fixture of [upward(), downward()]) {
       const points = buildExpressionPlan(fixture).chains[0]?.transitions[0]?.points ?? [];

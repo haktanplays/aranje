@@ -12,7 +12,7 @@ import { ExpressiveVoicePool, type VoiceHost } from "@/lib/audio/expressive-voic
 import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
 import type { LegatoChain } from "@/lib/audio/legato-chain";
 import { sampleEntries } from "@/lib/audio/sample-map";
-import { bar, note, slots, song } from "@/test/expression-fixtures";
+import { TIE, bar, note, slots, song } from "@/test/expression-fixtures";
 
 type Call = { kind: "set" | "ramp"; value: number; time: number };
 
@@ -446,6 +446,54 @@ describe("a legato chain is one voice", () => {
 
     const other = sources[1];
     expect(other?.playbackRate.calls.filter((call) => call.kind === "ramp")).toEqual([]);
+  });
+
+  it("does not touch a string that was already ringing before it started", () => {
+    // The order matters. Writing the travel onto "every voice this track has"
+    // looks correct as long as the chain goes first, because the other voices
+    // do not exist yet. In a chord they very often do.
+    const { pool, sources } = harness();
+    const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
+    const steady = buildExpressionPlan(
+      song([bar(slots([note("E3", 0, 12, "accent")]))]),
+    ).notes[0];
+    if (!steady) throw new Error("no steady note");
+
+    pool.play("gtr", steady, 0);
+    pool.playChain(chain, 0);
+
+    const other = sources[0];
+    const moved = sources[1];
+    expect(other?.playbackRate.calls.filter((call) => call.kind === "ramp")).toEqual([]);
+    // The steady string is set once, to its own rate, and never moved again.
+    expect(other?.playbackRate.calls).toHaveLength(1);
+    // Meanwhile the chain's own source really did move, so the test is not
+    // passing because nothing happened at all.
+    expect(
+      moved?.playbackRate.calls.filter((call) => call.kind === "ramp").length,
+    ).toBeGreaterThan(0);
+  });
+
+  it("keeps a slide's whole travel on its own source", () => {
+    const { pool, sources } = harness();
+    const chain = chainOf(
+      song([bar(slots([G3(), TIE, TIE, TIE, B3("slide")]))]),
+    );
+    const steady = buildExpressionPlan(
+      song([bar(slots([note("E3", 0, 12, "accent")]))]),
+    ).notes[0];
+    if (!steady) throw new Error("no steady note");
+
+    pool.play("gtr", steady, 0);
+    pool.playChain(chain, 0);
+
+    const other = sources[0];
+    const sliding = sources[1];
+    expect(other?.playbackRate.calls).toHaveLength(1);
+    // A slide is written out as a curve, so there are many points to leak.
+    expect(
+      sliding?.playbackRate.calls.filter((call) => call.kind === "ramp").length,
+    ).toBeGreaterThan(4);
   });
 
   it("refuses a track it has no samples for", () => {
