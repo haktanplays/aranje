@@ -9,6 +9,7 @@ const config = [
       ".shadow-eval/**",
       ".shadow-eval-s02/**",
       ".grid-check/**",
+      ".bakeoff-s03/**",
       "node_modules/**",
       "design/**",
       "public/**",

@@ -1,0 +1,11 @@
+{
+  "note": "SEALED. Not to be revealed until the listener has given an A/B preference.",
+  "method": "sha256('aranje-bakeoff-s03|' + sorted model ids joined by |); first hex nibble even -> first sorted id is A",
+  "digest": "edeab5b73ab557ae790503cb65f2fc0f741d0c143650653b15d164ea863bbad0",
+  "candidateA": {
+    "exactModelId": "claude-opus-5"
+  },
+  "candidateB": {
+    "exactModelId": "claude-sonnet-5"
+  }
+}

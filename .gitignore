@@ -8,3 +8,4 @@ next-env.d.ts
 .render-demo
 .shadow-eval/
 .grid-check/
+.bakeoff-s03/

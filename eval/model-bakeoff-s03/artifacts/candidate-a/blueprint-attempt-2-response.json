@@ -1,0 +1,440 @@
+{
+  "version": 1,
+  "targetDurationSeconds": 60,
+  "durationToleranceSeconds": 6,
+  "tonalCenter": "C# minor",
+  "tuningIntent": "Bir bucuk ses asagi akort; alt tel pedal olarak acik, gevsek tel gerilimi",
+  "resolution": 16,
+  "referenceTraits": [
+    "Kalin, orta-alt govdesi sikistirilmis yuksek kazancli ritim dokusu",
+    "Vurusun hemen oncesine dusen senkoplu 1/16 ataklar, ama sarsilmaz 4/4 groove ekseni",
+    "Bosluklarin groove'un parcasi oldugu, sus-agirlikli riff mimarisi",
+    "Palm-mute ile acik akor arasinda sert kontrast",
+    "Frigyen renkli minor ikinci gerilimi, harmonik hareket yerine pedal merkez",
+    "Kick/snare iliskisinin surekli rol degistirdigi, fill'lerle konusan bateri",
+    "Solo altinda seyrek ama duyulur backing; lead'in ustunu ortmeyen kayit alani",
+    "Solo yaziminda nefes alan cumleler + kisa ve keskin skala/sekans atagi",
+    "Kapanista dogal, karanlik akustik doku; acik teller ve genis araliklarla rezonans",
+    "Tempo dususu kademeli; fren etkisi yaratan ani yarilanma yok"
+  ],
+  "tracks": [
+    {
+      "role": "rhythm_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Yuksek kazancli, sikistirilmis orta-alt govde; palm-mute atagi kuru",
+      "tuningIntent": "Bir bucuk ses asagi; alt tel pedal gorevinde, gevsek gerilim",
+      "playsInSections": ["intro", "verse", "hard_break", "bridge_lift", "solo"],
+      "energyJob": "Groove'un iskeletini ve boslugun konumunu belirler; solo altinda seyrelerek lead'e yer acar",
+      "required": true,
+      "rationale": "Parcanin agirlik merkezi burada; senkop ve sus dagilimi bu tracktan okunur"
+    },
+    {
+      "role": "lead_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Orta-tiz odakli, sustain'i uzun ama kirli olmayan lead ton",
+      "tuningIntent": "Ritim gitarla ayni akort; ust register cumleleri icin tiz teller ozgur",
+      "playsInSections": ["bridge_lift", "solo"],
+      "energyJob": "Bridge'de gerilimi acar, Solo'da cumle yayini kurar; skala sekansi ve register sicramasi tasir",
+      "required": true,
+      "rationale": "Break'te bilinerek yok; girisi Bridge'e ayrildigi icin Solo'ya varista birikmis enerji olusur"
+    },
+    {
+      "role": "harmony",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Az kazancli, genis ve seyrek destek katmani; ust orta bolgede",
+      "tuningIntent": "Ritim gitarla ayni akort; gerilim araliklari icin orta teller",
+      "playsInSections": ["bridge_lift", "solo"],
+      "energyJob": "Bridge'de motifin ikinci sesini tasir; Solo'da seyrek uzun pedal olarak duyulur, lead'i ortmez",
+      "required": false,
+      "rationale": "Solo altindaki seyrek backing fikri korunuyor; yogunluk degil renk gorevi"
+    },
+    {
+      "role": "drums",
+      "instrumentFamily": "drums",
+      "presetIntent": "Kuru ve atakli; snare ortada agir, kick tanimli, tomlar acik",
+      "tuningIntent": "Perde disi; snare orta gergin, tomlar dusuk perdeli",
+      "playsInSections": ["intro", "verse", "hard_break", "bridge_lift", "solo"],
+      "energyJob": "Her bolumde groove rolu degisir: pedal-kick, kayan snare, yarim zaman hissi, ride'a gecis ve fill'ler",
+      "required": true,
+      "rationale": "Zenginlik hit sayisiyla degil rol degisimiyle kuruluyor; kick/snare iliskisi bolumden bolume yeniden yazilir"
+    },
+    {
+      "role": "acoustic_guitar",
+      "instrumentFamily": "guitar",
+      "presetIntent": "Celik telli, mikrofonlanmis dogal ton; parmak atagi duyulur, az kompresyon",
+      "tuningIntent": "Ayni dusuk merkez; acik tel rezonansi ve bos tel pedali korunur",
+      "playsInSections": ["clean_bridge", "clean_outro"],
+      "energyJob": "Elektrik dokuyu tamamen devralir; karanlik, acik telli arpej mimarisiyle parcayi kapatir",
+      "required": true,
+      "rationale": "Kapanis bolumunde tek ses kaynagi olmasi istendi; davul ve elektrik gitar yoklugu bilincli"
+    }
+  ],
+  "motifs": [
+    {
+      "key": "m_groove",
+      "rhythmSignature": "1. vurusta agir alt tel atagi, ardindan 2. vurusun 1/16 oncesine dusen senkoplu ikili; 3. vurus bilerek bos",
+      "accentStructure": "Guclu vurgu 1 ve 4'un hemen oncesinde; ara ataklar palm-mute ile kisik tutulur",
+      "pitchContour": "Acik alt tel pedali etrafinda kucuk ikinci ve dortlu sicramalari; dar aralik, agir govde",
+      "spaceCharacter": "Barin ucte biri sus; bosluk groove'un vurus kadar tasiyicisi",
+      "rationale": "Parcanin kimlik motifi; tum diger motifler bunun turevleri olarak taninabilir kalmali"
+    },
+    {
+      "key": "m_break",
+      "rhythmSignature": "Ana motifin ilk hucresi ayni yerde kalir; ikinci hucre bir 1/16 geriye kaydirilir ve tekrarlanir",
+      "accentStructure": "Snare 2 ve 4'te sabit kalir; gitar vurgusu kayar, senkop 4/4 eksenine karsi calisir ama olcu bolunmez",
+      "pitchContour": "Tek perde etrafinda ostinato; sadece son atakta yarim ses asagi cekme",
+      "spaceCharacter": "Sus daha genis ve daha kararli; her iki barda bir tam vurusluk sessizlik",
+      "rationale": "Sertlik ve senkop artar ama olcu degismedigi icin additive veya asiri progresif duyulmaz"
+    },
+    {
+      "key": "m_lift",
+      "rhythmSignature": "Ana motifin ritmi korunur, sureleri iki kat uzatilmis bir ust ses cizgisiyle ustuste bindirilir",
+      "accentStructure": "Vurgu barin son ceyregine tasinir; her tekrarda bir 1/16 one gelir, birikimli itki yaratir",
+      "pitchContour": "Motif bir oktav yukari tasinir ve ucuncu tekrarinda dizinin ikinci derecesine dogru yukselen sekans kurar",
+      "spaceCharacter": "Bosluk azalir ama kapanmaz; son barda kasitli askida birakilan tek uzun ses",
+      "rationale": "Bridge Break'in kopyasi degil; ayni hucre taninir kalirken register, sure ve yon degisir ve Solo'ya cozulmemis gerilim birakir"
+    },
+    {
+      "key": "m_solo",
+      "rhythmSignature": "Iki barlik soru-cevap: birinci bar seyrek ve uzun degerli, ikinci bar yogun ve one dogru itilen",
+      "accentStructure": "Cumle baslari vurgulu, cumle sonlari vibratoyla birakilir; nefes yerleri bar ortalarinda",
+      "pitchContour": "Alt ortadan yukselen kisa skala sekansiyla ust registere gecer; genis aralikli tek kaydirmayla tepe notaya cikar, merkez sese iner",
+      "spaceCharacter": "Nefes var ama akis kesilmiyor; susler cumle icinde degil cumleler arasinda",
+      "rationale": "Muzikal ama frenlenmemis solo istegi; potansiyel kesilmeden cumle mimarisi korunuyor"
+    },
+    {
+      "key": "m_open",
+      "rhythmSignature": "Surekli akan arpej dokusu; her iki barda bir bas notanin geciktirilmesi",
+      "accentStructure": "Vurgu neredeyse yok; parmak atagindaki dogal dinamik farki tek aksan kaynagi",
+      "pitchContour": "Ana motifin araliklari tersine cevrilerek genisletilir; acik teller sabit kalirken ust ses kromatik olarak asagi kayar",
+      "spaceCharacter": "Sus yerine cinlama; notalar ustuste birikip karanlik bir rezonans birakir",
+      "rationale": "Akustik bolum yeni bir parca gibi durmasin diye ayni hucrenin tersyuz edilmis hali kullaniliyor"
+    }
+  ],
+  "sections": [
+    {
+      "key": "intro",
+      "displayName": "Intro",
+      "formRole": "intro",
+      "bars": 4,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 3,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Snare ve tomlarda kisa 1/32 gecis; Verse'e girmeden once kick/snare iliskisini ilan eder"
+        }
+      ],
+      "energy": "medium",
+      "density": "low",
+      "tonalJob": "Merkez sesi acik alt tel pedaliyla kurmak; minor ikinci gerilimini erken duyurmak",
+      "motifKey": "m_groove",
+      "motifTransformation": "Motif ciplak halde, sadece ritim gitar ve bateri; ikinci hucre henuz calinmaz",
+      "entryIntent": "Tek agir atakla dogrudan girmek, fade veya sayim yok",
+      "exitIntent": "Son barda fill ile groove'u tamamlanmis halde teslim etmek",
+      "linkToPrevious": "",
+      "linkToNext": "Ayni tempo ve ayni hucre; Verse motifin eksik ikinci yarisini tamamlar",
+      "activeRoles": ["rhythm_guitar", "drums"],
+      "silentRoles": []
+    },
+    {
+      "key": "verse",
+      "displayName": "Verse",
+      "formRole": "verse",
+      "bars": 4,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 3,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Kick'in ikili 1/32 catallanmasiyla Break'e itki; snare yerini bir 1/16 geciktirir"
+        }
+      ],
+      "energy": "medium",
+      "density": "medium",
+      "tonalJob": "Pedal merkezini korurken ustte dortlu gerilimi tanitmak",
+      "motifKey": "m_groove",
+      "motifTransformation": "Motif tam haliyle; ucuncu vurustaki sus korunur, dorduncu vurus oncesi senkop netlesir",
+      "entryIntent": "Fill'in cozumunde palm-mute atagiyla oturmak",
+      "exitIntent": "Groove'u tam yogunlukta birakip Break'in vurgu kaymasina zemin hazirlamak",
+      "linkToPrevious": "Ayni motif, ayni tempo; sadece bateri rolu yogunlasir",
+      "linkToNext": "Break ayni hucreyle acilir, boylece sertlesme kopus degil devam olarak duyulur",
+      "activeRoles": ["rhythm_guitar", "drums"],
+      "silentRoles": []
+    },
+    {
+      "key": "hard_break",
+      "displayName": "Break",
+      "formRole": "break",
+      "bars": 4,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 2,
+          "resolution": 32,
+          "intent": "tremolo_burst",
+          "purpose": "Tek perde uzerinde yarim vurusluk 1/32 makineli atak; sertlik katar, olcuyu bolmez"
+        },
+        {
+          "barIndex": 3,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Tomlardan snare'e inen kisa gecis; Bridge'in yukselen sekansina rampa"
+        }
+      ],
+      "energy": "high",
+      "density": "medium",
+      "tonalJob": "Tek perde ostinatosuyla harmonik hareketi dondurmak; gerilimi ritme yuklemek",
+      "motifKey": "m_break",
+      "motifTransformation": "Motifin ikinci hucresi bir 1/16 geriye kaydirilir ve tekrarlanir; snare 2 ve 4'te sabit kaldigi icin 4/4 ekseni hissedilir kalir",
+      "entryIntent": "Verse'un cozumunden dogrudan devam; olcu, tempo ve nabiz degismez",
+      "exitIntent": "Bir tam vurusluk susla acik birakmak, cozumu Bridge'e devretmek",
+      "linkToPrevious": "Ayni hucre, kaydirilmis vurgu; sertlik artisi tempo veya olcu degil aksan isi",
+      "linkToNext": "Askida birakilan sus, Bridge'in ust register girisiyle doldurulur",
+      "activeRoles": ["rhythm_guitar", "drums"],
+      "silentRoles": []
+    },
+    {
+      "key": "bridge_lift",
+      "displayName": "Bridge",
+      "formRole": "bridge",
+      "bars": 4,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 2,
+          "resolution": 32,
+          "intent": "ornamented_transition",
+          "purpose": "Lead cizgisinin sekans tekrarinda kisa suslemeli baglanti; motifin yon degistirdigi an"
+        },
+        {
+          "barIndex": 3,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Ride'dan crash'e giden, kick'i yariya bolen gecis; Solo'ya cozulmemis gerilimle birakir"
+        }
+      ],
+      "energy": "high",
+      "density": "high",
+      "tonalJob": "Merkez sesten dizinin ikinci derecesine dogru cekmek; cozumu bilincli olarak ertelemek",
+      "motifKey": "m_lift",
+      "motifTransformation": "Break'in hucresi korunur ama bir oktav yukari tasinir, sureleri uzatilir ve ucuncu tekrarda yukselen sekansa donusur; kopya degil gelisim",
+      "entryIntent": "Lead ve harmony ayni anda girer, ritim gitar hucreyi altta surdurur",
+      "exitIntent": "Cozulmemis uzun bir sesle ve bateri fill'iyle Solo'nun ilk cumlesine kapiyi acmak",
+      "linkToPrevious": "Break'in vurgu kaymasi burada melodik yone cevrilir; dinleyici ayni hucreyi tanir",
+      "linkToNext": "Askidaki gerilim Solo'nun ilk cumlesinde cozulur",
+      "activeRoles": ["rhythm_guitar", "lead_guitar", "harmony", "drums"],
+      "silentRoles": []
+    },
+    {
+      "key": "solo",
+      "displayName": "Solo",
+      "formRole": "solo",
+      "bars": 8,
+      "timeSignature": [4, 4],
+      "bpm": 138,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 1,
+          "resolution": 32,
+          "intent": "scalar_run",
+          "purpose": "Kisa ama belirgin yukselen skala sekansi; iki vurus surer, cumlenin potansiyelini acar"
+        },
+        {
+          "barIndex": 3,
+          "resolution": 32,
+          "intent": "drum_fill",
+          "purpose": "Bateri groove rolunu degistirir: pedal-kick dokusundan ride odakli yarim zaman hissine gecis fill'i"
+        },
+        {
+          "barIndex": 5,
+          "resolution": 32,
+          "intent": "arpeggio",
+          "purpose": "Tel atlayarak calinan genis aralikli arpej; register degisimini hazirlar, akor sesleri ayri ayri duyulur"
+        },
+        {
+          "barIndex": 7,
+          "resolution": 32,
+          "intent": "ornamented_transition",
+          "purpose": "Lead alt registere iner, bateri rimlere cekilir; akustik bolume kopus olmadan gecis"
+        }
+      ],
+      "energy": "high",
+      "density": "medium",
+      "tonalJob": "Merkez sesi tekrar kazanmak; tepe notaya cikip cozumu asagidan yapmak",
+      "motifKey": "m_solo",
+      "motifTransformation": "Ana hucrenin araliklari cumle basligi olarak kullanilir; iki barlik soru-cevap yapisiyla acilir, tek genis aralikli kaydirmayla tepe noktaya tasinir",
+      "entryIntent": "Bridge'in askidaki sesinden dogrudan devralmak, yeniden baslatmamak",
+      "exitIntent": "Son iki barda register ve yogunlugu dusurup akustik dokuya alan acmak",
+      "linkToPrevious": "Bridge'in cozulmemis gerilimi solonun ilk cumlesinde karsilanir",
+      "linkToNext": "Tempo tek adimda 138'den 126'ya iner; yarilanma yok, fren hissi olusmaz",
+      "activeRoles": ["lead_guitar", "rhythm_guitar", "harmony", "drums"],
+      "silentRoles": []
+    },
+    {
+      "key": "clean_bridge",
+      "displayName": "Acoustic Bridge",
+      "formRole": "bridge",
+      "bars": 4,
+      "timeSignature": [4, 4],
+      "bpm": 126,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 2,
+          "resolution": 24,
+          "intent": "arpeggio",
+          "purpose": "1/16 ucleme gridinde donen arpej: vurus basina 3 slot, duz gridin sikilastirilmis hali degil gercek ucleme salinimi"
+        }
+      ],
+      "energy": "low",
+      "density": "medium",
+      "tonalJob": "Ayni merkez sesi acik tellerle yeniden kurmak; ust seste kromatik dusus baslatmak",
+      "motifKey": "m_open",
+      "motifTransformation": "Ana hucrenin araliklari tersine cevrilir ve genisletilir; acik teller sabit pedal, ust ses hareketli",
+      "entryIntent": "Tek bir akustik arpejle girmek; sayim, sus veya kopus yok",
+      "exitIntent": "Rezonansi acik birakip Outro'nun daha genis araliklarina baglamak",
+      "linkToPrevious": "Solonun son inisindeki perde bolgesi burada acik tel olarak devam eder, gecis yapisik duyulur",
+      "linkToNext": "Ayni doku, bir adim daha yavas ve daha genis araliklarla surer",
+      "activeRoles": ["acoustic_guitar"],
+      "silentRoles": []
+    },
+    {
+      "key": "clean_outro",
+      "displayName": "Acoustic Outro",
+      "formRole": "outro",
+      "bars": 4,
+      "timeSignature": [4, 4],
+      "bpm": 114,
+      "resolution": 16,
+      "gridAccents": [
+        {
+          "barIndex": 1,
+          "resolution": 24,
+          "intent": "arpeggio",
+          "purpose": "Arpejin son genisleme dalgasi; ucleme salinimi korunarak aralik acilir, sonrasinda doku seyrelir"
+        }
+      ],
+      "energy": "low",
+      "density": "low",
+      "tonalJob": "Karanlik rengi koruyarak merkez sese inmek; cozum tam degil, acik birakilir",
+      "motifKey": "m_open",
+      "motifTransformation": "Motif iyice seyreltilir; son iki barda sadece acik tel pedali ve tek hareketli ust ses kalir",
+      "entryIntent": "Onceki bolumun rezonansi kesilmeden devam etmek",
+      "exitIntent": "Son akoru uzun tutup dogal olarak sonmesine birakmak",
+      "linkToPrevious": "Ayni motif ve ayni acik tel pedali; sadece tempo bir adim daha iner",
+      "linkToNext": "",
+      "activeRoles": ["acoustic_guitar"],
+      "silentRoles": []
+    }
+  ],
+  "requestedTechniques": [
+    {
+      "technique": "palm_mute",
+      "sectionKey": "intro",
+      "purpose": "Alt tel pedalini kuru ve tanimli tutmak; boslugun duyulmasini saglamak"
+    },
+    {
+      "technique": "palm_mute",
+      "sectionKey": "verse",
+      "purpose": "Senkoplu 1/16 ataklarin govdesini kismak, aksanli notalarla kontrast yaratmak"
+    },
+    {
+      "technique": "accent",
+      "sectionKey": "hard_break",
+      "purpose": "Kaydirilmis vurgunun 4/4 eksenine karsi calistigi yerleri isaretlemek"
+    },
+    {
+      "technique": "staccato",
+      "sectionKey": "hard_break",
+      "purpose": "Ataklari kisa kesip aradaki suslerin groove'a katkisini korumak"
+    },
+    {
+      "technique": "bend_half",
+      "sectionKey": "bridge_lift",
+      "purpose": "Yukselen sekansin tepe notasinda cozulmemis gerilimi isaretlemek"
+    },
+    {
+      "technique": "vibrato",
+      "sectionKey": "bridge_lift",
+      "purpose": "Uzatilan degerlerin canli kalmasi; askidaki son sesin nefes almasi"
+    },
+    {
+      "technique": "hammer_on",
+      "sectionKey": "solo",
+      "purpose": "Skala sekansi icinde ayni tel uzerinde akiciligi saglamak"
+    },
+    {
+      "technique": "pull_off",
+      "sectionKey": "solo",
+      "purpose": "Cumle sonu inislerinde atagi yumusatmak; sadece ayni tel uzerinde ve arada sus olmadan"
+    },
+    {
+      "technique": "bend_full",
+      "sectionKey": "solo",
+      "purpose": "Tepe notada tam ses bukme; cumlenin doruk noktasi"
+    },
+    {
+      "technique": "slide",
+      "sectionKey": "solo",
+      "purpose": "Parcada tek bir kez, 6. barda genis aralikli register sicramasi icin; ayni tel uzerinde ve 12 yari tonu asmayan tek hareket. Merkezi numara degil, tek seferlik yapisal jest"
+    },
+    {
+      "technique": "vibrato",
+      "sectionKey": "solo",
+      "purpose": "Cumle sonlarini kapatmak; nefes yerlerini sus yerine tinlamayla vermek"
+    },
+    {
+      "technique": "sustain",
+      "sectionKey": "clean_bridge",
+      "purpose": "Acik tellerin ustuste birikip karanlik rezonans birakmasi"
+    },
+    {
+      "technique": "hammer_on",
+      "sectionKey": "clean_outro",
+      "purpose": "Parmak atagiyla yumusak baglanti; arpej icinde ust sesin kromatik inisi"
+    },
+    {
+      "technique": "sustain",
+      "sectionKey": "clean_outro",
+      "purpose": "Son akorun dogal sonumu; kapanisi kesmeden birakmak"
+    }
+  ],
+  "omittedRequests": [
+    {
+      "request": "Sweep picking",
+      "reason": "Bu cikti sozlesmesinde ifade edilemiyor: nota basina tek articulation var, sureklilikli tel gecisli sweep tanimlanamiyor. Yerine Solo 6. barda tel atlayarak calinan genis aralikli arpej yazildi; bu sweep taklidi degil, farkli bir fikirdir"
+    },
+    {
+      "request": "Pinch harmonic / squeal (tur icin tipik cigli)",
+      "reason": "Articulation listesinde yok. Yerine accent + bend_full + vibrato birlesimiyle vurgu saglandi; harmonik cigligi varmis gibi anlatmiyorum"
+    },
+    {
+      "request": "Whammy bar dive / kol kullanimi",
+      "reason": "Sozlesmede kol hareketi icin bir articulation yok; bend ve slide ile taklit etmek yaniltici olurdu"
+    },
+    {
+      "request": "Bateri fill'lerinde flam ve grace note",
+      "reason": "Bu iki sus bu sozlesmede ifade edilemiyor. Fill zenginligi bunun yerine 1/32 gridli gecis barlari ve bolumden bolume degisen kick/snare rolleriyle kuruldu"
+    },
+    {
+      "request": "Bas gitar hatti",
+      "reason": "Kullanici pas gecilebilecegini soyledi; alt kayit gorevini akort dusuklugu ve acik alt tel pedaliyla ritim gitar ustlendi. Bas eklenecekse ayrica planlanmali"
+    },
+    {
+      "request": "Tapping",
+      "reason": "Ayri bir articulation olarak tanimli degil; hammer_on/pull_off ile taklit etmek gercek bir tapping cizgisi vermezdi, o yuzden yazilmadi"
+    }
+  ]
+}
