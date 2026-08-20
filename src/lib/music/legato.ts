@@ -105,8 +105,13 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
     }
   }
 
-  // A tie running over a bar line becomes a second span in the next bar. The
-  // note is still one note, so its sounding end is the end of the last one.
+  /*
+   * A tie running over a bar line becomes a second span in the next bar. The
+   * note is still one note, so its sounding end is the end of the last one —
+   * and its *length* is the sum of the parts, measured on each bar's own grid
+   * (spec 5.5, K-34). Adding slot counts before multiplying would be wrong by
+   * the ratio between the two grids whenever they differ.
+   */
   for (const bar of timeline.bars) {
     if (bar.silent) continue;
     const base = bases.get(bar.key) ?? 0;
@@ -119,7 +124,15 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
         if (onset.endSlot + 1 !== base + span.startSlot) continue;
         owner = onset;
       }
-      if (owner && end > owner.endSlot) owner.endSlot = end;
+      if (!owner || end <= owner.endSlot) continue;
+      owner.endSlot = end;
+      const carried =
+        (span.endSlot - span.startSlot + 1) * ticksPerSlot(bar.resolution);
+      owner.durationTicks = Math.max(
+        1,
+        owner.durationTicks +
+          Math.round(carried * articulationHold(span.articulation)),
+      );
     }
   }
 

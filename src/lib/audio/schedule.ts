@@ -14,7 +14,11 @@
 import { velocityRange } from "@/lib/limits";
 import { slotCount, ticksPerSlot } from "@/lib/music/timing";
 import type { Articulation, DrumPiece, Song } from "@/lib/song/schema";
-import { buildTrackTimeline } from "@/lib/tab/timeline";
+import {
+  buildTrackTimeline,
+  type FrettedBar,
+  type TabSpan,
+} from "@/lib/tab/timeline";
 
 /** Velocity used when a note does not carry one. */
 export const DEFAULT_VELOCITY = 96;
@@ -110,6 +114,48 @@ export function barTimeline(song: Song): BarMarker[] {
   return bars;
 }
 
+/**
+ * How long one note actually sounds, in ticks (spec 5.5, 8.3, K-34).
+ *
+ * A tie is not a new onset, so a note held across a bar line is one note whose
+ * length is the sum of its parts — and with per-bar grids those parts are not
+ * the same length as each other. Bar 1 at 1/16 holding into bar 2 at 1/32 is
+ * `slots * 48 + slots * 24`, and adding slot counts before multiplying would
+ * be wrong by exactly the ratio between the two grids.
+ *
+ * The walk follows the timeline's own carry marks: `openEnd` says the sound
+ * continues into the next bar, and the continuation there is the span with the
+ * same pitch on the same string that is marked `openStart`. A bar the track is
+ * not written in (spec 5.5) has no such span, so the sound ends — which is the
+ * same rule the tab draws and the expression planner uses.
+ */
+function soundingTicks(
+  bars: readonly FrettedBar[],
+  barIndex: number,
+  span: TabSpan,
+): number {
+  let total = (span.endSlot - span.startSlot + 1) * ticksPerSlot(bars[barIndex]?.resolution ?? 8);
+  let cursor = barIndex;
+  let open = span.openEnd;
+
+  while (open) {
+    cursor += 1;
+    const next = bars[cursor];
+    if (!next || next.silent) break;
+    const carried = next.spans.find(
+      (entry) =>
+        entry.openStart &&
+        entry.pitch === span.pitch &&
+        entry.stringIndex === span.stringIndex,
+    );
+    if (!carried) break;
+    total += (carried.endSlot - carried.startSlot + 1) * ticksPerSlot(next.resolution);
+    open = carried.openEnd;
+  }
+
+  return total;
+}
+
 /** Everything that has to sound, with the times it has to sound at. */
 export function buildSongPlan(song: Song): SongPlan {
   const bars = barTimeline(song);
@@ -121,16 +167,15 @@ export function buildSongPlan(song: Song): SongPlan {
     if (timeline.kind === "unsupported") continue;
 
     if (timeline.kind === "fretted") {
-      for (const bar of timeline.bars) {
-        if (bar.silent) continue;
+      timeline.bars.forEach((bar, barIndex) => {
+        if (bar.silent) return;
         const start = barStart.get(bar.key) ?? 0;
         const step = ticksPerSlot(bar.resolution);
 
         for (const span of bar.spans) {
           // A span that began in an earlier bar was already scheduled there.
           if (span.openStart) continue;
-          const slots = span.endSlot - span.startSlot + 1;
-          const full = slots * step;
+          const full = soundingTicks(timeline.bars, barIndex, span);
           events.push({
             kind: "note",
             trackId: track.id,
@@ -143,7 +188,7 @@ export function buildSongPlan(song: Song): SongPlan {
             gain: velocityGain(span.velocity),
           });
         }
-      }
+      });
     } else {
       for (const bar of timeline.bars) {
         if (bar.silent) continue;
