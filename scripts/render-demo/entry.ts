@@ -21,8 +21,9 @@ import { desiredGlideSeconds } from "@/lib/audio/legato-chain";
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { drumTrackIds, melodicTrackIds } from "@/lib/audio/tracks";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
-import type { Song } from "@/lib/song/schema";
+import { songSchema, type Song } from "@/lib/song/schema";
 
 function encodeWav(channels: Float32Array[], sampleRate: number): Uint8Array {
   const channelCount = channels.length;
@@ -95,7 +96,7 @@ export async function renderVariant(variant: RenderVariant = "full") {
 
     // Samples are decoded by the time createEngine resolves, so scheduling and
     // starting the transport happen strictly afterwards.
-    diagnostics.scheduledTicks = scheduleSong(engine, song.bpm);
+    diagnostics.scheduledTicks = scheduleSong(engine, buildTempoMap(song));
     context.transport.start(0);
   }, seconds);
 
@@ -162,7 +163,7 @@ export async function renderSolo(trackId: string) {
 
   const buffer = await Tone.Offline(async (context) => {
     const engine = await createEngine(song, context, { excludeTrackIds });
-    scheduleSong(engine, song.bpm);
+    scheduleSong(engine, buildTempoMap(song));
     context.transport.start(0);
   }, seconds);
 
@@ -213,7 +214,7 @@ export async function renderStyleExample(
 
   const buffer = await Tone.Offline(async (context) => {
     const engine = await createEngine(song, context);
-    scheduleSong(engine, song.bpm);
+    scheduleSong(engine, buildTempoMap(song));
     context.transport.start(0);
   }, seconds);
 
@@ -304,7 +305,7 @@ export async function renderExpressionDemo(index: number, pack: DemoPack = "expr
     const engine = await createEngine(song, context);
     // Render comparisons plan differently; live playback never does.
     engine.expression.setPlan(buildExpressionPlan(song, options));
-    scheduleSong(engine, song.bpm);
+    scheduleSong(engine, buildTempoMap(song));
     context.transport.start(0);
 
     diagnostics.expectedBuffers = engine.expectedBuffers;
@@ -506,3 +507,117 @@ window.aranjeRenderExpressionDemo = renderExpressionDemo;
 window.aranjeLegatoDemoCount = LEGATO_DEMOS.length;
 window.aranjeBendDemoCount = BEND_DEMOS.length;
 window.aranjeSlideDemoCount = SLIDE_DEMOS.length;
+
+/**
+ * Does the transport actually honour a tempo change? (spec 8.3, K-25)
+ *
+ * Every event is scheduled in ticks and the tempo curve is written onto
+ * `transport.bpm`, which means Tone — not us — decides what second a tick
+ * lands on. That is an assumption about a library, so it is measured rather
+ * than believed: this renders a bar of clicks either side of a tempo change
+ * and reports where the attacks actually appear in the audio, against where
+ * the pure timeline said they would.
+ */
+export async function renderTempoProof() {
+  const song = songSchema.parse({
+    version: 2,
+    title: "tempo proof",
+    bpm: 120,
+    key: "E minor",
+    tracks: [SAMPLE_SONG.tracks.find((t) => t.id === "gtr")],
+    sections: [
+      {
+        id: "fast",
+        name: "Fast",
+        status: "fixed",
+        bars: [
+          {
+            timeSignature: [4, 4],
+            resolution: 8,
+            slots: {
+              gtr: [
+                { notes: [{ pitch: "A3", position: { string: 1, fret: 12 } }] },
+                null, null, null,
+                { notes: [{ pitch: "A3", position: { string: 1, fret: 12 } }] },
+                null, null, null,
+              ],
+            },
+          },
+        ],
+      },
+      {
+        id: "slow",
+        name: "Slow",
+        status: "fixed",
+        bpmOverride: 60,
+        bars: [
+          {
+            timeSignature: [4, 4],
+            resolution: 8,
+            slots: {
+              gtr: [
+                { notes: [{ pitch: "A3", position: { string: 1, fret: 12 } }] },
+                null, null, null,
+                { notes: [{ pitch: "A3", position: { string: 1, fret: 12 } }] },
+                null, null, null,
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  const tempo = buildTempoMap(song);
+  const expression = buildExpressionPlan(song);
+  const seconds = tempo.totalSeconds + 2;
+
+  const buffer = await Tone.Offline(async (context) => {
+    const engine = await createEngine(song, context);
+    scheduleSong(engine, tempo);
+    context.transport.start(0);
+  }, seconds);
+
+  const raw = buffer.toArray() as Float32Array | Float32Array[];
+  const list = Array.isArray(raw) ? raw : [raw];
+  const channel = list[0] ?? new Float32Array();
+  const rate = buffer.sampleRate;
+
+  // Onsets, found as sharp rises in a short-window envelope.
+  const win = Math.floor(rate * 0.005);
+  const env: number[] = [];
+  for (let i = 0; i + win < channel.length; i += win) {
+    let peak = 0;
+    for (let j = i; j < i + win; j += 1) peak = Math.max(peak, Math.abs(channel[j] ?? 0));
+    env.push(peak);
+  }
+  const attacks: number[] = [];
+  for (let i = 1; i < env.length; i += 1) {
+    const now = env[i] ?? 0;
+    const before = env[i - 1] ?? 0;
+    if (now > 0.02 && now > before * 3 && (attacks.length === 0 || (i * win) / rate - (attacks[attacks.length - 1] ?? 0) > 0.15)) {
+      attacks.push((i * win) / rate);
+    }
+  }
+
+  return {
+    predicted: expression.notes
+      .slice()
+      .sort((a, b) => a.startSeconds - b.startSeconds)
+      .map((n) => Number(n.startSeconds.toFixed(4))),
+    measured: attacks.map((t) => Number(t.toFixed(4))),
+    tempoSegments: tempo.segments.map((s) => ({
+      sectionId: s.sectionId,
+      bpm: s.bpm,
+      startSeconds: Number(s.startSeconds.toFixed(4)),
+    })),
+    totalSeconds: Number(tempo.totalSeconds.toFixed(4)),
+  };
+}
+
+declare global {
+  interface Window {
+    aranjeRenderTempoProof: typeof renderTempoProof;
+  }
+}
+window.aranjeRenderTempoProof = renderTempoProof;

@@ -12,6 +12,8 @@ const SERVER_STATE: PlaybackState = {
   songBpm: 0,
   practicePercent: DEFAULT_PRACTICE_PERCENT,
   bpm: 0,
+  activeBpm: 0,
+  hasTempoChanges: false,
   loopSectionId: null,
   metronome: false,
   progress: null,

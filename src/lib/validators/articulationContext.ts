@@ -22,7 +22,7 @@
  */
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import { legatoDecision } from "@/lib/audio/legato-chain";
-import { PPQ } from "@/lib/audio/schedule";
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { trackLegatoOnsets } from "@/lib/music/legato";
 import { isExpressive, needsPrevious } from "@/lib/audio/expression";
 import { expressionPresets } from "@/lib/audio/expression";
@@ -88,7 +88,10 @@ export const validateArticulationContext: Validator = (song: Song) => {
     }
 
     const onsets = trackLegatoOnsets(song, track.id);
-    const timing = { secondsPerTick: 60 / (song.bpm * PPQ), timeScale: 1 };
+    // The song's own tempo map at full speed: whether a slide has room is a
+    // property of the writing, and of the section it is written in, not of
+    // the speed it is being worked at (spec 8.3, K-25).
+    const timing = { tempo: buildTempoMap(song), timeScale: 1 };
 
     onsets.forEach((onset, index) => {
       const articulation = onset.articulation;

@@ -37,8 +37,9 @@ describe("songLimits validator (spec 10.1, values 6)", () => {
     expect(issues[0]?.code).toBe("songLimits");
   });
 
-  it("rejects more total bars than the core limit", () => {
-    const sections: Section[] = Array.from({ length: 3 }, (_, index) =>
+  /** `count` full sections of `barsPerSection` bars each. */
+  const fullSections = (count: number): Section[] =>
+    Array.from({ length: count }, (_, index) =>
       section(
         Array.from({ length: songLimits.barsPerSection }, () =>
           melodicBar("gtr", restSlots(8)),
@@ -46,8 +47,36 @@ describe("songLimits validator (spec 10.1, values 6)", () => {
         { id: `s${index}` },
       ),
     );
-    const issues = validateSongLimits(song([guitarTrack()], sections));
-    expect(issues.some((issue) => issue.message.includes("24"))).toBe(true);
+
+  it("rejects more total bars than the core limit", () => {
+    // Derived, not written: this used to say "24" and quietly stopped
+    // testing anything the moment the limit moved (spec 6, K-25).
+    const overBy = songLimits.barsPerSection;
+    const count = songLimits.totalBars / songLimits.barsPerSection + 1;
+    const issues = validateSongLimits(song([guitarTrack()], fullSections(count)));
+    expect(
+      issues.some((issue) =>
+        issue.message.includes(String(songLimits.totalBars + overBy)),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts exactly the limit and refuses one bar more", () => {
+    const exact = fullSections(songLimits.totalBars / songLimits.barsPerSection);
+    expect(validateSongLimits(song([guitarTrack()], exact))).toEqual([]);
+
+    // One bar over, in a section of its own, so only the total is wrong.
+    const overBy = [...exact, section([melodicBar("gtr", restSlots(8))], { id: "extra" })];
+    const issues = validateSongLimits(song([guitarTrack()], overBy));
+    expect(issues).not.toEqual([]);
+    expect(issues.some((issue) => issue.message.includes(String(songLimits.totalBars + 1)))).toBe(true);
+  });
+
+  it("is the limit phase 2G raised it to", () => {
+    // Pinned so a change to the pilot's length is a deliberate edit here.
+    expect(songLimits.totalBars).toBe(32);
+    expect(songLimits.barsPerSection).toBe(8);
+    expect(songLimits.barsPerPatch).toBe(8);
   });
 
   it("rejects more bars in one section than allowed", () => {

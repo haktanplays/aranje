@@ -14,6 +14,8 @@ import { sectionLoopBounds } from "@/lib/audio/position";
 import { effectiveBpm } from "@/lib/audio/practice-rate";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import type { Song } from "@/lib/song/schema";
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { bar, note, slots, song } from "@/test/expression-fixtures";
 
 /** Two notes on one string, the second hammered on to the first. */
@@ -25,7 +27,13 @@ type FakeTransport = {
   ticks: number;
   seconds: number;
   PPQ: number;
-  bpm: { value: number };
+  bpm: {
+    value: number;
+    /** Every step scheduled on the curve, in the order it was written. */
+    steps: { bpm: number; atSeconds: number }[];
+    setValueAtTime(bpm: number, atSeconds: number): void;
+    cancelScheduledValues(atSeconds: number): void;
+  };
   loop: boolean;
   loopStart: string;
   loopEnd: string;
@@ -48,7 +56,16 @@ function fakeTransport(): FakeTransport {
     ticks: 0,
     seconds: 0,
     PPQ: 192,
-    bpm: { value: 0 },
+    bpm: {
+      value: 0,
+      steps: [] as { bpm: number; atSeconds: number }[],
+      setValueAtTime(bpm: number, atSeconds: number) {
+        this.steps.push({ bpm, atSeconds });
+      },
+      cancelScheduledValues(atSeconds: number) {
+        this.steps = this.steps.filter((step) => step.atSeconds < atSeconds);
+      },
+    },
     loop: false,
     loopStart: "",
     loopEnd: "",
@@ -105,7 +122,8 @@ function fakeExpression() {
   };
 }
 
-function harness(options: { practicePercent?: number } = {}) {
+function harness(options: { practicePercent?: number; song?: Song } = {}) {
+  const song = options.song ?? SAMPLE_SONG;
   const transport = fakeTransport();
   let builds = 0;
   const expression = fakeExpression();
@@ -116,14 +134,14 @@ function harness(options: { practicePercent?: number } = {}) {
     metronome: { click: { triggerAttackRelease: () => {} }, filter: {} },
     voices: new Map(),
     meters: new Map(),
-    plan: buildSongPlan(SAMPLE_SONG),
+    plan: buildSongPlan(song),
     expression,
     expectedBuffers: 0,
     loadedBuffers: 0,
     dispose: () => {},
   } as unknown as Engine;
 
-  const controller = new PlaybackController(SAMPLE_SONG, {
+  const controller = new PlaybackController(song, {
     ...(options.practicePercent === undefined
       ? {}
       : { practicePercent: options.practicePercent }),
@@ -134,6 +152,13 @@ function harness(options: { practicePercent?: number } = {}) {
   });
 
   return { controller, transport, engine, expression, builds: () => builds };
+}
+
+/** A harness whose engine has been built, so the transport carries the tempo. */
+async function started(options: { practicePercent?: number; song?: Song } = {}) {
+  const bench = harness(options);
+  await bench.controller.play();
+  return bench;
 }
 
 describe("the two tempos", () => {
@@ -304,7 +329,7 @@ describe("the scheduler itself", () => {
       expression: fakeExpression(),
     } as unknown as Engine;
 
-    scheduleSong(engine, effectiveBpm(SAMPLE_SONG.bpm, 75));
+    scheduleSong(engine, buildTempoMap(SAMPLE_SONG, 75));
     expect(transport.bpm.value).toBe(99);
   });
 });
@@ -404,7 +429,7 @@ describe("what the scheduler does with a legato chain (spec 8.5, K-22)", () => {
 
   it("plays the chain once and never restrikes its target", () => {
     const { engine, transport, struck, chained, plan } = legatoHarness();
-    scheduleSong(engine, 120);
+    scheduleSong(engine, buildTempoMap(SAMPLE_SONG));
 
     expect(plan.chains).toHaveLength(1);
     // Every scheduled callback fires, as the transport would.
@@ -418,12 +443,84 @@ describe("what the scheduler does with a legato chain (spec 8.5, K-22)", () => {
 
   it("still strikes an ordinary note beside a chain", () => {
     const { engine, transport, struck } = legatoHarness();
-    scheduleSong(engine, 120);
+    scheduleSong(engine, buildTempoMap(SAMPLE_SONG));
     for (const callback of transport.callbacks) callback(0);
 
     // The fixture is two notes, both in the chain, so nothing is struck. A
     // third note outside it would be — that is what this guards.
     expect(struck).toHaveLength(0);
     expect(transport.callbacks.length).toBeGreaterThan(0);
+  });
+});
+
+describe("a song that changes tempo at a section line (spec 8.3, K-25)", () => {
+  /** The demo song with its second section marked slower. */
+  function stepped(): Song {
+    const sections = SAMPLE_SONG.sections.map((section, index) =>
+      index === 1 ? { ...section, bpmOverride: 60 } : section,
+    );
+    return { ...SAMPLE_SONG, sections };
+  }
+
+  it("writes one step per later section onto the transport", async () => {
+    const song = stepped();
+    const { controller, transport } = await started({ song });
+    const map = buildTempoMap(song);
+
+    // The first segment is the plain value; the rest are scheduled.
+    expect(transport.bpm.value).toBe(map.segments[0]?.bpm);
+    expect(transport.bpm.steps).toHaveLength(map.segments.length - 1);
+    expect(transport.bpm.steps[0]).toEqual({
+      bpm: 60,
+      atSeconds: map.segments[1]?.startSeconds,
+    });
+    controller.dispose();
+  });
+
+  it("rewrites the whole curve when the practice speed changes", async () => {
+    const song = stepped();
+    const { controller, transport } = await started({ song });
+
+    controller.setPracticePercent(50);
+
+    // Not one value scaled and the rest left behind: every step is at half.
+    expect(transport.bpm.value).toBe(SAMPLE_SONG.bpm / 2);
+    expect(transport.bpm.steps.map((s) => s.bpm)).toEqual(
+      buildTempoMap(song, 50).segments.slice(1).map((s) => s.bpm),
+    );
+    expect(transport.bpm.steps.some((s) => s.bpm === 30)).toBe(true);
+    controller.dispose();
+  });
+
+  it("reports the tempo of the section the playhead is in", async () => {
+    const song = stepped();
+    const { controller, transport } = await started({ song });
+    const map = buildTempoMap(song);
+
+    expect(controller.getState().hasTempoChanges).toBe(true);
+    expect(controller.getState().activeBpm).toBe(SAMPLE_SONG.bpm);
+
+    // Move the playhead into the slower section and ask again.
+    transport.ticks = map.segments[1]?.startTicks ?? 0;
+    controller.setPracticePercent(100);
+    expect(controller.getState().activeBpm).toBe(60);
+    controller.dispose();
+  });
+
+  it("says nothing changed on a song at one tempo", async () => {
+    const { controller, transport } = await started({});
+    expect(controller.getState().hasTempoChanges).toBe(false);
+    expect(controller.getState().activeBpm).toBe(SAMPLE_SONG.bpm);
+    expect(transport.bpm.steps.every((s) => s.bpm === SAMPLE_SONG.bpm)).toBe(true);
+    controller.dispose();
+  });
+
+  it("leaves the song's own tempo alone", async () => {
+    const song = stepped();
+    const before = JSON.stringify(song);
+    const { controller } = await started({ song });
+    controller.setPracticePercent(150);
+    expect(JSON.stringify(song)).toBe(before);
+    controller.dispose();
   });
 });

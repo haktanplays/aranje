@@ -65,11 +65,13 @@ export function surfaceDigest(song: Song): SurfaceDigest {
       id: section.id,
       name: section.name,
       status: section.status,
+      // The section's tempo is part of the music, so it is part of the locked
+      // surface: an arrange patch may never move it (spec 11.1, K-25).
+      bpmOverride: section.bpmOverride ?? null,
       // Bar shape without the slots: what the model may never touch.
       bars: section.bars.map((bar) => ({
         timeSignature: bar.timeSignature,
         resolution: bar.resolution,
-        bpmOverride: bar.bpmOverride ?? null,
       })),
     });
 

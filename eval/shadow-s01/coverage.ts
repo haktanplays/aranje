@@ -13,7 +13,7 @@ import { songSchema, type Song } from "@/lib/song/schema";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { legatoDecision } from "@/lib/audio/legato-chain";
 import { trackLegatoOnsets } from "@/lib/music/legato";
-import { PPQ } from "@/lib/audio/schedule";
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 import { isDrumInstrument } from "@/lib/instruments/registry";
 
@@ -69,7 +69,7 @@ for (const track of song.tracks) {
       const decision =
         index >= 0
           ? legatoDecision(onsets, index, {
-              secondsPerTick: 60 / (song.bpm * PPQ),
+              tempo: buildTempoMap(song),
               timeScale: 1,
             })
           : null;

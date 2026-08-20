@@ -10,7 +10,7 @@
  */
 export const songLimits = {
   maxTracks: 8,
-  totalBars: 16, // phase 2.5: 64
+  totalBars: 32, // phase 2.5: 64
   barsPerSection: 8,
   barsPerPatch: 8,
   maxVoicesPerSlot: 32,

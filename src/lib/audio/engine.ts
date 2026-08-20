@@ -33,6 +33,7 @@ import { metronomeClicks } from "@/lib/audio/position";
 import { sampleEntries, type SampleEntry } from "@/lib/audio/sample-map";
 import { buildSongPlan, ticks, type SongPlan } from "@/lib/audio/schedule";
 import type { DrumPiece, Song, Track } from "@/lib/song/schema";
+import type { TempoMap } from "@/lib/audio/tempo";
 
 /**
  * Tone reaches for `window` as soon as it is imported, so it is pulled in on
@@ -503,16 +504,43 @@ export type ScheduleOptions = {
  *
  * This runs once per engine. Play and pause never reschedule.
  */
+/**
+ * Write a song's tempo timeline onto a transport (spec 8.3, K-25).
+ *
+ * Every event is placed in **ticks**, and Tone's transport derives its own
+ * tick-to-time mapping from this automation, so a step change here moves all
+ * the later events without any of them being rewritten. That is the whole
+ * reason the scheduler was built in ticks in the first place.
+ *
+ * The first segment is a plain value, so the transport is already at the
+ * right tempo before it runs; the rest are scheduled at the second their
+ * section begins. Previous automation is cancelled first, because this is
+ * also what a practice-rate change calls — and a rate change must replace
+ * the curve, not layer a second one on top of it.
+ */
+export function applyTempoMap(
+  transport: Tone.BaseContext["transport"],
+  tempo: TempoMap,
+): void {
+  transport.bpm.cancelScheduledValues(0);
+  const first = tempo.segments[0];
+  if (first) transport.bpm.value = first.bpm;
+  for (const segment of tempo.segments.slice(1)) {
+    transport.bpm.setValueAtTime(segment.bpm, segment.startSeconds);
+  }
+}
+
 export function scheduleSong(
   engine: Engine,
-  bpm: number,
+  tempo: TempoMap,
   options: ScheduleOptions = {},
 ): number {
   const transport = engine.context.transport;
   transport.cancel();
   transport.PPQ = 192;
+
   // Tempo is set before anything is scheduled (spec 8.3).
-  transport.bpm.value = bpm;
+  applyTempoMap(transport, tempo);
 
   /*
    * Notes come from the expression plan and drums from the song plan. Both are

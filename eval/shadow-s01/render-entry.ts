@@ -16,6 +16,7 @@ import * as Tone from "tone";
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { songSchema, type Song } from "@/lib/song/schema";
 import FINAL from "./artifacts/final-song.json";
 
@@ -102,7 +103,7 @@ export async function renderCut(index: number) {
     // Built exactly once per render; a second build would show here.
     engineBuilds += 1;
     const engine = await createEngine(song, context, { excludeTrackIds });
-    scheduleSong(engine, song.bpm);
+    scheduleSong(engine, buildTempoMap(song));
     context.transport.start(0);
 
     diagnostics.expectedBuffers = engine.expectedBuffers;

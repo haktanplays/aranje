@@ -87,7 +87,6 @@ export const drumSlotSchema = z.array(drumHitSchema);
 export const barSchema = z.strictObject({
   timeSignature: timeSignatureSchema,
   resolution: resolutionSchema,
-  bpmOverride: z.number().min(bpmRange.min).max(bpmRange.max).optional(),
   slots: z.record(
     z.string(),
     z.union([z.array(melodicSlotSchema), z.array(drumSlotSchema)]),
@@ -100,6 +99,20 @@ export const sectionSchema = z.strictObject({
   id: z.string().min(1),
   name: z.string().min(1),
   status: sectionStatusSchema,
+  /**
+   * This section's own tempo (spec 8.3, 13.8, K-25).
+   *
+   * Absent means the song's own `bpm`. Present, it takes effect on the first
+   * tick of this section's first bar and applies to this section only —
+   * nothing carries into the next one, so a section always states its own
+   * tempo completely.
+   *
+   * Tempo lived on the *bar* until phase 2G, where it was declared, locked
+   * and then read by absolutely nothing: a song could carry it and the music
+   * would ignore it. A tempo field that does not change the tempo is worse
+   * than no field, so it was removed rather than left beside a working one.
+   */
+  bpmOverride: z.number().min(bpmRange.min).max(bpmRange.max).optional(),
   bars: z.array(barSchema).min(1).max(songLimits.barsPerSection),
 });
 

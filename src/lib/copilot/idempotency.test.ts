@@ -186,3 +186,24 @@ describe("idempotency records (spec 12.3)", () => {
     expect(TTL.budgetGraceSeconds).toBeGreaterThan(24 * 60 * 60);
   });
 });
+
+describe("a section's tempo is part of the question (spec 8.3, K-25)", () => {
+  it("makes a differently-timed song a different question", async () => {
+    const slow = {
+      ...TEST_SONG,
+      sections: TEST_SONG.sections.map((section, index) =>
+        index === 0 ? { ...section, bpmOverride: 60 } : section,
+      ),
+    };
+    const a = await requestFingerprint(arrangeRequest("drums"));
+    const b = await requestFingerprint({ ...arrangeRequest("drums"), song: slow });
+    // Same key, different music: the second call must not replay the first.
+    expect(a).not.toBe(b);
+  });
+
+  it("is still the same question when nothing moved", async () => {
+    expect(await requestFingerprint(arrangeRequest("drums"))).toBe(
+      await requestFingerprint(arrangeRequest("drums")),
+    );
+  });
+});

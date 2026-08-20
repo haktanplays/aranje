@@ -17,6 +17,7 @@ import { TransportBar } from "@/components/workspace/TransportBar";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { useSettings } from "@/lib/settings/use-settings";
 import { usePlayback } from "@/lib/audio/use-playback";
+import { formatBpm } from "@/lib/audio/practice-rate";
 import { BRAND_NAME } from "@/lib/brand";
 import { availableSkills, targetsFor } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
@@ -363,7 +364,16 @@ export function Workspace() {
         <p className="text-muted shrink-0 text-right text-[11px] tabular-nums">
           {song.key}
           <br />
-          {song.bpm} BPM · {meter}
+          {/*
+            The tempo sounding now, not the song's top-level number. On a song
+            that changes tempo the two differ for most of its length, and a
+            header that is wrong most of the time is worse than no header
+            (spec 13.8, K-25). The bullet says the reading is one of several.
+          */}
+          {state.hasTempoChanges
+            ? `${formatBpm(state.activeBpm)} BPM •`
+            : `${song.bpm} BPM`}{" "}
+          · {meter}
         </p>
         <button
           type="button"

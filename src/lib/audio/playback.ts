@@ -19,10 +19,17 @@
  */
 import {
   SampleLoadError,
+  applyTempoMap,
   createLiveEngine,
   scheduleSong,
   type Engine,
 } from "@/lib/audio/engine";
+import {
+  buildTempoMap,
+  hasTempoChanges,
+  tempoAtTicks,
+  type TempoMap,
+} from "@/lib/audio/tempo";
 import {
   barStartTicks,
   positionAtTicks,
@@ -58,6 +65,13 @@ export type PlaybackState = {
   practicePercent: number;
   /** What the transport actually runs at: `songBpm * practicePercent / 100`. */
   bpm: number;
+  /**
+   * The tempo sounding **now** — the playhead's section, practice rate
+   * included (spec 8.3, 13.8, K-25). Equal to `bpm` on a song at one tempo.
+   */
+  activeBpm: number;
+  /** True when the song asks for more than one tempo, so the UI can say so. */
+  hasTempoChanges: boolean;
   loopSectionId: string | null;
   metronome: boolean;
   progress: LoadProgress | null;
@@ -103,6 +117,8 @@ export class PlaybackController {
       songBpm: song.bpm,
       practicePercent,
       bpm: effectiveBpm(song.bpm, practicePercent),
+      activeBpm: tempoAtTicks(buildTempoMap(song, practicePercent), 0),
+      hasTempoChanges: hasTempoChanges(song),
       loopSectionId: null,
       metronome: false,
       progress: null,
@@ -176,7 +192,7 @@ export class PlaybackController {
       throw new Error("disposed");
     }
 
-    scheduleSong(engine, this.state.bpm, {
+    scheduleSong(engine, this.tempoMap(), {
       metronomeEnabled: () => this.state.metronome,
       onEnded: () => this.handleEnded(),
     });
@@ -307,7 +323,10 @@ export class PlaybackController {
     const practicePercent = clampPercent(percent);
     const bpm = effectiveBpm(this.state.songBpm, practicePercent);
     const transport = this.engine?.context.transport;
-    if (transport) transport.bpm.value = bpm;
+    // The whole curve is rewritten, not just the current value: a song with
+    // section tempos has several, and scaling one of them would silently put
+    // the rest at the wrong speed (spec 8.3, 13.8, K-25).
+    if (transport) applyTempoMap(transport, this.tempoMap(practicePercent));
     // Expression is written in seconds, so the plan is rebuilt at the new
     // speed and anything already sounding on the old timing is cancelled. The
     // engine itself is untouched: no graph, no samples, no rescheduling.
@@ -315,7 +334,23 @@ export class PlaybackController {
     this.engine?.expression.setPlan(
       buildExpressionPlan(this.song, { practicePercent }),
     );
-    this.set({ practicePercent, bpm });
+    this.set({ practicePercent, bpm, activeBpm: this.activeBpm(practicePercent) });
+  }
+
+  /** This song's tempo timeline at the speed being practised at. */
+  private tempoMap(percent: number = this.state.practicePercent): TempoMap {
+    return buildTempoMap(this.song, percent);
+  }
+
+  /**
+   * The tempo actually sounding, which is the playhead's section's — not the
+   * song's top-level number (spec 13.8, K-25). Showing the top-level tempo on
+   * a song that changes tempo would be a display that is wrong most of the
+   * time.
+   */
+  private activeBpm(percent: number = this.state.practicePercent): number {
+    const ticks = this.engine?.context.transport.ticks ?? 0;
+    return tempoAtTicks(this.tempoMap(percent), ticks);
   }
 
   getPracticePercent(): number {

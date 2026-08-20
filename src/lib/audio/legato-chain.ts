@@ -31,6 +31,11 @@
  */
 import { CENTS_PER_SEMITONE, expressionPresets } from "@/lib/audio/expression";
 import { legatoLink, type LegatoOnset } from "@/lib/music/legato";
+import {
+  durationSeconds,
+  secondsAtTicks,
+  type TempoMap,
+} from "@/lib/audio/tempo";
 
 export type LegatoTransitionKind = "hammer_on" | "pull_off" | "slide";
 
@@ -126,7 +131,9 @@ export type LegatoDecision =
  * fretboard rules leave it out.
  */
 export type LegatoTiming = {
-  secondsPerTick: number;
+  /** The song's tempo timeline, so a slur that straddles a tempo change is
+   *  measured on both sides of it (spec 8.3, K-25). */
+  tempo: TempoMap;
   /** 1 at full speed, 2 at half speed (spec 13.8). */
   timeScale: number;
 };
@@ -189,7 +196,11 @@ export function legatoDecision(
     }
     if (!timing) return { kind: "joined", previous, transition: articulation };
 
-    const gap = (onset.timeTicks - previous.timeTicks) * timing.secondsPerTick;
+    const gap = durationSeconds(
+      timing.tempo,
+      previous.timeTicks,
+      onset.timeTicks - previous.timeTicks,
+    );
     const glide = glideFor(onset.midi - previous.midi, gap, timing.timeScale);
     if (glide.kind === "too_tight") {
       return { kind: "refused", reason: "no_room_to_glide" };
@@ -335,8 +346,8 @@ export type ChainMembership = {
 export type ChainBuildInput = {
   trackId: string;
   onsets: readonly LegatoOnset[];
-  /** Ticks to seconds, at the speed being practised at. */
-  secondsPerTick: number;
+  /** Ticks to seconds, section tempos included (spec 8.3, K-25). */
+  tempo: TempoMap;
   timeScale: number;
   /** The note id of each onset, by index, so the chain can name its members. */
   noteIds: readonly string[];
@@ -364,7 +375,7 @@ export type ChainBuildResult = {
  * another string — ends the chain too, because those are the same thing.
  */
 export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
-  const { onsets, secondsPerTick, timeScale, noteIds, gains } = input;
+  const { onsets, tempo, timeScale, noteIds, gains } = input;
   const chains: LegatoChain[] = [];
   const membership = new Map<number, ChainMembership>();
   const refusals = new Map<number, LegatoRefusal>();
@@ -379,7 +390,7 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
     // answered once, before a chain is opened for a transition that cannot
     // happen. A source sitting in a chain with no transitions is a half chain,
     // which is not a thing that can be played.
-    const decision = legatoDecision(onsets, index, { secondsPerTick, timeScale });
+    const decision = legatoDecision(onsets, index, { tempo, timeScale });
     if (!decision) return;
     if (decision.kind === "refused") {
       refusals.set(index, decision.reason);
@@ -405,8 +416,11 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
         trackId: input.trackId,
         stringIndex: previous.stringIndex,
         sourcePitch: previous.pitch,
-        startSeconds: previous.timeTicks * secondsPerTick,
-        endSeconds: (previous.timeTicks + previous.durationTicks) * secondsPerTick,
+        startSeconds: secondsAtTicks(tempo, previous.timeTicks),
+        endSeconds: secondsAtTicks(
+          tempo,
+          previous.timeTicks + previous.durationTicks,
+        ),
         startTicks: previous.timeTicks,
         noteIds: [noteIds[previousIndex] ?? ""],
         transitions: [],
@@ -429,7 +443,7 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
     const sourceMidi = previousMidiOf(chain, onsets, previousIndex);
     const cumulative = (onset.midi - sourceMidi) * CENTS_PER_SEMITONE;
     const fromCents = (previous.midi - sourceMidi) * CENTS_PER_SEMITONE;
-    const targetAt = onset.timeTicks * secondsPerTick - chain.startSeconds;
+    const targetAt = secondsAtTicks(tempo, onset.timeTicks) - chain.startSeconds;
 
     let startsAt: number;
     let arrivesAt: number;
@@ -479,7 +493,10 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
 
     chain.transitions = [...chain.transitions, transition];
     chain.noteIds = [...chain.noteIds, noteIds[index] ?? ""];
-    chain.endSeconds = (onset.timeTicks + onset.durationTicks) * secondsPerTick;
+    chain.endSeconds = secondsAtTicks(
+      tempo,
+      onset.timeTicks + onset.durationTicks,
+    );
 
     entry.lastIndex = index;
     membership.set(index, { chainId: chain.chainId, role: "target" });

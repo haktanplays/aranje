@@ -18,7 +18,13 @@
  *   `pitchAutomation` are a deviation applied while playing, and nothing here
  *   writes back to the song.
  */
-import { PPQ, velocityGain } from "@/lib/audio/schedule";
+import { velocityGain } from "@/lib/audio/schedule";
+import {
+  buildTempoMap,
+  durationSeconds as tempoDurationSeconds,
+  secondsAtTicks,
+  type TempoMap,
+} from "@/lib/audio/tempo";
 import {
   DEFAULT_PRACTICE_PERCENT,
   effectiveBpm,
@@ -432,15 +438,19 @@ function planFor(
   onset: LegatoOnset,
   allOnsets: readonly LegatoOnset[],
   index: number,
-  secondsPerTick: number,
+  tempo: TempoMap,
   options: {
     timeScale: number;
     profile: BendProfile;
     comparison: ExpressionComparisonOptions;
   },
 ): ExpressiveNotePlan {
-  const startSeconds = round(noteSeconds(onset.timeTicks, secondsPerTick));
-  let durationSeconds = round(noteSeconds(onset.durationTicks, secondsPerTick));
+  // Asked of the timeline rather than multiplied out, so a note held across a
+  // tempo change lasts the sum of its two halves (spec 8.3, K-25).
+  const startSeconds = round(secondsAtTicks(tempo, onset.timeTicks));
+  let durationSeconds = round(
+    tempoDurationSeconds(tempo, onset.timeTicks, onset.durationTicks),
+  );
   const gain = velocityGain(onset.velocity);
 
   const base: ExpressiveNotePlan = {
@@ -583,8 +593,9 @@ export function buildExpressionPlan(
   options: ExpressionPlanOptions = {},
 ): ExpressionPlan {
   const percent = options.practicePercent ?? DEFAULT_PRACTICE_PERCENT;
-  const bpm = effectiveBpm(song.bpm, percent);
-  const secondsPerTick = 60 / (bpm * PPQ);
+  // One timeline, section tempos included. There is no global-bpm shortcut
+  // here any more: a song may run at several tempos (spec 8.3, K-25).
+  const tempo = buildTempoMap(song, percent);
   // A gesture is musical, so at half speed it takes twice as long in seconds.
   const timeScale = DEFAULT_PRACTICE_PERCENT / percent;
   const profile = options.bendProfile ?? "tight";
@@ -599,7 +610,7 @@ export function buildExpressionPlan(
       (onset) => `${track.id}:${onset.timeTicks}:${onset.stringIndex}:${onset.pitch}`,
     );
     const planned = onsets.map((onset, index) => ({
-      ...planFor(onset, onsets, index, secondsPerTick, {
+      ...planFor(onset, onsets, index, tempo, {
         timeScale,
         profile,
         comparison,
@@ -614,7 +625,7 @@ export function buildExpressionPlan(
           skipSlides: comparison.legacySlide ?? false,
           trackId: track.id,
           onsets,
-          secondsPerTick,
+          tempo,
           timeScale,
           noteIds,
           gains: planned.map((note) => note.gain),
