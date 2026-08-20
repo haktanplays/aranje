@@ -67,6 +67,42 @@ describe("a grid change is a different question (spec 12.3)", () => {
     }
   });
 
+  it("notices the grid even when no slot array gives it away", async () => {
+    /*
+     * A bar's slot count normally pins its grid, so most of the time the two
+     * cannot drift apart. The exception is a bar nobody is written in — legal
+     * under spec 5.5 — where the only thing that says how it is counted is
+     * `resolution` itself. If the fingerprint dropped that field, two songs
+     * that count a whole bar differently would hash the same.
+     */
+    const silentBar = (resolution: Resolution) =>
+      songSchema.parse({
+        version: 2,
+        title: "silent",
+        bpm: 138,
+        key: "D minor",
+        tracks: TEST_SONG.tracks.filter((track) => track.id === "drums"),
+        sections: [
+          {
+            id: "s1",
+            name: "S",
+            status: "fixed",
+            bars: [{ timeSignature: [4, 4], resolution, slots: {} }],
+          },
+        ],
+      });
+
+    const at16 = await requestFingerprint(
+      arrangeRequest("drums", { song: silentBar(16), sectionId: "s1" }),
+    );
+    for (const resolution of [8, 12, 24, 32] as const) {
+      const other = await requestFingerprint(
+        arrangeRequest("drums", { song: silentBar(resolution), sectionId: "s1" }),
+      );
+      expect(other).not.toBe(at16);
+    }
+  });
+
   it("is stable when nothing about the grid changed", async () => {
     const first = await requestFingerprint(arrangeRequest("drums", { song: regrid(24) }));
     const second = await requestFingerprint(arrangeRequest("drums", { song: regrid(24) }));
