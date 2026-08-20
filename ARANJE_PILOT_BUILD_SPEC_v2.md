@@ -291,22 +291,78 @@ type DrumSlot = DrumHit[];        // boş dizi = sus
 ```ts
 type TimeSignature = [4, 4] | [3, 4] | [6, 8] | [7, 8];
 
+/** Bir tam notanın kaça bölündüğü (§19 K-34). */
+type Resolution = 8 | 12 | 16 | 24 | 32;
+
 type Bar = {
   timeSignature: TimeSignature;
-  resolution: 8 | 16;
-  bpmOverride?: number;
+  resolution: Resolution;
   slots: Record<string, MelodicSlot[] | DrumSlot[]>;   // trackId -> slot dizisi
 };
 
-const slotCount = (ts: TimeSignature, res: 8 | 16) => (ts[0] * res) / ts[1];
+const slotCount = (ts: TimeSignature, res: Resolution) => (ts[0] * res) / ts[1];
 ```
 
-Örnekler: 4/4 + 8 → **8 slot**; 4/4 + 16 → **16**; 6/8 + 8 → **6**;
-6/8 + 16 → **12**; 3/4 + 8 → **6**; 7/8 + 8 → **7**.
+Örnekler: 4/4 + 8 → **8 slot**; 4/4 + 12 → **12**; 4/4 + 16 → **16**;
+4/4 + 24 → **24**; 4/4 + 32 → **32**; 6/8 + 8 → **6**; 6/8 + 16 → **12**;
+3/4 + 12 → **9**; 7/8 + 8 → **7**.
+
+**Grid sözlüğü (§19 K-34).** Resolution "bir tam notanın kaç parçaya
+bölündüğü"dür; bu yüzden aynı sayı her ölçüde aynı şeyi ifade eder:
+
+| Değer | 4/4 slot | Anlamı |
+|---|---|---|
+| 8 | 8 | sekizlik |
+| 12 | 12 | **sekizlik triplet** |
+| 16 | 16 | onaltılık |
+| 24 | 24 | **onaltılık triplet** |
+| 32 | 32 | otuzikilik |
+
+`12` ve `24` **üçleme grid'leridir**, "biraz daha sık düz grid" değildir: bir
+vurus üç slottur, iki veya dört değil. Kullanıcıya ve modele gösterilen etiket
+her zaman nota değeridir — "1/8 üçleme", "1/16 üçleme" — çıplak `1/12` veya
+`1/24` hiçbir yerde yazılmaz, çünkü "1/16"nın yanında düz bir değer gibi
+okunur.
+
+**64 bu sürümde kasıtlı olarak yoktur.** Gerekçe ölçümdür, tercih değil:
+
+- 4/4 bar başına 64 slot; 32 bar ve çoklu track'te JSON/token yükü prompt
+  bütçesinin taşıyamayacağı büyüklüğe çıkar.
+- 138 BPM'de bir slot yaklaşık **27 ms**; bu, pilotun çaldığı sample'ların
+  attack'ından kısadır, yani iki komşu slot iki ayrı nota olarak duyulmaz.
+- 64'ün gerçekten istendiği olaylar — grace note, flam, sweep gesture —
+  yoğun grid adımı değil **phrase/micro-event** düzeyinde modellenmesi gereken
+  şeylerdir; slot olarak modellemek yanlış şekildir.
+
+Bu, **açık bir ürün boşluğu olarak kayıtlıdır**; desteklenmiyormuş gibi
+davranılmaz, destekleniyormuş gibi de davranılmaz.
+
+**Yazılabilirlik kuralı.** Bir grid, ölçüsünün kendi nota değerini
+yazabilmelidir; yani `resolution`, ölçünün paydasına tam bölünmelidir. Bu tek
+kural iki hatayı birden kapatır:
+
+- 7/8 @ 1/12 → 10.5 slot, ki bu bir bar değildir;
+- 6/8 @ 1/12 → 9 tam slot, ama hiçbiri bir sekizlik değil.
+
+İkisi de **bar şeması** ve `slotCount` tarafından reddedilir; sonuç asla
+yarım slot olarak aşağı akmaz.
+
+**Bar başına bağımsız grid.** Her bar kendi resolution'ını taşır ve bir
+section'ın bütün barlarını aynı grid'e zorlayan ikinci bir kural **yoktur**.
+Grid değişimi section sınırı gerektirmez: dört barlık bir break'in ortasında
+tek barlık bir 1/16-triplet turnaround olabilir.
+
+Farklı grid seçmek bir çeşitlilik kutusu değildir. Blueprint'te yüksek
+resolution'lı her bar bir **niyet** belirtir (§11.8); niyet yoksa mümkün olan
+en düşük grid kullanılır.
 
 - Çekirdekte yalnız `[4,4]` ve `[6,8]` kullanılır (§2.6); `[3,4]` ve `[7,8]`
   şemada vardır, Faz 2.5'te açılır.
 - Varsayılan ölçü `[4,4]`, varsayılan resolution `8`.
+- Tick aritmetiğinin **tek sahibi** `lib/music/timing.ts`'tir (§8.3): slot
+  uzunluğu, bar uzunluğu, vuruş yerleri ve çizim genişliği oradan türer.
+  `60 / bpm` veya `resolution / denominator` hesabı başka hiçbir yerde
+  tekrarlanmaz.
 - `slots` anahtarları **var olan `Track.id` değerleri olmak zorundadır**
   (referential-integrity validator'ı, §10.2).
 - Bir bar şarkıdaki track'lerin **istediği alt kümesini** taşıyabilir; eksik
@@ -511,6 +567,11 @@ planner'ında, ne playhead'de, ne offline render'da. Semantik kasten dardır:
 - Tempo sınırını aşan bir nota **iki parçasının toplamı** kadar sürer; süre
   `ticks × secondsPerTick` ile değil, zaman çizgisine iki kez sorularak
   hesaplanır.
+- Aynı kural **grid sınırı** için de geçerlidir (§19 K-34): bar sınırını aşan
+  bir tie yeni bir onset değildir ve süresi, geçtiği her barın **kendi**
+  grid'inde ölçülüp toplanır. Slot sayılarını toplayıp tek bir grid ile
+  çarpmak, iki grid farklıysa aralarındaki oran kadar yanlıştır. Ses, gerçek
+  bir sus veya track'in yazılı olmadığı bir bar ile biter.
 - Practice rate (§13.8) müziğin değil oturumun özelliğidir: bütün haritayı
   ölçekler, Song'a yazılmaz ve section tempolarını **hep birlikte** ölçekler.
 - Başlıkta gösterilen tempo, şarkının üst düzey sayısı değil **playhead'in
@@ -690,6 +751,10 @@ yerleştirilir. K-4'ün hafızasız greedy kuralı üretimden kaldırılmıştı
    aynı teli kullanıyorsa taşınmaz — `stringCollision` raporlar.
 4. Hiç tam voicing bulunamazsa sahte pozisyon üretilmez ve bu bir çakışma
    olarak etiketlenmez; `unplaceable` (§10.3) raporlar.
+
+Yerleşim motoru barın grid'ini bilmez ve bilmesi gerekmez (§19 K-34): onset'ler
+zaman sıralı bir dizi olarak gelir, slot uzunluğu aramaya girmez. Karışık
+grid'li bir section'da da aynı arama, aynı maliyet ve aynı sonuç geçerlidir.
 
 **Articulation motoru bilir (§19 K-27).** Slide, hammer-on ve pull-off aynı
 telde çalınır (§8.5); yerleşim motoru bunu bilmezse iki notayı ayrı tellere
@@ -1055,6 +1120,21 @@ stil kartının somut örnekleri · motifin section'lar arasında devamı · vel
 ve articulation · akor voicing'i ve gitar çalınabilirliği · groove /
 humanization · kullanıcının kabul-ret geçmişi.
 
+**Ritmik söz dağarcığı raporu (§19 K-34).** Bir parçanın grid'lerle ne yaptığı
+ölçülür ve **puanlanmaz**: kullanılan grid dağılımı, triplet bar sayısı, ince
+grid'e konmuş ama daha kaba bir grid'in de taşıyacağı bar sayısı, gerçek
+onset'ler arasındaki en kısa aralık, hızlı yazımın burst mı yoksa kesintisiz
+akış mı olduğu ve duyulur gam yürüyüşü adayları.
+
+Kural açıkça bir **karşılaştırma ölçüsüdür**, müzikal hakikat değildir:
+"en az 4 ardışık pitched onset, çoğunluğu aynı yönde, adımların çoğu 1–2
+yarım ton, arada uzun sus yok, tie yeni onset sayılmaz". Bir parçanın bir
+gamın notalarını kullanması ile o parçada duyulur bir run olması aynı şey
+değildir; bu kural ikisini her seferinde aynı şekilde ayırt etmek içindir.
+
+**Daha yüksek resolution için skor üretilmez.** 1/8'de iyi bir riff, 1/32'de
+riff olmayan bir şeyi yener; tek bir sayı bununla çelişiyormuş gibi okunurdu.
+
 ### §11.7 Stil kartları
 
 - `content/styles/*.md`. Pilotta 2 kart: `generic-metal.md`,
@@ -1091,6 +1171,19 @@ sorusunun bu sürümdeki cevabı: modelden bir **plan** istenir, Song'u o planda
   gerilim"). Bu, §11.7'nin kart kuralının aynısıdır.
 - Materializer saftır: aynı blueprint her zaman aynı iskeleti verir. Süre
   kontrolü tempo haritası üzerinden yapılır (§8.3), bar sayısı ile değil.
+- **Grid planı üç yerde, gittikçe daralarak belirtilir (§19 K-34):** parçanın
+  varsayılan `resolution`'ı, section'ın kendi `resolution`'ı (isteğe bağlı) ve
+  bir barın `gridAccents` girdisi. Yalnız sonuncusu gerekçe ister ve gerekçe
+  kapalı bir sözlükten gelir: `scalar_run`, `legato_burst`, `arpeggio`,
+  `triplet_groove`, `drum_fill`, `tremolo_burst`, `ornamented_transition`.
+  Niyet yoksa mümkün olan en düşük grid kullanılır.
+- Bar şeklini ve slot sayısını bu plandan **materializer** kurar; model slot
+  dizisi yazmaz. Plan olmayan bir plan — section'ın sonunu aşan accent, bir
+  bara iki grid, accent ettiği grid'den ince olmayan accent, ölçünün
+  taşıyamayacağı grid — iskelet oluşmadan **önce** reddedilir.
+- Bütün barları en ince grid'e çıkarmak yasak değildir; `gridUsage`
+  raporunda görünür (§11.6). **Daha ince grid = daha iyi müzik değildir** ve
+  hiçbir rapor bunu puan olarak sunmaz.
 - **Public `/api/copilot` rotasında tam parça bestelemek yoktur.** Rota
   yalnız `arrange_track` kabul eder (§11.1, K-18); blueprint yolu bu sürümde
   eval/rehearsal yoludur. Bir istekle bir bütün parça üretmek maliyet, kota ve
@@ -1368,17 +1461,30 @@ yalnız zaman konumunu değiştirir.
 **`move_onset_group`.** Saf komut: `{ sectionId, trackId, origins, movement }`.
 `movement` ∈ `previous_slot | next_slot | previous_bar | next_bar`. Slot
 hareketi section içindeki bar'ları flatten ederek bir slot kaydırır ve bar
-sınırını geçebilir; bar hareketi her bloğu komşu barın **aynı** `slotIndex`
-konumuna taşır. Bar'lar kendi `timeSignature`/`resolution` değerleriyle
-sayılır; 4/4 veya 8 slot varsayımı yoktur.
+sınırını geçebilir. Bar hareketi **slot indeksini değil anı** korur (§19
+K-34): kaynağın kendi barı içindeki tick ofseti okunur ve hedef barda tam o
+ofset aranır. Slot 8, 1/16 barda üçüncü vuruş, 1/32 barda ikinci vuruştur;
+indeksi korumak, iki barın grid'i farklıysa müziği sessizce başka bir vuruşa
+taşımak demektir.
+
+Bloğun uzunluğu da **tick** olarak ölçülür. Blok, hedef grid'de aynı süreyi
+kaplayacak şekilde yeniden notalanır: bir 1/16 slot iki 1/32 slot olur, dört
+1/32 slot bir 1/8 slot olur, ses aynı kalır. Hedef grid o anı ya da o süreyi
+yazamıyorsa işlem **`target_grid_incompatible`** ile reddedilir; **en yakın
+slota yuvarlanmaz.** Yuvarlama, kullanıcının notasını istemediği bir yere
+taşır ve bunu fark etmesi için hiçbir iz bırakmaz.
+
+Bar'lar kendi `timeSignature`/`resolution` değerleriyle sayılır; 4/4 veya 8
+slot varsayımı yoktur.
 
 İşlem **atomiktir** ve şu sırayla yürür: kaynak alanları belirlenir → kaynaklar
 geçici olarak boş kabul edilir → bütün hedefler hesaplanır → hepsi doğrulanır →
 ancak hepsi geçerliyse yeni Song kurulur → şema ve validator zinciri çalışır →
 tek storage commit yapılır. Seçili blokların birbirlerinin boşalttığı alana
 kayması geçerlidir. Dolu hedef, seçime ait olmayan tie, section dışı, uyumsuz
-slot yapısı, track'in yazılı olmadığı bar ve iki bloğun aynı hedefe düşmesi
-işlemi **tümüyle** reddeder; kısmi taşıma ve üzerine yazma yoktur. Yetim tie
+slot yapısı, track'in yazılı olmadığı bar, **hedef grid'in yazamadığı an veya
+süre** ve iki bloğun aynı hedefe düşmesi işlemi **tümüyle** reddeder; kısmi
+taşıma ve üzerine yazma yoktur. Yetim tie
 ne bırakılır ne oluşturulur. Hata kullanıcıya engelleyen bar/slot'u söyler.
 Warning engellemez, error engeller. Bütün grup taşıma **tek** undo adımıdır.
 
@@ -1691,6 +1797,8 @@ maliyettir** (§11.2/7).
 | **K-32** | **Turun gördüğü bağlam parçanın bütününü kapsar (§11.5).** Bir tur artık form anahatını (her section: id, ad, bar sayısı, kendi temposu, hedef mi), bağlanma noktalarını (önceki section'ın bıraktığı yer, hedef track'in kendi son barı, sonraki section'ın ilk barı) ve **rol filtreli** kaynak okumalarını görür. Minimizasyon kuralı kalktı değil, role bağlandı: `drums` hiçbir zaman perde görmez. Ham Song JSON'u hâlâ gönderilmez. Bütün form fingerprint'e dahildir. Bu değişiklik "modelin görmediği motifi kullanıcı talimatına elle yazma" workaround'unu kapatmak içindir; o workaround bir çözüm değil, eksik girdinin belirtisiydi. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
 | **K-33** | **Provenance kayıtsız yazılamaz (§21).** S-01 teslim raporu "Sonnet 8 turda 1 şema hatası üretti" dedi; Sonnet hiç çağrılmamıştı. İddia mümkündü çünkü çalıştırmada cevapları kimin yazdığını **hiçbir şey kaydetmiyordu**. Artık her cevap — blueprint dahil — kendi `ShadowProvenance` kaydını taşır: `generationMode`, sağlayıcı çağrısı olup olmadığı, model etiketinin doğrulanmış bir ID mi yoksa oturum etiketi mi olduğu, istek ve cevap hash'leri. `assertHonestProvenance` sağlayıcı çağrılmadan sağlayıcı iddia eden bir kaydı **reddeder**; `coding_agent_simulation` latency ve maliyet rakamı üretmez, çünkü ölçülecek bir çağrı yoktur. Kural test altındadır: elle değiştirilmiş bir blueprint hash'i tutmaz, talimata elle yazılmış bir motif ve "provider eval" etiketi testi kırar. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
 
+| **K-34** | **Ritmik söz dağarcığı kapısı (§5.5, §8.3, §9.2, §11.8, §13.x).** `Resolution` 8/16'dan **8, 12, 16, 24, 32**'ye genişletildi: sekizlik, sekizlik triplet, onaltılık, onaltılık triplet, otuzikilik. Gerekçe ölçümdür: 138 BPM'de yazılabilen en ince şey 108.7 ms'lik bir onaltılıktı, yani hızlı scalar run, kısa legato burst, hızlı arpej, tremolo-benzeri tekrar, gelişmiş drum fill ve triplet groove **yazılamıyordu**. **64 eklenmedi** ve nedeni kayda geçti (bar başına 64 slot'un token/JSON yükü; 138 BPM'de ~27 ms slot'un mevcut sample attack'ının altında kalması; grace/flam/sweep gibi olayların slot değil phrase/micro-event olması) — açık ürün boşluğu olarak durur. `12` ve `24` **triplet grid**'dir ve hiçbir yerde düz grid gibi hesaplanamaz veya etiketlenemez; kullanıcıya ve modele "1/8 üçleme" / "1/16 üçleme" gösterilir, çıplak "1/12" hiçbir yerde geçmez. Bir grid ölçüsünün kendi nota değerini yazabilmelidir (`resolution % payda === 0`); 7/8@12 ve 6/8@12 şema tarafından reddedilir. **Tick aritmetiğinin tek sahibi** `lib/music/timing.ts` oldu; `PPQ`, `ticksPerSlot`, `slotCount` ve iki ayrı slots-per-beat kuralı oraya taşındı, üç kopya silindi. **Her bar kendi grid'ini taşır**; grid değişimi section sınırı gerektirmez, fakat blueprint'te yüksek-resolution her bar bir **niyet** belirtir (`scalar_run`, `legato_burst`, `arpeggio`, `triplet_groove`, `drum_fill`, `tremolo_burst`, `ornamented_transition`) ve niyet yoksa mümkün olan en düşük grid kullanılır. Bütün barları 32 yapmak yasak değildir ama `gridUsage` raporunda görünür. Model **bar grid'ini değiştiremez**; yanlış slot sayısı, düzeltme mesajında ölçü + grid + beklenen slot sayısı ile reddedilir. Tie/sustain/legato/slide karışık grid'lerde **exact tick** üzerinden hesaplanır — bu sırada, bar sınırını aşan bir tie'ın taşınan kısmının hem scheduler'da hem expression planner'ında **düşürüldüğü** bulundu ve düzeltildi. `move_onset_group` slot indeksi değil **an** korur; hedef grid o anı yazamıyorsa `target_grid_incompatible` ile reddedilir, en yakın slota yuvarlanmaz; süre korunacak şekilde hedef grid'de yeniden notalanır. Ölçüm: 8 bar × 1/32 yoğun cevap ~1045/4000 output token, en kötü input ~3870/8000 — **tavanlar değiştirilmedi** ve run-length encoding gereksiz bulundu. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
 | Konu | v1.2 | Geçerli (v1.5) |
@@ -1698,6 +1806,7 @@ maliyettir** (§11.2/7).
 | Track sınırı | 6 aktif track | **8**, section başına aktif-track limiti yok |
 | Toplam bar | 64 (pilotta zorunlu) | **32 çekirdek** (K-25; v1.5'te 16 idi), 64 Faz 2.5 |
 | Ölçüler | 4/4, 3/4, 6/8, 7/8 hepsi pilotta | **4/4 + 6/8 çekirdek**, kalanı Faz 2.5 |
+| Grid | 8 / 16 | **8, 12, 16, 24, 32** (K-34); 64 açık boşluk |
 | Tel ekle/çıkar, 7/8 telli gitar, 5/6 telli bas | Pilotta gelişmiş ayar | **Pilot sonrası** |
 | Tel tel manuel akort, pan/solo, davul lane | Faz 1 | **Faz 2.5** |
 | Pozisyon motoru | 4 maliyeti minimize eden motor | **Ergonomic Placement v2** (§9.2, K-19) |
