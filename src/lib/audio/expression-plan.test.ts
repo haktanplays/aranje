@@ -226,6 +226,20 @@ describe("palm mute and accent", () => {
     expect(plan.pitch).toBe("A3");
   });
 
+  it("caps a long note far below what it was written as", () => {
+    // A note held for a whole bar. Written, it rings for well over a second;
+    // palm muted, it stops at the cap however long the bar is.
+    const heldBar = [A3("palm_mute"), TIE, TIE, TIE, TIE, TIE, TIE, TIE];
+    const plainBar = [A3(), TIE, TIE, TIE, TIE, TIE, TIE, TIE];
+
+    const muted = at(song([bar(heldBar)]), 0);
+    const plain = at(song([bar(plainBar)]), 0);
+
+    expect(plain.durationSeconds).toBeGreaterThan(1);
+    expect(muted.durationSeconds).toBe(expressionPresets.palmMute.maxHoldSeconds);
+    expect(muted.durationSeconds).toBeLessThan(plain.durationSeconds / 4);
+  });
+
   it("lifts an accent without reaching full scale", () => {
     const plain = at(song([bar(slots([A3()]))]), 0);
     const loud = at(song([bar(slots([A3("accent")]))]), 0);
