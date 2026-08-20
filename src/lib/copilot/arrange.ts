@@ -21,7 +21,7 @@ import {
   isAcousticInstrument,
   isDrumInstrument,
 } from "@/lib/instruments/registry";
-import { slotCount } from "@/lib/music/timing";
+import { resolutionPromptLabel, slotCount } from "@/lib/music/timing";
 import {
   modelPatchSchema,
   type ArrangeSkill,
@@ -201,13 +201,21 @@ export function validateArrangeOutput(
     const target = section.bars[position];
     if (!target) return;
 
+    /*
+     * The bar's grid is not the model's to choose (spec 5.5, K-34), and with
+     * five grids in play a wrong slot count is most often a bar written on the
+     * wrong one. So the correction names all three things it takes to fix it:
+     * the meter, which grid this bar is on, and how many slots that is.
+     */
     const expected = slotCount(target.timeSignature, target.resolution);
     if (bar.slots.length !== expected) {
       issues.push(
         where(
-          `Bar ${position + 1}: ${target.timeSignature[0]}/` +
-            `${target.timeSignature[1]} ve 1/${target.resolution} için ` +
-            `${expected} slot gerekiyor, ${bar.slots.length} geldi.`,
+          `Bar ${position + 1}: bu bar ${target.timeSignature[0]}/` +
+            `${target.timeSignature[1]} ölçüsünde ve ` +
+            `${resolutionPromptLabel(target.resolution)} grid'inde; ` +
+            `${expected} slot gerekiyor, ${bar.slots.length} geldi. ` +
+            `Barın grid'i değiştirilemez.`,
         ),
       );
     }

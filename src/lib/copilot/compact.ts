@@ -17,7 +17,12 @@
  * no business reading. A `drums` request is not shown the bass line.
  */
 import { instrumentFamily } from "@/lib/instruments/registry";
-import { slotCount } from "@/lib/music/timing";
+import {
+  isTripletGrid,
+  resolutionPromptLabel,
+  slotCount,
+  slotsPerNotatedBeat,
+} from "@/lib/music/timing";
 import type {
   DrumPiece,
   DrumSlot,
@@ -95,13 +100,24 @@ export function rhythmLines(section: Section, trackId: string): string[] {
   });
 }
 
-/** Bar shapes of the section: what the answer must match slot for slot. */
+/**
+ * Bar shapes of the section: what the answer must match slot for slot.
+ *
+ * Every bar states its own grid, because bars in one section no longer share
+ * one (spec 5.5, K-34). A triplet grid is named as a triplet — "1/8 ucleme",
+ * never "1/12" — so a bar of twelve slots cannot be read as a slightly denser
+ * straight bar, and the slot count is spelled out next to it either way.
+ */
 export function barShapeLines(section: Section): string[] {
   return section.bars.map((bar, index) => {
     const count = slotCount(bar.timeSignature, bar.resolution);
+    const grid = resolutionPromptLabel(bar.resolution);
+    const triplet = isTripletGrid(bar.resolution)
+      ? ` (uclu bolme: ${slotsPerNotatedBeat(bar.timeSignature, bar.resolution)} slot = 1 vurus)`
+      : "";
     return (
       `bar ${index + 1}: ${bar.timeSignature[0]}/${bar.timeSignature[1]} ` +
-      `1/${bar.resolution} ${count} slot`
+      `${grid} ${count} slot${triplet}`
     );
   });
 }

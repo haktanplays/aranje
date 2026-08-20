@@ -18,6 +18,7 @@
 import { z } from "zod";
 
 import { songLimits } from "@/lib/limits";
+import { MAX_SLOTS_PER_BAR } from "@/lib/music/timing";
 import {
   drumSlotSchema,
   noteEventSchema,
@@ -72,10 +73,19 @@ export const modelMelodicSlotSchema = z.union([
 
 export const modelBarSchema = z.strictObject({
   barIndex: z.number().int().min(0).max(songLimits.barsPerSection - 1),
-  /** Melodic for a melodic target, drums for a drum target; never mixed. */
+  /**
+   * Melodic for a melodic target, drums for a drum target; never mixed.
+   *
+   * The bound is the widest bar the contract allows — 4/4 on the finest grid
+   * (spec 5.5, K-34). It is not the *right* number for any particular bar:
+   * that comes from the bar's own meter and grid and is checked against the
+   * section in `checkBarShapes`. What it does is put the range in the schema
+   * the provider is given, so a bar of a hundred slots is refused by the
+   * structured-output constraint rather than by us afterwards.
+   */
   slots: z.union([
-    z.array(modelMelodicSlotSchema),
-    z.array(drumSlotSchema),
+    z.array(modelMelodicSlotSchema).max(MAX_SLOTS_PER_BAR),
+    z.array(drumSlotSchema).max(MAX_SLOTS_PER_BAR),
   ]),
 });
 

@@ -195,10 +195,43 @@ export function formatTimeSignature(timeSignature: TimeSignature): string {
 export function resolutionLabel(resolution: Resolution): string {
   switch (resolution) {
     case 12:
-      return "1/8 üçleme";
+      return "1/8 \u00FC\u00E7leme";
     case 24:
-      return "1/16 üçleme";
+      return "1/16 \u00FC\u00E7leme";
     default:
       return `1/${resolution}`;
   }
 }
+
+/**
+ * The same label without diacritics, for the prompt blocks.
+ *
+ * The cacheable prefix is byte-stable ASCII (spec 11.5) and the rest of the
+ * prompt is written the same way, so a triplet grid says "ucleme" there and
+ * "\u00FC\u00E7leme" on screen. What it may never say in either place is a bare
+ * "1/12".
+ */
+export function resolutionPromptLabel(resolution: Resolution): string {
+  switch (resolution) {
+    case 12:
+      return "1/8 ucleme";
+    case 24:
+      return "1/16 ucleme";
+    default:
+      return `1/${resolution}`;
+  }
+}
+
+/**
+ * The most slots any bar in the contract can have: 4/4 at 1/32.
+ *
+ * Derived rather than written down, so widening `RESOLUTIONS` or the meter
+ * list moves it without anyone remembering to.
+ */
+export const MAX_SLOTS_PER_BAR: number = Math.max(
+  ...TIME_SIGNATURES.flatMap((timeSignature) =>
+    RESOLUTIONS.filter((resolution) =>
+      isRepresentableGrid(timeSignature, resolution),
+    ).map((resolution) => slotCount(timeSignature, resolution)),
+  ),
+);
