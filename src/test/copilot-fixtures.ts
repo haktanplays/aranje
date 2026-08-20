@@ -89,9 +89,14 @@ export const HARMONY_SONG: Song = {
 export type RequestOverrides = Partial<CopilotRequest>;
 
 const TARGET_BY_SKILL: Readonly<Record<ArrangeSkill, string>> = {
-  drums: "drums",
-  bass: "bass",
+  // The demo song's own guitar is the one a riff or a solo belongs on.
+  rhythm_guitar: "gtr",
+  lead_guitar: "gtr",
+  // The demo song already has a steel-string; no fixture track needed.
+  acoustic_guitar: "acc",
   harmony: "gtr2",
+  bass: "bass",
+  drums: "drums",
 };
 
 export function arrangeRequest(

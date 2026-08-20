@@ -348,6 +348,24 @@ export function instrumentFamily(instrumentId: string): InstrumentFamily {
   return FAMILIES[instrumentId] ?? "other";
 }
 
+/**
+ * Guitars that are not amplified (spec 11.1, K-30).
+ *
+ * `instrumentFamily` calls a steel-string acoustic and a high-gain electric
+ * the same thing, which is right for placement and range — they are fretted
+ * six-strings — and wrong for deciding who arranges what. An acoustic coda
+ * is a different job from a rhythm riff, so the role check needs to tell them
+ * apart, and it asks here rather than keeping its own list.
+ */
+const ACOUSTIC_INSTRUMENTS: ReadonlySet<string> = new Set([
+  "steel_acoustic",
+  "nylon_guitar",
+]);
+
+export function isAcousticInstrument(instrumentId: string): boolean {
+  return ACOUSTIC_INSTRUMENTS.has(instrumentId);
+}
+
 export function listInstruments(): readonly InstrumentDefinition[] {
   return DEFINITIONS;
 }

@@ -141,6 +141,28 @@ export const SYSTEM_PROMPT = [
 
 /** What each skill is for, in the instruction layer. Byte-stable per skill. */
 export const SKILL_CARDS: Readonly<Record<ArrangeSkill, string>> = {
+  rhythm_guitar: [
+    "# gorev: ritim gitari",
+    "Bolumun ana riff'ini sen yaziyorsun. Geri cekilme, esliksin degil.",
+    "Motifin ritmik hucresini kur veya gelistir; sus riff'in parcasidir.",
+    "Dusuk telde tut, palm mute ve accent ile karakter ver.",
+    "Her slotu doldurma; bosluk birak.",
+  ].join("\n"),
+  lead_guitar: [
+    "# gorev: solo gitari",
+    "Ritim gitarinin ustunde tek sesli bir cizgi yaz.",
+    "Motif gelistirerek ilerle; rastgele scale run yazma.",
+    "Cumleler arasinda nefes birak.",
+    "Bend, vibrato, slide, hammer-on ve pull-off dogal yerlerinde kullanilir;",
+    "coverage icin yigma.",
+  ].join("\n"),
+  acoustic_guitar: [
+    "# gorev: akustik gitar",
+    "Bu bolumde tek basina calabilirsin; oyleyse bolumun tamami sensin.",
+    "Acik tel pedal ve arpej kullan.",
+    "Onceki bolumun son perdesini veya motifini devral; yeni bir sarki baslatma.",
+    "Distortion mantigiyla degil, cinlayan tellerle dusun.",
+  ].join("\n"),
   drums: [
     "# gorev: davul",
     "Bolumun melodik aksanlarina oturan bir davul partisi yaz.",

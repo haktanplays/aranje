@@ -7,9 +7,12 @@ import { targetsFor } from "@/lib/copilot/ui-options";
 import type { Song } from "@/lib/song/schema";
 
 const SKILL_LABEL: Readonly<Record<ArrangeSkill, string>> = {
-  drums: "Davul",
-  bass: "Bas",
+  rhythm_guitar: "Ritim gitar",
+  lead_guitar: "Solo gitar",
+  acoustic_guitar: "Akustik gitar",
   harmony: "Armoni gitar",
+  bass: "Bas",
+  drums: "Davul",
 };
 
 const STYLE_LABEL: Readonly<Record<string, string>> = {

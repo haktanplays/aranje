@@ -42,9 +42,12 @@ const LIMITS = {
 
 const SECTION_ID = mainSection().id;
 const TARGETS: Readonly<Record<ArrangeSkill, string>> = {
-  drums: "drums",
-  bass: "bass",
+  rhythm_guitar: "gtr",
+  lead_guitar: "gtr",
+  acoustic_guitar: "acc",
   harmony: "gtr2",
+  bass: "bass",
+  drums: "drums",
 };
 
 function songFor(skill: ArrangeSkill): Song {

@@ -25,9 +25,32 @@ import {
 } from "@/lib/song/schema";
 import type { ValidationIssue } from "@/lib/validators/types";
 
-/** The three things the copilot can be asked to arrange (spec 11.1, K-18). */
-export const ARRANGE_SKILLS = ["drums", "bass", "harmony"] as const;
+/**
+ * The jobs the copilot can be asked to do (spec 11.1, K-18, K-30).
+ *
+ * K-18 had three: `drums`, `bass`, `harmony`. The S-01 rehearsal showed that
+ * is not enough vocabulary for a piece. Every guitar turn had to be
+ * `harmony`, whose card says "write a *second* guitar that does not cover the
+ * main one, and do not rewrite the main motif" — the exact opposite of what
+ * an opening riff or a solo needs, and nonsense for a coda where the acoustic
+ * is the only instrument playing. The role was doing the work of three.
+ *
+ * So the values name the job, not the instrument. Two of them target the same
+ * instrument family and differ entirely in what they read and what they are
+ * for.
+ */
+export const ARRANGE_SKILLS = [
+  "rhythm_guitar",
+  "lead_guitar",
+  "acoustic_guitar",
+  "harmony",
+  "bass",
+  "drums",
+] as const;
 export type ArrangeSkill = (typeof ARRANGE_SKILLS)[number];
+
+/** The same thing, named the way spec 11.1 talks about it. */
+export type ArrangeRole = ArrangeSkill;
 
 /**
  * What the model may say about a note.

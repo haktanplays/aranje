@@ -6,6 +6,8 @@ import {
   copilotRequestSchema,
   modelPatchSchema,
 } from "@/lib/copilot/contract";
+import { SKILL_TARGETS, skillAccepts } from "@/lib/copilot/arrange";
+import { SKILL_CARDS } from "@/lib/copilot/prompt";
 import { arrangeRequest, TEST_SONG } from "@/test/copilot-fixtures";
 
 function drumBars(count = 4, slots = 8) {
@@ -33,8 +35,62 @@ describe("request contract (spec 11.1, K-18)", () => {
     );
   });
 
-  it("offers exactly three skills", () => {
-    expect([...ARRANGE_SKILLS]).toEqual(["drums", "bass", "harmony"]);
+  it("offers one role per job, not one per instrument (K-30)", () => {
+    expect([...ARRANGE_SKILLS]).toEqual([
+      "rhythm_guitar",
+      "lead_guitar",
+      "acoustic_guitar",
+      "harmony",
+      "bass",
+      "drums",
+    ]);
+  });
+
+  it("gives three of them the same instrument family and different jobs", () => {
+    // This is the point of the split: `harmony` used to have to be a riff, a
+    // solo and a solo-acoustic coda all at once (K-30).
+    const guitarRoles = ARRANGE_SKILLS.filter(
+      (role) => SKILL_TARGETS[role].family === "guitar",
+    );
+    expect(guitarRoles).toEqual([
+      "rhythm_guitar",
+      "lead_guitar",
+      "acoustic_guitar",
+      "harmony",
+    ]);
+    const cards = guitarRoles.map((role) => SKILL_CARDS[role]);
+    expect(new Set(cards).size).toBe(cards.length);
+  });
+
+  it("tells an acoustic from an amplified guitar", () => {
+    const electric = {
+      id: "gtr",
+      name: "G",
+      instrumentId: "electric_guitar",
+      presetId: "high_gain",
+      volumeDb: 0,
+      fretboard: { tuning: ["E2", "A2", "D3", "G3", "B3", "E4"], capo: 0 },
+    };
+    const acoustic = { ...electric, id: "acc", instrumentId: "steel_acoustic" };
+
+    expect(skillAccepts("rhythm_guitar", electric)).toBe(true);
+    expect(skillAccepts("rhythm_guitar", acoustic)).toBe(false);
+    expect(skillAccepts("acoustic_guitar", acoustic)).toBe(true);
+    expect(skillAccepts("acoustic_guitar", electric)).toBe(false);
+    // A supporting second part is one either way.
+    expect(skillAccepts("harmony", electric)).toBe(true);
+    expect(skillAccepts("harmony", acoustic)).toBe(true);
+  });
+
+  it("refuses a role aimed at the wrong instrument before any provider call", () => {
+    expect(skillAccepts("drums", {
+      id: "gtr",
+      name: "G",
+      instrumentId: "electric_guitar",
+      presetId: "high_gain",
+      volumeDb: 0,
+      fretboard: { tuning: ["E2"], capo: 0 },
+    })).toBe(false);
   });
 
   it("takes no operation but arrange_track", () => {

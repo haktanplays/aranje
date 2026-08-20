@@ -16,7 +16,11 @@
  * (spec 5.5), so a wrong count is caught here rather than by the shared
  * `slotCount` validator on a candidate that should never have been built.
  */
-import { instrumentFamily, isDrumInstrument } from "@/lib/instruments/registry";
+import {
+  instrumentFamily,
+  isAcousticInstrument,
+  isDrumInstrument,
+} from "@/lib/instruments/registry";
 import { slotCount } from "@/lib/music/timing";
 import {
   modelPatchSchema,
@@ -31,18 +35,47 @@ export type TargetResolution =
   | { ok: true; section: Section; track: Track }
   | { ok: false; reason: string };
 
-/** Which instrument family each skill is allowed to write for (spec 11.1). */
-export const SKILL_TARGETS: Readonly<Record<ArrangeSkill, string>> = {
-  drums: "drums",
-  bass: "bass",
-  harmony: "guitar",
+/**
+ * What each role may be pointed at (spec 11.1, K-30).
+ *
+ * `family` comes from the instrument registry, which is the single source of
+ * truth for what an instrument is. `acoustic` is the one extra distinction a
+ * family cannot make: a steel-string and a high-gain electric are both
+ * "guitar" — right for placement and range, wrong for deciding who writes a
+ * coda.
+ */
+export const SKILL_TARGETS: Readonly<
+  Record<ArrangeSkill, { family: string; acoustic?: boolean }>
+> = {
+  rhythm_guitar: { family: "guitar", acoustic: false },
+  lead_guitar: { family: "guitar", acoustic: false },
+  acoustic_guitar: { family: "guitar", acoustic: true },
+  harmony: { family: "guitar" },
+  bass: { family: "bass" },
+  drums: { family: "drums" },
 };
 
-/** True when this track is the kind of instrument the skill arranges. */
+/** Reader-facing description of what a role needs, for a refusal message. */
+function targetDescription(skill: ArrangeSkill): string {
+  const target = SKILL_TARGETS[skill];
+  if (target.acoustic === true) return "acoustic guitar";
+  if (target.acoustic === false) return "amplified guitar";
+  return target.family;
+}
+
+/** True when this track is the kind of instrument the role arranges. */
 export function skillAccepts(skill: ArrangeSkill, track: Track): boolean {
+  const target = SKILL_TARGETS[skill];
   const family = instrumentFamily(track.instrumentId);
-  if (family !== SKILL_TARGETS[skill]) return false;
-  // A fretted skill needs a fretboard to place notes on; drums need none.
+  if (family !== target.family) return false;
+
+  // `harmony` takes either kind of guitar: a supporting second part is a
+  // supporting second part whether it is plugged in or not.
+  if (target.acoustic !== undefined) {
+    if (isAcousticInstrument(track.instrumentId) !== target.acoustic) return false;
+  }
+
+  // A fretted role needs a fretboard to place notes on; drums need none.
   if (skill === "drums") return true;
   return track.fretboard !== undefined;
 }
@@ -74,8 +107,8 @@ export function resolveTarget(request: CopilotRequest): TargetResolution {
     return {
       ok: false,
       reason:
-        `skill "${request.skill}" needs a ${SKILL_TARGETS[request.skill]} ` +
-        `track, but "${track.id}" is ${instrumentFamily(track.instrumentId)}`,
+        `skill "${request.skill}" needs a ${targetDescription(request.skill)} ` +
+        `track, but "${track.id}" is ${track.instrumentId}`,
     };
   }
 
