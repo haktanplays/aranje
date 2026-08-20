@@ -1,0 +1,14 @@
+{
+  "transcriptPath": "/root/.claude/projects/-home-user-aranje/b376a7ca-9a4d-5849-aa9d-fe1f951e0ab7/subagents/agent-a624f98f236724224.jsonl",
+  "exactModelId": "claude-sonnet-5",
+  "modelsSeen": [
+    "claude-sonnet-5"
+  ],
+  "modelIdVerified": true,
+  "modelIdSource": "runtime_transcript",
+  "toolUses": 0,
+  "toolNames": [],
+  "userRecords": 1,
+  "assistantReplies": 1,
+  "responseChars": 11327
+}

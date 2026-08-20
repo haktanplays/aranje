@@ -9,5 +9,16 @@
     "touchedBars": 4,
     "explanation": "Low-E pedal riff: accented downbeat hit opens cold, palm-muted 16ths carry the floor, F2 appears only as passing colour into E. Bar 3 develops the cell with B2/A2 at the end. Bar 4 shifts the same cell into triplet subdivision, then beat 4 is left completely empty so the break lands naked.",
     "warnings": []
+  },
+  {
+    "turn": 2,
+    "label": "Intro / drums",
+    "role": "drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p2-1",
+    "touchedBars": 4,
+    "explanation": "Soguk giris: 1. barin 1'inde crash+kick. Kick yalniz gitarin X aksanlarina (0, 6, 12) kilitli, ara 16'liklara vurulmuyor; snare 2 ve 4'te temel 4/4'u tutuyor. 3. barda 4&'deki X icin erken snare senkopu var. 4. barda uclu grid uzerinde 3. vurusta kisa tom fill'i gitarin son iki aksaniyla bitiyor ve 4. vurus tamamen bos birakiliyor; suslar doldurulmadi.",
+    "warnings": []
   }
 ]
