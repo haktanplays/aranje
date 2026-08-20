@@ -82,15 +82,21 @@ describe("track partitioning for isolated renders", () => {
   });
 });
 
-describe("one bank, two readers (spec 8.5)", () => {
+describe("one bank, every reader (spec 8.5, 8.1, K-28)", () => {
   const code = ENGINE_SOURCE.split("\n")
+    .filter((line) => !line.trim().startsWith("*"))
+    .join("\n");
+  const bankCode = readFileSync("src/lib/audio/buffer-bank.ts", "utf8")
+    .split("\n")
     .filter((line) => !line.trim().startsWith("*"))
     .join("\n");
 
   it("decodes the pack once and hands the sampler buffers, not urls", () => {
-    // The bank is the only thing given a url map and a baseUrl.
-    expect(code).toContain("new tone.ToneAudioBuffers({");
-    const bank = code.slice(code.indexOf("new tone.ToneAudioBuffers({"));
+    // Exactly one place is given a url map and a baseUrl, and it is the
+    // shared bank rather than the engine.
+    expect(code).not.toContain("new tone.ToneAudioBuffers({");
+    expect(bankCode).toContain("new tone.ToneAudioBuffers({");
+    const bank = bankCode.slice(bankCode.indexOf("new tone.ToneAudioBuffers({"));
     expect(bank.slice(0, 200)).toContain("urls: pack.urls");
     expect(bank.slice(0, 200)).toContain("baseUrl: pack.baseUrl");
 
@@ -98,6 +104,18 @@ describe("one bank, two readers (spec 8.5)", () => {
     const sampler = code.slice(code.indexOf("new tone.Sampler({"));
     expect(sampler.slice(0, 300)).toContain("buffers.get(note)");
     expect(sampler.slice(0, 300)).not.toContain("baseUrl");
+  });
+
+  it("is keyed by the pack, not by the track", () => {
+    // A track-keyed cache is what made two guitars decode the same seven
+    // files twice in the S-01 rehearsal.
+    expect(bankCode).toContain("packs.get(pack.id)");
+    expect(bankCode).not.toContain("track.id");
+  });
+
+  it("releases rather than disposes, so one track cannot silence another", () => {
+    expect(code).toContain("voice.bank.release()");
+    expect(code).not.toContain("voice.buffers.dispose()");
   });
 
   it("never reaches into Tone's private fields for those buffers", () => {

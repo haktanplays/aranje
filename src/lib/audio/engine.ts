@@ -18,6 +18,7 @@ import type * as Tone from "tone";
 
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import { samplePackFor } from "@/lib/audio/packs";
+import { acquireBank, type BankHandle } from "@/lib/audio/buffer-bank";
 import {
   buildExpressionPlan,
   type ExpressionPlan,
@@ -91,15 +92,21 @@ export type TrackVoice =
   | {
       kind: "sampler";
       trackId: string;
+      /** Which pack this voice plays, so shared banks are counted once. */
+      packId: string;
       sampler: Tone.Sampler;
       channel: Tone.Channel;
       bufferCount: number;
       /**
-       * The decoded samples, held once. The sampler plays from this bank and
-       * so does every expressive voice, so a note with a bend costs no extra
-       * download and no extra decode (spec 8.5).
+       * The decoded samples, held once **per pack and context**. The sampler
+       * plays from this bank, so does every expressive voice, and so does any
+       * other track on the same preset — a note with a bend costs no extra
+       * download and no extra decode, and neither does a second guitar
+       * (spec 8.5, 8.1, K-28).
        */
       buffers: Tone.ToneAudioBuffers;
+      /** This voice's claim on the shared bank; released on dispose. */
+      bank: BankHandle;
       entries: readonly SampleEntry[];
       /** The pack's level correction as a linear factor (spec 7.1). */
       trimGain: number;
@@ -249,6 +256,8 @@ function buildDrums(
  */
 type VoiceBuild = {
   channel: Tone.Channel;
+  /** The pack this voice will play, or null for the synthesised drum kit. */
+  packId: string | null;
   bufferCount: number;
   build: () => TrackVoice;
   loaded: Promise<void>;
@@ -270,6 +279,7 @@ function buildVoice(
     const drums = buildDrums(tone, context, channel);
     return {
       channel,
+      packId: null,
       bufferCount: 0,
       build: () => ({ kind: "drums", trackId: track.id, drums, channel }),
       // Synthesised, so there is nothing to download.
@@ -283,33 +293,26 @@ function buildVoice(
     return null;
   }
 
-  let settle: () => void = () => {};
-  let fail: (error: unknown) => void = () => {};
-  const loaded = new Promise<void>((resolve, reject) => {
-    settle = resolve;
-    fail = reject;
-  });
-
   /*
-   * One bank, two readers.
+   * One bank, every reader.
    *
-   * Before phase 2F the Sampler fetched and decoded the pack itself. It still
-   * plays from exactly those recordings, but they are now decoded **here**,
-   * once, and handed to it as buffers — because the expressive voices need the
-   * same recordings and a second Sampler, or a second URL map, would mean
-   * fetching and decoding all 21 files twice (spec 8.5).
+   * Before phase 2F the Sampler fetched and decoded the pack itself; 2F gave
+   * a track's Sampler and its expressive voices one shared bank. 2G finished
+   * the job: the bank is now shared across *tracks* too, keyed by the pack
+   * rather than by the track, so two guitars on the same preset decode the
+   * same seven files once (spec 8.1, K-28).
    */
-  const buffers = new tone.ToneAudioBuffers({
-    urls: pack.urls,
-    baseUrl: pack.baseUrl,
-    onload: () => settle(),
-    onerror: (error) => fail(new SampleLoadError(pack.id, error)),
+  const bank = acquireBank(tone, context, pack, () => {});
+  const buffers = bank.buffers;
+  const loaded = bank.loaded.catch((error) => {
+    throw new SampleLoadError(pack.id, error);
   });
 
   const noteNames = Object.keys(pack.urls);
 
   return {
     channel,
+    packId: pack.id,
     bufferCount: noteNames.length,
     // The sampler is built from the bank once the bank has decoded. Handing it
     // buffers that have not arrived yet would copy an empty one and never fill.
@@ -324,10 +327,12 @@ function buildVoice(
       return {
         kind: "sampler",
         trackId: track.id,
+        packId: pack.id,
         sampler,
         channel,
         bufferCount: noteNames.length,
         buffers,
+        bank,
         entries: sampleEntries(noteNames),
         trimGain: Math.pow(10, pack.trimDb / 20),
       };
@@ -370,19 +375,32 @@ export async function createEngine(
     }
   }
 
-  const expectedBuffers = builds.reduce(
-    (total, entry) => total + entry.build.bufferCount,
-    0,
-  );
+  /*
+   * Counted per **pack**, not per track (spec 8.1, K-28).
+   *
+   * Two guitars on the same preset share one decoded bank, so counting each
+   * track's files would promise the interface twice as many buffers as will
+   * ever arrive — a progress bar that stops at half.
+   */
+  const packSizes = new Map<string, number>();
+  for (const entry of builds) {
+    if (entry.build.packId === null) continue;
+    packSizes.set(entry.build.packId, entry.build.bufferCount);
+  }
+  const expectedBuffers = [...packSizes.values()].reduce((a, b) => a + b, 0);
 
   // Await these banks, not a global download registry. Progress is reported as
   // each pack lands so the interface can show something truthful.
+  const landed = new Set<string>();
   let decoded = 0;
   options.onProgress?.(0, expectedBuffers);
   await Promise.all(
     builds.map((entry) =>
       entry.build.loaded.then(() => {
-        decoded += entry.build.bufferCount;
+        const packId = entry.build.packId;
+        if (packId === null || landed.has(packId)) return;
+        landed.add(packId);
+        decoded += packSizes.get(packId) ?? 0;
         options.onProgress?.(decoded, expectedBuffers);
       }),
     ),
@@ -393,15 +411,13 @@ export async function createEngine(
     voices.set(entry.trackId, entry.build.build());
   }
 
-  const samplers = [...voices.values()].filter(
-    (voice) => voice.kind === "sampler",
-  );
-  const loadedBuffers = samplers.reduce(
-    (total, voice) =>
-      total +
-      (voice.kind === "sampler" && voice.sampler.loaded ? voice.bufferCount : 0),
-    0,
-  );
+  // Also per pack: two tracks sharing a bank loaded one bank, not two.
+  const loadedPacks = new Map<string, number>();
+  for (const voice of voices.values()) {
+    if (voice.kind !== "sampler" || !voice.sampler.loaded) continue;
+    loadedPacks.set(voice.packId, voice.bufferCount);
+  }
+  const loadedBuffers = [...loadedPacks.values()].reduce((a, b) => a + b, 0);
 
   const hosts = new Map<string, VoiceHost>();
   for (const voice of voices.values()) {
@@ -455,8 +471,9 @@ export async function createEngine(
       for (const voice of voices.values()) {
         if (voice.kind === "sampler") {
           voice.sampler.dispose();
-          // The bank is this engine's, so it goes with it.
-          voice.buffers.dispose();
+          // The bank may be another track's too, so it is released rather
+          // than disposed; the last consumer out turns the lights off.
+          voice.bank.release();
         } else {
           voice.drums.kick.dispose();
           voice.drums.snare.dispose();
