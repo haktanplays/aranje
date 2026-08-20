@@ -507,6 +507,53 @@ describe("a song that changes tempo at a section line (spec 8.3, K-25)", () => {
     controller.dispose();
   });
 
+  it("follows the playhead across a section boundary on its own", async () => {
+    /*
+     * Nothing calls a setter when the transport crosses into the next
+     * section, so the header would otherwise show the first section's tempo
+     * for the whole song. The playhead is read every frame; that read is what
+     * publishes the change (spec 13.8, K-25).
+     */
+    const song = stepped();
+    const { controller, transport } = await started({ song });
+    const map = buildTempoMap(song);
+
+    let notifications = 0;
+    controller.subscribe(() => {
+      notifications += 1;
+    });
+
+    expect(controller.getState().activeBpm).toBe(SAMPLE_SONG.bpm);
+
+    transport.ticks = map.segments[1]?.startTicks ?? 0;
+    controller.getPosition();
+    expect(controller.getState().activeBpm).toBe(60);
+    expect(notifications).toBe(1);
+
+    // Reading again at the same place must not re-publish the same number.
+    controller.getPosition();
+    expect(notifications).toBe(1);
+
+    transport.ticks = 0;
+    controller.getPosition();
+    expect(controller.getState().activeBpm).toBe(SAMPLE_SONG.bpm);
+    controller.dispose();
+  });
+
+  it("does not re-publish a tempo on a song that has only one", async () => {
+    const { controller, transport } = await started({});
+    let notifications = 0;
+    controller.subscribe(() => {
+      notifications += 1;
+    });
+    for (const ticks of [0, 480, 1920, 5760]) {
+      transport.ticks = ticks;
+      controller.getPosition();
+    }
+    expect(notifications).toBe(0);
+    controller.dispose();
+  });
+
   it("says nothing changed on a song at one tempo", async () => {
     const { controller, transport } = await started({});
     expect(controller.getState().hasTempoChanges).toBe(false);

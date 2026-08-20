@@ -102,6 +102,8 @@ export class PlaybackController {
   private readonly createEngine: EngineFactory;
   /** How many times an engine was built. A rate change must never raise it. */
   private builds = 0;
+  /** The tempo timeline at the current practice rate, kept rather than rebuilt. */
+  private tempoCache: { percent: number; map: TempoMap };
 
   constructor(
     private readonly song: Song,
@@ -112,12 +114,16 @@ export class PlaybackController {
     const practicePercent = clampPercent(
       options.practicePercent ?? DEFAULT_PRACTICE_PERCENT,
     );
+    this.tempoCache = {
+      percent: practicePercent,
+      map: buildTempoMap(song, practicePercent),
+    };
     this.state = {
       status: "idle",
       songBpm: song.bpm,
       practicePercent,
       bpm: effectiveBpm(song.bpm, practicePercent),
-      activeBpm: tempoAtTicks(buildTempoMap(song, practicePercent), 0),
+      activeBpm: tempoAtTicks(this.tempoCache.map, 0),
       hasTempoChanges: hasTempoChanges(song),
       loopSectionId: null,
       metronome: false,
@@ -170,6 +176,16 @@ export class PlaybackController {
   getPosition(): PlayPosition {
     const transport = this.engine?.context.transport;
     if (!transport) return NOWHERE;
+    /*
+     * The header shows the tempo sounding *now*, and "now" moves on its own:
+     * crossing a section boundary changes it with nobody calling a setter.
+     * This is the one thing read every frame while the transport runs, so it
+     * is where the check belongs. It publishes only when the number actually
+     * changed, so a song at one tempo never re-renders for it (spec 13.8,
+     * K-25).
+     */
+    const active = tempoAtTicks(this.tempoMap(), transport.ticks);
+    if (active !== this.state.activeBpm) this.set({ activeBpm: active });
     return positionAtTicks(this.plan, transport.ticks);
   }
 
@@ -337,9 +353,17 @@ export class PlaybackController {
     this.set({ practicePercent, bpm, activeBpm: this.activeBpm(practicePercent) });
   }
 
-  /** This song's tempo timeline at the speed being practised at. */
+  /**
+   * This song's tempo timeline at the speed being practised at.
+   *
+   * Cached because `getPosition` asks for it on every animation frame and the
+   * answer only changes when the practice rate does.
+   */
   private tempoMap(percent: number = this.state.practicePercent): TempoMap {
-    return buildTempoMap(this.song, percent);
+    if (this.tempoCache.percent !== percent) {
+      this.tempoCache = { percent, map: buildTempoMap(this.song, percent) };
+    }
+    return this.tempoCache.map;
   }
 
   /**
