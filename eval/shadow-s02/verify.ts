@@ -6,7 +6,7 @@ import { buildTrackTimeline } from "@/lib/tab/timeline";
 import { buildTempoMap } from "@/lib/audio/tempo";
 import { buildSongPlan } from "@/lib/audio/schedule";
 
-const song = songSchema.parse(JSON.parse(readFileSync("./artifacts/final-song.json","utf8")));
+const song = songSchema.parse(JSON.parse(readFileSync(new URL("./artifacts/final-song.json", import.meta.url), "utf8")));
 const issues = runValidators(song);
 const plan = buildExpressionPlan(song);
 const tempo = buildTempoMap(song);
