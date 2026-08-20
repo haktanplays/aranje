@@ -238,12 +238,19 @@ type Section = {
   id: string;
   name: string;                   // kullanıcıya görünen ad
   status: "fixed" | "pending" | "accepted";
+  bpmOverride?: number;           // bu section'ın kendi tempsu (§8.3, K-25)
   bars: Bar[];                    // 1..barsPerSection
 };
 ```
 
 `status` sadece bu üç değeri alır. **Ret = section silinir**; ayrı bir
 `"rejected"` durumu yoktur (ret animasyonu geçici UI state'i ile yapılır).
+
+`bpmOverride` **section seviyesindedir, bar seviyesinde değildir** (§19 K-25).
+Yoksa section şarkının kendi `bpm` değerinde çalar; hiçbir şey bir sonraki
+section'a taşınmaz. Bar içinde tempo değişimi, ramp ve rubato bu sürümün
+kapsamı dışındadır. `bpmOverride` müziğin parçasıdır: kilitli yüzeydedir ve
+bir arrange patch'i onu değiştiremez (§11.1).
 
 ### §5.4 Melodik nota ve davul olayı
 
@@ -325,7 +332,7 @@ Limitler koda dağınık biçimde gömülmez; tek bir `lib/limits.ts`ten okunur.
 ```ts
 export const songLimits = {
   maxTracks: 8,
-  totalBars: 16,        // Faz 2.5: 64
+  totalBars: 32,        // Faz 2.5: 64 (§19 K-25)
   barsPerSection: 8,
   barsPerPatch: 8,
   maxVoicesPerSlot: 32,
@@ -341,6 +348,11 @@ export const songLimits = {
   testi verir.
 - Track sınırı **enstrüman kataloğu sınırı değildir**; katalogda çok sayıda
   enstrüman olabilir.
+- `totalBars` Faz 2G'de 16'dan **32**'ye çıkarıldı (§19 K-25). Gerekçe ölçüm:
+  dört bölümlü, bölüm başına 8 barlık bir parça 16 barlık tavana sığmıyordu ve
+  bir dakikalık bir talep ancak bölümleri kırparak karşılanabiliyordu. Sınır
+  `barsPerSection = 8` ve `barsPerPatch = 8` ile birlikte hâlâ tek patch'in
+  bir section'dan fazlasına dokunamayacağı anlamına gelir.
 
 ---
 
@@ -480,6 +492,30 @@ pilotun mobil ses kanıtını korur.
 - Tone.js tam sürüm pinlenir: **`14.8.49`** (`^` kullanılmaz).
 - Audio modülleri yalnız client'ta, SSR dışında yüklenir
   (`'use client'` + `dynamic(..., { ssr: false })`).
+
+**Tempo haritası v1 (§19 K-25).** BPM artık tek sayı değildir. Tick'ten
+saniyeye çeviren **tek** bir otorite vardır (`lib/audio/tempo.ts`); `60 / bpm`
+aritmetiği başka hiçbir yerde tekrarlanmaz — ne scheduler'da, ne expression
+planner'ında, ne playhead'de, ne offline render'da. Semantik kasten dardır:
+
+- Bir section'ın temposu `section.bpmOverride ?? song.bpm`'dir ve o section'ın
+  **ilk barının ilk tick'inde** yürürlüğe girer. Yalnız section sınırında
+  basamak değişimi vardır; ramp, rubato ve bar içi tempo yoktur.
+- Hiçbir şey devralınmaz: override'ı olmayan section, kendinden önceki section
+  ne yaparsa yapsın şarkının kendi temposunda çalar. Bu, arrange sözleşmesinin
+  ihtiyacı olan şeydir — modele bir section gösterildiğinde temposu da, o
+  tempoya nasıl gelindiğinin tarihçesi olmadan söylenebilir.
+- Tempo değişimi transport'a **otomasyon eğrisi** olarak yazılır
+  (`cancelScheduledValues` + segment başına `setValueAtTime`); event'ler
+  tick'te kaldığı için ses, playhead, metronom ve loop birlikte hareket eder.
+- Tempo sınırını aşan bir nota **iki parçasının toplamı** kadar sürer; süre
+  `ticks × secondsPerTick` ile değil, zaman çizgisine iki kez sorularak
+  hesaplanır.
+- Practice rate (§13.8) müziğin değil oturumun özelliğidir: bütün haritayı
+  ölçekler, Song'a yazılmaz ve section tempolarını **hep birlikte** ölçekler.
+- Başlıkta gösterilen tempo, şarkının üst düzey sayısı değil **playhead'in
+  bulunduğu section'ın** temposudur; playhead bir sınırı geçtiğinde kendi
+  başına güncellenir.
 
 ### §8.5 Expressive Playback v1 (§19 K-21)
 
@@ -654,6 +690,17 @@ yerleştirilir. K-4'ün hafızasız greedy kuralı üretimden kaldırılmıştı
    aynı teli kullanıyorsa taşınmaz — `stringCollision` raporlar.
 4. Hiç tam voicing bulunamazsa sahte pozisyon üretilmez ve bu bir çakışma
    olarak etiketlenmez; `unplaceable` (§10.3) raporlar.
+
+**Articulation motoru bilir (§19 K-27).** Slide, hammer-on ve pull-off aynı
+telde çalınır (§8.5); yerleşim motoru bunu bilmezse iki notayı ayrı tellere
+koyar ve sonra planner "aynı telde değil" diye uyarır. Bu, kimsenin
+düzeltemeyeceği bir uyarıdır: kullanıcı perde yazmamıştır, perdeyi motor
+seçmiştir. Bu yüzden legato çiftleri arama sırasında **kısıt kenarı** olarak
+taşınır; kırılan kenar sayısı lexicographic maliyetin **ikinci** terimidir —
+büyük el sıçramasından hemen sonra, fazla kayma ve toplam yolculuktan önce.
+Bir kenar hem kaynağı hem hedefi yerleşmiş olduğunda sayılır; yerleşemeyen
+notayı iki kez cezalandırmak aramayı sorunu gizlemeye iter. Explicit
+`position` bu kısıt yüzünden de **taşınmaz** (madde 3).
 
 **El konumu ölçüleri** — `fretJump` (§10.3) ile **aynı** yardımcıdan gelir:
 
@@ -911,6 +958,14 @@ ARANJE_MODEL_ESCALATION=
 - Adapter, model kimliğine göre desteklenen request payload'ını kurar. Route
   farklı capability'lere sahip modellere aynı ham payload'ı göndermez.
 - Adapter her model için **golden request snapshot birim testi** taşır.
+- **Çıktı şeması adapter sınırının parçasıdır (§19 K-24).** `AdapterRequest`
+  zorunlu bir `responseSchema` taşır; sağlayıcıya structured output kısıtı
+  şemasız gidemez. Şema Zod sözleşmesinden **türetilir**
+  (`z.toJSONSchema(modelPatchSchema)`), elle ikinci bir kopya olarak yazılmaz —
+  aksi hâlde iki şema zamanla ayrışır ve reddedilen bir yanıt "modelin hatası"
+  gibi görünür. Tip, sağlayıcı paketine bağlı değildir: yapısal bir
+  `JsonSchema` tipi kullanılır. Şema sabit blokta taşındığı için token
+  tahminine de **dahildir**.
 - Adapter, girdi ve çıktı token tavanlarını **somut sayı olarak** zorlar:
   `ARANJE_MAX_INPUT_TOKENS` ve `ARANJE_MAX_OUTPUT_TOKENS`. Bu iki değer
   **Faz 2 başlamadan önce belirlenir** (§14.5) ve §12.3'teki rezervasyon
@@ -945,11 +1000,34 @@ Telefon/istemci ◄──SSE durum + validated patch──┘
 
 Hâlâ geçmiyorsa kullanıcıya anlaşılır hata döner (hangi nota, hangi bar).
 
-### §11.5 Token ekonomisi
+### §11.5 Token ekonomisi ve parçanın bütünü (§19 K-32)
 
 - **Modele ham Song JSON gönderilmez.**
-- Yalnız **hedef section + bir önceki + bir sonraki** section ile tek satır
-  meta gönderilir.
+- Bir tur, parçanın **şeklini** görür; parçanın kendisini değil. Gönderilen
+  bağlam üç parçadır ve hepsi özettir:
+  1. **Form anahatı** — playing order'da her section: id, ad, bar sayısı,
+     kendi temposu ve hangisinin hedef olduğu. İçerik yok.
+  2. **Bağlanma noktaları** — önceki section'ın nereye bıraktığı (tek bar,
+     o bölümdeki en baskın gitar), hedef track'in **kendi** en son çaldığı bar
+     (aradaki sessiz bölümler atlanarak) ve varsa bir sonraki section'ın
+     hedef track'teki ilk barı.
+  3. **Rol filtreli kaynaklar** — aynı section'daki diğer track'lerin, bu
+     rolün işine yarayan okumaları.
+- Minimizasyon kuralı değişmedi, uygulanışı roldedir. `drums` **hiçbir zaman**
+  perde görmez, yalnız onset/aksan/sus ritmi; `rhythm_guitar` davul grooveunu
+  görür, lead'in ayrıntısını değil; `lead_guitar` üzerine çaldığı backing'i
+  perdeleriyle görür; `acoustic_guitar` varsa diğer gitarların perdelerini;
+  `harmony` desteklediği tek gitarı; `bass` bir gitar + davul grooveunu.
+- Gerekçe ölçümdür, tercih değil: K-18'in tek-section penceresinde S-01'de
+  "önceki bölümün motifini geliştir" denen bir tur, gördüğü tek track'in her
+  barında `-sus-` okuyordu. Görev zor değil, **cevaplanamazdı**; motif ancak
+  kullanıcı talimatına düzyazı olarak elle yazılarak taşınabiliyordu. O
+  workaround bu bağlamın yokluğunun belirtisiydi. **Modelin görmediği bir
+  motifi instruction alanına elle yazmak açık kapatmak değildir.**
+- Bütün form artık cevabı etkilediği için **fingerprint'e dahildir** (§12.3):
+  başka bir section'da yapılan değişiklik farklı bir sorudur ve aynı
+  idempotency anahtarıyla eski cevabı tekrarlayamaz.
+- Kompakt taşıma formatı örneği:
 - Kompakt taşıma formatı örneği:
 
   ```txt
@@ -958,6 +1036,8 @@ Hâlâ geçmiyorsa kullanıcıya anlaşılır hata döner (hangi nota, hangi bar
   ```
 
   Canonical model ayrıntılı kalır; **AI taşıma formatı kompakttır.**
+- Genişleme ölçülmüştür ve tavanın altındadır: en kötü durumda tahmini girdi
+  **3424 / 8000** token (çıktı şeması dahil, §11.3).
 - Sabit prompt + şema + stil kartı **byte-sabit cache bloğudur.**
 - **Prompt cache prefix sırası zorunludur:** `tools → system → messages`.
   Sabit blok (sistem promptu, şema, stil kartı) **önce**; değişken blok
@@ -988,6 +1068,47 @@ humanization · kullanıcının kabul-ret geçmişi.
 - Route, prompt içinde stil adı geçerse ilgili kartı sistem promptuna ekler;
   geçmezse kart eklenmez.
 - Kart içerikleri route/build zamanında fs ile okunur.
+
+### §11.8 Composition blueprint (§19 K-31)
+
+Bir kullanıcı "bir dakikalık, sert bir break, bridge ve sololu bir şey" dediği
+zaman ortada henüz düzenlenecek bir Song yoktur. Boş Song'u **kim** kurar
+sorusunun bu sürümdeki cevabı: modelden bir **plan** istenir, Song'u o plandan
+**deterministic bir materializer** kurar.
+
+- `CompositionBlueprint` strict bir sözleşmedir: hedef süre ve tolerans, tonal
+  merkez, akort niyeti, çözünürlük, **özellik tabanlı** referans nitelikleri,
+  track rolleri, motifler, section'lar, istenen teknikler ve **karşılanmayan
+  istekler**.
+- **Model kalıcı ID üretmez.** Blueprint yalnız `internalKey` taşır
+  (`^[a-z][a-z0-9_-]*$`) ve Song'daki `sectionId` / `trackId` değerlerini
+  materializer üretir (`sec-1`, `rhythm-1`, …). Modelin ürettiği bir ID kalıcı
+  olsaydı fingerprint, idempotency ve kilitli yüzey karşılaştırmaları modelin
+  o an ne yazdığına bağlı olurdu.
+- **Sanatçı adı blueprint'e girmez.** Kullanıcının kendi cümlesi ham istek
+  artefaktında aynen durur; blueprint onu doku tarifine çevirir ("low
+  register'da senkoplu stop-start groove", "tonik pedal üzerine kromatik
+  gerilim"). Bu, §11.7'nin kart kuralının aynısıdır.
+- Materializer saftır: aynı blueprint her zaman aynı iskeleti verir. Süre
+  kontrolü tempo haritası üzerinden yapılır (§8.3), bar sayısı ile değil.
+- **Public `/api/copilot` rotasında tam parça bestelemek yoktur.** Rota
+  yalnız `arrange_track` kabul eder (§11.1, K-18); blueprint yolu bu sürümde
+  eval/rehearsal yoludur. Bir istekle bir bütün parça üretmek maliyet, kota ve
+  kilitli yüzey açısından ayrı bir üründür ve o kapıdan geçmeden açılmaz.
+
+### §11.9 Track rolleri (§19 K-30)
+
+Beceri listesi enstrüman başına değil **iş** başına tanımlanır:
+`rhythm_guitar`, `lead_guitar`, `acoustic_guitar`, `harmony`, `bass`, `drums`.
+
+Gerekçe: K-18'in listesinde tek bir `harmony` rolü vardı ve S-01'de aynı
+prompt kartı hem açılış riff'ini, hem soloyu, hem de yalnız akustik codayı
+yazmak zorunda kaldı — kart "ana gitarı örtme, ana motifi yeniden yazma"
+dediği için üçünde de geri çekilen bir parti üretti. Roller ayrıldıktan sonra
+her kart tek bir iş tarif eder. `rhythm_guitar` ve `acoustic_guitar` aynı
+enstrüman ailesini hedefler ama farklı **enstrümanları**: registry
+amplifiye olmayan gitarı ayırt eder, böylece bir akustik rolü elektro gitara,
+bir ritim rolü akustiğe yöneltilemez — sağlayıcı çağrısından **önce**.
 
 ---
 
@@ -1559,12 +1680,23 @@ maliyettir** (§11.2/7).
 
 | **K-23** | **Continuous slide chain (§8.5, §10.3, §13.9).** Slide'ın yazılı zamanı yeniden tanımlandı: hedef notanın notated onset'i kaymanın **başlangıcı değil, hedef perdeye varış anıdır**. El önceki notanın kuyruğunda hareket etmeye başlar, hedef onset'te tam hedef perdededir ve hedefte yeni bir full sample attack başlamaz; aynı primary source hedef notanın süresi boyunca devam eder. Faz 2F'nin `min(160 ms, süre × 0.35)` glide'ı hedef attack'ın altında kaybolduğu ve pasaj sıradan bir yeniden vuruş gibi duyulduğu için bırakıldı. Slide için ikinci bir zincir veya scheduler yazılmadı: hammer/pull ile aynı `LegatoChain` modelini kullanır, tek farkı bir transition'ın artık iki zaman taşımasıdır (hareketin başladığı an ve vardığı an). İstenen glide `clamp(|yarım ton| × 45 ms, 120 ms, 360 ms)`, kaynağın başında en az 20 ms sabit pitch bırakılarak mevcut süreye sığdırılır; kalan süre 90 ms'nin altındaysa slide kurulmaz, nota normal çalınır ve `no_room_to_glide` uyarısı verilir. Pilot slide aralığı en fazla 12 yarım tondur. Eğri tek linear ramp değil smoothstep'tir; son nokta tam hedef cent olduğu için overshoot, varış sonrası geri dönüş ve bend release davranışı yoktur. Practice rate bütün bu süreleri ölçekler. Uyarı ile fallback aynı saf `legatoDecision` yardımcısından okunur ve kurulamayan bir slide yarım zincir bırakmaz. Tab işaretinin yönü gerçek pitch'ten türetilir, `stringIndex`'ten değil. | Haktan, 20.08.2026 |
 
+| **K-24** | **Çıktı şeması adapter sınırına taşındı (§11.3).** `AdapterRequest` artık zorunlu bir `responseSchema` taşır; structured output kısıtı sağlayıcıya şemasız gidemez. Şema Zod sözleşmesinden türetilir (`z.toJSONSchema(modelPatchSchema)`), ikinci bir elle yazılmış kopya tutulmaz. Tip sağlayıcı paketinden bağımsız yapısal bir `JsonSchema`'dır. Şema sabit blokta gittiği için token tahminine dahil edildi: en kötü durum 2887 → **3424 / 8000**. Ayrıca düzeltme diagnostiğini bozan kaçış düzeltildi: veri katmanı kaçışı zod mesajlarındaki `<=400` ifadesini `(=400` yapıp modele yanlış sınır bildiriyordu; `asData` ile `asDiagnostic` ayrıldı. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-25** | **Tempo haritası v1 ve 32 bar (§5.3, §6, §8.3, §13.8).** `bpmOverride` bar'dan **section**'a taşındı; deklare edilmiş ama hiçbir zaman okunmayan bar seviyesindeki alan kaldırıldı. Tick→saniye çevrimi tek otoriteye (`lib/audio/tempo.ts`) indirildi; `60 / bpm` aritmetiği scheduler, expression planner, playhead ve offline render'dan kaldırıldı. Semantik dardır: section'ın temposu ilk tick'inde yürürlüğe girer, hiçbir şey devralınmaz, ramp/rubato/bar-içi tempo yoktur. Tempo transport'a otomasyon eğrisi olarak yazılır; tempo sınırını aşan nota iki parçasının toplamı kadar sürer. Practice rate bütün haritayı ölçekler ve Song'a yazılmaz. Başlıkta gösterilen tempo playhead'in section'ınındır ve sınır geçildiğinde kendi başına güncellenir. `totalBars` 16 → **32**: dört bölümlü bir parça 16 barlık tavana sığmıyordu. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-26** | **Bir nota aynı anda iki şey olabilir (§8.5).** `7p5 h7` durumunda ortadaki notanın kendi pull-off'u reddedilmişken (yanlış yön, ya da yerleşim iki notayı farklı tellere koymuş) aynı nota kendisinden sonraki hammer-on'un geçerli **kaynağıdır**. Faz 2F.2 yalnız birini kaydediyordu: zincir üyeliği kazanıyor, `fallbackReason` düşüyordu. Ses hiçbir zaman yanlış değildi — böyle bir nota zaten zincir kaynağı olarak vuruluyor — ama planner validator ile aynı fikirde olmuyordu ve coverage raporu bir fallback'i olan şarkıda sıfır okuyordu. İki olgu artık bağımsız kaydedilir: zincir **ne çalınacağını**, fallback **ne istenip verilmediğini** söyler. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-27** | **Articulation-aware yerleşim (§9.2).** Slide/hammer/pull çiftleri yerleşim aramasına **kısıt kenarı** olarak verilir; kırılan kenar sayısı lexicographic maliyetin ikinci terimidir. Gerekçe: kullanıcı perde yazmadığında perdeyi motor seçer, sonra planner "aynı telde değil" diye uyarırdı — kimsenin düzeltemeyeceği bir uyarı. Yerleşemeyen nota bu terimde ikinci kez cezalandırılmaz (`unplaceable` onun sahibidir), aksi hâlde arama sorunu gizlemeye yönelir. Explicit `position` bu kısıt yüzünden de taşınmaz. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-28** | **Sample bank context+pack başına paylaşılır (§8.1).** Çözülmüş `ToneAudioBuffers` artık track başına değil, **audio context başına, pack başına** tutulur ve referans sayılır; son bırakan dispose eder. Aynı paketi kullanan iki gitar aynı belleği ve aynı indirmeyi paylaşır (S-01 demo şarkısında 22 → **15** istek, tam olarak farklı URL sayısı). Cache context üzerinde `WeakMap`'tir: ayrı context'ler ayrı bank alır, giden context girdisini birlikte götürür. Bir track'in dispose'u diğerinin bank'ini bozamaz. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-29** | **Pan denetlendi, varsayılmadı (§5.2, §8.1).** Faz 2G'de pan yolu ölçüldü: `track.pan` track'in `Channel`'ına yazılır ve track'in **bütün** kaynakları — sampler, her expressive primary voice ve pull-off'un yardımcı transient'i — aynı kanala bağlanır. İkinci bir sistem yazılmadı; davranış testle sabitlendi. Offline ölçüm: −0.3 pan → **+4.25 dB** L, +0.25 pan → **−3.50 dB** R, pan'sız track → **0.00 dB**. Nota başına panner yoktur (bir akorun tek notasını başka yere koyardı). Pan kilitli yüzeydedir ve cevap şemasında yazılabileceği bir yer yoktur. Materializer artık rolden pan verir (ritim −0.3, lead +0.25, harmony +0.35; akustik/bas/davul merkez), çünkü hepsi merkezdeyken bestelenen parçada ölçülen ayrışma her yerde 0.00 dB'di. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-30** | **Track rolleri işe göre bölündü (§11.9).** `ARRANGE_SKILLS` altı roldür: `rhythm_guitar`, `lead_guitar`, `acoustic_guitar`, `harmony`, `bass`, `drums`. K-18'in tek `harmony` rolü S-01'de hem açılış riff'ini hem soloyu hem akustik codayı yazmak zorunda kaldı ve kart "geri çekil" dediği için üçü de geri çekildi. Registry amplifiye olmayan gitarı ayırt eder; rol/enstrüman uyuşmazlığı **sağlayıcı çağrısından önce** reddedilir. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-31** | **CompositionBlueprint + deterministic materializer (§11.8).** Boş Song'u model değil, modelin **planından** saf bir materializer kurar. Blueprint strict'tir; model **kalıcı ID üretmez** (yalnız `internalKey`, Song id'lerini materializer verir); sanatçı adları blueprint'e girmez, ham istek artefaktında kalır ve blueprint onları özellik tabanlı doku tarifine çevirir; süre kontrolü tempo haritası üzerinden yapılır. **Public rotada tam parça besteleme yoktur** — rota yalnız `arrange_track` kabul etmeye devam eder. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-32** | **Turun gördüğü bağlam parçanın bütününü kapsar (§11.5).** Bir tur artık form anahatını (her section: id, ad, bar sayısı, kendi temposu, hedef mi), bağlanma noktalarını (önceki section'ın bıraktığı yer, hedef track'in kendi son barı, sonraki section'ın ilk barı) ve **rol filtreli** kaynak okumalarını görür. Minimizasyon kuralı kalktı değil, role bağlandı: `drums` hiçbir zaman perde görmez. Ham Song JSON'u hâlâ gönderilmez. Bütün form fingerprint'e dahildir. Bu değişiklik "modelin görmediği motifi kullanıcı talimatına elle yazma" workaround'unu kapatmak içindir; o workaround bir çözüm değil, eksik girdinin belirtisiydi. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+| **K-33** | **Provenance kayıtsız yazılamaz (§21).** S-01 teslim raporu "Sonnet 8 turda 1 şema hatası üretti" dedi; Sonnet hiç çağrılmamıştı. İddia mümkündü çünkü çalıştırmada cevapları kimin yazdığını **hiçbir şey kaydetmiyordu**. Artık her cevap — blueprint dahil — kendi `ShadowProvenance` kaydını taşır: `generationMode`, sağlayıcı çağrısı olup olmadığı, model etiketinin doğrulanmış bir ID mi yoksa oturum etiketi mi olduğu, istek ve cevap hash'leri. `assertHonestProvenance` sağlayıcı çağrılmadan sağlayıcı iddia eden bir kaydı **reddeder**; `coding_agent_simulation` latency ve maliyet rakamı üretmez, çünkü ölçülecek bir çağrı yoktur. Kural test altındadır: elle değiştirilmiş bir blueprint hash'i tutmaz, talimata elle yazılmış bir motif ve "provider eval" etiketi testi kırar. | Claude Code önerisi — **Haktan onayladı 20.08.2026** |
+
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
 | Konu | v1.2 | Geçerli (v1.5) |
 |---|---|---|
 | Track sınırı | 6 aktif track | **8**, section başına aktif-track limiti yok |
-| Toplam bar | 64 (pilotta zorunlu) | **16 çekirdek**, 64 Faz 2.5 |
+| Toplam bar | 64 (pilotta zorunlu) | **32 çekirdek** (K-25; v1.5'te 16 idi), 64 Faz 2.5 |
 | Ölçüler | 4/4, 3/4, 6/8, 7/8 hepsi pilotta | **4/4 + 6/8 çekirdek**, kalanı Faz 2.5 |
 | Tel ekle/çıkar, 7/8 telli gitar, 5/6 telli bas | Pilotta gelişmiş ayar | **Pilot sonrası** |
 | Tel tel manuel akort, pan/solo, davul lane | Faz 1 | **Faz 2.5** |
@@ -1627,3 +1759,50 @@ kullanılmıştır.
 Kapı geçildikten sonra Faz 0'a başla. Her faz sonunda kabul kriterleri ve
 doğrulama komutları raporlanır. **Faz 2 müzikal kanıtı alınmadan Faz 2.5'e
 geçilmez.**
+
+---
+
+## §21 Shadow rehearsal ve provenance (§19 K-33)
+
+Bir "shadow rehearsal", üretim prompt / şema / apply / validator yolunu
+gerçek bir sağlayıcı çağrısı olmadan uçtan uca çalıştırmaktır. Faydalıdır —
+sözleşmenin gerçekten bir parça çıkarıp çıkarmadığını gösterir — ama **kalite
+ölçümü değildir** ve öyle raporlanamaz.
+
+### §21.1 Kayıt zorunluluğu
+
+Her cevap, blueprint dahil, kendi kaydını taşır:
+
+```ts
+type GenerationMode =
+  | "provider"                  // adapter üzerinden gerçek sağlayıcı çağrısı
+  | "separate_shadow_model"     // bilerek çağrılan ayrı bir model
+  | "coding_agent_simulation"   // cevabı kodlama ajanının kendisi yazdı
+  | "fixture";                  // diskten oynatılan kayıtlı cevap
+```
+
+Kayıt ayrıca sağlayıcı çağrısı olup olmadığını, sağlayıcı adını (varsa), model
+etiketinin **doğrulanmış bir ID mi yoksa oturum etiketi mi** olduğunu, istek ve
+cevap hash'lerini ve zaman damgasını taşır.
+
+### §21.2 Dürüstlük kuralları
+
+- `exactModelId` yalnız **runtime metadata**'dan doldurulur. Runtime
+  söylemiyorsa alan boş kalır: makul görünen bir ID, boş bir alandan kötüdür,
+  çünkü kanıt gibi okunur.
+- Sağlayıcı çağrısı olmadan `provider` iddia eden kayıt **reddedilir**; bir
+  sağlayıcı çağrısı sağlayıcıyı adlandırmak zorundadır.
+- `coding_agent_simulation` **latency ve maliyet rakamı üretmez.** Ölçülecek
+  bir çağrı yoktur ve burada uydurulan bir sayı karşılaştırma tablosunda
+  ölçüm gibi görünür.
+- Rehearsal, blueprint'i veya notaları sonuç yeşil olsun diye elle
+  düzeltemez. Blueprint'in hash'i kayda bağlıdır; elle değiştirilmiş bir
+  blueprint tutmaz.
+- Modelin görmediği bir motif, turun talimatına elle yazılamaz (§11.5, K-32).
+
+### §21.3 Neden
+
+S-01 teslim raporu bir sağlayıcı modelinin cevapları ürettiğini söyledi.
+Sağlayıcı hiç çağrılmamıştı. İddiayı mümkün kılan şey kötü niyet değil,
+**kaydın yokluğuydu**. Bu bölümün tamamı o boşluğu kapatmak içindir ve
+kuralları test altındadır.
