@@ -10,7 +10,8 @@ import { join } from "node:path";
 
 import { songSchema, type Song } from "@/lib/song/schema";
 import { runValidators } from "@/lib/validators";
-import { buildSongPlan, PPQ } from "@/lib/audio/schedule";
+import { buildSongPlan } from "@/lib/audio/schedule";
+import { PPQ } from "@/lib/music/timing";
 import { buildTempoMap, secondsAtTicks } from "@/lib/audio/tempo";
 import { isDrumInstrument } from "@/lib/instruments/registry";
 

@@ -15,7 +15,7 @@ import {
   tempoAtTicks,
   ticksAtSeconds,
 } from "@/lib/audio/tempo";
-import { PPQ } from "@/lib/audio/schedule";
+import { PPQ } from "@/lib/music/timing";
 import {
   barSchema,
   sectionSchema,

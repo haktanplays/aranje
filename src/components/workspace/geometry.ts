@@ -26,11 +26,9 @@ export function slotCentre(slotIndex: number): number {
 
 /**
  * Slots per beat, used for the light beat ticks under the staff.
- * x/4 ticks every quarter, x/8 ticks every eighth.
+ *
+ * Re-exported rather than recomputed: the grid arithmetic has exactly one
+ * owner (spec 5.5, K-34), and a second copy here is how a triplet bar ends
+ * up drawn with straight beat ticks.
  */
-export function slotsPerBeat(
-  timeSignature: readonly [number, number],
-  resolution: number,
-): number {
-  return Math.max(1, resolution / timeSignature[1]);
-}
+export { slotsPerNotatedBeat as slotsPerBeat } from "@/lib/music/timing";

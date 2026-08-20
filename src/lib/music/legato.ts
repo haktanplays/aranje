@@ -12,12 +12,8 @@
  * continues, a rest ends it, and a bar the track is not written in ends it too.
  * A section line on its own ends nothing.
  */
-import {
-  DEFAULT_VELOCITY,
-  articulationHold,
-  barTimeline,
-  ticksPerSlot,
-} from "@/lib/audio/schedule";
+import { DEFAULT_VELOCITY, articulationHold, barTimeline } from "@/lib/audio/schedule";
+import { ticksPerSlot } from "@/lib/music/timing";
 import { pitchToMidi } from "@/lib/music/pitch";
 import type { Articulation, Song } from "@/lib/song/schema";
 import { buildTrackTimeline } from "@/lib/tab/timeline";

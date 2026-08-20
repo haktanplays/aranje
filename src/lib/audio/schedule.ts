@@ -3,25 +3,21 @@
  *
  * Time is expressed in ticks derived from note values, never in seconds
  * (spec 8.3). A slot is one grid step, so its length follows the bar's
- * resolution: at resolution 8 a slot is an eighth, at 16 a sixteenth. That
- * keeps 6/8 and 7/8 correct without any special case.
+ * resolution: at 8 a slot is an eighth, at 16 a sixteenth, at 12 an eighth
+ * triplet. That keeps 6/8, 7/8 and every triplet grid correct without any
+ * special case. The arithmetic itself lives in `lib/music/timing.ts`, which
+ * is the only place that knows how long a slot is (spec 5.5, K-34).
  *
  * What sounds when comes from the same timeline model the tab view draws, so
  * the ear and the eye cannot drift apart.
  */
 import { velocityRange } from "@/lib/limits";
+import { PPQ, slotCount, ticksPerSlot } from "@/lib/music/timing";
 import type { Articulation, DrumPiece, Song } from "@/lib/song/schema";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 
-/** Tone's default pulses per quarter note. */
-export const PPQ = 192;
-
 /** Velocity used when a note does not carry one. */
 export const DEFAULT_VELOCITY = 96;
-
-export function ticksPerSlot(resolution: number): number {
-  return (PPQ * 4) / resolution;
-}
 
 /**
  * How much of its slot span a note actually sounds. A palm mute is choked, a
@@ -95,16 +91,15 @@ export function barTimeline(song: Song): BarMarker[] {
   for (const section of song.sections) {
     section.bars.forEach((bar, barIndex) => {
       barNumber += 1;
-      const slotCount =
-        (bar.timeSignature[0] * bar.resolution) / bar.timeSignature[1];
-      const durationTicks = slotCount * ticksPerSlot(bar.resolution);
+      const count = slotCount(bar.timeSignature, bar.resolution);
+      const durationTicks = count * ticksPerSlot(bar.resolution);
       bars.push({
         barKey: `${section.id}:${barIndex}`,
         sectionId: section.id,
         barNumber,
         time,
         durationTicks,
-        slotCount,
+        slotCount: count,
         timeSignature: bar.timeSignature,
         resolution: bar.resolution,
       });

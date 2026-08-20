@@ -1,15 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  DEFAULT_VELOCITY,
-  PPQ,
-  articulationHold,
-  barTimeline,
-  buildSongPlan,
-  ticks,
-  ticksPerSlot,
-  velocityGain,
-} from "@/lib/audio/schedule";
+import { DEFAULT_VELOCITY, articulationHold, barTimeline, buildSongPlan, ticks, velocityGain } from "@/lib/audio/schedule";
+import { PPQ, ticksPerSlot } from "@/lib/music/timing";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import { songSchema } from "@/lib/song/schema";
 import fixture from "@/lib/song/visual-fixture.json";

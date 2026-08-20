@@ -17,7 +17,7 @@
  */
 import type { ArrangeSkill, ModelBar } from "@/lib/copilot/contract";
 import { primaryGuitar } from "@/lib/copilot/compact";
-import { slotCount } from "@/lib/music/timing";
+import { slotCount, slotsPerNotatedBeat } from "@/lib/music/timing";
 import { pitchToMidi, midiToPitch } from "@/lib/music/pitch";
 import { classifyTone, parseKey } from "@/lib/music/tonality";
 import type {
@@ -66,7 +66,7 @@ function emptyDrums(count: number): DrumSlot[] {
 function drumBar(bar: Bar, guitarId: string | undefined): DrumSlot[] {
   const count = slotCount(bar.timeSignature, bar.resolution);
   const slots = emptyDrums(count);
-  const perBeat = bar.resolution / bar.timeSignature[1];
+  const perBeat = slotsPerNotatedBeat(bar.timeSignature, bar.resolution);
 
   const accents = new Set(
     guitarId === undefined

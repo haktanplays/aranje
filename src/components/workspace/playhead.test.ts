@@ -8,7 +8,8 @@ import {
   playheadX,
 } from "@/components/workspace/playhead";
 import { positionAtTicks } from "@/lib/audio/position";
-import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
+import { buildSongPlan } from "@/lib/audio/schedule";
+import { PPQ } from "@/lib/music/timing";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 
 const PLAN = buildSongPlan(SAMPLE_SONG);

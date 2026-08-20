@@ -10,7 +10,7 @@ import { bpmRange, songLimits, velocityRange, volumeDbRange } from "@/lib/limits
 import { DRUM_PIECES } from "@/lib/instruments/registry";
 import { MAX_CAPO } from "@/lib/music/fretboard";
 import { PITCH_PATTERN } from "@/lib/music/pitch";
-import { RESOLUTIONS } from "@/lib/music/timing";
+import { RESOLUTIONS, isRepresentableGrid } from "@/lib/music/timing";
 
 /** "E minor", "C major" (spec 5.1). */
 export const KEY_PATTERN = /^[A-G](#|b)? (minor|major)$/;
@@ -24,7 +24,23 @@ export const timeSignatureSchema = z.union([
   z.tuple([z.literal(7), z.literal(8)]),
 ]);
 
-export const resolutionSchema = z.union([z.literal(8), z.literal(16)]);
+/**
+ * The grid a bar is written on (spec 5.5, K-34).
+ *
+ * Divisions of a whole note, so the same number means the same thing in every
+ * meter: 8 eighths, 12 eighth triplets, 16 sixteenths, 24 sixteenth triplets,
+ * 32 thirty-seconds. 12 and 24 are triplet grids, not denser straight ones.
+ *
+ * 64 is deliberately absent — see `lib/music/timing.ts` for why, and spec 5.5
+ * for the open gap that leaves.
+ */
+export const resolutionSchema = z.union([
+  z.literal(8),
+  z.literal(12),
+  z.literal(16),
+  z.literal(24),
+  z.literal(32),
+]);
 
 /**
  * How one note is played (spec 5.4, 8.5).
@@ -84,14 +100,31 @@ export const drumHitSchema = z.strictObject({
 /** An empty array is a rest; several hits in one slot are allowed (spec 5.4). */
 export const drumSlotSchema = z.array(drumHitSchema);
 
-export const barSchema = z.strictObject({
-  timeSignature: timeSignatureSchema,
-  resolution: resolutionSchema,
-  slots: z.record(
-    z.string(),
-    z.union([z.array(melodicSlotSchema), z.array(drumSlotSchema)]),
-  ),
-});
+export const barSchema = z
+  .strictObject({
+    timeSignature: timeSignatureSchema,
+    resolution: resolutionSchema,
+    slots: z.record(
+      z.string(),
+      z.union([z.array(melodicSlotSchema), z.array(drumSlotSchema)]),
+    ),
+  })
+  /*
+   * A bar has to be writable on the grid it declares (spec 5.5). 7/8 at 1/12
+   * would be ten and a half slots, and 6/8 at 1/12 would be nine slots none
+   * of which is an eighth. Both are caught here rather than downstream, so
+   * nothing that reads a parsed Song ever has to wonder.
+   */
+  .superRefine((bar, ctx) => {
+    if (isRepresentableGrid(bar.timeSignature, bar.resolution)) return;
+    ctx.addIssue({
+      code: "custom",
+      path: ["resolution"],
+      message:
+        `${bar.timeSignature[0]}/${bar.timeSignature[1]} olcusu ` +
+        `1/${bar.resolution} gridinde yazilamaz`,
+    });
+  });
 
 export const sectionStatusSchema = z.enum(["fixed", "pending", "accepted"]);
 

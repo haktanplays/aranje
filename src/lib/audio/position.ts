@@ -5,7 +5,8 @@
  * sound, the playhead, the active bar and the loop boundaries all read from one
  * timeline. There is no separate clock for the interface.
  */
-import { ticksPerSlot, type BarMarker, type SongPlan } from "@/lib/audio/schedule";
+import { type BarMarker, type SongPlan } from "@/lib/audio/schedule";
+import { slotsPerFeltBeat, ticksPerSlot } from "@/lib/music/timing";
 
 export type PlayPosition = {
   ticks: number;
@@ -80,15 +81,13 @@ export function sectionLoopBounds(
 }
 
 /**
- * Slots per felt beat. In x/4 the beat is the quarter note. In compound time,
- * where the numerator divides by three, the beat is the dotted note, so 6/8
- * counts two beats rather than six.
+ * Slots per felt beat, for one bar of a plan.
+ *
+ * The rule itself lives in the timing module with the rest of the grid
+ * arithmetic (spec 5.5, K-34); this is only the plan-shaped way in.
  */
 export function slotsPerBeat(bar: BarMarker): number {
-  const [numerator, denominator] = bar.timeSignature;
-  const base = bar.resolution / denominator;
-  if (denominator === 8 && numerator % 3 === 0) return base * 3;
-  return base;
+  return slotsPerFeltBeat(bar.timeSignature, bar.resolution);
 }
 
 export type BeatClick = { time: number; downbeat: boolean };

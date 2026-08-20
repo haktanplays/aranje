@@ -15,7 +15,8 @@ import * as Tone from "tone";
 
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
-import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
+import { buildSongPlan } from "@/lib/audio/schedule";
+import { PPQ } from "@/lib/music/timing";
 import { buildTempoMap, secondsAtTicks } from "@/lib/audio/tempo";
 import { songSchema, type Song } from "@/lib/song/schema";
 import FINAL from "./artifacts/final-song.json";

@@ -32,7 +32,8 @@
  * It scales the whole map and never touches the Song (spec 13.8), so the
  * same song at 50% is the same song.
  */
-import { PPQ, barTimeline } from "@/lib/audio/schedule";
+import { barTimeline } from "@/lib/audio/schedule";
+import { PPQ } from "@/lib/music/timing";
 import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 import type { Song } from "@/lib/song/schema";
 

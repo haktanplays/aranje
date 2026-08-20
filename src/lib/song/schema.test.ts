@@ -10,6 +10,11 @@ import {
   songSchema,
 } from "@/lib/song/schema";
 import { drumTrack, guitarTrack, section, song } from "@/lib/song/fixtures";
+import {
+  RESOLUTIONS,
+  TIME_SIGNATURES,
+  isRepresentableGrid,
+} from "@/lib/music/timing";
 
 describe("song schema (spec 5)", () => {
   it("accepts the sample song", () => {
@@ -148,30 +153,66 @@ describe("song schema (spec 5)", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts every documented meter and both resolutions", () => {
-    for (const timeSignature of [
-      [4, 4],
-      [3, 4],
-      [6, 8],
-      [7, 8],
-    ]) {
-      for (const resolution of [8, 16]) {
-        expect(
-          barSchema.safeParse({ timeSignature, resolution, slots: {} }).success,
-        ).toBe(true);
+  it("accepts every documented meter on every grid it can be written on", () => {
+    for (const timeSignature of TIME_SIGNATURES) {
+      for (const resolution of RESOLUTIONS) {
+        const parsed = barSchema.safeParse({
+          timeSignature,
+          resolution,
+          slots: {},
+        });
+        expect(parsed.success).toBe(
+          isRepresentableGrid(timeSignature, resolution),
+        );
       }
     }
+  });
+
+  it("takes the five grids the contract names and nothing else (K-34)", () => {
+    for (const resolution of [8, 12, 16, 24, 32]) {
+      expect(
+        barSchema.safeParse({ timeSignature: [4, 4], resolution, slots: {} })
+          .success,
+      ).toBe(true);
+    }
+    // 64 is the one people will ask for; it is deliberately not here.
+    for (const rejected of [1, 4, 6, 10, 20, 48, 64, 128, 16.5, -16]) {
+      expect(
+        barSchema.safeParse({
+          timeSignature: [4, 4],
+          resolution: rejected,
+          slots: {},
+        }).success,
+      ).toBe(false);
+    }
+  });
+
+  it("refuses a meter that cannot be written on the grid it declares", () => {
+    // Nine whole slots, none of which is an eighth.
+    const compoundTriplet = barSchema.safeParse({
+      timeSignature: [6, 8],
+      resolution: 12,
+      slots: {},
+    });
+    expect(compoundTriplet.success).toBe(false);
+    if (!compoundTriplet.success) {
+      expect(compoundTriplet.error.issues[0]?.path).toEqual(["resolution"]);
+    }
+    // Ten and a half slots.
+    expect(
+      barSchema.safeParse({
+        timeSignature: [7, 8],
+        resolution: 12,
+        slots: {},
+      }).success,
+    ).toBe(false);
+  });
+
+  it("still refuses a meter that is not in the contract", () => {
     expect(
       barSchema.safeParse({
         timeSignature: [5, 4],
         resolution: 8,
-        slots: {},
-      }).success,
-    ).toBe(false);
-    expect(
-      barSchema.safeParse({
-        timeSignature: [4, 4],
-        resolution: 32,
         slots: {},
       }).success,
     ).toBe(false);

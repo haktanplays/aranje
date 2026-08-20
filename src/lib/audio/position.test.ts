@@ -7,7 +7,8 @@ import {
   sectionLoopBounds,
   slotsPerBeat,
 } from "@/lib/audio/position";
-import { PPQ, buildSongPlan, ticksPerSlot } from "@/lib/audio/schedule";
+import { buildSongPlan } from "@/lib/audio/schedule";
+import { PPQ, ticksPerSlot } from "@/lib/music/timing";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 
 const PLAN = buildSongPlan(SAMPLE_SONG);
