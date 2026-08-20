@@ -68,6 +68,7 @@ export type OnsetSelection = {
 export function FrettedBarBlock({
   bar,
   stringCount,
+  gridLabel = null,
   selected,
   onSelect,
   editing = false,
@@ -77,6 +78,8 @@ export function FrettedBarBlock({
 }: {
   bar: FrettedBar;
   stringCount: number;
+  /** Written in the header when the counting changes (spec 5.5, K-34). */
+  gridLabel?: string | null;
   selected: boolean;
   onSelect: () => void;
   /** In edit mode the bar is a grid of cells rather than one seek target. */
@@ -137,6 +140,9 @@ export function FrettedBarBlock({
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}
         </span>
+        {gridLabel ? (
+          <span className="text-bronze/80 truncate text-[10px]">{gridLabel}</span>
+        ) : null}
       </div>
 
       <div className="relative" style={{ height: staffHeight }}>

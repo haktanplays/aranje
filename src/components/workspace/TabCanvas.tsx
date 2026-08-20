@@ -23,9 +23,37 @@ import type { PlayPosition } from "@/lib/audio/position";
 import type { SongPlan } from "@/lib/audio/schedule";
 import type { SectionStatus } from "@/lib/song/schema";
 import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
+import {
+  isTripletGrid,
+  resolutionLabel,
+  type Resolution,
+} from "@/lib/music/timing";
 
 /** Bars are found by this attribute, so no child refs are needed. */
 export const BAR_KEY_ATTRIBUTE = "data-bar-key";
+
+/**
+ * The grid to write on a bar's header, or nothing (spec 5.5, 13.x, K-34).
+ *
+ * Shown when the grid *changes* — a reader needs to know the counting just
+ * changed, and marking every bar of a piece written on one grid would be
+ * noise — and always on a triplet bar, because "three to the beat here" is
+ * true whether or not the bar before it was the same.
+ *
+ * The label is a note value, never the raw number: "1/12" sitting next to
+ * "1/16" reads as a straight grid, which is exactly what it is not.
+ */
+export function gridLabelFor(
+  bars: readonly { resolution: Resolution }[],
+  index: number,
+): string | null {
+  const bar = bars[index];
+  if (!bar) return null;
+  const previous = index > 0 ? bars[index - 1] : undefined;
+  const changed = previous === undefined || previous.resolution !== bar.resolution;
+  if (!changed && !isTripletGrid(bar.resolution)) return null;
+  return resolutionLabel(bar.resolution);
+}
 
 const DRUM_LABEL: Record<string, string> = {
   crash: "CR",
@@ -206,10 +234,11 @@ export function TabCanvas({
           </div>
 
           {timeline.kind === "fretted"
-            ? timeline.bars.map((bar) => (
+            ? timeline.bars.map((bar, barIndex) => (
                 <BarSlot key={bar.key} bar={bar} bars={bars}>
                   <FrettedBarBlock
                     bar={bar}
+                    gridLabel={gridLabelFor(timeline.bars, barIndex)}
                     stringCount={timeline.strings.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}
@@ -224,10 +253,11 @@ export function TabCanvas({
                   />
                 </BarSlot>
               ))
-            : timeline.bars.map((bar) => (
+            : timeline.bars.map((bar, barIndex) => (
                 <BarSlot key={bar.key} bar={bar} bars={bars}>
                   <DrumBarBlock
                     bar={bar}
+                    gridLabel={gridLabelFor(timeline.bars, barIndex)}
                     laneCount={timeline.lanes.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}

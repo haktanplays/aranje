@@ -29,11 +29,14 @@ function Glyph({ piece }: { piece: DrumPiece }) {
 export function DrumBarBlock({
   bar,
   laneCount,
+  gridLabel = null,
   selected,
   onSelect,
 }: {
   bar: DrumBar;
   laneCount: number;
+  /** Written in the header when the counting changes (spec 5.5, K-34). */
+  gridLabel?: string | null;
   selected: boolean;
   onSelect: () => void;
 }) {
@@ -59,6 +62,9 @@ export function DrumBarBlock({
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}
         </span>
+        {gridLabel ? (
+          <span className="text-bronze/80 truncate text-[10px]">{gridLabel}</span>
+        ) : null}
       </div>
 
       <div className="relative" style={{ height: gridHeight }}>
