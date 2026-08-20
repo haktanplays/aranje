@@ -8,6 +8,7 @@ const config = [
       ".render-demo/**",
       ".shadow-eval/**",
       ".shadow-eval-s02/**",
+      ".grid-check/**",
       "node_modules/**",
       "design/**",
       "public/**",
