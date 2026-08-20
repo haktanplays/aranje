@@ -441,10 +441,19 @@ doğrulanmadan manifeste ve repoya alınmaz.
 Sinyal zinciri yalnız şunları içerebilir:
 
 `Sampler` · `PolySynth(Synth)` · `MembraneSynth` · `NoiseSynth` · `Filter` ·
-`Distortion` (WaveShaper) · `Gain` / `Channel` · `Destination` · `Meter`
+`Distortion` (WaveShaper) · `Gain` / `Channel` · `Destination` · `Meter` ·
+`ToneAudioBuffers` · `ToneBufferSource`
 
 **Distortion prototipte mobil saha testinde çalışmıştır ve metal karakteri için
 gereklidir.** v1.0 spec'indeki Distortion yasağı kaldırılmıştır.
+
+**`ToneAudioBuffers` ve `ToneBufferSource` §19 K-21 ile eklendi.** Gerekçe:
+Expressive Playback (§8.5) nota başına bağımsız pitch automation gerektirir ve
+`Sampler` bunu dışarı açmaz. `ToneAudioBuffers` çözülmüş sample'ları **tek**
+kez tutar; hem `Sampler` hem nota-sahipli `ToneBufferSource`'lar aynı bank'ten
+beslenir, böylece aynı URL ikinci kez indirilmez veya decode edilmez.
+`LFO`, `Convolver` ve AudioWorklet zinciri **eklenmedi**: vibrato dahil bütün
+modulation, planner'ın ürettiği ayrık automation noktalarıyla yazılır.
 
 ### §8.2 Yasak/ertelenen node'lar
 
@@ -471,6 +480,73 @@ pilotun mobil ses kanıtını korur.
 - Tone.js tam sürüm pinlenir: **`14.8.49`** (`^` kullanılmaz).
 - Audio modülleri yalnız client'ta, SSR dışında yüklenir
   (`'use client'` + `dynamic(..., { ssr: false })`).
+
+### §8.5 Expressive Playback v1 (§19 K-21)
+
+`NoteEvent.articulation` yalnız görsel metadata değildir: **nota bazında**
+duyulan bir davranıştır. Pilot sözlüğü sekiz değerdir — `accent`, `palm_mute`,
+`vibrato`, `bend_half`, `bend_full`, `slide`, `hammer_on`, `pull_off` — ve bir
+nota aynı anda **yalnız bir** articulation taşır. Kombinasyonlar bu sürümün
+kapsamı dışındadır. Faz 0'dan gelen `normal`, `sustain`, `staccato` değerleri
+anlamlarını aynen korur; articulation'sız eski Song JSON'ları aynı şekilde
+çalar.
+
+**Mantıksal pitch değişmez.** Bend, slide ve vibrato `NoteEvent.pitch`
+değerine dokunmaz; modulation yalnız playback katmanında yaşar. Bend miktarı
+serbest sayı değildir: `bend_half` = +100 cent, `bend_full` = +200 cent.
+
+**Merkezî presetler.** Bütün başlangıç değerleri tek saf modülde durur;
+component, scheduler ve voice sınıflarında sayı tekrarlanmaz.
+
+| Articulation | Değer |
+|---|---|
+| Vibrato | ±35 cent derinlik, 5.5 Hz, gecikme `min(120 ms, süre × 0.25)`, nota sonuna kadar sinüs |
+| Bend half | +100 cent |
+| Bend full | +200 cent |
+| Bend eğrisi | ilk %55 hedefe yüksel · sonraki %30 hedefte kal · son %15 başlangıca dön |
+| Slide | önceki pitch'ten hedefe, glide `min(160 ms, süre × 0.35)`, sonra normal pitch |
+| Hammer-on / pull-off | geçiş `min(45 ms, süre × 0.20)`, yumuşatılmış attack, yeni pena atağı yok |
+| Palm mute | gövde en fazla süre × %45, üst sınır 180 ms, kısa release, kontrollü low-pass |
+| Accent | merkezî gain sabiti, limiter öncesi clipping üretmeyen muhafazakâr değer |
+
+Bu sayılar "gerçekçilik kesinleşti" kararı değildir; WAV insan kabulünden sonra
+ayarlanabilir.
+
+**Saf Expression Planner.** Audio node'larından bağımsız bir katman her nota
+için pitch automation, gain envelope ve gerekiyorsa filter preset üretir.
+Planner Song/timeline girdisini mutate etmez, practice rate'i hesaba katar,
+tie'ı yeni onset saymaz, bar ve section carry semantiğini korur, explicit ve
+Ergonomic v2 pozisyonlarını **aynı** normalize edilmiş timeline'dan okur,
+slide/hammer/pull için önceki gerçek onset'i aynı track ve aynı tel bağlamında
+arar. Eksik track anahtarı ve gerçek sus bağlantıyı keser; section sınırı tek
+başına kesmez. Geçersiz bağlamda exception atılmaz: normal playback planı artı
+sabit bir `fallbackReason` üretilir. Diagnostic'e provider veya kullanıcı metni
+konmaz.
+
+**Nota/voice izolasyonu — bu bölümün en kritik invariant'ı.** Bir notanın
+vibrato/bend/slide modulation'ı aynı anda çalan başka bir notanın pitch'ini
+değiştiremez. Paylaşılan track sampler'ında global `detune`, `playbackRate`
+veya pitch node'u **değiştirilmez**. Zincir:
+
+    paylaşılan decoded buffer bank
+    → nota-sahipli ToneBufferSource
+    → nota-sahipli Gain envelope
+    → gerekiyorsa nota-sahipli Filter
+    → track bus
+    → mevcut master graph
+
+Context constructor'dan gelir; `Tone.Transport`, `Tone.Destination` ve
+`.toDestination()` gibi global singleton yolları geri getirilmez. `setTimeout`
+tabanlı scheduler yaması yoktur. Online ve offline **aynı** planner ve aynı
+scheduling yolunu kullanır. Tone.js private alanlarına güvenilmez.
+
+**Yaşam döngüsü.** Pause bütün aktif voice'ları durdurur; seek eski voice'ları
+dispose eder; başa dönüş eski automation'ı bırakmaz; section loop sararken
+önceki turdan voice sarkmaz; practice rate değişince eski automation iptal
+edilip yeni zamanlamayla schedule edilir ve **engine yeniden kurulmaz**;
+preview kapanınca bütün preview voice'ları dispose edilir. Aynı voice iki kez
+dispose edilirse hata çıkmaz. Aktif/dispose sayıları test diagnostic'iyle
+ölçülebilir; normal akışta console log yoktur.
 
 ### §8.4 Debug modu
 
@@ -639,6 +715,20 @@ iki gitarın aynı power chord'u çalması sahte hata üretir.
   değişimi (§19 K-17). Bu bir uyarıdır, patch'i bloklamaz.
 - `position` boş olduğu için otomatik yerleştirilen nota; greedy uygun yerleşim
   bulamadıysa nota positionsız çalınır.
+- **`articulationContext`** — articulation'ın bağlamı tutmuyor (§8.5, K-21).
+  Saf ve UI'dan bağımsızdır, **error üretmez**. Kurallar: `accent` her pitched
+  melodik notada geçerlidir; `palm_mute`, `vibrato`, `bend_half` ve `bend_full`
+  Core Lite fretted melodik track'te geçerlidir; `slide` için önceki gerçek
+  onset **aynı telde** bulunmalıdır; `hammer_on` için önceki gerçek onset aynı
+  telde ve **daha düşük** pitch'te, `pull_off` için aynı telde ve **daha
+  yüksek** pitch'te olmalıdır. Önceki olay tie'ın arkasında bulunabiliyorsa Faz
+  0 carry semantiği kullanılır; arada gerçek sus varsa bağlantı yoktur; eksik
+  track anahtarı bağlantıyı keser; section sınırı tek başına kesmez. Davulda
+  melodik articulation uygulanmaz. Fretboard'suz Faz 2.5 enstrümanlarında
+  davranış uydurulmaz, deferred olarak bırakılır. Geçersiz bağlamda uyarı
+  üretilir ve playback normal onset'e düşer. Aynı kök sorun için tekrar tekrar
+  issue üretilmez. Issue path deterministic'tir: track → section → bar → slot →
+  mümkünse nota/tel.
 
 ### §10.4 Tonal çekirdek ve renk notaları (§19 K-17)
 
@@ -1128,6 +1218,24 @@ durum yalnız renkle değil outline ve erişilebilir metinle de anlatılır. Bu
 sürümde serbest drag-and-drop **yoktur**: tab'ın yatay scroll hareketiyle
 çakışma riski fiziksel cihaz görülmeden alınmaz.
 
+### §13.9 Articulation düzenleme ve tab işaretleri (§19 K-21)
+
+**Riff editörü.** FretSheet seçili notaya articulation seçimi ekler. Kullanıcı
+adları teknik ID değildir: *Normal · Vurgu · Palm mute · Vibrato · Yarım bend ·
+Tam bend · Slide · Hammer-on · Pull-off*. Articulation bütün akora değil,
+**seçilen teldeki** `NoteEvent`'e uygulanır; "Normal" alanı kaldırır. Seçimin
+ürettiği bağlam uyarısı sheet içinde görünür ve **kaydetmeyi engellemez**.
+Davul ve fretboard'suz track'te kontrol gösterilmez. Dokunma hedefleri 44 px,
+320 px'de sheet dışına taşma yok. Articulation seçimi pitch veya fret'i
+değiştirmez; tek undo geri alır; grup taşıma articulation'ı aynen korur.
+
+**Tab işaretleri.** `accent` `>` · `palm_mute` `PM` · `vibrato` `~` ·
+`bend_half` `b½` · `bend_full` `b1` · `slide` yönüne göre `/` veya `\` ·
+`hammer_on` `h` · `pull_off` `p`. İşaret fret numarasını kapatmaz, tie
+çizgisiyle karışmaz, akorda doğru telin satırına düşer, yalnız renge dayanmaz
+ve screen reader tam articulation adını söyler. Mobil tab yüksekliği artmaz;
+gutter maskesi ve yatay scroll bozulmaz.
+
 ### §13.7 Prototipten taşınan / taşınmayanlar
 
 **Taşınır:** pending kesikli çerçeve + breathe animasyonu ve reduced-motion
@@ -1388,6 +1496,7 @@ maliyettir** (§11.2/7).
 | **K-18** | İlk kullanıcı ürünü, section'ın tamamını değiştiren `replace_section` değil, yalnız hedef track'i düzenleyen **`arrange_track`** oldu. Public `/api/copilot` strict şeması yalnız `arrange_track` kabul eder; `insert_section` / `replace_section` public route'tan kaldırıldı (dış kullanıcı olmadığı için geniş contract backward compatibility uğruna korunmadı). Sağlayıcı çıktısı section'ın tamamını değil **yalnız hedef track'in slotlarını** döndürür; melodik çıktıda explicit `position` reddedilir. Target dışı bütün track'ler sunucu tarafında kilitlidir; `lockedTrackIds` yalnızca ek açıklıktır. `patchSize` artık target track içinde dokunulan bar sayısını ölçer. Stil kartları sanatçıya değil **özelliğe** dayanır; `opeth-acoustic.md` yerine `progressive-atmospheric-acoustic.md`. | Haktan, 19.08.2026 |
 | **K-19** | **Ergonomic Placement v2.** `position` yazılmamış fretted melodik onset'ler artık hafızasız greedy ile tek tek değil, track'in zaman sıralı bağlamı içinde deterministic beam-search / dynamic-programming ile yerleştirilir (§9.2). Maliyet ağırlıklı bir skor değil, **lexicographic tuple**'dır; eşikler `limits.ts`'teki tek merkezi kaynaktan gelir ve beam width orada sabittir (runtime env ayarı yok). El konumu ölçüleri (anchor, chord span, string center) ve reset/carry semantiği `fretJump` ile **aynı** yardımcıdan gelir; tab, validator, preview ve playback tek yerleşim modelini kullanır. Explicit `position` her zaman korunur ve motor tarafından değiştirilemez. K-4'ün hafızasız kuralı üretimden kaldırıldı; parmak numarası, barre analizi ve picking ergonomisi bu sürümün iddiası değildir. | Haktan, 19.08.2026 |
 | **K-20** | **Çalışma hızı ve akor grubu taşıma (§13.8).** Transport'un mutlak BPM kaydırıcısı kaldırıldı; yerine şarkının kendi `bpm`'ini değiştirmeyen bir **practice rate** geldi (%50–%150, %5 adım, varsayılan %100; `limits.ts` tek kaynak). İkinci bir tempo sistemi yoktur: tek transport, tek scheduler, tick tabanlı zamanlama. Rate Song Contract'a yazılmaz, song/Copilot fingerprint'ine girmez ve Song'dan ayrı, strict doğrulanan bir ayar anahtarında saklanır; bozuk ayar %100'e döner ve Song karantinasını tetiklemez. Zaman ekseninde taşımanın birimi **onset block**'tur (onset + akor notaları + kesintisiz tie zinciri) ve saf `move_onset_group` komutu atomiktir: kısmi taşıma, üzerine yazma ve yetim tie yoktur, bütün grup tek storage write ve tek undo adımıdır. Bu sürümde serbest drag-and-drop yoktur. | Haktan, 20.08.2026 |
+| **K-21** | **Expressive Playback v1 (§8.5, §10.3, §13.9).** `NoteEvent.articulation` artık yalnız görsel metadata değil, nota bazında duyulan davranıştır. Pilot sözlüğü sekiz değerdir ve bir nota aynı anda yalnız birini taşır; kombinasyon kapsam dışıdır. Mantıksal pitch değişmez, bend miktarı sabittir (+100 / +200 cent), bütün başlangıç değerleri tek saf preset modülünde durur. Saf bir Expression Planner audio node'larından bağımsız olarak pitch automation ve gain envelope üretir; geçersiz bağlamda exception değil `articulationContext` uyarısı ve normal onset'e fallback verir. **Modulation nota-sahiplidir:** paylaşılan sampler'da global detune kullanılmaz; §8.1 allow-list'i bu yüzden `ToneAudioBuffers` ve `ToneBufferSource` ile açıkça genişletildi ve çözülmüş sample'lar tek bank'ten paylaşılır. Online ve offline aynı planner ve aynı scheduling yolunu kullanır. | Haktan, 20.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 

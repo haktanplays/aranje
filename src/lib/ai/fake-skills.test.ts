@@ -182,3 +182,52 @@ describe("the three deterministic skills", () => {
     expect(patchedGuitar).toEqual(originalGuitar);
   });
 });
+
+describe("expression in a fake answer (spec 8.5)", () => {
+  it("writes articulations the contract accepts", () => {
+    const written = bars("harmony");
+
+    const articulations = written.flatMap((bar) =>
+      bar.slots.flatMap((slot) =>
+        slot === null || slot === "-" || Array.isArray(slot)
+          ? []
+          : slot.notes.map((note) => note.articulation),
+      ),
+    );
+
+    expect(articulations.some((value) => value !== undefined)).toBe(true);
+    expect(
+      modelPatchSchema.safeParse({
+        operation: "arrange_track",
+        sectionId: SECTION_ID,
+        targetTrackId: "gtr2",
+        bars: written,
+        explanation: "test",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("only writes articulations whose context always holds", () => {
+    const used = new Set(
+      bars("harmony").flatMap((bar) =>
+        bar.slots.flatMap((slot) =>
+          slot === null || slot === "-" || Array.isArray(slot)
+            ? []
+            : slot.notes.map((note) => note.articulation).filter(Boolean),
+        ),
+      ),
+    );
+
+    // Nothing that depends on the note before it: a fixture must not teach a
+    // habit the validator would then warn about.
+    expect(used.has("slide")).toBe(false);
+    expect(used.has("hammer_on")).toBe(false);
+    expect(used.has("pull_off")).toBe(false);
+    expect(used.size).toBeGreaterThan(0);
+  });
+
+  it("gives the same answer every time", () => {
+    const runs = Array.from({ length: 3 }, () => JSON.stringify(bars("harmony")));
+    expect(new Set(runs).size).toBe(1);
+  });
+});

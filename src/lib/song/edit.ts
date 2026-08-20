@@ -69,7 +69,20 @@ export type EditCommand =
   /** Make the slot silent. */
   | { kind: "set_rest"; target: EditTarget }
   /** Continue whatever was already sounding (spec 5.4). */
-  | { kind: "set_tie"; target: EditTarget };
+  | { kind: "set_tie"; target: EditTarget }
+  /**
+   * How one string of one slot is played (spec 8.5, 13.9).
+   *
+   * `null` is "normal": the field is removed rather than written as a value,
+   * so a song that was never given an articulation and one that was set back
+   * to normal are the same song.
+   */
+  | {
+      kind: "set_articulation";
+      target: EditTarget;
+      stringIndex: number;
+      articulation: Articulation | null;
+    };
 
 export type EditErrorCode =
   | "section_not_found"
@@ -423,6 +436,44 @@ export function applyEdit(song: Song, command: EditCommand): EditResult {
         if (orphan.kind !== "slot") continue;
         writeSlot(next, orphan.sectionIndex, orphan.barIndex, target.trackId, orphan.slotIndex, null);
       }
+      return settle(next);
+    }
+
+    case "set_articulation": {
+      if (slot === null || slot === "-") {
+        return fail(
+          "no_note_on_string",
+          "Bu slotta ifade verilecek bir nota yok.",
+        );
+      }
+
+      const found = slot.notes.find(
+        (entry) => entry.position?.string === command.stringIndex,
+      );
+      if (!found) {
+        return fail(
+          "no_note_on_string",
+          `${command.stringIndex + 1}. telde bu slotta nota yok.`,
+        );
+      }
+
+      // Only the touched string changes; the rest of the chord is untouched,
+      // including any articulation the other notes carry (spec 13.9).
+      const notes: NoteEvent[] = slot.notes.map((entry) => {
+        if (entry.position?.string !== command.stringIndex) return entry;
+        const rest: NoteEvent = { ...entry };
+        // "Normal" removes the field rather than writing a value, so a note
+        // set back to normal is the same as one that never carried anything.
+        delete rest.articulation;
+        return command.articulation === null
+          ? rest
+          : { ...rest, articulation: command.articulation };
+      });
+
+      const next = cloneSong(song);
+      writeSlot(next, sectionIndex, target.barIndex, target.trackId, target.slotIndex, {
+        notes,
+      });
       return settle(next);
     }
 

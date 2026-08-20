@@ -20,6 +20,7 @@ const STRIPS = [
   "src/components/workspace/TransportBar.tsx",
   "src/components/workspace/EditToolbar.tsx",
   "src/components/workspace/TrackSelector.tsx",
+  "src/components/workspace/FretSheet.tsx",
 ];
 
 /** Tailwind heights smaller than 44px. `min-h-11` is 44px. */

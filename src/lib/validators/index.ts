@@ -8,6 +8,7 @@
  * proposal rather than a song, and it has to answer before the proposal is
  * applied (see `@/lib/validators/patchSize`).
  */
+import { validateArticulationContext } from "@/lib/validators/articulationContext";
 import { validateDrumVocab } from "@/lib/validators/drumVocab";
 import { validateFretJump } from "@/lib/validators/fretJump";
 import { validateFretboardIntegrity } from "@/lib/validators/fretboardIntegrity";
@@ -43,6 +44,7 @@ export const TONAL_VALIDATORS: readonly Validator[] = [validateTonalMajority];
 export const WARNING_VALIDATORS: readonly Validator[] = [
   validateUnplaceable,
   validateFretJump,
+  validateArticulationContext,
 ];
 
 /** The central chain. Everything that validates a whole song runs this. */
@@ -61,6 +63,7 @@ export function runValidators(
 }
 
 export {
+  validateArticulationContext,
   validateDrumVocab,
   validateFretJump,
   validateFretboardIntegrity,
@@ -72,6 +75,10 @@ export {
   validateTrackReferences,
   validateUnplaceable,
 };
+export {
+  ARTICULATION_LABELS,
+  articulationLabel,
+} from "@/lib/validators/articulationContext";
 export { validatePatchSize, touchedBars } from "@/lib/validators/patchSize";
 export type { PatchValidator } from "@/lib/validators/patchSize";
 export { rangeSupportFor } from "@/lib/validators/range";

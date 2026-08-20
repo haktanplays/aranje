@@ -541,3 +541,149 @@ describe("bass and other tunings use the same commands", () => {
     expect(result.ok).toBe(false);
   });
 });
+
+describe("set_articulation (spec 8.5, 13.9)", () => {
+  const target = {
+    sectionId: "chorus",
+    trackId: "gtr",
+    barIndex: 0,
+    slotIndex: 0,
+  };
+
+  /** A chord on two strings, so "only the touched one" means something. */
+  const chordSong: Song = song(
+    [guitarTrack()],
+    [
+      section(
+        [
+          melodicBar("gtr", [
+            {
+              notes: [
+                { pitch: "E3", position: { string: 0, fret: 12 } },
+                { pitch: "B3", position: { string: 1, fret: 14 } },
+              ],
+            },
+            ...restSlots(7),
+          ]),
+        ],
+        { id: "chorus", name: "Chorus" },
+      ),
+    ],
+  );
+
+  function notesAfter(command: EditCommand) {
+    const result = applyEdit(chordSong, command);
+    if (!result.ok) throw new Error(result.error.message);
+    const slot = result.song.sections[0]?.bars[0]?.slots.gtr?.[0];
+    if (!slot || slot === "-" || Array.isArray(slot)) throw new Error("no chord");
+    return slot.notes;
+  }
+
+  it("writes the articulation on the string that was touched", () => {
+    const notes = notesAfter({
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: "vibrato",
+    });
+
+    expect(notes[1]?.articulation).toBe("vibrato");
+  });
+
+  it("leaves the other notes of the chord alone", () => {
+    const notes = notesAfter({
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: "vibrato",
+    });
+
+    expect(notes[0]?.articulation).toBeUndefined();
+    expect(notes[0]?.pitch).toBe("E3");
+    expect(notes[0]?.position).toEqual({ string: 0, fret: 12 });
+  });
+
+  it("does not change the pitch or the fret", () => {
+    const notes = notesAfter({
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: "bend_full",
+    });
+
+    expect(notes[1]?.pitch).toBe("B3");
+    expect(notes[1]?.position).toEqual({ string: 1, fret: 14 });
+  });
+
+  it("removes the field when the answer is normal", () => {
+    const withVibrato = applyEdit(chordSong, {
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: "vibrato",
+    });
+    if (!withVibrato.ok) throw new Error("setup failed");
+
+    const cleared = applyEdit(withVibrato.song, {
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: null,
+    });
+    if (!cleared.ok) throw new Error(cleared.error.message);
+
+    const slot = cleared.song.sections[0]?.bars[0]?.slots.gtr?.[0];
+    if (!slot || slot === "-" || Array.isArray(slot)) throw new Error("no chord");
+    expect(slot.notes[1]).toEqual({
+      pitch: "B3",
+      position: { string: 1, fret: 14 },
+    });
+    expect("articulation" in (slot.notes[1] ?? {})).toBe(false);
+  });
+
+  it("refuses a string with no note on it, and a rest", () => {
+    expect(
+      applyEdit(chordSong, {
+        kind: "set_articulation",
+        target,
+        stringIndex: 4,
+        articulation: "vibrato",
+      }).ok,
+    ).toBe(false);
+    expect(
+      applyEdit(chordSong, {
+        kind: "set_articulation",
+        target: { ...target, slotIndex: 3 },
+        stringIndex: 0,
+        articulation: "vibrato",
+      }).ok,
+    ).toBe(false);
+  });
+
+  it("does not mutate the song it was given", () => {
+    const snapshot = JSON.stringify(chordSong);
+    applyEdit(chordSong, {
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: "slide",
+    });
+    expect(JSON.stringify(chordSong)).toBe(snapshot);
+  });
+
+  it("lets a context warning through without blocking the edit", () => {
+    // A slide with nothing before it is a warning, not a refusal.
+    const result = applyEdit(chordSong, {
+      kind: "set_articulation",
+      target,
+      stringIndex: 1,
+      articulation: "slide",
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(
+      result.warnings.some((issue) => issue.code === "articulationContext"),
+    ).toBe(true);
+  });
+});

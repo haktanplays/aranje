@@ -39,10 +39,17 @@ describe("no stale context singletons (spec 8.3)", () => {
   it("builds every node on the injected context", () => {
     // Nodes come from the lazily loaded module, and each constructor is handed
     // the context as its first option.
+    //
+    // `ToneAudioBuffers` is the one exception, and it is not a node: it is a
+    // bag of decoded samples, with no input and no output, so it has no
+    // context option to be given (spec 8.5). Everything that makes a sound
+    // still gets one.
     const constructors = code.match(/new tone\.\w+\(\{/g) ?? [];
     expect(constructors.length).toBeGreaterThan(5);
-    const withoutContext = code.match(/new tone\.\w+\((?!\{\s*\n?\s*context)/g);
-    expect(withoutContext).toBeNull();
+    const withoutContext = (
+      code.match(/new tone\.\w+\((?!\{\s*\n?\s*context)/g) ?? []
+    ).filter((match) => !match.startsWith("new tone.ToneAudioBuffers("));
+    expect(withoutContext).toEqual([]);
   });
 
   it("starts the context only through the live entry point", () => {
@@ -72,5 +79,36 @@ describe("track partitioning for isolated renders", () => {
       ...drumTrackIds(SAMPLE_SONG),
     ].sort();
     expect(all).toEqual(SAMPLE_SONG.tracks.map((t) => t.id).sort());
+  });
+});
+
+describe("one bank, two readers (spec 8.5)", () => {
+  const code = ENGINE_SOURCE.split("\n")
+    .filter((line) => !line.trim().startsWith("*"))
+    .join("\n");
+
+  it("decodes the pack once and hands the sampler buffers, not urls", () => {
+    // The bank is the only thing given a url map and a baseUrl.
+    expect(code).toContain("new tone.ToneAudioBuffers({");
+    const bank = code.slice(code.indexOf("new tone.ToneAudioBuffers({"));
+    expect(bank.slice(0, 200)).toContain("urls: pack.urls");
+    expect(bank.slice(0, 200)).toContain("baseUrl: pack.baseUrl");
+
+    // The sampler is built from that bank, so nothing is requested twice.
+    const sampler = code.slice(code.indexOf("new tone.Sampler({"));
+    expect(sampler.slice(0, 300)).toContain("buffers.get(note)");
+    expect(sampler.slice(0, 300)).not.toContain("baseUrl");
+  });
+
+  it("never reaches into Tone's private fields for those buffers", () => {
+    expect(/\._buffers\b/.test(code)).toBe(false);
+    expect(/\._activeSources\b/.test(code)).toBe(false);
+  });
+
+  it("never detunes a shared voice", () => {
+    // Track-wide detune would bend the whole chord (spec 8.5).
+    expect(/sampler\.detune/.test(code)).toBe(false);
+    expect(/channel\.detune/.test(code)).toBe(false);
+    expect(/\.playbackRate/.test(code)).toBe(false);
   });
 });

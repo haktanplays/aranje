@@ -26,8 +26,8 @@ describe("validator chain (spec 10)", () => {
   it("runs the playability validators from the central chain by default", () => {
     expect(PLAYABILITY_VALIDATORS).toHaveLength(2);
     expect(TONAL_VALIDATORS).toHaveLength(1);
-    expect(WARNING_VALIDATORS).toHaveLength(2);
-    expect(SONG_VALIDATORS).toHaveLength(10);
+    expect(WARNING_VALIDATORS).toHaveLength(3);
+    expect(SONG_VALIDATORS).toHaveLength(11);
     // Order is fixed, so the same song always reports in the same sequence.
     expect(SONG_VALIDATORS).toEqual([
       ...PHASE_0_VALIDATORS,

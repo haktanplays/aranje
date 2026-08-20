@@ -18,7 +18,18 @@ import type * as Tone from "tone";
 
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import { samplePackFor } from "@/lib/audio/packs";
+import {
+  buildExpressionPlan,
+  type ExpressionPlan,
+  type ExpressiveNotePlan,
+} from "@/lib/audio/expression-plan";
+import {
+  ExpressiveVoicePool,
+  type VoiceHost,
+  type VoicePoolCounts,
+} from "@/lib/audio/expressive-voice";
 import { metronomeClicks } from "@/lib/audio/position";
+import { sampleEntries, type SampleEntry } from "@/lib/audio/sample-map";
 import { buildSongPlan, ticks, type SongPlan } from "@/lib/audio/schedule";
 import type { DrumPiece, Song, Track } from "@/lib/song/schema";
 
@@ -81,8 +92,32 @@ export type TrackVoice =
       sampler: Tone.Sampler;
       channel: Tone.Channel;
       bufferCount: number;
+      /**
+       * The decoded samples, held once. The sampler plays from this bank and
+       * so does every expressive voice, so a note with a bend costs no extra
+       * download and no extra decode (spec 8.5).
+       */
+      buffers: Tone.ToneAudioBuffers;
+      entries: readonly SampleEntry[];
+      /** The pack's level correction as a linear factor (spec 7.1). */
+      trimGain: number;
     }
   | { kind: "drums"; trackId: string; drums: DrumVoices; channel: Tone.Channel };
+
+/** The expressive layer of one engine (spec 8.5). */
+export type ExpressionRuntime = {
+  /** Replace the plan, for instance when the practice speed changes. */
+  setPlan(plan: ExpressionPlan): void;
+  getPlan(): ExpressionPlan;
+  /** Start one note in a voice of its own. False when it cannot be played. */
+  play(note: ExpressiveNotePlan, time: number): boolean;
+  /** Every voice currently sounding, gone. */
+  stopAll(): void;
+  readonly counts: VoicePoolCounts;
+  /** How many sample URLs this engine asked for, and how many it decoded. */
+  readonly fetchedUrls: number;
+  dispose(): void;
+};
 
 export type Engine = {
   context: AudioRuntime;
@@ -91,6 +126,7 @@ export type Engine = {
   voices: Map<string, TrackVoice>;
   meters: Map<string, Tone.Meter>;
   plan: SongPlan;
+  expression: ExpressionRuntime;
   /** How many sample buffers this graph expects, and how many arrived. */
   expectedBuffers: number;
   loadedBuffers: number;
@@ -99,6 +135,8 @@ export type Engine = {
 
 export type CreateEngineOptions = {
   debug?: boolean;
+  /** Whole percent of the song's own tempo the plan is built at (spec 13.8). */
+  practicePercent?: number;
   /** Tracks to leave out of the graph entirely, for isolated renders. */
   excludeTrackIds?: readonly string[];
   /** Called as each sample pack finishes decoding. */
@@ -199,7 +237,18 @@ function buildDrums(
   };
 }
 
-type VoiceBuild = { voice: TrackVoice; loaded: Promise<void> };
+/**
+ * A track's graph, and how to finish it.
+ *
+ * Drums are ready immediately; a sampled track has to wait for its bank, so it
+ * hands back a `build` to run once the samples are in.
+ */
+type VoiceBuild = {
+  channel: Tone.Channel;
+  bufferCount: number;
+  build: () => TrackVoice;
+  loaded: Promise<void>;
+};
 
 /** Builds the graph for one track, plus a promise for its samples. */
 function buildVoice(
@@ -214,13 +263,11 @@ function buildVoice(
   channel.connect(master);
 
   if (isDrumInstrument(track.instrumentId)) {
+    const drums = buildDrums(tone, context, channel);
     return {
-      voice: {
-        kind: "drums",
-        trackId: track.id,
-        drums: buildDrums(tone, context, channel),
-        channel,
-      },
+      channel,
+      bufferCount: 0,
+      build: () => ({ kind: "drums", trackId: track.id, drums, channel }),
       // Synthesised, so there is nothing to download.
       loaded: Promise.resolve(),
     };
@@ -239,26 +286,47 @@ function buildVoice(
     fail = reject;
   });
 
-  const sampler = new tone.Sampler({
-    context,
+  /*
+   * One bank, two readers.
+   *
+   * Before phase 2F the Sampler fetched and decoded the pack itself. It still
+   * plays from exactly those recordings, but they are now decoded **here**,
+   * once, and handed to it as buffers — because the expressive voices need the
+   * same recordings and a second Sampler, or a second URL map, would mean
+   * fetching and decoding all 21 files twice (spec 8.5).
+   */
+  const buffers = new tone.ToneAudioBuffers({
     urls: pack.urls,
     baseUrl: pack.baseUrl,
-    volume: pack.trimDb,
-    // Fires once every buffer of this sampler has decoded.
     onload: () => settle(),
-    // A missing or undecodable file is surfaced, never swallowed into a
-    // synthesised stand-in.
     onerror: (error) => fail(new SampleLoadError(pack.id, error)),
   });
-  sampler.connect(channel);
+
+  const noteNames = Object.keys(pack.urls);
 
   return {
-    voice: {
-      kind: "sampler",
-      trackId: track.id,
-      sampler,
-      channel,
-      bufferCount: Object.keys(pack.urls).length,
+    channel,
+    bufferCount: noteNames.length,
+    // The sampler is built from the bank once the bank has decoded. Handing it
+    // buffers that have not arrived yet would copy an empty one and never fill.
+    build: () => {
+      const sampler = new tone.Sampler({
+        context,
+        // Buffer objects, not URLs: nothing is requested a second time.
+        urls: Object.fromEntries(noteNames.map((note) => [note, buffers.get(note)])),
+        volume: pack.trimDb,
+      });
+      sampler.connect(channel);
+      return {
+        kind: "sampler",
+        trackId: track.id,
+        sampler,
+        channel,
+        bufferCount: noteNames.length,
+        buffers,
+        entries: sampleEntries(noteNames),
+        trimGain: Math.pow(10, pack.trimDb / 20),
+      };
     },
     loaded,
   };
@@ -283,44 +351,46 @@ export async function createEngine(
 
   const voices = new Map<string, TrackVoice>();
   const meters = new Map<string, Tone.Meter>();
-  const loads: Promise<void>[] = [];
+  const builds: { trackId: string; build: VoiceBuild }[] = [];
 
   for (const track of song.tracks) {
     if (excluded.has(track.id)) continue;
     const built = buildVoice(tone, context, track, master);
     if (!built) continue;
-
-    voices.set(track.id, built.voice);
-    loads.push(built.loaded);
+    builds.push({ trackId: track.id, build: built });
 
     if (options.debug) {
       const meter = new tone.Meter({ context, smoothing: 0.6 });
-      built.voice.channel.connect(meter);
+      built.channel.connect(meter);
       meters.set(track.id, meter);
     }
   }
 
-  const samplers = [...voices.values()].filter(
-    (voice) => voice.kind === "sampler",
-  );
-  const expectedBuffers = samplers.reduce(
-    (total, voice) => total + (voice.kind === "sampler" ? voice.bufferCount : 0),
+  const expectedBuffers = builds.reduce(
+    (total, entry) => total + entry.build.bufferCount,
     0,
   );
 
-  // Await these samplers, not a global download registry. Progress is reported
-  // as each pack lands so the interface can show something truthful.
+  // Await these banks, not a global download registry. Progress is reported as
+  // each pack lands so the interface can show something truthful.
   let decoded = 0;
   options.onProgress?.(0, expectedBuffers);
   await Promise.all(
-    [...voices.values()].map((voice, index) => {
-      const load = loads[index] ?? Promise.resolve();
-      if (voice.kind !== "sampler") return load;
-      return load.then(() => {
-        decoded += voice.bufferCount;
+    builds.map((entry) =>
+      entry.build.loaded.then(() => {
+        decoded += entry.build.bufferCount;
         options.onProgress?.(decoded, expectedBuffers);
-      });
-    }),
+      }),
+    ),
+  );
+
+  // Every bank has decoded, so the samplers can be built from them.
+  for (const entry of builds) {
+    voices.set(entry.trackId, entry.build.build());
+  }
+
+  const samplers = [...voices.values()].filter(
+    (voice) => voice.kind === "sampler",
   );
   const loadedBuffers = samplers.reduce(
     (total, voice) =>
@@ -329,6 +399,42 @@ export async function createEngine(
     0,
   );
 
+  const hosts = new Map<string, VoiceHost>();
+  for (const voice of voices.values()) {
+    if (voice.kind !== "sampler") continue;
+    hosts.set(voice.trackId, {
+      buffers: voice.buffers,
+      entries: voice.entries,
+      destination: voice.channel,
+      trimGain: voice.trimGain,
+    });
+  }
+
+  const pool = new ExpressiveVoicePool(tone, context, hosts);
+  let expressionPlan = buildExpressionPlan(song, {
+    ...(options.practicePercent === undefined
+      ? {}
+      : { practicePercent: options.practicePercent }),
+  });
+
+  const expression: ExpressionRuntime = {
+    setPlan(next) {
+      expressionPlan = next;
+      // The old automation belongs to the old timing; it does not carry over.
+      pool.stopAll();
+    },
+    getPlan: () => expressionPlan,
+    play: (note, time) => pool.play(note.trackId, note, time),
+    stopAll: () => pool.stopAll(),
+    get counts() {
+      return pool.counts;
+    },
+    get fetchedUrls() {
+      return expectedBuffers;
+    },
+    dispose: () => pool.dispose(),
+  };
+
   return {
     context,
     master,
@@ -336,12 +442,17 @@ export async function createEngine(
     voices,
     meters,
     plan: buildSongPlan(song),
+    expression,
     expectedBuffers,
     loadedBuffers,
     dispose() {
+      pool.dispose();
       for (const voice of voices.values()) {
-        if (voice.kind === "sampler") voice.sampler.dispose();
-        else {
+        if (voice.kind === "sampler") {
+          voice.sampler.dispose();
+          // The bank is this engine's, so it goes with it.
+          voice.buffers.dispose();
+        } else {
           voice.drums.kick.dispose();
           voice.drums.snare.dispose();
           voice.drums.hat.dispose();
@@ -399,25 +510,44 @@ export function scheduleSong(
   // Tempo is set before anything is scheduled (spec 8.3).
   transport.bpm.value = bpm;
 
+  /*
+   * Notes come from the expression plan and drums from the song plan. Both are
+   * built from the same timeline, so the note set is the same either way; what
+   * the expression plan adds is what each note should *do*. Scheduling notes
+   * from it is what makes online and offline share one path (spec 8.5).
+   */
+  for (const note of engine.expression.getPlan().notes) {
+    const voice = engine.voices.get(note.trackId);
+    if (!voice || voice.kind !== "sampler") continue;
+
+    const { sampler } = voice;
+    const duration = ticks(note.durationTicks);
+    const noteId = note.id;
+
+    transport.schedule((time) => {
+      // Read at trigger time, so a speed change reaches notes that have not
+      // sounded yet without rebuilding anything.
+      const current =
+        engine.expression.getPlan().notes.find((entry) => entry.id === noteId) ??
+        note;
+
+      if (current.expressive) {
+        const played = engine.expression.play(current, time);
+        if (played) return;
+      }
+      sampler.triggerAttackRelease(current.pitch, duration, time, current.gain);
+    }, ticks(note.timeTicks));
+  }
+
   for (const event of engine.plan.events) {
+    if (event.kind !== "drum") continue;
     const voice = engine.voices.get(event.trackId);
-    if (!voice) continue;
+    if (!voice || voice.kind !== "drums") continue;
 
-    if (event.kind === "note" && voice.kind === "sampler") {
-      const { sampler } = voice;
-      const duration = ticks(event.durationTicks);
-      transport.schedule((time) => {
-        sampler.triggerAttackRelease(event.pitch, duration, time, event.gain);
-      }, ticks(event.time));
-      continue;
-    }
-
-    if (event.kind === "drum" && voice.kind === "drums") {
-      const { drums } = voice;
-      transport.schedule((time) => {
-        playDrum(drums, event.piece, time, event.gain);
-      }, ticks(event.time));
-    }
+    const { drums } = voice;
+    transport.schedule((time) => {
+      playDrum(drums, event.piece, time, event.gain);
+    }, ticks(event.time));
   }
 
   // The metronome sits on the same transport and the same context as the

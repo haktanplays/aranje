@@ -35,6 +35,7 @@ import {
   clampPercent,
   effectiveBpm,
 } from "@/lib/audio/practice-rate";
+import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
 import type { Song } from "@/lib/song/schema";
 
@@ -65,7 +66,10 @@ export type PlaybackState = {
 
 export type EngineFactory = (
   song: Song,
-  options: { onProgress?: (buffers: number, total: number) => void },
+  options: {
+    practicePercent?: number;
+    onProgress?: (buffers: number, total: number) => void;
+  },
 ) => Promise<Engine>;
 
 export type PlaybackOptions = {
@@ -161,6 +165,7 @@ export class PlaybackController {
     // Tone.start() runs inside the click that called play(), which is what the
     // browser requires to open an audio context.
     const engine = await this.createEngine(this.song, {
+      practicePercent: this.state.practicePercent,
       onProgress: (buffers, totalBuffers) =>
         this.set({ progress: { buffers, totalBuffers } }),
     });
@@ -178,6 +183,10 @@ export class PlaybackController {
 
     this.engine = engine;
     this.applyLoop();
+
+    // A loop wrap starts the section again, so nothing from the previous pass
+    // may still be ringing over the top of it (spec 8.5).
+    engine.context.transport.on("loop", () => engine.expression.stopAll());
     return engine;
   }
 
@@ -211,6 +220,9 @@ export class PlaybackController {
     if (!transport) return;
     // pause() keeps the tick position, unlike stop().
     transport.pause();
+    // A per-note voice is not on the transport's clock once it has started, so
+    // pausing has to end it explicitly (spec 8.5).
+    this.engine?.expression.stopAll();
     if (this.state.status === "playing") this.set({ status: "paused" });
   }
 
@@ -222,6 +234,7 @@ export class PlaybackController {
   /** Back to the top, for both the transport and the playhead. */
   rewind(): void {
     const transport = this.engine?.context.transport;
+    this.engine?.expression.stopAll();
     if (transport) {
       transport.ticks = this.state.loopSectionId
         ? (sectionLoopBounds(this.plan, this.state.loopSectionId)?.startTicks ??
@@ -234,6 +247,8 @@ export class PlaybackController {
   seekToBar(barKey: string): void {
     const start = barStartTicks(this.plan, barKey);
     if (start === null) return;
+    // Jumping somewhere else leaves anything that was sounding behind.
+    this.engine?.expression.stopAll();
     const transport = this.engine?.context.transport;
     if (transport) transport.ticks = start;
     if (this.state.status === "ended") this.set({ status: "paused" });
@@ -293,6 +308,13 @@ export class PlaybackController {
     const bpm = effectiveBpm(this.state.songBpm, practicePercent);
     const transport = this.engine?.context.transport;
     if (transport) transport.bpm.value = bpm;
+    // Expression is written in seconds, so the plan is rebuilt at the new
+    // speed and anything already sounding on the old timing is cancelled. The
+    // engine itself is untouched: no graph, no samples, no rescheduling.
+    this.engine?.expression.stopAll();
+    this.engine?.expression.setPlan(
+      buildExpressionPlan(this.song, { practicePercent }),
+    );
     this.set({ practicePercent, bpm });
   }
 
@@ -312,6 +334,7 @@ export class PlaybackController {
 
   dispose(): void {
     this.disposed = true;
+    this.engine?.expression.dispose();
     const transport = this.engine?.context.transport;
     if (transport) {
       transport.stop();

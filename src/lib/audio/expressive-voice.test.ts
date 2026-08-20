@@ -1,0 +1,302 @@
+/**
+ * One voice per note, and no voice touching another (spec 8.5, K-21).
+ *
+ * The node module is faked, so this runs without an audio context and can
+ * check the thing that actually matters: *which* object each automation call
+ * lands on. A test that only listened to the output could not tell a per-note
+ * bend from a track-wide one until a chord happened to expose it.
+ */
+import { describe, expect, it } from "vitest";
+
+import { ExpressiveVoicePool, type VoiceHost } from "@/lib/audio/expressive-voice";
+import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
+import { sampleEntries } from "@/lib/audio/sample-map";
+import { bar, note, slots, song } from "@/test/expression-fixtures";
+
+type Call = { kind: "set" | "ramp"; value: number; time: number };
+
+type FakeParam = { calls: Call[] };
+
+type FakeSource = {
+  id: number;
+  playbackRate: FakeParam & {
+    setValueAtTime(value: number, time: number): void;
+    linearRampToValueAtTime(value: number, time: number): void;
+  };
+  started: { time: number; offset: number; duration: number } | null;
+  stopped: boolean;
+  disposed: number;
+  onended: () => void;
+  connect(node: unknown): void;
+  start(time: number, offset: number, duration: number): void;
+  stop(): void;
+  dispose(): void;
+};
+
+function fakeTone() {
+  const sources: FakeSource[] = [];
+  const gains: { id: number; calls: Call[]; disposed: number }[] = [];
+  const filters: { id: number; disposed: number }[] = [];
+
+  const param = (): FakeParam & {
+    setValueAtTime(value: number, time: number): void;
+    linearRampToValueAtTime(value: number, time: number): void;
+  } => {
+    const calls: Call[] = [];
+    return {
+      calls,
+      setValueAtTime(value, time) {
+        calls.push({ kind: "set", value, time });
+      },
+      linearRampToValueAtTime(value, time) {
+        calls.push({ kind: "ramp", value, time });
+      },
+    };
+  };
+
+  const tone = {
+    Gain: class {
+      id = gains.length;
+      gain = param();
+      disposed = 0;
+      calls = this.gain.calls;
+      constructor() {
+        gains.push(this as unknown as { id: number; calls: Call[]; disposed: number });
+      }
+      connect() {}
+      dispose() {
+        this.disposed += 1;
+      }
+    },
+    Filter: class {
+      id = filters.length;
+      disposed = 0;
+      constructor() {
+        filters.push(this as unknown as { id: number; disposed: number });
+      }
+      connect() {}
+      dispose() {
+        this.disposed += 1;
+      }
+    },
+    ToneBufferSource: class {
+      id = sources.length;
+      playbackRate = param();
+      started: FakeSource["started"] = null;
+      stopped = false;
+      disposed = 0;
+      onended: () => void = () => {};
+      constructor() {
+        sources.push(this as unknown as FakeSource);
+      }
+      connect() {}
+      start(time: number, offset: number, duration: number) {
+        this.started = { time, offset, duration };
+      }
+      stop() {
+        this.stopped = true;
+      }
+      dispose() {
+        this.disposed += 1;
+      }
+    },
+  };
+
+  return { tone, sources, gains, filters };
+}
+
+const NOTES = ["E2", "A2", "D3", "G3", "B3", "E4"];
+
+function harness(options: { offline?: boolean } = {}) {
+  const { tone, sources, gains, filters } = fakeTone();
+  const host: VoiceHost = {
+    buffers: {
+      has: () => true,
+      get: (name: string) => ({ name }),
+    } as unknown as VoiceHost["buffers"],
+    entries: sampleEntries(NOTES),
+    destination: {} as VoiceHost["destination"],
+    trimGain: 1,
+  };
+  const pool = new ExpressiveVoicePool(
+    tone as never,
+    { isOffline: options.offline ?? false } as never,
+    new Map([["gtr", host]]),
+  );
+  return { pool, sources, gains, filters };
+}
+
+function planFor(articulation: Parameters<typeof note>[3]): ExpressiveNotePlan {
+  const fixture = song([
+    bar(slots([note("G3", 1, 10), note("B3", 1, 14, articulation)])),
+  ]);
+  const found = buildExpressionPlan(fixture).notes.find(
+    (entry) => entry.slotIndex === 1,
+  );
+  if (!found) throw new Error("no plan");
+  return found;
+}
+
+describe("one voice per note", () => {
+  it("builds a source, a gain and nothing shared", () => {
+    const { pool, sources, gains } = harness();
+    expect(pool.play("gtr", planFor("vibrato"), 1)).toBe(true);
+
+    expect(sources).toHaveLength(1);
+    expect(gains).toHaveLength(1);
+    expect(pool.counts.active).toBe(1);
+    expect(pool.counts.started).toBe(1);
+  });
+
+  it("starts at the time it was given, for the length it was planned", () => {
+    const { pool, sources } = harness();
+    const plan = planFor("vibrato");
+    pool.play("gtr", plan, 4.5);
+
+    expect(sources[0]?.started).toEqual({
+      time: 4.5,
+      offset: 0,
+      duration: plan.durationSeconds,
+    });
+  });
+
+  it("writes the modulation on its own source and no other", () => {
+    const { pool, sources } = harness();
+    // A chord: one note shakes, the other does not.
+    pool.play("gtr", planFor("vibrato"), 0);
+    pool.play("gtr", { ...planFor(undefined), expressive: true }, 0);
+
+    const shaken = sources[0];
+    const still = sources[1];
+    expect(shaken?.playbackRate.calls.length).toBeGreaterThan(3);
+    // The plain note is set once, at its own rate, and never moved.
+    expect(still?.playbackRate.calls.filter((call) => call.kind === "ramp")).toEqual([]);
+  });
+
+  it("gives a bend its own rise and fall", () => {
+    const { pool, sources } = harness();
+    pool.play("gtr", planFor("bend_full"), 0);
+
+    const calls = sources[0]?.playbackRate.calls ?? [];
+    const rates = calls.map((call) => call.value);
+    expect(Math.max(...rates)).toBeGreaterThan(rates[0] ?? 0);
+    expect(calls[calls.length - 1]?.value).toBeCloseTo(rates[0] ?? 0, 10);
+  });
+
+  it("hands a palm mute a filter of its own", () => {
+    const { pool, filters } = harness();
+    pool.play("gtr", planFor("palm_mute"), 0);
+    expect(filters).toHaveLength(1);
+  });
+
+  it("gives an accent a gain of its own and no filter", () => {
+    const { pool, gains, filters } = harness();
+    pool.play("gtr", planFor("accent"), 0);
+
+    expect(filters).toHaveLength(0);
+    expect(gains[0]?.calls.length).toBeGreaterThan(0);
+  });
+
+  it("refuses a track it has no samples for", () => {
+    const { pool, sources } = harness();
+    expect(pool.play("bass", planFor("vibrato"), 0)).toBe(false);
+    expect(sources).toHaveLength(0);
+  });
+});
+
+describe("nothing is left ringing", () => {
+  it("goes away when the source ends", () => {
+    const { pool, sources } = harness();
+    pool.play("gtr", planFor("vibrato"), 0);
+    sources[0]?.onended();
+
+    expect(pool.counts.active).toBe(0);
+    expect(pool.counts.disposed).toBe(1);
+    expect(sources[0]?.disposed).toBe(1);
+  });
+
+  it("stops everything at once when asked", () => {
+    const { pool, sources, gains } = harness();
+    pool.play("gtr", planFor("vibrato"), 0);
+    pool.play("gtr", planFor("bend_half"), 1);
+    expect(pool.counts.active).toBe(2);
+
+    pool.stopAll();
+
+    expect(pool.counts.active).toBe(0);
+    expect(sources.every((source) => source.disposed === 1)).toBe(true);
+    expect(gains.every((gain) => gain.disposed === 1)).toBe(true);
+  });
+
+  it("does not mind being disposed twice", () => {
+    const { pool, sources } = harness();
+    pool.play("gtr", planFor("vibrato"), 0);
+
+    pool.stopAll();
+    sources[0]?.onended();
+    pool.stopAll();
+
+    expect(sources[0]?.disposed).toBe(1);
+    expect(pool.counts.disposed).toBe(1);
+    expect(pool.counts.active).toBe(0);
+  });
+
+  it("leaks nothing through a fast run of starts and stops", () => {
+    const { pool, sources } = harness();
+    for (let round = 0; round < 25; round += 1) {
+      pool.play("gtr", planFor("vibrato"), round);
+      if (round % 3 === 0) pool.stopAll();
+    }
+    pool.stopAll();
+
+    expect(pool.counts.active).toBe(0);
+    expect(pool.counts.disposed).toBe(pool.counts.started);
+    expect(sources.every((source) => source.disposed === 1)).toBe(true);
+  });
+
+  it("plays nothing more once it has been disposed", () => {
+    const { pool } = harness();
+    pool.dispose();
+    expect(pool.play("gtr", planFor("vibrato"), 0)).toBe(false);
+    expect(pool.counts.active).toBe(0);
+  });
+});
+
+describe("the offline renderer's rule", () => {
+  it("keeps a finished voice's nodes until the render is over", () => {
+    // Offline, Tone walks the timeline first and writes the audio afterwards.
+    // Freeing a node when its note ends would erase the sound before it was
+    // ever written, so the nodes stay until the pool is stopped.
+    const { pool, sources } = harness({ offline: true });
+    pool.play("gtr", planFor("vibrato"), 0);
+    sources[0]?.onended();
+
+    expect(pool.counts.active).toBe(0);
+    expect(sources[0]?.disposed).toBe(0);
+
+    pool.stopAll();
+    expect(sources[0]?.disposed).toBe(1);
+    expect(pool.counts.disposed).toBe(1);
+  });
+
+  it("frees a finished voice straight away when it is not offline", () => {
+    const { pool, sources } = harness({ offline: false });
+    pool.play("gtr", planFor("vibrato"), 0);
+    sources[0]?.onended();
+
+    expect(sources[0]?.disposed).toBe(1);
+  });
+
+  it("leaves nothing behind offline once everything has stopped", () => {
+    const { pool, sources } = harness({ offline: true });
+    for (let index = 0; index < 10; index += 1) {
+      pool.play("gtr", planFor("vibrato"), index);
+    }
+    for (const source of sources) source.onended();
+
+    expect(pool.counts.active).toBe(0);
+    pool.dispose();
+    expect(sources.every((source) => source.disposed === 1)).toBe(true);
+    expect(pool.counts.disposed).toBe(sources.length);
+  });
+});

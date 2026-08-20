@@ -36,6 +36,7 @@ import {
 } from "@/lib/song/selection";
 import { useSong } from "@/lib/song/use-song";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
+import { validateArticulationContext } from "@/lib/validators";
 
 type Cell = { barKey: string; slotIndex: number; stringIndex: number };
 
@@ -161,17 +162,42 @@ export function Workspace() {
     });
   }, [clearSelection, controller]);
 
-  const currentFret = useMemo(() => {
+  /** The span under the selected cell, if there is a note there. */
+  const currentSpan = useMemo(() => {
     if (!cell || timeline.kind !== "fretted") return null;
     const bar = timeline.bars.find((entry) => entry.key === cell.barKey);
-    const span = bar?.spans.find(
-      (entry) =>
-        entry.startSlot === cell.slotIndex &&
-        !entry.openStart &&
-        entry.stringIndex === cell.stringIndex,
+    return (
+      bar?.spans.find(
+        (entry) =>
+          entry.startSlot === cell.slotIndex &&
+          !entry.openStart &&
+          entry.stringIndex === cell.stringIndex,
+      ) ?? null
     );
-    return span?.fret ?? null;
   }, [cell, timeline]);
+
+  const currentFret = currentSpan?.fret ?? null;
+  const currentArticulation = currentSpan?.articulation ?? null;
+
+  /**
+   * What the validators say about the articulation on the selected cell.
+   * A warning is information, not a refusal: it is shown, and the edit stands.
+   */
+  const articulationWarning = useMemo(() => {
+    if (!cell || !track) return null;
+    const [sectionId, barIndexText] = cell.barKey.split(":");
+    const barIndex = Number(barIndexText);
+    if (!sectionId || !Number.isInteger(barIndex)) return null;
+
+    const issue = validateArticulationContext(song).find(
+      (entry) =>
+        entry.trackId === track.id &&
+        entry.sectionId === sectionId &&
+        entry.barIndex === barIndex &&
+        entry.slotIndex === cell.slotIndex,
+    );
+    return issue?.message ?? null;
+  }, [cell, song, track]);
 
   const fretTarget: FretSheetTarget | null = useMemo(() => {
     if (!cell || timeline.kind !== "fretted") return null;
@@ -182,8 +208,10 @@ export function Workspace() {
       slotIndex: cell.slotIndex,
       stringIndex: cell.stringIndex,
       currentFret,
+      currentArticulation,
+      articulationWarning,
     };
-  }, [cell, currentFret, timeline]);
+  }, [articulationWarning, cell, currentArticulation, currentFret, timeline]);
 
   const runCommand = useCallback(
     (build: (target: { sectionId: string; barIndex: number }) => EditCommand) => {
@@ -484,7 +512,7 @@ export function Workspace() {
 
       {editing && fretboard && track ? (
         <FretSheet
-          key={`${cell?.barKey}:${cell?.slotIndex}:${cell?.stringIndex}:${currentFret}`}
+          key={`${cell?.barKey}:${cell?.slotIndex}:${cell?.stringIndex}:${currentFret}:${currentArticulation}`}
           open={cell !== null && !previewOpen}
           fretboard={fretboard}
           target={fretTarget}
@@ -494,6 +522,19 @@ export function Workspace() {
             setEditError(null);
           }}
           onNudge={nudge}
+          onArticulation={(articulation) =>
+            runCommand(({ sectionId, barIndex }) => ({
+              kind: "set_articulation",
+              target: {
+                sectionId,
+                trackId: track.id,
+                barIndex,
+                slotIndex: cell?.slotIndex ?? 0,
+              },
+              stringIndex: cell?.stringIndex ?? 0,
+              articulation,
+            }))
+          }
           onCommit={(fret) =>
             runCommand(({ sectionId, barIndex }) => ({
               kind: "set_note",

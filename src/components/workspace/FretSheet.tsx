@@ -5,7 +5,29 @@ import { useState } from "react";
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { maxCapoRelativeFret } from "@/lib/music/fretboard";
 import { pitchAt } from "@/lib/song/edit";
-import type { Fretboard } from "@/lib/song/schema";
+import { articulationLabel } from "@/lib/validators";
+import type { Articulation, Fretboard } from "@/lib/song/schema";
+
+/**
+ * What the sheet offers, in playing order rather than alphabetical: the plain
+ * note first, then the two that change the level, then the four that change
+ * the pitch, then the two that join to the note before (spec 13.9).
+ *
+ * `null` is "normal" and removes the field. The reader never sees an
+ * identifier like `bend_half`; the labels come from the one place they are
+ * written down.
+ */
+const CHOICES: readonly (Articulation | null)[] = [
+  null,
+  "accent",
+  "palm_mute",
+  "vibrato",
+  "bend_half",
+  "bend_full",
+  "slide",
+  "hammer_on",
+  "pull_off",
+];
 
 export type FretSheetTarget = {
   barNumber: number;
@@ -13,6 +35,10 @@ export type FretSheetTarget = {
   stringIndex: number;
   /** What is written on this string in this slot now, if anything. */
   currentFret: number | null;
+  /** How this string of this slot is played now (spec 8.5). */
+  currentArticulation: Articulation | null;
+  /** What the validators say about that choice, if anything. */
+  articulationWarning: string | null;
 };
 
 /**
@@ -37,6 +63,7 @@ export function FretSheet({
   onRest,
   onTie,
   onNudge,
+  onArticulation,
   error,
 }: {
   open: boolean;
@@ -48,6 +75,7 @@ export function FretSheet({
   onRest: () => void;
   onTie: () => void;
   onNudge: (delta: { slot?: number; string?: number }) => void;
+  onArticulation: (articulation: Articulation | null) => void;
   /** Set when the last command was refused, in words the reader can act on. */
   error: string | null;
 }) {
@@ -143,6 +171,42 @@ export function FretSheet({
         >
           ↓
         </SheetButton>
+      </div>
+
+      <div className="border-line border-t py-3">
+        <p className="text-muted pb-2 text-xs" id="articulation-label">
+          Bu telin çalınışı
+        </p>
+        <div
+          role="group"
+          aria-labelledby="articulation-label"
+          className="flex flex-wrap gap-2"
+        >
+          {CHOICES.map((choice) => {
+            const selected = (target.currentArticulation ?? null) === choice;
+            return (
+              <button
+                key={choice ?? "normal"}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => onArticulation(choice)}
+                className={`min-h-11 rounded-lg border px-3 text-sm ${
+                  selected
+                    ? "border-bronze text-bronze bg-raised font-semibold"
+                    : "border-line text-muted"
+                }`}
+              >
+                {choice === null ? "Normal" : articulationLabel(choice)}
+              </button>
+            );
+          })}
+        </div>
+
+        {target.articulationWarning ? (
+          <p role="status" className="text-bronze pt-2 text-xs">
+            {target.articulationWarning}
+          </p>
+        ) : null}
       </div>
 
       <div className="border-line flex flex-wrap gap-2 border-t py-3">

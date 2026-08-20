@@ -132,12 +132,20 @@ function bassBar(bar: Bar, guitarId: string | undefined, floorMidi: number): Mel
  * onsets only. Colour tones are left alone rather than harmonised, and the
  * unaccented onsets are left silent so the part does not shadow the guitar
  * note for note.
+ *
+ * It is also the one fake that writes expression (spec 8.5): the downbeat is
+ * accented and the bar's last harmony note is left ringing with vibrato.
+ * Both are context-free, so this fixture can never produce an articulation
+ * whose context does not hold — proving the contract carries expression
+ * without teaching a bad habit.
  */
 function harmonyBar(bar: Bar, guitarId: string | undefined, song: Song): MelodicSlot[] {
   const count = slotCount(bar.timeSignature, bar.resolution);
   const slots = emptyMelodic(count);
   const key = parseKey(song.key);
   if (guitarId === undefined || !key) return slots;
+
+  const written: number[] = [];
 
   for (const onset of onsetsOf(bar, guitarId)) {
     if (!onset.accented && onset.slotIndex !== 0) continue;
@@ -157,7 +165,25 @@ function harmonyBar(bar: Bar, guitarId: string | undefined, song: Song): Melodic
 
     const pitch = midiToPitch(top + candidate);
     if (!pitch) continue;
-    slots[onset.slotIndex] = { notes: [{ pitch }] };
+    slots[onset.slotIndex] = {
+      notes: [
+        onset.slotIndex === 0
+          ? { pitch, articulation: "accent" as const }
+          : { pitch },
+      ],
+    };
+    written.push(onset.slotIndex);
+  }
+
+  // The last note of the bar rings on, so it is given a vibrato.
+  const last = written[written.length - 1];
+  if (last !== undefined && last !== 0) {
+    const slot = slots[last];
+    if (slot && slot !== "-" && slot.notes[0]) {
+      slots[last] = {
+        notes: [{ ...slot.notes[0], articulation: "vibrato" as const }],
+      };
+    }
   }
 
   return slots;

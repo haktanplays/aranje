@@ -9,6 +9,8 @@
 import * as Tone from "tone";
 
 import { styleExampleSongs } from "@/lib/copilot/style-examples";
+import { EXPRESSION_DEMOS } from "@/lib/audio/expression-demos";
+import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { createEngine, scheduleSong } from "@/lib/audio/engine";
 import { drumTrackIds, melodicTrackIds } from "@/lib/audio/tracks";
 import { PPQ, buildSongPlan } from "@/lib/audio/schedule";
@@ -246,6 +248,8 @@ declare global {
     aranjeRenderVariant: typeof renderVariant;
     aranjeRenderSolo: typeof renderSolo;
     aranjeRenderStyleExample: typeof renderStyleExample;
+    aranjeRenderExpressionDemo: typeof renderExpressionDemo;
+    aranjeExpressionDemoCount: number;
     aranjeTrackIds: string[];
   }
 }
@@ -254,3 +258,106 @@ window.aranjeRenderVariant = renderVariant;
 window.aranjeRenderSolo = renderSolo;
 window.aranjeRenderStyleExample = renderStyleExample;
 window.aranjeTrackIds = SAMPLE_SONG.tracks.map((track) => track.id);
+window.aranjeExpressionDemoCount = EXPRESSION_DEMOS.length;
+
+/**
+ * Render one expression A/B case (spec 8.5, phase 2F).
+ *
+ * The same engine, the same samples, the same scheduler and the same planner
+ * as live playback. What is measured alongside the audio is what a listener
+ * cannot hear: how many voices were opened, whether any survived the end, how
+ * many sample requests the engine made, and how far the pitch was actually
+ * moved. None of it is a judgement about how it sounds.
+ */
+export async function renderExpressionDemo(index: number) {
+  const demo = EXPRESSION_DEMOS[index];
+  if (!demo) throw new Error(`no expression demo at index ${index}`);
+
+  const song = demo.song;
+  const plan = buildSongPlan(song);
+  const expression = buildExpressionPlan(song);
+  const seconds = (plan.totalTicks / PPQ) * (60 / song.bpm) + 2.5;
+
+  let requests = 0;
+  const originalFetch = window.fetch.bind(window);
+  window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    if (url.includes("/samples/")) requests += 1;
+    return originalFetch(input as RequestInfo, init);
+  }) as typeof window.fetch;
+
+  const diagnostics: Record<string, unknown> = {};
+
+  const buffer = await Tone.Offline(async (context) => {
+    const engine = await createEngine(song, context);
+    scheduleSong(engine, song.bpm);
+    context.transport.start(0);
+
+    diagnostics.expectedBuffers = engine.expectedBuffers;
+    diagnostics.loadedBuffers = engine.loadedBuffers;
+    diagnostics.plannedNotes = engine.expression.getPlan().notes.length;
+    diagnostics.expressiveNotes = engine.expression.getPlan().expressiveNotes;
+    diagnostics.fallbacks = engine.expression.getPlan().fallbacks;
+
+    // Read after the render finishes, so a voice that outlived the music shows.
+    context.transport.scheduleOnce(() => {
+      diagnostics.voicesAtEnd = engine.expression.counts.active;
+      diagnostics.voicesStarted = engine.expression.counts.started;
+      diagnostics.voicesDisposed = engine.expression.counts.disposed;
+    }, `${Math.max(1, plan.totalTicks)}i`);
+
+    diagnostics.engine = engine;
+  }, seconds);
+
+  window.fetch = originalFetch;
+
+  const engine = diagnostics.engine as {
+    expression: { counts: { active: number; started: number; disposed: number } };
+    dispose(): void;
+  };
+  diagnostics.countsAtEnd = { ...engine.expression.counts };
+  // Disposing after the render proves nothing survives the engine.
+  engine.dispose();
+  diagnostics.countsAfterDispose = { ...engine.expression.counts };
+  delete diagnostics.engine;
+
+  const raw = buffer.toArray() as Float32Array | Float32Array[];
+  const list = Array.isArray(raw) ? raw : [raw];
+
+  let peak = 0;
+  let sumSquares = 0;
+  let samples = 0;
+  for (const channel of list) {
+    for (const value of channel) {
+      peak = Math.max(peak, Math.abs(value));
+      sumSquares += value * value;
+      samples += 1;
+    }
+  }
+
+  const cents = expression.notes.flatMap((note) =>
+    note.pitchAutomation.map((point) => point.cents),
+  );
+
+  const wav = encodeWav(list, buffer.sampleRate);
+  let binary = "";
+  for (const byte of wav) binary += String.fromCharCode(byte);
+
+  return {
+    id: demo.id,
+    label: demo.label,
+    pairsWith: demo.pairsWith,
+    wavBase64: btoa(binary),
+    sampleRate: buffer.sampleRate,
+    channels: list.length,
+    seconds: buffer.duration,
+    peak,
+    rms: Math.sqrt(sumSquares / Math.max(1, samples)),
+    events: plan.events.length,
+    sampleRequests: requests,
+    centsRange: cents.length === 0 ? [0, 0] : [Math.min(...cents), Math.max(...cents)],
+    diagnostics,
+  };
+}
+
+window.aranjeRenderExpressionDemo = renderExpressionDemo;

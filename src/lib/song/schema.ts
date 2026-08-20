@@ -26,12 +26,31 @@ export const timeSignatureSchema = z.union([
 
 export const resolutionSchema = z.union([z.literal(8), z.literal(16)]);
 
+/**
+ * How one note is played (spec 5.4, 8.5).
+ *
+ * The first five were here from phase 0 and keep their meaning exactly, so a
+ * song written before expressive playback reads and sounds the same. The six
+ * added in phase 2F are the pilot's expression vocabulary; a note carries at
+ * most one of them, and combinations are deliberately not part of this
+ * version.
+ *
+ * This is the **only** articulation enum in the codebase. The copilot's narrow
+ * output shape derives from it rather than declaring its own, so the two can
+ * never drift into disagreeing about what a valid articulation is.
+ */
 export const articulationSchema = z.enum([
   "normal",
   "palm_mute",
   "accent",
   "sustain",
   "staccato",
+  "vibrato",
+  "bend_half",
+  "bend_full",
+  "slide",
+  "hammer_on",
+  "pull_off",
 ]);
 
 export const positionSchema = z

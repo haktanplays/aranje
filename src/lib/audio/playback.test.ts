@@ -8,6 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import { scheduleSong, type Engine } from "@/lib/audio/engine";
+import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { PlaybackController } from "@/lib/audio/playback";
 import { sectionLoopBounds } from "@/lib/audio/position";
 import { effectiveBpm } from "@/lib/audio/practice-rate";
@@ -23,10 +24,12 @@ type FakeTransport = {
   loopStart: string;
   loopEnd: string;
   scheduled: number[];
+  listeners: string[];
   cancels: number;
   starts: number;
   pauses: number;
   schedule(callback: (time: number) => void, time: unknown): number;
+  on(event: string, callback: () => void): void;
   start(): void;
   pause(): void;
   stop(): void;
@@ -43,12 +46,16 @@ function fakeTransport(): FakeTransport {
     loopStart: "",
     loopEnd: "",
     scheduled: [],
+    listeners: [],
     cancels: 0,
     starts: 0,
     pauses: 0,
     schedule() {
       transport.scheduled.push(transport.scheduled.length);
       return transport.scheduled.length;
+    },
+    on(event) {
+      transport.listeners.push(event);
     },
     start() {
       transport.starts += 1;
@@ -65,9 +72,33 @@ function fakeTransport(): FakeTransport {
   return transport;
 }
 
+/** The expressive layer, without any audio in it, counting what it was asked. */
+function fakeExpression() {
+  let plan = buildExpressionPlan(SAMPLE_SONG);
+  const log = { stops: 0, plans: 0, disposals: 0 };
+  return {
+    log,
+    setPlan: (next: typeof plan) => {
+      plan = next;
+      log.plans += 1;
+    },
+    getPlan: () => plan,
+    play: () => false,
+    stopAll: () => {
+      log.stops += 1;
+    },
+    counts: { active: 0, started: 0, disposed: 0 },
+    fetchedUrls: 0,
+    dispose: () => {
+      log.disposals += 1;
+    },
+  };
+}
+
 function harness(options: { practicePercent?: number } = {}) {
   const transport = fakeTransport();
   let builds = 0;
+  const expression = fakeExpression();
 
   const engine = {
     context: { transport },
@@ -76,6 +107,7 @@ function harness(options: { practicePercent?: number } = {}) {
     voices: new Map(),
     meters: new Map(),
     plan: buildSongPlan(SAMPLE_SONG),
+    expression,
     expectedBuffers: 0,
     loadedBuffers: 0,
     dispose: () => {},
@@ -91,7 +123,7 @@ function harness(options: { practicePercent?: number } = {}) {
     },
   });
 
-  return { controller, transport, engine, builds: () => builds };
+  return { controller, transport, engine, expression, builds: () => builds };
 }
 
 describe("the two tempos", () => {
@@ -259,9 +291,59 @@ describe("the scheduler itself", () => {
       metronome: { click: { triggerAttackRelease: () => {} } },
       voices: new Map(),
       plan: buildSongPlan(SAMPLE_SONG),
+      expression: fakeExpression(),
     } as unknown as Engine;
 
     scheduleSong(engine, effectiveBpm(SAMPLE_SONG.bpm, 75));
     expect(transport.bpm.value).toBe(99);
+  });
+});
+
+describe("the expressive layer's lifetime", () => {
+  it("rebuilds the plan at the new speed, without rebuilding the engine", async () => {
+    const { controller, expression, builds } = harness();
+    await controller.play();
+    const plansBefore = expression.log.plans;
+
+    controller.setPracticePercent(50);
+
+    expect(expression.log.plans).toBe(plansBefore + 1);
+    expect(expression.log.stops).toBeGreaterThan(0);
+    expect(builds()).toBe(1);
+    const slow = expression.getPlan().notes[0];
+    const fast = buildExpressionPlan(SAMPLE_SONG).notes[0];
+    expect(slow?.durationSeconds).toBeCloseTo((fast?.durationSeconds ?? 0) * 2, 5);
+  });
+
+  it("ends every voice on pause", async () => {
+    const { controller, expression } = harness();
+    await controller.play();
+    const before = expression.log.stops;
+    controller.pause();
+    expect(expression.log.stops).toBe(before + 1);
+  });
+
+  it("ends every voice on a seek and on a rewind", async () => {
+    const { controller, expression } = harness();
+    await controller.play();
+    const before = expression.log.stops;
+
+    controller.seekToBar(`${SAMPLE_SONG.sections[0]?.id}:1`);
+    controller.rewind();
+
+    expect(expression.log.stops).toBe(before + 2);
+  });
+
+  it("listens for the loop wrap so the previous pass cannot hang over", async () => {
+    const { controller, transport } = harness();
+    await controller.play();
+    expect(transport.listeners).toContain("loop");
+  });
+
+  it("disposes the expressive layer with the engine", async () => {
+    const { controller, expression } = harness();
+    await controller.play();
+    controller.dispose();
+    expect(expression.log.disposals).toBe(1);
   });
 });

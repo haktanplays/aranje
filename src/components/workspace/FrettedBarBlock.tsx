@@ -2,6 +2,7 @@
 
 import { useCallback, useRef } from "react";
 
+import { ArticulationGlyph } from "@/components/workspace/ArticulationGlyph";
 import { FretGlyph } from "@/components/workspace/FretGlyph";
 import {
   BAR_HEADER_HEIGHT,
@@ -17,6 +18,25 @@ import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
+
+/**
+ * Which way a slide leans, read from the bar itself.
+ *
+ * Only the previous onset on the same string within this bar is consulted: the
+ * glyph is a hint about direction, and the validator is what decides whether a
+ * slide is playable at all (spec 10.3).
+ */
+function risingAt(bar: FrettedBar, span: FrettedBar["spans"][number]): boolean | undefined {
+  let previous: FrettedBar["spans"][number] | undefined;
+  for (const other of bar.spans) {
+    if (other.stringIndex !== span.stringIndex) continue;
+    if (other.startSlot >= span.startSlot) continue;
+    if (other.openStart) continue;
+    previous = other;
+  }
+  if (!previous || previous.fret === null || span.fret === null) return undefined;
+  return span.fret > previous.fret;
+}
 
 /** How long a press has to be held before it means "select this chord". */
 export const LONG_PRESS_MS = 400;
@@ -169,6 +189,12 @@ export function FrettedBarBlock({
                   title={span.pitch}
                 >
                   <FretGlyph fret={span.fret} articulation={span.articulation} />
+                  {span.articulation ? (
+                    <ArticulationGlyph
+                      articulation={span.articulation}
+                      rising={risingAt(bar, span)}
+                    />
+                  ) : null}
                 </span>
               ),
             )}
