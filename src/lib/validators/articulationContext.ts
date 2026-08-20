@@ -8,8 +8,9 @@
  * told why rather than left wondering where the sound went.
  *
  * So this only ever warns. Playback falls back to an ordinary onset with the
- * same fixed reason this reports, because both read the context from the same
- * helper (`@/lib/music/legato`).
+ * same fixed reason this reports, because both ask the same question of the
+ * same helper (`legatoDecision`) — including, for a slide, whether there is
+ * enough time between the two notes to hear the hand travel (spec 8.5, K-23).
  *
  * What it refuses to do
  * ---------------------
@@ -21,7 +22,8 @@
  */
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import { legatoDecision } from "@/lib/audio/legato-chain";
-import { legatoLink, trackLegatoOnsets } from "@/lib/music/legato";
+import { PPQ } from "@/lib/audio/schedule";
+import { trackLegatoOnsets } from "@/lib/music/legato";
 import { isExpressive, needsPrevious } from "@/lib/audio/expression";
 import { expressionPresets } from "@/lib/audio/expression";
 import type { Song } from "@/lib/song/schema";
@@ -86,6 +88,7 @@ export const validateArticulationContext: Validator = (song: Song) => {
     }
 
     const onsets = trackLegatoOnsets(song, track.id);
+    const timing = { secondsPerTick: 60 / (song.bpm * PPQ), timeScale: 1 };
 
     onsets.forEach((onset, index) => {
       const articulation = onset.articulation;
@@ -113,37 +116,11 @@ export const validateArticulationContext: Validator = (song: Song) => {
 
       const name = articulationLabel(articulation);
 
-      if (articulation === "slide") {
-        const link = legatoLink(onsets, index);
-        if (link.kind === "other_string") {
-          report(
-            `${where}: ${onset.pitch} notasındaki ${name} için önceki nota aynı ` +
-              `telde değil; normal çalınacak.`,
-          );
-          return;
-        }
-        if (link.kind === "none") {
-          report(
-            `${where}: ${onset.pitch} notasındaki ${name} bir önceki nota ile ` +
-              `bağlanamıyor; normal çalınacak.`,
-          );
-          return;
-        }
-        const previous = link.previous;
-        if (previous.midi === null || onset.midi === null) return;
-        const interval = Math.abs(previous.midi - onset.midi);
-        if (interval > expressionPresets.slide.maxIntervalSemitones) {
-          report(
-            `${where}: ${previous.pitch} ile ${onset.pitch} arası ${interval} ` +
-              `yarım ton; bir oktavdan geniş bir ${name} normal çalınacak.`,
-          );
-        }
-        return;
-      }
-
-      // Hammer-on and pull-off are decided by the same helper the renderer
-      // uses, so a warning here and a fallback there can never disagree.
-      const decision = legatoDecision(onsets, index);
+      // Every slur is decided by the same helper the renderer uses, so a
+      // warning here and a fallback there can never disagree (spec 8.5, K-23).
+      // The clock is the song's own, at full speed: whether a slide has room
+      // is a property of the writing, not of the speed it is being worked at.
+      const decision = legatoDecision(onsets, index, timing);
       if (!decision || decision.kind === "joined") return;
 
       switch (decision.reason) {
@@ -170,9 +147,21 @@ export const validateArticulationContext: Validator = (song: Song) => {
           return;
         case "interval_too_wide":
           report(
-            `${where}: ${name} en fazla ` +
-              `${expressionPresets.legato.maxIntervalSemitones} yarım ton ` +
-              `uzağa bağlanır; ${onset.pitch} normal çalınacak.`,
+            articulation === "slide"
+              ? `${where}: ${name} aynı perdeye kaymaz ve en fazla ` +
+                  `${expressionPresets.slide.maxIntervalSemitones} yarım ton ` +
+                  `uzağa kayar; ${onset.pitch} normal çalınacak.`
+              : `${where}: ${name} en fazla ` +
+                  `${expressionPresets.legato.maxIntervalSemitones} yarım ton ` +
+                  `uzağa bağlanır; ${onset.pitch} normal çalınacak.`,
+          );
+          return;
+        case "no_room_to_glide":
+          report(
+            `${where}: ${onset.pitch} notasındaki ${name} için iki nota arasında ` +
+              `elin kayacağı süre yok (en az ` +
+              `${Math.round(expressionPresets.slide.minAudibleSeconds * 1000)} ms ` +
+              `gerekir); normal çalınacak.`,
           );
           return;
         default:

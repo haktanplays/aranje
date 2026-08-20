@@ -9,8 +9,10 @@ import {
 } from "@/lib/validators/articulationContext";
 import { SONG_VALIDATORS, runValidators } from "@/lib/validators";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import {
   REST,
+  TIE,
   bar,
   emptyBar,
   note,
@@ -73,7 +75,53 @@ describe("slide", () => {
       song([bar(slots([note("E2", 0, 0), note("F3", 0, 13, "slide")]))]),
     );
     expect(issues).toHaveLength(1);
-    expect(issues[0]?.message).toContain("oktavdan");
+    expect(issues[0]?.message).toContain("12 yarım ton");
+  });
+
+  it("warns when the two notes are too close together to hear the hand move", () => {
+    // Eighths at 300bpm are 100ms apart, and 20ms of that belongs to the
+    // source note, so 80ms of travel is left — under the audible floor.
+    const quick: Song = { ...song([bar(slots([G3(), B3("slide")]))]), bpm: 300 };
+    const issues = issuesOf(quick);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.message).toContain("kayacağı süre yok");
+  });
+
+  it("says nothing once the same passage has room for the hand", () => {
+    const roomy: Song = { ...song([bar(slots([G3(), TIE, B3("slide")]))]), bpm: 300 };
+    expect(issuesOf(roomy)).toEqual([]);
+  });
+
+  it("says nothing about a section line on its own", () => {
+    const across = song(
+      [bar(slots([REST, REST, REST, REST, G3(), TIE, TIE, TIE]))],
+      [bar(slots([B3("slide")]))],
+    );
+    expect(issuesOf(across)).toEqual([]);
+  });
+
+  it("warns about exactly the slides the planner refuses to play", () => {
+    // The two must never disagree: a warning with no fallback would be a lie,
+    // and a fallback with no warning would be a note that quietly changed.
+    const fixtures: Song[] = [
+      song([bar(slots([G3(), B3("slide")]))]),
+      song([bar(slots([B3("slide")]))]),
+      song([bar(slots([note("E3", 0, 12), note("A3", 1, 12, "slide")]))]),
+      song([bar(slots([note("E2", 0, 0), note("F3", 0, 13, "slide")]))]),
+      song([bar(slots([G3(), REST, B3("slide")]))]),
+      { ...song([bar(slots([G3(), B3("slide")]))]), bpm: 300 },
+      song([
+        bar(slots([REST, REST, REST, REST, REST, REST, REST, G3()])),
+        emptyBar(),
+        bar(slots([B3("slide")])),
+      ]),
+    ];
+
+    for (const fixture of fixtures) {
+      const warned = issuesOf(fixture).length;
+      const refused = buildExpressionPlan(fixture).fallbacks;
+      expect(warned).toBe(refused);
+    }
   });
 });
 

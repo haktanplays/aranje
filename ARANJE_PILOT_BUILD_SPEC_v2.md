@@ -504,7 +504,7 @@ component, scheduler ve voice sınıflarında sayı tekrarlanmaz.
 | Bend half | +100 cent |
 | Bend full | +200 cent |
 | Bend eğrisi (v2) | settle **35 ms** (≤ sürenin %8'i) · rise süre × %22, **80–280 ms** arası, ease-out · hold kalan orta bölüm, hedef tam korunur · release süre × %12, **60–180 ms** arası, ease-in-out, 0 cent'e döner (§19 K-22) |
-| Slide | önceki pitch'ten hedefe, glide `min(160 ms, süre × 0.35)`, sonra normal pitch |
+| Slide (v2) | hedef onset **varış** anıdır; glide önceki notanın kuyruğunda başlar. İstenen süre `clamp(\|yarım ton\| × 45 ms, 120 ms, 360 ms)`, kaynağın başında en az **20 ms** sabit pitch kalır, kalan süreye sığdırılır; **90 ms**'nin altına düşerse slide çalınmaz. Smoothstep eğri, 8 adım, son nokta tam hedef cent. En fazla **12 yarım ton** (§19 K-23) |
 | Hammer-on | geçiş **22 ms**, geçiş sonrası enerji **%88** (§19 K-22) |
 | Pull-off | geçiş **28 ms**, enerji **%78**, kısa yardımcı transient: gain 0.16, ≤35 ms, low-pass 4500 Hz (§19 K-22) |
 | Legato aralığı | en fazla **5 yarım ton** (§19 K-22) |
@@ -535,6 +535,32 @@ Chain ID canonical ve deterministic'tir. Zincir kurulamayan her durumda mevcut
 Pull-off'un yardımcı transient'i primary zincirin parçası **değildir** ve
 diagnostic'te ayrıca `auxiliaryTransient` olarak sayılır; primary voice'ın
 yerine geçmez ve full restrike gibi duyulmamalıdır.
+
+**Slide de aynı zincirdedir (§19 K-23).** Slide için ikinci bir zincir veya
+scheduler yoktur; hammer/pull ile aynı `LegatoChain` modelini kullanır. Tek
+farkı **zamanıdır**: hammer-on hedefte olur — parmak iner ve pitch orada
+değişir — slide ise hedeften **önce** olur. Bu yüzden bir transition iki zaman
+taşır: pitch'in hareket etmeye başladığı an (`atSeconds`) ve hedefe vardığı an
+(`arrivesAtSeconds`). Slide'da varış anı hedef notanın **notated onset'idir**;
+yani yazılan zaman kaymanın başlangıcı değil, hedef perdeye ulaşma anıdır.
+Hedefte yeni full sample attack başlamaz ve aynı primary source hedef notanın
+süresi boyunca devam eder.
+
+Glide süresi aralığa göre ölçeklenir ve iki notanın arasındaki zamana
+sığdırılır: kaynak nota önce **kendisi olarak** duyulmalıdır (en az 20 ms sabit
+pitch), kalan süre istenen glide'dan kısaysa glide kısaltılır, kalan süre
+**90 ms**'nin altındaysa slide hiç kurulmaz — nota normal çalınır ve
+`no_room_to_glide` uyarısı verilir. Practice rate bütün bu süreleri ölçekler,
+bu yüzden %50'de aynı pasaj daha uzun, %150'de daha kısa kayar; hangi
+pasajların kayabildiği hızla değişmez.
+
+Glide eğrisi tek linear ramp değildir: smoothstep ile başta yumuşak, ortada
+belirgin, hedefe yaklaşırken kontrollü bir hareket yazılır. Son automation
+noktası **tam** hedef cent değerindedir, bu yüzden overshoot yoktur, varıştan
+sonra pitch sabit kalır, başlangıç perdesine dönüş yoktur ve bend release
+davranışı slide'a taşınmaz. Yukarı ve aşağı slide simetriktir. Zincir kurulmayan
+bir slide **yarım zincir bırakmaz**: kaynak nota transition'ı olmayan bir
+zincirin içinde kalamaz.
 
 **Saf Expression Planner.** Audio node'larından bağımsız bir katman her nota
 için pitch automation, gain envelope ve gerekiyorsa filter preset üretir.
@@ -743,9 +769,12 @@ iki gitarın aynı power chord'u çalması sahte hata üretir.
   Saf ve UI'dan bağımsızdır, **error üretmez**. Kurallar: `accent` her pitched
   melodik notada geçerlidir; `palm_mute`, `vibrato`, `bend_half` ve `bend_full`
   Core Lite fretted melodik track'te geçerlidir; `slide` için önceki gerçek
-  onset **aynı telde** bulunmalıdır; `hammer_on` için önceki gerçek onset aynı
+  onset **aynı telde** bulunmalıdır, aralık **12 yarım tonu geçmemeli** ve iki
+  onset arasında %100 hız eşdeğerinde en az **90 ms** kayma süresi kalmalıdır
+  (§8.5, K-23); `hammer_on` için önceki gerçek onset aynı
   telde ve **daha düşük** pitch'te, `pull_off` için aynı telde ve **daha
-  yüksek** pitch'te olmalıdır. Önceki olay tie'ın arkasında bulunabiliyorsa Faz
+  yüksek** pitch'te olmalıdır. Uyarı ile playback'in fallback'i **aynı saf
+  yardımcıdan** (`legatoDecision`) okunur; ikisi farklı karar veremez. Önceki olay tie'ın arkasında bulunabiliyorsa Faz
   0 carry semantiği kullanılır; arada gerçek sus varsa bağlantı yoktur; eksik
   track anahtarı bağlantıyı keser; section sınırı tek başına kesmez. Davulda
   melodik articulation uygulanmaz. Fretboard'suz Faz 2.5 enstrümanlarında
@@ -1255,7 +1284,12 @@ değiştirmez; tek undo geri alır; grup taşıma articulation'ı aynen korur.
 
 **Tab işaretleri.** `accent` `>` · `palm_mute` `PM` · `vibrato` `~` ·
 `bend_half` `b½` · `bend_full` `b1` · `slide` yönüne göre `/` veya `\` ·
-`hammer_on` `h` · `pull_off` `p`. İşaret fret numarasını kapatmaz, tie
+`hammer_on` `h` · `pull_off` `p`. Slide'ın yönü **gerçek pitch'ten** türetilir
+(hedef pitch daha yüksekse `/`, daha düşükse `\`); görsel tel yönünden veya
+`stringIndex`'ten değil (§19 K-23) — tab thickest-string-first çizildiği için
+bu ikisi ters yöne bakabilir ve işaret duyulanla aynı şeyi söylemelidir.
+Bağlamı tutmayan bir slide yine yazılı işaretini gösterir, erişilebilir uyarı
+ayrıca durur. İşaret fret numarasını kapatmaz, tie
 çizgisiyle karışmaz, akorda doğru telin satırına düşer, yalnız renge dayanmaz
 ve screen reader tam articulation adını söyler. Mobil tab yüksekliği artmaz;
 gutter maskesi ve yatay scroll bozulmaz.
@@ -1522,6 +1556,8 @@ maliyettir** (§11.2/7).
 | **K-20** | **Çalışma hızı ve akor grubu taşıma (§13.8).** Transport'un mutlak BPM kaydırıcısı kaldırıldı; yerine şarkının kendi `bpm`'ini değiştirmeyen bir **practice rate** geldi (%50–%150, %5 adım, varsayılan %100; `limits.ts` tek kaynak). İkinci bir tempo sistemi yoktur: tek transport, tek scheduler, tick tabanlı zamanlama. Rate Song Contract'a yazılmaz, song/Copilot fingerprint'ine girmez ve Song'dan ayrı, strict doğrulanan bir ayar anahtarında saklanır; bozuk ayar %100'e döner ve Song karantinasını tetiklemez. Zaman ekseninde taşımanın birimi **onset block**'tur (onset + akor notaları + kesintisiz tie zinciri) ve saf `move_onset_group` komutu atomiktir: kısmi taşıma, üzerine yazma ve yetim tie yoktur, bütün grup tek storage write ve tek undo adımıdır. Bu sürümde serbest drag-and-drop yoktur. | Haktan, 20.08.2026 |
 | **K-21** | **Expressive Playback v1 (§8.5, §10.3, §13.9).** `NoteEvent.articulation` artık yalnız görsel metadata değil, nota bazında duyulan davranıştır. Pilot sözlüğü sekiz değerdir ve bir nota aynı anda yalnız birini taşır; kombinasyon kapsam dışıdır. Mantıksal pitch değişmez, bend miktarı sabittir (+100 / +200 cent), bütün başlangıç değerleri tek saf preset modülünde durur. Saf bir Expression Planner audio node'larından bağımsız olarak pitch automation ve gain envelope üretir; geçersiz bağlamda exception değil `articulationContext` uyarısı ve normal onset'e fallback verir. **Modulation nota-sahiplidir:** paylaşılan sampler'da global detune kullanılmaz; §8.1 allow-list'i bu yüzden `ToneAudioBuffers` ve `ToneBufferSource` ile açıkça genişletildi ve çözülmüş sample'lar tek bank'ten paylaşılır. Online ve offline aynı planner ve aynı scheduling yolunu kullanır. | Haktan, 20.08.2026 |
 | **K-22** | **Gerçek legato voice zinciri ve Bend v2 (§8.5).** Hammer-on/pull-off, hedefin daha kısık yeniden tetiklenmesi olmaktan çıkarıldı: aynı telde birbirine değen notalar tek bir primary voice'ta yaşar, transition'da o voice'un kendi pitch parametresi cumulative olarak hedef perdeye gider ve hedefte ikinci tam sample başlatılmaz. Hammer 22 ms / %88, pull 28 ms / %78; pull ayrıca ayrı sayılan kısa bir yardımcı transient alabilir (0.16 gain, ≤35 ms, 4500 Hz). Pilot legato aralığı en fazla 5 yarım tondur; aşan aralık uyarı + normal fallback üretir. Bend eğrisi yalnız yüzdeye bağlı olmaktan çıkarıldı: settle/rise/hold/release, rise 80–280 ms ve release 60–180 ms gerçek zaman sınırlarıyla, kısa notada deterministic oransal sıkıştırma ile. Üretim profili **tight**; **expressive** üst salınım yalnız render/test preset injection yolunda yaşar, UI seçici yoktur. Faz 2F'nin eski legato ve bend eğrileri yalnız dinleme karşılaştırması için durur, üretimde seçilebilir bir legacy motor yoktur. | Haktan, 20.08.2026 |
+
+| **K-23** | **Continuous slide chain (§8.5, §10.3, §13.9).** Slide'ın yazılı zamanı yeniden tanımlandı: hedef notanın notated onset'i kaymanın **başlangıcı değil, hedef perdeye varış anıdır**. El önceki notanın kuyruğunda hareket etmeye başlar, hedef onset'te tam hedef perdededir ve hedefte yeni bir full sample attack başlamaz; aynı primary source hedef notanın süresi boyunca devam eder. Faz 2F'nin `min(160 ms, süre × 0.35)` glide'ı hedef attack'ın altında kaybolduğu ve pasaj sıradan bir yeniden vuruş gibi duyulduğu için bırakıldı. Slide için ikinci bir zincir veya scheduler yazılmadı: hammer/pull ile aynı `LegatoChain` modelini kullanır, tek farkı bir transition'ın artık iki zaman taşımasıdır (hareketin başladığı an ve vardığı an). İstenen glide `clamp(|yarım ton| × 45 ms, 120 ms, 360 ms)`, kaynağın başında en az 20 ms sabit pitch bırakılarak mevcut süreye sığdırılır; kalan süre 90 ms'nin altındaysa slide kurulmaz, nota normal çalınır ve `no_room_to_glide` uyarısı verilir. Pilot slide aralığı en fazla 12 yarım tondur. Eğri tek linear ramp değil smoothstep'tir; son nokta tam hedef cent olduğu için overshoot, varış sonrası geri dönüş ve bend release davranışı yoktur. Practice rate bütün bu süreleri ölçekler. Uyarı ile fallback aynı saf `legatoDecision` yardımcısından okunur ve kurulamayan bir slide yarım zincir bırakmaz. Tab işaretinin yönü gerçek pitch'ten türetilir, `stringIndex`'ten değil. | Haktan, 20.08.2026 |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 

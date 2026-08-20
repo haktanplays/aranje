@@ -63,10 +63,27 @@ export const expressionPresets = {
       pointsPerCycle: 10,
     },
   },
+  /**
+   * Slide (spec 8.5, K-23).
+   *
+   * v1 put an 80ms ramp at the *start* of the target note, underneath its own
+   * pick attack, where nobody could hear it — so a slide sounded like an
+   * ordinary restrike. A slide is not a way of beginning a note: it is the
+   * hand travelling along the string **into** it. So the glide happens in the
+   * previous note's tail and arrives exactly when the target is written.
+   */
   slide: {
-    maxGlideSeconds: 0.16,
-    glideFraction: 0.35,
-    /** Further than this and it is a jump, not a slide (spec 8.5). */
+    /** How long the hand takes per semitone before the clamps below. */
+    msPerSemitone: 45,
+    minGlideSeconds: 0.12,
+    maxGlideSeconds: 0.36,
+    /** The source note is heard as itself before the hand starts moving. */
+    minLeadSeconds: 0.02,
+    /** Below this nobody hears a slide, so it is not played as one. */
+    minAudibleSeconds: 0.09,
+    /** How finely the eased travel is written out. */
+    curvePoints: 8,
+    /** Further than this and it is a jump, not a slide. */
     maxIntervalSemitones: 12,
   },
   /**

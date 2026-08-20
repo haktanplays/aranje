@@ -242,22 +242,16 @@ export class ExpressiveVoicePool {
     let carried = 1;
     for (const transition of chain.transitions) {
       const at = time + transition.atSeconds;
-      const settled = at + transition.transitionSeconds;
+      const settled = time + transition.arrivesAtSeconds;
 
-      // Hold the pitch it has until the finger moves, then slide to the new
-      // one. Both calls are on this source and nothing else.
-      source.playbackRate.setValueAtTime(
-        playbackRateFor(
-          sample.midi,
-          sourceMidi,
-          transition.cumulativeCents - transition.intervalCents,
-        ),
-        at,
-      );
-      source.playbackRate.linearRampToValueAtTime(
-        playbackRateFor(sample.midi, sourceMidi, transition.cumulativeCents),
-        settled,
-      );
+      // The travel is planned, not improvised here: the pool replays exactly
+      // the points the planner wrote, on this source and nothing else.
+      for (const point of transition.points) {
+        const rate = playbackRateFor(sample.midi, sourceMidi, point.cents);
+        const when = time + point.timeSeconds;
+        if (point.curve === "step") source.playbackRate.setValueAtTime(rate, when);
+        else source.playbackRate.linearRampToValueAtTime(rate, when);
+      }
 
       // Hold the level it had until the finger lands, then step down. The
       // value is tracked here rather than read back off the param: a param
@@ -266,7 +260,9 @@ export class ExpressiveVoicePool {
       carried *= transition.levelAfter;
       gain.gain.linearRampToValueAtTime(chain.gain * carried * level, settled);
 
-      if (transition.auxiliary) this.playAuxiliary(host, transition, at, chain.gain);
+      if (transition.auxiliary) {
+        this.playAuxiliary(host, transition, settled, chain.gain);
+      }
     }
 
     source.onended = () => this.finish(voice);

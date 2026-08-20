@@ -10,11 +10,13 @@ import {
   buildExpressionPlan,
   type ExpressiveNotePlan,
 } from "@/lib/audio/expression-plan";
+import { chainIdFor, desiredGlideSeconds, glideFor } from "@/lib/audio/legato-chain";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import {
   REST,
   TIE,
+  TRACK_ID,
   bar,
   emptyBar,
   event,
@@ -23,7 +25,7 @@ import {
   slots,
   song,
 } from "@/test/expression-fixtures";
-import type { Articulation, Song } from "@/lib/song/schema";
+import type { Articulation, MelodicSlot, Song } from "@/lib/song/schema";
 
 function planOf(target: Song, percent?: number): ExpressiveNotePlan[] {
   return buildExpressionPlan(
@@ -44,6 +46,16 @@ function at(target: Song, slotIndex: number, percent?: number): ExpressiveNotePl
 const A3 = (articulation?: Articulation) => note("A3", 1, 12, articulation);
 const B3 = (articulation?: Articulation) => note("B3", 1, 14, articulation);
 const G3 = (articulation?: Articulation) => note("G3", 1, 10, articulation);
+
+/**
+ * A source held across four slots, then the note that slides off it.
+ *
+ * A slide needs the note before it to still be ringing, so the room between
+ * the two comes from a tie. A rest there would end the source, and then there
+ * is nothing to slide from.
+ */
+const held = (source: MelodicSlot, target: MelodicSlot): Song =>
+  song([bar(slots([source, TIE, TIE, TIE, target]))]);
 
 describe("a note with nothing asked of it", () => {
   it("has flat pitch, no envelope and no voice of its own", () => {
@@ -246,42 +258,318 @@ describe("bends", () => {
   });
 });
 
-describe("slide", () => {
-  it("starts at the note before it and arrives at its own", () => {
-    const plan = at(song([bar(slots([G3(), B3("slide")]))]), 1);
+describe("slide arrives at the note it is written on", () => {
+  // The source is held across four slots — a full second at the fixture tempo —
+  // so the hand has somewhere to travel. A rest here would end the source, and
+  // then there would be nothing to slide from.
+  const upward = () => song([bar(slots([G3(), TIE, TIE, TIE, B3("slide")]))]);
+  const downward = () => song([bar(slots([B3(), TIE, TIE, TIE, G3("slide")]))]);
 
-    expect(plan.fallbackReason).toBeUndefined();
-    expect(plan.expressive).toBe(true);
-    // G3 is four semitones below B3, so it starts 400 cents low.
-    expect(plan.pitchAutomation[0]?.cents).toBe(-400);
-    expect(plan.pitchAutomation[1]?.cents).toBe(0);
-    expect(plan.pitchAutomation[1]?.timeSeconds).toBeLessThanOrEqual(
-      expressionPresets.slide.maxGlideSeconds,
+  it("makes a chain whose travel ends exactly on the target's onset", () => {
+    const plan = buildExpressionPlan(upward());
+    const chain = plan.chains[0];
+    const transition = chain?.transitions[0];
+    const target = plan.notes.find((entry) => entry.pitch === "B3");
+
+    expect(plan.chains).toHaveLength(1);
+    expect(transition?.kind).toBe("slide");
+    // The arrival is the target's own start, measured from the chain's start.
+    expect((chain?.startSeconds ?? 0) + (transition?.arrivesAtSeconds ?? 0)).toBeCloseTo(
+      target?.startSeconds ?? -1,
+      6,
     );
   });
 
-  it("slides downwards as readily as upwards", () => {
-    const plan = at(song([bar(slots([B3(), G3("slide")]))]), 1);
-    expect(plan.pitchAutomation[0]?.cents).toBe(400);
+  it("starts moving before the target, inside the note before it", () => {
+    const chain = buildExpressionPlan(upward()).chains[0];
+    const transition = chain?.transitions[0];
+
+    expect(transition?.atSeconds ?? 0).toBeLessThan(transition?.arrivesAtSeconds ?? 0);
+    expect(transition?.atSeconds ?? -1).toBeGreaterThanOrEqual(
+      expressionPresets.slide.minLeadSeconds,
+    );
   });
 
-  it("falls back rather than leaping more than an octave", () => {
-    const wide = song([bar(slots([note("E2", 0, 0), note("F3", 0, 13, "slide")]))]);
-    const plan = at(wide, 1);
-    expect(plan.fallbackReason).toBe("interval_too_wide");
-    expect(plan.expressive).toBe(false);
+  it("does not restrike the target", () => {
+    const plan = buildExpressionPlan(upward());
+    const target = plan.notes.find((entry) => entry.pitch === "B3");
+    expect(target?.chainRole).toBe("target");
+    expect(plan.notes.filter((entry) => entry.chainRole !== "target")).toHaveLength(1);
   });
 
-  it("falls back when there is no note before it", () => {
-    const plan = at(song([bar(slots([A3("slide")]))]), 0);
-    expect(plan.fallbackReason).toBe("no_previous_note");
+  it("lands on the exact target pitch and stays there", () => {
+    const transition = buildExpressionPlan(upward()).chains[0]?.transitions[0];
+    const points = transition?.points ?? [];
+
+    expect(points[0]?.cents).toBe(0);
+    expect(points[points.length - 1]?.cents).toBe(400);
+    expect(points[points.length - 1]?.timeSeconds).toBeCloseTo(
+      transition?.arrivesAtSeconds ?? -1,
+      6,
+    );
+    // Nothing after the arrival, so the pitch simply holds.
+    expect(points.every((point) => point.timeSeconds <= (transition?.arrivesAtSeconds ?? 0) + 1e-9)).toBe(true);
   });
 
-  it("falls back when the note before it was on another string", () => {
-    const across = song([
-      bar(slots([note("E3", 0, 12), note("A3", 1, 12, "slide")])),
+  it("never overshoots on the way", () => {
+    for (const fixture of [upward(), downward()]) {
+      const points = buildExpressionPlan(fixture).chains[0]?.transitions[0]?.points ?? [];
+      const target = points[points.length - 1]?.cents ?? 0;
+      for (const point of points) {
+        expect(Math.abs(point.cents)).toBeLessThanOrEqual(Math.abs(target) + 1e-9);
+        expect(Math.sign(point.cents || target)).toBe(Math.sign(target));
+      }
+    }
+  });
+
+  it("moves the same amount of time downwards as upwards", () => {
+    const up = buildExpressionPlan(upward()).chains[0]?.transitions[0];
+    const down = buildExpressionPlan(downward()).chains[0]?.transitions[0];
+
+    expect(down?.transitionSeconds).toBeCloseTo(up?.transitionSeconds ?? -1, 9);
+    expect(down?.intervalCents).toBe(-400);
+    expect(up?.intervalCents).toBe(400);
+  });
+
+  it("takes 180 ms over four semitones, in either direction", () => {
+    for (const fixture of [upward(), downward()]) {
+      const transition = buildExpressionPlan(fixture).chains[0]?.transitions[0];
+      expect(transition?.transitionSeconds).toBeCloseTo(0.18, 6);
+    }
+  });
+
+  it("takes the floor over one semitone and the ceiling over twelve", () => {
+    const semitone = held(note("A3", 1, 12), note("A#3", 1, 13, "slide"));
+    const octave = held(note("A3", 1, 12), note("A4", 1, 24, "slide"));
+
+    expect(
+      buildExpressionPlan(semitone).chains[0]?.transitions[0]?.transitionSeconds,
+    ).toBeCloseTo(0.12, 6);
+    expect(
+      buildExpressionPlan(octave).chains[0]?.transitions[0]?.transitionSeconds,
+    ).toBeCloseTo(0.36, 6);
+  });
+
+  it("is played by one voice: a source that is struck and a target that is not", () => {
+    const plan = buildExpressionPlan(upward());
+    const chain = plan.chains[0];
+
+    expect(chain?.noteIds).toHaveLength(2);
+    expect(chain?.sourcePitch).toBe("G3");
+    expect(chain?.stringIndex).toBe(1);
+    expect(plan.notes.filter((entry) => entry.chainRole === "source")).toHaveLength(1);
+    expect(plan.notes.filter((entry) => entry.chainRole === "target")).toHaveLength(1);
+    // Every note of the chain is on the string the hand is sliding along.
+    expect(plan.notes.every((entry) => entry.position?.stringIndex === 1)).toBe(true);
+  });
+
+  it("keeps one chain across two slides in a row", () => {
+    const run = song([
+      bar(
+        slots([
+          note("A3", 1, 12),
+          TIE,
+          TIE,
+          TIE,
+          note("B3", 1, 14, "slide"),
+          TIE,
+          TIE,
+          note("C#4", 1, 16, "slide"),
+        ]),
+      ),
     ]);
-    expect(at(across, 1).fallbackReason).toBe("previous_note_other_string");
+    const plan = buildExpressionPlan(run);
+    const chain = plan.chains[0];
+
+    expect(plan.chains).toHaveLength(1);
+    expect(chain?.transitions).toHaveLength(2);
+    expect(chain?.transitions.every((step) => step.kind === "slide")).toBe(true);
+    // Cents are counted from the pitch the chain started on, not the last one.
+    expect(chain?.transitions[0]?.cumulativeCents).toBe(200);
+    expect(chain?.transitions[1]?.cumulativeCents).toBe(400);
+    // The second travel starts after the first has arrived.
+    expect(chain?.transitions[1]?.atSeconds ?? 0).toBeGreaterThan(
+      chain?.transitions[0]?.arrivesAtSeconds ?? 0,
+    );
+  });
+
+  it("carries on across a section line", () => {
+    const across = song(
+      [bar(slots([REST, REST, REST, REST, G3(), TIE, TIE, TIE]))],
+      [bar(slots([B3("slide")]))],
+    );
+    expect(buildExpressionPlan(across).chains).toHaveLength(1);
+  });
+
+  it("leaves the other strings of a chord alone", () => {
+    const withChord = song([
+      bar(
+        slots([
+          chord(event("A3", 1, 12), event("D4", 2, 12)),
+          TIE,
+          TIE,
+          TIE,
+          chord(event("C#4", 1, 16, "slide"), event("D4", 2, 12)),
+        ]),
+      ),
+    ]);
+    const plan = buildExpressionPlan(withChord);
+    const steady = plan.notes.filter((entry) => entry.position?.stringIndex === 2);
+
+    expect(plan.chains).toHaveLength(1);
+    expect(plan.chains[0]?.stringIndex).toBe(1);
+    expect(steady).toHaveLength(2);
+    for (const entry of steady) {
+      expect(entry.chainId).toBeUndefined();
+      expect(entry.expressive).toBe(false);
+      expect(entry.pitchAutomation).toEqual([
+        { timeSeconds: 0, cents: 0, curve: "step" },
+      ]);
+    }
+  });
+
+  it("names a chain the same way every time", () => {
+    const first = buildExpressionPlan(upward()).chains[0];
+    const second = buildExpressionPlan(upward()).chains[0];
+    expect(first?.chainId).toBe(second?.chainId);
+    expect(first?.chainId).toBe(chainIdFor(TRACK_ID, 1, first?.startTicks ?? -1));
+  });
+
+  it("does not touch the song it read", () => {
+    const before = upward();
+    const snapshot = JSON.stringify(before);
+    buildExpressionPlan(before);
+    buildExpressionPlan(before, { practicePercent: 50 });
+    expect(JSON.stringify(before)).toBe(snapshot);
+  });
+});
+
+describe("a slide at practice speed", () => {
+  const glideAt = (percent: number) =>
+    buildExpressionPlan(
+      song([bar(slots([G3(), TIE, TIE, TIE, B3("slide")]))]),
+      { practicePercent: percent },
+    ).chains[0]?.transitions[0];
+
+  it("takes longer slowed down and less sped up", () => {
+    expect(glideAt(50)?.transitionSeconds).toBeCloseTo(0.36, 6);
+    expect(glideAt(100)?.transitionSeconds).toBeCloseTo(0.18, 6);
+    expect(glideAt(150)?.transitionSeconds).toBeCloseTo(0.12, 6);
+  });
+
+  it("still arrives exactly on the target, whatever the speed", () => {
+    for (const percent of [50, 100, 150]) {
+      const plan = buildExpressionPlan(
+        song([bar(slots([G3(), TIE, TIE, TIE, B3("slide")]))]),
+        { practicePercent: percent },
+      );
+      const chain = plan.chains[0];
+      const transition = chain?.transitions[0];
+      const target = plan.notes.find((entry) => entry.pitch === "B3");
+
+      expect(
+        (chain?.startSeconds ?? 0) + (transition?.arrivesAtSeconds ?? 0),
+      ).toBeCloseTo(target?.startSeconds ?? -1, 6);
+    }
+  });
+});
+
+describe("when a slide cannot be played as written", () => {
+  const refuses = (fixture: Song, slotIndex: number, reason: string) => {
+    const plan = buildExpressionPlan(fixture);
+    expect(plan.chains).toEqual([]);
+    const note = plan.notes.find((entry) => entry.slotIndex === slotIndex);
+    expect(note?.fallbackReason).toBe(reason);
+    expect(note?.chainId).toBeUndefined();
+    // A refused slide is two ordinary notes, not silence and not half a chain.
+    expect(plan.notes.every((entry) => entry.expressive === false)).toBe(true);
+  };
+
+  it("refuses a jump wider than an octave", () => {
+    refuses(
+      held(note("A3", 1, 12), note("A#4", 1, 25, "slide")),
+      4,
+      "interval_too_wide",
+    );
+  });
+
+  it("refuses a slide that goes nowhere", () => {
+    refuses(held(note("A3", 1, 12), note("A3", 1, 12, "slide")), 4, "interval_too_wide");
+  });
+
+  it("refuses across a real rest", () => {
+    refuses(song([bar(slots([G3(), REST, REST, REST, B3("slide")]))]), 4, "no_previous_note");
+  });
+
+  it("refuses across strings", () => {
+    refuses(
+      song([
+        bar(slots([note("E3", 0, 12), TIE, TIE, TIE, note("A3", 1, 12, "slide")])),
+      ]),
+      4,
+      "previous_note_other_string",
+    );
+  });
+
+  it("refuses across a bar the track is not written in", () => {
+    const across = song([
+      bar(slots([REST, REST, REST, REST, REST, REST, REST, G3()])),
+      emptyBar(),
+      bar(slots([B3("slide")])),
+    ]);
+    expect(buildExpressionPlan(across).chains).toEqual([]);
+  });
+
+  it("refuses when the notes are too close together to hear the hand move", () => {
+    // Eighths at 300bpm leave 100ms between the two onsets, and 20ms of that
+    // belongs to the source, so there is not enough travel left to hear.
+    const quick: Song = {
+      ...song([bar(slots([G3(), B3("slide")]))]),
+      bpm: 300,
+    };
+    refuses(quick, 1, "no_room_to_glide");
+  });
+
+  it("plays the same passage as a slide once there is room for one", () => {
+    const roomy: Song = {
+      ...song([bar(slots([G3(), TIE, B3("slide")]))]),
+      bpm: 300,
+    };
+    expect(buildExpressionPlan(roomy).chains).toHaveLength(1);
+  });
+});
+
+describe("how long the hand takes", () => {
+  it("scales with the distance, between a floor and a ceiling", () => {
+    expect(desiredGlideSeconds(1)).toBeCloseTo(0.12, 6);
+    expect(desiredGlideSeconds(2)).toBeCloseTo(0.12, 6);
+    expect(desiredGlideSeconds(4)).toBeCloseTo(0.18, 6);
+    expect(desiredGlideSeconds(7)).toBeCloseTo(0.315, 6);
+    expect(desiredGlideSeconds(12)).toBeCloseTo(0.36, 6);
+    // Direction does not change how long it takes.
+    expect(desiredGlideSeconds(-7)).toBeCloseTo(desiredGlideSeconds(7), 9);
+  });
+
+  it("stretches with the practice speed", () => {
+    expect(desiredGlideSeconds(4, 2)).toBeCloseTo(0.36, 6);
+    expect(desiredGlideSeconds(4, 100 / 150)).toBeCloseTo(0.12, 6);
+  });
+
+  it("fits the travel into the room there is", () => {
+    // Plenty of room: it takes as long as it wants.
+    expect(glideFor(4, 1)).toMatchObject({ kind: "glide", seconds: 0.18 });
+    // Tight: it takes what is left after the source has been heard.
+    expect(glideFor(12, 0.2)).toMatchObject({ kind: "glide" });
+    const squeezed = glideFor(12, 0.2);
+    if (squeezed.kind === "glide") expect(squeezed.seconds).toBeCloseTo(0.18, 6);
+  });
+
+  it("refuses a gap too short for anyone to hear", () => {
+    // 20 ms of the gap belongs to the source note, so 0.109 s leaves 89 ms of
+    // travel — just under the floor — and 0.11 s leaves exactly 90 ms.
+    expect(glideFor(4, 0.1).kind).toBe("too_tight");
+    expect(glideFor(4, 0.109).kind).toBe("too_tight");
+    expect(glideFor(4, 0.11).kind).toBe("glide");
   });
 });
 

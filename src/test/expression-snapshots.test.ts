@@ -65,29 +65,24 @@ describe("vibrato is where phase 2F left it", () => {
   });
 });
 
-describe("slide is where phase 2F left it", () => {
-  it("keeps its glide and its octave limit", () => {
-    expect(expressionPresets.slide).toEqual({
-      maxGlideSeconds: 0.16,
-      glideFraction: 0.35,
-      maxIntervalSemitones: 12,
-    });
+describe("slide moved in phase 2F.2, and only where it was meant to", () => {
+  it("kept the distance beyond which it is a jump, not a slide", () => {
+    expect(expressionPresets.slide.maxIntervalSemitones).toBe(12);
   });
 
-  it("still starts at the note before it and arrives in one ramp", () => {
+  it("is no longer a per-note ramp at the start of the target", () => {
+    // The shape itself is deliberately different now: the travel happens
+    // before the target and belongs to a chain (spec 8.5, K-23). What this
+    // pins is that the target note carries no automation of its own.
     const plan = buildExpressionPlan(
       song([bar(slots([note("G3", 1, 10), note("B3", 1, 14, "slide")]))]),
-    ).notes.find((entry) => entry.pitch === "B3");
-
-    // The glide is the shorter of the cap and a third of the note; this note
-    // is short, so the note decides.
-    expect(plan?.pitchAutomation).toEqual([
-      { timeSeconds: 0, cents: -400, curve: "step" },
-      { timeSeconds: 0.080208, cents: 0, curve: "linear" },
-    ]);
-    expect(plan?.pitchAutomation[1]?.timeSeconds).toBeLessThanOrEqual(
-      expressionPresets.slide.maxGlideSeconds,
     );
+    const target = plan.notes.find((entry) => entry.pitch === "B3");
+
+    expect(target?.chainRole).toBe("target");
+    expect(target?.pitchAutomation).toEqual([
+      { timeSeconds: 0, cents: 0, curve: "step" },
+    ]);
   });
 });
 

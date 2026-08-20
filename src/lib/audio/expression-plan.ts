@@ -30,6 +30,7 @@ import {
 } from "@/lib/audio/expression";
 import {
   buildLegatoChains,
+  type ChainBuildResult,
   type ChainRole,
   type LegatoChain,
 } from "@/lib/audio/legato-chain";
@@ -62,7 +63,9 @@ export type ExpressionFallbackReason =
   | "previous_note_other_string"
   | "wrong_direction"
   | "interval_too_wide"
-  | "not_fretted";
+  | "not_fretted"
+  /** Slide only: the notes are too close together to hear the hand travel. */
+  | "no_room_to_glide";
 
 export type ExpressiveNotePlan = {
   /** Stable and independent of placement: track, tick and pitch. */
@@ -125,6 +128,8 @@ export type ExpressionComparisonOptions = {
   legacyLegato?: boolean;
   /** Phase 2F's bend curve: fixed percentages of the note. */
   legacyBend?: boolean;
+  /** Phase 2F's slide: an 80ms ramp at the start of the target note. */
+  legacySlide?: boolean;
   /** Off renders a pull-off with no finger click at all. */
   pullOffAuxiliary?: boolean;
 };
@@ -290,6 +295,25 @@ export function legacyBendAutomation(
 }
 
 /**
+ * Phase 2F's slide, kept only so a listener can hear what v2 changed.
+ *
+ * A short ramp at the **start** of the target note, hidden under the target's
+ * own attack — which is exactly why it did not sound like a slide. Nothing in
+ * the app can select this.
+ */
+export function legacySlideAutomation(
+  durationSeconds: number,
+  fromMidi: number,
+  toMidi: number,
+): PitchPoint[] {
+  const glide = Math.min(0.16, durationSeconds * 0.35);
+  return [
+    { timeSeconds: 0, cents: round((fromMidi - toMidi) * 100), curve: "step" },
+    { timeSeconds: round(glide), cents: 0, curve: "linear" },
+  ];
+}
+
+/**
  * Phase 2F's hammer-on and pull-off, kept for the same reason: the target was
  * struck again, only quieter. Render comparisons only.
  */
@@ -379,25 +403,6 @@ export function bendAutomation(
   }
 
   return points;
-}
-
-/** Start where the last note was and arrive at this one (spec 8.5). */
-export function slideAutomation(
-  durationSeconds: number,
-  fromMidi: number,
-  toMidi: number,
-): PitchPoint[] {
-  const { maxGlideSeconds, glideFraction } = expressionPresets.slide;
-  const glide = Math.min(maxGlideSeconds, durationSeconds * glideFraction);
-
-  return [
-    {
-      timeSeconds: 0,
-      cents: round((fromMidi - toMidi) * 100),
-      curve: "step",
-    },
-    { timeSeconds: round(glide), cents: 0, curve: "linear" },
-  ];
 }
 
 /** Choked, and released quickly (spec 8.5). */
@@ -509,7 +514,11 @@ function planFor(
     };
   }
 
-  if (articulation === "slide") {
+  // Hammer-on, pull-off and slide are not decided here: they belong to a
+  // chain, and the chain builder is what knows whether one can form (spec 8.5,
+  // K-22, K-23). The one exception is the render comparison, which reproduces
+  // the older shapes.
+  if (options.comparison.legacySlide && articulation === "slide") {
     const link = legatoLink(allOnsets, index);
     if (link.kind !== "joined") {
       return {
@@ -521,24 +530,19 @@ function planFor(
       };
     }
     const previous = link.previous;
-    if (previous.midi === null) {
-      return { ...base, fallbackReason: "no_previous_note" };
-    }
-    const interval = Math.abs(previous.midi - onset.midi);
-    if (interval > expressionPresets.slide.maxIntervalSemitones) {
-      return { ...base, fallbackReason: "interval_too_wide" };
-    }
+    if (previous.midi === null) return { ...base, fallbackReason: "no_previous_note" };
     return {
       ...base,
       expressive: true,
-      pitchAutomation: slideAutomation(durationSeconds, previous.midi, onset.midi),
+      pitchAutomation: legacySlideAutomation(
+        durationSeconds,
+        previous.midi,
+        onset.midi,
+      ),
     };
   }
 
-  // Hammer-on and pull-off are not decided here: they belong to a chain, and
-  // the chain builder is what knows whether one can form (spec 8.5, K-22).
-  // The one exception is the render comparison, which reproduces v1.
-  if (options.comparison.legacyLegato) {
+  if (options.comparison.legacyLegato && articulation !== "slide") {
     const link = legatoLink(allOnsets, index);
     if (link.kind !== "joined") {
       return {
@@ -604,9 +608,10 @@ export function buildExpressionPlan(
       id: noteIds[index] ?? "",
     }));
 
-    const built = comparison.legacyLegato
+    const built: ChainBuildResult = comparison.legacyLegato
       ? { chains: [], membership: new Map(), refusals: new Map() }
       : buildLegatoChains({
+          skipSlides: comparison.legacySlide ?? false,
           trackId: track.id,
           onsets,
           secondsPerTick,

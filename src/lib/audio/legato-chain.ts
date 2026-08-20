@@ -1,5 +1,5 @@
 /**
- * Hammer-on and pull-off as one continuing note (spec 8.5, K-22).
+ * Slurred notes as one continuing sound (spec 8.5, K-22, K-23).
  *
  * Phase 2F played the target of a hammer-on as a quieter copy of the same
  * onset. That is not what a hammer-on is. The string is already ringing; the
@@ -13,6 +13,18 @@
  * at each transition and which is released once at the end. `5h7p5` is one
  * voice and two transitions, not three notes.
  *
+ * Phase 2F.2 brought the slide into the same model, and it needed one more
+ * idea. A hammer-on happens *at* the target: the finger lands and the pitch
+ * changes there. A slide happens *before* it: the hand is already travelling
+ * while the previous note rings, and the target's written time is when it
+ * **arrives**. Putting the glide after the target onset — which is what v1
+ * did — hides it under the attack of the note it is supposed to be arriving
+ * at, and it stops sounding like a slide at all.
+ *
+ * So a transition carries two times, not one: when the pitch starts moving and
+ * when it gets there. For a hammer-on those are the target onset and a few
+ * milliseconds later; for a slide they straddle it.
+ *
  * The song is not changed by any of this. Every note stays a note in the
  * timeline and in the scheduler's snapshot; what the chain decides is only how
  * those notes are **rendered**.
@@ -20,7 +32,15 @@
 import { CENTS_PER_SEMITONE, expressionPresets } from "@/lib/audio/expression";
 import { legatoLink, type LegatoOnset } from "@/lib/music/legato";
 
-export type LegatoTransitionKind = "hammer_on" | "pull_off";
+export type LegatoTransitionKind = "hammer_on" | "pull_off" | "slide";
+
+/** One point of a transition's pitch travel, timed from the chain's start. */
+export type TransitionPoint = {
+  timeSeconds: number;
+  /** Cents against the pitch the chain started on. */
+  cents: number;
+  curve: "step" | "linear";
+};
 
 export type LegatoAuxiliary = {
   /** Level relative to full scale; deliberately far below a real attack. */
@@ -31,8 +51,18 @@ export type LegatoAuxiliary = {
 
 export type LegatoTransition = {
   kind: LegatoTransitionKind;
-  /** Seconds from the chain's own start. */
+  /**
+   * When the pitch starts moving, from the chain's own start.
+   *
+   * For a hammer-on or a pull-off this is the target's onset. For a slide it
+   * is **earlier**: the hand sets off during the previous note.
+   */
   atSeconds: number;
+  /**
+   * When the pitch gets there. For a slide this is exactly the target's
+   * notated onset (spec 8.5, K-23).
+   */
+  arrivesAtSeconds: number;
   fromPitch: string;
   toPitch: string;
   /** Signed, against the pitch before it. */
@@ -44,6 +74,8 @@ export type LegatoTransition = {
   levelAfter: number;
   /** The note this transition belongs to, so a diagnostic can point at it. */
   noteId: string;
+  /** The pitch travel, written out. The voice replays exactly these. */
+  points: TransitionPoint[];
   /** Pull-off only: the short click of the finger coming off the string. */
   auxiliary?: LegatoAuxiliary;
 };
@@ -65,17 +97,39 @@ export type LegatoChain = {
   gain: number;
 };
 
-/** Why a hammer-on or pull-off could not become a chain. */
+/** Why a slur could not become a chain. */
 export type LegatoRefusal =
   | "no_previous_note"
   | "previous_note_other_string"
   | "wrong_direction"
   | "interval_too_wide"
-  | "not_fretted";
+  | "not_fretted"
+  /** There is not enough room before the target to hear the hand travel. */
+  | "no_room_to_glide";
 
 export type LegatoDecision =
-  | { kind: "joined"; previous: LegatoOnset; transition: LegatoTransitionKind }
+  | {
+      kind: "joined";
+      previous: LegatoOnset;
+      transition: LegatoTransitionKind;
+      /** Slide only, and only when the decision was given a clock. */
+      glideSeconds?: number;
+    }
   | { kind: "refused"; reason: LegatoRefusal };
+
+/**
+ * The clock a slide has to be measured against.
+ *
+ * A hammer-on is playable or not on the notes alone. A slide is not: it also
+ * has to fit in the time between the two onsets, and that is a question about
+ * tempo. Callers that know the clock pass it; callers that only want the
+ * fretboard rules leave it out.
+ */
+export type LegatoTiming = {
+  secondsPerTick: number;
+  /** 1 at full speed, 2 at half speed (spec 13.8). */
+  timeScale: number;
+};
 
 /**
  * Can this note continue the one before it?
@@ -86,12 +140,19 @@ export type LegatoDecision =
 export function legatoDecision(
   onsets: readonly LegatoOnset[],
   index: number,
+  timing?: LegatoTiming,
 ): LegatoDecision | null {
   const onset = onsets[index];
   if (!onset) return null;
 
   const articulation = onset.articulation;
-  if (articulation !== "hammer_on" && articulation !== "pull_off") return null;
+  if (
+    articulation !== "hammer_on" &&
+    articulation !== "pull_off" &&
+    articulation !== "slide"
+  ) {
+    return null;
+  }
 
   if (onset.fret === null || onset.midi === null) {
     return { kind: "refused", reason: "not_fretted" };
@@ -119,11 +180,128 @@ export function legatoDecision(
   }
 
   const interval = Math.abs(onset.midi - previous.midi);
+
+  if (articulation === "slide") {
+    // A slide has no direction rule — the hand goes either way — but it does
+    // have a distance beyond which it is a jump.
+    if (interval === 0 || interval > expressionPresets.slide.maxIntervalSemitones) {
+      return { kind: "refused", reason: "interval_too_wide" };
+    }
+    if (!timing) return { kind: "joined", previous, transition: articulation };
+
+    const gap = (onset.timeTicks - previous.timeTicks) * timing.secondsPerTick;
+    const glide = glideFor(onset.midi - previous.midi, gap, timing.timeScale);
+    if (glide.kind === "too_tight") {
+      return { kind: "refused", reason: "no_room_to_glide" };
+    }
+    return {
+      kind: "joined",
+      previous,
+      transition: articulation,
+      glideSeconds: glide.seconds,
+    };
+  }
+
   if (interval > expressionPresets.legato.maxIntervalSemitones) {
     return { kind: "refused", reason: "interval_too_wide" };
   }
 
   return { kind: "joined", previous, transition: articulation };
+}
+
+/** How long the hand should take to travel this far, before the clamps. */
+export function desiredGlideSeconds(
+  intervalSemitones: number,
+  timeScale = 1,
+): number {
+  const preset = expressionPresets.slide;
+  const wanted = (Math.abs(intervalSemitones) * preset.msPerSemitone) / 1000;
+  return (
+    Math.min(preset.maxGlideSeconds, Math.max(preset.minGlideSeconds, wanted)) *
+    timeScale
+  );
+}
+
+export type GlidePlan =
+  | { kind: "glide"; seconds: number; desiredSeconds: number }
+  /** There is not enough room between the two notes to hear a slide. */
+  | { kind: "too_tight"; availableSeconds: number; desiredSeconds: number };
+
+/**
+ * How long the travel actually gets.
+ *
+ * It cannot start before the source note has been heard as itself, and it must
+ * finish exactly when the target is written. If what is left over is too short
+ * to hear, it is not played as a slide at all (spec 8.5, K-23).
+ */
+export function glideFor(
+  intervalSemitones: number,
+  availableSeconds: number,
+  timeScale = 1,
+): GlidePlan {
+  const preset = expressionPresets.slide;
+  const desiredSeconds = desiredGlideSeconds(intervalSemitones, timeScale);
+  const room = availableSeconds - preset.minLeadSeconds * timeScale;
+
+  if (room < preset.minAudibleSeconds * timeScale) {
+    return { kind: "too_tight", availableSeconds: Math.max(0, room), desiredSeconds };
+  }
+
+  return { kind: "glide", seconds: Math.min(desiredSeconds, room), desiredSeconds };
+}
+
+/** Gentle away, quick through the middle, controlled on arrival. */
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * The pitch travel of one transition, written out as points.
+ *
+ * A single linear ramp is what v1 used, and it is the wrong shape: a hand does
+ * not move at a constant speed and the ear reads the constant one as a
+ * portamento effect rather than as a finger. The last point lands exactly on
+ * the target, so there is no overshoot and nothing to correct afterwards.
+ */
+export function transitionPoints(
+  kind: LegatoTransitionKind,
+  startsAt: number,
+  arrivesAt: number,
+  fromCents: number,
+  toCents: number,
+): TransitionPoint[] {
+  if (kind !== "slide") {
+    // A finger landing is one short move; it was accepted in 2F.1 and is not
+    // being re-tuned here.
+    return [
+      { timeSeconds: startsAt, cents: fromCents, curve: "step" },
+      { timeSeconds: arrivesAt, cents: toCents, curve: "linear" },
+    ];
+  }
+
+  const steps = expressionPresets.slide.curvePoints;
+  const span = arrivesAt - startsAt;
+  const points: TransitionPoint[] = [
+    { timeSeconds: startsAt, cents: fromCents, curve: "step" },
+  ];
+
+  for (let step = 1; step <= steps; step += 1) {
+    const t = step / steps;
+    points.push({
+      timeSeconds: startsAt + span * t,
+      cents: fromCents + (toCents - fromCents) * smoothstep(t),
+      curve: "linear",
+    });
+  }
+
+  // The last point is the target exactly, whatever the curve did on the way.
+  points[points.length - 1] = {
+    timeSeconds: arrivesAt,
+    cents: toCents,
+    curve: "linear",
+  };
+
+  return points;
 }
 
 /** How long a transition takes, stretched with the practice speed. */
@@ -166,6 +344,8 @@ export type ChainBuildInput = {
   gains: readonly number[];
   /** Off renders a pull-off with no finger click. Render comparisons only. */
   withAuxiliary?: boolean;
+  /** Leaves slides to the old per-note path. Render comparisons only. */
+  skipSlides?: boolean;
 };
 
 export type ChainBuildResult = {
@@ -193,7 +373,13 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
   const openChains = new Map<string, { chain: LegatoChain; lastIndex: number }>();
 
   onsets.forEach((onset, index) => {
-    const decision = legatoDecision(onsets, index);
+    if (input.skipSlides && onset.articulation === "slide") return;
+
+    // The decision is given the clock, so "there is no room to slide here" is
+    // answered once, before a chain is opened for a transition that cannot
+    // happen. A source sitting in a chain with no transitions is a half chain,
+    // which is not a thing that can be played.
+    const decision = legatoDecision(onsets, index, { secondsPerTick, timeScale });
     if (!decision) return;
     if (decision.kind === "refused") {
       refusals.set(index, decision.reason);
@@ -205,6 +391,8 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
 
     const previous = decision.previous;
     if (previous.midi === null || onset.midi === null) return;
+
+    const glideSeconds = decision.glideSeconds ?? null;
 
     const existing = membership.get(previousIndex);
     let entry = existing ? openChains.get(existing.chainId) : undefined;
@@ -234,11 +422,27 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
     const preset =
       decision.transition === "hammer_on"
         ? expressionPresets.legato.hammerOn
-        : expressionPresets.legato.pullOff;
+        : decision.transition === "pull_off"
+          ? expressionPresets.legato.pullOff
+          : null;
 
     const sourceMidi = previousMidiOf(chain, onsets, previousIndex);
-    const cumulative =
-      (onset.midi - sourceMidi) * CENTS_PER_SEMITONE;
+    const cumulative = (onset.midi - sourceMidi) * CENTS_PER_SEMITONE;
+    const fromCents = (previous.midi - sourceMidi) * CENTS_PER_SEMITONE;
+    const targetAt = onset.timeTicks * secondsPerTick - chain.startSeconds;
+
+    let startsAt: number;
+    let arrivesAt: number;
+
+    if (glideSeconds !== null) {
+      // The written time of the target is when the hand *arrives*, so the
+      // travel is measured backwards from it (spec 8.5, K-23).
+      arrivesAt = targetAt;
+      startsAt = targetAt - glideSeconds;
+    } else {
+      startsAt = targetAt;
+      arrivesAt = targetAt + transitionSeconds(decision.transition, timeScale);
+    }
 
     const auxiliary =
       decision.transition === "pull_off" && (input.withAuxiliary ?? true)
@@ -252,14 +456,24 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
 
     const transition: LegatoTransition = {
       kind: decision.transition,
-      atSeconds: onset.timeTicks * secondsPerTick - chain.startSeconds,
+      atSeconds: startsAt,
+      arrivesAtSeconds: arrivesAt,
       fromPitch: previous.pitch,
       toPitch: onset.pitch,
       intervalCents: (onset.midi - previous.midi) * CENTS_PER_SEMITONE,
       cumulativeCents: cumulative,
-      transitionSeconds: transitionSeconds(decision.transition, timeScale),
-      levelAfter: preset.levelAfter,
+      transitionSeconds: arrivesAt - startsAt,
+      // A slide is already at the target when the note starts, so nothing is
+      // lost to the transition; a finger landing costs a little energy.
+      levelAfter: preset?.levelAfter ?? 1,
       noteId: noteIds[index] ?? "",
+      points: transitionPoints(
+        decision.transition,
+        startsAt,
+        arrivesAt,
+        fromCents,
+        cumulative,
+      ),
       ...(auxiliary ? { auxiliary } : {}),
     };
 

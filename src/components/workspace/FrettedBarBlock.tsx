@@ -16,17 +16,26 @@ import {
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
+import { pitchToMidi } from "@/lib/music/pitch";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
 
 /**
  * Which way a slide leans, read from the bar itself.
  *
+ * The direction is the **pitch** the hand ends up at against the pitch it left,
+ * not which way the note moves on the screen and not which string it is on
+ * (spec 13.9, K-23). On a fretboard drawn thickest-string-first those can point
+ * opposite ways, and the glyph has to agree with what is heard.
+ *
  * Only the previous onset on the same string within this bar is consulted: the
  * glyph is a hint about direction, and the validator is what decides whether a
  * slide is playable at all (spec 10.3).
  */
-function risingAt(bar: FrettedBar, span: FrettedBar["spans"][number]): boolean | undefined {
+export function risingAt(
+  bar: FrettedBar,
+  span: FrettedBar["spans"][number],
+): boolean | undefined {
   let previous: FrettedBar["spans"][number] | undefined;
   for (const other of bar.spans) {
     if (other.stringIndex !== span.stringIndex) continue;
@@ -34,8 +43,11 @@ function risingAt(bar: FrettedBar, span: FrettedBar["spans"][number]): boolean |
     if (other.openStart) continue;
     previous = other;
   }
-  if (!previous || previous.fret === null || span.fret === null) return undefined;
-  return span.fret > previous.fret;
+  if (!previous) return undefined;
+  const from = pitchToMidi(previous.pitch);
+  const to = pitchToMidi(span.pitch);
+  if (from === null || to === null || from === to) return undefined;
+  return to > from;
 }
 
 /** How long a press has to be held before it means "select this chord". */
