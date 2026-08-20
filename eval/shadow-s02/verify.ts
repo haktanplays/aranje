@@ -43,7 +43,6 @@ console.log("bass track present:", song.tracks.some(t=>t.instrumentId.includes("
 
 // Per-section onset density
 console.log("\n--- density (onsets per second of section) ---");
-let tick = 0;
 for (const section of song.sections) {
   const seg = tempo.segments.find(s=>s.sectionId===section.id)!;
   const secs = (seg.endTicks-seg.startTicks)*seg.secondsPerTick;
@@ -56,5 +55,4 @@ for (const section of song.sections) {
   }
   console.log(`  ${section.id} "${section.name}" ${secs.toFixed(2)}s ` +
     Object.entries(counts).map(([k,v])=>`${k}=${v} (${(v/secs).toFixed(2)}/s)`).join(" "));
-  tick += 1;
 }
