@@ -30,6 +30,7 @@ import { TUNING_PRESETS } from "@/lib/music/fretboard";
 import { songLimits } from "@/lib/limits";
 import { songSchema, type Bar, type Section, type Song, type Track } from "@/lib/song/schema";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
+import { barResolution, checkGridPlan } from "@/lib/copilot/grid-plan";
 import type { BlueprintTrack, CompositionBlueprint } from "@/lib/copilot/blueprint";
 
 export type MaterializeFailure = {
@@ -142,6 +143,15 @@ export function materializeSongSkeleton(
     return { ok: false, reason: `blueprint asks for ${tracks.length} tracks` };
   }
 
+  const gridProblems = checkGridPlan(blueprint);
+  if (gridProblems.length > 0) {
+    const first = gridProblems[0];
+    return {
+      ok: false,
+      reason: `section "${first?.sectionKey}": ${first?.message}`,
+    };
+  }
+
   const sectionIdByKey = new Map<string, string>();
   blueprint.sections.forEach((section, index) => {
     sectionIdByKey.set(section.key, sectionIdFor(index));
@@ -159,9 +169,16 @@ export function materializeSongSkeleton(
     }
 
     const active = new Set(section.activeRoles);
-    const count = slotCount(section.timeSignature, blueprint.resolution);
 
-    const bar = (): Bar => {
+    /*
+     * Each bar is built on its own grid (spec 5.5, K-34). The plan decides
+     * it — piece default, then the section's, then the bar's accent — and the
+     * slot count follows from the meter. The model never writes a slot array,
+     * so this is the only place a bar shape comes into existence.
+     */
+    const bar = (barIndex: number): Bar => {
+      const resolution = barResolution(blueprint, section, barIndex);
+      const count = slotCount(section.timeSignature, resolution);
       const slots: Bar["slots"] = {};
       for (const entry of blueprint.tracks) {
         if (!active.has(entry.role)) continue; // silence is absence (spec 5.5)
@@ -174,7 +191,7 @@ export function materializeSongSkeleton(
       }
       return {
         timeSignature: section.timeSignature,
-        resolution: blueprint.resolution,
+        resolution,
         slots,
       };
     };
@@ -186,7 +203,7 @@ export function materializeSongSkeleton(
       // Only written when it differs from the piece's own tempo, so a song at
       // one tempo carries no overrides at all (spec 8.3, K-25).
       ...(section.bpm === baseBpm(blueprint) ? {} : { bpmOverride: section.bpm }),
-      bars: Array.from({ length: section.bars }, bar),
+      bars: Array.from({ length: section.bars }, (_, barIndex) => bar(barIndex)),
     });
   }
 

@@ -106,6 +106,36 @@ export const blueprintMotifSchema = z.strictObject({
 });
 export type BlueprintMotif = z.infer<typeof blueprintMotifSchema>;
 
+/**
+ * Why a bar needs a finer grid than the section it sits in (spec 5.5, K-34).
+ *
+ * A different grid is not a variety box. Each of these is a thing a player
+ * would recognise as needing the notes to sit closer together, and a bar that
+ * asks for one has to say which — otherwise the rule is the lowest grid that
+ * can carry the music.
+ */
+export const RHYTHM_GRID_INTENTS = [
+  "scalar_run",
+  "legato_burst",
+  "arpeggio",
+  "triplet_groove",
+  "drum_fill",
+  "tremolo_burst",
+  "ornamented_transition",
+] as const;
+export type RhythmGridIntent = (typeof RHYTHM_GRID_INTENTS)[number];
+
+/** One bar that runs on a finer grid than its section's, and the reason. */
+export const gridAccentSchema = z.strictObject({
+  /** Position inside this section's own bars, counted from zero. */
+  barIndex: z.number().int().min(0).max(songLimits.barsPerSection - 1),
+  resolution: resolutionSchema,
+  intent: z.enum(RHYTHM_GRID_INTENTS),
+  /** What this bar is doing that the section's grid cannot carry. */
+  purpose: z.string().min(1).max(200),
+});
+export type GridAccent = z.infer<typeof gridAccentSchema>;
+
 export const blueprintSectionSchema = z.strictObject({
   /** Internal handle other parts of the blueprint refer to. */
   key: internalKey,
@@ -116,6 +146,21 @@ export const blueprintSectionSchema = z.strictObject({
   timeSignature: timeSignatureSchema,
   /** This section's own tempo. The Song's top-level bpm is the fallback. */
   bpm: z.number().min(bpmRange.min).max(bpmRange.max),
+  /**
+   * This section's base grid. Absent means the piece's own `resolution`.
+   *
+   * Optional on purpose: a section that has no rhythmic reason to differ
+   * should not have to state a number, and a plan where every section repeats
+   * the same grid reads as if the choice was made when it was not.
+   */
+  resolution: resolutionSchema.optional(),
+  /**
+   * The bars inside this section that run finer than its base grid.
+   *
+   * Each one has to name an intent, and the materialiser is what turns them
+   * into bar shapes — the model never writes a slot array (spec 11.8).
+   */
+  gridAccents: z.array(gridAccentSchema).max(songLimits.barsPerSection).optional(),
   energy: intensity,
   density: intensity,
   /** "sits on the tonic pedal", "unresolved tritone into the solo". */
@@ -162,6 +207,13 @@ export const compositionBlueprintSchema = z.strictObject({
   /** "D minor". Same shape the Song Contract uses. */
   tonalCenter: z.string().min(1).max(40),
   tuningIntent: z.string().min(1).max(80),
+  /**
+   * The piece's default grid — what a bar runs on when nothing asks for more.
+   *
+   * A section may state its own, and a bar inside it may state a finer one
+   * still (`gridAccents`). The default is the grid the music sits on, not the
+   * finest one anything in the piece needs.
+   */
   resolution: resolutionSchema,
   /**
    * What the reference in the request meant, as musical properties.
