@@ -25,13 +25,15 @@
  */
 import {
   barShapeLines,
-  primaryDrums,
-  primaryGuitar,
-  rhythmLines,
   trackLines,
   tuningLine,
 } from "@/lib/copilot/compact";
+import {
+  buildArrangementContext,
+  type ArrangementContext,
+} from "@/lib/copilot/arrangement-context";
 import { estimatePromptTokens } from "@/lib/copilot/tokens";
+import { MODEL_PATCH_JSON_SCHEMA } from "@/lib/copilot/output-schema";
 import type { ArrangeSkill, CopilotRequest } from "@/lib/copilot/contract";
 import { resolveTarget } from "@/lib/copilot/arrange";
 import { coreIntervals, parseKey } from "@/lib/music/tonality";
@@ -206,37 +208,38 @@ export type BuiltPrompt = {
 };
 
 /** The tracks a skill is allowed to read, and why (spec 11.5, K-18). */
-function sourceBlocks(
-  song: Song,
-  section: Section,
-  skill: ArrangeSkill,
-  target: Track,
-): string[] {
-  const blocks: string[] = [];
-  const guitar = primaryGuitar(song, target.id);
-  const drums = primaryDrums(song, target.id);
+/**
+ * The other tracks this role may read, in this section (spec 11.5, K-32).
+ *
+ * Delegated to the arrangement context so the access rules live in one place
+ * rather than being restated here — a drum turn seeing a pitch would be a bug
+ * in two files instead of one.
+ */
+function sourceBlocks(context: ArrangementContext): string[] {
+  return context.sources.map(
+    (source) => `# ${source.label}\n${source.lines.join("\n")}`,
+  );
+}
 
-  if (skill === "drums") {
-    // Rhythm only: a drummer does not need to know which note it was.
-    if (guitar) {
-      blocks.push(
-        `# gitar ritmi (${guitar.id})\n${rhythmLines(section, guitar.id).join("\n")}`,
-      );
-    }
-    return blocks;
-  }
-
-  if (guitar) {
-    blocks.push(
-      `# gitar (${guitar.id})\n${trackLines(section, guitar.id).join("\n")}`,
-    );
-  }
-  if (skill === "bass" && drums) {
-    blocks.push(
-      `# davul ritmi (${drums.id})\n${rhythmLines(section, drums.id).join("\n")}`,
-    );
-  }
-  return blocks;
+/**
+ * The shape of the piece around this turn (spec 11.5, K-32).
+ *
+ * S-01 asked a turn to develop the previous section's motif and then showed
+ * it `bar 1: -sus-` for every bar it could see. This is the input that was
+ * missing: form, tempo, where the previous section landed and what the next
+ * one needs. It is a summary, not the Song.
+ */
+function formBlock(context: ArrangementContext): string {
+  const lines = context.form.map(
+    (entry) =>
+      `${entry.target ? "->" : "  "} ${entry.id} "${entry.name}" ` +
+      `${entry.bars} bar, ${entry.bpm} bpm`,
+  );
+  lines.push(
+    `toplam ${context.totalSeconds.toFixed(1)} sn; bu bolum ` +
+      `${context.targetStartSeconds.toFixed(1)} sn'de basliyor`,
+  );
+  return lines.join("\n");
 }
 
 /** The seven core degrees of the declared key, for the harmony skill. */
@@ -284,9 +287,42 @@ export function buildPrompt(input: PromptInput): BuiltPrompt {
       fenced("bar sekilleri", barShapeLines(section).join("\n")),
     );
 
-    const sources = sourceBlocks(request.song, section, request.skill, track);
-    if (sources.length > 0) {
-      parts.push("", fenced("kaynak", sources.join("\n\n")));
+    const context = buildArrangementContext(
+      request.song,
+      request.sectionId,
+      request.targetTrackId,
+      request.skill,
+    );
+
+    if (context) {
+      parts.push("", fenced("parcanin bicimi", formBlock(context)));
+
+      if (context.previousLanding.length > 0) {
+        parts.push(
+          "",
+          fenced("onceki bolumun son olcusu", context.previousLanding.join("\n")),
+        );
+      }
+      if (context.targetPreviously.length > 0) {
+        parts.push(
+          "",
+          fenced(
+            "bu track'in onceki bolumdeki son hali",
+            context.targetPreviously.join("\n"),
+          ),
+        );
+      }
+      if (context.nextEntry.length > 0) {
+        parts.push(
+          "",
+          fenced("sonraki bolumun girisi", context.nextEntry.join("\n")),
+        );
+      }
+
+      const sources = sourceBlocks(context);
+      if (sources.length > 0) {
+        parts.push("", fenced("kaynak", sources.join("\n\n")));
+      }
     }
 
     parts.push(
@@ -313,6 +349,19 @@ export function buildPrompt(input: PromptInput): BuiltPrompt {
   return {
     system,
     userMessage,
-    estimatedInputTokens: estimatePromptTokens([...system, userMessage]),
+    /*
+     * The schema counts (spec 11.3, K-24).
+     *
+     * It travels as `responseSchema` rather than as prose, but a provider
+     * still receives it and still bills for it, and `checkCeilings` judges the
+     * request by this number. Leaving it out would understate every request by
+     * the same few hundred tokens and quietly weaken the worst-case budget
+     * invariant the ceiling exists to hold.
+     */
+    estimatedInputTokens: estimatePromptTokens([
+      ...system,
+      userMessage,
+      JSON.stringify(MODEL_PATCH_JSON_SCHEMA),
+    ]),
   };
 }

@@ -207,3 +207,32 @@ describe("a section's tempo is part of the question (spec 8.3, K-25)", () => {
     );
   });
 });
+
+describe("the whole form is part of the question now (spec 11.5, K-32)", () => {
+  it("makes a change in another section a different question", async () => {
+    /*
+     * Before K-32 a turn could not see any section but its own, so a change
+     * elsewhere could not change its answer. It can now — the form outline and
+     * the previous section's landing both travel — so the fingerprint has to
+     * cover it, or a second call with the same key would replay an answer
+     * written against a piece that no longer exists.
+     */
+    const edited = {
+      ...TEST_SONG,
+      sections: TEST_SONG.sections.map((section, index) =>
+        index === TEST_SONG.sections.length - 1
+          ? { ...section, name: `${section.name} (revised)` }
+          : section,
+      ),
+    };
+    const a = await requestFingerprint(arrangeRequest("drums"));
+    const b = await requestFingerprint({ ...arrangeRequest("drums"), song: edited });
+    expect(a).not.toBe(b);
+  });
+
+  it("makes a different role a different question", async () => {
+    const a = await requestFingerprint(arrangeRequest("rhythm_guitar"));
+    const b = await requestFingerprint(arrangeRequest("lead_guitar"));
+    expect(a).not.toBe(b);
+  });
+});

@@ -10,6 +10,8 @@ import {
   buildPrompt,
 } from "@/lib/copilot/prompt";
 import { barShapeLines, rhythmLines, trackLines } from "@/lib/copilot/compact";
+import { ARRANGE_SKILLS } from "@/lib/copilot/contract";
+import { readStyleCards } from "@/lib/copilot/style-cards.server";
 import { STYLE_CARD_IDS, styleCardPath, styleCardRegistry } from "@/lib/copilot/style-cards";
 import type { Song } from "@/lib/song/schema";
 import {
@@ -81,27 +83,74 @@ describe("prompt carries one section and one skill's context (K-18)", () => {
     expect(buildPrompt(input)).toEqual(buildPrompt(input));
   });
 
-  it("does not send raw Song JSON, or any section but the target one", () => {
+  it("does not send raw Song JSON", () => {
     const prompt = buildPrompt({ request: arrangeRequest("drums") });
     expect(prompt.userMessage).not.toContain('"timeSignature"');
     expect(prompt.userMessage).not.toContain('"slots"');
-
-    const other = TEST_SONG.sections.find((entry) => entry.id !== SECTION.id);
-    expect(prompt.userMessage).toContain(SECTION.id);
-    expect(prompt.userMessage).not.toContain(other?.id ?? "###");
   });
 
-  it("shows a drum request the guitar's rhythm and not its pitches", () => {
+  it("names the other sections but never carries their content (K-32)", () => {
+    // K-18 kept every other section out entirely, and S-01 showed the cost:
+    // a turn asked to develop the previous motif was shown "-sus-" for every
+    // bar it could see. The form outline is the fix; the *content* rule is
+    // unchanged, so a turn learns that a section exists and not what is in it.
     const prompt = buildPrompt({ request: arrangeRequest("drums") });
-    expect(prompt.userMessage).toContain("gitar ritmi");
-    // No pitch names from the source guitar reach a drum prompt.
-    expect(prompt.userMessage).not.toContain("gitar (gtr)");
+    const other = TEST_SONG.sections.find((entry) => entry.id !== SECTION.id);
+    if (!other) throw new Error("fixture has one section");
+
+    expect(prompt.userMessage).toContain(SECTION.id);
+    expect(prompt.userMessage).toContain(other.id);
+
+    // Every bar line of the other section, other than a landing summary,
+    // must be absent. The target section's own bars are what may be shown.
+    const otherBars = trackLines(other, "gtr").filter((line) =>
+      line.includes(" "),
+    );
+    const carried = otherBars.filter((line) => {
+      const tokens = line.slice(line.indexOf(":") + 1).trim();
+      return tokens.length > 8 && prompt.userMessage.includes(tokens);
+    });
+    // At most the one landing bar, and for a drum turn not even that.
+    expect(carried.length).toBeLessThanOrEqual(1);
+  });
+
+  it("shows a drum request rhythm and never a pitch (K-32)", () => {
+    const prompt = buildPrompt({ request: arrangeRequest("drums") });
+    const sources = between(prompt.userMessage, "kaynak");
+    expect(sources).toContain("ritim (gtr)");
+
+    // The substance, not the label: no pitch token from the source guitar
+    // may appear anywhere in the source block.
+    const pitches = trackLines(SECTION, "gtr")
+      .join(" ")
+      .split(/\s+/)
+      .filter((token) => /^[A-G](#|b)?-?\d\+?/.test(token));
+    expect(pitches.length).toBeGreaterThan(0);
+    for (const pitch of pitches) expect(sources).not.toContain(pitch);
   });
 
   it("shows a bass request the guitar's pitches and the drums' rhythm", () => {
     const prompt = buildPrompt({ request: arrangeRequest("bass") });
-    expect(prompt.userMessage).toContain("gitar (gtr)");
-    expect(prompt.userMessage).toContain("davul ritmi");
+    const sources = between(prompt.userMessage, "kaynak");
+    expect(sources).toContain("gitar (gtr)");
+    expect(sources).toContain("ritim (drums)");
+  });
+
+  it("shows a lead request what it plays over; a riff request only the groove", () => {
+    const lead = between(
+      buildPrompt({ request: arrangeRequest("lead_guitar") }).userMessage,
+      "kaynak",
+    );
+    const rhythm = between(
+      buildPrompt({ request: arrangeRequest("rhythm_guitar") }).userMessage,
+      "kaynak",
+    );
+
+    // A solo needs the harmony under it.
+    expect(lead).toContain("gitar (");
+    // A riff is written against the groove, not the lead's detail.
+    expect(rhythm).toContain("ritim (drums)");
+    expect(rhythm).not.toContain("gitar (");
   });
 
   it("shows a harmony request the guitar and the declared core scale", () => {
@@ -269,3 +318,45 @@ describe("our own diagnostics keep their operators (K-24)", () => {
     expect(built.userMessage).not.toContain("(=400");
   });
 });
+
+describe("the worst case still fits under the ceiling (spec 11.3, K-32)", () => {
+  it("counts the response schema, which a provider also receives", () => {
+    const built = buildPrompt({ request: arrangeRequest("drums") });
+    const prose = built.system.join("") + built.userMessage;
+    // The estimate must exceed what the prose alone would give, because the
+    // schema travels too and the ceiling check judges by this number.
+    expect(built.estimatedInputTokens).toBeGreaterThan(
+      Math.ceil(prose.length / 4),
+    );
+  });
+
+  it("leaves room at the ceiling for every role and card", () => {
+    // Measured rather than assumed: the form outline and the schema both
+    // grew the prompt in phase 2G, so the ceiling was re-checked instead of
+    // being raised (spec 11.3).
+    const cards = readStyleCards();
+    let worst = 0;
+    for (const role of ARRANGE_SKILLS) {
+      for (const cardId of [null, ...STYLE_CARD_IDS]) {
+        const card = cardId ? cards[cardId] : undefined;
+        const built = buildPrompt({
+          // The longest instruction the contract allows.
+          request: arrangeRequest(role, { instruction: "x".repeat(2000) }),
+          ...(card ? { styleCard: card } : {}),
+        });
+        worst = Math.max(worst, built.estimatedInputTokens);
+      }
+    }
+    expect(worst).toBeLessThan(8000);
+    // And not so close that a small addition silently breaks it.
+    expect(worst).toBeLessThan(8000 * 0.7);
+  });
+});
+
+/** The body of one fenced block, so a test can look only inside it. */
+function between(message: string, label: string): string {
+  const open = message.indexOf(`<aranje:data> ${label}`);
+  if (open < 0) return "";
+  const close = message.indexOf("</aranje:data>", open);
+  return message.slice(open, close < 0 ? undefined : close);
+}
