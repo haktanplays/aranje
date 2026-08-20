@@ -15,6 +15,8 @@
  * quietly coerced to zero.
  */
 
+import type { JsonSchema } from "@/lib/ai/json-schema";
+
 export type AdapterUsage = {
   inputTokens: number;
   outputTokens: number;
@@ -29,6 +31,21 @@ export type AdapterRequest = {
   system: readonly string[];
   /** The variable block; always last. */
   userMessage: string;
+  /**
+   * The exact output contract, as a JSON Schema (spec 11.3, K-24).
+   *
+   * Required, and required for a reason. Before this existed the prompt said
+   * "produce JSON in the requested schema" and then never said what the
+   * schema was: no field names, no `explanation` length, nothing. A model
+   * had to guess the contract it was being judged against.
+   *
+   * It travels as data rather than as prose so each adapter can present it
+   * the way its provider wants — a tool definition, a response format, a
+   * grammar — without anyone re-typing the contract. The document itself is
+   * derived from the same zod schema that validates the answer on the way
+   * back, so the two cannot drift.
+   */
+  responseSchema: JsonSchema;
   /**
    * Hard ceiling sent to the provider as a request parameter. Required: an
    * adapter call without one is a programming error, not a default.

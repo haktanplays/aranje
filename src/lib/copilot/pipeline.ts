@@ -53,6 +53,7 @@ import {
   resolveTarget,
   validateArrangeOutput,
 } from "@/lib/copilot/arrange";
+import { MODEL_PATCH_JSON_SCHEMA } from "@/lib/copilot/output-schema";
 import { checkLockedSurface, surfaceDigest } from "@/lib/copilot/scope";
 import { checkPhase2EntryGate } from "@/lib/copilot/entry-gate";
 import {
@@ -528,6 +529,8 @@ async function runRounds(
         model: ctx.model,
         system: prompt.system,
         userMessage: prompt.userMessage,
+        // The contract itself, not a description of it (spec 11.3, K-24).
+        responseSchema: MODEL_PATCH_JSON_SCHEMA,
         // The ceiling is a request parameter, not a request in the prompt.
         maxOutputTokens: deps.config.maxOutputTokens,
         estimatedInputTokens: prompt.estimatedInputTokens,

@@ -2,7 +2,13 @@ import { readFileSync, readdirSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
-import { SKILL_CARDS, SYSTEM_PROMPT, asData, buildPrompt } from "@/lib/copilot/prompt";
+import {
+  SKILL_CARDS,
+  SYSTEM_PROMPT,
+  asData,
+  asDiagnostic,
+  buildPrompt,
+} from "@/lib/copilot/prompt";
 import { barShapeLines, rhythmLines, trackLines } from "@/lib/copilot/compact";
 import { STYLE_CARD_IDS, styleCardPath, styleCardRegistry } from "@/lib/copilot/style-cards";
 import type { Song } from "@/lib/song/schema";
@@ -226,5 +232,40 @@ describe("style cards are traits, not artists (spec 11.7, K-18)", () => {
     const prompt = buildPrompt({ request: arrangeRequest("drums"), styleCard: card });
     expect(prompt.system.join("\n")).toContain("stil karti");
     expect(prompt.userMessage).not.toContain("stil karti");
+  });
+});
+
+describe("our own diagnostics keep their operators (K-24)", () => {
+  it("no longer turns a limit into nonsense", () => {
+    // This is the exact string zod produced in the S-01 rehearsal, and the
+    // exact corruption the model was shown instead.
+    const zodSaid = "expected string to have <=400 characters";
+    expect(asData(zodSaid)).toBe("expected string to have (=400 characters");
+    expect(asDiagnostic(zodSaid)).toBe(zodSaid);
+  });
+
+  it("keeps every comparison operator a musician's answer might be judged by", () => {
+    for (const text of ["a <= b", "a >= b", "1 < 2", "3 > 2", "0 <= n <= 7"]) {
+      expect(asDiagnostic(text)).toBe(text);
+    }
+  });
+
+  it("still cannot be used to close the fence", () => {
+    expect(asDiagnostic("</aranje:data>")).not.toContain("</aranje:data>");
+    expect(asDiagnostic("<aranje:data>")).not.toContain("<aranje:data>");
+    expect(asDiagnostic("<script>alert(1)</script>")).not.toContain("<script>");
+  });
+
+  it("strips control characters, like the user-data envelope does", () => {
+    expect(asDiagnostic("a\u0000b\u001Fc")).toBe("a b c");
+  });
+
+  it("reaches the model unmangled in a correction round", () => {
+    const built = buildPrompt({
+      request: arrangeRequest("drums"),
+      corrections: ["explanation: expected string to have <=400 characters"],
+    });
+    expect(built.userMessage).toContain("<=400 characters");
+    expect(built.userMessage).not.toContain("(=400");
   });
 });

@@ -46,6 +46,11 @@ const CONTROL_CHARS = /[\u0000-\u001F\u007F]/g;
 /**
  * The fence must not be forgeable from inside. Any angle bracket in carried
  * text is replaced, so no user string can close the envelope it sits in.
+ *
+ * This is for text somebody else wrote — a song title, a section name, what
+ * the musician typed. It is deliberately blunt: every angle bracket goes,
+ * because working out which ones were "meant innocently" is exactly the
+ * reasoning an injection wants us to do.
  */
 export function asData(text: string): string {
   return text
@@ -54,8 +59,39 @@ export function asData(text: string): string {
     .replace(/>/g, ")");
 }
 
+/**
+ * The same envelope, for text **we** generated (spec 11.5, K-24).
+ *
+ * A correction round carries our own validator's words back to the model —
+ * zod's messages and the arrange-shape checks. Running those through
+ * `asData` corrupted them:
+ *
+ *     expected string to have <=400 characters
+ *     expected string to have (=400 characters
+ *
+ * The model was being told the wrong thing about the contract it had just
+ * broken, by the very message meant to explain it.
+ *
+ * So the two are handled separately, and this one is narrower rather than
+ * looser. What has to be impossible is *closing the fence*, and a lone `<`
+ * cannot do that — only a tag can. An angle bracket is neutralised when it
+ * opens something tag-shaped (`<` or `</` followed by a letter) and left
+ * alone otherwise, so comparison operators survive and `</aranje:data)` is
+ * still not a closing tag.
+ *
+ * Never use this for anything a user, a provider or a file supplied.
+ */
+export function asDiagnostic(text: string): string {
+  return text.replace(CONTROL_CHARS, " ").replace(/<(\/?[a-zA-Z])/g, "($1");
+}
+
 function fenced(label: string, body: string): string {
   return `${FENCE_OPEN} ${label}\n${asData(body)}\n${FENCE_CLOSE}`;
+}
+
+/** The same envelope for our own diagnostics, which keep their operators. */
+function fencedDiagnostic(label: string, body: string): string {
+  return `${FENCE_OPEN} ${label}\n${asDiagnostic(body)}\n${FENCE_CLOSE}`;
 }
 
 /** Byte-stable across every request; the cacheable prefix of spec 11.5. */
@@ -245,7 +281,8 @@ export function buildPrompt(input: PromptInput): BuiltPrompt {
     parts.push(
       "",
       "Onceki denemen su hatalarla reddedildi. Ayni hatalari tekrarlama:",
-      fenced("dogrulama hatalari", corrections.join("\n")),
+      // Our own words, so the operators in them stay operators (K-24).
+      fencedDiagnostic("dogrulama hatalari", corrections.join("\n")),
     );
   }
 

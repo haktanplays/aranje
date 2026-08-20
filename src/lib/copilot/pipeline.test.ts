@@ -10,6 +10,7 @@ import type { CopilotConfig } from "@/lib/config/copilot";
 import type { ArrangeSkill, CopilotSuccessBody } from "@/lib/copilot/contract";
 import { runCopilot, type PipelineDeps } from "@/lib/copilot/pipeline";
 import { applyPatch } from "@/lib/copilot/apply";
+import { MODEL_PATCH_JSON_SCHEMA } from "@/lib/copilot/output-schema";
 import { checkLockedSurface, surfaceDigest } from "@/lib/copilot/scope";
 import { createMemoryMeter } from "@/lib/metering/events";
 import type { Section, Song, Track } from "@/lib/song/schema";
@@ -189,6 +190,53 @@ describe("each skill changes only its own track", () => {
 // ---------------------------------------------------------------------------
 // 7. a mis-aimed request never reaches the provider
 // ---------------------------------------------------------------------------
+describe("the provider is told the contract it is judged by (K-24)", () => {
+  it("sends the output schema with the request", async () => {
+    const { deps, adapter } = harness([goodRound("drums")]);
+    await runCopilot(deps, arrangeRequest("drums"));
+
+    const sent = adapter.calls[0]?.responseSchema as Record<string, unknown>;
+    expect(sent).toBeDefined();
+    expect(sent).toEqual(MODEL_PATCH_JSON_SCHEMA);
+
+    // The fields the S-01 prompt never named.
+    const props = Object.keys((sent.properties ?? {}) as object);
+    for (const field of [
+      "operation",
+      "sectionId",
+      "targetTrackId",
+      "bars",
+      "explanation",
+    ]) {
+      expect(props).toContain(field);
+    }
+    const text = JSON.stringify(sent);
+    expect(text).toContain('"barIndex"');
+    expect(text).toContain('"slots"');
+    // And the cap that actually cost a round in the rehearsal.
+    expect(text).toContain('"maxLength":400');
+  });
+
+  it("sends it on the correction round too", async () => {
+    const { deps, adapter } = harness([
+      { kind: "success", raw: "not json", usage: usage() },
+      goodRound("drums"),
+    ]);
+    await runCopilot(deps, arrangeRequest("drums"));
+
+    expect(adapter.calls).toHaveLength(2);
+    expect(adapter.calls[1]?.responseSchema).toEqual(MODEL_PATCH_JSON_SCHEMA);
+  });
+
+  it("still needs no network to run", async () => {
+    // The fake adapter answers from a queue; nothing here reaches out.
+    const { deps, adapter } = harness([goodRound("harmony")]);
+    const outcome = await runCopilot(deps, arrangeRequest("harmony"));
+    expect(outcome.ok).toBe(true);
+    expect(adapter.remaining()).toBe(0);
+  });
+});
+
 describe("a mis-aimed request is refused before the provider", () => {
   const cases: { name: string; request: ReturnType<typeof arrangeRequest> }[] = [
     { name: "drums at a guitar", request: arrangeRequest("drums", { targetTrackId: "gtr" }) },

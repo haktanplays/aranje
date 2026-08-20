@@ -15,6 +15,7 @@ function request(overrides: Partial<AdapterRequest> = {}): AdapterRequest {
     model: "claude-sonnet-5",
     system: ["fixed"],
     userMessage: "variable",
+    responseSchema: { type: "object", additionalProperties: false },
     maxOutputTokens: 4000,
     estimatedInputTokens: 1000,
     timeoutMs: 30_000,
