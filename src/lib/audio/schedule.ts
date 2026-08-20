@@ -12,7 +12,7 @@
  * the ear and the eye cannot drift apart.
  */
 import { velocityRange } from "@/lib/limits";
-import { PPQ, slotCount, ticksPerSlot } from "@/lib/music/timing";
+import { slotCount, ticksPerSlot } from "@/lib/music/timing";
 import type { Articulation, DrumPiece, Song } from "@/lib/song/schema";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 
