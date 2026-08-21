@@ -103,6 +103,8 @@ export function TabCanvas({
   scrollRef,
   selectionBand,
   onSlotLongPress,
+  onHandleMove,
+  onHandleUp,
   editing = false,
   selectedCell = null,
   onCellSelect,
@@ -123,6 +125,9 @@ export function TabCanvas({
    * threshold without becoming a drag, so a flick to scroll never reaches it.
    */
   onSlotLongPress?: (x: number) => void;
+  /** Handle drag, forwarded so the pointer stream has one owner. */
+  onHandleMove?: (event: React.PointerEvent) => void;
+  onHandleUp?: () => void;
   /** Edit mode turns each bar into a grid of cells (spec 13.1). */
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
@@ -221,7 +226,20 @@ export function TabCanvas({
         className="h-full overflow-x-auto overscroll-x-contain"
         style={{ paddingTop: STAFF_TOP_PADDING }}
       >
-        <div className="relative flex min-w-max" ref={contentRef} {...longPress}>
+        <div
+          data-tab-content
+          className="relative flex min-w-max"
+          ref={contentRef}
+          {...longPress}
+          onPointerMove={(event) => {
+            longPress.onPointerMove(event);
+            onHandleMove?.(event);
+          }}
+          onPointerUp={() => {
+            longPress.onPointerUp();
+            onHandleUp?.();
+          }}
+        >
           {/* String or lane names stay put while the bars scroll past */}
           <div
             className="bg-app sticky left-0 z-10 shrink-0"

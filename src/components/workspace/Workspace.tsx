@@ -106,7 +106,17 @@ export function Workspace() {
   );
   const transform = useTransform(transformStore, song);
   const [sheet, setSheet] = useState<TransformSheetKind>(null);
-  const [pasteAt, setPasteAt] = useState<number | null>(null);
+  /**
+   * Where a paste is in its flow.
+   *
+   * "choosing" means the next long press picks a target instead of making a
+   * new selection. Nothing is written until the reader confirms, so a paste
+   * that lands somewhere occupied is shown as a refusal rather than undone
+   * afterwards.
+   */
+  const [pasteAt, setPasteAt] = useState<
+    { kind: "idle" } | { kind: "choosing" } | { kind: "at"; ticks: number }
+  >({ kind: "idle" });
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -214,6 +224,75 @@ export function Workspace() {
   const selectionBarTicks = selectionSteps.bar;
 
   /**
+   * Dragging a selection handle.
+   *
+   * Only from the handle itself: once selection mode is on, a drag anywhere
+   * else is still the tab scrolling. The move is applied on pointerup, so a
+   * cancelled gesture leaves the selection exactly as it was rather than
+   * half-resized.
+   */
+  const dragEdge = useRef<"start" | "end" | null>(null);
+
+  const onHandleDown = useCallback(
+    (edge: "start" | "end", event: React.PointerEvent) => {
+      dragEdge.current = edge;
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      event.stopPropagation();
+    },
+    [],
+  );
+
+  const onHandleMove = useCallback(
+    (event: React.PointerEvent) => {
+      const edge = dragEdge.current;
+      const selection = transform.selection;
+      if (!edge || !selection || !selectedSection || timeline.kind === "unsupported") return;
+      const content = scrollRef.current?.querySelector("[data-tab-content]");
+      if (!content) return;
+
+      const x = event.clientX - content.getBoundingClientRect().left;
+      const hit = slotAtX(timeline.bars, x);
+      if (!hit || hit.sectionId !== selection.sectionId) return;
+      const bar = selectedSection.bars[hit.barIndex];
+      if (!bar) return;
+
+      const starts = sectionBarStartTicks(selectedSection);
+      const step = ticksPerSlot(bar.resolution);
+      const ticks = (starts[hit.barIndex] ?? 0) + hit.slotIndex * step;
+
+      // The edges may not cross: dragging start past end keeps one slot.
+      const next =
+        edge === "start"
+          ? { ...selection, startTicks: Math.min(ticks, selection.endTicks - step) }
+          : { ...selection, endTicks: Math.max(ticks + step, selection.startTicks + step) };
+      transform.select(next);
+    },
+    [selectedSection, timeline, transform],
+  );
+
+  const onHandleUp = useCallback(() => {
+    dragEdge.current = null;
+  }, []);
+
+  /** The paste being confirmed, if any. Built here so its ghost is real. */
+  const pasteCommand = useMemo(
+    () =>
+      pasteAt.kind === "at" && transform.hasClipboard
+        ? ({
+            kind: "paste_selection" as const,
+            clipboard: transform.clipboard,
+            atTicks: pasteAt.ticks,
+          })
+        : null,
+    [pasteAt, transform.clipboard, transform.hasClipboard],
+  );
+
+  const pastePreview = useMemo(
+    () => (pasteCommand ? transform.previewOf(pasteCommand) : null),
+    [pasteCommand, transform],
+  );
+
+  /**
    * What the ghost says, in words.
    *
    * The preview is the real command run against the real song with its result
@@ -221,13 +300,14 @@ export function Workspace() {
    * we hope would.
    */
   const previewText = useMemo(() => {
-    if (!transform.preview) return null;
-    if (!transform.preview.ok) return transform.preview.message;
-    const warnings = transform.preview.warnings.length;
+    const shown = pastePreview ?? transform.preview;
+    if (!shown) return null;
+    if (!shown.ok) return shown.message;
+    const warnings = shown.warnings.length;
     return warnings > 0
       ? "Uygulanabilir. Birkaç yerde el pozisyonu zorlanıyor olabilir."
       : "Uygulanmaya hazır.";
-  }, [transform.preview]);
+  }, [pastePreview, transform.preview]);
 
   /**
    * A long press picks the slot under the finger and asks the core to
@@ -250,6 +330,14 @@ export function Workspace() {
       const starts = sectionBarStartTicks(section);
       const step = ticksPerSlot(bar.resolution);
       const startTicks = (starts[hit.barIndex] ?? 0) + hit.slotIndex * step;
+
+      // Mid-paste the press names a destination instead of a new selection.
+      if (pasteAt.kind === "choosing") {
+        setPasteAt({ kind: "at", ticks: startTicks });
+        setSheet("paste");
+        return;
+      }
+
       transform.select({
         sectionId: section.id,
         trackId: track.id,
@@ -257,7 +345,7 @@ export function Workspace() {
         endTicks: startTicks + step,
       });
     },
-    [controller, song.sections, timeline, track, transform],
+    [controller, pasteAt.kind, song.sections, timeline, track, transform],
   );
 
   const getPosition = useCallback(() => controller.getPosition(), [controller]);
@@ -566,6 +654,8 @@ export function Workspace() {
           onSeekBar={seekToBar}
           scrollRef={scrollRef}
           onSlotLongPress={selectionEnabled ? onSlotLongPress : undefined}
+          onHandleMove={onHandleMove}
+          onHandleUp={onHandleUp}
           selectionBand={
             transform.selection && selectedSection && band ? (
               <TimeSelectionBand
@@ -575,6 +665,7 @@ export function Workspace() {
                 label={transform.summary?.text ?? "Seçim"}
                 left={band.left}
                 width={band.width}
+                onHandleDown={onHandleDown}
               />
             ) : null
           }
@@ -616,8 +707,8 @@ export function Workspace() {
       {transform.selection ? (
         <SelectionActionBar
           summary={
-            pasteAt !== null
-              ? "Yapıştırılacak yere dokun, sonra onayla."
+            pasteAt.kind === "choosing"
+              ? "Yapıştırılacak yere uzun bas."
               : (transform.summary?.text ?? "Seçim")
           }
           notice={transform.notice}
@@ -625,7 +716,7 @@ export function Workspace() {
           onCancel={() => {
             transform.clear();
             setSheet(null);
-            setPasteAt(null);
+            setPasteAt({ kind: "idle" });
           }}
           onAction={(action) => {
             if (action === "copy") {
@@ -655,14 +746,26 @@ export function Workspace() {
         stepTicks={selectionStepTicks}
         beatTicks={selectionBeatTicks}
         barTicks={selectionBarTicks}
-        pending={transform.pending}
-        preview={transform.preview}
+        pending={pasteCommand ?? transform.pending}
+        preview={pastePreview ?? transform.preview}
         previewText={previewText}
+        canPaste={transform.hasClipboard}
+        onStartPaste={() => {
+          setSheet(null);
+          setPasteAt({ kind: "choosing" });
+        }}
         onStage={transform.stage}
         onApply={() => {
-          if (transform.apply()) setSheet(null);
+          const command = pasteCommand ?? transform.pending;
+          if (command && transform.apply(command)) {
+            setSheet(null);
+            setPasteAt({ kind: "idle" });
+          }
         }}
-        onClose={() => setSheet(null)}
+        onClose={() => {
+          setSheet(null);
+          setPasteAt({ kind: "idle" });
+        }}
       />
 
       {track ? (
@@ -711,7 +814,7 @@ export function Workspace() {
           // cannot survive a change of either.
           transform.clear();
           setSheet(null);
-          setPasteAt(null);
+          setPasteAt({ kind: "idle" });
           setSelectedTrackId(id);
         }}
         onOpenDetails={() => setTrackSheetOpen(true)}

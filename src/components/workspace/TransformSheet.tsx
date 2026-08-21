@@ -29,7 +29,7 @@ import type { Preview } from "@/lib/song/use-transform";
 import type { TransformCommand } from "@/lib/song/transform";
 import type { Bar } from "@/lib/song/schema";
 
-export type TransformSheetKind = "move" | "repeat" | "more" | null;
+export type TransformSheetKind = "move" | "repeat" | "more" | "paste" | null;
 
 /** One step of the grid the selection actually starts on. */
 export function stepTicksFor(bar: Bar | undefined): number {
@@ -143,6 +143,9 @@ export type TransformSheetProps = {
   readonly preview: Preview | null;
   readonly previewText: string | null;
   readonly onStage: (command: TransformCommand | null) => void;
+  /** Offered only when there is something on the clipboard. */
+  readonly onStartPaste?: () => void;
+  readonly canPaste?: boolean;
   readonly onApply: () => void;
   readonly onClose: () => void;
 };
@@ -166,6 +169,8 @@ export function TransformSheet({
   preview,
   previewText,
   onStage,
+  onStartPaste,
+  canPaste = false,
   onApply,
   onClose,
 }: TransformSheetProps) {
@@ -183,7 +188,13 @@ export function TransformSheet({
   };
 
   const title =
-    kind === "move" ? "Taşı" : kind === "repeat" ? "Tekrarla" : "Daha fazla";
+    kind === "move"
+      ? "Taşı"
+      : kind === "repeat"
+        ? "Tekrarla"
+        : kind === "paste"
+          ? "Yapıştır"
+          : "Daha fazla";
 
   return (
     <Sheet
@@ -382,6 +393,20 @@ export function TransformSheet({
             <SheetButton onClick={() => onStage({ kind: "delete_selection" })}>
               Seçimi sil
             </SheetButton>
+            {canPaste ? (
+              <SheetButton onClick={() => onStartPaste?.()}>Yapıştır</SheetButton>
+            ) : null}
+          </Row>
+        ) : null}
+
+        {kind === "paste" ? (
+          <Row
+            title="Buraya yapıştır"
+            hint="Onaylamadan önce hiçbir şey değişmez."
+          >
+            <p className="text-muted text-sm">
+              Panodaki içerik seçtiğin yere kopyalanacak.
+            </p>
           </Row>
         ) : null}
       </div>
