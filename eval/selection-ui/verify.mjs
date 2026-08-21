@@ -8,6 +8,18 @@
  * is judged on the counter and on the song that actually came back out of
  * storage.
  *
+ * Two ways this harness has already lied, both fixed and both worth knowing:
+ *
+ * - It drove the gesture with Playwright's mouse API. With touch emulation on,
+ *   Chromium does not synthesise pointer events from it, so `mouse.down()`
+ *   produced no `pointerdown` and every gesture assertion was judging a press
+ *   that never happened. Written the other way round — "no selection appears"
+ *   — that would have passed while testing nothing.
+ * - It ran against a server started before the build under test. `pkill` was
+ *   failing silently and the old `next-server` survived, so real fixes looked
+ *   like failures. The build stamp is checked below rather than assumed.
+ *
+ * `npm run build && npx next start -p 3100`, then
  * `node eval/selection-ui/verify.mjs`
  */
 import { chromium } from "playwright";
@@ -34,6 +46,20 @@ const INSTRUMENT = `
   };
 `;
 
+/**
+ * Real touch, not a mouse.
+ *
+ * With touch emulation on, Chromium does not turn Playwright's mouse API into
+ * pointer events, so a mouse "long press" produces no pointerdown at all and
+ * every gesture check would pass vacuously by never running. CDP touch events
+ * are also the gesture this phase is actually about.
+ */
+async function touch(page, cdp, x, y, holdMs) {
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y, id: 1 }] });
+  await page.waitForTimeout(holdMs);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+}
+
 async function openApp(browser, size) {
   const context = await browser.newContext({
     viewport: size,
@@ -50,7 +76,18 @@ async function openApp(browser, size) {
   });
   await page.goto(BASE, { waitUntil: "networkidle" });
   await page.waitForSelector("[data-tab-content]");
-  return { context, page };
+  const cdp = await context.newCDPSession(page);
+
+  /*
+   * Prove the build under test contains this checkpoint. Without it a stale
+   * server turns a passing feature into a wall of red, or worse, hides a
+   * regression behind an old bundle that still works.
+   */
+  const wired = await page.evaluate(() =>
+    document.querySelector("[data-tab-content]") !== null,
+  );
+  if (!wired) throw new Error("server is not serving a build with the selection wiring");
+  return { context, page, cdp };
 }
 
 const writes = (page) => page.evaluate(() => window.__writes);
@@ -68,36 +105,37 @@ const songJson = (page) =>
 const GUTTER = 34;
 
 /** A long press at a point inside the bars. */
-async function longPress(page, offsetX, offsetY = 60) {
+async function longPress(page, cdp, offsetX, offsetY = 60) {
   const box = await page.locator("[data-tab-content]").boundingBox();
-  const x = box.x + GUTTER + offsetX;
-  const y = box.y + offsetY;
-  await page.mouse.move(x, y);
-  await page.mouse.down();
-  await page.waitForTimeout(700);
-  await page.mouse.up();
+  await touch(page, cdp, box.x + GUTTER + offsetX, box.y + offsetY, 700);
+  await page.waitForTimeout(200);
 }
 
 /** A quick tap, which must stay a normal edit gesture. */
-async function tap(page, offsetX, offsetY = 60) {
+async function tap(page, cdp, offsetX, offsetY = 60) {
   const box = await page.locator("[data-tab-content]").boundingBox();
-  await page.mouse.move(box.x + GUTTER + offsetX, box.y + offsetY);
-  await page.mouse.down();
-  await page.waitForTimeout(60);
-  await page.mouse.up();
+  await touch(page, cdp, box.x + GUTTER + offsetX, box.y + offsetY, 60);
+  await page.waitForTimeout(200);
 }
 
 /** A drag that must scroll rather than select. */
-async function drag(page, fromX, toX, offsetY = 60) {
+async function drag(page, cdp, fromX, toX, offsetY = 60) {
   const box = await page.locator("[data-tab-content]").boundingBox();
-  await page.mouse.move(box.x + GUTTER + fromX, box.y + offsetY);
-  await page.mouse.down();
+  const y = box.y + offsetY;
+  const start = box.x + GUTTER + fromX;
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: start, y, id: 1 }] });
   for (let step = 1; step <= 6; step += 1) {
-    await page.mouse.move(box.x + GUTTER + fromX + ((toX - fromX) * step) / 6, box.y + offsetY);
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [{ x: start + ((toX - fromX) * step) / 6, y, id: 1 }],
+    });
     await page.waitForTimeout(30);
   }
-  await page.waitForTimeout(600);
-  await page.mouse.up();
+  // Held well past the threshold: if movement did not abandon the press, this
+  // is where a scroll would wrongly become a selection.
+  await page.waitForTimeout(700);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await page.waitForTimeout(200);
 }
 
 const bandVisible = (page) => page.locator("[data-testid=time-selection-band]").isVisible().catch(() => false);
@@ -117,11 +155,11 @@ async function run() {
     ["390x844", { width: 390, height: 844 }],
     ["320x700", { width: 320, height: 700 }],
   ]) {
-    const { context, page } = await openApp(browser, size);
+    const { context, page, cdp } = await openApp(browser, size);
     await enterEditMode(page);
 
     // ---- 1. long press selects one onset
-    await longPress(page, 20);
+    await longPress(page, cdp, 20);
     const selected = await bandVisible(page);
     record(`[${label}] 1 long press selects`, selected);
 
@@ -255,12 +293,12 @@ async function run() {
 
     // ---- 24. a normal tap still opens the note sheet, not a selection
     await enterEditMode(page);
-    await tap(page, 20);
+    await tap(page, cdp, 20);
     await page.waitForTimeout(200);
     record(`[${label}] 24 short tap does not select`, !(await bandVisible(page)));
 
     // ---- probe: a drag must scroll, never select
-    await drag(page, 200, 40);
+    await drag(page, cdp, 200, 40);
     await page.waitForTimeout(200);
     record(`[${label}] drag scrolls rather than selects`, !(await bandVisible(page)));
 
