@@ -11,32 +11,68 @@
  * candidates occasionally wrap their answer in ```json ... ```. Charging that
  * to the model would report a limitation of this harness as a musical failure.
  *
- * So the fence is removed here, in the transport layer, before the production
- * parser sees the text — and nowhere else. This is not editing an answer so it
- * will pass: nothing inside the fence is touched, a body that is still invalid
- * stays invalid, and every unwrap is recorded so the report can say how often
- * each candidate needed it.
+ * This module therefore removes exactly one thing — a fence that wraps the
+ * WHOLE answer — and does it here, in the eval-only shadow transport, before
+ * the production parser runs.
+ *
+ * It must never be reachable from production. Not `parseArrangePatch`, not
+ * `/api/copilot`, not the adapter, not the shared schema parser, not the fake
+ * demo client. Writing schema rules into a plain-text prompt is not native
+ * enforcement, and a normaliser that leaked into production would turn this
+ * pretence into shipped behaviour. `bakeoff-transport.test.ts` pins that.
+ *
+ * What it will not do:
+ *   - touch a single byte inside the fence
+ *   - drop or rename a field, or strip an unknown key
+ *   - accept prose before or after the fence
+ *   - accept more than one fence
+ *   - rescue a body that still does not parse
  */
-
-/** A fenced block, optionally tagged, occupying the whole answer. */
-const FENCED = /^\s*```[a-zA-Z0-9_-]*\s*\n([\s\S]*?)\n?\s*```\s*$/;
-
-export type Unwrapped = {
-  /** The text the production parser should see. */
-  readonly text: string;
-  /** Whether a provider would have made the fence impossible. */
-  readonly unwrapped: boolean;
-};
+import { createHash } from "node:crypto";
 
 /**
- * Strip a whole-answer markdown fence, if there is one.
+ * A whole-answer fence: optional tag, one body, nothing outside it.
  *
- * Only a fence wrapping the entire response is removed. Prose before or after
- * it is a different failure — the model said something it was told not to say —
- * and must still be rejected.
+ * Anchored at both ends, so anything the model said around the fence keeps the
+ * answer unnormalised. `[^`]` in the body forbids a second fence rather than
+ * silently gluing two blocks together.
  */
-export function unwrapProviderEnvelope(raw: string): Unwrapped {
-  const match = FENCED.exec(raw);
-  if (!match || match[1] === undefined) return { text: raw, unwrapped: false };
-  return { text: match[1], unwrapped: true };
+const WHOLE_ANSWER_FENCE = /^\s*```[a-zA-Z0-9_-]*[ \t]*\r?\n([^`]*?)\r?\n[ \t]*```\s*$/;
+
+/** The only normalisation this harness performs. */
+export const FENCE_UNWRAP = "whole_answer_fence_unwrap";
+
+export type Normalisation = {
+  /** The text the production parser should see. */
+  readonly text: string;
+  /** Set only when a fence was removed. */
+  readonly normalizationApplied: typeof FENCE_UNWRAP | null;
+  /** Digest of exactly what the model returned. */
+  readonly rawSha256: string;
+  /** Digest of what the parser was given. Equal to `rawSha256` when untouched. */
+  readonly normalizedSha256: string;
+};
+
+const sha256 = (text: string) => createHash("sha256").update(text, "utf8").digest("hex");
+
+/**
+ * Strip a whole-answer markdown fence, if there is exactly one and it is all
+ * the model said.
+ *
+ * The body is returned verbatim. Whether it parses is still the parser's
+ * question to answer, and still the model's result to own.
+ */
+export function unwrapProviderEnvelope(raw: string): Normalisation {
+  const rawSha256 = sha256(raw);
+  const match = WHOLE_ANSWER_FENCE.exec(raw);
+  const body = match?.[1];
+  if (body === undefined) {
+    return { text: raw, normalizationApplied: null, rawSha256, normalizedSha256: rawSha256 };
+  }
+  return {
+    text: body,
+    normalizationApplied: FENCE_UNWRAP,
+    rawSha256,
+    normalizedSha256: sha256(body),
+  };
 }

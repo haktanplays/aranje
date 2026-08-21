@@ -1,0 +1,65 @@
+{
+  "runClassification": "transport_confounded_shadow_run",
+  "attempts": [
+    {
+      "stage": "blueprint",
+      "attempt": 0,
+      "outcome": "accepted",
+      "failure": null,
+      "reason": null,
+      "normalizationApplied": null,
+      "rawSha256": "6698ca36cc9d0cf4e1890e74081b1bbf7f31c82f924a9c8de57fd7660efca0cb",
+      "normalizedSha256": "6698ca36cc9d0cf4e1890e74081b1bbf7f31c82f924a9c8de57fd7660efca0cb"
+    },
+    {
+      "stage": "turn-1",
+      "attempt": 0,
+      "outcome": "accepted",
+      "failure": null,
+      "reason": null,
+      "normalizationApplied": null,
+      "rawSha256": "8c2c614f333d64ae7caf57fe12dfb531a23eac42586a20ae6991510b1aa568a6",
+      "normalizedSha256": "8c2c614f333d64ae7caf57fe12dfb531a23eac42586a20ae6991510b1aa568a6"
+    },
+    {
+      "stage": "turn-2",
+      "attempt": 0,
+      "outcome": "accepted",
+      "failure": null,
+      "reason": null,
+      "normalizationApplied": null,
+      "rawSha256": "feb602c2b43dad39d97ff4e8c45c070dee442a7b9955100a2261b7b5b229f038",
+      "normalizedSha256": "feb602c2b43dad39d97ff4e8c45c070dee442a7b9955100a2261b7b5b229f038"
+    },
+    {
+      "stage": "turn-3",
+      "attempt": 0,
+      "outcome": "rejected",
+      "failure": "schema_transport_confounded",
+      "reason": "explanation: too_big",
+      "normalizationApplied": "whole_answer_fence_unwrap",
+      "rawSha256": "ba5acc807e4d790f49cd00bc4cd4449d6cdd6e861e9721fa7c14282b96575aad",
+      "normalizedSha256": "7097212e41973e05655c6820120d64a119c9eefd03d94c0cbe14764b11325d8a"
+    },
+    {
+      "stage": "turn-3",
+      "attempt": 1,
+      "outcome": "rejected",
+      "failure": "semantic_failure",
+      "reason": "range: \"Break\" bölümü, bar 3, slot 16: D2 notası \"Holds the 4/4 floor and the riff weight;\" track'inin aralığının altında. Bu akort ve capo 0 ile çalınabilir aralık E2 - E6.",
+      "normalizationApplied": null,
+      "rawSha256": "ae37dd58104e1cb7d8a4f5eebd0e7f2bd7c635cfb4190522f85ceba918fca514",
+      "normalizedSha256": "ae37dd58104e1cb7d8a4f5eebd0e7f2bd7c635cfb4190522f85ceba918fca514"
+    },
+    {
+      "stage": "turn-3",
+      "attempt": 2,
+      "outcome": "accepted",
+      "failure": "packaging_only",
+      "reason": null,
+      "normalizationApplied": "whole_answer_fence_unwrap",
+      "rawSha256": "54e85f394d10333a97759e5f8806534af2cb4303111342cd9d95432212089148",
+      "normalizedSha256": "41f2fd891a3c3c1c58ed1078d18903b29cb6e5e841f3620ad2be150f22764d15"
+    }
+  ]
+}

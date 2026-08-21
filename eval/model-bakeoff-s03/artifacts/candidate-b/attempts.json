@@ -1,0 +1,35 @@
+{
+  "runClassification": "transport_confounded_shadow_run",
+  "attempts": [
+    {
+      "stage": "blueprint",
+      "attempt": 0,
+      "outcome": "rejected",
+      "failure": "schema_transport_confounded",
+      "reason": "tracks.0: Unrecognized key: \"playsInSections_note\"",
+      "normalizationApplied": "whole_answer_fence_unwrap",
+      "rawSha256": "0368cc62b9a5bdbc4e79c6feace099dfed1c33131582572e7b1a5f37b2f1a7c9",
+      "normalizedSha256": "6b996a8bca9e47e148aa03c64238b60863b9314dee5195564e91325977a5c578"
+    },
+    {
+      "stage": "blueprint",
+      "attempt": 1,
+      "outcome": "rejected",
+      "failure": "semantic_failure",
+      "reason": "solo: bar 6: 1/16 bölümün 1/16 gridinden daha ince değil.",
+      "normalizationApplied": null,
+      "rawSha256": "1ac24171bf393967ea8e93cf36ae3dc0304fcc5db25e7d378e59e025fa791082",
+      "normalizedSha256": "1ac24171bf393967ea8e93cf36ae3dc0304fcc5db25e7d378e59e025fa791082"
+    },
+    {
+      "stage": "blueprint",
+      "attempt": 2,
+      "outcome": "rejected",
+      "failure": "schema_transport_confounded",
+      "reason": "tracks.0: Unrecognized key: \"additionalProperties\"",
+      "normalizationApplied": "whole_answer_fence_unwrap",
+      "rawSha256": "5f8f06df14839ec94c56b64f404e45110338a3c88a1ae446049c68f0b42711f2",
+      "normalizedSha256": "b23576145880aced35401bff07a38700b0fb5d293f2480eb5dddbd729171760b"
+    }
+  ]
+}

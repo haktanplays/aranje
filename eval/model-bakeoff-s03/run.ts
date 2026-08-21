@@ -14,6 +14,7 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { unwrapProviderEnvelope } from "./envelope.js";
+import { classifyAttempt, RUN_CLASSIFICATION, type FailureClass } from "./failure-class.js";
 import { join } from "node:path";
 
 import { compositionBlueprintSchema } from "@/lib/copilot/blueprint";
@@ -110,17 +111,48 @@ function waitFor(what: string, payloadName: string, payload: unknown): never {
 }
 
 // ---------------------------------------------------------------- blueprint
-/** Every attempt whose answer arrived inside a markdown fence. */
-const envelopeUnwraps: string[] = [];
+/**
+ * What every attempt was, and what its rejection actually proved.
+ *
+ * The schema reached both candidates as prose, so a rejection is not
+ * automatically evidence about the model. Each attempt is filed under its
+ * class, and its raw and normalised digests are kept so the record shows the
+ * body was never touched.
+ */
+type AttemptRecord = {
+  readonly stage: string;
+  readonly attempt: number;
+  readonly outcome: "accepted" | "rejected";
+  readonly failure: FailureClass | null;
+  readonly reason: string | null;
+  readonly normalizationApplied: string | null;
+  readonly rawSha256: string;
+  readonly normalizedSha256: string;
+};
+
+const attempts: AttemptRecord[] = [];
+
+/**
+ * Packaging alone does not spend a correction.
+ *
+ * A fenced answer that parses once the fence is off told us nothing about the
+ * model, so re-asking for it costs the candidate nothing. Every other kind of
+ * rejection still does.
+ */
+const packagingOnly = (stage: string) =>
+  attempts.filter(
+    (record) => record.stage === stage && record.failure === "packaging_only",
+  ).length;
 
 let blueprintRaw: string | null = null;
 let blueprintAttempt = 0;
 const blueprintCorrections: string[] = [];
 
-for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
+for (let attempt = 0; attempt <= MAX_ATTEMPT + packagingOnly("blueprint"); attempt += 1) {
   const answer = path(`blueprint-attempt-${attempt}-response.json`);
   if (!existsSync(answer)) {
     if (attempt === 0 || blueprintCorrections.length > 0) {
+      write("attempts.json", JSON.stringify({ runClassification: RUN_CLASSIFICATION, attempts }, null, 2));
       waitFor(
         `blueprint attempt ${attempt}`,
         `blueprint-attempt-${attempt}-payload.json`,
@@ -130,16 +162,37 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
     break;
   }
   blueprintAttempt = attempt;
-  {
-    const envelope = unwrapProviderEnvelope(readFileSync(answer, "utf8"));
-    if (envelope.unwrapped) envelopeUnwraps.push(`blueprint-attempt-${attempt}`);
-    blueprintRaw = envelope.text;
-  }
+  const envelope = unwrapProviderEnvelope(readFileSync(answer, "utf8"));
+  blueprintRaw = envelope.text;
+
+  /** File this attempt, deciding whether the fence was all that was wrong. */
+  const record = (
+    outcome: "accepted" | "rejected",
+    stage: "parse" | "schema" | "grid" | "validators" | "materialise" | null,
+    reason: string | null,
+  ) => {
+    attempts.push({
+      stage: "blueprint",
+      attempt,
+      outcome,
+      failure: classifyAttempt({
+        accepted: outcome === "accepted",
+        normalized: envelope.normalizationApplied !== null,
+        stage,
+        reason: reason ?? "",
+      }),
+      reason,
+      normalizationApplied: envelope.normalizationApplied,
+      rawSha256: envelope.rawSha256,
+      normalizedSha256: envelope.normalizedSha256,
+    });
+  };
 
   let parsedJson: unknown;
   try {
     parsedJson = JSON.parse(blueprintRaw);
   } catch (error) {
+    record("rejected", "parse", (error as Error).message);
     blueprintCorrections.length = 0;
     blueprintCorrections.push(
       `Cikti gecerli JSON degildi: ${(error as Error).message}. Yalnizca JSON uret.`,
@@ -157,6 +210,7 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
         .slice(0, 12)
         .map((issue) => `${issue.path.join(".") || "(kok)"}: ${issue.message}`),
     );
+    record("rejected", "schema", blueprintCorrections.join("; "));
     console.log(`blueprint attempt ${attempt}: REJECTED at schema`);
     for (const line of blueprintCorrections) console.log(`    ${line}`);
     blueprintRaw = null;
@@ -169,6 +223,7 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
     blueprintCorrections.push(
       ...gridProblems.map((problem) => `${problem.sectionKey}: ${problem.message}`),
     );
+    record("rejected", "grid", blueprintCorrections.join("; "));
     console.log(`blueprint attempt ${attempt}: REJECTED at grid plan`);
     for (const line of blueprintCorrections) console.log(`    ${line}`);
     blueprintRaw = null;
@@ -179,12 +234,14 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
   if (!built.ok) {
     blueprintCorrections.length = 0;
     blueprintCorrections.push(...asBlueprintCorrection(built.reason));
+    record("rejected", "materialise", built.reason);
     console.log(`blueprint attempt ${attempt}: REJECTED at materialise`);
     for (const line of blueprintCorrections) console.log(`    ${line}`);
     blueprintRaw = null;
     continue;
   }
 
+  record("accepted", null, null);
   const duration = checkBlueprintDuration(parsed.data);
   write("blueprint.json", JSON.stringify(parsed.data, null, 2));
   write("skeleton.json", JSON.stringify(built.song, null, 2));
@@ -208,6 +265,8 @@ for (let attempt = 0; attempt <= MAX_ATTEMPT; attempt += 1) {
   );
   break;
 }
+
+write("attempts.json", JSON.stringify({ runClassification: RUN_CLASSIFICATION, attempts }, null, 2));
 
 if (!existsSync(path("blueprint.json"))) {
   console.log("\nblueprint not accepted yet.");
@@ -254,7 +313,8 @@ for (const turn of TURNS) {
   const corrections: string[][] = [];
   let accepted = false;
 
-  for (let attempt = 0; attempt <= MAX_ATTEMPT && !accepted; attempt += 1) {
+  const turnStage = `turn-${turn.index}`;
+  for (let attempt = 0; attempt <= MAX_ATTEMPT + packagingOnly(turnStage) && !accepted; attempt += 1) {
     const stem = `turn-${turn.index}-attempt-${attempt}`;
     const answerPath = path(`${stem}-response.json`);
     const previous = attempt === 0 ? undefined : corrections[attempt - 1];
@@ -262,7 +322,8 @@ for (const turn of TURNS) {
     if (!existsSync(answerPath)) {
       write("state.json", JSON.stringify(song, null, 2));
       write("turn-log.json", JSON.stringify(log, null, 2));
-  write("envelope-unwraps.json", JSON.stringify(envelopeUnwraps, null, 2));
+      write("attempts.json", JSON.stringify({ runClassification: RUN_CLASSIFICATION, attempts }, null, 2));
+  write("attempts.json", JSON.stringify({ runClassification: RUN_CLASSIFICATION, attempts }, null, 2));
       waitFor(
         `turn ${turn.index} (${turn.label}) attempt ${attempt}`,
         `${stem}-payload.json`,
@@ -276,8 +337,23 @@ for (const turn of TURNS) {
     }
 
     const envelope = unwrapProviderEnvelope(readFileSync(answerPath, "utf8"));
-    if (envelope.unwrapped) envelopeUnwraps.push(`turn-${turn.index}-attempt-${attempt}`);
     const outcome = runTurn(song, turn, candidate, envelope.text);
+
+    attempts.push({
+      stage: turnStage,
+      attempt,
+      outcome: outcome.ok ? "accepted" : "rejected",
+      failure: classifyAttempt({
+        accepted: outcome.ok,
+        normalized: envelope.normalizationApplied !== null,
+        stage: outcome.ok ? null : outcome.stage === "validators" ? "validators" : "parse",
+        reason: outcome.ok ? "" : outcome.diagnostic,
+      }),
+      reason: outcome.ok ? null : outcome.diagnostic,
+      normalizationApplied: envelope.normalizationApplied,
+      rawSha256: envelope.rawSha256,
+      normalizedSha256: envelope.normalizedSha256,
+    });
 
     if (outcome.ok) {
       song = outcome.song;
@@ -322,14 +398,14 @@ for (const turn of TURNS) {
     );
     write("final-song.json", JSON.stringify(song, null, 2));
     write("turn-log.json", JSON.stringify(log, null, 2));
-  write("envelope-unwraps.json", JSON.stringify(envelopeUnwraps, null, 2));
+  write("attempts.json", JSON.stringify({ runClassification: RUN_CLASSIFICATION, attempts }, null, 2));
     process.exit(1);
   }
 }
 
 write("final-song.json", JSON.stringify(song, null, 2));
 write("turn-log.json", JSON.stringify(log, null, 2));
-write("envelope-unwraps.json", JSON.stringify(envelopeUnwraps, null, 2));
+write("attempts.json", JSON.stringify({ runClassification: RUN_CLASSIFICATION, attempts }, null, 2));
 
 const issues = runValidators(song);
 console.log(
