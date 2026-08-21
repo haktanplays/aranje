@@ -93,7 +93,7 @@
     {
       "name": "[390x844] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18622 -> 19222"
+      "detail": "18622 -> 19227"
     },
     {
       "name": "[390x844] 20 practice rate survives the switch",
@@ -258,7 +258,7 @@
     {
       "name": "[320x700] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18613 -> 19227"
+      "detail": "18631 -> 19231"
     },
     {
       "name": "[320x700] 20 practice rate survives the switch",

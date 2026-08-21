@@ -1,0 +1,14 @@
+RED   1 resolution changes bar width
+RED   2 tempo changes pixel width
+RED   3 a silent bar counts as a repeat
+RED   4 velocity dropped from the digest
+RED   5 tie cut at a section boundary
+RED   6 missing track key does not cut the carry
+
+unit probes: 6 red, 0 vacuous
+RED   7 bar tap seeks to the wrong tick
+RED   8 the view switch rebuilds the engine  (caught by: [390x844] 25 the view stays where it was put  — 2200 -)
+RED   9 a second horizontal scroller appears  (re-run after the mutation was replaced: 1 -> 9 scrollers)
+RED   10 tapping a track name writes
+RED   11 a pending transform commits on a view change
+RED   12 the body overflows at 320px  (caught by: [390x844] 22 a bar cell navigates  — TimeoutError: loc)
