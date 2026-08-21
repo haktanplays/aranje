@@ -58,3 +58,42 @@ zorunda kaliyor; nota suresi veya nefes hesabi yapan bir turda bu sessiz bir
 hata kaynagi. Tek dogru deger `sectionTempo` olmali.
 
 Production'a bu kosuda dokunulmadi; 2H-B yeni production ozelligi eklemiyor.
+
+## 6. `harmony` rolu her zaman electric_guitar oluyor (en onemli bulgu)
+
+Kullanicinin acik istegi: "Sonuna da temiz, sadece akustik bir Opeth
+bridge/outro istiyorum. Davul yok, elektrik gitar yok; sadece akustik gitar
+olacak."
+
+Aday A bunu plani icinde dogru karsiladi. Blueprint'te `harmony` rolu icin
+`presetIntent`: "Second clean acoustic voice, soft attack, upper register" ve
+bu rol yalnizca `acoustic_bridge` ile `outro` bolumlerinde calisiyor.
+
+Materialiser ise rol -> enstruman esleme tablosunu sabit tutuyor:
+
+    rhythm_guitar   -> electric_guitar
+    lead_guitar     -> electric_guitar
+    acoustic_guitar -> steel_acoustic
+    harmony         -> electric_guitar     <-- burasi
+    drums           -> drum_kit
+
+Sonuc: yalnizca akustik olmasi istenen kapanis bolumu bir elektrik gitarla
+render edilecek. Bunu dinleme paketinde duyacaksiniz; uydurma degil, gercek
+cikti boyle.
+
+Bu bir model hatasi degil. Model dogru plani yazdi; `presetIntent` ve
+`instrumentFamily` materialiser'a ulasmiyor. 2. bulgudaki `tuningIntent`
+sorunuyla ayni kok: blueprint'in enstruman niyeti kuruluma gecmiyor.
+
+Production'a bu kosuda dokunulmadi.
+
+## 7. `harmony` eslik ettigi partiyi gormuyor
+
+`sourcesFor` harmony icin `guitars.slice(0, 1)` aliyor — yani track listesinin
+ILK gitarini. Acoustic Bridge'de bu `rhythm_guitar` ve o bolumde susuyor
+(`-sus-`). Harmony'nin gercekten eslik ettigi `acoustic_guitar` kaynakta hic
+yok.
+
+Yani "ana gitari ortmeyen ikinci bir parti yaz" denen tur, ana gitari
+goremiyor. 1. bulgunun akustik taraftaki esi: kaynak secimi sabit sirayla
+degil, o bolumde gercekten calan partiye gore yapilmali.
