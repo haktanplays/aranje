@@ -39,11 +39,12 @@ const server = createServer((request, response) => {
 await new Promise((resolve) => server.listen(0, resolve));
 const origin = `http://127.0.0.1:${server.address().port}`;
 
-const OUT = "eval/model-bakeoff-s03/artifacts/replay-2h-b1/wav";
+const REPLAY = process.env.REPLAY_DIR ?? "eval/model-bakeoff-s03/artifacts/replay-2h-b1";
+const OUT = `${REPLAY}/wav`;
 mkdirSync(OUT, { recursive: true });
 
 const bundle = readFileSync(".bakeoff-s03/bakeoff-render.js", "utf8");
-const song = readFileSync("eval/model-bakeoff-s03/artifacts/replay-2h-b1/song.json", "utf8");
+const song = readFileSync(`${REPLAY}/song.json`, "utf8");
 
 const browser = await chromium.launch({
   executablePath: "/opt/pw-browsers/chromium-1194/chrome-linux/chrome",

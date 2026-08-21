@@ -242,6 +242,7 @@ describe("the resolved tuning reaches the same field range and fretboard read", 
   it("moves the low end of the fretboard range with the tuning", () => {
     const drop = fretboardRange({ tuning: DROP_D, capo: 0 });
     const standard = fretboardRange({ tuning: E_STANDARD, capo: 0 });
+    if (drop === null || standard === null) throw new Error("tuning preset is unreadable");
     expect(drop.lowMidi).toBe(pitchToMidi("D2"));
     expect(standard.lowMidi).toBe(pitchToMidi("E2"));
     expect(drop.lowMidi).toBeLessThan(standard.lowMidi);
@@ -263,8 +264,7 @@ describe("tuning intent is part of the question", () => {
   it("fingerprints two different tuning intents differently under one key", async () => {
     const drop = songWithNote("Drop-tuned low string", "E3");
     const standard = songWithNote("Standard tuning", "E3");
-    expect(drop && standard).toBeTruthy();
-    if (!drop || !standard) return;
+    if (drop === null || standard === null) throw new Error("fixture did not materialize");
 
     const request = (song: Song) =>
       arrangeRequest("rhythm_guitar", {

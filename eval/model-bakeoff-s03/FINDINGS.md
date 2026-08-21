@@ -118,3 +118,25 @@ Harmony kaynak baglami: once o bolumde susan ritim gitari, simdi
 `gitar (acoustic_guitar)`.
 
 14/14 tur yeniden uygulandi. WAV'lar `artifacts/replay-2h-b1/wav/`.
+
+## 9. 2H-B.2 sonrasi replay (tuning)
+
+Ayni blueprint, ayni kabul edilmis cevaplar. Yeni model kosusu degildir;
+materializer parity kanitidir.
+
+| track | tuningIntent | once | sonra |
+|---|---|---|---|
+| rhythm_guitar | "Drop-tuned low string for riff weight" | E2 A2 D3 G3 B3 E4 | **D2** A2 D3 G3 B3 E4 |
+| lead_guitar | "Same drop tuning as the rhythm guitar" | E2 A2 D3 G3 B3 E4 | **D2** A2 D3 G3 B3 E4 |
+| acoustic_guitar | "Standard tuning, open strings left ringing" | E2 A2 D3 G3 B3 E4 | ayni |
+| harmony | "Standard tuning, matched to the acoustic guitar" | E2 A2 D3 G3 B3 E4 | ayni |
+| drums | — | fretboard yok | fretboard yok |
+
+Capo her track'te 0 kaldi.
+
+14/14 tur yeniden uygulandi. Validator: **0 error, 5 warning, 0 range error.**
+Daha once correction tuketen D2 artik range hatasi uretmiyor; validator
+gevsetilmedi, dogru tuning materialize edildi.
+
+WAV: `artifacts/replay-2h-b2/wav/` (8 kesit). 2H-B.1 dizininin uzerine
+yazilmadi.

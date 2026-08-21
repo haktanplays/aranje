@@ -19,12 +19,13 @@ import { compositionBlueprintSchema } from "@/lib/copilot/blueprint";
 import { buildArrangementContext } from "@/lib/copilot/arrangement-context";
 import { materializeSongSkeleton } from "@/lib/copilot/materialize";
 import { isAcousticInstrument } from "@/lib/instruments/registry";
+import { runValidators } from "@/lib/validators";
 import { unwrapProviderEnvelope } from "./envelope.js";
 import { runTurn, type TurnSpec } from "./harness.js";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
 
 const SOURCE = "eval/model-bakeoff-s03/artifacts/candidate-a";
-const OUT = "eval/model-bakeoff-s03/artifacts/replay-2h-b1";
+const OUT = process.env.REPLAY_OUT ?? "eval/model-bakeoff-s03/artifacts/replay-2h-b1";
 mkdirSync(OUT, { recursive: true });
 
 const blueprint = compositionBlueprintSchema.parse(
@@ -32,7 +33,7 @@ const blueprint = compositionBlueprintSchema.parse(
 );
 
 const before = JSON.parse(readFileSync(`${SOURCE}/skeleton.json`, "utf8")) as {
-  tracks: { id: string; instrumentId: string; presetId: string }[];
+  tracks: { id: string; instrumentId: string; presetId: string; fretboard?: { tuning: string[]; capo: number } }[];
   sections: { id: string; name: string; bars: { slots: Record<string, unknown> }[] }[];
 };
 
@@ -46,12 +47,18 @@ const after = built.song;
 /** Instrument and preset, before the fix and after it. */
 const trackDiff = blueprint.tracks.map((entry) => {
   const old = before.tracks.find((track) => track.id === entry.role);
-  const now = after.tracks.find((track) => track.id === entry.role);
+  const now = after.tracks.find((track) => track.id === entry.role) as
+    | { instrumentId: string; presetId: string; fretboard?: { tuning: readonly string[]; capo: number } }
+    | undefined;
   return {
     role: entry.role,
     presetIntent: entry.presetIntent,
     before: old ? `${old.instrumentId}/${old.presetId}` : null,
     after: now ? `${now.instrumentId}/${now.presetId}` : null,
+    tuningIntent: entry.tuningIntent,
+    tuningBefore: old?.fretboard?.tuning.join(" ") ?? null,
+    tuningAfter: now?.fretboard?.tuning.join(" ") ?? null,
+    capoAfter: now?.fretboard?.capo ?? null,
     changed: old && now ? old.instrumentId !== now.instrumentId || old.presetId !== now.presetId : false,
   };
 });
@@ -125,6 +132,11 @@ const sourceDiff = sectionDiff
     };
   });
 
+const finalIssues = runValidators(song);
+const errors = finalIssues.filter((issue) => issue.severity === "error");
+const warnings = finalIssues.filter((issue) => issue.severity === "warning");
+const rangeIssues = errors.filter((issue) => issue.code === "range");
+
 writeFileSync(`${OUT}/song.json`, `${JSON.stringify(song, null, 2)}\n`);
 writeFileSync(
   `${OUT}/REPLAY.json`,
@@ -137,6 +149,11 @@ writeFileSync(
       sectionDiff,
       sourceDiff,
       replayLog,
+      validators: {
+        errors: errors.map((issue) => issue.message),
+        warnings: warnings.length,
+        rangeErrors: rangeIssues.map((issue) => issue.message),
+      },
     },
     null,
     2,
@@ -153,5 +170,12 @@ for (const entry of sectionDiff.filter((s) => s.plannedAcousticOnly)) {
   console.log(`    violated before=${entry.violatedBefore} after=${entry.violatedAfter}`);
 }
 console.log(`\nturns replayed: ${replayLog.filter((r) => r.ok).length}/${replayLog.length}`);
+console.log(`\nvalidators: ${errors.length} error, ${warnings.length} warning, ${rangeIssues.length} range error`);
+console.log("\ntuning:");
+for (const entry of trackDiff) {
+  if (entry.tuningBefore === null && entry.tuningAfter === null) continue;
+  const mark = entry.tuningBefore !== entry.tuningAfter ? "   CHANGED" : "";
+  console.log(`  ${entry.role.padEnd(16)} ${String(entry.tuningBefore).padEnd(20)} -> ${entry.tuningAfter}${mark}`);
+}
 console.log("\nharmony source context now:");
 for (const entry of sourceDiff) console.log(`  ${entry.section}: ${entry.harmonyNowSees.join(", ") || "(none)"}`);
