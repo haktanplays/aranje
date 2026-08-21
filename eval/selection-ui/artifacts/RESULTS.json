@@ -48,7 +48,7 @@
     {
       "name": "[390x844] ghost preview writes nothing",
       "pass": true,
-      "detail": "1 taps, 2->2"
+      "detail": "5 taps, 2->2"
     },
     {
       "name": "[390x844] 16 ghost explains the outcome",
@@ -88,7 +88,7 @@
     {
       "name": "[390x844] 21 many nudges commit once",
       "pass": true,
-      "detail": "1 taps, writes 2->3"
+      "detail": "5 taps, writes 2->3"
     },
     {
       "name": "[390x844] song actually changed",
@@ -233,7 +233,7 @@
     {
       "name": "[320x700] ghost preview writes nothing",
       "pass": true,
-      "detail": "1 taps, 2->2"
+      "detail": "5 taps, 2->2"
     },
     {
       "name": "[320x700] 16 ghost explains the outcome",
@@ -273,7 +273,7 @@
     {
       "name": "[320x700] 21 many nudges commit once",
       "pass": true,
-      "detail": "1 taps, writes 2->3"
+      "detail": "5 taps, writes 2->3"
     },
     {
       "name": "[320x700] song actually changed",

@@ -26,7 +26,13 @@ import { chromium } from "playwright";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
-const OUT = "eval/selection-ui/artifacts";
+/*
+ * Overridable so a probe run does not overwrite the real artefacts. A probe
+ * deliberately breaks the app; its screenshots and its RESULTS.json are
+ * evidence about the break, not about the checkpoint, and the two had been
+ * landing in the same directory under the same names.
+ */
+const OUT = process.env.SELECTION_UI_OUT ?? "eval/selection-ui/artifacts";
 mkdirSync(OUT, { recursive: true });
 
 /*
@@ -399,6 +405,27 @@ async function run() {
       await page.locator("[data-testid=nudge-right-grid]").click();
       clicks += 1;
       await page.waitForTimeout(80);
+      enabled = await applyButton.isEnabled().catch(() => false);
+    }
+
+    /*
+     * "Many nudges" has to actually mean many.
+     *
+     * The loops above stop the moment the move becomes applicable, which on
+     * this fixture is after a single tap — and one tap cannot tell "every
+     * nudge accumulates into one pending command" apart from "each nudge
+     * commits on its own". Both produce exactly one write. A probe that broke
+     * the accumulation could not turn this red, and did not.
+     *
+     * A round trip fixes it: the extra taps land back on the same applicable
+     * delta, so the pending command is unchanged and the tap count is not.
+     */
+    if (enabled) {
+      for (const direction of ["right", "left", "right", "left"]) {
+        await page.locator(`[data-testid=nudge-${direction}-grid]`).click();
+        clicks += 1;
+        await page.waitForTimeout(80);
+      }
       enabled = await applyButton.isEnabled().catch(() => false);
     }
 

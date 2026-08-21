@@ -132,9 +132,28 @@ PY
     (npx next start -p 3100 >/dev/null 2>&1 &)
     until curl -s -m 2 -o /dev/null http://127.0.0.1:3100/; do sleep 1; done
 
-    timeout 420 node eval/selection-ui/verify.mjs > /tmp/probe-out.txt 2>&1
+    SELECTION_UI_OUT=/tmp/probe-artifacts \
+      timeout 900 node eval/selection-ui/verify.mjs > /tmp/probe-out.txt 2>&1
+
+    #
+    # "The named check did not fail" is not the same as "the check passed".
+    #
+    # Breaking the preview path so it commits put the app into a render loop,
+    # so the viewport pass fell over twenty checks in and the named check never
+    # ran at all. Grepping for its FAIL line found nothing and the probe
+    # reported the guard as VACUOUS — the exact opposite of what happened.
+    #
+    # A vacuity probe asks whether breaking something gets noticed. Noticed
+    # anywhere counts; which check noticed it is worth printing, not worth
+    # requiring.
+    #
     if grep -q "^FAIL.*${test_name}" /tmp/probe-out.txt; then
       echo "RED   $name"
+    elif grep -q "^FAIL" /tmp/probe-out.txt; then
+      caught=$(grep -m1 "^FAIL" /tmp/probe-out.txt | sed 's/^FAIL *//' | cut -c1-58)
+      echo "RED   $name  (caught by: $caught)"
+    elif ! grep -q "${test_name}" /tmp/probe-out.txt; then
+      echo "BROKEN $name  <-- the run never reached any check"
     else
       echo "GREEN $name  <-- VACUOUS"
     fi
@@ -145,10 +164,35 @@ PY
   #
   # This is the probe that would have caught the 40px-wide row on the day it
   # shipped. The check it aims at used to measure height only.
+  # Both halves, because neither alone shrinks anything: at four columns the
+  # buttons are 73px wide with or without the floor, and with the floor a
+  # seven-column row overflows instead of shrinking. The 40px row needed the
+  # one row *and* the missing floor, so the probe has to restore both.
   bprobe "13 seven targets squeezed into one row" \
     src/components/workspace/SelectionActionBar.tsx \
-    '<div className="grid grid-cols-4 gap-1 p-2">' \
-    '<div className="grid grid-cols-7 gap-1 p-2">' \
+    '      <div className="grid grid-cols-4 gap-1 p-2">
+        {PRIMARY.map((entry) => (
+          <button
+            key={entry.action}
+            type="button"
+            data-testid={`selection-action-${entry.action}`}
+            onClick={() => onAction(entry.action)}
+            aria-label={entry.label}
+            className="border-app flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight"
+            style={{
+              minHeight: MIN_TOUCH_TARGET_PX,
+              minWidth: MIN_TOUCH_TARGET_PX,
+            }}' \
+    '      <div className="grid grid-cols-7 gap-1 p-2">
+        {PRIMARY.map((entry) => (
+          <button
+            key={entry.action}
+            type="button"
+            data-testid={`selection-action-${entry.action}`}
+            onClick={() => onAction(entry.action)}
+            aria-label={entry.label}
+            className="border-app flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight"
+            style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: 0 }}' \
     "action targets >=44x44px"
 
   # 14 — the click a spent press leaves behind must not reach a control
@@ -193,7 +237,7 @@ PY
   # 10 — the tab stays the only horizontal scroller
   bprobe "10 a second horizontal scroller at 320px" \
     src/components/workspace/SelectionActionBar.tsx \
-    '      <div className="grid grid-cols-7 gap-1 p-2">' \
+    '      <div className="grid grid-cols-4 gap-1 p-2">' \
     '      <div className="flex gap-1 overflow-x-auto p-2" style={{ width: 1200 }}>' \
     "one horizontal scroller"
 
