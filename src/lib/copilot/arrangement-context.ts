@@ -31,7 +31,7 @@
  */
 import { rhythmLines, trackLines } from "@/lib/copilot/compact";
 import { buildTempoMap, sectionBpm } from "@/lib/audio/tempo";
-import { instrumentFamily } from "@/lib/instruments/registry";
+import { isAcousticInstrument, instrumentFamily } from "@/lib/instruments/registry";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
 import type { Section, Song, Track } from "@/lib/song/schema";
 
@@ -67,13 +67,44 @@ export type ArrangementContext = {
 };
 
 /** Which other tracks this role is allowed to read, and how (K-32). */
+/**
+ * Whether a track actually makes a sound in this section (spec 5.5, K-35).
+ *
+ * Silence is absence: a track that is not a key in the section's bars is not
+ * playing. S-03 handed the harmony turn a rhythm guitar that was silent for
+ * the whole section, and told it not to cover a part it could not hear. A
+ * source has to be present *and* audible, or it teaches the model nothing.
+ */
+function isAudibleIn(section: Section, trackId: string): boolean {
+  return section.bars.some((bar) => {
+    const slots = bar.slots[trackId];
+    if (slots === undefined) return false;
+    return slots.some((slot) => slot !== null && slot !== "-");
+  });
+}
+
+/**
+ * What this turn is playing against, chosen from what is actually sounding.
+ *
+ * Ordinal selection is gone. `guitars.slice(0, 1)` meant "whichever guitar
+ * happens to be first in the track list", which in an acoustic section is the
+ * electric rhythm guitar that is not playing. Selection now starts from the
+ * tracks audible in the target section and keeps the role's intent about
+ * *what kind* of information each part needs.
+ *
+ * A turn with no usable source is a real condition, not a silent one: the
+ * caller is told, so it can refuse before spending a provider call on a prompt
+ * whose context block is empty or wrong.
+ */
 function sourcesFor(
   song: Song,
   section: Section,
   role: ArrangeSkill,
   target: Track,
 ): SourceSummary[] {
-  const others = song.tracks.filter((track) => track.id !== target.id);
+  const others = song.tracks.filter(
+    (track) => track.id !== target.id && isAudibleIn(section, track.id),
+  );
   const guitars = others.filter(
     (track) => instrumentFamily(track.instrumentId) === "guitar",
   );
@@ -90,14 +121,26 @@ function sourcesFor(
     lines: trackLines(section, track.id),
   });
 
+  /* An accompanying part follows whoever is carrying the section. Acoustic
+   * first, because an acoustic section is where this mattered. */
+  const principal = (): Track | undefined =>
+    guitars.find((track) => isAcousticInstrument(track.instrumentId)) ?? guitars[0];
+
   switch (role) {
     // Never a pitch. A drum part is written against where the accents fall.
     case "drums":
       return guitars.map(rhythmOf);
 
-    // The riff is written against the groove, not against the lead's detail.
-    case "rhythm_guitar":
-      return drums ? [rhythmOf(drums)] : [];
+    /* The riff is written against the groove — but when it is playing under a
+     * lead, staying out of the lead's way is the job, and it cannot do that
+     * without hearing it. */
+    case "rhythm_guitar": {
+      const lead = guitars.find((track) => track.id.startsWith("lead_guitar"));
+      return [
+        ...(lead ? [pitchesOf(lead)] : []),
+        ...(drums ? [rhythmOf(drums)] : []),
+      ];
+    }
 
     // A solo needs to know what it is playing over, harmonically.
     case "lead_guitar":
@@ -110,15 +153,19 @@ function sourcesFor(
     case "acoustic_guitar":
       return guitars.map(pitchesOf);
 
-    // A supporting part is written against the part it supports.
-    case "harmony":
-      return guitars.slice(0, 1).map(pitchesOf);
+    // A supporting part is written against the part it actually supports.
+    case "harmony": {
+      const lead = principal();
+      return lead ? [pitchesOf(lead)] : [];
+    }
 
-    case "bass":
+    case "bass": {
+      const lead = principal();
       return [
-        ...guitars.slice(0, 1).map(pitchesOf),
+        ...(lead ? [pitchesOf(lead)] : []),
         ...(drums ? [rhythmOf(drums)] : []),
       ];
+    }
   }
 }
 

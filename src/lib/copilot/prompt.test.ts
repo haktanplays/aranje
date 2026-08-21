@@ -137,21 +137,49 @@ describe("prompt carries one section and one skill's context (K-18)", () => {
     expect(sources).toContain("ritim (drums)");
   });
 
-  it("shows a lead request what it plays over; a riff request only the groove", () => {
+  it("offers a lead only guitars that are actually sounding (K-35)", () => {
     const lead = between(
       buildPrompt({ request: arrangeRequest("lead_guitar") }).userMessage,
       "kaynak",
     );
+
+    /*
+     * The demo song's acoustic track does not play in this section, and a
+     * source that is silent teaches a solo nothing about what it is playing
+     * over. It used to be offered anyway, as four bars of `-sus-`; that is the
+     * shape of context S-03 gave the harmony turn, and it is gone.
+     */
+    expect(lead).not.toContain("gitar (acc)");
+    expect(lead).toContain("ritim (drums)");
+  });
+
+  it("shows a lead the second guitar when that guitar is playing", () => {
+    const lead = between(
+      buildPrompt({
+        request: arrangeRequest("lead_guitar", {
+          song: HARMONY_SONG,
+          targetTrackId: "gtr2",
+        }),
+      }).userMessage,
+      "kaynak",
+    );
+    expect(lead).toContain("gitar (gtr)");
+  });
+
+  it("shows a riff the lead it has to stay under, and the groove", () => {
     const rhythm = between(
       buildPrompt({ request: arrangeRequest("rhythm_guitar") }).userMessage,
       "kaynak",
     );
 
-    // A solo needs the harmony under it.
-    expect(lead).toContain("gitar (");
-    // A riff is written against the groove, not the lead's detail.
+    /*
+     * A riff is still written against the groove. But when a lead is playing
+     * over it, staying out of its way is the job, and S-03 asked a solo backing
+     * to do exactly that while showing it nothing. There is no lead track in
+     * this song, so the groove is all there is.
+     */
     expect(rhythm).toContain("ritim (drums)");
-    expect(rhythm).not.toContain("gitar (");
+    expect(rhythm).not.toContain("gitar (acc)");
   });
 
   it("shows a harmony request the guitar and the declared core scale", () => {

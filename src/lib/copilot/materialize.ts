@@ -30,6 +30,8 @@ import { TUNING_PRESETS } from "@/lib/music/fretboard";
 import { songLimits } from "@/lib/limits";
 import { songSchema, type Bar, type Section, type Song, type Track } from "@/lib/song/schema";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
+import { resolveInstrumentIntent } from "@/lib/copilot/instrument-intent";
+import { isAcousticInstrument } from "@/lib/instruments/registry";
 import { barResolution, checkGridPlan } from "@/lib/copilot/grid-plan";
 import type { BlueprintTrack, CompositionBlueprint } from "@/lib/copilot/blueprint";
 
@@ -53,6 +55,11 @@ export type MaterializeResult =
  *
  * Conservative on purpose: wide enough to separate, never hard-panned, so a
  * listener on one earbud still hears the piece.
+ */
+/**
+ * Kept only for the pan geometry and as documentation of the historical
+ * defaults. It is no longer the authority on which instrument a role gets:
+ * `resolveInstrumentIntent` is, and it reads the blueprint (spec 5.2, K-35).
  */
 const INSTRUMENT_BY_ROLE: Readonly<
   Record<ArrangeSkill, { instrumentId: string; presetId: string; pan: number }>
@@ -84,8 +91,12 @@ export function trackIdFor(role: ArrangeSkill, ordinal: number): string {
   return ordinal === 0 ? role : `${role}-${ordinal + 1}`;
 }
 
-function trackFor(entry: BlueprintTrack, id: string, name: string): Track {
-  const instrument = INSTRUMENT_BY_ROLE[entry.role];
+function trackFor(
+  entry: BlueprintTrack,
+  id: string,
+  name: string,
+  instrument: { instrumentId: string; presetId: string; pan: number },
+): Track {
   const needsFretboard = instrumentFamily(instrument.instrumentId) !== "drums";
   return {
     id,
@@ -100,6 +111,60 @@ function trackFor(entry: BlueprintTrack, id: string, name: string): Track {
       ? { fretboard: { tuning: [...tuningFor(entry.tuningIntent)], capo: 0 } }
       : {}),
   };
+}
+
+/**
+ * A section the plan describes as acoustic has to *be* acoustic (K-35).
+ *
+ * S-03's close was specified as acoustic only and materialised with an
+ * electric guitar in it. The instrument resolver is what prevents that now,
+ * but a resolver is a mechanism and this is the property; stating the property
+ * separately means a future change to roles, defaults or the registry cannot
+ * quietly reintroduce the bug without a test going red.
+ *
+ * Absence is the only silence there is (spec 5.5), so this checks which track
+ * keys exist in a section's bars. It never writes an empty slot array to fake
+ * a silent electric guitar — that would satisfy the letter of the rule and
+ * reintroduce the track it was meant to keep out.
+ */
+export function checkSectionIsolation(
+  song: Song,
+  acousticSectionIds: ReadonlySet<string>,
+): readonly string[] {
+  const instrumentOf = new Map(song.tracks.map((track) => [track.id, track.instrumentId]));
+  const problems: string[] = [];
+
+  for (const section of song.sections) {
+    if (!acousticSectionIds.has(section.id)) continue;
+    const offenders = new Set<string>();
+    for (const bar of section.bars) {
+      for (const trackId of Object.keys(bar.slots)) {
+        const instrumentId = instrumentOf.get(trackId);
+        if (instrumentId === undefined) continue;
+        if (isAcousticInstrument(instrumentId)) continue;
+        offenders.add(`${trackId} (${instrumentId})`);
+      }
+    }
+    if (offenders.size > 0) {
+      problems.push(
+        `section "${section.name}" is planned as acoustic only but carries ${[...offenders].sort().join(", ")}`,
+      );
+    }
+  }
+  return problems;
+}
+
+/** Sections whose active roles are all acoustic-only roles. */
+export function acousticOnlySectionKeys(blueprint: CompositionBlueprint): ReadonlySet<string> {
+  const keys = new Set<string>();
+  for (const section of blueprint.sections) {
+    if (section.activeRoles.length === 0) continue;
+    const allAcoustic = section.activeRoles.every(
+      (role) => role === "acoustic_guitar" || role === "harmony",
+    );
+    if (allAcoustic) keys.add(section.key);
+  }
+  return keys;
 }
 
 /**
@@ -136,7 +201,14 @@ export function materializeSongSkeleton(
     const id = trackIdFor(entry.role, ordinal);
     // The first track of a role is the one that role's turns will target.
     if (ordinal === 0) trackIdByRole.set(entry.role, id);
-    tracks.push(trackFor(entry, id, entry.energyJob.slice(0, 40)));
+    const resolved = resolveInstrumentIntent({
+      role: entry.role,
+      family: entry.instrumentFamily,
+      presetIntent: entry.presetIntent,
+      tuningIntent: entry.tuningIntent,
+    });
+    if (!resolved.ok) return { ok: false, reason: resolved.reason };
+    tracks.push(trackFor(entry, id, entry.energyJob.slice(0, 40), resolved));
   }
 
   if (tracks.length > songLimits.maxTracks) {
@@ -218,6 +290,14 @@ export function materializeSongSkeleton(
   if (!parsed.success) {
     return { ok: false, reason: `skeleton does not parse: ${parsed.error.message}` };
   }
+
+  const acousticSectionIds = new Set(
+    [...acousticOnlySectionKeys(blueprint)]
+      .map((key) => sectionIdByKey.get(key))
+      .filter((id): id is string => id !== undefined),
+  );
+  const isolation = checkSectionIsolation(parsed.data, acousticSectionIds);
+  if (isolation.length > 0) return { ok: false, reason: isolation.join("; ") };
 
   return { ok: true, song: parsed.data, sectionIdByKey, trackIdByRole };
 }
