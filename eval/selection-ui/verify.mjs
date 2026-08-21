@@ -35,6 +35,16 @@ const record = (name, pass, detail = "") => {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  — ${detail}` : ""}`);
 };
 
+/** One scenario may fail without taking the rest of the run down with it. */
+async function safe(name, fn) {
+  try {
+    return await fn();
+  } catch (error) {
+    record(name, false, String(error).split("\n")[0].slice(0, 90));
+    return undefined;
+  }
+}
+
 /** Count every write the app makes, from before the first line of app code. */
 const INSTRUMENT = `
   window.__writes = 0;
@@ -69,6 +79,9 @@ async function openApp(browser, size) {
   });
   await context.addInitScript(INSTRUMENT);
   const page = await context.newPage();
+  /* Every locator fails fast. A harness that hangs on a missing control tells
+   * you nothing and takes ten minutes to do it. */
+  page.setDefaultTimeout(4000);
   page.on("console", (message) => {
     if (message.type() === "error") {
       page.evaluate((text) => window.__consoleErrors.push(text), message.text()).catch(() => {});
@@ -143,8 +156,13 @@ const barVisible = (page) => page.locator("[data-testid=selection-action-bar]").
 
 async function enterEditMode(page) {
   // Selection is an edit gesture, so the tab has to be in edit mode first.
-  const toggle = page.locator("button", { hasText: /Düzenle|Edit/ }).first();
-  if (await toggle.isVisible().catch(() => false)) await toggle.click();
+  // Exact text: "Düzenle" and "Düzenlemeyi bitir" both contain "Düzenle", and
+  // a loose match would toggle edit mode back off on the second call.
+  const toggle = page.getByRole("button", { name: "Düzenle", exact: true });
+  if (await toggle.isVisible().catch(() => false)) {
+    await toggle.click();
+    await page.waitForTimeout(200);
+  }
 }
 
 async function run() {
@@ -206,7 +224,7 @@ async function run() {
     );
 
     const songBeforeApply = await songJson(page);
-    const applyButton = page.locator("button", { hasText: "Uygula" }).first();
+    const applyButton = page.getByRole("button", { name: "Uygula", exact: true }).first();
     const canApply = await applyButton.isEnabled().catch(() => false);
     if (canApply) {
       await applyButton.click();
@@ -221,15 +239,18 @@ async function run() {
       record(`[${label}] song actually changed`, songAfter !== songBeforeApply);
 
       // ---- 7. undo returns byte-identical
-      const undoButton = page.locator("button[aria-label*='Geri'], button", { hasText: /Geri al/ }).first();
-      if (await undoButton.isVisible().catch(() => false)) {
+      await safe(`[${label}] 7 undo restores byte-identical song`, async () => {
+        const undoButton = page.locator("[data-testid=undo], button[aria-label*='Geri']").first();
+        const reachable = await undoButton.isVisible().catch(() => false);
+        if (!reachable) {
+          record(`[${label}] 7 undo restores byte-identical song`, false, "no undo control");
+          return;
+        }
         await undoButton.click();
-        await page.waitForTimeout(250);
+        await page.waitForTimeout(300);
         const undone = await songJson(page);
         record(`[${label}] 7 undo restores byte-identical song`, undone === songBeforeApply);
-      } else {
-        record(`[${label}] 7 undo control reachable`, false, "no undo control found");
-      }
+      });
     } else {
       record(`[${label}] 21 five nudges commit once`, false, "Uygula disabled");
     }
@@ -266,10 +287,12 @@ async function run() {
     await page.screenshot({ path: `${OUT}/${label}-move-sheet.png` });
 
     // close the sheet: cancel must write nothing
-    const beforeCancel = await writes(page);
-    await page.locator("button", { hasText: "Vazgeç" }).first().click();
-    await page.waitForTimeout(200);
-    record(`[${label}] cancel writes nothing`, (await writes(page)) === beforeCancel);
+    await safe(`[${label}] cancel writes nothing`, async () => {
+      const beforeCancel = await writes(page);
+      await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+      await page.waitForTimeout(250);
+      record(`[${label}] cancel writes nothing`, (await writes(page)) === beforeCancel);
+    });
 
     await page.screenshot({ path: `${OUT}/${label}-selection.png` });
 
@@ -282,14 +305,17 @@ async function run() {
     record(`[${label}] action targets >=44px`, small === 0, `${small} under`);
 
     // ---- 22. changing track clears the selection
-    const trackButton = page.locator("[data-testid^=track-chip], button", { hasText: /Davul|Drums/ }).first();
-    if (await trackButton.isVisible().catch(() => false)) {
+    await safe(`[${label}] 22 track change clears selection`, async () => {
+      const trackButton = page.getByRole("button", { name: "Davul", exact: true }).first();
+      const reachable = await trackButton.isVisible().catch(() => false);
+      if (!reachable) {
+        record(`[${label}] 22 track change clears selection`, false, "no second track control");
+        return;
+      }
       await trackButton.click();
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(300);
       record(`[${label}] 22 track change clears selection`, !(await bandVisible(page)));
-    } else {
-      record(`[${label}] 22 track change clears selection`, false, "no second track control");
-    }
+    });
 
     // ---- 24. a normal tap still opens the note sheet, not a selection
     await enterEditMode(page);
@@ -302,7 +328,7 @@ async function run() {
     await page.waitForTimeout(200);
     record(`[${label}] drag scrolls rather than selects`, !(await bandVisible(page)));
 
-    const errors = await page.evaluate(() => window.__consoleErrors ?? []);
+    const errors = await page.evaluate(() => window.__consoleErrors ?? []).catch(() => []);
     record(`[${label}] no console errors`, errors.length === 0, errors.slice(0, 2).join(" | "));
 
     measurements[label] = { overflow, summary };
