@@ -140,6 +140,16 @@
       "normalizationApplied": null,
       "rawSha256": "53122f0c35824c2b23d2fb7acce6c5862dbeb891c50077680f7c98f90ec11a29",
       "normalizedSha256": "53122f0c35824c2b23d2fb7acce6c5862dbeb891c50077680f7c98f90ec11a29"
+    },
+    {
+      "stage": "turn-12",
+      "attempt": 0,
+      "outcome": "accepted",
+      "failure": null,
+      "reason": null,
+      "normalizationApplied": null,
+      "rawSha256": "9ed7caa2244319fca8fc3a5bc14abc886c71fa9764e6f005a1183352d97e7706",
+      "normalizedSha256": "9ed7caa2244319fca8fc3a5bc14abc886c71fa9764e6f005a1183352d97e7706"
     }
   ]
 }

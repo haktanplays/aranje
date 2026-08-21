@@ -1,0 +1,410 @@
+{
+  "runClassification": "transport_and_materializer_confounded_shadow_run",
+  "confounds": [
+    "Candidate B faced stricter schema conditions than production imposes: the transport was plain text, with no provider-side structured-output enforcement.",
+    "The instrumentFamily and presetIntent candidate A wrote correctly into its blueprint were lost at the materializer boundary.",
+    "harmony is mapped to electric_guitar unconditionally, so a close that was specified as acoustic-only contains an electric guitar.",
+    "The harmony turn's context was built from the first rhythm guitar — silent in that section — instead of the acoustic track it actually accompanies.",
+    "Therefore the acoustic-only brief, harmony fit, timbre choice and overall final quality cannot be scored against either model."
+  ],
+  "statement": "This run is a harness and production-boundary finding, not a measurement of either model's musical quality. No winner is declared. Candidate A is not the winner; candidate B is not a musical loser. No blind A/B package exists, because only one candidate produced a song.",
+  "candidates": {
+    "a": {
+      "attempts": [
+        {
+          "stage": "blueprint",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "6698ca36cc9d0cf4e1890e74081b1bbf7f31c82f924a9c8de57fd7660efca0cb",
+          "normalizedSha256": "6698ca36cc9d0cf4e1890e74081b1bbf7f31c82f924a9c8de57fd7660efca0cb",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-1",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "8c2c614f333d64ae7caf57fe12dfb531a23eac42586a20ae6991510b1aa568a6",
+          "normalizedSha256": "8c2c614f333d64ae7caf57fe12dfb531a23eac42586a20ae6991510b1aa568a6",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-2",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "feb602c2b43dad39d97ff4e8c45c070dee442a7b9955100a2261b7b5b229f038",
+          "normalizedSha256": "feb602c2b43dad39d97ff4e8c45c070dee442a7b9955100a2261b7b5b229f038",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-3",
+          "attempt": 0,
+          "outcome": "rejected",
+          "failure": "schema_transport_confounded",
+          "reason": "explanation: too_big",
+          "normalizationApplied": "whole_answer_fence_unwrap",
+          "rawSha256": "ba5acc807e4d790f49cd00bc4cd4449d6cdd6e861e9721fa7c14282b96575aad",
+          "normalizedSha256": "7097212e41973e05655c6820120d64a119c9eefd03d94c0cbe14764b11325d8a",
+          "fenceUnwrapped": true,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 2
+        },
+        {
+          "stage": "turn-3",
+          "attempt": 1,
+          "outcome": "rejected",
+          "failure": "semantic_failure",
+          "reason": "range: \"Break\" bölümü, bar 3, slot 16: D2 notası \"Holds the 4/4 floor and the riff weight;\" track'inin aralığının altında. Bu akort ve capo 0 ile çalınabilir aralık E2 - E6.",
+          "normalizationApplied": null,
+          "rawSha256": "ae37dd58104e1cb7d8a4f5eebd0e7f2bd7c635cfb4190522f85ceba918fca514",
+          "normalizedSha256": "ae37dd58104e1cb7d8a4f5eebd0e7f2bd7c635cfb4190522f85ceba918fca514",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 2
+        },
+        {
+          "stage": "turn-3",
+          "attempt": 2,
+          "outcome": "accepted",
+          "failure": "packaging_only",
+          "reason": null,
+          "normalizationApplied": "whole_answer_fence_unwrap",
+          "rawSha256": "54e85f394d10333a97759e5f8806534af2cb4303111342cd9d95432212089148",
+          "normalizedSha256": "41f2fd891a3c3c1c58ed1078d18903b29cb6e5e841f3620ad2be150f22764d15",
+          "fenceUnwrapped": true,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 2
+        },
+        {
+          "stage": "turn-4",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": "packaging_only",
+          "reason": null,
+          "normalizationApplied": "whole_answer_fence_unwrap",
+          "rawSha256": "69c82d26ba14db81c120f8674cd61b5ca50480b6e578aa73e9c4d9b2afa70931",
+          "normalizedSha256": "d1da514de438bcadd01cbb4f0efb3877823471d3733d0da0bff912502920d27e",
+          "fenceUnwrapped": true,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-5",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "31f16798717e26359605687e99116d8a82bf7ac39f482a9eab9bef7f31b3f220",
+          "normalizedSha256": "31f16798717e26359605687e99116d8a82bf7ac39f482a9eab9bef7f31b3f220",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-6",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "53b789df08b080d23a8c8569a3cfccd3818364bd722ff4cb1de543fbc5ed5ff3",
+          "normalizedSha256": "53b789df08b080d23a8c8569a3cfccd3818364bd722ff4cb1de543fbc5ed5ff3",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-7",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "9a433beab3ba038565bbbb1629e1c0165f17d3d53984662990b96e7a315276dd",
+          "normalizedSha256": "9a433beab3ba038565bbbb1629e1c0165f17d3d53984662990b96e7a315276dd",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-8",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "d0a6a075655dc07b3b30560ca668718b2b93bb4f5fc9b2ebea5e02dee4db6249",
+          "normalizedSha256": "d0a6a075655dc07b3b30560ca668718b2b93bb4f5fc9b2ebea5e02dee4db6249",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-9",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "947f8e5f87aaf1a0b356cbd9b8c0921ac94e2cbbde042be8511f8e388d4310f3",
+          "normalizedSha256": "947f8e5f87aaf1a0b356cbd9b8c0921ac94e2cbbde042be8511f8e388d4310f3",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-10",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "f4264656e9efe41d0bd78599efcda0da4c0e6f43c4548a66d5730d802c802c7c",
+          "normalizedSha256": "f4264656e9efe41d0bd78599efcda0da4c0e6f43c4548a66d5730d802c802c7c",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-11",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "53122f0c35824c2b23d2fb7acce6c5862dbeb891c50077680f7c98f90ec11a29",
+          "normalizedSha256": "53122f0c35824c2b23d2fb7acce6c5862dbeb891c50077680f7c98f90ec11a29",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        },
+        {
+          "stage": "turn-12",
+          "attempt": 0,
+          "outcome": "accepted",
+          "failure": null,
+          "reason": null,
+          "normalizationApplied": null,
+          "rawSha256": "9ed7caa2244319fca8fc3a5bc14abc886c71fa9764e6f005a1183352d97e7706",
+          "normalizedSha256": "9ed7caa2244319fca8fc3a5bc14abc886c71fa9764e6f005a1183352d97e7706",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 0
+        }
+      ],
+      "intentDiff": {
+        "songTuningIntent": "Drop-tuned low string for weight; acoustic standard with open strings",
+        "lostFields": [
+          "instrumentFamily",
+          "presetIntent",
+          "tuningIntent"
+        ],
+        "tracks": [
+          {
+            "role": "rhythm_guitar",
+            "blueprintInstrumentFamily": "guitar",
+            "blueprintPresetIntent": "High-gain, tight low end with present midrange",
+            "blueprintTuningIntent": "Drop-tuned low string for riff weight",
+            "materializedInstrumentId": "electric_guitar",
+            "presetIntentPreserved": false,
+            "tuningIntentPreserved": false,
+            "familyHonoured": true
+          },
+          {
+            "role": "lead_guitar",
+            "blueprintInstrumentFamily": "guitar",
+            "blueprintPresetIntent": "High-gain lead voice with long sustain and bite",
+            "blueprintTuningIntent": "Same drop tuning as the rhythm guitar",
+            "materializedInstrumentId": "electric_guitar",
+            "presetIntentPreserved": false,
+            "tuningIntentPreserved": false,
+            "familyHonoured": true
+          },
+          {
+            "role": "acoustic_guitar",
+            "blueprintInstrumentFamily": "guitar",
+            "blueprintPresetIntent": "Natural steel-string acoustic, no drive, woody and open",
+            "blueprintTuningIntent": "Standard tuning, open strings left ringing",
+            "materializedInstrumentId": "steel_acoustic",
+            "presetIntentPreserved": false,
+            "tuningIntentPreserved": false,
+            "familyHonoured": true
+          },
+          {
+            "role": "harmony",
+            "blueprintInstrumentFamily": "guitar",
+            "blueprintPresetIntent": "Second clean acoustic voice, soft attack, upper register",
+            "blueprintTuningIntent": "Standard tuning, matched to the acoustic guitar",
+            "materializedInstrumentId": "electric_guitar",
+            "presetIntentPreserved": false,
+            "tuningIntentPreserved": false,
+            "familyHonoured": true
+          },
+          {
+            "role": "drums",
+            "blueprintInstrumentFamily": "drums",
+            "blueprintPresetIntent": "Dry punchy kit, hard cracking snare, tight low tom",
+            "blueprintTuningIntent": "Tight kick and tom tuning for articulation",
+            "materializedInstrumentId": "drum_kit",
+            "presetIntentPreserved": false,
+            "tuningIntentPreserved": false,
+            "familyHonoured": true
+          }
+        ],
+        "acousticOnlySections": [
+          {
+            "key": "acoustic_bridge",
+            "activeRoles": [
+              "acoustic_guitar",
+              "harmony"
+            ],
+            "materializedInstruments": [
+              {
+                "role": "acoustic_guitar",
+                "instrumentId": "steel_acoustic"
+              },
+              {
+                "role": "harmony",
+                "instrumentId": "electric_guitar"
+              }
+            ],
+            "violated": true
+          },
+          {
+            "key": "outro",
+            "activeRoles": [
+              "acoustic_guitar",
+              "harmony"
+            ],
+            "materializedInstruments": [
+              {
+                "role": "acoustic_guitar",
+                "instrumentId": "steel_acoustic"
+              },
+              {
+                "role": "harmony",
+                "instrumentId": "electric_guitar"
+              }
+            ],
+            "violated": true
+          }
+        ]
+      }
+    },
+    "b": {
+      "attempts": [
+        {
+          "stage": "blueprint",
+          "attempt": 0,
+          "outcome": "rejected",
+          "failure": "schema_transport_confounded",
+          "reason": "tracks.0: Unrecognized key: \"playsInSections_note\"",
+          "normalizationApplied": "whole_answer_fence_unwrap",
+          "rawSha256": "0368cc62b9a5bdbc4e79c6feace099dfed1c33131582572e7b1a5f37b2f1a7c9",
+          "normalizedSha256": "6b996a8bca9e47e148aa03c64238b60863b9314dee5195564e91325977a5c578",
+          "fenceUnwrapped": true,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 3
+        },
+        {
+          "stage": "blueprint",
+          "attempt": 1,
+          "outcome": "rejected",
+          "failure": "semantic_failure",
+          "reason": "solo: bar 6: 1/16 bölümün 1/16 gridinden daha ince değil.",
+          "normalizationApplied": null,
+          "rawSha256": "1ac24171bf393967ea8e93cf36ae3dc0304fcc5db25e7d378e59e025fa791082",
+          "normalizedSha256": "1ac24171bf393967ea8e93cf36ae3dc0304fcc5db25e7d378e59e025fa791082",
+          "fenceUnwrapped": false,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 3
+        },
+        {
+          "stage": "blueprint",
+          "attempt": 2,
+          "outcome": "rejected",
+          "failure": "schema_transport_confounded",
+          "reason": "tracks.0: Unrecognized key: \"additionalProperties\"",
+          "normalizationApplied": "whole_answer_fence_unwrap",
+          "rawSha256": "5f8f06df14839ec94c56b64f404e45110338a3c88a1ae446049c68f0b42711f2",
+          "normalizedSha256": "b23576145880aced35401bff07a38700b0fb5d293f2480eb5dddbd729171760b",
+          "fenceUnwrapped": true,
+          "bodyUnchanged": true,
+          "correctionsSpentOnStage": 3
+        }
+      ],
+      "intentDiff": null
+    }
+  },
+  "listeningCriteria": [
+    {
+      "criterion": "Rhythmic vocabulary: grid choice and whether high resolution was earned",
+      "verdict": "assessable"
+    },
+    {
+      "criterion": "Motif development across Break, Bridge and Solo",
+      "verdict": "assessable"
+    },
+    {
+      "criterion": "Use of space; whether rests carry weight",
+      "verdict": "assessable"
+    },
+    {
+      "criterion": "Section-to-section handover and tempo easing",
+      "verdict": "assessable"
+    },
+    {
+      "criterion": "Phrase breathing in the solo",
+      "verdict": "assessable"
+    },
+    {
+      "criterion": "The acoustic-only brief",
+      "verdict": "contaminated",
+      "why": "harmony materialises as electric_guitar, so the close contains an electric guitar the plan never asked for."
+    },
+    {
+      "criterion": "Harmony fit against the acoustic guitar",
+      "verdict": "contaminated",
+      "why": "the harmony turn was shown a rhythm guitar that is silent in that section, not the acoustic track it accompanies."
+    },
+    {
+      "criterion": "Timbre and preset choice",
+      "verdict": "contaminated",
+      "why": "presetIntent and tuningIntent never reach the materializer; every instrument came from a fixed role table."
+    },
+    {
+      "criterion": "Overall final quality, and any A/B comparison",
+      "verdict": "contaminated",
+      "why": "candidate B never produced an accepted blueprint under a transport stricter than production, so there is no second song to compare."
+    }
+  ],
+  "lostSourceContexts": [
+    {
+      "turn": "Solo / rhythm_guitar",
+      "askedFor": "backing that stays out of the lead's way",
+      "shown": "drums only, and the Solo drums were not written until the next turn",
+      "soSaw": "nothing"
+    },
+    {
+      "turn": "Acoustic Bridge / harmony",
+      "askedFor": "a second line that does not cover the main guitar",
+      "shown": "guitars.slice(0, 1), which is the rhythm guitar",
+      "soSaw": "a track that is silent in that section"
+    }
+  ]
+}

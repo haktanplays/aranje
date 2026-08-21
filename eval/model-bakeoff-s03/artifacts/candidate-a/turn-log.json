@@ -189,5 +189,33 @@
         "message": "\"Acoustic Bridge\" bölümü, bar 5, slot 13: A4 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
       }
     ]
+  },
+  {
+    "turn": 12,
+    "label": "Acoustic Bridge / harmony",
+    "role": "harmony",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p12-1",
+    "touchedBars": 6,
+    "explanation": "Open low E and open B/E ring as a fixed pedal while an inner voice descends B-A-G-F#-E-D and settles on Em. Thirds and sixths (G3+E4, F#3+D4, D3+B3, A3+C4) appear only at phrase points, not parallel throughout. Bar 3's triplet grid carries a short descending cell as the one moving gesture; no slides, no restating the main motif.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 7, slot 13: B3 notasındaki Slide için önceki nota aynı telde değil; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 4, slot 9: B5 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Acoustic Bridge\" bölümü, bar 5, slot 13: A4 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
   }
 ]
