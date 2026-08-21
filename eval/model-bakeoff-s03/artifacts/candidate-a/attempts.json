@@ -1,5 +1,5 @@
 {
-  "runClassification": "transport_confounded_shadow_run",
+  "runClassification": "transport_and_materializer_confounded_shadow_run",
   "attempts": [
     {
       "stage": "blueprint",

@@ -13,7 +13,23 @@
  * spent as a musical-quality score or as a model's defeat.
  */
 
-export const RUN_CLASSIFICATION = "transport_confounded_shadow_run";
+export const RUN_CLASSIFICATION = "transport_and_materializer_confounded_shadow_run";
+
+/**
+ * Why this run cannot be read as a musical comparison between two models.
+ *
+ * Two independent confounds, at opposite ends of the pipeline. Neither is
+ * something a candidate did, and together they reach far enough into the
+ * result that the acoustic brief, harmony fit, timbre choice and any overall
+ * "final quality" judgement are contaminated rather than merely noisy.
+ */
+export const CONFOUNDS = [
+  "Candidate B faced stricter schema conditions than production imposes: the transport was plain text, with no provider-side structured-output enforcement.",
+  "The instrumentFamily and presetIntent candidate A wrote correctly into its blueprint were lost at the materializer boundary.",
+  "harmony is mapped to electric_guitar unconditionally, so a close that was specified as acoustic-only contains an electric guitar.",
+  "The harmony turn's context was built from the first rhythm guitar — silent in that section — instead of the acoustic track it actually accompanies.",
+  "Therefore the acoustic-only brief, harmony fit, timbre choice and overall final quality cannot be scored against either model.",
+] as const;
 
 export type FailureClass =
   /**

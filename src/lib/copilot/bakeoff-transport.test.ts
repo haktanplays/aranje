@@ -21,6 +21,7 @@ import {
 } from "../../../eval/model-bakeoff-s03/envelope";
 import {
   classifyAttempt,
+  CONFOUNDS,
   isPackagingOnly,
   RUN_CLASSIFICATION,
 } from "../../../eval/model-bakeoff-s03/failure-class";
@@ -127,7 +128,15 @@ describe("the normaliser is eval-only", () => {
 
 describe("failure classification", () => {
   it("names the run for what it is", () => {
-    expect(RUN_CLASSIFICATION).toBe("transport_confounded_shadow_run");
+    expect(RUN_CLASSIFICATION).toBe("transport_and_materializer_confounded_shadow_run");
+  });
+
+  it("records every confound that makes the run unscoreable", () => {
+    expect(CONFOUNDS).toHaveLength(5);
+    const joined = CONFOUNDS.join(" ");
+    for (const term of ["structured-output", "presetIntent", "electric_guitar", "silent"]) {
+      expect(joined).toContain(term);
+    }
   });
 
   it("calls an accepted answer that only needed its fence removed packaging only", () => {
