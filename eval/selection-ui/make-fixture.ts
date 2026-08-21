@@ -11,9 +11,22 @@
  *
  * - Bar 1 holds a power chord and then rests, so a shape can move and a chord
  *   can be selected as a group.
- * - Bar 2 is a 1/16 bar next to a 1/8 one, so a move crosses a grid change.
- * - Bar 3 is a 1/8 triplet, so an inexpressible destination can be reached.
- * - One guitar is in Drop D, one is capoed.
+ * - Bar 1 also holds a hammer-on pair, so touching one end of a legato chain
+ *   has a chain to grow into.
+ * - Bar 2 is a 1/8 triplet, so an inexpressible destination can be reached.
+ * - Bars 3 and 4 share a 1/16 grid, so "repeat to the end of the section" has
+ *   a stretch it can actually be written into. The triplet bar sits *before*
+ *   them on purpose: a fill that had to cross it would be refused for a real
+ *   reason, and a scenario cannot show a feature working by watching it be
+ *   correctly refused.
+ * - One guitar is in Drop D, one is capoed, and both hold a two-note shape
+ *   rather than a single note, so a shape really has a shape to move.
+ *
+ * **No two bars put an onset on the same slot index.** That is not tidiness:
+ * the tab marks cells `data-cell="slot:string"` without saying which bar they
+ * are in, so overlapping slot indices leave a test with no way to name the
+ * note it means. Disjoint indices make every onset addressable — bar 1 owns
+ * slots 0, 4, 6 and 7, bar 2 owns 3, bar 3 owns 2, and bar 4 is empty.
  *
  * `npx tsx eval/selection-ui/make-fixture.ts`
  */
@@ -36,6 +49,28 @@ const power: MelodicSlot = {
 const single = (pitch: string, string: number, fret: number): MelodicSlot => ({
   notes: [{ pitch, position: { string, fret }, velocity: 100 }],
 });
+
+/** The second half of a hammer-on: it only sounds because of the note before. */
+const hammered = (pitch: string, string: number, fret: number): MelodicSlot => ({
+  notes: [
+    { pitch, position: { string, fret }, velocity: 100, articulation: "hammer_on" },
+  ],
+});
+
+/** Two notes struck together, so "move the shape" has a shape to move. */
+const shape = (
+  a: readonly [string, number, number],
+  b: readonly [string, number, number],
+): MelodicSlot => ({
+  notes: [
+    { pitch: a[0], position: { string: a[1], fret: a[2] }, velocity: 104 },
+    { pitch: b[0], position: { string: b[1], fret: b[2] }, velocity: 98 },
+  ],
+});
+
+/** A slot map with everything at rest except the given slot indices. */
+const at = (count: number, written: Readonly<Record<number, MelodicSlot>>): MelodicSlot[] =>
+  Array.from({ length: count }, (_, index) => written[index] ?? rest);
 
 const pad = (written: readonly MelodicSlot[], count: number): MelodicSlot[] => [
   ...written,
@@ -86,32 +121,48 @@ const song: Song = songSchema.parse({
           timeSignature: [4, 4],
           resolution: 8,
           slots: {
-            gtr: pad([power, rest, rest, rest, single("G3", 3, 0), rest, rest, rest], 8),
-            "gtr-drop": pad([single("D2", 0, 0), rest, rest, rest], 8),
-            "gtr-capo": pad([single("A3", 1, 10), rest, rest, rest], 8),
+            gtr: at(8, {
+              0: power,
+              4: single("G3", 3, 0),
+              6: single("D4", 3, 7),
+              7: hammered("E4", 3, 9),
+            }),
+            // Drop D: root and fifth on the two lowest strings, both open.
+            "gtr-drop": at(8, { 0: shape(["D2", 0, 0], ["A2", 1, 0]) }),
+            // Capo 2: the written fret is above the capo, so 10 sounds an octave.
+            "gtr-capo": at(8, { 0: shape(["A3", 1, 10], ["D4", 2, 10]) }),
           },
         },
-        // A finer grid immediately after, so a move crosses a grid change.
-        {
-          timeSignature: [4, 4],
-          resolution: 16,
-          slots: {
-            gtr: pad([single("A3", 1, 12), rest, rest, rest], 16),
-            "gtr-drop": pad([], 16),
-            "gtr-capo": pad([], 16),
-          },
-        },
-        // A triplet grid, where a straight moment cannot be expressed.
+        // A triplet grid right after a straight one, so a move crosses a grid
+        // change and a straight moment has somewhere it cannot be written.
         {
           timeSignature: [4, 4],
           resolution: 12,
           slots: {
-            gtr: pad([single("B3", 2, 9), rest, rest], 12),
+            gtr: at(12, { 3: single("B3", 2, 9) }),
             "gtr-drop": pad([], 12),
             "gtr-capo": pad([], 12),
           },
         },
-        { timeSignature: [4, 4], resolution: 8, slots: { gtr: pad([], 8), "gtr-drop": pad([], 8), "gtr-capo": pad([], 8) } },
+        // Two 1/16 bars: one note, then room to repeat into.
+        {
+          timeSignature: [4, 4],
+          resolution: 16,
+          slots: {
+            gtr: at(16, { 2: single("A3", 1, 12) }),
+            "gtr-drop": pad([], 16),
+            "gtr-capo": pad([], 16),
+          },
+        },
+        {
+          timeSignature: [4, 4],
+          resolution: 16,
+          slots: {
+            gtr: pad([], 16),
+            "gtr-drop": pad([], 16),
+            "gtr-capo": pad([], 16),
+          },
+        },
       ],
     },
   ],

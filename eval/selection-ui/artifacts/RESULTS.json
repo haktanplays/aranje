@@ -11,12 +11,12 @@
       "detail": ""
     },
     {
-      "name": "[390x844] 23 one press selects one way",
+      "name": "[390x844] P1 one press selects one way",
       "pass": true,
       "detail": "0 group rings"
     },
     {
-      "name": "[390x844] 23 press alone opens no sheet",
+      "name": "[390x844] P2 press alone opens no sheet",
       "pass": true,
       "detail": "none"
     },
@@ -53,7 +53,7 @@
     {
       "name": "[390x844] 16 ghost explains the outcome",
       "pass": true,
-      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu zorla"
+      "detail": "Uygulanmaya hazır."
     },
     {
       "name": "[390x844] move mode time >=44px",
@@ -136,6 +136,11 @@
       "detail": ""
     },
     {
+      "name": "[390x844] 15 the shape moves across strings too",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
       "name": "[390x844] 3 shape translation commits once",
       "pass": true,
       "detail": "1->2"
@@ -148,7 +153,7 @@
     {
       "name": "[390x844] 13 transpose by a half step previews without writing",
       "pass": true,
-      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu"
+      "detail": "Uygulanmaya hazır."
     },
     {
       "name": "[390x844] 13 transpose by an octave previews without writing",
@@ -176,6 +181,161 @@
       "detail": "not applicable here"
     },
     {
+      "name": "[390x844] 4 handle extends the selection",
+      "pass": true,
+      "detail": "34 -> 272px over 204px"
+    },
+    {
+      "name": "[390x844] 4 handle drag writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 4 widened selection still reads as music",
+      "pass": true,
+      "detail": "6 nota · 1 ölçü"
+    },
+    {
+      "name": "[390x844] 5 band sits on the note in a triplet bar",
+      "pass": true,
+      "detail": "band 178/34 cell 178/34"
+    },
+    {
+      "name": "[390x844] 6 paste shows a ghost before writing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 6 paste writes exactly once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] 6 paste changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 7 cut writes once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] 7 cut changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 7 undo after cut is byte-identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 9 selection reports a width, not just a count",
+      "pass": true,
+      "detail": "1 nota · 1 ölçü"
+    },
+    {
+      "name": "[390x844] 9 repeat ghost writes nothing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 9 repeat writes exactly once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] 9 repeat changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 10 fill ghost writes nothing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 10 fill to the section end",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] 11 one grid step each way",
+      "pass": true,
+      "detail": "2/2"
+    },
+    {
+      "name": "[390x844] 11 a grid step previews without writing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 12 a beat and a bar are offered",
+      "pass": true,
+      "detail": "2/2"
+    },
+    {
+      "name": "[390x844] 12 beat and bar moves write nothing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 17 incompatible target is refused",
+      "pass": true,
+      "detail": "Seçim hedef ölçünün ritim aralığına tam oturmuyor."
+    },
+    {
+      "name": "[390x844] 17 refusal is in musician's words",
+      "pass": true,
+      "detail": "Seçim hedef ölçünün ritim aralığına tam oturmuyor."
+    },
+    {
+      "name": "[390x844] 17 refused move writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 18 shape move on Drop D",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 18 shape move on capo 2",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[390x844] 19 touching a chain grows the selection",
+      "pass": true,
+      "detail": "2 nota · 1 ölçü · zincir tamamlandı"
+    },
+    {
+      "name": "[390x844] 19 the grown selection covers both notes",
+      "pass": true,
+      "detail": "68px"
+    },
+    {
+      "name": "[390x844] 23 selecting pauses playback",
+      "pass": true,
+      "detail": "selected=true paused=true"
+    },
+    {
+      "name": "[390x844] 23 no selection while the Copilot is open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 24 a short tap still opens the note sheet",
+      "pass": true,
+      "detail": "Bar 1 · slot 1 · tel 1"
+    },
+    {
+      "name": "[390x844] 24 a short tap makes no selection",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "[390x844] no console errors",
       "pass": true,
       "detail": ""
@@ -196,12 +356,12 @@
       "detail": ""
     },
     {
-      "name": "[320x700] 23 one press selects one way",
+      "name": "[320x700] P1 one press selects one way",
       "pass": true,
       "detail": "0 group rings"
     },
     {
-      "name": "[320x700] 23 press alone opens no sheet",
+      "name": "[320x700] P2 press alone opens no sheet",
       "pass": true,
       "detail": "none"
     },
@@ -238,7 +398,7 @@
     {
       "name": "[320x700] 16 ghost explains the outcome",
       "pass": true,
-      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu zorla"
+      "detail": "Uygulanmaya hazır."
     },
     {
       "name": "[320x700] move mode time >=44px",
@@ -321,6 +481,11 @@
       "detail": ""
     },
     {
+      "name": "[320x700] 15 the shape moves across strings too",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
       "name": "[320x700] 3 shape translation commits once",
       "pass": true,
       "detail": "1->2"
@@ -333,7 +498,7 @@
     {
       "name": "[320x700] 13 transpose by a half step previews without writing",
       "pass": true,
-      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu"
+      "detail": "Uygulanmaya hazır."
     },
     {
       "name": "[320x700] 13 transpose by an octave previews without writing",
@@ -359,6 +524,161 @@
       "name": "[320x700] 9 repeat refused with a reason",
       "pass": true,
       "detail": "not applicable here"
+    },
+    {
+      "name": "[320x700] 4 handle extends the selection",
+      "pass": true,
+      "detail": "34 -> 272px over 204px"
+    },
+    {
+      "name": "[320x700] 4 handle drag writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 4 widened selection still reads as music",
+      "pass": true,
+      "detail": "6 nota · 1 ölçü"
+    },
+    {
+      "name": "[320x700] 5 band sits on the note in a triplet bar",
+      "pass": true,
+      "detail": "band 143/34 cell 143/34"
+    },
+    {
+      "name": "[320x700] 6 paste shows a ghost before writing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 6 paste writes exactly once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] 6 paste changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 7 cut writes once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] 7 cut changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 7 undo after cut is byte-identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 9 selection reports a width, not just a count",
+      "pass": true,
+      "detail": "1 nota · 1 ölçü"
+    },
+    {
+      "name": "[320x700] 9 repeat ghost writes nothing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 9 repeat writes exactly once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] 9 repeat changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 10 fill ghost writes nothing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 10 fill to the section end",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] 11 one grid step each way",
+      "pass": true,
+      "detail": "2/2"
+    },
+    {
+      "name": "[320x700] 11 a grid step previews without writing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 12 a beat and a bar are offered",
+      "pass": true,
+      "detail": "2/2"
+    },
+    {
+      "name": "[320x700] 12 beat and bar moves write nothing",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 17 incompatible target is refused",
+      "pass": true,
+      "detail": "Seçim hedef ölçünün ritim aralığına tam oturmuyor."
+    },
+    {
+      "name": "[320x700] 17 refusal is in musician's words",
+      "pass": true,
+      "detail": "Seçim hedef ölçünün ritim aralığına tam oturmuyor."
+    },
+    {
+      "name": "[320x700] 17 refused move writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 18 shape move on Drop D",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 18 shape move on capo 2",
+      "pass": true,
+      "detail": "Uygulanmaya hazır."
+    },
+    {
+      "name": "[320x700] 19 touching a chain grows the selection",
+      "pass": true,
+      "detail": "2 nota · 1 ölçü · zincir tamamlandı"
+    },
+    {
+      "name": "[320x700] 19 the grown selection covers both notes",
+      "pass": true,
+      "detail": "68px"
+    },
+    {
+      "name": "[320x700] 23 selecting pauses playback",
+      "pass": true,
+      "detail": "selected=true paused=true"
+    },
+    {
+      "name": "[320x700] 23 no selection while the Copilot is open",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 24 a short tap still opens the note sheet",
+      "pass": true,
+      "detail": "Bar 1 · slot 1 · tel 1"
+    },
+    {
+      "name": "[320x700] 24 a short tap makes no selection",
+      "pass": true,
+      "detail": ""
     },
     {
       "name": "[320x700] no console errors",

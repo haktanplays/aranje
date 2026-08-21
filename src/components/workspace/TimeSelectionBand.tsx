@@ -69,7 +69,17 @@ export function TimeSelectionBand({
           data-testid={`selection-handle-${edge}`}
           aria-label={edge === "start" ? "Seçim başlangıcını taşı" : "Seçim sonunu taşı"}
           onPointerDown={(event) => onHandleDown?.(edge, event)}
-          className="pointer-events-auto absolute top-1/2 -translate-y-1/2 touch-none"
+          /*
+           * Anchored to the top of the band, not its middle.
+           *
+           * The band is as tall as the staff — 178px on a six-string track —
+           * and on a small phone the tab is not. At 320x700 with the action
+           * bar open the tab shows about 103px of staff, so a handle centred
+           * in the band sat below the visible area: laid out, findable by a
+           * test, and untouchable by a finger. The top of the band is the one
+           * part that is on screen whenever the band is.
+           */
+          className="pointer-events-auto absolute top-0 touch-none"
           style={{
             [edge === "start" ? "left" : "right"]: -SELECTION_HANDLE_WIDTH_PX / 2,
             width: SELECTION_HANDLE_WIDTH_PX,

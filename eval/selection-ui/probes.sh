@@ -200,7 +200,7 @@ PY
     src/lib/ui/use-long-press.ts \
     '    if (spent) swallowNextClick();' \
     '' \
-    "23 press alone opens no sheet"
+    "P2 press alone opens no sheet"
 
   # 2 — a ghost preview must never write
   bprobe "2 ghost preview writes to the song" \
@@ -235,10 +235,16 @@ PY
     "track change clears selection"
 
   # 10 — the tab stays the only horizontal scroller
+  #
+  # A wide non-scrolling div is not a scroller. The first version of this probe
+  # forced the row to 1200px, so its content fitted inside it and nothing ever
+  # scrolled — the check was right and the probe was wrong. Seven buttons held
+  # at their 44px floor in a flex row need 348px, which a 320px screen has to
+  # scroll, and that is a real second scroller.
   bprobe "10 a second horizontal scroller at 320px" \
     src/components/workspace/SelectionActionBar.tsx \
     '      <div className="grid grid-cols-4 gap-1 p-2">' \
-    '      <div className="flex gap-1 overflow-x-auto p-2" style={{ width: 1200 }}>' \
+    '      <div className="flex gap-1 overflow-x-auto p-2">' \
     "one horizontal scroller"
 
   npm run build >/dev/null 2>&1

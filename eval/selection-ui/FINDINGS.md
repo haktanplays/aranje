@@ -83,6 +83,40 @@ Karar: vazgeçilecek şey satır sayısıdır, dokunma hedefi değil. Dört süt
 satır. Sütun sayısı viewport'a göre değişmez — telefondan telefona yer değiştiren
 bir araç çubuğu, bakmadan bulunması gereken yedi düğme için doğru şey değildir.
 
+### 4. Seçim tutamaçları küçük telefonda parmağın ulaşamayacağı yerdeydi
+
+Band bütün staff yüksekliğindedir — altı telli bir track'te 178px. Küçük
+telefonda tab o kadar uzun değildir: 320x700'de action bar açıkken tab'a
+yaklaşık **103px** kalır. Tutamaç band'ın **ortasına** hizalıydı, yani görünür
+alanın altında kalıyordu: layout'ta vardı, test onu buluyordu, parmak
+dokunamıyordu.
+
+Ölçüm, aynı koordinatta iki viewport:
+
+```
+390x844: parmağın altında  BUTTON[selection-handle-end]   -> band 34 -> 272px
+320x700: parmağın altında  DIV[selection-action-bar]      -> band 34 -> 34px
+```
+
+Tutamaç artık band'ın **üstüne** hizalı. Band görünüyorsa üstü de görünüyordur.
+
+Kalan dürüst sınır: 320x700'de seçim açıkken tab yaklaşık üç tel gösterir ve
+gerisi dikey kaydırma ile gelir. Action bar'ın 44px hedefleri iki satır ister
+ve iki satır yer kaplar; bu ölçülmüş bir takas, gizlenmiş bir kusur değil.
+
+### 5. Bölüm sonuna kadar tekrar, grid değişimini geçemez
+
+Fixture'ın ilk hâlinde üçleme barı 1/16 barın **önündeydi**, bu yüzden
+"bölüm sonuna kadar tekrarla" her seferinde üçleme barına çarpıyor ve
+
+«Seçim hedef ölçünün ritim aralığına tam oturmuyor.»
+
+ile reddediliyordu. **Bu doğru davranıştır** — sessiz yuvarlama olmaması
+istenen şeydir. Fakat bir senaryo, bir özelliğin çalıştığını onun doğru
+biçimde reddedilişini seyrederek gösteremez. Fixture yeniden düzenlendi:
+üçleme barı öne alındı, arkasına aynı grid'i paylaşan iki 1/16 bar kondu. Artık
+hem başarılı doldurma hem de grid değişiminde dürüst reddediş ölçülüyor.
+
 ## Ölçülen değerler
 
 | | 390x844 | 320x700 |
@@ -123,3 +157,24 @@ gösterdi. Kayda geçiyorlar çünkü bir sonraki koşuda tekrar edilmemeleri ge
 - Bir viewport'un hatası diğerini de düşürüyordu; her viewport artık korumalı.
 - İki viewport arasında tab kaydırması deterministik değildi — aynı senaryo iki
   farklı şeyi ölçüyordu. Basıştan önce `resetScroll`.
+- **"Çok kez nudge" tek kez nudge'dı.** Döngü, hareket uygulanabilir olur olmaz
+  duruyordu; bu fixture'da bir dokunuş sonrası. Bir dokunuş, "bütün nudge'lar
+  tek pending komutta birikiyor" ile "her nudge kendi başına commit ediyor"
+  arasını **ayırt edemez** — ikisi de tek yazma üretir. Birikmeyi bozan probe bu
+  yüzden kontrolü kırmadı, kıramazdı. Artık uygulanabilir olduktan sonra bir
+  gidiş-dönüş eklenir: fazladan dokunuşlar aynı delta'ya döner, pending komut
+  değişmez, dokunuş sayısı değişir. Beş dokunuş, tek yazma.
+- **Bir probe, olmayan FAIL satırını "geçti" diye okudu.** Preview yolunu commit
+  edecek şekilde bozmak uygulamayı bir render döngüsüne sokuyor, viewport
+  koşusu yirmi kontrol sonra düşüyor ve adı geçen kontrol **hiç çalışmıyordu**.
+  FAIL satırı aranınca bulunamıyor ve probe, korumayı VACUOUS ilan ediyordu —
+  olanın tam tersi. Bir vacuity probe "bunu bozmak fark ediliyor mu?" diye
+  sorar; nerede fark edildiği yazdırmaya değer, şart koşmaya değil.
+- **`data-cell` bar söylemez.** Her bar kendi slot 2'sini çizer, bu yüzden
+  `[data-cell="2:1"]` dört hücreyle eşleşir ve `.first()` bar 1'inkini seçer —
+  ki boştur. Dört senaryo sessizce yanlış bardaki **boş** bir seçimi ölçtü ve
+  geçti; çünkü "band bastığım hücreyle hizalı" her hücre için doğrudur. Fixture
+  artık her bara kendi slot indekslerini verir ve seçiciler `[data-onset]` ister.
+- Dokunma hedefi probe'u düzeltmenin yarısını geri alıyordu. Dört sütunda
+  düğmeler genişlik tabanı olsa da olmasa da 73px; taban varken yedi sütun
+  daralmak yerine taşar. 40px'lik satır **ikisini birden** gerektiriyordu.

@@ -160,6 +160,9 @@ const songJson = (page) =>
  */
 const GUTTER = 34;
 
+/** One grid slot's width, from `components/workspace/geometry.ts`. */
+const SLOT = 34;
+
 const bandVisible = (page) =>
   page.locator("[data-testid=time-selection-band]").isVisible().catch(() => false);
 
@@ -224,6 +227,66 @@ async function longPressOnset(page, cdp, index = 0) {
   }
   return false;
 }
+
+/**
+ * Long press one *named* cell.
+ *
+ * `data-cell` is "slot:string" and says nothing about which bar it sits in, so
+ * the fixture gives every bar its own slot indices (bar 1 owns 0 and 4, bar 2
+ * owns 2, bar 3 owns 3, bar 4 owns 5 and 6) and a cell can be named. Without
+ * that a scenario can only say "the nth onset", which changes meaning the
+ * moment an earlier scenario deletes something.
+ */
+async function longPressCell(page, cdp, cell, { onset = true } = {}) {
+  /*
+   * `onset` is the whole point of the naming scheme and was missing at first.
+   * Every bar renders a cell for slot 2, so `[data-cell="2:1"]` matches four
+   * of them and `.first()` picks bar 1's — which is empty. Four scenarios
+   * quietly measured an empty selection in the wrong bar and reported it as a
+   * pass, because "the band lines up with the cell I pressed" is true of any
+   * cell. Asking for the onset marker picks the bar that actually has a note.
+   */
+  const target = page
+    .locator(onset ? `[data-cell="${cell}"][data-onset]` : `[data-cell="${cell}"]`)
+    .first();
+  if ((await target.count()) === 0) return false;
+  await target.scrollIntoViewIfNeeded().catch(() => {});
+  await page.waitForTimeout(150);
+  const box = await target.boundingBox();
+  if (!box || box.width < 2) return false;
+  await touch(page, cdp, box.x + box.width / 2, box.y + box.height / 2, 700);
+  await page.waitForTimeout(300);
+  return true;
+}
+
+/** Long press a cell and report whether a selection came of it. */
+async function selectCell(page, cdp, cell) {
+  if (!(await longPressCell(page, cdp, cell))) return false;
+  return bandVisible(page);
+}
+
+/** Whether the current selection actually holds something. */
+async function selectionHasNotes(page) {
+  const summary = await page
+    .locator("[data-testid=selection-summary]")
+    .innerText()
+    .catch(() => "");
+  return summary.length > 0 && !/^Boş seçim/.test(summary);
+}
+
+/** Start clean, in edit mode, scrolled home. */
+async function fresh(page) {
+  await reseed(page);
+  await enterEditMode(page);
+  await resetScroll(page);
+}
+
+/** The ghost's own words, or "" when no ghost is showing. */
+const ghostText = (page) =>
+  page.locator("[data-testid=transform-preview]").innerText().catch(() => "");
+
+const applyButtonOf = (page) =>
+  page.getByRole("button", { name: "Uygula", exact: true }).first();
 
 /** A quick tap, which must stay a normal edit gesture. */
 async function tap(page, cdp, offsetX, offsetY = 60) {
@@ -317,7 +380,7 @@ async function run() {
     const groupRings = await page.evaluate(
       () => document.querySelectorAll("[data-group-selected]").length,
     );
-    record(`[${label}] 23 one press selects one way`, groupRings === 0, `${groupRings} group rings`);
+    record(`[${label}] P1 one press selects one way`, groupRings === 0, `${groupRings} group rings`);
 
     /*
      * The click a finished press leaves behind is aimed at whatever is under
@@ -329,7 +392,7 @@ async function run() {
       const dialog = document.querySelector("[role=dialog]");
       return dialog ? dialog.innerText.split("\n")[0] : null;
     });
-    record(`[${label}] 23 press alone opens no sheet`, strayDialog === null, strayDialog ?? "none");
+    record(`[${label}] P2 press alone opens no sheet`, strayDialog === null, strayDialog ?? "none");
 
     // ---- summary is human, not technical
     const summary = await page.locator("[data-testid=selection-summary]").innerText();
@@ -593,6 +656,34 @@ async function run() {
       await page.waitForTimeout(200);
       record(`[${label}] 3 shape ghost writes nothing`, (await writes(page)) === before);
 
+      /*
+       * A shape moves in two directions, and they are different musical acts:
+       * along the neck it transposes, across the strings it does not. Only the
+       * fret direction was ever tried, so the string one had nothing watching
+       * it at all.
+       */
+      const across = page.locator("[data-testid=shape-string-1]");
+      if (await across.isVisible().catch(() => false)) {
+        await across.click();
+        await page.waitForTimeout(220);
+        const ghost = await ghostText(page);
+        record(
+          `[${label}] 15 the shape moves across strings too`,
+          ghost.length > 0 && (await writes(page)) === before,
+          ghost.slice(0, 46),
+        );
+        /*
+         * Back to the fret move the commit check below is about. The steppers
+         * replace the pending command rather than adding to it, so leaving the
+         * string move staged would quietly turn that check into a different
+         * test than its name claims.
+         */
+        await page.locator("[data-testid=shape-fret-1]").click();
+        await page.waitForTimeout(200);
+      } else {
+        record(`[${label}] 15 the shape moves across strings too`, false, "no string control");
+      }
+
       const apply = page.getByRole("button", { name: "Uygula", exact: true }).first();
       if (await apply.isEnabled().catch(() => false)) {
         const songBefore = await songJson(page);
@@ -672,6 +763,466 @@ async function run() {
         await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
       }
       await page.waitForTimeout(200);
+    });
+
+    // ------------------------------------------------------------------- 4
+    // The end handle drags the selection's boundary, and dragging a boundary
+    // is not an edit: nothing may be written until something is applied.
+    await safe(`[${label}] 4 handle extends the selection`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "0:0"))) {
+        record(`[${label}] 4 handle extends the selection`, false, "no selection");
+        return;
+      }
+      const band = page.locator("[data-testid=time-selection-band]");
+      const start = await band.boundingBox();
+      const handle = await page
+        .locator("[data-testid=selection-handle-end]")
+        .boundingBox();
+      if (!start || !handle) {
+        record(`[${label}] 4 handle extends the selection`, false, "no end handle");
+        return;
+      }
+      const beforeWrites = await writes(page);
+      const y = handle.y + handle.height / 2;
+      const from = handle.x + handle.width / 2;
+      /*
+       * Six slots is the intent, but a finger cannot leave the screen. At
+       * 320px the full distance ended past the right edge, the drag went
+       * nowhere and the band was reported as refusing to grow.
+       */
+      const travel = Math.min(SLOT * 6, size.width - from - 16);
+      await cdp.send("Input.dispatchTouchEvent", {
+        type: "touchStart",
+        touchPoints: [{ x: from, y, id: 1 }],
+      });
+      for (let step = 1; step <= 8; step += 1) {
+        await cdp.send("Input.dispatchTouchEvent", {
+          type: "touchMove",
+          touchPoints: [{ x: from + (travel * step) / 8, y, id: 1 }],
+        });
+        await page.waitForTimeout(30);
+      }
+      await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+      await page.waitForTimeout(300);
+      const end = await band.boundingBox();
+      record(
+        `[${label}] 4 handle extends the selection`,
+        end !== null && end.width > start.width + 4,
+        `${Math.round(start.width)} -> ${Math.round(end?.width ?? 0)}px over ${Math.round(travel)}px`,
+      );
+      record(
+        `[${label}] 4 handle drag writes nothing`,
+        (await writes(page)) === beforeWrites,
+      );
+      const summary = await page
+        .locator("[data-testid=selection-summary]")
+        .innerText()
+        .catch(() => "");
+      // Widening past the note has to be described in music, not in ticks.
+      record(
+        `[${label}] 4 widened selection still reads as music`,
+        summary.length > 0 && !/tick|slot|\d{3,}/i.test(summary),
+        summary,
+      );
+    });
+
+    // ------------------------------------------------------------------- 5
+    // Bar 3 is a triplet grid. The band has to land on the note itself, which
+    // is the visible form of "the selection is ticks, not a slot index".
+    await safe(`[${label}] 5 band sits on the note in a triplet bar`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "3:2"))) {
+        record(`[${label}] 5 band sits on the note in a triplet bar`, false, "no selection");
+        return;
+      }
+      // The onset marker, not the bare slot: every bar has a slot 3, and the
+      // first of those is bar 1's empty one, 816px away from the note meant.
+      const cell = await page
+        .locator('[data-cell="3:2"][data-onset]')
+        .first()
+        .boundingBox();
+      const band = await page.locator("[data-testid=time-selection-band]").boundingBox();
+      const aligned =
+        cell !== null &&
+        band !== null &&
+        Math.abs(band.x - cell.x) <= 2 &&
+        Math.abs(band.width - SLOT) <= 2;
+      record(
+        `[${label}] 5 band sits on the note in a triplet bar`,
+        aligned,
+        `band ${Math.round(band?.x ?? -1)}/${Math.round(band?.width ?? -1)} cell ${Math.round(cell?.x ?? -1)}/${Math.round(cell?.width ?? -1)}`,
+      );
+    });
+
+    // ------------------------------------------------------------------- 6
+    // Copy, name a destination, confirm. Nothing is written before the confirm.
+    await safe(`[${label}] 6 copy then paste`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "0:0"))) {
+        record(`[${label}] 6 paste writes exactly once`, false, "no selection");
+        return;
+      }
+      await page.locator("[data-testid=selection-action-copy]").click();
+      await page.waitForTimeout(150);
+      await page.locator("[data-testid=selection-action-more]").click();
+      const paste = page.getByRole("button", { name: "Yapıştır", exact: true }).first();
+      if (!(await paste.isVisible().catch(() => false))) {
+        record(`[${label}] 6 paste writes exactly once`, false, "no paste control");
+        return;
+      }
+      await paste.click();
+      await page.waitForTimeout(200);
+      // Deliberately *not* an onset: bar 1's slot 2 is the empty destination.
+      await longPressCell(page, cdp, "2:0", { onset: false });
+      await page.waitForTimeout(250);
+      const beforeConfirm = await writes(page);
+      const ghost = await ghostText(page);
+      record(
+        `[${label}] 6 paste shows a ghost before writing`,
+        ghost.length > 0,
+        ghost.slice(0, 46),
+      );
+      const apply = applyButtonOf(page);
+      if (!(await apply.isEnabled().catch(() => false))) {
+        record(`[${label}] 6 paste writes exactly once`, false, `refused: ${ghost.slice(0, 40)}`);
+        return;
+      }
+      const songBefore = await songJson(page);
+      await apply.click();
+      await page.waitForTimeout(350);
+      record(
+        `[${label}] 6 paste writes exactly once`,
+        (await writes(page)) - beforeConfirm === 1,
+        `${beforeConfirm}->${await writes(page)}`,
+      );
+      record(`[${label}] 6 paste changed the song`, (await songJson(page)) !== songBefore);
+    });
+
+    // ------------------------------------------------------------------- 7
+    await safe(`[${label}] 7 cut then undo`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "0:0"))) {
+        record(`[${label}] 7 cut writes once`, false, "no selection");
+        return;
+      }
+      const songBefore = await songJson(page);
+      const beforeWrites = await writes(page);
+      await page.locator("[data-testid=selection-action-cut]").click();
+      await page.waitForTimeout(350);
+      record(
+        `[${label}] 7 cut writes once`,
+        (await writes(page)) - beforeWrites === 1,
+        `${beforeWrites}->${await writes(page)}`,
+      );
+      record(`[${label}] 7 cut changed the song`, (await songJson(page)) !== songBefore);
+      const undo = page.getByRole("button", { name: "Son değişikliği geri al" }).first();
+      if (!(await undo.isVisible().catch(() => false))) {
+        record(`[${label}] 7 undo after cut is byte-identical`, false, "no undo control");
+        return;
+      }
+      await undo.click();
+      await page.waitForTimeout(350);
+      record(
+        `[${label}] 7 undo after cut is byte-identical`,
+        (await songJson(page)) === songBefore,
+      );
+    });
+
+    // ---------------------------------------------------------------- 9, 10
+    // Bar 2 is a 1/16 bar with one note and thirteen rests after it, so a
+    // repeat has somewhere to go.
+    await safe(`[${label}] 9 repeat by count`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "2:1"))) {
+        record(`[${label}] 9 repeat writes exactly once`, false, "no selection");
+        return;
+      }
+      const summary = await page.locator("[data-testid=selection-summary]").innerText();
+      // A pattern's rests are part of it, so the summary owes the reader a
+      // width, not only a note count — but an empty selection saying "1 ölçü"
+      // would satisfy that while proving nothing, so check it holds a note.
+      record(
+        `[${label}] 9 selection reports a width, not just a count`,
+        (await selectionHasNotes(page)) && /ölçü|vuruş/.test(summary),
+        summary,
+      );
+      await page.locator("[data-testid=selection-action-repeat]").click();
+      await page.waitForSelector("[data-testid=repeat-count-3]");
+      const before = await writes(page);
+      await page.locator("[data-testid=repeat-count-3]").click();
+      await page.waitForTimeout(250);
+      const ghost = await ghostText(page);
+      record(`[${label}] 9 repeat ghost writes nothing`, (await writes(page)) === before, ghost.slice(0, 44));
+      const apply = applyButtonOf(page);
+      if (!(await apply.isEnabled().catch(() => false))) {
+        record(`[${label}] 9 repeat writes exactly once`, false, `refused: ${ghost.slice(0, 40)}`);
+        return;
+      }
+      const songBefore = await songJson(page);
+      await apply.click();
+      await page.waitForTimeout(350);
+      record(
+        `[${label}] 9 repeat writes exactly once`,
+        (await writes(page)) - before === 1,
+        `${before}->${await writes(page)}`,
+      );
+      record(`[${label}] 9 repeat changed the song`, (await songJson(page)) !== songBefore);
+    });
+
+    await safe(`[${label}] 10 repeat to the end of the section`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "2:1"))) {
+        record(`[${label}] 10 fill to the section end`, false, "no selection");
+        return;
+      }
+      await page.locator("[data-testid=selection-action-repeat]").click();
+      await page.waitForSelector("[data-testid=repeat-fill]");
+      const before = await writes(page);
+      await page.locator("[data-testid=repeat-fill]").click();
+      await page.waitForTimeout(300);
+      const ghost = await ghostText(page);
+      record(`[${label}] 10 fill ghost writes nothing`, (await writes(page)) === before, ghost.slice(0, 44));
+      const apply = applyButtonOf(page);
+      if (!(await apply.isEnabled().catch(() => false))) {
+        record(`[${label}] 10 fill to the section end`, false, `refused: ${ghost.slice(0, 40)}`);
+        return;
+      }
+      await apply.click();
+      await page.waitForTimeout(400);
+      record(
+        `[${label}] 10 fill to the section end`,
+        (await writes(page)) - before === 1,
+        `${before}->${await writes(page)}`,
+      );
+    });
+
+    // ------------------------------------------------------------------ 11
+    // One grid step, each way. The nudge loop earlier uses these too, but it
+    // stops as soon as a move becomes applicable, so it never says out loud
+    // that both directions are offered and that neither writes on its own.
+    await safe(`[${label}] 11 one grid step each way`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "2:1"))) {
+        record(`[${label}] 11 one grid step each way`, false, "no selection");
+        return;
+      }
+      await page.locator("[data-testid=selection-action-move]").click();
+      await page.waitForSelector("[data-testid=move-mode-time]");
+      const before = await writes(page);
+      let offered = 0;
+      for (const side of ["right", "left"]) {
+        const button = page.locator(`[data-testid=nudge-${side}-grid]`);
+        if (!(await button.isVisible().catch(() => false))) continue;
+        offered += 1;
+        await button.click();
+        await page.waitForTimeout(180);
+      }
+      const ghost = await ghostText(page);
+      record(`[${label}] 11 one grid step each way`, offered === 2, `${offered}/2`);
+      record(
+        `[${label}] 11 a grid step previews without writing`,
+        (await writes(page)) === before,
+        ghost.slice(0, 44),
+      );
+      await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+      await page.waitForTimeout(200);
+    });
+
+    // ------------------------------------------------------------------ 12
+    await safe(`[${label}] 12 beat and bar moves`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "2:1"))) {
+        record(`[${label}] 12 a beat and a bar are offered`, false, "no selection");
+        return;
+      }
+      await page.locator("[data-testid=selection-action-move]").click();
+      await page.waitForSelector("[data-testid=move-mode-time]");
+      const before = await writes(page);
+      let offered = 0;
+      for (const unit of ["vuruş", "ölçü"]) {
+        const button = page.locator(`[data-testid=nudge-right-${unit}]`);
+        if (!(await button.isVisible().catch(() => false))) continue;
+        offered += 1;
+        await button.click();
+        await page.waitForTimeout(200);
+      }
+      record(`[${label}] 12 a beat and a bar are offered`, offered === 2, `${offered}/2`);
+      const ghost = await ghostText(page);
+      record(
+        `[${label}] 12 beat and bar moves write nothing`,
+        (await writes(page)) === before,
+        ghost.slice(0, 44),
+      );
+      await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+      await page.waitForTimeout(200);
+    });
+
+    // ------------------------------------------------------------------ 17
+    //
+    // Bar 3 counts in triplets and bar 4 does not. One grid step inside bar 3
+    // lands on 128 ticks, and bar 4 has no slot there — so moving it on by a
+    // bar is a moment bar 4 cannot write. It must be refused in words a
+    // musician can act on, and never silently rounded to the nearest slot.
+    await safe(`[${label}] 17 a moment the target bar cannot write`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "3:2"))) {
+        record(`[${label}] 17 incompatible target is refused`, false, "no selection");
+        return;
+      }
+      await page.locator("[data-testid=selection-action-move]").click();
+      await page.waitForSelector("[data-testid=move-mode-time]");
+      const before = await writes(page);
+      await page.locator("[data-testid=nudge-right-grid]").click();
+      await page.waitForTimeout(150);
+      await page.locator("[data-testid=nudge-right-ölçü]").click();
+      await page.waitForTimeout(250);
+      const ghost = await ghostText(page);
+      const apply = applyButtonOf(page);
+      record(
+        `[${label}] 17 incompatible target is refused`,
+        !(await apply.isEnabled().catch(() => false)),
+        ghost.slice(0, 50),
+      );
+      record(
+        `[${label}] 17 refusal is in musician's words`,
+        /ritim aralığına|ölçünün/.test(ghost) && !/grid_incompatible|target_/.test(ghost),
+        ghost.slice(0, 50),
+      );
+      record(`[${label}] 17 refused move writes nothing`, (await writes(page)) === before);
+      await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+      await page.waitForTimeout(200);
+    });
+
+    // ------------------------------------------------------------------ 18
+    // The other two guitars are in Drop D and behind a capo, and both hold a
+    // two-note shape rather than a lone note.
+    await safe(`[${label}] 18 shape moves under a different tuning`, async () => {
+      for (const [index, name] of [
+        [1, "Drop D"],
+        [2, "capo 2"],
+      ]) {
+        await fresh(page);
+        const tab = page.getByRole("tab").nth(index);
+        if (!(await tab.isVisible().catch(() => false))) {
+          record(`[${label}] 18 shape move on ${name}`, false, "track not reachable");
+          continue;
+        }
+        await tab.click();
+        await page.waitForTimeout(300);
+        await enterEditMode(page);
+        await resetScroll(page);
+        if (!(await selectCell(page, cdp, "0:0"))) {
+          record(`[${label}] 18 shape move on ${name}`, false, "no selection");
+          continue;
+        }
+        await page.locator("[data-testid=selection-action-move]").click();
+        await page.waitForSelector("[data-testid=move-mode-shape]");
+        await page.locator("[data-testid=move-mode-shape]").click();
+        await page.waitForTimeout(150);
+        const before = await writes(page);
+        await page.locator("[data-testid=shape-fret-1]").click();
+        await page.waitForTimeout(250);
+        const ghost = await ghostText(page);
+        record(
+          `[${label}] 18 shape move on ${name}`,
+          ghost.length > 0 && (await writes(page)) === before,
+          ghost.slice(0, 46),
+        );
+        // The sheet's backdrop covers the track tabs, so it has to go before
+        // the next track can be reached at all.
+        await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+        await page.waitForTimeout(250);
+      }
+      // Leave the first track selected: everything after assumes it.
+      await page.getByRole("tab").first().click();
+      await page.waitForTimeout(250);
+    });
+
+    // ------------------------------------------------------------------ 19
+    // Bar 4 holds a hammer-on. The second note only sounds because of the one
+    // before it, so taking one has to take both — and say so.
+    await safe(`[${label}] 19 touching a chain grows the selection`, async () => {
+      await fresh(page);
+      if (!(await selectCell(page, cdp, "7:3"))) {
+        record(`[${label}] 19 touching a chain grows the selection`, false, "no selection");
+        return;
+      }
+      const summary = await page.locator("[data-testid=selection-summary]").innerText();
+      record(
+        `[${label}] 19 touching a chain grows the selection`,
+        /zincir/.test(summary),
+        summary,
+      );
+      const band = await page.locator("[data-testid=time-selection-band]").boundingBox();
+      record(
+        `[${label}] 19 the grown selection covers both notes`,
+        band !== null && band.width >= SLOT * 2 - 2,
+        `${Math.round(band?.width ?? 0)}px`,
+      );
+    });
+
+    // ------------------------------------------------------------------ 23
+    await safe(`[${label}] 23 playback and the Copilot`, async () => {
+      await fresh(page);
+      const play = page.getByRole("button", { name: "Çal" }).first();
+      if (await play.isVisible().catch(() => false)) {
+        await play.click();
+        await page.waitForTimeout(600);
+        const selected = await selectCell(page, cdp, "0:0");
+        const paused = await page
+          .getByRole("button", { name: "Çal" })
+          .first()
+          .isVisible()
+          .catch(() => false);
+        record(`[${label}] 23 selecting pauses playback`, selected && paused, `selected=${selected} paused=${paused}`);
+      } else {
+        record(`[${label}] 23 selecting pauses playback`, false, "no transport control");
+      }
+
+      // The Copilot owns the screen while it is asking: a press must not also
+      // start a selection behind its sheet.
+      await fresh(page);
+      const arrange = page.getByRole("button", { name: "Aranje et", exact: true }).first();
+      if (!(await arrange.isEnabled().catch(() => false))) {
+        record(`[${label}] 23 no selection while the Copilot is open`, false, "arrange unavailable");
+        return;
+      }
+      await arrange.click();
+      await page.waitForTimeout(400);
+      await longPressCell(page, cdp, "0:0");
+      await page.waitForTimeout(200);
+      record(
+        `[${label}] 23 no selection while the Copilot is open`,
+        !(await bandVisible(page)),
+      );
+      await page.getByRole("button", { name: "Kapat" }).first().click().catch(() => {});
+      await page.waitForTimeout(250);
+    });
+
+    // ------------------------------------------------------------------ 24
+    // The old gesture has to survive the new one: a tap still edits a note.
+    await safe(`[${label}] 24 a short tap still opens the note sheet`, async () => {
+      await fresh(page);
+      const cell = page.locator('[data-cell="0:0"]').first();
+      await cell.scrollIntoViewIfNeeded().catch(() => {});
+      const box = await cell.boundingBox();
+      if (!box) {
+        record(`[${label}] 24 a short tap still opens the note sheet`, false, "no cell");
+        return;
+      }
+      await touch(page, cdp, box.x + box.width / 2, box.y + box.height / 2, 60);
+      await page.waitForTimeout(350);
+      const title = await page.evaluate(() => {
+        const dialog = document.querySelector("[role=dialog]");
+        return dialog ? dialog.innerText.split("\n")[0] : null;
+      });
+      record(
+        `[${label}] 24 a short tap still opens the note sheet`,
+        title !== null && /^Bar \d+/.test(title),
+        title ?? "no sheet",
+      );
+      record(`[${label}] 24 a short tap makes no selection`, !(await bandVisible(page)));
     });
 
     const errors = await page.evaluate(() => window.__consoleErrors ?? []).catch(() => []);
