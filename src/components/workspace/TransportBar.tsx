@@ -111,7 +111,12 @@ export function TransportBar({
         </button>
 
         <IconButton
-          label="Section loop"
+          /*
+           * The one accessible name on this screen that was still English.
+           * A screen reader saying "Section loop" between "Çal" and
+           * "Metronom" is the app changing language mid-sentence.
+           */
+          label="Bölüm döngüsü"
           onClick={onToggleLoop}
           active={Boolean(state.loopSectionId)}
           disabled={busy || runs.length === 0}

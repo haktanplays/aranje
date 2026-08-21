@@ -58,6 +58,24 @@ export function usePlayback(
     });
     const at = entry.controller.getPosition().barKey;
     if (at !== null) next.seekToNearestBar(at);
+
+    /*
+     * The loop, but only if it is still real (spec 13.13, K-44).
+     *
+     * A loop is a section, and its boundaries are that section's first and
+     * last bar — so bars appearing and disappearing inside it move the
+     * boundaries, and the new plan is where the new ones come from. If the
+     * section itself is gone there is nothing to re-derive: the loop is turned
+     * **off** rather than quietly re-pointed at whichever section now sits at
+     * those ticks, because a loop that keeps running over different music is
+     * the app playing something nobody asked for.
+     */
+    const loopSectionId = entry.controller.getState().loopSectionId;
+    const stillThere = song.sections.some(
+      (section) => section.id === loopSectionId && section.bars.length > 0,
+    );
+    if (loopSectionId !== null && stillThere) next.setLoopSection(loopSectionId);
+
     setEntry({ song, controller: next });
   }
 

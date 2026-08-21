@@ -74,6 +74,7 @@ import {
   type Selection,
 } from "@/lib/song/selection";
 import { useSong } from "@/lib/song/use-song";
+import { useEditShortcuts } from "@/lib/ui/use-edit-shortcuts";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 import { validateArticulationContext } from "@/lib/validators";
 
@@ -83,7 +84,18 @@ type Cell = { barKey: string; slotIndex: number; stringIndex: number };
 const EMPTY_SLOTS: ReadonlySet<number> = new Set<number>();
 
 export function Workspace() {
-  const { song, message, canUndo, persisted, commit, undo } = useSong();
+  const {
+    song,
+    message,
+    canUndo,
+    canRedo,
+    undoLabel,
+    redoLabel,
+    persisted,
+    commit,
+    undo,
+    redo,
+  } = useSong();
   const { practiceRatePercent, setPracticeRatePercent } = useSettings();
   const { controller, state } = usePlayback(song, practiceRatePercent);
   useDebugHandle(controller);
@@ -176,10 +188,18 @@ export function Workspace() {
     song.tracks.find((entry) => entry.id === selectedTrackId) ?? song.tracks[0];
 
   const copilot = useCoArranger(song, {
-    onApply: commit,
+    onApply: (candidate, skill) => commit(candidate, { kind: "copilot_apply", skill }),
     onBeforePreviewPlay: () => controller.pause(),
     practicePercent: state.practicePercent,
   });
+  /*
+   * Pulled out so the undo path can depend on it.
+   *
+   * `copilot` is rebuilt every render, so a callback depending on the whole
+   * handle would be rebuilt too — and the keyboard listener behind it
+   * resubscribed on every keystroke, scroll and animation frame.
+   */
+  const closeCopilot = copilot.close;
   const previewOpen =
     copilot.state.status === "preview_ready" ||
     copilot.state.status === "preview_playing" ||
@@ -646,6 +666,60 @@ export function Workspace() {
     [barTransform, controller, transform],
   );
 
+  /* ------------------------------------------------------- undo and redo */
+
+  /**
+   * Put every editing surface down before the song moves under it.
+   *
+   * A selection is a range of ticks or bars in the song as it stands, a ghost
+   * is a command staged against it, and a Copilot candidate was measured
+   * against the song as it was when it was asked for. After an undo none of
+   * those describe anything, and leaving one on screen would leave the reader
+   * holding a handle attached to music that is no longer there.
+   *
+   * The clipboards stay. A clipboard is not song state: someone who copied a
+   * bar, undid an unrelated edit and came back would rightly expect it to
+   * still be there.
+   */
+  const resetEditSurfaces = useCallback(() => {
+    transform.clear();
+    barTransform.clear();
+    setSheet(null);
+    setBarSheet(null);
+    setPasteAt({ kind: "idle" });
+    clearSelection();
+    setCell(null);
+    setEditError(null);
+    // Disposes the preview engine as well as closing the sheet, so no second
+    // graph is left playing a candidate that is no longer on the table.
+    closeCopilot();
+  }, [barTransform, clearSelection, closeCopilot, transform]);
+
+  /**
+   * Step the history, once.
+   *
+   * Playback stops first and does not start again on its own: the music under
+   * the playhead is about to become different music, and resuming into it
+   * would be the app deciding to play something the reader did not ask for.
+   * No engine is built here — the song change replaces the controller through
+   * the path every other edit already uses.
+   */
+  const undoEdit = useCallback(() => {
+    if (!canUndo) return;
+    controller.pause();
+    resetEditSurfaces();
+    undo();
+  }, [canUndo, controller, resetEditSurfaces, undo]);
+
+  const redoEdit = useCallback(() => {
+    if (!canRedo) return;
+    controller.pause();
+    resetEditSurfaces();
+    redo();
+  }, [canRedo, controller, redo, resetEditSurfaces]);
+
+  useEditShortcuts({ canUndo, canRedo, onUndo: undoEdit, onRedo: redoEdit });
+
   const stageBarCommand = useCallback(
     (command: BarCommand) => {
       setBarSheet(null);
@@ -744,7 +818,7 @@ export function Workspace() {
         return;
       }
       setEditError(null);
-      commit(result.song);
+      commit(result.song, { kind: "note_edit" });
     },
     [cell, commit, song, track],
   );
@@ -856,7 +930,7 @@ export function Workspace() {
       }
       setMoveError(null);
       // One commit: one storage write and one step of history (spec 5.6).
-      commit(result.song);
+      commit(result.song, { kind: "group_move" });
       setSelection({ sectionId: selection.sectionId, refs: result.origins });
     },
     [commit, controller, selection, song, timeline, track],
@@ -1258,8 +1332,6 @@ export function Workspace() {
           error={moveError}
           onMove={moveSelection}
           onClear={clearSelection}
-          onUndo={undo}
-          canUndo={canUndo}
         />
       ) : null}
 
@@ -1277,8 +1349,11 @@ export function Workspace() {
         }}
         arrangeDisabled={skills.length === 0 || previewOpen}
         canUndo={canUndo}
-        onUndo={undo}
-        showUndo={selection === null}
+        canRedo={canRedo}
+        undoLabel={undoLabel}
+        redoLabel={redoLabel}
+        onUndo={undoEdit}
+        onRedo={redoEdit}
         canToggleEdit={view === "tab"}
       />
 

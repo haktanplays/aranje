@@ -7,12 +7,18 @@ import {
   getSongStore,
   type SongStoreSnapshot,
 } from "@/lib/song/song-store";
+import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song } from "@/lib/song/schema";
 
 /*
  * localStorage is an external store, so it is read through useSyncExternalStore
  * rather than an effect. Since phase 2C the song can also be written, so the
  * store publishes to subscribers and the snapshot is whatever it last set.
+ *
+ * Undo and redo are the store's too (spec 13.13). They are not component
+ * state: the same history has to be the one behind the tab, the arrangement
+ * and every sheet, and a hook that kept its own copy would give each surface a
+ * different past.
  */
 
 /* Prerender and hydration show the sample song; the stored song replaces it as
@@ -20,12 +26,19 @@ import type { Song } from "@/lib/song/schema";
 const SERVER_SNAPSHOT: SongStoreSnapshot = {
   song: SAMPLE_SONG,
   canUndo: false,
+  canRedo: false,
+  undoLabel: "Geri al",
+  redoLabel: "Yinele",
+  undoDepth: 0,
+  redoDepth: 0,
   persisted: true,
 };
 
 export type SongHandle = SongStoreSnapshot & {
-  commit(next: Song): void;
+  /** The one way to change the song. Says what the edit was. */
+  commit(next: Song, action: HistoryAction): boolean;
   undo(): void;
+  redo(): void;
 };
 
 export function useSong(): SongHandle {
@@ -38,9 +51,7 @@ export function useSong(): SongHandle {
   );
 
   const commit = useCallback(
-    (next: Song) => {
-      store?.commit(next);
-    },
+    (next: Song, action: HistoryAction) => store?.commit(next, action) ?? false,
     [store],
   );
 
@@ -48,5 +59,9 @@ export function useSong(): SongHandle {
     store?.undo();
   }, [store]);
 
-  return { ...snapshot, commit, undo };
+  const redo = useCallback(() => {
+    store?.redo();
+  }, [store]);
+
+  return { ...snapshot, commit, undo, redo };
 }

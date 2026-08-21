@@ -10,7 +10,11 @@ import {
   createProviderClient,
   type CoArrangerClient,
 } from "@/lib/copilot/client";
-import { copilotRequestSchema, type CopilotRequest } from "@/lib/copilot/contract";
+import {
+  copilotRequestSchema,
+  type ArrangeSkill,
+  type CopilotRequest,
+} from "@/lib/copilot/contract";
 import { buildCandidate } from "@/lib/copilot/preview";
 import {
   canApply,
@@ -88,7 +92,15 @@ export function useCoArranger(
     onBeforePreviewPlay,
     practicePercent = DEFAULT_PRACTICE_PERCENT,
   }: {
-    onApply: (candidate: Song) => void;
+    /**
+     * The candidate, and which skill produced it.
+     *
+     * The skill travels with it because the edit history has to be able to
+     * say what an undo would reverse (spec 13.13) — "Aranje önerisini
+     * uygulama" needs to know it was an apply, and the caller cannot read it
+     * off the state after this hook has cleared the request.
+     */
+    onApply: (candidate: Song, skill: ArrangeSkill) => void;
     /** Called before the preview engine starts, to stop the song's own. */
     onBeforePreviewPlay: () => void;
     /** The speed the song is being practised at (spec 13.8). */
@@ -225,10 +237,10 @@ export function useCoArranger(
   }, [disposePreview]);
 
   const apply = useCallback(() => {
-    if (!canApply(state, song) || !state.candidate) return;
+    if (!canApply(state, song) || !state.candidate || !state.request) return;
     disposePreview();
     dispatch({ type: "apply" });
-    onApply(state.candidate);
+    onApply(state.candidate, state.request.skill);
     dispatch({ type: "applied" });
   }, [disposePreview, onApply, song, state]);
 

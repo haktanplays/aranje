@@ -36,12 +36,13 @@ import {
   expansionNotice,
   type BarSelection,
 } from "@/lib/song/bar-selection";
+import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song } from "@/lib/song/schema";
 
 /** The store bridge, so this file never imports the store itself. */
 export type BarStore = {
   getSnapshot: () => { song: Song };
-  commit: (song: Song) => void;
+  commit: (song: Song, action: HistoryAction) => boolean;
 };
 
 export type BarPreview =
@@ -270,7 +271,11 @@ export function useBarTransform(
         return false;
       }
       // The one commit. One storage write, one history entry (spec 5.6).
-      store.commit(result.song);
+      store.commit(result.song, {
+        kind: "bar_transform",
+        command: command.kind,
+        scope: selection.scope,
+      });
       setSelection(result.selection);
       setPending(null);
       setError(null);

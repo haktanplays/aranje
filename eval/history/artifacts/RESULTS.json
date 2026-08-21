@@ -1,0 +1,275 @@
+{
+  "results": [
+    {
+      "name": "1 nothing to undo at the start @390x844",
+      "pass": true,
+      "detail": "Geri al / Yinele, writes 0"
+    },
+    {
+      "name": "2 a track-bar delete undoes and redoes @390x844",
+      "pass": true,
+      "detail": "Geri al: Track içeriğini silme, writes +3"
+    },
+    {
+      "name": "3 a full-bar delete undoes and redoes @390x844",
+      "pass": true,
+      "detail": "5 -> 4 -> 5 -> 4, Geri al: Ölçüleri silme"
+    },
+    {
+      "name": "4 three edits undo and redo in order @390x844",
+      "pass": true,
+      "detail": "back to start=true, forward=true"
+    },
+    {
+      "name": "5 an edit after two undos drops the redo branch @390x844",
+      "pass": true,
+      "detail": "redo before=true after=false"
+    },
+    {
+      "name": "6 a ghost leaves no step behind @390x844",
+      "pass": true,
+      "detail": "ghost=true, writes 1->1"
+    },
+    {
+      "name": "7 a refused edit leaves no step behind @390x844",
+      "pass": true,
+      "detail": "refused=\"Kopyalanan ölçü hedef ölçünün ritim aral\", writes 1->1"
+    },
+    {
+      "name": "8 the surfaces share one history @390x844",
+      "pass": true,
+      "detail": "arrange=\"Geri al: Ölçüleri silme\" tab=\"Geri al: Ölçüleri silme\" redoAfter=true"
+    },
+    {
+      "name": "9 undo puts the editing surfaces down @390x844",
+      "pass": true,
+      "detail": "selection 1 -> 0"
+    },
+    {
+      "name": "10 the clipboard survives an undo @390x844",
+      "pass": true,
+      "detail": "Ölçü işlemleri | Buraya yapıştır"
+    },
+    {
+      "name": "11 storage and the screen agree after undo and redo @390x844",
+      "pass": true,
+      "detail": "stored 5->4, drawn 11->10"
+    },
+    {
+      "name": "12 playing stops for a structural edit and does not resume @390x844",
+      "pass": true,
+      "detail": "playing -> idle -> idle, contexts 1 -> 1"
+    },
+    {
+      "name": "13 the playhead stays on a bar that exists @390x844",
+      "pass": true,
+      "detail": "intro:4 -> intro:3"
+    },
+    {
+      "name": "14 a loop survives an edit that leaves it intact @390x844",
+      "pass": true,
+      "detail": "{\"on\":true,\"startTicks\":0,\"endTicks\":3840} -> {\"on\":true,\"startTicks\":0,\"endTicks\":3072}"
+    },
+    {
+      "name": "15 keyboard undo and redo @390x844",
+      "pass": true,
+      "detail": "ctrl+z=true shift=true ctrl+y=true"
+    },
+    {
+      "name": "16 a shortcut inside a text field is the field's @390x844",
+      "pass": true,
+      "detail": "field=true, song untouched=true"
+    },
+    {
+      "name": "17 both controls are real targets @390x844",
+      "pass": true,
+      "detail": "undo {\"w\":44,\"h\":44} redo {\"w\":44,\"h\":44}, overflow 0, scrollers 1"
+    },
+    {
+      "name": "console stayed quiet @390x844",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "1 nothing to undo at the start @320x700",
+      "pass": true,
+      "detail": "Geri al / Yinele, writes 0"
+    },
+    {
+      "name": "2 a track-bar delete undoes and redoes @320x700",
+      "pass": true,
+      "detail": "Geri al: Track içeriğini silme, writes +3"
+    },
+    {
+      "name": "3 a full-bar delete undoes and redoes @320x700",
+      "pass": true,
+      "detail": "5 -> 4 -> 5 -> 4, Geri al: Ölçüleri silme"
+    },
+    {
+      "name": "4 three edits undo and redo in order @320x700",
+      "pass": true,
+      "detail": "back to start=true, forward=true"
+    },
+    {
+      "name": "5 an edit after two undos drops the redo branch @320x700",
+      "pass": true,
+      "detail": "redo before=true after=false"
+    },
+    {
+      "name": "6 a ghost leaves no step behind @320x700",
+      "pass": true,
+      "detail": "ghost=true, writes 1->1"
+    },
+    {
+      "name": "7 a refused edit leaves no step behind @320x700",
+      "pass": true,
+      "detail": "refused=\"Kopyalanan ölçü hedef ölçünün ritim aral\", writes 1->1"
+    },
+    {
+      "name": "8 the surfaces share one history @320x700",
+      "pass": true,
+      "detail": "arrange=\"Geri al: Ölçüleri silme\" tab=\"Geri al: Ölçüleri silme\" redoAfter=true"
+    },
+    {
+      "name": "9 undo puts the editing surfaces down @320x700",
+      "pass": true,
+      "detail": "selection 1 -> 0"
+    },
+    {
+      "name": "10 the clipboard survives an undo @320x700",
+      "pass": true,
+      "detail": "Ölçü işlemleri | Buraya yapıştır"
+    },
+    {
+      "name": "11 storage and the screen agree after undo and redo @320x700",
+      "pass": true,
+      "detail": "stored 5->4, drawn 11->10"
+    },
+    {
+      "name": "12 playing stops for a structural edit and does not resume @320x700",
+      "pass": true,
+      "detail": "playing -> idle -> idle, contexts 1 -> 1"
+    },
+    {
+      "name": "13 the playhead stays on a bar that exists @320x700",
+      "pass": true,
+      "detail": "intro:4 -> intro:3"
+    },
+    {
+      "name": "14 a loop survives an edit that leaves it intact @320x700",
+      "pass": true,
+      "detail": "{\"on\":true,\"startTicks\":0,\"endTicks\":3840} -> {\"on\":true,\"startTicks\":0,\"endTicks\":3072}"
+    },
+    {
+      "name": "15 keyboard undo and redo @320x700",
+      "pass": true,
+      "detail": "ctrl+z=true shift=true ctrl+y=true"
+    },
+    {
+      "name": "16 a shortcut inside a text field is the field's @320x700",
+      "pass": true,
+      "detail": "field=true, song untouched=true"
+    },
+    {
+      "name": "17 both controls are real targets @320x700",
+      "pass": true,
+      "detail": "undo {\"w\":44,\"h\":44} redo {\"w\":44,\"h\":44}, overflow 0, scrollers 1"
+    },
+    {
+      "name": "console stayed quiet @320x700",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "measurements": {
+    "audioContexts-390x844": {
+      "built": 1,
+      "after": 1
+    },
+    "playhead-390x844": {
+      "before": {
+        "barKey": "intro:4",
+        "barIndex": 4,
+        "slotIndex": 2
+      },
+      "after": {
+        "barKey": "intro:3",
+        "barIndex": 3,
+        "slotIndex": 1
+      }
+    },
+    "loop-390x844": {
+      "before": {
+        "on": true,
+        "startTicks": 0,
+        "endTicks": 3840
+      },
+      "after": {
+        "on": true,
+        "startTicks": 0,
+        "endTicks": 3072
+      }
+    },
+    "layout-390x844": {
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "undoLabel": "Geri al: Ölçüleri silme",
+      "redoLabel": "Yinele",
+      "canUndo": true,
+      "canRedo": false,
+      "undoBox": {
+        "w": 44,
+        "h": 44
+      },
+      "redoBox": {
+        "w": 44,
+        "h": 44
+      }
+    },
+    "audioContexts-320x700": {
+      "built": 1,
+      "after": 1
+    },
+    "playhead-320x700": {
+      "before": {
+        "barKey": "intro:4",
+        "barIndex": 4,
+        "slotIndex": 2
+      },
+      "after": {
+        "barKey": "intro:3",
+        "barIndex": 3,
+        "slotIndex": 1
+      }
+    },
+    "loop-320x700": {
+      "before": {
+        "on": true,
+        "startTicks": 0,
+        "endTicks": 3840
+      },
+      "after": {
+        "on": true,
+        "startTicks": 0,
+        "endTicks": 3072
+      }
+    },
+    "layout-320x700": {
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "undoLabel": "Geri al: Ölçüleri silme",
+      "redoLabel": "Yinele",
+      "canUndo": true,
+      "canRedo": false,
+      "undoBox": {
+        "w": 44,
+        "h": 44
+      },
+      "redoBox": {
+        "w": 44,
+        "h": 44
+      }
+    }
+  },
+  "failed": 0
+}

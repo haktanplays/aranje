@@ -32,6 +32,7 @@ import {
 import { EMPTY_CLIPBOARD, type Clipboard, type TimeSelection } from "@/lib/song/time-selection";
 import { summariseSelection, type SelectionSummary } from "@/lib/song/selection-summary";
 import { transformMessage } from "@/lib/song/transform-messages";
+import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song } from "@/lib/song/schema";
 import type { ValidationIssue } from "@/lib/validators/types";
 
@@ -66,7 +67,7 @@ export type TransformHandle = {
 
 type Store = {
   getSnapshot(): { song: Song };
-  commit(next: Song): void;
+  commit(next: Song, action: HistoryAction): boolean;
 };
 
 export function useTransform(store: Store, song: Song): TransformHandle {
@@ -177,7 +178,12 @@ export function useTransform(store: Store, song: Song): TransformHandle {
         if (read.ok) setClipboard(read.clipboard);
       }
 
-      store.commit(result.song);
+      // One commit, and it says what it was — that is the sentence the undo
+      // control will read back to the reader.
+      store.commit(result.song, {
+        kind: "selection_transform",
+        command: target.kind,
+      });
       setExpanded(false);
       setSelection(result.selection);
       setPending(null);

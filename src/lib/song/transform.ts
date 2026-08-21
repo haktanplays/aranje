@@ -62,6 +62,7 @@ import type {
   Song,
   Track,
 } from "@/lib/song/schema";
+import type { HistoryAction } from "@/lib/song/edit-history";
 import type { ValidationIssue } from "@/lib/validators/types";
 
 /**
@@ -750,11 +751,21 @@ export type { Clipboard, ClipboardEvent, TimeSelection };
  * to check `ok` before committing.
  */
 export function commitTransform(
-  store: { getSnapshot(): { song: Song }; commit(next: Song): void },
+  store: {
+    getSnapshot(): { song: Song };
+    commit(next: Song, action: HistoryAction): boolean;
+  },
   selection: TimeSelection,
   command: TransformCommand,
 ): TransformResult {
   const result = applyTransform(store.getSnapshot().song, selection, command);
-  if (result.ok) store.commit(result.song);
+  if (result.ok) {
+    // The action is built here rather than asked for, so this bridge cannot
+    // become a way to write a song into the history without saying what it was.
+    store.commit(result.song, {
+      kind: "selection_transform",
+      command: command.kind,
+    });
+  }
   return result;
 }

@@ -64,6 +64,22 @@ export const placementLimits = {
 } as const;
 
 /**
+ * Session edit history (spec 5.6, 13.13, K-44).
+ *
+ * How many undoable transitions the session keeps. Fifty is generous enough
+ * that a working session is never truncated in practice and small enough that
+ * a phone is not asked to hold a hundred copies of a thirty-two bar song —
+ * each snapshot is a whole `Song`, because that is what makes undo exact.
+ *
+ * It lives here with the other limits for the same reason they do: one place
+ * to change it, and no component carrying its own opinion about how far back
+ * "back" goes.
+ */
+export const historyLimits = {
+  maxUndoSteps: 50,
+} as const;
+
+/**
  * Practice speed (spec 13.8, phase 2E).
  *
  * This is a **playback** setting, not a property of the music: the song keeps

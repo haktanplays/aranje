@@ -6,23 +6,50 @@
  * readable by things that are not components (the audio engine, the debug
  * handle) without threading a setter through them.
  *
- * Two rules this file exists to keep:
+ * ## One gate (spec 13.13, K-44)
  *
- * - **A write is atomic.** The new song goes to storage and to the subscribers
- *   together, through the same `saveSong` path that already validates before
- *   writing (spec 5.6). A refused write leaves the store where it was.
- * - **Undo is session-only.** Spec 5.6 persists the song, not the history. A
- *   history written to storage would outlive the tab and be replayed against a
- *   song it no longer describes.
+ * Every path that can change the song — a riff edit, a group move, a
+ * selection transform, a bar operation, an applied Copilot suggestion — comes
+ * through `commit`. That is what makes "one edit, one write, one undo step" a
+ * property of the app rather than of five separate call sites that currently
+ * happen to agree. A second path would look right on screen and quietly
+ * produce two writes, or a history step with nothing behind it.
+ *
+ * Every commit says what it *was*, so the history can tell the reader what
+ * undo is about to reverse. The action is a shape, never a diagnostic.
+ *
+ * ## What a commit refuses
+ *
+ * - A candidate the schema will not accept. It never reaches history and
+ *   never reaches storage, because a history holding an invalid song is a
+ *   history whose undo produces a song the app cannot load.
+ * - A candidate that is the same music. Not the same *object* — the same
+ *   music: an edit that rebuilt a bar and changed nothing is a step the
+ *   reader would find does nothing when they undo it.
+ *
+ * ## Session only
+ *
+ * Spec 5.6 persists the song, not the history. A history written to storage
+ * would outlive the tab and be replayed against a song it no longer describes.
+ * It also never reaches the fingerprint, a Copilot request, or a project file.
  */
 import {
+  canRedo as historyCanRedo,
   canUndo as historyCanUndo,
-  createHistory,
-  record,
+  createEditHistory,
+  currentSong,
+  recordEdit,
+  redo as historyRedo,
+  redoAction,
+  resetEditHistory,
+  sameSong,
   undo as historyUndo,
-  type History,
+  undoAction,
+  type EditHistory,
+  type HistoryAction,
 } from "@/lib/song/edit-history";
-import type { Song } from "@/lib/song/schema";
+import { redoLabel, undoLabel } from "@/lib/song/history-labels";
+import { songSchema, type Song } from "@/lib/song/schema";
 import { loadSong, saveSong, type LoadResult, type StorageLike } from "@/lib/song/storage";
 
 export type SongStoreSnapshot = {
@@ -30,6 +57,13 @@ export type SongStoreSnapshot = {
   /** Set when the load had something to tell the reader (spec 5.6). */
   message?: string;
   canUndo: boolean;
+  canRedo: boolean;
+  /** "Geri al: Ölçüleri silme" — the accessible name of the undo control. */
+  undoLabel: string;
+  redoLabel: string;
+  /** How many steps lie behind and ahead. Measured, not guessed. */
+  undoDepth: number;
+  redoDepth: number;
   /** False when a write was refused, so the screen can say so. */
   persisted: boolean;
 };
@@ -37,44 +71,65 @@ export type SongStoreSnapshot = {
 export type SongStore = {
   getSnapshot(): SongStoreSnapshot;
   subscribe(listener: () => void): () => void;
-  /** Replace the song and remember the one being left. */
-  commit(next: Song): void;
-  /** Step back to the song before the last commit. */
+  /**
+   * Replace the song and remember what did it.
+   *
+   * Returns whether the song actually changed, so a caller can tell "refused"
+   * from "that was already the song".
+   */
+  commit(next: Song, action: HistoryAction): boolean;
+  /** Step back one edit. */
   undo(): void;
-  /** Forget the history without touching the song. */
-  forgetHistory(): void;
+  /** Step forward one edit. */
+  redo(): void;
+  /**
+   * Start again from a song that did not come from an edit.
+   *
+   * Hydration, the sample-song fallback, and any later "open another project".
+   * There is nothing behind these to go back to.
+   */
+  replaceBaseline(song: Song): void;
 };
 
 export function createSongStore(
   initial: LoadResult,
   storage?: StorageLike | null,
 ): SongStore {
-  let history: History<Song> = createHistory(initial.song);
+  let history: EditHistory = createEditHistory(initial.song);
   let persisted = true;
   const listeners = new Set<() => void>();
 
-  let snapshot: SongStoreSnapshot = {
-    song: history.present,
+  const readSnapshot = (): SongStoreSnapshot => ({
+    song: currentSong(history),
     ...(initial.message === undefined ? {} : { message: initial.message }),
-    canUndo: false,
-    persisted: true,
-  };
+    canUndo: historyCanUndo(history),
+    canRedo: historyCanRedo(history),
+    undoLabel: undoLabel(undoAction(history)),
+    redoLabel: redoLabel(redoAction(history)),
+    undoDepth: history.cursor,
+    redoDepth: history.snapshots.length - 1 - history.cursor,
+    persisted,
+  });
+
+  let snapshot: SongStoreSnapshot = readSnapshot();
 
   const publish = () => {
-    snapshot = {
-      song: history.present,
-      ...(initial.message === undefined ? {} : { message: initial.message }),
-      canUndo: historyCanUndo(history),
-      persisted,
-    };
+    snapshot = readSnapshot();
     for (const listener of listeners) listener();
   };
 
-  const write = (next: History<Song>) => {
+  /**
+   * Move the history and write the song it now shows.
+   *
+   * Exactly one storage write and exactly one publish, whatever moved it —
+   * a commit, an undo and a redo are the same event as far as the outside
+   * world is concerned: the song changed to this one.
+   */
+  const write = (next: EditHistory) => {
+    const song = currentSong(next);
     // Storage first: if it refuses, the screen keeps working in memory and
     // says so, rather than showing a state that was never saved.
-    persisted =
-      storage === undefined ? saveSong(next.present) : saveSong(next.present, storage);
+    persisted = storage === undefined ? saveSong(song) : saveSong(song, storage);
     history = next;
     publish();
   };
@@ -85,16 +140,31 @@ export function createSongStore(
       listeners.add(listener);
       return () => listeners.delete(listener);
     },
-    commit(next) {
-      if (next === history.present) return;
-      write(record(history, next));
+
+    commit(next, action) {
+      /*
+       * The schema, before anything else. A song that cannot be parsed cannot
+       * be stored, and one that cannot be stored has no business being a step
+       * someone can come back to.
+       */
+      if (!songSchema.safeParse(next).success) return false;
+      if (sameSong(next, currentSong(history))) return false;
+      write(recordEdit(history, next, action));
+      return true;
     },
+
     undo() {
       if (!historyCanUndo(history)) return;
       write(historyUndo(history));
     },
-    forgetHistory() {
-      history = createHistory(history.present);
+
+    redo() {
+      if (!historyCanRedo(history)) return;
+      write(historyRedo(history));
+    },
+
+    replaceBaseline(song) {
+      history = resetEditHistory(song);
       publish();
     },
   };

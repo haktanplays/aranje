@@ -8,10 +8,21 @@
  *
  * On the arrangement surface the edit toggle is not shown, because there is no
  * tab on screen for it to act on — a button whose target is not there is worse
- * than a missing one. "Aranje et" and undo stay: the first opens a sheet and
- * works from either surface, and the second belongs to the song rather than to
- * whichever view happens to be up.
+ * than a missing one. "Aranje et" and the history controls stay: the first
+ * opens a sheet and works from either surface, and the second pair belongs to
+ * the song rather than to whichever view happens to be up.
+ *
+ * ## Undo and redo are two controls
+ *
+ * Not one that changes meaning. A single button that undoes until you shift-
+ * click it is a button whose behaviour the reader has to remember; two are
+ * ninety pixels of a row that has room for them, and each says what it would
+ * do — "Geri al: Ölçüleri silme" rather than "Geri al". They stay on screen
+ * when there is nothing to do, disabled: a control that appears and vanishes
+ * moves everything beside it, which on a phone means the reader's next tap
+ * lands somewhere they did not aim.
  */
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 export function EditToolbar({
   editing,
   canEdit,
@@ -20,8 +31,11 @@ export function EditToolbar({
   onArrange,
   arrangeDisabled,
   canUndo,
+  canRedo,
+  undoLabel,
+  redoLabel,
   onUndo,
-  showUndo = true,
+  onRedo,
   canToggleEdit = true,
 }: {
   editing: boolean;
@@ -32,9 +46,12 @@ export function EditToolbar({
   onArrange: () => void;
   arrangeDisabled: boolean;
   canUndo: boolean;
+  canRedo: boolean;
+  /** "Geri al: Ölçüleri silme" — from the one label table (spec 13.13). */
+  undoLabel: string;
+  redoLabel: string;
   onUndo: () => void;
-  /** Hidden while the selection strip carries its own undo (spec 13.8). */
-  showUndo?: boolean;
+  onRedo: () => void;
   /** False on a surface with no tab to edit (spec 13.10). */
   canToggleEdit?: boolean;
 }) {
@@ -70,17 +87,30 @@ export function EditToolbar({
         >
           Aranje et
         </button>
-        {showUndo ? (
-          <button
-            type="button"
-            onClick={onUndo}
-            disabled={!canUndo}
-            aria-label="Son değişikliği geri al"
-            className="text-muted min-h-11 min-w-11 rounded-lg border border-line text-sm disabled:opacity-40"
-          >
-            <span aria-hidden>&#8630;</span>
-          </button>
-        ) : null}
+        <button
+          type="button"
+          data-undo
+          onClick={onUndo}
+          disabled={!canUndo}
+          aria-label={undoLabel}
+          title={undoLabel}
+          className="text-muted border-line shrink-0 rounded-lg border text-sm disabled:opacity-40"
+          style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
+        >
+          <span aria-hidden>&#8630;</span>
+        </button>
+        <button
+          type="button"
+          data-redo
+          onClick={onRedo}
+          disabled={!canRedo}
+          aria-label={redoLabel}
+          title={redoLabel}
+          className="text-muted border-line shrink-0 rounded-lg border text-sm disabled:opacity-40"
+          style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
+        >
+          <span aria-hidden>&#8631;</span>
+        </button>
       </div>
       {/*
         Both of these are transient. They get a line when they have something

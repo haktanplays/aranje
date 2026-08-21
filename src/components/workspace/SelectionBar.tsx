@@ -21,15 +21,11 @@ export function SelectionBar({
   error,
   onMove,
   onClear,
-  onUndo,
-  canUndo,
 }: {
   count: number;
   error: string | null;
   onMove: (movement: OnsetMovement) => void;
   onClear: () => void;
-  onUndo: () => void;
-  canUndo: boolean;
 }) {
   if (count === 0) return null;
 
@@ -67,15 +63,6 @@ export function SelectionBar({
           Temizle
         </button>
 
-        <button
-          type="button"
-          onClick={onUndo}
-          disabled={!canUndo}
-          aria-label="Son değişikliği geri al"
-          className="border-line text-muted flex min-h-11 min-w-11 items-center justify-center rounded-lg border text-base disabled:opacity-40"
-        >
-          <span aria-hidden>&#8630;</span>
-        </button>
       </div>
     </div>
   );

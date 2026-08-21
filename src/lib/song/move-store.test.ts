@@ -49,7 +49,7 @@ function moveOn(
     origins,
     movement,
   });
-  if (result.ok) store.commit(result.song);
+  if (result.ok) store.commit(result.song, { kind: "group_move" });
   return result;
 }
 

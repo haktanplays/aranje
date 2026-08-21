@@ -21,10 +21,14 @@ import { touchesOnlyTarget } from "@/lib/copilot/preview";
 import { lockedFor } from "@/lib/copilot/ui-options";
 import { applyEdit } from "@/lib/song/edit";
 import { createSongStore } from "@/lib/song/song-store";
+import type { HistoryAction } from "@/lib/song/edit-history";
 import { SONG_KEY, type StorageLike } from "@/lib/song/storage";
 import type { ArrangeSkill, CopilotRequest } from "@/lib/copilot/contract";
 import type { Song } from "@/lib/song/schema";
 import { HARMONY_SONG, TEST_SONG, mainSection } from "@/test/copilot-fixtures";
+
+/** Any edit will do for these; the store cares that it was told, not which. */
+const NOTE_EDIT: HistoryAction = { kind: "note_edit" };
 
 const SECTION_ID = mainSection().id;
 
@@ -98,7 +102,7 @@ describe("the vertical slice", () => {
       expect(store.getSnapshot().song).toBe(entry.song);
 
       expect(canApply(state, store.getSnapshot().song)).toBe(true);
-      store.commit(state.candidate!);
+      store.commit(state.candidate!, NOTE_EDIT);
 
       const written = store.getSnapshot().song;
       expect(written).not.toBe(entry.song);
@@ -139,7 +143,7 @@ describe("the vertical slice", () => {
     });
     expect(edited.ok).toBe(true);
     if (!edited.ok) return;
-    store.commit(edited.song);
+    store.commit(edited.song, NOTE_EDIT);
 
     expect(isStale(state, store.getSnapshot().song)).toBe(true);
     expect(canApply(state, store.getSnapshot().song)).toBe(false);
@@ -155,11 +159,11 @@ describe("the vertical slice", () => {
       fret: 5,
     });
     if (!edited.ok) return;
-    store.commit(edited.song);
+    store.commit(edited.song, NOTE_EDIT);
 
     const state = await readyState(store.getSnapshot().song, "drums", "drums");
     expect(canApply(state, store.getSnapshot().song)).toBe(true);
-    store.commit(state.candidate!);
+    store.commit(state.candidate!, NOTE_EDIT);
 
     store.undo();
     expect(store.getSnapshot().song).toEqual(edited.song);
