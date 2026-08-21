@@ -70,6 +70,16 @@
       "normalizationApplied": "whole_answer_fence_unwrap",
       "rawSha256": "69c82d26ba14db81c120f8674cd61b5ca50480b6e578aa73e9c4d9b2afa70931",
       "normalizedSha256": "d1da514de438bcadd01cbb4f0efb3877823471d3733d0da0bff912502920d27e"
+    },
+    {
+      "stage": "turn-5",
+      "attempt": 0,
+      "outcome": "accepted",
+      "failure": null,
+      "reason": null,
+      "normalizationApplied": null,
+      "rawSha256": "31f16798717e26359605687e99116d8a82bf7ac39f482a9eab9bef7f31b3f220",
+      "normalizedSha256": "31f16798717e26359605687e99116d8a82bf7ac39f482a9eab9bef7f31b3f220"
     }
   ]
 }

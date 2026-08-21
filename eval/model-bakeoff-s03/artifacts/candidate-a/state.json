@@ -1674,21 +1674,87 @@
           "resolution": 16,
           "slots": {
             "rhythm_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  },
+                  {
+                    "pitch": "E3",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 84,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 80,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 82,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 78,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  },
+                  {
+                    "pitch": "E3",
+                    "velocity": 110,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
               null
             ],
             "lead_guitar": [
@@ -1737,21 +1803,87 @@
           "resolution": 16,
           "slots": {
             "rhythm_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 80,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  },
+                  {
+                    "pitch": "E3",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 82,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 78,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 110,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 80,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 115,
+                    "articulation": "accent"
+                  },
+                  {
+                    "pitch": "G3",
+                    "velocity": 108,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
               null
             ],
             "lead_guitar": [
@@ -1800,22 +1932,96 @@
           "resolution": 16,
           "slots": {
             "rhythm_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  },
+                  {
+                    "pitch": "E3",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 84,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 80,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 82,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 90,
+                    "articulation": "hammer_on"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  },
+                  {
+                    "pitch": "G3",
+                    "velocity": 108,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 86,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              }
             ],
             "lead_guitar": [
               null,
@@ -1863,30 +2069,115 @@
           "resolution": 24,
           "slots": {
             "rhythm_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 118,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 80,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 78,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 114,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 82,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 78,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 116,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 88,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 80,
+                    "articulation": "palm_mute"
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 120,
+                    "articulation": "vibrato"
+                  },
+                  {
+                    "pitch": "F#3",
+                    "velocity": 112,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
             ],
             "lead_guitar": [
               null,

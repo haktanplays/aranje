@@ -60,5 +60,16 @@
     "touchedBars": 4,
     "explanation": "Bar 1 crash+kick ile tam slam. 2 ve 4'te sabit backbeat, 8'lik hat: 4/4 groove korunuyor. Kick sadece gitarin onemli aksanlarinda (0, 3, gecikmeli 9) oturuyor; her onset takip edilmiyor, susler acik kaliyor. Bar 3 open_hat ile gerilim artiyor. Bar 4'te 1/32 gridde gecikmeli kick+snare vurusu ve kisa tom fill'i, son crash ile bolumu kapatiyor.",
     "warnings": []
+  },
+  {
+    "turn": 5,
+    "label": "Bridge / rhythm_guitar",
+    "role": "rhythm_guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p5-1",
+    "touchedBars": 4,
+    "explanation": "Break hucresi dorduncu yukari tasinip A2 pedaline oturdu; ikinci barda sekizlik kaydirilarak gelisti. Palm mute dokusu icinde accent noktalari sabit kaldi, C3 gerilimi ekledi. Bar 3'te acik A'dan B2'ye hammer_on ile kisa yukselis var. Uclemeli son barda motif sikisip cozulmeyen B2+F#3 uzerinde asili kaliyor, Solo'ya gerilim birakiyor.",
+    "warnings": []
   }
 ]
