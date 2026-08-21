@@ -5965,22 +5965,48 @@
               null
             ],
             "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "G3",
+                    "velocity": 62,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "B3",
+                    "velocity": 64,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F#3",
+                    "velocity": 58,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "A3",
+                    "velocity": 60,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
             ]
           }
         },
@@ -6074,22 +6100,48 @@
               null
             ],
             "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "E3",
+                    "velocity": 60,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "G3",
+                    "velocity": 62,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 56,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "B3",
+                    "velocity": 58,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
             ]
           }
         },
@@ -6183,22 +6235,48 @@
               null
             ],
             "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "E3",
+                    "velocity": 58,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "C4",
+                    "velocity": 60,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "G3",
+                    "velocity": 55,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "B3",
+                    "velocity": 57,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
             ]
           }
         },
@@ -6292,22 +6370,35 @@
               null
             ],
             "harmony": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "F#3",
+                    "velocity": 52,
+                    "articulation": "sustain"
+                  },
+                  {
+                    "pitch": "D4",
+                    "velocity": 54,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
             ]
           }
         },

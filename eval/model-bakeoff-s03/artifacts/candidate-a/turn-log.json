@@ -217,5 +217,69 @@
         "message": "\"Acoustic Bridge\" bölümü, bar 5, slot 13: A4 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
       }
     ]
+  },
+  {
+    "turn": 13,
+    "label": "Acoustic Outro / acoustic_guitar",
+    "role": "acoustic_guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p13-1",
+    "touchedBars": 6,
+    "explanation": "Onceki bolumun E2-B2-E3-G3-B3-E4-F#3-E3 arpeji ayni sekizlik akisla surer; ust E4 chime yalniz ilk uc barda kalir. 3. barda D4 tepe noktasindan sonra E3-F#3 hammer_on ile ikinci derece one cikar. Son iki barda ikinci ses tamamen duser, dokum ceyreklige inip iskelete kalir; kapanis E2/B2 uzerinde F#3 cinlayarak, tonige oturur ama aydinlanmaz.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 7, slot 13: B3 notasındaki Slide için önceki nota aynı telde değil; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 4, slot 9: B5 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Acoustic Bridge\" bölümü, bar 5, slot 13: A4 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Acoustic Outro\" bölümü, bar 4, slot 15: F#3 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
+  },
+  {
+    "turn": 14,
+    "label": "Acoustic Outro / harmony",
+    "role": "harmony",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p14-1",
+    "touchedBars": 6,
+    "explanation": "Ikinci akustik ses, ana partinin arpejini ortmeden 1. ve 3. vuruslarda uzayan tonal ucler/altilarla hareket ediyor; paralel tasima yok, ust ses B-A-G-D dogrultusunda inen bir cizgi kuruyor. 4. barda F#-D uzatilarak ikinci derece cinlar kalir; motif iskelete indigi icin son iki barda bu ses tamamen susar.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 7, slot 13: B3 notasındaki Slide için önceki nota aynı telde değil; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 4, slot 9: B5 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Acoustic Bridge\" bölümü, bar 5, slot 13: A4 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Acoustic Outro\" bölümü, bar 4, slot 15: F#3 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
   }
 ]
