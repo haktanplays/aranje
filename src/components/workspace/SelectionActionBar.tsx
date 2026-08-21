@@ -3,10 +3,19 @@
 /**
  * What you can do with a selection (spec 13.1).
  *
- * Seven primary actions, fixed, plus a "Daha fazla" sheet for the rest. They
- * stay on one row at 320px because the row scrolls nothing: adding a second
- * horizontal scroller to a screen whose tab is deliberately the only one is
- * how a reader loses track of which thing their finger is moving.
+ * Seven primary actions, fixed, plus a "Daha fazla" sheet for the rest.
+ *
+ * Four columns, so the seven wrap to two rows. One row was the first attempt
+ * and it does not survive arithmetic: seven 44px targets with gaps and padding
+ * need 348px, and the narrowest screen this pilot supports is 320. The row did
+ * fit — by letting every button shrink to 40px wide, which is under the
+ * minimum and was measured that way on a real 320px viewport. Wrapping is what
+ * gives up; the touch target is not the thing to give up, and neither is the
+ * rule that this screen has exactly one horizontal scroller, which is the tab.
+ *
+ * The column count does not change with the viewport. A toolbar that reflows
+ * between phones is a toolbar whose buttons are somewhere else on a friend's
+ * screen, and these seven are meant to be found without looking.
  *
  * Every control is a real button with a real name. Nothing here is a bare icon
  * with a tooltip, because a tooltip is not available to a finger.
@@ -84,7 +93,7 @@ export function SelectionActionBar({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-7 gap-1 p-2">
+      <div className="grid grid-cols-4 gap-1 p-2">
         {PRIMARY.map((entry) => (
           <button
             key={entry.action}
@@ -93,7 +102,10 @@ export function SelectionActionBar({
             onClick={() => onAction(entry.action)}
             aria-label={entry.label}
             className="border-app flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight"
-            style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: 0 }}
+            style={{
+              minHeight: MIN_TOUCH_TARGET_PX,
+              minWidth: MIN_TOUCH_TARGET_PX,
+            }}
           >
             <span className="truncate">{entry.label}</span>
           </button>

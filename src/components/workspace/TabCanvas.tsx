@@ -305,6 +305,7 @@ export function TabCanvas({
                       onCellSelect?.({ ...cell, barKey: bar.key })
                     }
                     onsets={onsetsForBar?.(bar) ?? null}
+                    timeSelectionOwnsPress={onSlotLongPress !== undefined}
                   />
                 </BarSlot>
               ))

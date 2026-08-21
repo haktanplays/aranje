@@ -17,6 +17,7 @@ import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 import { pitchToMidi } from "@/lib/music/pitch";
+import { LONG_PRESS_MS } from "@/lib/ui/interaction";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
 
@@ -50,8 +51,6 @@ export function risingAt(
   return to > from;
 }
 
-/** How long a press has to be held before it means "select this chord". */
-export const LONG_PRESS_MS = 400;
 
 /** What the bar knows about the group selection sitting on it (spec 13.1). */
 export type OnsetSelection = {
@@ -75,6 +74,7 @@ export function FrettedBarBlock({
   selectedCell = null,
   onCellSelect,
   onsets = null,
+  timeSelectionOwnsPress = false,
 }: {
   bar: FrettedBar;
   stringCount: number;
@@ -87,6 +87,17 @@ export function FrettedBarBlock({
   selectedCell?: CellSelection | null;
   onCellSelect?: (cell: CellSelection) => void;
   onsets?: OnsetSelection | null;
+  /**
+   * True when the time selection (spec 13.1) is listening for the same hold.
+   *
+   * Two selection models cannot both answer one finger. Held on an onset, the
+   * press used to arm this block's chord pick *and* the time selection, so a
+   * single hold produced a green group ring and a time band at once — two
+   * different answers to one gesture, at two different thresholds. The newer
+   * model owns the hold wherever it is live; the chord pick keeps it only on
+   * the surfaces where it is not, such as while a Copilot preview is open.
+   */
+  timeSelectionOwnsPress?: boolean;
 }) {
   const width = barWidth(bar.slotCount);
   const staffHeight = stringCount * STRING_ROW_HEIGHT;
@@ -104,6 +115,7 @@ export function FrettedBarBlock({
 
   const startHold = useCallback(
     (slotIndex: number) => {
+      if (timeSelectionOwnsPress) return;
       if (!onsets?.onsetSlots.has(slotIndex)) return;
       held.current = false;
       cancelHold();
@@ -112,7 +124,7 @@ export function FrettedBarBlock({
         onsets.onLongPress(slotIndex);
       }, LONG_PRESS_MS);
     },
-    [cancelHold, onsets],
+    [cancelHold, onsets, timeSelectionOwnsPress],
   );
 
   const Frame = editing ? "div" : "button";

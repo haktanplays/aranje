@@ -16,13 +16,43 @@
  *   gesture is a scroll — cancels too, so a press that the platform took over
  *   never half-commits.
  *
- * Nothing here calls `preventDefault`. Blocking the default would make the tab
- * stop scrolling under a finger that was only ever going to scroll it.
+ * Nothing here calls `preventDefault` on the pointer events themselves.
+ * Blocking the default would make the tab stop scrolling under a finger that
+ * was only ever going to scroll it. The *click* the browser makes afterwards
+ * is a different matter — see `swallowNextClick`.
  */
 import { useCallback, useEffect, useRef } from "react";
 
-import { LONG_PRESS_MS } from "@/lib/ui/interaction";
+import { CLICK_AFTER_PRESS_MS, LONG_PRESS_MS } from "@/lib/ui/interaction";
 import { movedTo, press, type PressState } from "@/lib/ui/long-press-machine";
+
+/**
+ * Throw away the click a finished long press leaves behind.
+ *
+ * A touch that ends produces a click, and the browser aims that click at
+ * whatever is under the finger *when it lands* — not at what was under it when
+ * the finger went down. A long press that opens a toolbar therefore hands the
+ * toolbar a click on whichever of its buttons happens to appear under the
+ * finger. That is not a hypothetical: at 320x700 the selection toolbar puts
+ * "Taşı" exactly where a note in the lower half of the tab is, so selecting
+ * that note opened the move sheet on its own.
+ *
+ * The press has already been spent on the selection, so the click means
+ * nothing and is stopped in the capture phase, before React's root listener
+ * and therefore before any control's handler runs. The window is short and
+ * expires on its own, because a click does not always follow a touch.
+ */
+function swallowNextClick(): void {
+  if (typeof document === "undefined") return;
+  const stop = (event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+  document.addEventListener("click", stop, { capture: true, once: true });
+  setTimeout(() => {
+    document.removeEventListener("click", stop, { capture: true });
+  }, CLICK_AFTER_PRESS_MS);
+}
 
 export type LongPressHandlers = {
   onPointerDown(event: React.PointerEvent): void;
@@ -40,6 +70,8 @@ export function useLongPress(
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The decision itself lives in the pure machine; this only holds it. */
   const state = useRef<PressState>({ kind: "idle" });
+  /** Whether this gesture already became a selection, so its click is spent. */
+  const fired = useRef(false);
 
   const cancel = useCallback(() => {
     if (timer.current !== null) clearTimeout(timer.current);
@@ -54,12 +86,14 @@ export function useLongPress(
     (event: React.PointerEvent) => {
       if (!enabled) return;
       cancel();
+      fired.current = false;
       const point = { x: event.clientX, y: event.clientY };
       state.current = press(point.x, point.y, 0);
       timer.current = setTimeout(() => {
         timer.current = null;
         if (state.current.kind !== "pressing") return;
         state.current = { kind: "idle" };
+        fired.current = true;
         onLongPress({ clientX: point.x, clientY: point.y });
       }, LONG_PRESS_MS);
     },
@@ -80,11 +114,23 @@ export function useLongPress(
     [],
   );
 
+  /*
+   * Lifting after a press that fired: the selection is made, so the click that
+   * follows is disowned. A cancelled gesture needs none of this — the browser
+   * that sends `pointercancel` is not going to send a click either.
+   */
+  const onPointerUp = useCallback(() => {
+    const spent = fired.current;
+    cancel();
+    fired.current = false;
+    if (spent) swallowNextClick();
+  }, [cancel]);
+
   return {
     onPointerDown,
     onPointerMove,
-    onPointerUp: cancel,
+    onPointerUp,
     onPointerCancel: cancel,
-    onPointerLeave: cancel,
+    onPointerLeave: onPointerUp,
   };
 }

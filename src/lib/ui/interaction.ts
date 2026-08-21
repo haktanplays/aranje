@@ -30,3 +30,12 @@ export const MIN_TOUCH_TARGET_PX = 44;
 
 /** Width of a selection handle's grab area. Meets the touch target minimum. */
 export const SELECTION_HANDLE_WIDTH_PX = MIN_TOUCH_TARGET_PX;
+
+/**
+ * How long to keep disowning the click a finished long press leaves behind.
+ *
+ * The click follows the touch that ends the press within a frame or two; the
+ * window only has to outlast that, and has to expire on its own because a
+ * touch does not always produce a click at all.
+ */
+export const CLICK_AFTER_PRESS_MS = 400;

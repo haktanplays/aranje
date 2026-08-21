@@ -71,6 +71,27 @@ import { applyTransform } from "@/lib/song/transform";
 void applyTransform;' \
   "$U src/lib/song/transform-boundary.test.ts"
 
+# 10 — the chord pick must stand down where the time selection is live
+probe "10 two selection models answer one hold" \
+  src/components/workspace/FrettedBarBlock.tsx \
+  '      if (timeSelectionOwnsPress) return;' \
+  '' \
+  "$U src/lib/ui/interaction-boundary.test.ts"
+
+# 11 — the threshold lives in exactly one file
+probe "11 a component keeps its own threshold" \
+  src/components/workspace/FrettedBarBlock.tsx \
+  'import { LONG_PRESS_MS } from "@/lib/ui/interaction";' \
+  'const LONG_PRESS_MS = 400;' \
+  "$U src/lib/ui/interaction-boundary.test.ts"
+
+# 12 — the click a spent press leaves behind must be disowned
+probe "12 spent press leaves a live click" \
+  src/lib/ui/use-long-press.ts \
+  '    if (spent) swallowNextClick();' \
+  '' \
+  "$U src/lib/ui/interaction-boundary.test.ts"
+
 # 9 — no diagnostic may reach the reader
 probe "9 diagnostic leaks into a message" \
   src/lib/song/transform-messages.ts \
@@ -103,7 +124,10 @@ PY
     if [ $? -ne 0 ]; then echo "SKIP  $name (anchor)"; mv "$file.probebak" "$file"; return; fi
 
     npm run build >/dev/null 2>&1
-    for pid in $(pgrep -f "next-server"); do kill -9 "$pid" 2>/dev/null; done
+    # The bracket is not cosmetic: `pgrep -f next-server` matches the shell
+    # running this very line, so the plain pattern kills its own parent and the
+    # probe run dies half way through looking like a hang.
+    pkill -f '[n]ext-server' 2>/dev/null || true
     sleep 1
     (npx next start -p 3100 >/dev/null 2>&1 &)
     until curl -s -m 2 -o /dev/null http://127.0.0.1:3100/; do sleep 1; done
@@ -116,6 +140,23 @@ PY
     fi
     mv "$file.probebak" "$file"
   }
+
+  # 13 — the touch target minimum has to be measured in both directions
+  #
+  # This is the probe that would have caught the 40px-wide row on the day it
+  # shipped. The check it aims at used to measure height only.
+  bprobe "13 seven targets squeezed into one row" \
+    src/components/workspace/SelectionActionBar.tsx \
+    '<div className="grid grid-cols-4 gap-1 p-2">' \
+    '<div className="grid grid-cols-7 gap-1 p-2">' \
+    "action targets >=44x44px"
+
+  # 14 — the click a spent press leaves behind must not reach a control
+  bprobe "14 spent press opens a sheet by itself" \
+    src/lib/ui/use-long-press.ts \
+    '    if (spent) swallowNextClick();' \
+    '' \
+    "23 press alone opens no sheet"
 
   # 2 — a ghost preview must never write
   bprobe "2 ghost preview writes to the song" \

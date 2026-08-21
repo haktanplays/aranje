@@ -39,9 +39,27 @@ mkdirSync(OUT, { recursive: true });
 const FIXTURE = readFileSync("eval/selection-ui/fixture-song.json", "utf8").trim();
 
 const results = [];
+const measurements = {};
+
+/*
+ * Write the results file after every check rather than once at the end. A
+ * viewport that hangs used to take the whole record down with it: the run was
+ * killed by its outer timeout and left no evidence of the forty checks that
+ * had already passed. Sixty small writes cost nothing, and the artefact then
+ * always reflects how far the run actually got.
+ */
+function flush() {
+  const failed = results.filter((entry) => !entry.pass);
+  writeFileSync(
+    `${OUT}/RESULTS.json`,
+    `${JSON.stringify({ results, measurements, failed: failed.length }, null, 2)}\n`,
+  );
+}
+
 const record = (name, pass, detail = "") => {
   results.push({ name, pass, detail });
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  — ${detail}` : ""}`);
+  flush();
 };
 
 /** One scenario may fail without taking the rest of the run down with it. */
@@ -252,13 +270,20 @@ async function enterEditMode(page) {
 
 async function run() {
   const browser = await chromium.launch();
-  const measurements = {};
 
   for (const [label, size] of [
     ["390x844", { width: 390, height: 844 }],
     ["320x700", { width: 320, height: 700 }],
   ]) {
     const { context, page, cdp } = await openApp(browser, size);
+    /*
+     * Everything from here to the close is one protected pass. Individual
+     * scenarios already guard themselves with `safe`, but the connective
+     * tissue between them — opening a sheet, reselecting after a delete —
+     * did not, and a single locator timeout in the second viewport threw
+     * past every remaining check.
+     */
+    try {
     await enterEditMode(page);
 
     // ---- 1. long press selects one onset
@@ -270,11 +295,35 @@ async function run() {
 
     if (!selected) {
       await page.screenshot({ path: `${OUT}/${label}-no-selection.png` });
-      await context.close();
       continue;
     }
 
     record(`[${label}] action bar appears`, await barVisible(page));
+
+    /*
+     * One finger, one answer.
+     *
+     * The chord-group pick from 2E and the time selection were both listening
+     * for the same hold at two different thresholds, so a single press drew a
+     * green group ring over six cells *and* a time band. Neither of those is
+     * visible in a check that only asks whether the band appeared.
+     */
+    const groupRings = await page.evaluate(
+      () => document.querySelectorAll("[data-group-selected]").length,
+    );
+    record(`[${label}] 23 one press selects one way`, groupRings === 0, `${groupRings} group rings`);
+
+    /*
+     * The click a finished press leaves behind is aimed at whatever is under
+     * the finger when it lands, which is the toolbar that just appeared. At
+     * 320px that put "Taşı" under the finger and the move sheet opened by
+     * itself.
+     */
+    const strayDialog = await page.evaluate(() => {
+      const dialog = document.querySelector("[role=dialog]");
+      return dialog ? dialog.innerText.split("\n")[0] : null;
+    });
+    record(`[${label}] 23 press alone opens no sheet`, strayDialog === null, strayDialog ?? "none");
 
     // ---- summary is human, not technical
     const summary = await page.locator("[data-testid=selection-summary]").innerText();
@@ -328,7 +377,6 @@ async function run() {
     record(`[${label}] reselect after delete`, reselected);
     if (!reselected) {
       await page.screenshot({ path: `${OUT}/${label}-reselect-failed.png` });
-      await context.close();
       continue;
     }
     await page.locator("[data-testid=selection-action-move]").click();
@@ -439,12 +487,27 @@ async function run() {
     await page.screenshot({ path: `${OUT}/${label}-selection.png` });
 
     // ---- touch target sizes on the action bar
-    const small = await page.evaluate(() =>
+    /*
+     * Both dimensions. Measuring height alone is how seven buttons squeezed
+     * into a 320px row passed this check at 40px wide for a whole run: every
+     * one of them was 44px tall.
+     */
+    const sizes = await page.evaluate(() =>
       [...document.querySelectorAll("[data-testid^=selection-action-]")]
-        .map((node) => node.getBoundingClientRect())
-        .filter((rect) => rect.height < 43.5).length,
+        .filter((node) => node.tagName === "BUTTON")
+        .map((node) => {
+          const rect = node.getBoundingClientRect();
+          return { id: node.dataset.testid, w: Math.round(rect.width), h: Math.round(rect.height) };
+        }),
     );
-    record(`[${label}] action targets >=44px`, small === 0, `${small} under`);
+    const small = sizes.filter((box) => box.w < 43.5 || box.h < 43.5);
+    record(
+      `[${label}] action targets >=44x44px`,
+      small.length === 0,
+      small.length > 0
+        ? small.map((box) => `${box.id} ${box.w}x${box.h}`).join(", ")
+        : `${sizes.length} buttons, smallest ${Math.min(...sizes.map((b) => b.w))}x${Math.min(...sizes.map((b) => b.h))}`,
+    );
 
     // ---- 22. changing track clears the selection
     await safe(`[${label}] 22 track change clears selection`, async () => {
@@ -588,16 +651,23 @@ async function run() {
     record(`[${label}] no console errors`, errors.length === 0, errors.slice(0, 2).join(" | "));
 
     measurements[label] = { overflow, summary };
-    await context.close();
+    record(`[${label}] viewport pass completed`, true);
+    } catch (error) {
+      record(
+        `[${label}] viewport pass completed`,
+        false,
+        String(error).split("\n")[0].slice(0, 90),
+      );
+      await page.screenshot({ path: `${OUT}/${label}-aborted.png` }).catch(() => {});
+    } finally {
+      await context.close();
+    }
   }
 
   await browser.close();
+  flush();
 
   const failed = results.filter((entry) => !entry.pass);
-  writeFileSync(
-    `${OUT}/RESULTS.json`,
-    `${JSON.stringify({ results, measurements, failed: failed.length }, null, 2)}\n`,
-  );
   console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
   if (failed.length > 0) process.exitCode = 1;
 }

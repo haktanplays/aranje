@@ -1,0 +1,391 @@
+{
+  "results": [
+    {
+      "name": "[390x844] 1 long press selects",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] action bar appears",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 23 one press selects one way",
+      "pass": true,
+      "detail": "0 group rings"
+    },
+    {
+      "name": "[390x844] 23 press alone opens no sheet",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "[390x844] summary is non-technical",
+      "pass": true,
+      "detail": "1 power chord şekli · 1 ölçü"
+    },
+    {
+      "name": "[390x844] band has width",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "name": "[390x844] 20 copy writes nothing",
+      "pass": true,
+      "detail": "1->1"
+    },
+    {
+      "name": "[390x844] 21a delete commits once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] reselect after delete",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] ghost preview writes nothing",
+      "pass": true,
+      "detail": "1 taps, 2->2"
+    },
+    {
+      "name": "[390x844] 16 ghost explains the outcome",
+      "pass": true,
+      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu zorla"
+    },
+    {
+      "name": "[390x844] move mode time >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[390x844] move mode pitch >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[390x844] move mode string >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[390x844] move mode shape >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[390x844] no body horizontal overflow (sheet open)",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] 25 one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 21 many nudges commit once",
+      "pass": true,
+      "detail": "1 taps, writes 2->3"
+    },
+    {
+      "name": "[390x844] song actually changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 7 undo restores byte-identical song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] cancel writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] action targets >=44x44px",
+      "pass": true,
+      "detail": "7 buttons, smallest 91x44"
+    },
+    {
+      "name": "[390x844] 22 track change clears selection",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 24 short tap does not select",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] drag scrolls rather than selects",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 2 chord selected as a group",
+      "pass": true,
+      "detail": "1 power chord şekli · 1 ölçü"
+    },
+    {
+      "name": "[390x844] 3 shape ghost writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 3 shape translation commits once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] 3 shape translation changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 13 transpose by a half step previews without writing",
+      "pass": true,
+      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu"
+    },
+    {
+      "name": "[390x844] 13 transpose by an octave previews without writing",
+      "pass": true,
+      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu"
+    },
+    {
+      "name": "[390x844] 14 same pitch on another string previews without writing",
+      "pass": true,
+      "detail": "Bu şekil mevcut akort ve capo ile çalına"
+    },
+    {
+      "name": "[390x844] 8 duplicate writes at most once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[390x844] 9 repeat ghost writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 9 repeat refused with a reason",
+      "pass": true,
+      "detail": "not applicable here"
+    },
+    {
+      "name": "[390x844] no console errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] viewport pass completed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 1 long press selects",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] action bar appears",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 23 one press selects one way",
+      "pass": true,
+      "detail": "0 group rings"
+    },
+    {
+      "name": "[320x700] 23 press alone opens no sheet",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "[320x700] summary is non-technical",
+      "pass": true,
+      "detail": "1 power chord şekli · 1 ölçü"
+    },
+    {
+      "name": "[320x700] band has width",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "name": "[320x700] 20 copy writes nothing",
+      "pass": true,
+      "detail": "1->1"
+    },
+    {
+      "name": "[320x700] 21a delete commits once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] reselect after delete",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] ghost preview writes nothing",
+      "pass": true,
+      "detail": "1 taps, 2->2"
+    },
+    {
+      "name": "[320x700] 16 ghost explains the outcome",
+      "pass": true,
+      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu zorla"
+    },
+    {
+      "name": "[320x700] move mode time >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[320x700] move mode pitch >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[320x700] move mode string >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[320x700] move mode shape >=44px",
+      "pass": true,
+      "detail": "44px"
+    },
+    {
+      "name": "[320x700] no body horizontal overflow (sheet open)",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] 25 one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 21 many nudges commit once",
+      "pass": true,
+      "detail": "1 taps, writes 2->3"
+    },
+    {
+      "name": "[320x700] song actually changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 7 undo restores byte-identical song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] cancel writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] action targets >=44x44px",
+      "pass": true,
+      "detail": "7 buttons, smallest 73x44"
+    },
+    {
+      "name": "[320x700] 22 track change clears selection",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 24 short tap does not select",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] drag scrolls rather than selects",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 2 chord selected as a group",
+      "pass": true,
+      "detail": "1 power chord şekli · 1 ölçü"
+    },
+    {
+      "name": "[320x700] 3 shape ghost writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 3 shape translation commits once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] 3 shape translation changed the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 13 transpose by a half step previews without writing",
+      "pass": true,
+      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu"
+    },
+    {
+      "name": "[320x700] 13 transpose by an octave previews without writing",
+      "pass": true,
+      "detail": "Uygulanabilir. Birkaç yerde el pozisyonu"
+    },
+    {
+      "name": "[320x700] 14 same pitch on another string previews without writing",
+      "pass": true,
+      "detail": "Bu şekil mevcut akort ve capo ile çalına"
+    },
+    {
+      "name": "[320x700] 8 duplicate writes at most once",
+      "pass": true,
+      "detail": "1->2"
+    },
+    {
+      "name": "[320x700] 9 repeat ghost writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 9 repeat refused with a reason",
+      "pass": true,
+      "detail": "not applicable here"
+    },
+    {
+      "name": "[320x700] no console errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] viewport pass completed",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "measurements": {
+    "390x844": {
+      "overflow": {
+        "body": 0,
+        "scrollers": 1
+      },
+      "summary": "1 power chord şekli · 1 ölçü"
+    },
+    "320x700": {
+      "overflow": {
+        "body": 0,
+        "scrollers": 1
+      },
+      "summary": "1 power chord şekli · 1 ölçü"
+    }
+  },
+  "failed": 0
+}
