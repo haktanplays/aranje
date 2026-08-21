@@ -113,5 +113,29 @@
         "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
       }
     ]
+  },
+  {
+    "turn": 9,
+    "label": "Solo / rhythm_guitar",
+    "role": "rhythm_guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p9-1",
+    "touchedBars": 8,
+    "explanation": "Solo altinda seyrek E pedal riff: lead yalniz girsin diye bar 1 ikinci vurusta katiliyor. Motif palm mute gallop olarak kuruluyor, bar 3'te 1/32 ile asagi sekanslaniyor, bar 6'da C (flat sixth) guc akoruyla tepe yapip B'ye iniyor. Bar 7'de tek ve genis bir slide (B2'den B3'e, uzun kuyruk birakildi), kapanis B+F# vibratoyla akustik bolume asiliyor.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 7, slot 13: B3 notasındaki Slide için önceki nota aynı telde değil; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 4, slot 9: B5 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
   }
 ]
