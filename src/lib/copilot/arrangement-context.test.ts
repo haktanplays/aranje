@@ -167,3 +167,56 @@ describe("refusals", () => {
     expect(context("drums", "one", "nobody")).toBeNull();
   });
 });
+
+describe("source context comes from what is actually sounding (K-35)", () => {
+  /**
+   * A song whose second guitar exists but plays nothing in the section.
+   *
+   * This is the shape S-03 hit: `guitars.slice(0, 1)` handed the harmony turn
+   * a guitar that was silent for the whole section and told it not to cover a
+   * part it could not hear. The fixture has to contain that silent track, or
+   * the test proves nothing.
+   */
+  function withSilentGuitar(): Song {
+    const acoustic = { ...GUITAR!, id: "acc", instrumentId: "steel_acoustic" };
+    const base = twoSections();
+    return songSchema.parse({
+      ...base,
+      tracks: [...base.tracks, acoustic],
+    });
+  }
+
+  const sourcesFrom = (skill: ArrangeSkill, targetTrackId: string) =>
+    buildArrangementContext(withSilentGuitar(), "one", targetTrackId, skill)
+      ?.sources.map((source) => source.label) ?? [];
+
+  it("the fixture really does carry a silent second guitar", () => {
+    const song = withSilentGuitar();
+    expect(song.tracks.some((track) => track.id === "acc")).toBe(true);
+    const section = song.sections.find((s) => s.id === "one");
+    expect(section?.bars.every((bar) => bar.slots.acc === undefined)).toBe(true);
+  });
+
+  it("never offers a track that is silent in the target section", () => {
+    for (const [skill, target] of [
+      ["lead_guitar", "gtr"],
+      ["rhythm_guitar", "gtr"],
+      ["harmony", "gtr"],
+      ["bass", "bass"],
+    ] as const) {
+      expect(sourcesFrom(skill, target)).not.toContain("gitar (acc)");
+    }
+  });
+
+  it("still keeps pitch away from a drum turn", () => {
+    const ctx = buildArrangementContext(withSilentGuitar(), "one", "drums", "drums");
+    const text = JSON.stringify(ctx?.sources);
+    for (const pitch of ["E2", "G2", "A2", "B2", "D3"]) {
+      expect(text).not.toContain(pitch);
+    }
+  });
+
+  it("gives a riff turn the groove", () => {
+    expect(sourcesFrom("rhythm_guitar", "gtr")).toContain("ritim (drums)");
+  });
+});
