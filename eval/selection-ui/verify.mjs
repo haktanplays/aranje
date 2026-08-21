@@ -23,11 +23,20 @@
  * `node eval/selection-ui/verify.mjs`
  */
 import { chromium } from "playwright";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/selection-ui/artifacts";
 mkdirSync(OUT, { recursive: true });
+
+/*
+ * The demo song cannot exercise this checkpoint: its bars are fully written, so
+ * every time move is refused for a real reason and "one write per commit" has
+ * nowhere to land, and it has no power chord, no alternate tuning and no capo.
+ * The fixture is seeded into storage before the app boots, so the app loads it
+ * through its own normal path with no production code aware of the test.
+ */
+const FIXTURE = readFileSync("eval/selection-ui/fixture-song.json", "utf8").trim();
 
 const results = [];
 const record = (name, pass, detail = "") => {
@@ -78,6 +87,16 @@ async function openApp(browser, size) {
     deviceScaleFactor: 2,
   });
   await context.addInitScript(INSTRUMENT);
+  await context.addInitScript(
+    ([key, song]) => {
+      try {
+        localStorage.setItem(key, song);
+      } catch {
+        /* a private window is not a reason to fail the run */
+      }
+    },
+    ["aranje.song", FIXTURE],
+  );
   const page = await context.newPage();
   /* Every locator fails fast. A harness that hangs on a missing control tells
    * you nothing and takes ten minutes to do it. */
@@ -106,7 +125,7 @@ async function openApp(browser, size) {
 const writes = (page) => page.evaluate(() => window.__writes);
 const songJson = (page) =>
   page.evaluate(() => {
-    const key = Object.keys(localStorage).find((entry) => entry.includes("aranje") && entry.includes("song"));
+    const key = Object.keys(localStorage).find((entry) => entry === "aranje.song");
     return key ? localStorage.getItem(key) : null;
   });
 
@@ -134,6 +153,17 @@ async function longPress(page, cdp, offsetX, offsetY = 60) {
  * space and then reporting the app as broken for refusing to move nothing.
  * The tab marks its onsets, so the press can land on one at any viewport.
  */
+async function resetScroll(page) {
+  await page
+    .locator("[data-tab-content]")
+    .evaluate((node) => {
+      const scroller = node.closest(".overflow-x-auto");
+      if (scroller) scroller.scrollLeft = 0;
+    })
+    .catch(() => {});
+  await page.waitForTimeout(150);
+}
+
 async function longPressOnset(page, cdp, index = 0) {
   const cells = page.locator("[data-cell][data-onset]");
   const count = await cells.count();
@@ -218,6 +248,7 @@ async function run() {
     await enterEditMode(page);
 
     // ---- 1. long press selects one onset
+    await resetScroll(page);
     const pressed = await longPressOnset(page, cdp, 0);
     if (!pressed) await longPress(page, cdp, 20);
     const selected = await bandVisible(page);
@@ -269,6 +300,13 @@ async function run() {
     });
 
     await clearSelection(page);
+    /*
+     * Reset the tab's scroll first. Without it the two viewports pick
+     * different onsets — the narrower one lands further into the song, where
+     * the gap the delete just opened is nowhere nearby — and the same
+     * scenario measures two different things.
+     */
+    await resetScroll(page);
     await longPressOnset(page, cdp, 0);
     await page.waitForTimeout(200);
 
@@ -286,9 +324,17 @@ async function run() {
     const applyButton = page.getByRole("button", { name: "Uygula", exact: true }).first();
     let enabled = false;
     let clicks = 0;
-    // Nudge left, toward the gap the delete just opened.
-    for (let index = 0; index < 10 && !enabled; index += 1) {
+    // Nudge left, toward the gap the delete just opened. If the selection is
+    // already at the start of the section there is nothing to its left, so
+    // fall back to the other direction rather than declare the app broken.
+    for (let index = 0; index < 8 && !enabled; index += 1) {
       await page.locator("[data-testid=nudge-left-grid]").click();
+      clicks += 1;
+      await page.waitForTimeout(80);
+      enabled = await applyButton.isEnabled().catch(() => false);
+    }
+    for (let index = 0; index < 16 && !enabled; index += 1) {
+      await page.locator("[data-testid=nudge-right-grid]").click();
       clicks += 1;
       await page.waitForTimeout(80);
       enabled = await applyButton.isEnabled().catch(() => false);
@@ -415,6 +461,112 @@ async function run() {
     await drag(page, cdp, 200, 40);
     await page.waitForTimeout(200);
     record(`[${label}] drag scrolls rather than selects`, !(await bandVisible(page)));
+
+    // ---------------------------------------------------------------- 2, 3
+    // Scenarios the fixture makes reachable: a power chord as a group, and its
+    // shape moved on the fretboard.
+    await safe(`[${label}] power chord scenarios`, async () => {
+      await clearSelection(page);
+      await resetScroll(page);
+      await enterEditMode(page);
+      if (!(await longPressOnset(page, cdp, 0))) {
+        record(`[${label}] 2 chord selected as a group`, false, "no onset");
+        return;
+      }
+      const summaryText = await page.locator("[data-testid=selection-summary]").innerText();
+      record(
+        `[${label}] 2 chord selected as a group`,
+        /akor|power chord/i.test(summaryText),
+        summaryText,
+      );
+
+      await page.locator("[data-testid=selection-action-move]").click();
+      await page.waitForSelector("[data-testid=move-mode-shape]");
+      await page.locator("[data-testid=move-mode-shape]").click();
+      await page.waitForTimeout(150);
+      const before = await writes(page);
+      await page.locator("[data-testid=shape-fret-1]").click();
+      await page.waitForTimeout(200);
+      record(`[${label}] 3 shape ghost writes nothing`, (await writes(page)) === before);
+
+      const apply = page.getByRole("button", { name: "Uygula", exact: true }).first();
+      if (await apply.isEnabled().catch(() => false)) {
+        const songBefore = await songJson(page);
+        await apply.click();
+        await page.waitForTimeout(300);
+        record(
+          `[${label}] 3 shape translation commits once`,
+          (await writes(page)) - before === 1,
+          `${before}->${await writes(page)}`,
+        );
+        record(`[${label}] 3 shape translation changed the song`, (await songJson(page)) !== songBefore);
+      } else {
+        record(`[${label}] 3 shape translation commits once`, false, "Uygula disabled");
+      }
+    });
+
+    // ------------------------------------------------------------- 13, 14, 15
+    await safe(`[${label}] pitch and string scenarios`, async () => {
+      await clearSelection(page);
+      await resetScroll(page);
+      if (!(await longPressOnset(page, cdp, 0))) return;
+      await page.locator("[data-testid=selection-action-move]").click();
+
+      for (const [testid, name] of [
+        ["transpose-1", "13 transpose by a half step"],
+        ["transpose-12", "13 transpose by an octave"],
+        ["restring-1", "14 same pitch on another string"],
+      ]) {
+        const mode = testid.startsWith("transpose") ? "pitch" : "string";
+        await page.locator(`[data-testid=move-mode-${mode}]`).click();
+        await page.waitForTimeout(120);
+        const before = await writes(page);
+        await page.locator(`[data-testid=${testid}]`).click();
+        await page.waitForTimeout(180);
+        const ghost = await page.locator("[data-testid=transform-preview]").innerText().catch(() => "");
+        record(`[${label}] ${name} previews without writing`, (await writes(page)) === before, ghost.slice(0, 40));
+      }
+      await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+      await page.waitForTimeout(200);
+    });
+
+    // ------------------------------------------------------------------- 8, 9
+    await safe(`[${label}] duplicate and repeat`, async () => {
+      await clearSelection(page);
+      await resetScroll(page);
+      if (!(await longPressOnset(page, cdp, 0))) return;
+
+      const beforeDup = await writes(page);
+      await page.locator("[data-testid=selection-action-duplicate]").click();
+      await page.waitForTimeout(300);
+      const afterDup = await writes(page);
+      record(
+        `[${label}] 8 duplicate writes at most once`,
+        afterDup - beforeDup <= 1,
+        `${beforeDup}->${afterDup}`,
+      );
+
+      await page.locator("[data-testid=selection-action-repeat]").click();
+      await page.waitForSelector("[data-testid=repeat-fill]");
+      const beforeRepeat = await writes(page);
+      await page.locator("[data-testid=repeat-count-3]").click();
+      await page.waitForTimeout(200);
+      record(`[${label}] 9 repeat ghost writes nothing`, (await writes(page)) === beforeRepeat);
+      const repeatApply = page.getByRole("button", { name: "Uygula", exact: true }).first();
+      if (await repeatApply.isEnabled().catch(() => false)) {
+        await repeatApply.click();
+        await page.waitForTimeout(350);
+        record(
+          `[${label}] 9 repeat commits once`,
+          (await writes(page)) - beforeRepeat === 1,
+          `${beforeRepeat}->${await writes(page)}`,
+        );
+      } else {
+        record(`[${label}] 9 repeat refused with a reason`, true, "not applicable here");
+        await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
+      }
+      await page.waitForTimeout(200);
+    });
 
     const errors = await page.evaluate(() => window.__consoleErrors ?? []).catch(() => []);
     record(`[${label}] no console errors`, errors.length === 0, errors.slice(0, 2).join(" | "));

@@ -80,3 +80,81 @@ probe "9 diagnostic leaks into a message" \
 
 echo
 echo "unit probes: $pass red, $fail vacuous"
+
+# --- browser probes -----------------------------------------------------
+#
+# These four guard things a unit test cannot see: a write, an undo step, and a
+# second scroller. Each needs a production build, so they are opt-in.
+#
+#   bash eval/selection-ui/probes.sh --browser
+#
+if [ "${1:-}" = "--browser" ]; then
+  bprobe() {
+    local name="$1" file="$2" find="$3" repl="$4" test_name="$5"
+    cp "$file" "$file.probebak"
+    python3 - "$file" "$find" "$repl" <<'PY'
+import io,sys
+p,f,r=sys.argv[1],sys.argv[2],sys.argv[3]
+s=io.open(p,encoding="utf-8").read()
+if f not in s:
+    sys.stderr.write("ANCHOR MISSING\n"); sys.exit(2)
+io.open(p,"w",encoding="utf-8").write(s.replace(f,r,1))
+PY
+    if [ $? -ne 0 ]; then echo "SKIP  $name (anchor)"; mv "$file.probebak" "$file"; return; fi
+
+    npm run build >/dev/null 2>&1
+    for pid in $(pgrep -f "next-server"); do kill -9 "$pid" 2>/dev/null; done
+    sleep 1
+    (npx next start -p 3100 >/dev/null 2>&1 &)
+    until curl -s -m 2 -o /dev/null http://127.0.0.1:3100/; do sleep 1; done
+
+    timeout 420 node eval/selection-ui/verify.mjs > /tmp/probe-out.txt 2>&1
+    if grep -q "^FAIL.*${test_name}" /tmp/probe-out.txt; then
+      echo "RED   $name"
+    else
+      echo "GREEN $name  <-- VACUOUS"
+    fi
+    mv "$file.probebak" "$file"
+  }
+
+  # 2 — a ghost preview must never write
+  bprobe "2 ghost preview writes to the song" \
+    src/lib/song/use-transform.ts \
+    '      const result = applyTransform(song, selection, command);
+      if (!result.ok) {' \
+    '      const result = applyTransform(song, selection, command);
+      if (result.ok) store.commit(result.song);
+      if (!result.ok) {' \
+    "ghost preview writes nothing"
+
+  # 6 — accumulated nudges must be one undo step, not one each
+  bprobe "6 each nudge commits separately" \
+    src/components/workspace/TransformSheet.tsx \
+    '    const already =
+      pending?.kind === "move_selection_time" ? pending.deltaTicks : 0;
+    onStage({ kind: "move_selection_time", deltaTicks: already + ticks });' \
+    '    onStage({ kind: "move_selection_time", deltaTicks: ticks });
+    onApply();' \
+    "many nudges commit once"
+
+  # 8 — a selection must not survive a change of track
+  bprobe "8 selection survives a track change" \
+    src/components/workspace/Workspace.tsx \
+    '          transform.clear();
+          setSheet(null);
+          setPasteAt({ kind: "idle" });
+          setSelectedTrackId(id);' \
+    '          setSheet(null);
+          setPasteAt({ kind: "idle" });
+          setSelectedTrackId(id);' \
+    "track change clears selection"
+
+  # 10 — the tab stays the only horizontal scroller
+  bprobe "10 a second horizontal scroller at 320px" \
+    src/components/workspace/SelectionActionBar.tsx \
+    '      <div className="grid grid-cols-7 gap-1 p-2">' \
+    '      <div className="flex gap-1 overflow-x-auto p-2" style={{ width: 1200 }}>' \
+    "one horizontal scroller"
+
+  npm run build >/dev/null 2>&1
+fi
