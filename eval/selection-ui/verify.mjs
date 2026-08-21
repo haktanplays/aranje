@@ -117,6 +117,9 @@ const songJson = (page) =>
  */
 const GUTTER = 34;
 
+const bandVisible = (page) =>
+  page.locator("[data-testid=time-selection-band]").isVisible().catch(() => false);
+
 /** A long press at a point inside the bars. */
 async function longPress(page, cdp, offsetX, offsetY = 60) {
   const box = await page.locator("[data-tab-content]").boundingBox();
@@ -135,11 +138,23 @@ async function longPressOnset(page, cdp, index = 0) {
   const cells = page.locator("[data-cell][data-onset]");
   const count = await cells.count();
   if (count === 0) return false;
-  const box = await cells.nth(Math.min(index, count - 1)).boundingBox();
-  if (!box) return false;
-  await touch(page, cdp, box.x + box.width / 2, box.y + box.height / 2, 700);
-  await page.waitForTimeout(250);
-  return true;
+
+  /*
+   * Try a few onsets. At 320px the tab may be scrolled so the first one sits
+   * outside the viewport, where a touch at its box lands on nothing — which
+   * previously looked like the app failing to select.
+   */
+  for (let offset = 0; offset < 5 && index + offset < count; offset += 1) {
+    const cell = cells.nth(index + offset);
+    await cell.scrollIntoViewIfNeeded().catch(() => {});
+    await page.waitForTimeout(120);
+    const box = await cell.boundingBox();
+    if (!box || box.width < 2) continue;
+    await touch(page, cdp, box.x + box.width / 2, box.y + box.height / 2, 700);
+    await page.waitForTimeout(250);
+    if (await bandVisible(page)) return true;
+  }
+  return false;
 }
 
 /** A quick tap, which must stay a normal edit gesture. */
@@ -178,7 +193,6 @@ async function clearSelection(page) {
   }
 }
 
-const bandVisible = (page) => page.locator("[data-testid=time-selection-band]").isVisible().catch(() => false);
 const barVisible = (page) => page.locator("[data-testid=selection-action-bar]").isVisible().catch(() => false);
 
 async function enterEditMode(page) {
@@ -258,6 +272,13 @@ async function run() {
     await longPressOnset(page, cdp, 0);
     await page.waitForTimeout(200);
 
+    const reselected = await barVisible(page);
+    record(`[${label}] reselect after delete`, reselected);
+    if (!reselected) {
+      await page.screenshot({ path: `${OUT}/${label}-reselect-failed.png` });
+      await context.close();
+      continue;
+    }
     await page.locator("[data-testid=selection-action-move]").click();
     await page.waitForSelector("[data-testid=move-mode-time]");
     const beforeNudge = await writes(page);
