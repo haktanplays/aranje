@@ -2863,17 +2863,81 @@
               [],
               [],
               [],
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 116,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 110,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "snare",
+                  "velocity": 104
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 74
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 98
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104,
+                  "articulation": "accent"
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               []
             ]
           }
@@ -3025,21 +3089,100 @@
               null
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 82,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 80,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 98
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               []
             ]
           }
@@ -3328,38 +3471,165 @@
               null
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 82,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 112,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 74
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 108
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 74
+                }
+              ],
+              [
+                {
+                  "piece": "tom_high",
+                  "velocity": 98
+                }
+              ],
+              [
+                {
+                  "piece": "tom_mid",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "tom_floor",
+                  "velocity": 106,
+                  "articulation": "accent"
+                }
+              ]
             ]
           }
         },
@@ -3487,21 +3757,99 @@
               null
             ],
             "drums": [
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 112,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 74
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 80,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 108
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               []
             ]
           }
@@ -3698,29 +4046,128 @@
               null
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 82,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 98
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 80,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 78
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               []
             ]
           }
@@ -3909,21 +4356,89 @@
               "-"
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 84,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 68
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 108,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "open_hat",
+                  "velocity": 92,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 68
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 108
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 70
+                }
+              ],
               []
             ]
           }
@@ -4092,30 +4607,116 @@
               "-"
             ],
             "drums": [
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 112,
+                  "articulation": "accent"
+                }
+              ],
               [],
               [],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 104
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 110,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 80,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 76
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "tom_high",
+                  "velocity": 98
+                }
+              ],
+              [
+                {
+                  "piece": "tom_mid",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "tom_floor",
+                  "velocity": 106,
+                  "articulation": "accent"
+                }
+              ]
             ]
           }
         },
@@ -4271,19 +4872,80 @@
               "-"
             ],
             "drums": [
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 120,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 112,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 74
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 106
+                },
+                {
+                  "piece": "ride",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 70
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "ride",
+                  "velocity": 72
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "crash",
+                  "velocity": 120,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 112,
+                  "articulation": "accent"
+                }
+              ],
               [],
               [],
               [],
