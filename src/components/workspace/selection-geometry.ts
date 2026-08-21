@@ -93,3 +93,63 @@ export function ticksForX(section: Section, x: number): number | null {
   }
   return null;
 }
+
+/**
+ * The same arithmetic across the tab's flat bar list.
+ *
+ * The tab draws every bar of the song in one row, so a section's music starts
+ * some distance along it. These helpers add that offset without duplicating
+ * the tick maths: the band is still positioned from ticks inside its section,
+ * then slid right by the bars that come before it.
+ */
+export type TimelineBar = {
+  readonly sectionId: string;
+  readonly barIndex: number;
+  readonly slotCount: number;
+};
+
+/** Pixels from the start of the tab to the first bar of a section. */
+export function sectionOffsetX(
+  bars: readonly TimelineBar[],
+  sectionId: string,
+): number | null {
+  let x = 0;
+  for (const bar of bars) {
+    if (bar.sectionId === sectionId) return x;
+    x += barWidth(bar.slotCount);
+  }
+  return null;
+}
+
+/** A band, placed in the tab rather than in its section. */
+export function bandInTimeline(
+  bars: readonly TimelineBar[],
+  section: Section,
+  startTicks: number,
+  endTicks: number,
+): { readonly left: number; readonly width: number } | null {
+  const offset = sectionOffsetX(bars, section.id);
+  if (offset === null) return null;
+  const band = bandFor(section, startTicks, endTicks);
+  return band ? { left: offset + band.left, width: band.width } : null;
+}
+
+/** Which slot of which bar a horizontal position in the tab falls on. */
+export function slotAtX(
+  bars: readonly TimelineBar[],
+  x: number,
+): { readonly sectionId: string; readonly barIndex: number; readonly slotIndex: number } | null {
+  let left = 0;
+  for (const bar of bars) {
+    const width = barWidth(bar.slotCount);
+    if (x >= left && x < left + width) {
+      const slotIndex = Math.min(
+        bar.slotCount - 1,
+        Math.max(0, Math.floor((x - left) / SLOT_WIDTH)),
+      );
+      return { sectionId: bar.sectionId, barIndex: bar.barIndex, slotIndex };
+    }
+    left += width;
+  }
+  return null;
+}

@@ -5,12 +5,14 @@
  *
  * The move sheet keeps four musical ideas apart, because they *are* four
  * different things and a single "up/down" control would make a player guess
- * which one they were getting:
+ * which one they were getting: move in time, change the note, keep the note
+ * and change the string, or move the shape.
  *
- * - **Zaman** moves the music earlier or later.
- * - **Sesi transpoze et** changes the note. The hand follows if it can.
- * - **Aynı sesi başka tele taşı** keeps the note exactly and moves the hand.
- * - **Şekli taşı** moves the hand, and the notes follow.
+ * They are chosen from a 2x2 of cards rather than a row of tabs. Four tabs on
+ * one line cramp at 320px and start eliding their own labels, which is the
+ * worst outcome here: the whole point of separating these is that a player can
+ * read which one they are about to use. Only the chosen mode's controls are
+ * shown, so the sheet never needs to scroll sideways.
  *
  * Nudges stage rather than commit. Five taps of the right arrow is one musical
  * thought, so it becomes one pending command, one write and one undo step when
@@ -145,6 +147,16 @@ export type TransformSheetProps = {
   readonly onClose: () => void;
 };
 
+/** The four things "move" can mean, in the reader's words. */
+const MODES = [
+  { id: "time", label: "Zaman", hint: "Seçimi ritim üzerinde sağa veya sola taşır." },
+  { id: "pitch", label: "Ses", hint: "Notaları daha tiz veya daha pes yapar." },
+  { id: "string", label: "Tel", hint: "Ses değişmeden çalındığı teli değiştirir." },
+  { id: "shape", label: "Şekil", hint: "Akorun parmak şeklini taşır; ses değişebilir." },
+] as const;
+
+type MoveMode = (typeof MODES)[number]["id"];
+
 export function TransformSheet({
   kind,
   stepTicks,
@@ -158,6 +170,7 @@ export function TransformSheet({
   onClose,
 }: TransformSheetProps) {
   const [customCount, setCustomCount] = useState("2");
+  const [mode, setMode] = useState<MoveMode>("time");
 
   if (kind === null) return null;
 
@@ -212,33 +225,55 @@ export function TransformSheet({
 
         {kind === "move" ? (
           <>
-            <Row title="Zaman" hint="Seçimi olduğu gibi öne veya geriye taşır.">
+            <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Taşıma türü">
+              {MODES.map((entry) => (
+                <button
+                  key={entry.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={mode === entry.id}
+                  data-testid={`move-mode-${entry.id}`}
+                  onClick={() => setMode(entry.id)}
+                  className={
+                    mode === entry.id
+                      ? "border-accent bg-accent/10 rounded-md border-2 px-2 text-sm font-medium"
+                      : "border-app rounded-md border px-2 text-sm"
+                  }
+                  style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+                >
+                  {entry.label}
+                </button>
+              ))}
+            </div>
+
+            <p data-testid="move-mode-hint" className="text-muted text-xs">
+              {MODES.find((entry) => entry.id === mode)?.hint}
+            </p>
+
+            {mode === "time" ? (
               <TimeNudges
                 step={stepTicks}
                 beat={beatTicks}
                 barTicks={barTicks}
                 onNudge={nudge}
               />
-            </Row>
+            ) : null}
 
-            <Row title="Sesi transpoze et" hint="Notalar değişir; el mümkünse aynı telde kalır.">
+            {mode === "pitch" ? (
               <Stepper
                 label="Sesi transpoze et"
                 testPrefix="transpose"
                 values={[
                   { label: "−1 oktav", value: -12 },
-                  { label: "−1 yarım ses", value: -1 },
-                  { label: "+1 yarım ses", value: 1 },
+                  { label: "−1 yarım", value: -1 },
+                  { label: "+1 yarım", value: 1 },
                   { label: "+1 oktav", value: 12 },
                 ]}
                 onPick={(semitones) => onStage({ kind: "transpose_pitch", semitones })}
               />
-            </Row>
+            ) : null}
 
-            <Row
-              title="Aynı sesi başka tele taşı"
-              hint="Nota aynı duyulur, yalnız çalındığı tel değişir."
-            >
+            {mode === "string" ? (
               <Stepper
                 label="Aynı sesi başka tele taşı"
                 testPrefix="restring"
@@ -250,35 +285,34 @@ export function TransformSheet({
                   onStage({ kind: "restring_same_pitch", stringDelta })
                 }
               />
-            </Row>
+            ) : null}
 
-            <Row
-              title="Şekli taşı"
-              hint="Akorun parmak şekli taşınır; duyulan notalar değişebilir."
-            >
-              <Stepper
-                label="Şekli tel yönünde taşı"
-                testPrefix="shape-string"
-                values={[
-                  { label: "Tel ince", value: 1 },
-                  { label: "Tel kalın", value: -1 },
-                ]}
-                onPick={(stringDelta) =>
-                  onStage({ kind: "translate_fret_shape", stringDelta, fretDelta: 0 })
-                }
-              />
-              <Stepper
-                label="Şekli perde yönünde taşı"
-                testPrefix="shape-fret"
-                values={[
-                  { label: "Perde geri", value: -1 },
-                  { label: "Perde ileri", value: 1 },
-                ]}
-                onPick={(fretDelta) =>
-                  onStage({ kind: "translate_fret_shape", stringDelta: 0, fretDelta })
-                }
-              />
-            </Row>
+            {mode === "shape" ? (
+              <div className="space-y-2">
+                <Stepper
+                  label="Şekli tel yönünde taşı"
+                  testPrefix="shape-string"
+                  values={[
+                    { label: "Tel ince", value: 1 },
+                    { label: "Tel kalın", value: -1 },
+                  ]}
+                  onPick={(stringDelta) =>
+                    onStage({ kind: "translate_fret_shape", stringDelta, fretDelta: 0 })
+                  }
+                />
+                <Stepper
+                  label="Şekli perde yönünde taşı"
+                  testPrefix="shape-fret"
+                  values={[
+                    { label: "Perde geri", value: -1 },
+                    { label: "Perde ileri", value: 1 },
+                  ]}
+                  onPick={(fretDelta) =>
+                    onStage({ kind: "translate_fret_shape", stringDelta: 0, fretDelta })
+                  }
+                />
+              </div>
+            ) : null}
           </>
         ) : null}
 

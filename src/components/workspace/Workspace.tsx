@@ -17,6 +17,24 @@ import { TransportBar } from "@/components/workspace/TransportBar";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { useSettings } from "@/lib/settings/use-settings";
 import { usePlayback } from "@/lib/audio/use-playback";
+import { SelectionActionBar } from "@/components/workspace/SelectionActionBar";
+import { TimeSelectionBand } from "@/components/workspace/TimeSelectionBand";
+import {
+  TransformSheet,
+  type TransformSheetKind,
+} from "@/components/workspace/TransformSheet";
+import {
+  bandInTimeline,
+  slotAtX,
+} from "@/components/workspace/selection-geometry";
+import { useTransform } from "@/lib/song/use-transform";
+import {
+  BAR_HEADER_HEIGHT,
+  DRUM_ROW_HEIGHT,
+  STRING_ROW_HEIGHT,
+} from "@/components/workspace/geometry";
+import { sectionBarStartTicks } from "@/lib/song/onset-block";
+import { ticksPerBar, ticksPerSlot, slotsPerNotatedBeat } from "@/lib/music/timing";
 import { formatBpm } from "@/lib/audio/practice-rate";
 import { BRAND_NAME } from "@/lib/brand";
 import { availableSkills, targetsFor } from "@/lib/copilot/ui-options";
@@ -77,6 +95,19 @@ export function Workspace() {
     setMoveError(null);
   }, []);
 
+  /*
+   * The time selection (2I-B). Its store adapter is memoised on the song so
+   * `apply` always reads the latest one — a stale snapshot here would commit
+   * an edit onto a song that has already moved on.
+   */
+  const transformStore = useMemo(
+    () => ({ getSnapshot: () => ({ song }), commit }),
+    [song, commit],
+  );
+  const transform = useTransform(transformStore, song);
+  const [sheet, setSheet] = useState<TransformSheetKind>(null);
+  const [pasteAt, setPasteAt] = useState<number | null>(null);
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   const track =
@@ -114,6 +145,120 @@ export function Workspace() {
   );
   const runs = useMemo(() => sectionRuns(song), [song]);
   const plan = controller.getPlan();
+
+
+  /** The section a time selection lives in, resolved once. */
+  const selectedSection = useMemo(
+    () =>
+      transform.selection
+        ? (song.sections.find((entry) => entry.id === transform.selection?.sectionId) ?? null)
+        : null,
+    [song.sections, transform.selection],
+  );
+
+  /*
+   * Selection is an edit gesture, so it is unavailable while the Copilot owns
+   * the screen. Two things that both rewrite the same bars must not be live at
+   * once (spec 13.1).
+   */
+  const selectionEnabled = !previewOpen && !arrangeOpen && track !== undefined;
+
+  /** Where the band sits in tab coordinates, and how tall the staff is. */
+  const band = useMemo(
+    () =>
+      transform.selection && selectedSection && timeline.kind !== "unsupported"
+        ? bandInTimeline(
+            timeline.bars,
+            selectedSection,
+            transform.selection.startTicks,
+            transform.selection.endTicks,
+          )
+        : null,
+    [selectedSection, timeline, transform.selection],
+  );
+
+  const bandHeight =
+    timeline.kind === "fretted"
+      ? BAR_HEADER_HEIGHT + timeline.strings.length * STRING_ROW_HEIGHT
+      : timeline.kind === "drums"
+        ? BAR_HEADER_HEIGHT + timeline.lanes.length * DRUM_ROW_HEIGHT
+        : 0;
+
+  /**
+   * Step sizes for the move sheet, taken from the bar the selection starts in.
+   *
+   * "One grid step" has to mean a step of the grid the music is actually on,
+   * or the nudge would move a triplet by a sixteenth and the reader would have
+   * no way to see why it refused.
+   */
+  const selectionSteps = useMemo(() => {
+    const fallback = { step: ticksPerSlot(16), beat: ticksPerSlot(16) * 4, bar: ticksPerSlot(16) * 16 };
+    if (!selectedSection || !transform.selection) return fallback;
+    const starts = sectionBarStartTicks(selectedSection);
+    const index = starts.findIndex((start, position) => {
+      const next = starts[position + 1] ?? Number.POSITIVE_INFINITY;
+      return transform.selection!.startTicks >= start && transform.selection!.startTicks < next;
+    });
+    const bar = selectedSection.bars[index === -1 ? 0 : index];
+    if (!bar) return fallback;
+    const step = ticksPerSlot(bar.resolution);
+    return {
+      step,
+      beat: step * slotsPerNotatedBeat(bar.timeSignature, bar.resolution),
+      bar: ticksPerBar(bar.timeSignature, bar.resolution),
+    };
+  }, [selectedSection, transform.selection]);
+
+  const selectionStepTicks = selectionSteps.step;
+  const selectionBeatTicks = selectionSteps.beat;
+  const selectionBarTicks = selectionSteps.bar;
+
+  /**
+   * What the ghost says, in words.
+   *
+   * The preview is the real command run against the real song with its result
+   * thrown away, so this describes what would actually happen rather than what
+   * we hope would.
+   */
+  const previewText = useMemo(() => {
+    if (!transform.preview) return null;
+    if (!transform.preview.ok) return transform.preview.message;
+    const warnings = transform.preview.warnings.length;
+    return warnings > 0
+      ? "Uygulanabilir. Birkaç yerde el pozisyonu zorlanıyor olabilir."
+      : "Uygulanmaya hazır.";
+  }, [transform.preview]);
+
+  /**
+   * A long press picks the slot under the finger and asks the core to
+   * normalise it. What comes back is the whole chord, and the whole chain it
+   * belongs to — so the band the reader sees is the music that will move.
+   */
+  const onSlotLongPress = useCallback(
+    (x: number) => {
+      if (!track) return;
+      const hit = slotAtX(timeline.kind === "unsupported" ? [] : timeline.bars, x);
+      if (!hit) return;
+      const section = song.sections.find((entry) => entry.id === hit.sectionId);
+      const bar = section?.bars[hit.barIndex];
+      if (!section || !bar) return;
+
+      // Selecting is an edit gesture, and edits and playback do not share the
+      // screen (spec 13.1). Pause rather than tear the engine down.
+      controller.pause();
+
+      const starts = sectionBarStartTicks(section);
+      const step = ticksPerSlot(bar.resolution);
+      const startTicks = (starts[hit.barIndex] ?? 0) + hit.slotIndex * step;
+      transform.select({
+        sectionId: section.id,
+        trackId: track.id,
+        startTicks,
+        endTicks: startTicks + step,
+      });
+    },
+    [controller, song.sections, timeline, track, transform],
+  );
 
   const getPosition = useCallback(() => controller.getPosition(), [controller]);
 
@@ -420,6 +565,19 @@ export function Workspace() {
           onActiveBarChange={setActiveBarKey}
           onSeekBar={seekToBar}
           scrollRef={scrollRef}
+          onSlotLongPress={selectionEnabled ? onSlotLongPress : undefined}
+          selectionBand={
+            transform.selection && selectedSection && band ? (
+              <TimeSelectionBand
+                section={selectedSection}
+                selection={transform.selection}
+                height={bandHeight}
+                label={transform.summary?.text ?? "Seçim"}
+                left={band.left}
+                width={band.width}
+              />
+            ) : null
+          }
           editing={editing}
           selectedCell={cell}
           onCellSelect={(next) => {
@@ -454,6 +612,58 @@ export function Workspace() {
           }}
         />
       </main>
+
+      {transform.selection ? (
+        <SelectionActionBar
+          summary={
+            pasteAt !== null
+              ? "Yapıştırılacak yere dokun, sonra onayla."
+              : (transform.summary?.text ?? "Seçim")
+          }
+          notice={transform.notice}
+          error={transform.error}
+          onCancel={() => {
+            transform.clear();
+            setSheet(null);
+            setPasteAt(null);
+          }}
+          onAction={(action) => {
+            if (action === "copy") {
+              // Reading only: no commit, no write, no undo step.
+              transform.copy();
+              return;
+            }
+            if (action === "cut") {
+              transform.apply({ kind: "cut_selection" });
+              return;
+            }
+            if (action === "duplicate") {
+              transform.apply({ kind: "duplicate_selection" });
+              return;
+            }
+            if (action === "delete") {
+              transform.apply({ kind: "delete_selection" });
+              return;
+            }
+            setSheet(action === "repeat" ? "repeat" : action === "move" ? "move" : "more");
+          }}
+        />
+      ) : null}
+
+      <TransformSheet
+        kind={sheet}
+        stepTicks={selectionStepTicks}
+        beatTicks={selectionBeatTicks}
+        barTicks={selectionBarTicks}
+        pending={transform.pending}
+        preview={transform.preview}
+        previewText={previewText}
+        onStage={transform.stage}
+        onApply={() => {
+          if (transform.apply()) setSheet(null);
+        }}
+        onClose={() => setSheet(null)}
+      />
 
       {track ? (
         <p className="text-muted truncate border-t border-line px-3 py-1.5 text-[11px]">
@@ -497,6 +707,11 @@ export function Workspace() {
           setEditing(false);
           setCell(null);
           clearSelection();
+          // A selection belongs to one track and one section (2I-A V1), so it
+          // cannot survive a change of either.
+          transform.clear();
+          setSheet(null);
+          setPasteAt(null);
           setSelectedTrackId(id);
         }}
         onOpenDetails={() => setTrackSheetOpen(true)}

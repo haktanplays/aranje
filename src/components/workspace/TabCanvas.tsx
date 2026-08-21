@@ -19,6 +19,7 @@ import {
 import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { followScrollLeft, playheadX } from "@/components/workspace/playhead";
 import { frettedRowLabels } from "@/components/workspace/staff";
+import { useLongPress } from "@/lib/ui/use-long-press";
 import type { PlayPosition } from "@/lib/audio/position";
 import type { SongPlan } from "@/lib/audio/schedule";
 import type { SectionStatus } from "@/lib/song/schema";
@@ -100,6 +101,8 @@ export function TabCanvas({
   onActiveBarChange,
   onSeekBar,
   scrollRef,
+  selectionBand,
+  onSlotLongPress,
   editing = false,
   selectedCell = null,
   onCellSelect,
@@ -113,6 +116,13 @@ export function TabCanvas({
   onActiveBarChange: (barKey: string | null) => void;
   onSeekBar: (barKey: string) => void;
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  /** The time band, already positioned; null when nothing is selected. */
+  selectionBand?: React.ReactNode;
+  /**
+   * A long press landed on a slot. Only fires once the press has outlived the
+   * threshold without becoming a drag, so a flick to scroll never reaches it.
+   */
+  onSlotLongPress?: (x: number) => void;
   /** Edit mode turns each bar into a grid of cells (spec 13.1). */
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
@@ -168,6 +178,23 @@ export function TabCanvas({
     return () => cancelAnimationFrame(frame);
   }, [running, plan, getPosition, onActiveBarChange, scrollRef]);
 
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+   * The press is measured against the content, not the viewport, so the tick
+   * it resolves to is the one under the finger whatever the tab is scrolled
+   * to. Reading the rect at fire time rather than at press time keeps that
+   * true even if the tab moved during the press.
+   */
+  const longPress = useLongPress(
+    ({ clientX }) => {
+      const element = contentRef.current;
+      if (!element || !onSlotLongPress) return;
+      onSlotLongPress(clientX - element.getBoundingClientRect().left);
+    },
+    { enabled: onSlotLongPress !== undefined },
+  );
+
   if (timeline.kind === "unsupported") {
     return (
       <div className="text-muted flex h-full items-center justify-center px-6 text-center text-sm">
@@ -194,7 +221,7 @@ export function TabCanvas({
         className="h-full overflow-x-auto overscroll-x-contain"
         style={{ paddingTop: STAFF_TOP_PADDING }}
       >
-        <div className="relative flex min-w-max">
+        <div className="relative flex min-w-max" ref={contentRef} {...longPress}>
           {/* String or lane names stay put while the bars scroll past */}
           <div
             className="bg-app sticky left-0 z-10 shrink-0"
@@ -232,6 +259,10 @@ export function TabCanvas({
               style={{ left: "calc(100% + 0.625rem)" }}
             />
           </div>
+
+          {/* Positioned in tab coordinates, so it scrolls with the music and
+              stays under the sticky gutter rather than over the string names. */}
+          {selectionBand}
 
           {timeline.kind === "fretted"
             ? timeline.bars.map((bar, barIndex) => (

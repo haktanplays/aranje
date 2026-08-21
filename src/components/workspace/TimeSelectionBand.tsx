@@ -14,10 +14,10 @@
  * visible objects — so it reads in bright sun, in dark mode, and to someone
  * who cannot separate the accent hue from the background.
  *
- * It sits between the staff and the playhead: over the notes it is selecting,
- * under the line that says where the music is.
+ * It sits at z-5: above the staff it is selecting, below the sticky gutter so
+ * it never covers the string names, and below the playhead so the line saying
+ * where the music is stays readable across it.
  */
-import { bandFor } from "@/components/workspace/selection-geometry";
 import { SELECTION_HANDLE_WIDTH_PX } from "@/lib/ui/interaction";
 import type { Section } from "@/lib/song/schema";
 import type { TimeSelection } from "@/lib/song/time-selection";
@@ -28,26 +28,28 @@ export type TimeSelectionBandProps = {
   readonly height: number;
   /** Reader-facing description, for assistive technology. */
   readonly label: string;
+  /** Already resolved in tab coordinates by the caller. */
+  readonly left: number;
+  readonly width: number;
   readonly onHandleDown?: (edge: "start" | "end", event: React.PointerEvent) => void;
 };
 
 export function TimeSelectionBand({
-  section,
   selection,
   height,
   label,
+  left,
+  width,
   onHandleDown,
 }: TimeSelectionBandProps) {
-  const band = bandFor(section, selection.startTicks, selection.endTicks);
-  if (!band) return null;
 
   return (
     <div
       data-testid="time-selection-band"
       data-start-ticks={selection.startTicks}
       data-end-ticks={selection.endTicks}
-      className="pointer-events-none absolute top-0 z-20"
-      style={{ left: band.left, width: band.width, height }}
+      className="pointer-events-none absolute top-0 z-[5]"
+      style={{ left, width, height }}
       role="region"
       aria-label={label}
     >
