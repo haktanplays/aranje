@@ -1,0 +1,17 @@
+RED   1 scroll starts a selection
+RED   4 chord selected as a single note
+RED   5 band positioned from slot index
+RED   3 failed transform still commits
+RED   7 component bypasses the core
+RED   10 two selection models answer one hold
+RED   11 a component keeps its own threshold
+RED   12 spent press leaves a live click
+RED   9 diagnostic leaks into a message
+
+unit probes: 9 red, 0 vacuous
+RED   13 seven targets squeezed into one row
+RED   14 spent press opens a sheet by itself
+RED   2 ghost preview writes to the song  (caught by: [390x844] viewport pass completed  — TimeoutError: locat)
+RED   6 each nudge commits separately  (caught by: [390x844] viewport pass completed  — TimeoutError: locat)
+RED   8 selection survives a track change
+RED   10 a second horizontal scroller at 320px
