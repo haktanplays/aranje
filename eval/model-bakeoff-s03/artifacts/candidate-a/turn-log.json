@@ -71,5 +71,16 @@
     "touchedBars": 4,
     "explanation": "Break hucresi dorduncu yukari tasinip A2 pedaline oturdu; ikinci barda sekizlik kaydirilarak gelisti. Palm mute dokusu icinde accent noktalari sabit kaldi, C3 gerilimi ekledi. Bar 3'te acik A'dan B2'ye hammer_on ile kisa yukselis var. Uclemeli son barda motif sikisip cozulmeyen B2+F#3 uzerinde asili kaliyor, Solo'ya gerilim birakiyor.",
     "warnings": []
+  },
+  {
+    "turn": 6,
+    "label": "Bridge / lead_guitar",
+    "role": "lead_guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p6-1",
+    "touchedBars": 4,
+    "explanation": "Motif Break hucresinin vurgu noktalarini oktav ustte tekrarliyor; bar 2 ayni cumleyi geciktirip hammer-on/pull-off ile suslüyor. Bar 3 kisa inen dortlu sekans, sonunda F# bend_half gerilim. Bar 4 ucleme gridinde alt registerden cikip uzun B4 kuyrugu uzerinden E5'e genis slide, cozulmemis F#5 vibratoyla Solo'ya asili kaliyor.",
+    "warnings": []
   }
 ]

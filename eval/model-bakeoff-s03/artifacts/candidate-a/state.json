@@ -1758,22 +1758,68 @@
               null
             ],
             "lead_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 110,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C5",
+                    "velocity": 104,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 92
+                  }
+                ]
+              },
               null,
               null,
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 106,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 90
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 96,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              "-",
+              "-"
             ],
             "drums": [
               [],
@@ -1888,20 +1934,65 @@
             ],
             "lead_guitar": [
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 86
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 92,
+                    "articulation": "hammer_on"
+                  }
+                ]
+              },
+              "-",
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 96
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C5",
+                    "velocity": 108,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 88,
+                    "articulation": "pull_off"
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 98
+                  }
+                ]
+              },
+              "-",
+              "-",
               null
             ],
             "drums": [
@@ -2024,22 +2115,101 @@
               }
             ],
             "lead_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E5",
+                    "velocity": 112,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "D5",
+                    "velocity": 94
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "C5",
+                    "velocity": 92
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 90
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C5",
+                    "velocity": 96
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 90
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 88
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 94
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 90
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 88
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "F#4",
+                    "velocity": 100,
+                    "articulation": "bend_half"
+                  }
+                ]
+              },
+              "-"
             ],
             "drums": [
               [],
@@ -2180,30 +2350,76 @@
               "-"
             ],
             "lead_guitar": [
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 96
+                  }
+                ]
+              },
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "G4",
+                    "velocity": 90
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 96,
+                    "articulation": "hammer_on"
+                  }
+                ]
+              },
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "B4",
+                    "velocity": 108,
+                    "articulation": "accent"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "E5",
+                    "velocity": 110,
+                    "articulation": "slide"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-",
+              {
+                "notes": [
+                  {
+                    "pitch": "F#5",
+                    "velocity": 104,
+                    "articulation": "vibrato"
+                  }
+                ]
+              },
+              "-",
+              "-",
+              "-",
+              "-",
+              "-"
             ],
             "drums": [
               [],
