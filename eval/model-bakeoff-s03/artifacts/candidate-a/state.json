@@ -908,22 +908,102 @@
               }
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "crash",
+                  "velocity": 112,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 80
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 116,
+                  "articulation": "accent"
+                }
+              ],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 114
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 96
+                }
+              ]
             ]
           }
         },
@@ -1022,21 +1102,98 @@
               null
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 82,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 116,
+                  "articulation": "accent"
+                }
+              ],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 114
+                },
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
               []
             ]
           }
@@ -1136,22 +1293,107 @@
               }
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 82,
+                  "articulation": "accent"
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 100
+                }
+              ],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 116,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 98
+                }
+              ],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 114
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 116,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "open_hat",
+                  "velocity": 104
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              []
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 70,
+                  "articulation": "ghost"
+                }
+              ]
             ]
           }
         },
@@ -1295,35 +1537,122 @@
               "-"
             ],
             "drums": [
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 120,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "crash",
+                  "velocity": 114,
+                  "articulation": "accent"
+                }
+              ],
               [],
               [],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 72
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 104
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "snare",
+                  "velocity": 112
+                },
+                {
+                  "piece": "closed_hat",
+                  "velocity": 78
+                }
+              ],
               [],
               [],
               [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 74
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 102
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "closed_hat",
+                  "velocity": 76
+                }
+              ],
+              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 118,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "snare",
+                  "velocity": 118,
+                  "articulation": "accent"
+                }
+              ],
               [],
               [],
               [],
+              [
+                {
+                  "piece": "tom_high",
+                  "velocity": 102
+                }
+              ],
+              [
+                {
+                  "piece": "tom_high",
+                  "velocity": 84
+                }
+              ],
               [],
+              [
+                {
+                  "piece": "tom_mid",
+                  "velocity": 104
+                }
+              ],
+              [
+                {
+                  "piece": "tom_floor",
+                  "velocity": 100
+                }
+              ],
               [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
-              [],
+              [
+                {
+                  "piece": "kick",
+                  "velocity": 122,
+                  "articulation": "accent"
+                },
+                {
+                  "piece": "crash",
+                  "velocity": 116,
+                  "articulation": "accent"
+                }
+              ],
               [],
               [],
               []

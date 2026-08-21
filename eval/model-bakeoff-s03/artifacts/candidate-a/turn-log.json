@@ -49,5 +49,16 @@
     "touchedBars": 4,
     "explanation": "Tonik E2 pedali korunuyor; 1. vurusta tam slam, mute kumesi ikizlenip 3. vurus gecikmeli ve daha sert iniyor. Fraz uzunlugu dort kare kaliyor, gerilim yerlesimden geliyor. F2 komsu nota cumle sonunu kapatiyor, 3. barda G2 tek seferlik kaldirma. Son bar 1/32 gridde daha seyrek nefes alip kapanis slam'iyle bitiyor.",
     "warnings": []
+  },
+  {
+    "turn": 4,
+    "label": "Break / drums",
+    "role": "drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p4-1",
+    "touchedBars": 4,
+    "explanation": "Bar 1 crash+kick ile tam slam. 2 ve 4'te sabit backbeat, 8'lik hat: 4/4 groove korunuyor. Kick sadece gitarin onemli aksanlarinda (0, 3, gecikmeli 9) oturuyor; her onset takip edilmiyor, susler acik kaliyor. Bar 3 open_hat ile gerilim artiyor. Bar 4'te 1/32 gridde gecikmeli kick+snare vurusu ve kisa tom fill'i, son crash ile bolumu kapatiyor.",
+    "warnings": []
   }
 ]

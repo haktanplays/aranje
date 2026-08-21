@@ -60,6 +60,16 @@
       "normalizationApplied": "whole_answer_fence_unwrap",
       "rawSha256": "54e85f394d10333a97759e5f8806534af2cb4303111342cd9d95432212089148",
       "normalizedSha256": "41f2fd891a3c3c1c58ed1078d18903b29cb6e5e841f3620ad2be150f22764d15"
+    },
+    {
+      "stage": "turn-4",
+      "attempt": 0,
+      "outcome": "accepted",
+      "failure": "packaging_only",
+      "reason": null,
+      "normalizationApplied": "whole_answer_fence_unwrap",
+      "rawSha256": "69c82d26ba14db81c120f8674cd61b5ca50480b6e578aa73e9c4d9b2afa70931",
+      "normalizedSha256": "d1da514de438bcadd01cbb4f0efb3877823471d3733d0da0bff912502920d27e"
     }
   ]
 }
