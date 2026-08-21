@@ -4976,22 +4976,100 @@
           "resolution": 16,
           "slots": {
             "acoustic_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 72,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 58
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 54
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "G3",
+                    "velocity": 66
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 52
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 62
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 56
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 52
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "F#3",
+                    "velocity": 64
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 48
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 46
+                  }
+                ]
+              }
             ],
             "harmony": [
               null,
@@ -5021,21 +5099,92 @@
           "resolution": 16,
           "slots": {
             "acoustic_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 74,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 58
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 54
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E3",
+                    "velocity": 66
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 52
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 62
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 56
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 52
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "D3",
+                    "velocity": 64
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 48
+                  }
+                ]
+              },
               null
             ],
             "harmony": [
@@ -5066,29 +5215,115 @@
           "resolution": 24,
           "slots": {
             "acoustic_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 72,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 56
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 52
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 68
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 54
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 50
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 66
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 56
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 52
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 68,
+                    "articulation": "accent"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "F#3",
+                    "velocity": 58
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 50
+                  }
+                ]
+              },
               null
             ],
             "harmony": [
@@ -5127,21 +5362,100 @@
           "resolution": 16,
           "slots": {
             "acoustic_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 72,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 56
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 52
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 66
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 52
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A2",
+                    "velocity": 64
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 54
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 50
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 60
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "C3",
+                    "velocity": 58,
+                    "articulation": "hammer_on"
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 48
+                  }
+                ]
+              },
               null
             ],
             "harmony": [
@@ -5172,21 +5486,79 @@
           "resolution": 16,
           "slots": {
             "acoustic_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 74,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 54
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 50
+                  }
+                ]
+              },
+              {
+                "notes": [
+                  {
+                    "pitch": "G3",
+                    "velocity": 60
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 56
+                  }
+                ]
+              },
+              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "D4",
+                    "velocity": 66
+                  }
+                ]
+              },
               null,
               null,
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "A4",
+                    "velocity": 68,
+                    "articulation": "slide"
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 52
+                  }
+                ]
+              },
               null
             ],
             "harmony": [
@@ -5217,21 +5589,79 @@
           "resolution": 16,
           "slots": {
             "acoustic_guitar": [
+              {
+                "notes": [
+                  {
+                    "pitch": "E2",
+                    "velocity": 70,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B2",
+                    "velocity": 58
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E3",
+                    "velocity": 60
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "G3",
+                    "velocity": 58
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "B3",
+                    "velocity": 56
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E4",
+                    "velocity": 54
+                  }
+                ]
+              },
               null,
+              {
+                "notes": [
+                  {
+                    "pitch": "F#3",
+                    "velocity": 48
+                  }
+                ]
+              },
               null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
-              null,
+              {
+                "notes": [
+                  {
+                    "pitch": "E3",
+                    "velocity": 54,
+                    "articulation": "sustain"
+                  }
+                ]
+              },
               null
             ],
             "harmony": [

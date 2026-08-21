@@ -161,5 +161,33 @@
         "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
       }
     ]
+  },
+  {
+    "turn": 11,
+    "label": "Acoustic Bridge / acoustic_guitar",
+    "role": "acoustic_guitar",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p11-1",
+    "touchedBars": 6,
+    "explanation": "Acik E2 pedali ile cinlayan B3/E4 tellerinin altinda ic ses yavasca iniyor: G3-F#3-E3-D3-C3-B2-A2. Bar 3 ucleme akisiyla nefes aliyor, bar 4'te B2-C3 hammer_on kucuk bir kivrilma veriyor. Bar 5'te register acilir: D4 uzun cinlarken el kayarak A4'e variyor (genis araliktli tek slide). Bar 6 arpeji E minor'a acik tellerle cozuyor ve sec-6'ya bosluksuz uzatiyor.",
+    "warnings": [
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 7, slot 13: B3 notasındaki Slide için önceki nota aynı telde değil; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 4, slot 9: B5 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Solo\" bölümü, bar 6, slot 14: A5 notasındaki Hammer-on bir önceki nota ile bağlanamıyor; normal çalınacak."
+      },
+      {
+        "code": "articulationContext",
+        "message": "\"Acoustic Bridge\" bölümü, bar 5, slot 13: A4 notasındaki Slide bir önceki nota ile bağlanamıyor; normal çalınacak."
+      }
+    ]
   }
 ]
