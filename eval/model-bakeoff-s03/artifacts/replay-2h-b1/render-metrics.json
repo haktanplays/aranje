@@ -1,0 +1,66 @@
+[
+  {
+    "cut": "full-mix",
+    "seconds": 63.54,
+    "peak": 0.7865,
+    "rms": 0.0797,
+    "events": 711,
+    "sampleRequests": 15
+  },
+  {
+    "cut": "break",
+    "seconds": 9.46,
+    "peak": 0.5531,
+    "rms": 0.05401,
+    "events": 82,
+    "sampleRequests": 15
+  },
+  {
+    "cut": "bridge",
+    "seconds": 9.46,
+    "peak": 0.7059,
+    "rms": 0.07347,
+    "events": 106,
+    "sampleRequests": 15
+  },
+  {
+    "cut": "solo",
+    "seconds": 9.46,
+    "peak": 0.858,
+    "rms": 0.09296,
+    "events": 126,
+    "sampleRequests": 15
+  },
+  {
+    "cut": "acoustic-outro",
+    "seconds": 16.41,
+    "peak": 0.6992,
+    "rms": 0.10767,
+    "events": 256,
+    "sampleRequests": 15
+  },
+  {
+    "cut": "solo-lead",
+    "seconds": 9.46,
+    "peak": 0.4181,
+    "rms": 0.06311,
+    "events": 29,
+    "sampleRequests": 7
+  },
+  {
+    "cut": "solo-backing",
+    "seconds": 9.46,
+    "peak": 0.6132,
+    "rms": 0.05849,
+    "events": 39,
+    "sampleRequests": 7
+  },
+  {
+    "cut": "drums",
+    "seconds": 63.54,
+    "peak": 0.3214,
+    "rms": 0.03262,
+    "events": 304,
+    "sampleRequests": 0
+  }
+]

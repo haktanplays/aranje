@@ -97,3 +97,24 @@ yok.
 Yani "ana gitari ortmeyen ikinci bir parti yaz" denen tur, ana gitari
 goremiyor. 1. bulgunun akustik taraftaki esi: kaynak secimi sabit sirayla
 degil, o bolumde gercekten calan partiye gore yapilmali.
+
+## 8. 2H-B.1 sonrasi deterministik replay
+
+Ayni blueprint, duzeltilmis materializer. Yeni model kosusu degildir ve model
+kalitesi olcmez; yalnizca planin artik dogru uygulandigini gosterir.
+
+| rol | once | sonra |
+|---|---|---|
+| rhythm_guitar | electric_guitar/high_gain | electric_guitar/high_gain |
+| lead_guitar | electric_guitar/high_gain | electric_guitar/high_gain |
+| acoustic_guitar | steel_acoustic/finger | steel_acoustic/finger |
+| **harmony** | **electric_guitar/clean** | **steel_acoustic/finger** |
+| drums | drum_kit/rock | drum_kit/rock |
+
+Akustik bolumler: `violated before=true`, `after=false`. Her ikisi de artik
+yalnizca steel_acoustic tasiyor.
+
+Harmony kaynak baglami: once o bolumde susan ritim gitari, simdi
+`gitar (acoustic_guitar)`.
+
+14/14 tur yeniden uygulandi. WAV'lar `artifacts/replay-2h-b1/wav/`.

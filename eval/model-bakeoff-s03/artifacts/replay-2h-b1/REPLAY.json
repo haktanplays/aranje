@@ -1,0 +1,238 @@
+{
+  "what": "Deterministic materializer replay of candidate A's accepted blueprint against the 2H-B.1 boundary.",
+  "notAModelRun": true,
+  "measuresModelQuality": false,
+  "trackDiff": [
+    {
+      "role": "rhythm_guitar",
+      "presetIntent": "High-gain, tight low end with present midrange",
+      "before": "electric_guitar/high_gain",
+      "after": "electric_guitar/high_gain",
+      "changed": false
+    },
+    {
+      "role": "lead_guitar",
+      "presetIntent": "High-gain lead voice with long sustain and bite",
+      "before": "electric_guitar/high_gain",
+      "after": "electric_guitar/high_gain",
+      "changed": false
+    },
+    {
+      "role": "acoustic_guitar",
+      "presetIntent": "Natural steel-string acoustic, no drive, woody and open",
+      "before": "steel_acoustic/finger",
+      "after": "steel_acoustic/finger",
+      "changed": false
+    },
+    {
+      "role": "harmony",
+      "presetIntent": "Second clean acoustic voice, soft attack, upper register",
+      "before": "electric_guitar/clean",
+      "after": "steel_acoustic/finger",
+      "changed": true
+    },
+    {
+      "role": "drums",
+      "presetIntent": "Dry punchy kit, hard cracking snare, tight low tom",
+      "before": "drum_kit/rock",
+      "after": "drum_kit/rock",
+      "changed": false
+    }
+  ],
+  "sectionDiff": [
+    {
+      "key": "intro",
+      "displayName": "Intro",
+      "plannedAcousticOnly": false,
+      "before": [
+        "drum_kit",
+        "electric_guitar"
+      ],
+      "after": [
+        "drum_kit",
+        "electric_guitar"
+      ],
+      "violatedBefore": false,
+      "violatedAfter": false
+    },
+    {
+      "key": "break",
+      "displayName": "Break",
+      "plannedAcousticOnly": false,
+      "before": [
+        "drum_kit",
+        "electric_guitar"
+      ],
+      "after": [
+        "drum_kit",
+        "electric_guitar"
+      ],
+      "violatedBefore": false,
+      "violatedAfter": false
+    },
+    {
+      "key": "bridge",
+      "displayName": "Bridge",
+      "plannedAcousticOnly": false,
+      "before": [
+        "drum_kit",
+        "electric_guitar",
+        "electric_guitar"
+      ],
+      "after": [
+        "drum_kit",
+        "electric_guitar",
+        "electric_guitar"
+      ],
+      "violatedBefore": false,
+      "violatedAfter": false
+    },
+    {
+      "key": "solo",
+      "displayName": "Solo",
+      "plannedAcousticOnly": false,
+      "before": [
+        "drum_kit",
+        "electric_guitar",
+        "electric_guitar"
+      ],
+      "after": [
+        "drum_kit",
+        "electric_guitar",
+        "electric_guitar"
+      ],
+      "violatedBefore": false,
+      "violatedAfter": false
+    },
+    {
+      "key": "acoustic_bridge",
+      "displayName": "Acoustic Bridge",
+      "plannedAcousticOnly": true,
+      "before": [
+        "electric_guitar",
+        "steel_acoustic"
+      ],
+      "after": [
+        "steel_acoustic",
+        "steel_acoustic"
+      ],
+      "violatedBefore": true,
+      "violatedAfter": false
+    },
+    {
+      "key": "outro",
+      "displayName": "Acoustic Outro",
+      "plannedAcousticOnly": true,
+      "before": [
+        "electric_guitar",
+        "steel_acoustic"
+      ],
+      "after": [
+        "steel_acoustic",
+        "steel_acoustic"
+      ],
+      "violatedBefore": true,
+      "violatedAfter": false
+    }
+  ],
+  "sourceDiff": [
+    {
+      "section": "Acoustic Bridge",
+      "harmonyNowSees": [
+        "gitar (acoustic_guitar)"
+      ]
+    },
+    {
+      "section": "Acoustic Outro",
+      "harmonyNowSees": [
+        "gitar (acoustic_guitar)"
+      ]
+    }
+  ],
+  "replayLog": [
+    {
+      "turn": 1,
+      "label": "Intro / rhythm_guitar",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 2,
+      "label": "Intro / drums",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 3,
+      "label": "Break / rhythm_guitar",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 4,
+      "label": "Break / drums",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 5,
+      "label": "Bridge / rhythm_guitar",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 6,
+      "label": "Bridge / lead_guitar",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 7,
+      "label": "Bridge / drums",
+      "ok": true,
+      "detail": "0 warning"
+    },
+    {
+      "turn": 8,
+      "label": "Solo / lead_guitar",
+      "ok": true,
+      "detail": "2 warning"
+    },
+    {
+      "turn": 9,
+      "label": "Solo / rhythm_guitar",
+      "ok": true,
+      "detail": "3 warning"
+    },
+    {
+      "turn": 10,
+      "label": "Solo / drums",
+      "ok": true,
+      "detail": "3 warning"
+    },
+    {
+      "turn": 11,
+      "label": "Acoustic Bridge / acoustic_guitar",
+      "ok": true,
+      "detail": "4 warning"
+    },
+    {
+      "turn": 12,
+      "label": "Acoustic Bridge / harmony",
+      "ok": true,
+      "detail": "4 warning"
+    },
+    {
+      "turn": 13,
+      "label": "Acoustic Outro / acoustic_guitar",
+      "ok": true,
+      "detail": "5 warning"
+    },
+    {
+      "turn": 14,
+      "label": "Acoustic Outro / harmony",
+      "ok": true,
+      "detail": "5 warning"
+    }
+  ]
+}

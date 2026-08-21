@@ -43,36 +43,6 @@ export type MaterializeResult =
   | { ok: true; song: Song; sectionIdByKey: Map<string, string>; trackIdByRole: Map<string, string> }
   | { ok: false; reason: string };
 
-/**
- * Which instrument each role is realised on, and where it sits (spec 5.2,
- * 8.1, K-31).
- *
- * The pan is part of the *shape* of an arrangement, not a mixing afterthought:
- * two amplified guitars stacked dead centre fight each other for the same
- * frequencies in the same place, and the first S-02 render measured exactly
- * that — 0.00 dB of separation across the whole piece. Anything that carries
- * the middle of the mix on its own stays there.
- *
- * Conservative on purpose: wide enough to separate, never hard-panned, so a
- * listener on one earbud still hears the piece.
- */
-/**
- * Kept only for the pan geometry and as documentation of the historical
- * defaults. It is no longer the authority on which instrument a role gets:
- * `resolveInstrumentIntent` is, and it reads the blueprint (spec 5.2, K-35).
- */
-const INSTRUMENT_BY_ROLE: Readonly<
-  Record<ArrangeSkill, { instrumentId: string; presetId: string; pan: number }>
-> = {
-  rhythm_guitar: { instrumentId: "electric_guitar", presetId: "high_gain", pan: -0.3 },
-  lead_guitar: { instrumentId: "electric_guitar", presetId: "high_gain", pan: 0.25 },
-  harmony: { instrumentId: "electric_guitar", presetId: "clean", pan: 0.35 },
-  // Alone in its section, so it belongs in the middle.
-  acoustic_guitar: { instrumentId: "steel_acoustic", presetId: "finger", pan: 0 },
-  bass: { instrumentId: "electric_bass", presetId: "finger", pan: 0 },
-  drums: { instrumentId: "drum_kit", presetId: "rock", pan: 0 },
-};
-
 /** Tuning words to a preset. Unrecognised wording falls back to standard. */
 function tuningFor(intent: string): readonly string[] {
   const text = intent.toLowerCase();
