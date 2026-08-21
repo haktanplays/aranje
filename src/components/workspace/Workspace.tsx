@@ -10,11 +10,13 @@ import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { FretSheet, type FretSheetTarget } from "@/components/workspace/FretSheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
-import { SectionChips } from "@/components/workspace/SectionChips";
+import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
+import { SectionNavigator } from "@/components/workspace/SectionNavigator";
+import { Sheet } from "@/components/workspace/Sheet";
+import { SectionSheet } from "@/components/workspace/SectionSheet";
 import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { BAR_KEY_ATTRIBUTE, TabCanvas } from "@/components/workspace/TabCanvas";
-import { TrackSelector, trackSummary } from "@/components/workspace/TrackSelector";
-import { TrackSheet } from "@/components/workspace/TrackSheet";
+import { TrackSheet, trackLine } from "@/components/workspace/TrackSheet";
 import { TransportBar } from "@/components/workspace/TransportBar";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { useSettings } from "@/lib/settings/use-settings";
@@ -40,6 +42,7 @@ import { sectionBarStartTicks } from "@/lib/song/onset-block";
 import { ticksPerBar, ticksPerSlot, slotsPerNotatedBeat } from "@/lib/music/timing";
 import { formatBpm } from "@/lib/audio/practice-rate";
 import { BRAND_NAME } from "@/lib/brand";
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { availableSkills, targetsFor } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { formatTimeSignature } from "@/lib/music/timing";
@@ -82,6 +85,8 @@ export function Workspace() {
   const [selectedTrackId, setSelectedTrackId] = useState(firstTrackId);
   const [activeBarKey, setActiveBarKey] = useState<string | null>(null);
   const [trackSheetOpen, setTrackSheetOpen] = useState(false);
+  const [sectionSheetOpen, setSectionSheetOpen] = useState(false);
+  const [practiceSheetOpen, setPracticeSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
 
   /*
@@ -667,34 +672,57 @@ export function Workspace() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <header className="flex items-center gap-3 border-b border-line px-3 py-2">
-        <div className="min-w-0 flex-1">
-          <p className="text-bronze text-[10px] font-semibold tracking-[0.18em] uppercase">
+      {/*
+        Three columns, and the outer two are fixed.
+
+        The brand and the song title used to start at the very edge of the
+        screen, which is where a host shell puts its close control — so the
+        first characters of both sat underneath it. A title that is unreadable
+        at its start is worse than a truncated one, because truncation at least
+        happens at the end. The centre column is the only one that flexes, and
+        `min-w-0` is what lets it truncate instead of pushing the trailing
+        action off the screen.
+      */}
+      <header
+        className="border-line grid items-center gap-2 border-b px-2 py-1.5"
+        style={{
+          gridTemplateColumns: `${MIN_TOUCH_TARGET_PX}px minmax(0, 1fr) ${MIN_TOUCH_TARGET_PX}px`,
+        }}
+      >
+        {/*
+          Reserved, not decorative. The shell this runs inside draws its own
+          close control here; the header's job is to leave it the room rather
+          than to draw underneath it.
+        */}
+        <div aria-hidden style={{ width: MIN_TOUCH_TARGET_PX }} />
+
+        <div className="min-w-0">
+          {/* The mark stays. It was never the thing taking the room — it was
+              the thing starting underneath the shell's close control. */}
+          <p className="text-bronze truncate text-[9px] font-semibold tracking-[0.18em] uppercase">
             {BRAND_NAME}
           </p>
-          <h1 className="font-display truncate text-base leading-tight">
+          <h1 className="font-display truncate text-sm leading-tight">
             {song.title}
           </h1>
-        </div>
-        <p className="text-muted shrink-0 text-right text-[11px] tabular-nums">
-          {song.key}
-          <br />
           {/*
-            The tempo sounding now, not the song's top-level number. On a song
+            Key, tempo and meter on one line under the title. The tempo shown is
+            the one sounding now, not the song's top-level number: on a song
             that changes tempo the two differ for most of its length, and a
             header that is wrong most of the time is worse than no header
-            (spec 13.8, K-25). The bullet says the reading is one of several.
+            (spec 13.8, K-25).
           */}
-          {state.hasTempoChanges
-            ? `${formatBpm(state.activeBpm)} BPM •`
-            : `${song.bpm} BPM`}{" "}
-          · {meter}
-        </p>
+          <p className="text-muted truncate text-[10px] leading-tight tabular-nums">
+            {song.key} · {state.hasTempoChanges ? `${formatBpm(state.activeBpm)} BPM •` : `${song.bpm} BPM`} · {meter}
+          </p>
+        </div>
+
         <button
           type="button"
           onClick={() => setInfoOpen(true)}
           aria-label="Ses kaynakları ve lisans"
-          className="text-muted min-h-11 min-w-11 shrink-0 rounded-lg border border-line text-sm"
+          className="text-muted border-line justify-self-end rounded-lg border text-sm"
+          style={{ width: MIN_TOUCH_TARGET_PX, height: MIN_TOUCH_TARGET_PX }}
         >
           <span aria-hidden>&#9432;</span>
         </button>
@@ -723,24 +751,23 @@ export function Workspace() {
         onChange={(next) => (next === "arrange" ? enterArrange() : setView("tab"))}
       />
 
-      <SectionChips
-        runs={runs}
-        activeSectionId={activeSectionId}
-        loopSectionId={state.loopSectionId}
-        onJump={(sectionId) => {
-          if (view === "tab") {
-            jumpToSection(sectionId);
-            return;
-          }
-          const section = arrangement.sections.find(
-            (entry) => entry.sectionId === sectionId,
-          );
-          const scroller = arrangeScrollRef.current;
-          if (!section || !scroller) return;
-          // Scrolls, and only scrolls. Seeking is a bar cell's job.
-          scroller.scrollTo({ left: section.left, behavior: "smooth" });
-        }}
-      />
+      {/*
+        Only on the tab.
+        
+        The arrangement already draws every section with its own header, its
+        bar count and its tempo, so a strip listing the same names above it
+        would be telling the reader about something they are looking at — and
+        charging them eighty-nine pixels of a seven hundred pixel screen for it.
+      */}
+      {view === "tab" ? (
+        <SectionNavigator
+          runs={runs}
+          activeSectionId={activeSectionId}
+          loopSectionId={state.loopSectionId}
+          onJump={jumpToSection}
+          onOpenList={() => setSectionSheetOpen(true)}
+        />
+      ) : null}
 
       <main className="min-h-0 flex-1">
         {/*
@@ -890,16 +917,28 @@ export function Workspace() {
       />
 
       {/*
-        Both of these describe *the tab's* chosen track. The arrangement shows
-        every track at once, each with its own name and instrument, so on that
-        surface they are a second copy of what is already on screen — and a
-        second copy costs the lanes the room they need. At 320x700 the chrome
-        left the overview forty pixels: less than one lane of eight.
+        One line where a four-by-two grid of track buttons used to be.
+
+        The grid answered "which track?" permanently, and that question gets
+        asked a handful of times a session. At 320x700 it cost fifty-seven
+        pixels of a tab surface that had forty left. The list is not gone —
+        it moved into the sheet this control opens, with the same `onSelect`
+        behind it, so track changing still goes through one state path.
       */}
       {track && view === "tab" ? (
-        <p className="text-muted truncate border-t border-line px-3 py-1.5 text-[11px]">
-          {trackSummary(track)}
-        </p>
+        <button
+          type="button"
+          data-track-control
+          onClick={() => setTrackSheetOpen(true)}
+          aria-label={`Aktif track: ${trackLine(track)}. Track değiştir`}
+          className="border-line flex items-center justify-between gap-2 border-t px-3 text-left"
+          style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+        >
+          <span className="text-bronze truncate text-sm">{trackLine(track)}</span>
+          <span className="text-muted shrink-0 text-xs" aria-hidden>
+            &#9662;
+          </span>
+        </button>
       ) : null}
 
       {editing ? (
@@ -932,25 +971,6 @@ export function Workspace() {
         canToggleEdit={view === "tab"}
       />
 
-      {view === "tab" ? (
-      <TrackSelector
-        tracks={song.tracks}
-        selectedTrackId={track?.id ?? ""}
-        onSelect={(id) => {
-          setEditing(false);
-          setCell(null);
-          clearSelection();
-          // A selection belongs to one track and one section (2I-A V1), so it
-          // cannot survive a change of either.
-          transform.clear();
-          setSheet(null);
-          setPasteAt({ kind: "idle" });
-          setSelectedTrackId(id);
-        }}
-        onOpenDetails={() => setTrackSheetOpen(true)}
-      />
-      ) : null}
-
       <TransportBar
         state={state}
         runs={runs}
@@ -958,12 +978,47 @@ export function Workspace() {
         onRewind={() => controller.rewind()}
         onToggleLoop={toggleLoop}
         onToggleMetronome={() => controller.setMetronome(!state.metronome)}
-        onPracticePercentChange={setPracticeRatePercent}
+        onOpenPracticeRate={() => setPracticeSheetOpen(true)}
       />
+
+      {/*
+        The practice-rate controls, on demand.
+        
+        Same control, same state path — it moved out of the permanent footer
+        and behind the pill that shows its value. Practice rate is a thing you
+        set and then work at, not a thing you adjust continuously.
+      */}
+      <Sheet
+        open={practiceSheetOpen}
+        title="Çalışma hızı"
+        onClose={() => setPracticeSheetOpen(false)}
+        labelledBy="practice-sheet-title"
+      >
+        <PracticeRateControl
+          songBpm={state.songBpm}
+          percent={state.practicePercent}
+          onChange={setPracticeRatePercent}
+        />
+        <p className="text-muted mt-3 text-xs">
+          Şarkının kendi temposu değişmez; yalnız çalma hızı değişir.
+        </p>
+      </Sheet>
 
       {track ? (
         <TrackSheet
-          track={track}
+          tracks={song.tracks}
+          selectedTrackId={track.id}
+          onSelect={(id) => {
+            setEditing(false);
+            setCell(null);
+            clearSelection();
+            // A selection belongs to one track and one section (2I-A V1), so
+            // it cannot survive a change of either.
+            transform.clear();
+            setSheet(null);
+            setPasteAt({ kind: "idle" });
+            setSelectedTrackId(id);
+          }}
           open={trackSheetOpen}
           onClose={() => setTrackSheetOpen(false)}
         />
@@ -1079,6 +1134,14 @@ export function Workspace() {
         onStop={copilot.stop}
         onApply={copilot.apply}
         onReject={copilot.close}
+      />
+
+      <SectionSheet
+        runs={runs}
+        activeSectionId={activeSectionId}
+        open={sectionSheetOpen}
+        onJump={jumpToSection}
+        onClose={() => setSectionSheetOpen(false)}
       />
 
       <InfoSheet open={infoOpen} onClose={() => setInfoOpen(false)} />

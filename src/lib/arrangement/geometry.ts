@@ -47,8 +47,19 @@ export const PX_PER_WHOLE = 96;
 /** Height of one track's lane. A lane is tappable, so it meets the minimum. */
 export const LANE_HEIGHT = 44;
 
-/** Width of the sticky track-name column on the left. */
-export const TRACK_LABEL_WIDTH = 96;
+/**
+ * Width of the sticky track-name column on the left.
+ *
+ * Every pixel here is a pixel of music the reader does not see, and at 320px it
+ * was taking nearly a third of the row to print an instrument name that the
+ * track sheet already carries in full. The lane shows the track's *name*; what
+ * it is and how it is set up is a question with a place to be answered.
+ *
+ * Narrow enough to give the timeline the room, wide enough that a real Turkish
+ * track name — "Ritim Gitar", "Klasik Gitar" — is readable rather than three
+ * letters and an ellipsis.
+ */
+export const TRACK_LABEL_WIDTH = 108;
 
 /**
  * Height of the section header strip above the lanes.

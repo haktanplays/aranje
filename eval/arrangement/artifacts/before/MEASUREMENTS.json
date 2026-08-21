@@ -1,0 +1,284 @@
+{
+  "390x844": {
+    "arrange": {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 61
+      },
+      "brand": {
+        "x": 12,
+        "y": 13,
+        "width": 211,
+        "height": 15
+      },
+      "title": {
+        "x": 12,
+        "y": 28,
+        "width": 211,
+        "height": 20
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 334,
+          "y": 8,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 61,
+        "width": 390,
+        "height": 57
+      },
+      "sectionNav": null,
+      "work": {
+        "x": 0,
+        "y": 207,
+        "width": 390,
+        "height": 443
+      },
+      "trackColumn": {
+        "x": 0,
+        "y": 251,
+        "width": 96,
+        "height": 44
+      },
+      "trackControl": null,
+      "actionRow": null,
+      "transport": {
+        "x": 0,
+        "y": 707,
+        "width": 390,
+        "height": 138
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 8,
+      "silentWords": 139,
+      "instrumentIds": 0,
+      "englishLabels": 8
+    },
+    "playing": {
+      "visibleLanes": 8
+    },
+    "tab": {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 61
+      },
+      "brand": {
+        "x": 12,
+        "y": 13,
+        "width": 211,
+        "height": 15
+      },
+      "title": {
+        "x": 12,
+        "y": 28,
+        "width": 211,
+        "height": 20
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 334,
+          "y": 8,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 61,
+        "width": 390,
+        "height": 57
+      },
+      "sectionNav": null,
+      "work": {
+        "x": 0,
+        "y": 207,
+        "width": 390,
+        "height": 256
+      },
+      "trackColumn": null,
+      "trackControl": null,
+      "actionRow": null,
+      "transport": {
+        "x": 0,
+        "y": 707,
+        "width": 390,
+        "height": 138
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 0,
+      "silentWords": 0,
+      "instrumentIds": 0,
+      "englishLabels": 1
+    },
+    "headerOverlap": {
+      "brandUnderLeading": 0,
+      "titleUnderLeading": 0
+    },
+    "errors": []
+  },
+  "320x700": {
+    "arrange": {
+      "viewport": {
+        "w": 320,
+        "h": 700
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 61
+      },
+      "brand": {
+        "x": 12,
+        "y": 13,
+        "width": 141,
+        "height": 15
+      },
+      "title": {
+        "x": 12,
+        "y": 28,
+        "width": 141,
+        "height": 20
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 264,
+          "y": 8,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 61,
+        "width": 320,
+        "height": 57
+      },
+      "sectionNav": null,
+      "work": {
+        "x": 0,
+        "y": 207,
+        "width": 320,
+        "height": 274
+      },
+      "trackColumn": {
+        "x": 0,
+        "y": 251,
+        "width": 96,
+        "height": 44
+      },
+      "trackControl": null,
+      "actionRow": null,
+      "transport": {
+        "x": 0,
+        "y": 538,
+        "width": 320,
+        "height": 162
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 5,
+      "silentWords": 139,
+      "instrumentIds": 0,
+      "englishLabels": 8
+    },
+    "playing": {
+      "visibleLanes": 5
+    },
+    "tab": {
+      "viewport": {
+        "w": 320,
+        "h": 700
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 61
+      },
+      "brand": {
+        "x": 12,
+        "y": 13,
+        "width": 141,
+        "height": 15
+      },
+      "title": {
+        "x": 12,
+        "y": 28,
+        "width": 141,
+        "height": 20
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 264,
+          "y": 8,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 61,
+        "width": 320,
+        "height": 57
+      },
+      "sectionNav": null,
+      "work": {
+        "x": 0,
+        "y": 207,
+        "width": 320,
+        "height": 40
+      },
+      "trackColumn": null,
+      "trackControl": null,
+      "actionRow": null,
+      "transport": {
+        "x": 0,
+        "y": 538,
+        "width": 320,
+        "height": 162
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 0,
+      "silentWords": 0,
+      "instrumentIds": 0,
+      "englishLabels": 1
+    },
+    "headerOverlap": {
+      "brandUnderLeading": 0,
+      "titleUnderLeading": 0
+    },
+    "errors": []
+  }
+}

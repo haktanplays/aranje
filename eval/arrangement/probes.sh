@@ -189,3 +189,101 @@ PY
 
   npm run build >/dev/null 2>&1
 fi
+
+# ------------------------------------------------------------ visual (2J-P)
+#
+#   bash eval/arrangement/probes.sh --visual
+#
+# Six probes against the visual acceptance targets. They matter for the same
+# reason the others do: a header that draws under a button and a screen that
+# spends its height on chrome both look like ordinary screens.
+#
+if [ "${1:-}" = "--visual" ]; then
+  vprobe() {
+    local name="$1" file="$2" find="$3" repl="$4" test_name="$5"
+    cp "$file" "$file.probebak"
+    python3 - "$file" "$find" "$repl" <<'PY'
+import io,sys
+p,f,r=sys.argv[1],sys.argv[2],sys.argv[3]
+s=io.open(p,encoding="utf-8").read()
+if f not in s:
+    sys.stderr.write("ANCHOR MISSING\n"); sys.exit(2)
+io.open(p,"w",encoding="utf-8").write(s.replace(f,r,1))
+PY
+    if [ $? -ne 0 ]; then echo "SKIP  $name (anchor)"; mv "$file.probebak" "$file"; return; fi
+
+    if ! npm run build >/dev/null 2>&1; then
+      echo "BROKEN $name  <-- the mutation does not build"
+      mv "$file.probebak" "$file"; return
+    fi
+    pkill -f '[n]ext-server' 2>/dev/null || true
+    sleep 1
+    (npx next start -p 3100 >/dev/null 2>&1 &)
+    until curl -s -m 2 -o /dev/null http://127.0.0.1:3100/; do sleep 1; done
+
+    VISUAL_OUT=/tmp/arr-visual-probe \
+      timeout 600 node eval/arrangement/visual.mjs > /tmp/arr-visual-out.txt 2>&1
+
+    if grep -q "^FAIL.*${test_name}" /tmp/arr-visual-out.txt; then
+      echo "RED   $name"
+    elif grep -q "^FAIL" /tmp/arr-visual-out.txt; then
+      caught=$(grep -m1 "^FAIL" /tmp/arr-visual-out.txt | sed 's/^FAIL *//' | cut -c1-56)
+      echo "RED   $name  (caught by: $caught)"
+    elif ! grep -q "${test_name}" /tmp/arr-visual-out.txt; then
+      echo "BROKEN $name  <-- the run never reached any check"
+    else
+      echo "GREEN $name  <-- VACUOUS"
+    fi
+    mv "$file.probebak" "$file"
+  }
+
+  mkdir -p /tmp/arr-visual-probe
+
+  # 13 — the title may not start underneath the leading action
+  vprobe "13 the header draws under the leading slot" \
+    src/components/workspace/Workspace.tsx \
+    'gridTemplateColumns: `${MIN_TOUCH_TARGET_PX}px minmax(0, 1fr) ${MIN_TOUCH_TARGET_PX}px`,' \
+    'gridTemplateColumns: `0px minmax(0, 1fr) ${MIN_TOUCH_TARGET_PX}px`,' \
+    "header text starts after the leading slot"
+
+  # 14 — the switch is a strip, not two cards
+  vprobe "14 the view switch grows back into cards" \
+    src/components/workspace/ViewSwitch.tsx \
+    'className="bg-app border-line relative z-40 flex border-b px-3"' \
+    'className="bg-app border-line relative z-40 flex gap-1 border-b px-3 py-4"' \
+    "the view switch is a strip"
+
+  # 15 — the sticky column may not eat the timeline
+  vprobe "15 the track column takes the timeline's width" \
+    src/lib/arrangement/geometry.ts \
+    'export const TRACK_LABEL_WIDTH = 108;' \
+    'export const TRACK_LABEL_WIDTH = 168;' \
+    "the track column leaves the timeline its width"
+
+  # 16 — a silent cell is an empty surface, not a printed word
+  vprobe "16 every silent cell prints a word again" \
+    src/components/workspace/ArrangementCanvas.tsx \
+    '                      <CellContent cell={cell} width={bar.width} />' \
+    '                      <CellContent cell={cell} width={bar.width} />
+                      {cell.kind === "silent" ? (
+                        <span className="absolute inset-0 text-[8px]">Sessiz</span>
+                      ) : null}' \
+    'no cell prints the word "Sessiz"'
+
+  # 17 — the reader never sees the registry's English
+  vprobe "17 the English instrument label reaches the screen" \
+    src/lib/instruments/labels.ts \
+    '  electric_guitar: "Elektro gitar",' \
+    '  electric_guitar_disabled: "Elektro gitar",' \
+    "no English instrument label reaches the screen"
+
+  # 18 — the transport is one row
+  vprobe "18 the transport grows a second row" \
+    src/components/workspace/TransportBar.tsx \
+    '      <div className="flex items-center gap-2 px-3 py-1.5">' \
+    '      <div className="h-24" />
+      <div className="flex items-center gap-2 px-3 py-1.5">' \
+    "the transport is one row"
+
+  npm run build >/dev/null 2>&1
+fi

@@ -152,8 +152,10 @@ export function FrettedBarBlock({
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}
         </span>
+        {/* Grey, because a grid label is passive information. Gold on this
+            surface means a control the reader chose, and this is neither. */}
         {gridLabel ? (
-          <span className="text-bronze/80 truncate text-[10px]">{gridLabel}</span>
+          <span className="text-muted/80 truncate text-[10px]">{gridLabel}</span>
         ) : null}
       </div>
 

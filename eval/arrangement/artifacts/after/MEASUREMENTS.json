@@ -1,0 +1,525 @@
+{
+  "390x844": {
+    "arrange": {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 57
+      },
+      "brand": {
+        "x": 60,
+        "y": 6,
+        "width": 270,
+        "height": 14
+      },
+      "title": {
+        "x": 60,
+        "y": 20,
+        "width": 270,
+        "height": 18
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 338,
+          "y": 6,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 57,
+        "width": 390,
+        "height": 47
+      },
+      "sectionNav": null,
+      "work": {
+        "x": 0,
+        "y": 104,
+        "width": 390,
+        "height": 634
+      },
+      "trackColumn": {
+        "x": 0,
+        "y": 148,
+        "width": 108,
+        "height": 44
+      },
+      "trackControl": null,
+      "actionRow": {
+        "x": 0,
+        "y": 738,
+        "width": 390,
+        "height": 49
+      },
+      "transport": {
+        "x": 0,
+        "y": 787,
+        "width": 390,
+        "height": 57
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 8,
+      "silentWords": 0,
+      "instrumentIds": 0,
+      "englishLabels": 0
+    },
+    "playing": {
+      "visibleLanes": 8
+    },
+    "tab": {
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 57
+      },
+      "brand": {
+        "x": 60,
+        "y": 6,
+        "width": 270,
+        "height": 14
+      },
+      "title": {
+        "x": 60,
+        "y": 20,
+        "width": 270,
+        "height": 18
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 338,
+          "y": 6,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 57,
+        "width": 390,
+        "height": 47
+      },
+      "sectionNav": {
+        "x": 0,
+        "y": 104,
+        "width": 390,
+        "height": 49
+      },
+      "work": {
+        "x": 0,
+        "y": 153,
+        "width": 390,
+        "height": 541
+      },
+      "trackColumn": null,
+      "trackControl": {
+        "x": 0,
+        "y": 694,
+        "width": 390,
+        "height": 44
+      },
+      "actionRow": {
+        "x": 0,
+        "y": 738,
+        "width": 390,
+        "height": 49
+      },
+      "transport": {
+        "x": 0,
+        "y": 787,
+        "width": 390,
+        "height": 57
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 0,
+      "silentWords": 0,
+      "instrumentIds": 0,
+      "englishLabels": 0
+    },
+    "sheet": {
+      "englishLabels": 0,
+      "instrumentIds": 0
+    },
+    "headerOverlap": {
+      "brandUnderLeading": 0,
+      "titleUnderLeading": 0
+    },
+    "errors": []
+  },
+  "320x700": {
+    "arrange": {
+      "viewport": {
+        "w": 320,
+        "h": 700
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 57
+      },
+      "brand": {
+        "x": 60,
+        "y": 6,
+        "width": 200,
+        "height": 14
+      },
+      "title": {
+        "x": 60,
+        "y": 20,
+        "width": 200,
+        "height": 18
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 268,
+          "y": 6,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 57,
+        "width": 320,
+        "height": 47
+      },
+      "sectionNav": null,
+      "work": {
+        "x": 0,
+        "y": 104,
+        "width": 320,
+        "height": 490
+      },
+      "trackColumn": {
+        "x": 0,
+        "y": 148,
+        "width": 108,
+        "height": 44
+      },
+      "trackControl": null,
+      "actionRow": {
+        "x": 0,
+        "y": 594,
+        "width": 320,
+        "height": 49
+      },
+      "transport": {
+        "x": 0,
+        "y": 643,
+        "width": 320,
+        "height": 57
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 8,
+      "silentWords": 0,
+      "instrumentIds": 0,
+      "englishLabels": 0
+    },
+    "playing": {
+      "visibleLanes": 8
+    },
+    "tab": {
+      "viewport": {
+        "w": 320,
+        "h": 700
+      },
+      "header": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 57
+      },
+      "brand": {
+        "x": 60,
+        "y": 6,
+        "width": 200,
+        "height": 14
+      },
+      "title": {
+        "x": 60,
+        "y": 20,
+        "width": 200,
+        "height": 18
+      },
+      "headerActions": [
+        {
+          "id": "Ses kaynakları ve lisans",
+          "x": 268,
+          "y": 6,
+          "width": 44,
+          "height": 44
+        }
+      ],
+      "viewSwitch": {
+        "x": 0,
+        "y": 57,
+        "width": 320,
+        "height": 47
+      },
+      "sectionNav": {
+        "x": 0,
+        "y": 104,
+        "width": 320,
+        "height": 49
+      },
+      "work": {
+        "x": 0,
+        "y": 153,
+        "width": 320,
+        "height": 397
+      },
+      "trackColumn": null,
+      "trackControl": {
+        "x": 0,
+        "y": 550,
+        "width": 320,
+        "height": 44
+      },
+      "actionRow": {
+        "x": 0,
+        "y": 594,
+        "width": 320,
+        "height": 49
+      },
+      "transport": {
+        "x": 0,
+        "y": 643,
+        "width": 320,
+        "height": 57
+      },
+      "status": null,
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "small": [],
+      "visibleLanes": 0,
+      "silentWords": 0,
+      "instrumentIds": 0,
+      "englishLabels": 0
+    },
+    "sheet": {
+      "englishLabels": 0,
+      "instrumentIds": 0
+    },
+    "headerOverlap": {
+      "brandUnderLeading": 0,
+      "titleUnderLeading": 0
+    },
+    "errors": []
+  },
+  "checks": [
+    {
+      "name": "[390x844] header text starts after the leading slot",
+      "pass": true,
+      "detail": "title x=60 brand x=60 (reserved to 44)"
+    },
+    {
+      "name": "[390x844] header text does not overlap an action",
+      "pass": true,
+      "detail": "brand 0px² title 0px²"
+    },
+    {
+      "name": "[390x844] the view switch is a strip, not two cards",
+      "pass": true,
+      "detail": "47px"
+    },
+    {
+      "name": "[390x844] Düzen shows no section chip strip",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "[390x844] Tab keeps a one-row section navigator",
+      "pass": true,
+      "detail": "49px"
+    },
+    {
+      "name": "[390x844] the track column leaves the timeline its width",
+      "pass": true,
+      "detail": "108px of 390 (limit 124)"
+    },
+    {
+      "name": "[390x844] at least six lanes are on screen in Düzen",
+      "pass": true,
+      "detail": "8 lanes"
+    },
+    {
+      "name": "[390x844] the tab is the biggest thing on the tab screen",
+      "pass": true,
+      "detail": "541 vs 93"
+    },
+    {
+      "name": "[390x844] the action row is one row",
+      "pass": true,
+      "detail": "49px"
+    },
+    {
+      "name": "[390x844] the transport is one row",
+      "pass": true,
+      "detail": "57px"
+    },
+    {
+      "name": "[390x844] no cell prints the word \"Sessiz\"",
+      "pass": true,
+      "detail": "0 cells"
+    },
+    {
+      "name": "[390x844] no English instrument label reaches the screen",
+      "pass": true,
+      "detail": "düzen 0 · tab 0 · sheet 0"
+    },
+    {
+      "name": "[390x844] no technical id reaches the screen",
+      "pass": true,
+      "detail": "düzen 0 · tab 0 · sheet 0"
+    },
+    {
+      "name": "[390x844] no body overflow in Düzen",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] no body overflow in Tab",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] one horizontal scroller in Düzen",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] one horizontal scroller in Tab",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] every target is 44px or more",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "[390x844] no console or page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] header text starts after the leading slot",
+      "pass": true,
+      "detail": "title x=60 brand x=60 (reserved to 44)"
+    },
+    {
+      "name": "[320x700] header text does not overlap an action",
+      "pass": true,
+      "detail": "brand 0px² title 0px²"
+    },
+    {
+      "name": "[320x700] the view switch is a strip, not two cards",
+      "pass": true,
+      "detail": "47px"
+    },
+    {
+      "name": "[320x700] Düzen shows no section chip strip",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "[320x700] Tab keeps a one-row section navigator",
+      "pass": true,
+      "detail": "49px"
+    },
+    {
+      "name": "[320x700] the track column leaves the timeline its width",
+      "pass": true,
+      "detail": "108px of 320 (limit 116)"
+    },
+    {
+      "name": "[320x700] at least six lanes are on screen in Düzen",
+      "pass": true,
+      "detail": "8 lanes"
+    },
+    {
+      "name": "[320x700] the tab is the biggest thing on the tab screen",
+      "pass": true,
+      "detail": "397 vs 93"
+    },
+    {
+      "name": "[320x700] the action row is one row",
+      "pass": true,
+      "detail": "49px"
+    },
+    {
+      "name": "[320x700] the transport is one row",
+      "pass": true,
+      "detail": "57px"
+    },
+    {
+      "name": "[320x700] no cell prints the word \"Sessiz\"",
+      "pass": true,
+      "detail": "0 cells"
+    },
+    {
+      "name": "[320x700] no English instrument label reaches the screen",
+      "pass": true,
+      "detail": "düzen 0 · tab 0 · sheet 0"
+    },
+    {
+      "name": "[320x700] no technical id reaches the screen",
+      "pass": true,
+      "detail": "düzen 0 · tab 0 · sheet 0"
+    },
+    {
+      "name": "[320x700] no body overflow in Düzen",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] no body overflow in Tab",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] one horizontal scroller in Düzen",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] one horizontal scroller in Tab",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] every target is 44px or more",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "[320x700] no console or page errors",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": 0
+}

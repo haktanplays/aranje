@@ -14,6 +14,25 @@
  * ticks say "it is busy here", the bridge says "this note is still ringing".
  * Anything finer is what the tab view is for, and it is one tap away.
  *
+ * ## What each colour means here
+ *
+ * Fixed roles, so nothing on this screen has to be decoded twice (spec 13.11):
+ *
+ * - **Blue** is the music's position and the music's continuity: the playhead
+ *   column, the bar being played, and the bridge where a sound carries into the
+ *   next bar. Nothing a *reader chooses* is blue.
+ * - **Gold** is the reader's own choice — the selected track's name — and
+ *   nothing else. It used to mark section boundaries and carry links too, which
+ *   put three unrelated meanings on one colour and made the boundaries shout
+ *   over the playhead.
+ * - **Grey** is everything passive: grid lines, bar lines, section boundaries,
+ *   the repeat note. The section boundary is heavier than a bar line and
+ *   lighter than the playhead, which is the whole of what it needs to say.
+ * - **Red** is never used here, because nothing on this surface fails.
+ *
+ * Depth follows the same idea: the grid sits back, the onsets a step forward.
+ * The lines are structure and the marks are the music.
+ *
  * ## One scroller
  *
  * This is the only horizontal scroller while the arrangement is on screen —
@@ -68,7 +87,7 @@ function CellContent({
         <span
           key={`s${index}`}
           aria-hidden
-          className="bg-muted/40 absolute h-px"
+          className="bg-text/35 absolute h-px"
           style={{
             left: x(sustain.from),
             width: Math.max(1, (sustain.to - sustain.from) * inner),
@@ -80,7 +99,7 @@ function CellContent({
         <span
           key={`m${index}`}
           aria-hidden
-          className="bg-steel absolute w-px"
+          className="bg-text/85 absolute w-px"
           style={{ left: x(mark.at), top: y(mark.height), height: 8 }}
         />
       ))}
@@ -109,15 +128,41 @@ function cellLabel(
 const repeatSentence = (barNumber: number) => `${barNumber}. ölçü ile aynı`;
 
 /**
- * The same claim, shortened to fit a bar.
+ * The same claim, as small as a bar can hold.
  *
- * A 6/8 cell is seventy-two pixels wide and the sentence does not fit in it, so
- * the cell shows the short form and carries the full one as its accessible name
- * and its tooltip. What it may not do is fall back to a symbol: "=1" is not
- * something a reader can be expected to decode, and this is the one label in
- * the view that makes a claim about the music rather than drawing it.
+ * A 6/8 cell is seventy-two pixels wide and the sentence does not fit, so the
+ * cell shows a mark and carries the full sentence as its accessible name and
+ * its tooltip. The recycle glyph is doing the work "= " used to: it says
+ * *repeat* without needing a word, which is what leaves room for the number
+ * that actually varies.
  */
-const repeatChip = (barNumber: number) => `= ${barNumber}. ölçü`;
+const repeatChip = (barNumber: number) => `\u21BB${barNumber}`;
+
+/**
+ * Is this cell the *start* of a run of repeats, or the middle of one?
+ *
+ * A bass line that plays the same bar for thirty bars is thirty true repeat
+ * labels, and thirty of anything down one lane is noise rather than
+ * information. The first cell of a run says which bar it repeats; the ones
+ * behind it keep a quieter mark that says the run is still going.
+ *
+ * Derived at render time from the model as it already is. No repeat-run data
+ * model is being invented here — a fuller summary belongs with the arrangement
+ * work in 2J.1, and this is presentation only.
+ */
+function repeatRunStart(
+  model: ArrangementModel,
+  trackId: string,
+  barIndex: number,
+): boolean {
+  const bar = model.bars[barIndex];
+  const cell = bar && model.cells.get(cellKey(trackId, bar.barKey));
+  if (!cell?.repeatOf) return false;
+  const previousBar = model.bars[barIndex - 1];
+  if (!previousBar) return true;
+  const previous = model.cells.get(cellKey(trackId, previousBar.barKey));
+  return previous?.repeatOf?.barKey !== cell.repeatOf.barKey;
+}
 
 export function ArrangementCanvas({
   model,
@@ -254,7 +299,7 @@ export function ArrangementCanvas({
               // the two together would make every glance at the structure move
               // the music.
               aria-label={`${section.name} bölümüne git`}
-              className="border-bronze/70 absolute top-0 flex items-center gap-1.5 overflow-hidden border-l px-1.5 text-left"
+              className="border-line absolute top-0 flex items-center gap-1.5 overflow-hidden border-l-2 px-1.5 text-left"
               style={{
                 left: TRACK_LABEL_WIDTH + section.left,
                 width: section.width,
@@ -298,24 +343,41 @@ export function ArrangementCanvas({
                 onClick={() => onSelectTrack(track.trackId)}
                 data-arr-track={track.trackId}
                 aria-pressed={track.trackId === selectedTrackId}
+                aria-label={`${track.name}, ${track.instrument}${
+                  track.silentThroughout ? ", bu şarkıda hiç çalmıyor" : ""
+                }`}
                 className={`bg-app border-line sticky left-0 z-10 shrink-0 border-r px-2 text-left ${
                   track.trackId === selectedTrackId ? "text-bronze" : "text-muted"
                 }`}
                 style={{ width: TRACK_LABEL_WIDTH, height: LANE_HEIGHT }}
               >
-                <span className="block truncate text-[11px] leading-tight">
+                {/*
+                  The name, and nothing under it.
+                  
+                  A second line saying "Elektro gitar" under "Ritim Gitar" is a
+                  category the reader can see from the lane itself, printed
+                  eight times down the side of the screen at the cost of the
+                  width the music needed. The instrument and its variation are
+                  in the track sheet, in full, where they are asked for.
+                */}
+                <span className="block truncate text-xs leading-tight">
                   {track.name}
                 </span>
-                {/* Registry labels, never the ids the song stores. */}
-                <span className="block truncate text-[9px] leading-tight opacity-70">
-                  {track.instrument}
-                </span>
+                {/* One mark, once, for a track that never plays at all. */}
+                {track.silentThroughout ? (
+                  <span className="text-muted/60 block text-[9px] leading-tight">
+                    sessiz
+                  </span>
+                ) : null}
               </button>
 
               <div className="relative" style={{ width: model.totalWidth }}>
-                {model.bars.map((bar) => {
+                {model.bars.map((bar, barIndex) => {
                   const cell = model.cells.get(cellKey(track.trackId, bar.barKey));
                   if (!cell) return null;
+                  const runStart =
+                    cell.repeatOf !== null &&
+                    repeatRunStart(model, track.trackId, barIndex);
                   return (
                     <button
                       key={bar.barKey}
@@ -329,9 +391,18 @@ export function ArrangementCanvas({
                       title={
                         cell.repeatOf ? repeatSentence(cell.repeatOf.barNumber) : undefined
                       }
-                      className={`absolute top-0 ${
-                        bar.isSectionStart ? "border-bronze/70 border-l" : "border-line/60 border-l"
-                      } ${bar.barKey === activeBarKey ? "bg-steel/10" : ""}`}
+                      /*
+                       * The cell already has the shape of something that could
+                       * be picked up: its own boundary, and a state layer that
+                       * a selection would light. Bar operations arrive in
+                       * 2J.1; what this checkpoint refuses to add is a gesture
+                       * or a menu that does not work yet, which is a different
+                       * thing from leaving the surface unable to show one.
+                       */
+                      data-arr-selected={bar.barKey === activeBarKey ? "" : undefined}
+                      className={`absolute top-0 rounded-[2px] ${
+                        bar.isSectionStart ? "border-line border-l-2" : "border-line/40 border-l"
+                      } ${bar.barKey === activeBarKey ? "bg-steel/12 ring-steel/40 ring-1 ring-inset" : ""}`}
                       style={{
                         left: bar.left,
                         width: bar.width,
@@ -340,22 +411,23 @@ export function ArrangementCanvas({
                       }}
                     >
                       <CellContent cell={cell} width={bar.width} />
-                      {cell.kind === "silent" ? (
-                        <span
-                          aria-hidden
-                          className="text-muted/45 absolute inset-0 flex items-center justify-center text-[8px]"
-                        >
-                          Sessiz
-                        </span>
-                      ) : null}
                       {cell.repeatOf ? (
-                        <span
-                          aria-hidden
-                          className="text-muted/70 absolute right-1 bottom-0.5 truncate text-[8px] leading-none"
-                          style={{ maxWidth: bar.width - 6 }}
-                        >
-                          {repeatChip(cell.repeatOf.barNumber)}
-                        </span>
+                        runStart ? (
+                          <span
+                            aria-hidden
+                            className="text-muted/70 absolute right-1 bottom-0.5 truncate text-[9px] leading-none tabular-nums"
+                            style={{ maxWidth: bar.width - 6 }}
+                          >
+                            {repeatChip(cell.repeatOf.barNumber)}
+                          </span>
+                        ) : (
+                          /* Still the same run: a dot, not a repeat of the
+                             sentence the cell before it already made. */
+                          <span
+                            aria-hidden
+                            className="bg-muted/40 absolute right-1.5 bottom-1.5 h-1 w-1 rounded-full"
+                          />
+                        )
                       ) : null}
                     </button>
                   );
@@ -373,7 +445,7 @@ export function ArrangementCanvas({
                         key={`${link.fromBarKey}-${link.kind}`}
                         role="img"
                         aria-label={LINK_LABELS[link.kind]}
-                        className="border-bronze pointer-events-none absolute rounded-b-full border-x border-b"
+                        className="border-steel pointer-events-none absolute rounded-b-full border-x border-b"
                         style={{
                           left: from.left + from.width - 7,
                           width: 14,

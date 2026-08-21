@@ -1,0 +1,14 @@
+RED   1 resolution changes bar width
+RED   2 tempo changes pixel width
+RED   3 a silent bar counts as a repeat
+RED   4 velocity dropped from the digest
+RED   5 tie cut at a section boundary
+RED   6 missing track key does not cut the carry
+
+unit probes: 6 red, 0 vacuous
+RED   13 the header draws under the leading slot  (after the check was aimed at the reserved column)
+RED   14 the view switch grows back into cards
+RED   15 the track column takes the timeline's width
+RED   16 every silent cell prints a word again
+RED   17 the English instrument label reaches the screen  (after the check learned to open the track sheet)
+RED   18 the transport grows a second row

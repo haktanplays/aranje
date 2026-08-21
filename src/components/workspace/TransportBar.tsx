@@ -1,12 +1,20 @@
 "use client";
 
-import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
+import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 import type { PlaybackState } from "@/lib/audio/playback";
-import type { SectionRun } from "@/components/workspace/SectionChips";
+import type { SectionRun } from "@/lib/tab/timeline";
 
 const BUSY: PlaybackState["status"][] = ["loading"];
 
-function statusLabel(state: PlaybackState): string {
+/**
+ * What the transport has to say, or nothing.
+ *
+ * "Hazır" and "Duraklatıldı" were a permanent line at the bottom of the screen
+ * restating what the play button already showed. A status line earns its space
+ * when it says something the controls cannot: sounds still loading, an error,
+ * the end of the song. The rest of the time it is not there.
+ */
+function statusLabel(state: PlaybackState): string | null {
   switch (state.status) {
     case "loading": {
       const p = state.progress;
@@ -16,14 +24,10 @@ function statusLabel(state: PlaybackState): string {
     }
     case "ended":
       return "Bitti";
-    case "paused":
-      return "Duraklatıldı";
-    case "playing":
-      return "Çalıyor";
     case "error":
       return "Ses hatası";
     default:
-      return "Hazır";
+      return null;
   }
 }
 
@@ -65,7 +69,7 @@ export function TransportBar({
   onRewind,
   onToggleLoop,
   onToggleMetronome,
-  onPracticePercentChange,
+  onOpenPracticeRate,
 }: {
   state: PlaybackState;
   runs: readonly SectionRun[];
@@ -73,9 +77,10 @@ export function TransportBar({
   onRewind: () => void;
   onToggleLoop: () => void;
   onToggleMetronome: () => void;
-  onPracticePercentChange: (percent: number) => void;
+  onOpenPracticeRate: () => void;
 }) {
   const busy = BUSY.includes(state.status);
+  const status = statusLabel(state);
   const playing = state.status === "playing";
   const loopRun = runs.find((run) => run.sectionId === state.loopSectionId);
 
@@ -90,7 +95,7 @@ export function TransportBar({
         </p>
       ) : null}
 
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div className="flex items-center gap-2 px-3 py-1.5">
         <IconButton label="Başa dön" onClick={onRewind} disabled={busy}>
           <span aria-hidden>&#9198;</span>
         </IconButton>
@@ -123,20 +128,36 @@ export function TransportBar({
           <span aria-hidden>&#9834;</span>
         </IconButton>
 
+        {/*
+          The practice rate, as one pill.
+          
+          Two rows of controls and a repeated "138 BPM · %100" were spending
+          seventy pixels to say a number that is 100 almost always. The pill
+          says the number; tapping it opens the − / + / reset it used to keep
+          on screen permanently, along with the arithmetic.
+        */}
+        <button
+          type="button"
+          onClick={onOpenPracticeRate}
+          aria-label={`Çalışma hızı yüzde ${state.practicePercent}. Değiştir`}
+          className={`ml-auto min-h-11 shrink-0 rounded-lg border px-3 font-mono text-sm tabular-nums ${
+            state.practicePercent === DEFAULT_PRACTICE_PERCENT
+              ? "border-line text-muted"
+              : "border-bronze/60 text-bronze"
+          }`}
+        >
+          %{state.practicePercent}
+        </button>
       </div>
 
-      <div className="px-3 pb-2">
-        <PracticeRateControl
-          songBpm={state.songBpm}
-          percent={state.practicePercent}
-          onChange={onPracticePercentChange}
-        />
-      </div>
-
-      <p className="text-muted/80 px-3 pb-2 text-[11px]">
-        {statusLabel(state)}
-        {loopRun ? ` · Loop: ${loopRun.name}` : ""}
-      </p>
+      {/* A line only when there is something to say that the buttons cannot. */}
+      {status || loopRun ? (
+        <p data-transport-status className="text-muted/80 px-3 pb-1.5 text-[11px]">
+          {[status, loopRun ? `Döngü: ${loopRun.name}` : null]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      ) : null}
     </footer>
   );
 }

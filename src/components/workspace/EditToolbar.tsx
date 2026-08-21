@@ -39,7 +39,7 @@ export function EditToolbar({
   canToggleEdit?: boolean;
 }) {
   return (
-    <div className="border-line flex flex-col gap-1 border-t px-3 py-1.5">
+    <div data-action-row className="border-line flex flex-col border-t px-3 py-0.5">
       <div className="flex items-center gap-2">
         {canToggleEdit ? (
           <button
@@ -47,8 +47,10 @@ export function EditToolbar({
             onClick={onToggleEdit}
             disabled={!canEdit}
             aria-pressed={editing}
-            className={`min-h-11 flex-1 rounded-lg border px-3 text-sm disabled:opacity-40 ${
-              editing ? "border-bronze text-bronze" : "border-line text-muted"
+            className={`min-h-11 flex-1 rounded-lg border px-3 text-sm font-medium disabled:opacity-40 ${
+              editing
+                ? "border-bronze bg-bronze/15 text-bronze"
+                : "border-bronze/60 text-bronze"
             }`}
           >
             {editing ? "Düzenlemeyi bitir" : "Düzenle"}
@@ -58,7 +60,13 @@ export function EditToolbar({
           type="button"
           onClick={onArrange}
           disabled={arrangeDisabled}
-          className="text-muted min-h-11 flex-1 rounded-lg border border-line px-3 text-sm disabled:opacity-40"
+          /*
+           * Secondary, and sized like it. It was the widest thing on the
+           * screen while the Copilot may not even be configured — a fail-closed
+           * button has no business being the largest promise on the surface.
+           * Disabled it still says why, through `arrangeDisabled` upstream.
+           */
+          className="text-muted border-line min-h-11 shrink-0 rounded-lg border px-3 text-sm disabled:opacity-40"
         >
           Aranje et
         </button>
@@ -74,13 +82,17 @@ export function EditToolbar({
           </button>
         ) : null}
       </div>
+      {/*
+        Both of these are transient. They get a line when they have something
+        to say and none when they do not, rather than reserving one for ever.
+      */}
       {canToggleEdit && editDisabledReason ? (
-        <p role="status" className="text-muted text-[11px]">
+        <p role="status" className="text-muted pt-1 text-[11px]">
           {editDisabledReason}
         </p>
       ) : null}
       {editing ? (
-        <p role="status" className="text-bronze text-[11px]">
+        <p role="status" className="text-bronze pt-1 text-[11px]">
           Düzenleme açık — bir tel ve slot seç.
         </p>
       ) : null}

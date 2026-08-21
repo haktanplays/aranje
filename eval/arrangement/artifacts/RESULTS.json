@@ -58,7 +58,7 @@
     {
       "name": "[390x844] 22 the tap activates that track",
       "pass": true,
-      "detail": "Solo Gitar"
+      "detail": "Solo Gitar · Crunch\n▾"
     },
     {
       "name": "[390x844] 22 navigation writes nothing",
@@ -93,7 +93,7 @@
     {
       "name": "[390x844] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18622 -> 19227"
+      "detail": "18618 -> 19223"
     },
     {
       "name": "[390x844] 20 practice rate survives the switch",
@@ -148,12 +148,12 @@
     {
       "name": "[390x844] 30 an edit changes the arrangement",
       "pass": true,
-      "detail": "804 -> 801 marks"
+      "detail": "665 -> 662 marks"
     },
     {
       "name": "[390x844] 30 undo updates the arrangement",
       "pass": true,
-      "detail": "801 -> 804 marks (want 804)"
+      "detail": "662 -> 665 marks (want 665)"
     },
     {
       "name": "[390x844] 35 no console or page errors",
@@ -223,7 +223,7 @@
     {
       "name": "[320x700] 22 the tap activates that track",
       "pass": true,
-      "detail": "Solo Gitar"
+      "detail": "Solo Gitar · Crunch\n▾"
     },
     {
       "name": "[320x700] 22 navigation writes nothing",
@@ -258,7 +258,7 @@
     {
       "name": "[320x700] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18631 -> 19231"
+      "detail": "18631 -> 19240"
     },
     {
       "name": "[320x700] 20 practice rate survives the switch",
@@ -313,12 +313,12 @@
     {
       "name": "[320x700] 30 an edit changes the arrangement",
       "pass": true,
-      "detail": "804 -> 801 marks"
+      "detail": "665 -> 662 marks"
     },
     {
       "name": "[320x700] 30 undo updates the arrangement",
       "pass": true,
-      "detail": "801 -> 804 marks (want 804)"
+      "detail": "662 -> 665 marks (want 665)"
     },
     {
       "name": "[320x700] 35 no console or page errors",

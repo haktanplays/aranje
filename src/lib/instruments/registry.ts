@@ -7,6 +7,7 @@
  * they only become active in phase 2.5.
  */
 import { TUNING_PRESETS } from "@/lib/music/fretboard";
+import { instrumentName, presetName } from "@/lib/instruments/labels";
 
 /** How a preset is produced. Mirrors the engine column of spec 7.1. */
 export type InstrumentEngine =
@@ -378,13 +379,28 @@ export function coreInstruments(): readonly InstrumentDefinition[] {
  * Reader-facing name of an instrument. Components never show a raw id, and
  * never map ids to text themselves.
  */
+/**
+ * What a reader is shown for an instrument.
+ *
+ * The Turkish table in `labels.ts` first, the registry's internal English name
+ * second, and the raw id only if neither knows it — which is a bug rather than
+ * a fallback, but a visible one is better than a blank.
+ */
 export function instrumentLabel(instrumentId: string): string {
-  return getInstrument(instrumentId)?.displayName ?? instrumentId;
+  return (
+    instrumentName(instrumentId) ??
+    getInstrument(instrumentId)?.displayName ??
+    instrumentId
+  );
 }
 
-/** Reader-facing name of a preset, e.g. "high_gain" reads "High gain". */
+/** The same, for a preset. A preset id is never a reader-facing string. */
 export function presetLabel(instrumentId: string, presetId: string): string {
-  return getPreset(instrumentId, presetId)?.displayName ?? presetId;
+  return (
+    presetName(instrumentId, presetId) ??
+    getPreset(instrumentId, presetId)?.displayName ??
+    presetId
+  );
 }
 
 /** Presets of an instrument that are available in the core scope (spec 2.5). */

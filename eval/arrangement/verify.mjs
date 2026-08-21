@@ -281,11 +281,13 @@ async function run() {
           ticks === OUTRO_BAR_3_TICKS,
           `${ticks} (want ${OUTRO_BAR_3_TICKS})`,
         );
-        // Scoped to the track strip: the view switch is a tablist too, and an
-        // unscoped "selected tab" matches whichever comes first in the DOM.
+        /*
+         * The active track now has one control that says which it is, rather
+         * than a grid of eight where the selected one is marked. Reading the
+         * control is reading the same state.
+         */
         const activeTrack = await page
-          .getByRole("tablist", { name: "Track" })
-          .getByRole("tab", { selected: true })
+          .locator("[data-track-control]")
           .first()
           .innerText()
           .catch(() => "?");
@@ -360,20 +362,22 @@ async function run() {
 
       // ---------------------------------------------------------------- 24
       await safe(`[${label}] 24 playback moves the active bar`, async () => {
+        /*
+         * The state attribute, not the class.
+         *
+         * This used to grep for `bg-steel/10`, which is a styling decision and
+         * changed the moment the cell got a ring as well as a tint. What the
+         * check is about is which cell the transport is in, and the cell says
+         * so in an attribute meant for exactly that.
+         */
         const before = await page
-          .locator("[data-arr-cell]")
-          .evaluateAll((nodes) =>
-            nodes.filter((n) => n.className.includes("bg-steel/10")).length,
-          );
+          .locator("[data-arr-cell][data-arr-selected]")
+          .count();
         await page.waitForTimeout(1600);
         const position = await debugPosition(page);
         const highlighted = await page
-          .locator("[data-arr-cell]")
-          .evaluateAll((nodes) =>
-            nodes
-              .filter((n) => n.className.includes("bg-steel/10"))
-              .map((n) => n.getAttribute("data-arr-cell")),
-          );
+          .locator("[data-arr-cell][data-arr-selected]")
+          .evaluateAll((nodes) => nodes.map((n) => n.getAttribute("data-arr-cell")));
         record(
           `[${label}] 24 the playing bar is marked across the lanes`,
           highlighted.length >= 8 &&

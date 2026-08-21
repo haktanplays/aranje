@@ -378,9 +378,23 @@ export function buildTrackTimeline(
 }
 
 /** Section runs across the flattened bar stream, for the chip row. */
-export function sectionRuns(
-  song: Song,
-): { sectionId: string; name: string; status: SectionStatus; firstBar: number; barCount: number }[] {
+/**
+ * One section, as a strip of the song.
+ *
+ * Named here because this is where it is made. It used to be declared by the
+ * chip component that happened to draw it first, which meant a navigator and a
+ * sheet both imported a type from a component neither of them rendered.
+ */
+export type SectionRun = {
+  sectionId: string;
+  name: string;
+  status: SectionStatus;
+  /** 1-based bar number this section starts on, counted across the song. */
+  firstBar: number;
+  barCount: number;
+};
+
+export function sectionRuns(song: Song): SectionRun[] {
   let barNumber = 0;
   return song.sections.map((section) => {
     const firstBar = barNumber + 1;
