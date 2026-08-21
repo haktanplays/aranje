@@ -21,7 +21,7 @@
  * Selection and clipboard are session state. Neither is written to the Song or
  * to localStorage, and both are dropped when the track or section changes.
  */
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import {
   applyTransform,
@@ -75,12 +75,18 @@ export function useTransform(store: Store, song: Song): TransformHandle {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<TransformCommand | null>(null);
-  /** Whether the last selection change was widened by the core. */
-  const expanded = useRef(false);
+  /**
+   * Whether the core widened the last selection to keep a chain whole.
+   *
+   * State rather than a ref: the summary is derived from it during render, and
+   * a ref read at render time is both a lint error and a real staleness bug —
+   * the badge would lag the selection by one commit.
+   */
+  const [expanded, setExpanded] = useState(false);
 
   const summary = useMemo(
-    () => (selection ? summariseSelection(song, selection, { expanded: expanded.current }) : null),
-    [song, selection],
+    () => (selection ? summariseSelection(song, selection, { expanded }) : null),
+    [song, selection, expanded],
   );
 
   const runPreview = useCallback(
@@ -111,7 +117,7 @@ export function useTransform(store: Store, song: Song): TransformHandle {
       setNotice(null);
       setPending(null);
       if (!next) {
-        expanded.current = false;
+        setExpanded(false);
         setSelection(null);
         return;
       }
@@ -119,20 +125,21 @@ export function useTransform(store: Store, song: Song): TransformHandle {
       // sees is the music the command will act on — chain and all.
       const normalised = copySelection(song, next);
       if (normalised.ok) {
-        expanded.current =
+        setExpanded(
           normalised.selection.startTicks !== next.startTicks ||
-          normalised.selection.endTicks !== next.endTicks;
+            normalised.selection.endTicks !== next.endTicks,
+        );
         setSelection(normalised.selection);
         return;
       }
-      expanded.current = false;
+      setExpanded(false);
       setSelection(next);
     },
     [song],
   );
 
   const clear = useCallback(() => {
-    expanded.current = false;
+    setExpanded(false);
     setSelection(null);
     setPending(null);
     setError(null);
@@ -171,7 +178,7 @@ export function useTransform(store: Store, song: Song): TransformHandle {
       }
 
       store.commit(result.song);
-      expanded.current = false;
+      setExpanded(false);
       setSelection(result.selection);
       setPending(null);
       setError(null);
