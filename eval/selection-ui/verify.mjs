@@ -153,6 +153,20 @@ async function longPress(page, cdp, offsetX, offsetY = 60) {
  * space and then reporting the app as broken for refusing to move nothing.
  * The tab marks its onsets, so the press can land on one at any viewport.
  */
+/**
+ * Back to the pristine fixture.
+ *
+ * The init script re-seeds storage on every navigation, so a reload is a clean
+ * song. Scenario groups that mutate the piece would otherwise hand the next
+ * group a song with the note it needs already deleted — which reads as the app
+ * failing to select a chord that is no longer there.
+ */
+async function reseed(page) {
+  await page.reload({ waitUntil: "networkidle" });
+  await page.waitForSelector("[data-tab-content]");
+  await page.waitForTimeout(250);
+}
+
 async function resetScroll(page) {
   await page
     .locator("[data-tab-content]")
@@ -434,7 +448,7 @@ async function run() {
 
     // ---- 22. changing track clears the selection
     await safe(`[${label}] 22 track change clears selection`, async () => {
-      const trackButton = page.getByRole("tab", { name: /Davul/ }).first();
+      const trackButton = page.getByRole("tab").nth(1);
       const reachable = await trackButton.isVisible().catch(() => false);
       if (!reachable) {
         record(`[${label}] 22 track change clears selection`, false, "no second track control");
@@ -445,7 +459,7 @@ async function run() {
       record(`[${label}] 22 track change clears selection`, !(await bandVisible(page)));
       // Back to a track the tab can edit: the drum track correctly disables
       // editing, and leaving it selected would break every later scenario.
-      await page.getByRole("tab", { name: /Gitar/ }).first().click();
+      await page.getByRole("tab").first().click();
       await page.waitForTimeout(300);
     });
 
@@ -466,7 +480,7 @@ async function run() {
     // Scenarios the fixture makes reachable: a power chord as a group, and its
     // shape moved on the fretboard.
     await safe(`[${label}] power chord scenarios`, async () => {
-      await clearSelection(page);
+      await reseed(page);
       await resetScroll(page);
       await enterEditMode(page);
       if (!(await longPressOnset(page, cdp, 0))) {
@@ -507,7 +521,8 @@ async function run() {
 
     // ------------------------------------------------------------- 13, 14, 15
     await safe(`[${label}] pitch and string scenarios`, async () => {
-      await clearSelection(page);
+      await reseed(page);
+      await enterEditMode(page);
       await resetScroll(page);
       if (!(await longPressOnset(page, cdp, 0))) return;
       await page.locator("[data-testid=selection-action-move]").click();
@@ -532,7 +547,8 @@ async function run() {
 
     // ------------------------------------------------------------------- 8, 9
     await safe(`[${label}] duplicate and repeat`, async () => {
-      await clearSelection(page);
+      await reseed(page);
+      await enterEditMode(page);
       await resetScroll(page);
       if (!(await longPressOnset(page, cdp, 0))) return;
 
