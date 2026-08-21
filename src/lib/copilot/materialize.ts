@@ -24,13 +24,12 @@
  * different statement — "this track plays nothing here" — and it would put
  * the track in the section for every reader that counts keys.
  */
-import { instrumentFamily } from "@/lib/instruments/registry";
 import { slotCount } from "@/lib/music/timing";
-import { TUNING_PRESETS } from "@/lib/music/fretboard";
 import { songLimits } from "@/lib/limits";
 import { songSchema, type Bar, type Section, type Song, type Track } from "@/lib/song/schema";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
 import { resolveInstrumentIntent } from "@/lib/copilot/instrument-intent";
+import { resolveTuningIntent } from "@/lib/copilot/tuning-intent";
 import { isAcousticInstrument } from "@/lib/instruments/registry";
 import { barResolution, checkGridPlan } from "@/lib/copilot/grid-plan";
 import type { BlueprintTrack, CompositionBlueprint } from "@/lib/copilot/blueprint";
@@ -42,14 +41,6 @@ export type MaterializeFailure = {
 export type MaterializeResult =
   | { ok: true; song: Song; sectionIdByKey: Map<string, string>; trackIdByRole: Map<string, string> }
   | { ok: false; reason: string };
-
-/** Tuning words to a preset. Unrecognised wording falls back to standard. */
-function tuningFor(intent: string): readonly string[] {
-  const text = intent.toLowerCase();
-  if (text.includes("drop d")) return TUNING_PRESETS.drop_d?.tuning ?? [];
-  if (text.includes("bass")) return TUNING_PRESETS.bass_standard?.tuning ?? [];
-  return TUNING_PRESETS.e_standard?.tuning ?? [];
-}
 
 /** `sec-1`, `sec-2`, ... — position, not anything the model chose. */
 export function sectionIdFor(index: number): string {
@@ -66,8 +57,8 @@ function trackFor(
   id: string,
   name: string,
   instrument: { instrumentId: string; presetId: string; pan: number },
+  tuning: readonly string[] | null,
 ): Track {
-  const needsFretboard = instrumentFamily(instrument.instrumentId) !== "drums";
   return {
     id,
     name,
@@ -77,9 +68,11 @@ function trackFor(
     // Absent rather than zero: the centre is the default, and writing it
     // would put a number in the Song that says nothing (spec 5.2).
     ...(instrument.pan === 0 ? {} : { pan: instrument.pan }),
-    ...(needsFretboard
-      ? { fretboard: { tuning: [...tuningFor(entry.tuningIntent)], capo: 0 } }
-      : {}),
+    /*
+     * Capo stays 0. It is a performer's choice, not something a plan's tuning
+     * wording may derive (spec 9.1).
+     */
+    ...(tuning ? { fretboard: { tuning: [...tuning], capo: 0 } } : {}),
   };
 }
 
@@ -178,7 +171,24 @@ export function materializeSongSkeleton(
       tuningIntent: entry.tuningIntent,
     });
     if (!resolved.ok) return { ok: false, reason: resolved.reason };
-    tracks.push(trackFor(entry, id, entry.energyJob.slice(0, 40), resolved));
+
+    /* Tuning is resolved on the instrument that was actually chosen, so an
+     * acoustic harmony is checked against the acoustic's fretboard. */
+    const tuning = resolveTuningIntent({
+      instrumentId: resolved.instrumentId,
+      tuningIntent: entry.tuningIntent,
+    });
+    if (!tuning.ok) return { ok: false, reason: `track "${entry.role}": ${tuning.reason}` };
+
+    tracks.push(
+      trackFor(
+        entry,
+        id,
+        entry.energyJob.slice(0, 40),
+        resolved,
+        tuning.status === "not_applicable" ? null : tuning.tuning,
+      ),
+    );
   }
 
   if (tracks.length > songLimits.maxTracks) {
