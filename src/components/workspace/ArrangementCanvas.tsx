@@ -41,9 +41,10 @@
  * because eight lanes do not fit a phone; the section strip is sticky so the
  * structure stays legible while it does.
  */
-import { useEffect, useRef, type RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
 
 import {
+  BAR_NUMBER_HEIGHT,
   LANE_HEIGHT,
   SECTION_HEADER_HEIGHT,
   TRACK_LABEL_WIDTH,
@@ -55,12 +56,39 @@ import {
   type ArrangementCell,
   type ArrangementModel,
 } from "@/lib/arrangement/model";
+import { useLongPress } from "@/lib/ui/use-long-press";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
+import type { BarSelection } from "@/lib/song/bar-selection";
 import type { PlayPosition } from "@/lib/audio/position";
 
 /** Marks the cell a test or a scroll needs to find. */
 export const ARR_CELL_ATTRIBUTE = "data-arr-cell";
 export const ARR_SECTION_ATTRIBUTE = "data-arr-section";
+/** The bar number, which is where a whole-bar selection is picked up. */
+export const ARR_BAR_ATTRIBUTE = "data-arr-bar";
+
+/** A request for bars, from whichever gesture made it (spec 13.12). */
+export type BarSelectRequest = {
+  readonly barIndex: number;
+  readonly sectionId: string;
+  /** Present for a track selection, absent for a whole-bar one. */
+  readonly trackId?: string;
+};
+
+/** Which end of an existing selection a handle is moving. */
+export type BarSelectEdge = "start" | "end";
+
+/*
+ * The resize handles.
+ *
+ * A full 44px square at each end would cover most of a single-bar selection
+ * and take the cells under it out of reach, so the touch area is spent where
+ * the gesture actually needs it: full lane height to grab, narrower across,
+ * because the drag is horizontal and the finger only has to *start* on the
+ * handle — pointer capture carries the rest.
+ */
+const HANDLE_WIDTH = 28;
+const HANDLE_HEIGHT = MIN_TOUCH_TARGET_PX;
 
 function CellContent({
   cell,
@@ -164,6 +192,214 @@ function repeatRunStart(
   return previous?.repeatOf?.barKey !== cell.repeatOf.barKey;
 }
 
+/**
+ * One bar of one track, and the way that track's bars are picked up.
+ *
+ * A component rather than JSX inside a loop, because the long press is a hook
+ * and a hook cannot be called in a `map`. The tap and the press are different
+ * verbs on purpose: a tap opens the bar in the tab, a press picks up this
+ * track's content in it. Nothing here can start a whole-bar selection — that
+ * gesture lives on the bar number one row up, because emptying one lane and
+ * removing a bar from the song are not the same act and must not share a
+ * finger movement.
+ */
+function BarCell({
+  bar,
+  cell,
+  trackId,
+  trackName,
+  runStart,
+  playing,
+  selected,
+  onOpen,
+  onLongPress,
+}: {
+  bar: ArrangementBar;
+  cell: ArrangementCell;
+  trackId: string;
+  trackName: string;
+  runStart: boolean;
+  playing: boolean;
+  selected: boolean;
+  onOpen: () => void;
+  onLongPress: () => void;
+}) {
+  const longPress = useLongPress(onLongPress);
+  return (
+    <button
+      type="button"
+      {...{ [ARR_CELL_ATTRIBUTE]: `${trackId}|${bar.barKey}` }}
+      {...longPress}
+      onClick={onOpen}
+      aria-label={cellLabel(trackName, bar, cell)}
+      title={
+        cell.repeatOf ? repeatSentence(cell.repeatOf.barNumber) : undefined
+      }
+      data-arr-selected={playing ? "" : undefined}
+      data-arr-picked={selected ? "" : undefined}
+      className={`absolute top-0 rounded-[2px] ${
+        bar.isSectionStart
+          ? "border-line border-l-2"
+          : "border-line/40 border-l"
+      } ${playing ? "bg-steel/12 ring-steel/40 ring-1 ring-inset" : ""} ${
+        /*
+         * Gold, and only ever gold: this is the reader's own choice, and it
+         * has to stay legible on top of the blue the transport paints when
+         * the two land on the same bar.
+         */
+        selected ? "bg-bronze/15" : ""
+      }`}
+      style={{
+        left: bar.left,
+        width: bar.width,
+        height: LANE_HEIGHT,
+        minHeight: MIN_TOUCH_TARGET_PX,
+      }}
+    >
+      <CellContent cell={cell} width={bar.width} />
+      {cell.repeatOf ? (
+        runStart ? (
+          <span
+            aria-hidden
+            className="text-muted/70 absolute right-1 bottom-0.5 truncate text-[9px] leading-none tabular-nums"
+            style={{ maxWidth: bar.width - 6 }}
+          >
+            {repeatChip(cell.repeatOf.barNumber)}
+          </span>
+        ) : (
+          /* Still the same run: a dot, not a repeat of the sentence the cell
+             before it already made. */
+          <span
+            aria-hidden
+            className="bg-muted/40 absolute right-1.5 bottom-1.5 h-1 w-1 rounded-full"
+          />
+        )
+      ) : null}
+    </button>
+  );
+}
+
+/**
+ * The bar number, and the way the whole bar is picked up.
+ *
+ * The number is the one thing on this screen that belongs to every track at
+ * once, which is exactly what a whole-bar operation acts on — so it is where
+ * that gesture goes. A tap moves the transport and stays here: someone
+ * checking where bar 19 is should not lose the structure to do it.
+ */
+function BarNumberCell({
+  bar,
+  playing,
+  selected,
+  onSeek,
+  onLongPress,
+}: {
+  bar: ArrangementBar;
+  playing: boolean;
+  selected: boolean;
+  onSeek: () => void;
+  onLongPress: () => void;
+}) {
+  const longPress = useLongPress(onLongPress);
+  return (
+    <button
+      type="button"
+      {...{ [ARR_BAR_ATTRIBUTE]: bar.barKey }}
+      {...longPress}
+      onClick={onSeek}
+      data-arr-picked={selected ? "" : undefined}
+      aria-label={`${bar.barNumber}. ölçü. Bütün enstrümanlarda seçmek için basılı tutun.`}
+      className={`border-line absolute top-0 flex items-center justify-center ${
+        bar.isSectionStart ? "border-l-2" : "border-l border-line/40"
+      } ${playing ? "bg-steel/12" : ""} ${selected ? "bg-bronze/20 text-bronze" : "text-muted"}`}
+      style={{
+        left: TRACK_LABEL_WIDTH + bar.left,
+        width: bar.width,
+        height: BAR_NUMBER_HEIGHT,
+      }}
+    >
+      <span className="text-[10px] tabular-nums">{bar.barNumber}</span>
+    </button>
+  );
+}
+
+/**
+ * One end of a bar selection, as something a finger can move.
+ *
+ * Its own component so the drag flag is its own ref: two handles sharing one
+ * flag is two handles that can disagree about who is being dragged, and a ref
+ * read inside a `map` during render is a ref read at the wrong time.
+ */
+function SelectionHandle({
+  edge,
+  anchorX,
+  left,
+  top,
+  onDragTo,
+}: {
+  edge: BarSelectEdge;
+  /** Where this edge currently sits, in the arrangement's own pixels. */
+  anchorX: number;
+  left: number;
+  top: number;
+  onDragTo: (contentX: number) => void;
+}) {
+  /*
+   * Where the gesture started, on the glass and in the arrangement.
+   *
+   * Both are taken once, at the press. A delta needs no layout read — the
+   * edge's own position in arrangement pixels is already known — but it must
+   * be measured from where the edge *was*, not from where it is now: the edge
+   * moves as the selection grows, and adding the whole distance travelled to
+   * an anchor that has already moved makes the drag run away from the finger.
+   */
+  const from = useRef<{ readonly clientX: number; readonly anchorX: number } | null>(
+    null,
+  );
+  return (
+    <button
+      type="button"
+      data-arr-handle={edge}
+      aria-label={
+        edge === "start"
+          ? "Seçimin başlangıcını değiştir"
+          : "Seçimin sonunu değiştir"
+      }
+      /*
+       * Pointer capture, because the finger leaves the handle immediately —
+       * the gesture is a swipe across bars and the handle is narrower than a
+       * bar. Without it the drag would end on the first cell it crossed.
+       */
+      onPointerDown={(event) => {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        from.current = { clientX: event.clientX, anchorX };
+      }}
+      onPointerMove={(event) => {
+        const started = from.current;
+        if (started === null) return;
+        onDragTo(started.anchorX + (event.clientX - started.clientX));
+      }}
+      onPointerUp={() => {
+        from.current = null;
+      }}
+      onPointerCancel={() => {
+        from.current = null;
+      }}
+      className="border-bronze bg-app absolute z-[6] flex items-center justify-center rounded-md border-2"
+      style={{
+        left,
+        top,
+        width: HANDLE_WIDTH,
+        height: HANDLE_HEIGHT,
+        // The scroller must not take the gesture: this one really is a drag.
+        touchAction: "none",
+      }}
+    >
+      <span className="bg-bronze h-4 w-0.5 rounded-full" aria-hidden />
+    </button>
+  );
+}
+
 export function ArrangementCanvas({
   model,
   scrollRef,
@@ -173,7 +409,12 @@ export function ArrangementCanvas({
   running,
   onActiveBarChange,
   onOpenBar,
+  onSeekBar,
   onSelectTrack,
+  barSelection,
+  onSelectBars,
+  onExtendBars,
+  ghost = false,
 }: {
   model: ArrangementModel;
   scrollRef: RefObject<HTMLDivElement | null>;
@@ -183,11 +424,109 @@ export function ArrangementCanvas({
   running: boolean;
   onActiveBarChange: (barKey: string | null) => void;
   onOpenBar: (barKey: string) => void;
+  /** Move the transport without leaving the structure. */
+  onSeekBar: (barKey: string) => void;
   onSelectTrack: (trackId: string) => void;
+  /** The bars a reader is holding, if any (spec 13.12). */
+  barSelection: BarSelection | null;
+  /**
+   * A long press asking for a range of bars.
+   *
+   * `trackId` present means the reader pressed one lane's cell and wants that
+   * track's content; absent means they pressed the bar number and want the
+   * bar itself, every track in it included. The two are never merged: one
+   * empties a cell, the other removes a bar from the song.
+   */
+  onSelectBars?: (request: BarSelectRequest) => void;
+  /**
+   * A handle dragged to a bar. Whole bars only — there is no other step for a
+   * bar selection to take, so the range cannot end up half way through one.
+   */
+  onExtendBars?: (edge: BarSelectEdge, barIndex: number) => void;
+  /**
+   * True when `model` is the song a staged command *would* produce.
+   *
+   * The arrangement then draws the outcome rather than a sentence about it —
+   * half-lit, and untouchable, because the bars in it do not exist yet and a
+   * press on one would be a press on a bar the song does not have.
+   */
+  ghost?: boolean;
 }) {
   const columnRef = useRef<HTMLDivElement | null>(null);
   const lastBarKey = useRef<string | null>(null);
   const lanesHeight = model.tracks.length * LANE_HEIGHT;
+
+  /** The bars currently held, as a set of keys, so a cell is one lookup. */
+  const pickedBarKeys = useMemo(() => {
+    const keys = new Set<string>();
+    if (!barSelection) return keys;
+    for (const bar of model.bars) {
+      if (
+        bar.sectionId === barSelection.sectionId &&
+        bar.barIndex >= barSelection.startBarIndex &&
+        bar.barIndex <= barSelection.endBarIndex
+      ) {
+        keys.add(bar.barKey);
+      }
+    }
+    return keys;
+  }, [barSelection, model.bars]);
+
+  /**
+   * Where the selection sits on screen.
+   *
+   * A track selection is one lane tall and a whole-bar selection is all of
+   * them, which is the difference between the two scopes made visible without
+   * a word: you can see that one of them is about to touch every instrument.
+   */
+  const box = useMemo(() => {
+    if (!barSelection) return null;
+    const held = model.bars.filter((bar) => pickedBarKeys.has(bar.barKey));
+    const first = held[0];
+    const last = held[held.length - 1];
+    if (!first || !last) return null;
+    if (barSelection.scope === "full") {
+      return {
+        left: first.left,
+        width: last.left + last.width - first.left,
+        top: 0,
+        height: lanesHeight,
+      };
+    }
+    const lane = model.tracks.findIndex(
+      (track) => track.trackId === barSelection.trackId,
+    );
+    if (lane < 0) return null;
+    return {
+      left: first.left,
+      width: last.left + last.width - first.left,
+      top: lane * LANE_HEIGHT,
+      height: LANE_HEIGHT,
+    };
+  }, [barSelection, lanesHeight, model.bars, model.tracks, pickedBarKeys]);
+
+  /**
+   * Which bar a point in the arrangement is in.
+   *
+   * Bars are the only step a bar selection has, so this can only answer with a
+   * whole one — there is no arithmetic here that could land between two. A
+   * point outside the selection's own section is no answer at all: a selection
+   * lives in one section, and a handle dragged past the boundary must stop at
+   * it rather than quietly taking the selection somewhere else.
+   */
+  const barAtContentX = useCallback(
+    (x: number): number | null => {
+      if (!barSelection) return null;
+      const hit = model.bars.find(
+        (bar) =>
+          bar.sectionId === barSelection.sectionId &&
+          x >= bar.left &&
+          x < bar.left + bar.width,
+      );
+      return hit ? hit.barIndex : null;
+    },
+    [barSelection, model.bars],
+  );
 
   /*
    * Whether the reader has taken the view somewhere themselves.
@@ -205,8 +544,10 @@ export function ArrangementCanvas({
     if (!scroller) return;
     const onScroll = () => {
       // A scroll this component set itself is not the reader taking over.
-      if (ownScrollLeft.current !== null &&
-          Math.abs(scroller.scrollLeft - ownScrollLeft.current) < 2) {
+      if (
+        ownScrollLeft.current !== null &&
+        Math.abs(scroller.scrollLeft - ownScrollLeft.current) < 2
+      ) {
         return;
       }
       userScrolled.current = true;
@@ -275,7 +616,8 @@ export function ArrangementCanvas({
       className="h-full overflow-x-auto overscroll-x-contain"
     >
       <div
-        className="relative"
+        data-arr-ghost={ghost ? "" : undefined}
+        className={`relative ${ghost ? "pointer-events-none opacity-50" : ""}`}
         style={{ width: TRACK_LABEL_WIDTH + model.totalWidth }}
       >
         {/* Sections. Their boundaries are stronger than any bar line, because
@@ -306,7 +648,9 @@ export function ArrangementCanvas({
                 height: SECTION_HEADER_HEIGHT,
               }}
             >
-              <span className="truncate text-[11px] font-medium">{section.name}</span>
+              <span className="truncate text-[11px] font-medium">
+                {section.name}
+              </span>
               <span className="text-muted shrink-0 text-[10px] tabular-nums">
                 {section.barCount} ölçü · {section.meterLabel} ·{" "}
                 {section.bpmFrom === null
@@ -316,6 +660,44 @@ export function ArrangementCanvas({
                     `${section.bpmFrom} → ${section.bpm} BPM`}
               </span>
             </button>
+          ))}
+        </div>
+
+        {/*
+          The bar numbers.
+
+          They are the one row on this screen that belongs to every track at
+          once, so they are where a whole-bar selection is picked up — and,
+          incidentally, the thing the arrangement was missing: until now you
+          could see that a section had eight bars but not which eight.
+        */}
+        <div
+          className="bg-app border-line sticky z-20 border-b"
+          style={{ height: BAR_NUMBER_HEIGHT, top: SECTION_HEADER_HEIGHT }}
+        >
+          {/* The lane names' column, kept clear, so a scrolled bar number does
+              not end up sitting where a track name is about to be. */}
+          <div
+            aria-hidden
+            className="bg-app border-line sticky left-0 z-10 h-full border-r"
+            style={{ width: TRACK_LABEL_WIDTH }}
+          />
+          {model.bars.map((bar) => (
+            <BarNumberCell
+              key={bar.barKey}
+              bar={bar}
+              playing={bar.barKey === activeBarKey}
+              selected={
+                barSelection?.scope === "full" && pickedBarKeys.has(bar.barKey)
+              }
+              onSeek={() => onSeekBar(bar.barKey)}
+              onLongPress={() =>
+                onSelectBars?.({
+                  barIndex: bar.barIndex,
+                  sectionId: bar.sectionId,
+                })
+              }
+            />
           ))}
         </div>
 
@@ -347,7 +729,9 @@ export function ArrangementCanvas({
                   track.silentThroughout ? ", bu şarkıda hiç çalmıyor" : ""
                 }`}
                 className={`bg-app border-line sticky left-0 z-10 shrink-0 border-r px-2 text-left ${
-                  track.trackId === selectedTrackId ? "text-bronze" : "text-muted"
+                  track.trackId === selectedTrackId
+                    ? "text-bronze"
+                    : "text-muted"
                 }`}
                 style={{ width: TRACK_LABEL_WIDTH, height: LANE_HEIGHT }}
               >
@@ -373,63 +757,41 @@ export function ArrangementCanvas({
 
               <div className="relative" style={{ width: model.totalWidth }}>
                 {model.bars.map((bar, barIndex) => {
-                  const cell = model.cells.get(cellKey(track.trackId, bar.barKey));
+                  const cell = model.cells.get(
+                    cellKey(track.trackId, bar.barKey),
+                  );
                   if (!cell) return null;
-                  const runStart =
-                    cell.repeatOf !== null &&
-                    repeatRunStart(model, track.trackId, barIndex);
                   return (
-                    <button
+                    <BarCell
                       key={bar.barKey}
-                      type="button"
-                      {...{ [ARR_CELL_ATTRIBUTE]: `${track.trackId}|${bar.barKey}` }}
-                      onClick={() => {
+                      bar={bar}
+                      cell={cell}
+                      trackId={track.trackId}
+                      trackName={track.name}
+                      runStart={
+                        cell.repeatOf !== null &&
+                        repeatRunStart(model, track.trackId, barIndex)
+                      }
+                      playing={bar.barKey === activeBarKey}
+                      selected={
+                        barSelection !== null &&
+                        (barSelection.scope === "full" ||
+                          barSelection.trackId === track.trackId) &&
+                        pickedBarKeys.has(bar.barKey)
+                      }
+                      onOpen={() => {
                         onSelectTrack(track.trackId);
                         onOpenBar(bar.barKey);
                       }}
-                      aria-label={cellLabel(track.name, bar, cell)}
-                      title={
-                        cell.repeatOf ? repeatSentence(cell.repeatOf.barNumber) : undefined
-                      }
-                      /*
-                       * The cell already has the shape of something that could
-                       * be picked up: its own boundary, and a state layer that
-                       * a selection would light. Bar operations arrive in
-                       * 2J.1; what this checkpoint refuses to add is a gesture
-                       * or a menu that does not work yet, which is a different
-                       * thing from leaving the surface unable to show one.
-                       */
-                      data-arr-selected={bar.barKey === activeBarKey ? "" : undefined}
-                      className={`absolute top-0 rounded-[2px] ${
-                        bar.isSectionStart ? "border-line border-l-2" : "border-line/40 border-l"
-                      } ${bar.barKey === activeBarKey ? "bg-steel/12 ring-steel/40 ring-1 ring-inset" : ""}`}
-                      style={{
-                        left: bar.left,
-                        width: bar.width,
-                        height: LANE_HEIGHT,
-                        minHeight: MIN_TOUCH_TARGET_PX,
+                      onLongPress={() => {
+                        onSelectTrack(track.trackId);
+                        onSelectBars?.({
+                          barIndex: bar.barIndex,
+                          sectionId: bar.sectionId,
+                          trackId: track.trackId,
+                        });
                       }}
-                    >
-                      <CellContent cell={cell} width={bar.width} />
-                      {cell.repeatOf ? (
-                        runStart ? (
-                          <span
-                            aria-hidden
-                            className="text-muted/70 absolute right-1 bottom-0.5 truncate text-[9px] leading-none tabular-nums"
-                            style={{ maxWidth: bar.width - 6 }}
-                          >
-                            {repeatChip(cell.repeatOf.barNumber)}
-                          </span>
-                        ) : (
-                          /* Still the same run: a dot, not a repeat of the
-                             sentence the cell before it already made. */
-                          <span
-                            aria-hidden
-                            className="bg-muted/40 absolute right-1.5 bottom-1.5 h-1 w-1 rounded-full"
-                          />
-                        )
-                      ) : null}
-                    </button>
+                    />
                   );
                 })}
 
@@ -438,7 +800,9 @@ export function ArrangementCanvas({
                 {model.links
                   .filter((link) => link.trackId === track.trackId)
                   .map((link) => {
-                    const from = model.bars.find((bar) => bar.barKey === link.fromBarKey);
+                    const from = model.bars.find(
+                      (bar) => bar.barKey === link.fromBarKey,
+                    );
                     if (!from) return null;
                     return (
                       <span
@@ -458,6 +822,58 @@ export function ArrangementCanvas({
               </div>
             </div>
           ))}
+
+          {/*
+            The selection, and the two handles that resize it.
+
+            Drawn over the lanes rather than inside them, so a range that spans
+            several bars is one shape instead of a row of separately outlined
+            cells — which is the difference between "these bars" and "these
+            cells". It takes no pointer events: the cells underneath keep
+            answering, so a press on a different bar still starts a new
+            selection instead of being swallowed by the outline of the old one.
+          */}
+          {box ? (
+            <div
+              aria-hidden
+              data-arr-selection-box
+              className="border-bronze pointer-events-none absolute z-[5] border-2"
+              style={{
+                left: TRACK_LABEL_WIDTH + box.left,
+                width: box.width,
+                top: box.top,
+                height: box.height,
+              }}
+            />
+          ) : null}
+
+          {box && onExtendBars
+            ? (["start", "end"] as const).map((edge) => (
+                <SelectionHandle
+                  key={edge}
+                  edge={edge}
+                  anchorX={edge === "start" ? box.left : box.left + box.width}
+                  left={
+                    TRACK_LABEL_WIDTH +
+                    (edge === "start"
+                      ? box.left - HANDLE_WIDTH / 2
+                      : box.left + box.width - HANDLE_WIDTH / 2)
+                  }
+                  top={box.top + box.height / 2 - HANDLE_HEIGHT / 2}
+                  onDragTo={(contentX) => {
+                    /*
+                     * The right handle is measured at the *end* of its bar,
+                     * which is the first pixel of the next one — so it is
+                     * pulled back inside before the bar is looked up.
+                     */
+                    const at = barAtContentX(
+                      edge === "end" ? contentX - 1 : contentX,
+                    );
+                    if (at !== null) onExtendBars(edge, at);
+                  }}
+                />
+              ))
+            : null}
         </div>
       </div>
     </div>

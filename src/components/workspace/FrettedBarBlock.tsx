@@ -18,6 +18,7 @@ import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 import { pitchToMidi } from "@/lib/music/pitch";
 import { LONG_PRESS_MS } from "@/lib/ui/interaction";
+import { NO_PRESS, useLongPress } from "@/lib/ui/use-long-press";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
 
@@ -75,6 +76,7 @@ export function FrettedBarBlock({
   onCellSelect,
   onsets = null,
   timeSelectionOwnsPress = false,
+  onBarLongPress,
 }: {
   bar: FrettedBar;
   stringCount: number;
@@ -98,6 +100,16 @@ export function FrettedBarBlock({
    * the surfaces where it is not, such as while a Copilot preview is open.
    */
   timeSelectionOwnsPress?: boolean;
+  /**
+   * A long press on the bar's header, asking for the bar itself (spec 13.12).
+   *
+   * The header is where a bar is named, so it is where the bar is picked up —
+   * the same idea as the arrangement's bar-number row, reached from the other
+   * surface. It selects the *active track's* content in this bar and nothing
+   * else: the tab draws one track, and a gesture made on one track's staff
+   * must not quietly reach the seven the reader cannot see.
+   */
+  onBarLongPress?: () => void;
 }) {
   const width = barWidth(bar.slotCount);
   const staffHeight = stringCount * STRING_ROW_HEIGHT;
@@ -127,6 +139,16 @@ export function FrettedBarBlock({
     [cancelHold, onsets, timeSelectionOwnsPress],
   );
 
+  /*
+   * `stopPropagation` on the way down, because the tab's content element is
+   * carrying the time-selection press. Without it one finger arms two
+   * selections, and the reader gets a band of slots they never asked for
+   * alongside the bars they did.
+   */
+  const barPress = useLongPress(onBarLongPress ?? NO_PRESS, {
+    enabled: onBarLongPress !== undefined,
+  });
+
   const Frame = editing ? "div" : "button";
   const frameProps = editing
     ? ({} as Record<string, unknown>)
@@ -146,8 +168,15 @@ export function FrettedBarBlock({
       style={{ width }}
     >
       <div
+        {...barPress}
+        onPointerDown={(event) => {
+          if (!onBarLongPress) return;
+          event.stopPropagation();
+          barPress.onPointerDown(event);
+        }}
+        data-tab-bar-header={bar.key}
         className="flex items-center gap-1.5 overflow-hidden px-1.5"
-        style={{ height: BAR_HEADER_HEIGHT }}
+        style={{ height: BAR_HEADER_HEIGHT, touchAction: "pan-x" }}
       >
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}

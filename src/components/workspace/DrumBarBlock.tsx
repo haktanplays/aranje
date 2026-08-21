@@ -7,6 +7,7 @@ import {
   slotsPerBeat,
 } from "@/components/workspace/geometry";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
+import { NO_PRESS, useLongPress } from "@/lib/ui/use-long-press";
 import { drumRhythm, type DrumBar } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/song/schema";
 
@@ -32,6 +33,7 @@ export function DrumBarBlock({
   gridLabel = null,
   selected,
   onSelect,
+  onBarLongPress,
 }: {
   bar: DrumBar;
   laneCount: number;
@@ -39,10 +41,15 @@ export function DrumBarBlock({
   gridLabel?: string | null;
   selected: boolean;
   onSelect: () => void;
+  /** A long press on the header picks this bar up on this track (13.12). */
+  onBarLongPress?: () => void;
 }) {
   const width = barWidth(bar.slotCount);
   const gridHeight = Math.max(laneCount, 1) * DRUM_ROW_HEIGHT;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
+  const barPress = useLongPress(onBarLongPress ?? NO_PRESS, {
+    enabled: onBarLongPress !== undefined,
+  });
 
   return (
     <button
@@ -56,8 +63,15 @@ export function DrumBarBlock({
       style={{ width }}
     >
       <div
+        {...barPress}
+        onPointerDown={(event) => {
+          if (!onBarLongPress) return;
+          event.stopPropagation();
+          barPress.onPointerDown(event);
+        }}
+        data-tab-bar-header={bar.key}
         className="flex items-center gap-1.5 overflow-hidden px-1.5"
-        style={{ height: BAR_HEADER_HEIGHT }}
+        style={{ height: BAR_HEADER_HEIGHT, touchAction: "pan-x" }}
       >
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}

@@ -65,6 +65,34 @@ export function barStartTicks(plan: SongPlan, barKey: string): number | null {
 }
 
 /**
+ * The bar this plan still has that is nearest a bar key that may be gone.
+ *
+ * Bars can be removed and inserted (spec 13.12), so a key held across a song
+ * change can name a bar that no longer exists — or, worse, one that exists and
+ * means something else, because the bars behind a deleted one all shift down.
+ * The answer is deliberately dumb and deliberately local: the same section if
+ * it is still there, clamped to the bars it now has. Somewhere close in the
+ * same part of the song is what a musician means by "where I was"; the top of
+ * the song is not.
+ *
+ * `null` only when the plan has no bars at all.
+ */
+export function nearestBarKey(plan: SongPlan, barKey: string): string | null {
+  if (plan.bars.some((bar) => bar.barKey === barKey)) return barKey;
+
+  const separator = barKey.lastIndexOf(":");
+  const sectionId = separator < 0 ? barKey : barKey.slice(0, separator);
+  const inSection = plan.bars.filter((bar) => bar.sectionId === sectionId);
+  const pool = inSection.length > 0 ? inSection : plan.bars;
+
+  const wanted = Number(barKey.slice(separator + 1));
+  const index = Number.isInteger(wanted)
+    ? Math.min(Math.max(0, wanted), pool.length - 1)
+    : 0;
+  return pool[index]?.barKey ?? null;
+}
+
+/**
  * Loop boundaries for a section, snapped to whole bars by construction: the
  * start is the first tick of its first bar and the end is the tick the bar
  * after its last one begins on.

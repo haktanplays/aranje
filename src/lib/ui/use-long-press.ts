@@ -54,6 +54,15 @@ function swallowNextClick(): void {
   }, CLICK_AFTER_PRESS_MS);
 }
 
+/**
+ * The callback for a press that is turned off.
+ *
+ * A module-level constant rather than an inline arrow, so a component that
+ * passes `undefined` for its press still gives the hook a stable identity and
+ * does not rebuild its handlers on every render.
+ */
+export const NO_PRESS = (): void => {};
+
 export type LongPressHandlers = {
   onPointerDown(event: React.PointerEvent): void;
   onPointerMove(event: React.PointerEvent): void;

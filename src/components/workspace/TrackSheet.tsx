@@ -15,6 +15,7 @@
  * no second track-selector implementation to keep in step with the first.
  */
 import { Sheet } from "@/components/workspace/Sheet";
+import { INSTRUMENT_LIST_TITLE } from "@/lib/instruments/labels";
 import {
   getPreset,
   instrumentLabel,
@@ -57,7 +58,12 @@ export function TrackSheet({
   const preset = getPreset(track.instrumentId, track.presetId);
 
   return (
-    <Sheet open={open} title="Track" onClose={onClose} labelledBy="track-sheet-title">
+    <Sheet
+      open={open}
+      title={INSTRUMENT_LIST_TITLE}
+      onClose={onClose}
+      labelledBy="track-sheet-title"
+    >
       <div role="listbox" aria-label="Track seç" className="flex flex-col gap-1">
         {tracks.map((entry) => {
           const selected = entry.id === track.id;

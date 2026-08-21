@@ -38,12 +38,17 @@ U="npx vitest run src/lib/song/bar-transform.test.ts"
 # 1 — a track delete may never remove the bar
 probe "1 a track delete removes the whole bar" \
   src/lib/song/bar-transform.ts \
-  '      if (selection.scope === "track") {
-        // The bars stay; only this track'"'"'s content goes.
-        return withNotice(
-          viaTimeSelection(song, section, selection, { kind: "delete_selection" }),
-        );
-      }' \
+  '        return {
+          ok: true,
+          song: withBars(
+            song,
+            selection.sectionId,
+            clearTrackRange(section, selection.trackId, start, end),
+          ),
+          selection,
+          warnings: [],
+          notice,
+        };' \
   '' \
   "$U"
 
@@ -105,6 +110,43 @@ probe "8 a blank bar invents track keys" \
     slots: {},' \
   '    slots: { gtr: [] },' \
   "$U"
+
+# 9 — a drum lane is a track, and its content actually travels
+#
+# The drum branch is what the old tick-based track scope could not express at
+# all, so this is the probe that would have been green before the rewrite.
+probe "9 a drum bar travels as silence" \
+  src/lib/song/bar-transform.ts \
+  '  const regridded = isDrumSlotArray(slots)
+    ? regridDrums(slots, source.resolution, target.resolution, toCount)
+    : regridMelodic(slots, source.resolution, target.resolution, toCount);' \
+  '  const regridded = isDrumSlotArray(slots)
+    ? undefined
+    : regridMelodic(slots, source.resolution, target.resolution, toCount);' \
+  "$U"
+
+# 10 — a bar the track was never written in is somewhere content can land
+probe "10 an empty bar cannot be written into" \
+  src/lib/song/bar-transform.ts \
+  '  if (at < 0 || at + sources.length > bars.length) {' \
+  '  if (true) {' \
+  "$U"
+
+# 11 — what has to stop playback, and what must not
+probe "11 every command counts as structural" \
+  src/lib/song/bar-transform.ts \
+  '  if (scope !== "full") return false;' \
+  '  if (scope !== "full") return true;' \
+  "$U"
+
+# 12 — a position held across a song change lands on a bar that exists
+probe "12 the playhead is never clamped" \
+  src/lib/audio/position.ts \
+  '  const index = Number.isInteger(wanted)
+    ? Math.min(Math.max(0, wanted), pool.length - 1)
+    : 0;' \
+  '  const index = Number.isInteger(wanted) ? wanted : 0;' \
+  "npx vitest run src/lib/audio/position.test.ts"
 
 echo
 echo "unit probes: $pass red, $fail vacuous"

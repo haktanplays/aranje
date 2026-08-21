@@ -21,6 +21,16 @@
  * literals spread across the components.
  */
 
+/**
+ * What the list of a song's tracks is called on screen.
+ *
+ * It lives here rather than in the sheet that shows it, because it names the
+ * same things this table names. It also used to say "Track", which is the
+ * word the code uses for a row of data — a musician has a shorter and better
+ * word for what is in that list, and it is the instruments.
+ */
+export const INSTRUMENT_LIST_TITLE = "Enstrümanlar";
+
 /** Reader-facing instrument names, keyed by the registry's id. */
 const INSTRUMENT_NAMES: Readonly<Record<string, string>> = {
   electric_guitar: "Elektro gitar",
@@ -41,7 +51,9 @@ const INSTRUMENT_NAMES: Readonly<Record<string, string>> = {
 const PRESET_NAMES: Readonly<Record<string, string>> = {
   "electric_guitar.clean": "Temiz",
   "electric_guitar.crunch": "Crunch",
-  "electric_guitar.high_gain": "Yüksek gain",
+  // The name of the sound, kept as musicians say it. "Yüksek gain" was a
+  // translation of a term that is not translated in a rehearsal room.
+  "electric_guitar.high_gain": "High gain",
   "steel_acoustic.finger": "Parmakla",
   "steel_acoustic.pick": "Pena ile",
   "nylon_guitar.warm": "Sıcak",

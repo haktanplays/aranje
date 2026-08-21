@@ -100,6 +100,7 @@ export function TabCanvas({
   activeBarKey,
   onActiveBarChange,
   onSeekBar,
+  onBarLongPress,
   scrollRef,
   selectionBand,
   onSlotLongPress,
@@ -117,6 +118,11 @@ export function TabCanvas({
   activeBarKey: string | null;
   onActiveBarChange: (barKey: string | null) => void;
   onSeekBar: (barKey: string) => void;
+  /**
+   * A long press on a bar's header, asking for that bar on the active track
+   * (spec 13.12). Absent means the gesture is not offered on this surface.
+   */
+  onBarLongPress?: (barKey: string) => void;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   /** The time band, already positioned; null when nothing is selected. */
   selectionBand?: React.ReactNode;
@@ -306,6 +312,9 @@ export function TabCanvas({
                     }
                     onsets={onsetsForBar?.(bar) ?? null}
                     timeSelectionOwnsPress={onSlotLongPress !== undefined}
+                    onBarLongPress={
+                      onBarLongPress ? () => onBarLongPress(bar.key) : undefined
+                    }
                   />
                 </BarSlot>
               ))
@@ -317,6 +326,9 @@ export function TabCanvas({
                     laneCount={timeline.lanes.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}
+                    onBarLongPress={
+                      onBarLongPress ? () => onBarLongPress(bar.key) : undefined
+                    }
                   />
                 </BarSlot>
               ))}

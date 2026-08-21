@@ -32,6 +32,7 @@ import {
 } from "@/lib/audio/tempo";
 import {
   barStartTicks,
+  nearestBarKey,
   positionAtTicks,
   sectionLoopBounds,
   type PlayPosition,
@@ -313,6 +314,19 @@ export class PlaybackController {
       this.pendingSeekTicks = start;
     }
     if (this.state.status === "ended") this.set({ status: "paused" });
+  }
+
+  /**
+   * Move to a bar, or to the nearest one this plan still has.
+   *
+   * The way a position survives a change to the song's structure. It goes
+   * through the same seek as everything else, so an engine that does not exist
+   * yet remembers the tick and starts there — nothing is scheduled here and no
+   * engine is built.
+   */
+  seekToNearestBar(barKey: string): void {
+    const key = nearestBarKey(this.plan, barKey);
+    if (key !== null) this.seekToBar(key);
   }
 
   setLoopSection(sectionId: string | null): void {

@@ -3,7 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
-import { ArrangementCanvas } from "@/components/workspace/ArrangementCanvas";
+import {
+  ArrangementCanvas,
+  type BarSelectEdge,
+  type BarSelectRequest,
+} from "@/components/workspace/ArrangementCanvas";
+import {
+  BarActionBar,
+  type BarRepeatChoice,
+} from "@/components/workspace/BarActionBar";
 import { buildArrangementModel } from "@/lib/arrangement/model";
 import { ViewSwitch, type WorkspaceView } from "@/components/workspace/ViewSwitch";
 import { EditToolbar } from "@/components/workspace/EditToolbar";
@@ -32,6 +40,12 @@ import {
   slotAtX,
 } from "@/components/workspace/selection-geometry";
 import { useTransform } from "@/lib/song/use-transform";
+import { useBarTransform } from "@/lib/song/use-bar-transform";
+import {
+  isStructuralBarCommand,
+  type BarCommand,
+} from "@/lib/song/bar-transform";
+import { sameBarSelection, type BarSelection } from "@/lib/song/bar-selection";
 import {
   BAR_HEADER_HEIGHT,
   DRUM_ROW_HEIGHT,
@@ -127,6 +141,22 @@ export function Workspace() {
     [song, commit],
   );
   const transform = useTransform(transformStore, song);
+
+  /*
+   * Bar operations (2J.1). Same store, same "one apply, one write, one undo"
+   * promise, and the same reason it goes through a hook: a component that ran
+   * a bar command and committed the result itself would produce a second
+   * history entry that looks exactly like the first.
+   */
+  const trackNameOf = useCallback(
+    (trackId: string) =>
+      song.tracks.find((entry) => entry.id === trackId)?.name ?? trackId,
+    [song.tracks],
+  );
+  const barTransform = useBarTransform(transformStore, song, trackNameOf);
+  const [barSheet, setBarSheet] = useState<"more" | "move" | "repeat" | null>(
+    null,
+  );
   const [sheet, setSheet] = useState<TransformSheetKind>(null);
   /**
    * Where a paste is in its flow.
@@ -367,6 +397,11 @@ export function Workspace() {
         return;
       }
 
+      // The other selection model lets go, for the same reason a bar press
+      // clears this one: one press, one thing selected.
+      barTransform.clear();
+      setBarSheet(null);
+
       transform.select({
         sectionId: section.id,
         trackId: track.id,
@@ -374,7 +409,15 @@ export function Workspace() {
         endTicks: startTicks + step,
       });
     },
-    [controller, pasteAt.kind, song.sections, timeline, track, transform],
+    [
+      barTransform,
+      controller,
+      pasteAt.kind,
+      song.sections,
+      timeline,
+      track,
+      transform,
+    ],
   );
 
   const getPosition = useCallback(() => controller.getPosition(), [controller]);
@@ -387,6 +430,22 @@ export function Workspace() {
    * structure for free — there is no separate arrangement state to invalidate.
    */
   const arrangement = useMemo(() => buildArrangementModel(song), [song]);
+
+  /**
+   * The arrangement a staged command would leave behind.
+   *
+   * Built from the ghost song rather than described in words, so "two bars
+   * will be removed" is something the reader can *see* — including which two.
+   * It is thrown away the moment the command is cancelled or applied; nothing
+   * here reaches the store, the history or the playback plan.
+   */
+  const ghostArrangement = useMemo(
+    () =>
+      barTransform.previewSong
+        ? buildArrangementModel(barTransform.previewSong)
+        : null,
+    [barTransform.previewSong],
+  );
 
   /**
    * Leave for the structure view.
@@ -456,6 +515,144 @@ export function Workspace() {
     scroller.scrollLeft = Math.max(0, target.offsetLeft - GUTTER_WIDTH);
     setPendingTabBar(null);
   }, [view, pendingTabBar]);
+
+  /* ------------------------------------------------------ bar selection */
+
+  /**
+   * Take hold of bars (spec 13.12).
+   *
+   * The time selection goes first, and unconditionally. Both models describe
+   * the same music — one as a span of ticks on one track, the other as whole
+   * bars — and two action bars claiming the same bars is how a reader ends up
+   * pressing "Sil" without knowing which of the two answers it.
+   */
+  const selectBars = useCallback(
+    (request: BarSelectRequest) => {
+      transform.clear();
+      setSheet(null);
+      setPasteAt({ kind: "idle" });
+      setBarSheet(null);
+      barTransform.select(
+        request.trackId === undefined
+          ? {
+              scope: "full",
+              sectionId: request.sectionId,
+              startBarIndex: request.barIndex,
+              endBarIndex: request.barIndex,
+            }
+          : {
+              scope: "track",
+              sectionId: request.sectionId,
+              trackId: request.trackId,
+              startBarIndex: request.barIndex,
+              endBarIndex: request.barIndex,
+            },
+      );
+    },
+    [barTransform, transform],
+  );
+
+  /**
+   * A handle dragged onto a bar.
+   *
+   * The edge moves to that bar and stops there; it never crosses the other
+   * edge, so the range cannot turn inside out mid-drag. Re-selecting rather
+   * than editing the range in place is what keeps chain expansion honest: a
+   * dragged edge that lands mid-chain is widened by the same code that widens
+   * a fresh press.
+   */
+  const extendBars = useCallback(
+    (edge: BarSelectEdge, barIndex: number) => {
+      const current = barTransform.selection;
+      if (!current) return;
+      const bounds =
+        edge === "start"
+          ? {
+              startBarIndex: Math.min(barIndex, current.endBarIndex),
+              endBarIndex: current.endBarIndex,
+            }
+          : {
+              startBarIndex: current.startBarIndex,
+              endBarIndex: Math.max(barIndex, current.startBarIndex),
+            };
+      const next: BarSelection =
+        current.scope === "track"
+          ? { ...current, ...bounds }
+          : { ...current, ...bounds };
+      if (sameBarSelection(next, current)) return;
+      barTransform.select(next);
+    },
+    [barTransform],
+  );
+
+  /**
+   * The same gesture from the tab: a press on a bar's header.
+   *
+   * Track scope, always. The tab draws one track, and a press made on one
+   * staff must not reach into the seven the reader cannot see — a whole-bar
+   * selection is offered where whole bars are visible, which is the
+   * arrangement.
+   */
+  const selectBarsFromTab = useCallback(
+    (barKey: string) => {
+      if (!track) return;
+      const [sectionId, indexText] = barKey.split(":");
+      const barIndex = Number(indexText);
+      if (!sectionId || !Number.isInteger(barIndex)) return;
+      selectBars({ barIndex, sectionId, trackId: track.id });
+    },
+    [selectBars, track],
+  );
+
+  /**
+   * The one place a bar command becomes a write.
+   *
+   * A structural operation pauses first, because the scheduler is holding
+   * positions in a bar array that is about to be re-indexed. A preview does
+   * not: nothing has changed yet, and stopping the music to *look* at an
+   * outcome would make the ghost more disruptive than the edit.
+   */
+  const applyBars = useCallback(
+    (options: { readonly replace?: boolean } = {}) => {
+      const command = barTransform.pending;
+      const selection = barTransform.selection;
+      if (!command || !selection) return;
+
+      const structural = isStructuralBarCommand(selection.scope, command);
+      if (structural) controller.pause();
+
+      if (!barTransform.apply(options)) return;
+
+      setBarSheet(null);
+      /*
+       * The time selection is measured in ticks against a layout that has just
+       * moved, and a queued tab scroll names a bar key that may now mean a
+       * different bar. Both go rather than being adjusted: there is no honest
+       * adjustment for "the bar you asked for was deleted".
+       */
+      transform.clear();
+      setSheet(null);
+      setPasteAt({ kind: "idle" });
+      setPendingTabBar(null);
+      /*
+       * The transport's own position is carried across the song change by
+       * `usePlayback`, which asks the new plan for the nearest bar it still
+       * has. What cannot be carried is this: the highlighted bar is a bar
+       * *key*, and after bars shift the same key is a different bar. It is
+       * dropped rather than guessed, and the next frame reads the real one.
+       */
+      if (structural) setActiveBarKey(null);
+    },
+    [barTransform, controller, transform],
+  );
+
+  const stageBarCommand = useCallback(
+    (command: BarCommand) => {
+      setBarSheet(null);
+      barTransform.stage(command);
+    },
+    [barTransform],
+  );
 
   const toggleLoop = useCallback(() => {
     const current = activeBarKey?.split(":")[0] ?? runs[0]?.sectionId ?? null;
@@ -780,7 +977,8 @@ export function Workspace() {
         */}
         {view === "arrange" ? (
           <ArrangementCanvas
-            model={arrangement}
+            model={ghostArrangement ?? arrangement}
+            ghost={ghostArrangement !== null}
             scrollRef={arrangeScrollRef}
             activeBarKey={activeBarKey}
             selectedTrackId={track?.id ?? ""}
@@ -788,7 +986,18 @@ export function Workspace() {
             running={state.status === "playing"}
             onActiveBarChange={setActiveBarKey}
             onOpenBar={openBarInTab}
+            onSeekBar={seekToBar}
             onSelectTrack={setSelectedTrackId}
+            /*
+             * No outline over the ghost. The selection is a range of bar
+             * *indices* in the song as it stands, and in the song a command
+             * would produce those indices are different bars — an outline
+             * drawn from them would be pointing at the wrong music while
+             * claiming to show what is about to change.
+             */
+            barSelection={ghostArrangement ? null : barTransform.selection}
+            onSelectBars={selectBars}
+            onExtendBars={extendBars}
           />
         ) : (
           <TabCanvas
@@ -799,6 +1008,14 @@ export function Workspace() {
             activeBarKey={activeBarKey}
             onActiveBarChange={setActiveBarKey}
             onSeekBar={seekToBar}
+            onBarLongPress={
+              /*
+               * Not while the Copilot owns the screen, and not while a
+               * candidate is on it: a bar selection is an edit gesture, and
+               * a candidate is measured against the song as it was asked for.
+               */
+              previewOpen || arrangeOpen ? undefined : selectBarsFromTab
+            }
             scrollRef={scrollRef}
             onSlotLongPress={selectionEnabled ? onSlotLongPress : undefined}
             onHandleMove={onHandleMove}
@@ -851,6 +1068,100 @@ export function Workspace() {
           />
         )}
       </main>
+
+      {/*
+        The refusal, outside the action bar on purpose.
+
+        Some refusals take the selection with them — a chain that leaves the
+        section is turned down at the selection itself, so there is no
+        selection left for an action bar to be attached to. Putting the message
+        inside that action bar would mean the one refusal the reader most needs
+        explained is the one they never see.
+      */}
+      {barTransform.error ? (
+        <p
+          data-bar-error
+          role="alert"
+          className="border-reject/50 bg-raised text-reject border-t px-3 py-2 text-sm"
+        >
+          {barTransform.error}
+        </p>
+      ) : null}
+
+      {barTransform.selection ? (
+        <BarActionBar
+          selection={barTransform.selection}
+          summary={barTransform.summary ?? "Ölçü seçimi"}
+          notice={barTransform.notice}
+          preview={barTransform.preview}
+          hasClipboard={barTransform.hasClipboard}
+          clipboardScope={barTransform.clipboardScope}
+          moreOpen={barSheet === "more"}
+          moveOpen={barSheet === "move"}
+          repeatOpen={barSheet === "repeat"}
+          onAction={(action) => {
+            switch (action) {
+              case "copy":
+                // Reading only: no commit, no write, no undo step.
+                barTransform.copy();
+                return;
+              case "cut":
+                stageBarCommand({ kind: "cut_bars" });
+                return;
+              case "duplicate":
+                stageBarCommand({ kind: "duplicate_bars" });
+                return;
+              case "delete":
+                stageBarCommand({ kind: "delete_bars" });
+                return;
+              case "repeat":
+                setBarSheet("repeat");
+                return;
+              case "move":
+                setBarSheet("move");
+                return;
+              case "more":
+                setBarSheet("more");
+                return;
+            }
+          }}
+          onRepeat={(choice: BarRepeatChoice) =>
+            stageBarCommand({ kind: "repeat_bars", mode: choice })
+          }
+          onMore={(action) => {
+            switch (action) {
+              case "paste":
+                setBarSheet(null);
+                barTransform.stagePaste();
+                return;
+              case "blank_before":
+                stageBarCommand({ kind: "insert_blank_bar_before" });
+                return;
+              case "blank_after":
+                stageBarCommand({ kind: "insert_blank_bar_after" });
+                return;
+              case "insert_before":
+                setBarSheet(null);
+                barTransform.stageInsertCopied("before");
+                return;
+              case "insert_after":
+                setBarSheet(null);
+                barTransform.stageInsertCopied("after");
+                return;
+            }
+          }}
+          onCloseMore={() => setBarSheet(null)}
+          onMoveLeft={() => stageBarCommand({ kind: "move_bars_left" })}
+          onMoveRight={() => stageBarCommand({ kind: "move_bars_right" })}
+          onApply={() => applyBars()}
+          onReplace={() => applyBars({ replace: true })}
+          onCancel={barTransform.cancel}
+          onClear={() => {
+            barTransform.clear();
+            setBarSheet(null);
+          }}
+        />
+      ) : null}
 
       {transform.selection ? (
         <SelectionActionBar

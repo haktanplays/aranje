@@ -11,7 +11,9 @@ import { describe, expect, it } from "vitest";
 import {
   applyBarCommand,
   copyBars,
+  isStructuralBarCommand,
   type BarClipboard,
+  type BarCommand,
   type FullBarsClipboard,
   type TrackBarsClipboard,
 } from "@/lib/song/bar-transform";
@@ -24,7 +26,7 @@ import {
   section,
   song as makeSong,
 } from "@/lib/song/fixtures";
-import type { Bar, MelodicSlot, Song } from "@/lib/song/schema";
+import type { Bar, DrumSlot, MelodicSlot, Song } from "@/lib/song/schema";
 
 const note = (pitch: string, extra: Record<string, unknown> = {}): MelodicSlot => ({
   notes: [{ pitch, velocity: 100, ...extra }],
@@ -744,5 +746,202 @@ describe("33. a refused command produces nothing at all", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect("song" in result).toBe(false);
+  });
+});
+
+/*
+ * Which commands change the shape of a section, and therefore which ones have
+ * to stop playback before they are written (spec 13.12). Getting this wrong in
+ * either direction is bad: a missed one leaves the scheduler pointing at bars
+ * that moved, and a spurious one stops the music for an edit that changed
+ * nothing structural.
+ */
+describe("34. what counts as a structural operation", () => {
+  it("is never structural in the track scope", () => {
+    const commands: BarCommand[] = [
+      { kind: "cut_bars" },
+      { kind: "delete_bars" },
+      { kind: "duplicate_bars" },
+      { kind: "repeat_bars", mode: { kind: "count", count: 2 } },
+      { kind: "insert_blank_bar_before" },
+      { kind: "insert_blank_bar_after" },
+      { kind: "move_bars_left" },
+      { kind: "move_bars_right" },
+    ];
+    for (const command of commands) {
+      expect(isStructuralBarCommand("track", command)).toBe(false);
+    }
+  });
+
+  it("is structural for every full-scope command that moves bars", () => {
+    const commands: BarCommand[] = [
+      { kind: "cut_bars" },
+      { kind: "delete_bars" },
+      { kind: "duplicate_bars" },
+      { kind: "repeat_bars", mode: { kind: "count", count: 2 } },
+      { kind: "insert_blank_bar_before" },
+      { kind: "insert_blank_bar_after" },
+      { kind: "move_bars_left" },
+      { kind: "move_bars_right" },
+    ];
+    for (const command of commands) {
+      expect(isStructuralBarCommand("full", command)).toBe(true);
+    }
+  });
+
+  it("leaves reading and content-only writing alone", () => {
+    const clipboard: FullBarsClipboard = {
+      kind: "full_bars",
+      barCount: 1,
+      widthTicks: 768,
+      bars: [bar({ gtr: RIFF() })],
+    };
+    expect(isStructuralBarCommand("full", { kind: "copy_bars" })).toBe(false);
+    expect(
+      isStructuralBarCommand("full", { kind: "paste_bar_contents", clipboard }),
+    ).toBe(false);
+    // Inserting copies does add bars, so it is not in the same group.
+    expect(
+      isStructuralBarCommand("full", {
+        kind: "insert_copied_bars",
+        clipboard,
+        side: "after",
+      }),
+    ).toBe(true);
+  });
+});
+
+/*
+ * A bar where a track has no key at all is the ordinary empty bar: silence is
+ * absence (spec 5.5). It is also the bar a reader most often pastes into, and
+ * for a while it was refused with a sentence about the rhythm grid — a message
+ * about a problem that was not there.
+ */
+describe("35. an empty bar is somewhere content can land", () => {
+  const source = () =>
+    song([
+      bar({ gtr: RIFF() }),
+      // No `gtr` key at all: the track is silent here, and says so by absence.
+      bar({ gtr2: OTHER() }),
+    ]);
+
+  it("pastes into a bar the track has never been written in", () => {
+    const from = source();
+    const read = copyBars(from, trackSel(0, 0));
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+
+    const result = applyBarCommand(from, trackSel(1, 1), {
+      kind: "paste_bar_contents",
+      clipboard: read.clipboard,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(slotsOf(result.song, 1, "gtr")).toEqual(RIFF());
+    // The bar's own shape and its other tracks are untouched.
+    expect(result.song.sections[0]?.bars[1]?.resolution).toBe(8);
+    expect(slotsOf(result.song, 1, "gtr2")).toEqual(OTHER());
+  });
+
+  it("does not call an empty bar occupied", () => {
+    const from = source();
+    const read = copyBars(from, trackSel(0, 0));
+    if (!read.ok) return;
+    const result = applyBarCommand(from, trackSel(1, 1), {
+      kind: "paste_bar_contents",
+      clipboard: read.clipboard,
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("copies a silent bar as silence, and pasting it clears the target", () => {
+    const from = source();
+    const read = copyBars(from, trackSel(1, 1));
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+
+    const result = applyBarCommand(from, trackSel(0, 0), {
+      kind: "paste_bar_contents",
+      clipboard: read.clipboard,
+      replace: true,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // Absence in, absence out. Not an array of rests, which would be a claim
+    // that the track is written here and plays nothing.
+    expect(slotsOf(result.song, 0, "gtr")).toBeUndefined();
+  });
+});
+
+/*
+ * The arrangement draws a drum lane and offers the same long press on it. If
+ * bar operations refused there, the app would be disagreeing with itself about
+ * what a track is.
+ */
+describe("36. the drum lane is a track like any other", () => {
+  const beat = (): DrumSlot[] => [
+    [{ piece: "kick" }],
+    [],
+    [{ piece: "snare" }],
+    [],
+    [{ piece: "kick" }],
+    [],
+    [{ piece: "snare" }],
+    [],
+  ];
+
+  /** A bar written for the drums, which the melodic helper cannot express. */
+  const drumBar = (slots: DrumSlot[], resolution: 8 | 12 = 8): Bar => ({
+    timeSignature: [4, 4],
+    resolution,
+    slots: { drums: slots },
+  });
+
+  it("copies and pastes a drum bar", () => {
+    const source = song([drumBar(beat()), bar({})]);
+    const read = copyBars(source, trackSel(0, 0, "drums"));
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+
+    const result = applyBarCommand(source, trackSel(1, 1, "drums"), {
+      kind: "paste_bar_contents",
+      clipboard: read.clipboard,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(slotsOf(result.song, 1, "drums")).toEqual(beat());
+    // And the bar it came from is still exactly as it was.
+    expect(slotsOf(result.song, 0, "drums")).toEqual(beat());
+  });
+
+  it("empties a drum bar without removing it", () => {
+    const source = song([drumBar(beat())]);
+    const result = applyBarCommand(source, trackSel(0, 0, "drums"), {
+      kind: "delete_bars",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(barCount(result.song)).toBe(1);
+    expect(slotsOf(result.song, 0, "drums")).toEqual(
+      Array.from({ length: 8 }, () => []),
+    );
+  });
+
+  it("refuses a drum bar the target grid cannot state", () => {
+    // A triplet bar of drums onto an eighth-note bar: the second hit lands 64
+    // ticks in, and 64 is not a multiple of 96.
+    const triplet: DrumSlot[] = Array.from({ length: 12 }, (_, index) =>
+      index === 1 ? [{ piece: "closed_hat" as const }] : [],
+    );
+    const source = song([drumBar(triplet, 12), bar({})]);
+    const read = copyBars(source, trackSel(0, 0, "drums"));
+    if (!read.ok) return;
+    const result = applyBarCommand(source, trackSel(1, 1, "drums"), {
+      kind: "paste_bar_contents",
+      clipboard: read.clipboard,
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("target_grid_incompatible");
   });
 });

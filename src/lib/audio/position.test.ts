@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   barStartTicks,
   metronomeClicks,
+  nearestBarKey,
   positionAtTicks,
   sectionLoopBounds,
   slotsPerBeat,
@@ -151,5 +152,45 @@ describe("metronome", () => {
       { time: 0, downbeat: true },
       { time: PPQ * 1.5, downbeat: false },
     ]);
+  });
+});
+
+/*
+ * Structural edits move bars around (spec 13.12), so a bar key held across a
+ * song change can name a bar that is gone — or one that still exists and now
+ * means a different bar. These are the cases that decide where the transport
+ * lands afterwards.
+ */
+describe("the nearest bar a plan still has", () => {
+  it("keeps a bar that is still there", () => {
+    expect(nearestBarKey(PLAN, "main-riff:1")).toBe("main-riff:1");
+  });
+
+  it("clamps to the last bar of a section that got shorter", () => {
+    const shorter = buildSongPlan({
+      ...SAMPLE_SONG,
+      sections: SAMPLE_SONG.sections.map((section) =>
+        section.id === "main-riff"
+          ? { ...section, bars: section.bars.slice(0, 1) }
+          : section,
+      ),
+    });
+    expect(nearestBarKey(shorter, "main-riff:3")).toBe("main-riff:0");
+  });
+
+  it("falls back to a bar of the song when the section is gone", () => {
+    const without = buildSongPlan({
+      ...SAMPLE_SONG,
+      sections: SAMPLE_SONG.sections.filter((section) => section.id !== "main-riff"),
+    });
+    const answer = nearestBarKey(without, "main-riff:1");
+    expect(answer).not.toBeNull();
+    expect(PLAN.bars.some((bar) => bar.barKey === answer)).toBe(true);
+    expect(answer?.startsWith("main-riff:")).toBe(false);
+  });
+
+  it("has no answer when there are no bars at all", () => {
+    const empty = buildSongPlan({ ...SAMPLE_SONG, sections: [] });
+    expect(nearestBarKey(empty, "main-riff:0")).toBeNull();
   });
 });

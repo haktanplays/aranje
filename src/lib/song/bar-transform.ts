@@ -5,21 +5,33 @@
  * mutates its input and nothing here writes: a command returns the song it
  * would produce, and the caller decides whether that becomes a commit.
  *
- * ## Why `track` scope is thin
+ * ## Both scopes work in whole bars
  *
- * A bar range on one track *is* a span of time on one track — the same thing
- * 2I-A already selects, transforms and pastes, with mixed-grid re-expression,
- * chain policy, collision rules and validation all decided and tested. So
- * track-scope commands are expressed in terms of it rather than reimplemented
- * beside it. Two implementations of "paste content into a range" would drift,
- * and the one that drifted would be this one, because it is the newer.
+ * The track scope was first written on top of the time selection, on the
+ * reasoning that a bar range on one track *is* a span of time on one track.
+ * That reasoning is true about the music and false about the data, and it
+ * failed in two ways a reader meets immediately:
  *
- * ## Why `full` scope is not
+ * - A bar where the track has no key at all is the ordinary empty bar you
+ *   would paste into. To the tick machinery it is not writable, so the paste
+ *   came back as "this rhythm does not fit the grid" — a sentence about a
+ *   problem that did not exist.
+ * - A drum lane has no tick representation there at all, so every bar
+ *   operation on the drums was refused with an editor message. The arrangement
+ *   draws the drum lane and offers the gesture on it, so that refusal was the
+ *   app disagreeing with itself.
  *
- * Full scope changes the *shape* of the section: bars appear, disappear and
- * change places, and every track moves with them. There is no time-selection
- * equivalent, so this is where the real new work is — and where the rules that
- * matter are structural rather than musical:
+ * So a track command now does what a full command does — read whole bars,
+ * re-express them on the target's grid, write them back — restricted to one
+ * key. The two scopes share `regridMelodic`/`regridDrums`, which is where the
+ * rule that actually matters lives: a moment the destination grid cannot state
+ * exactly is refused, never rounded (K-34).
+ *
+ * ## What full scope adds
+ *
+ * Full scope also changes the *shape* of the section: bars appear, disappear
+ * and change places, and every track moves with them. Those rules are
+ * structural rather than musical:
  *
  * - a section can never reach zero bars
  * - the bar limits are the schema's, not a second opinion
@@ -43,7 +55,6 @@ import {
   expandBarSelection,
   type BarSelection,
 } from "@/lib/song/bar-selection";
-import { sectionBarStartTicks } from "@/lib/song/onset-block";
 import {
   isDrumSlotArray,
   type Bar,
@@ -52,8 +63,6 @@ import {
   type Section,
   type Song,
 } from "@/lib/song/schema";
-import type { Clipboard } from "@/lib/song/time-selection";
-import { applyTransform, copySelection } from "@/lib/song/transform";
 import type { ValidationIssue } from "@/lib/validators/types";
 
 // --------------------------------------------------------------- clipboards
@@ -61,16 +70,20 @@ import type { ValidationIssue } from "@/lib/validators/types";
 /**
  * One track's bars.
  *
- * The content is a time region, so it can be written onto any grid that can
- * express it. The bar metadata is carried for the summary and for nothing
- * else: pasting content never changes the metre or grid it lands on.
+ * Whole bars, carrying that track's content and nothing else — not the other
+ * tracks that were in them, and not the section they came from. The metre and
+ * grid travel because they are what the content is written *in*, and are what
+ * lets it be re-expressed on a different grid when it lands. They are never
+ * written to the destination: a paste changes what a bar says, never how it
+ * counts.
  */
 export type TrackBarsClipboard = {
   readonly kind: "track_bars";
   readonly trackId: string;
   readonly barCount: number;
   readonly widthTicks: number;
-  readonly region: Clipboard;
+  /** Deep copies, each holding at most the one track's key. */
+  readonly bars: readonly Bar[];
 };
 
 /** Whole bars, with every track in them and the shape they are written in. */
@@ -131,6 +144,42 @@ export type BarTransformErrorCode =
   | "not_available_in_scope"
   | "transform_failed";
 
+/**
+ * Does this command change the *shape* of a section?
+ *
+ * Shape means how many bars the section has and which bar is which. Only a
+ * full-scope command can change it — a track command rewrites what is inside
+ * bars that stay exactly where they were, which is why the two scopes are
+ * separate in the first place.
+ *
+ * The answer decides one thing outside this file: whether playback has to stop
+ * before the write. A scheduler holding positions inside a bar array that is
+ * about to be re-indexed is a scheduler pointing at music that is no longer
+ * there, and the sound of that is a bar of someone else's riff.
+ */
+export function isStructuralBarCommand(
+  scope: BarSelection["scope"],
+  command: BarCommand,
+): boolean {
+  if (scope !== "full") return false;
+  switch (command.kind) {
+    case "copy_bars":
+    // Content only: the bars keep their place, their meter and their grid.
+    case "paste_bar_contents":
+      return false;
+    case "cut_bars":
+    case "delete_bars":
+    case "insert_copied_bars":
+    case "duplicate_bars":
+    case "repeat_bars":
+    case "insert_blank_bar_before":
+    case "insert_blank_bar_after":
+    case "move_bars_left":
+    case "move_bars_right":
+      return true;
+  }
+}
+
 export type BarTransformFailure = {
   readonly code: BarTransformErrorCode;
   readonly message: string;
@@ -160,39 +209,16 @@ export type BarClipboardResult =
 const fail = (
   code: BarTransformErrorCode,
   message: string,
-): { ok: false; error: BarTransformFailure } => ({ ok: false, error: { code, message } });
+): { ok: false; error: BarTransformFailure } => ({
+  ok: false,
+  error: { code, message },
+});
 
-// ------------------------------------------------------------------ helpers
+// ------------------------------------------------------------------ shapes
 
+/** How long one bar lasts, in ticks. Resolution cancels out; metre does not. */
 function barWidthTicks(bar: Bar): number {
   return slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
-}
-
-function rangeWidthTicks(section: Section, from: number, to: number): number {
-  let total = 0;
-  for (let index = from; index <= to; index += 1) {
-    const bar = section.bars[index];
-    if (bar) total += barWidthTicks(bar);
-  }
-  return total;
-}
-
-/** The bar range as a span of time on one track. */
-function timeRange(
-  section: Section,
-  trackId: string,
-  selection: BarSelection,
-): { sectionId: string; trackId: string; startTicks: number; endTicks: number } {
-  const starts = sectionBarStartTicks(section);
-  const startTicks = starts[selection.startBarIndex] ?? 0;
-  return {
-    sectionId: selection.sectionId,
-    trackId,
-    startTicks,
-    endTicks:
-      startTicks +
-      rangeWidthTicks(section, selection.startBarIndex, selection.endBarIndex),
-  };
 }
 
 function sectionOf(song: Song, sectionId: string): Section | undefined {
@@ -351,39 +377,169 @@ function blankBarLike(bar: Bar): Bar {
   };
 }
 
-// ------------------------------------------------------------- track bridge
+// -------------------------------------------------------------- one track
+
+/** A bar carrying one track's content and nothing else. */
+function barOfTrack(bar: Bar, trackId: string): Bar {
+  const slots = bar.slots[trackId];
+  return {
+    timeSignature: bar.timeSignature,
+    resolution: bar.resolution,
+    slots:
+      slots === undefined
+        ? {}
+        : { [trackId]: JSON.parse(JSON.stringify(slots)) as typeof slots },
+  };
+}
 
 /**
- * Run a time-selection command and translate its answer back into bar terms.
+ * One track's content replaced in a bar — or removed, when it is silence.
  *
- * The bridge exists so the two vocabularies stay apart: the caller says
- * "these bars on this track", the core says "these ticks", and neither has to
- * learn the other's rules.
+ * `undefined` means the track writes nothing here, and a missing key is how
+ * this format says that (spec 5.5). Writing an empty array instead would be a
+ * different claim: that the track is written here and plays nothing.
  */
-function viaTimeSelection(
+function withTrack(
+  bar: Bar,
+  trackId: string,
+  slots: MelodicSlot[] | DrumSlot[] | undefined,
+): Bar {
+  if (slots === undefined) {
+    if (bar.slots[trackId] === undefined) return bar;
+    const next = { ...bar.slots };
+    delete next[trackId];
+    return { ...bar, slots: next };
+  }
+  return { ...bar, slots: { ...bar.slots, [trackId]: slots } };
+}
+
+/**
+ * Re-express one bar of one track on another bar's grid.
+ *
+ * The single place a track paste can refuse, and it refuses for exactly one
+ * reason: the destination grid cannot state one of the moments exactly. It is
+ * never rounded to the nearest slot — a sixteenth-note triplet nudged onto an
+ * eighth-note grid is a different rhythm, and silently playing a different
+ * rhythm is worse than declining to write one (K-34).
+ */
+function regridTrack(
+  source: Bar,
+  trackId: string,
+  target: Bar,
+):
+  | { ok: true; slots: MelodicSlot[] | DrumSlot[] | undefined }
+  | { ok: false; error: BarTransformFailure } {
+  const slots = source.slots[trackId];
+  if (slots === undefined) return { ok: true, slots: undefined };
+
+  const toCount = slotCount(target.timeSignature, target.resolution);
+  const regridded = isDrumSlotArray(slots)
+    ? regridDrums(slots, source.resolution, target.resolution, toCount)
+    : regridMelodic(slots, source.resolution, target.resolution, toCount);
+  if (!regridded) {
+    return fail(
+      "target_grid_incompatible",
+      "Kopyalanan ölçü hedef ölçünün ritim aralığına tam oturmuyor.",
+    );
+  }
+  return { ok: true, slots: regridded };
+}
+
+/**
+ * Write a run of source bars into a section at `at`, on one track.
+ *
+ * Everything that can refuse is decided before a bar is written, so a refusal
+ * leaves the section exactly as it was found.
+ */
+function writeTrackRun(
+  bars: readonly Bar[],
+  trackId: string,
+  at: number,
+  sources: readonly Bar[],
+): { ok: true; bars: Bar[] } | { ok: false; error: BarTransformFailure } {
+  if (at < 0 || at + sources.length > bars.length) {
+    return fail(
+      "selection_out_of_bounds",
+      "Kopyalanan ölçüler bölümün sonuna sığmıyor.",
+    );
+  }
+  const written = [...bars];
+  for (let offset = 0; offset < sources.length; offset += 1) {
+    const source = sources[offset];
+    const target = written[at + offset];
+    if (!source || !target) continue;
+    const regridded = regridTrack(source, trackId, target);
+    if (!regridded.ok) return regridded;
+    written[at + offset] = withTrack(target, trackId, regridded.slots);
+  }
+  return { ok: true, bars: written };
+}
+
+/** Is anything written on this track in these bars? */
+function trackRangeHasContent(
+  section: Section,
+  trackId: string,
+  from: number,
+  to: number,
+): boolean {
+  return rangeHasContent(section, {
+    scope: "track",
+    sectionId: section.id,
+    trackId,
+    startBarIndex: from,
+    endBarIndex: to,
+  });
+}
+
+/**
+ * Write a track's selected bars into the bars behind them, `times` over.
+ *
+ * Shared by "Çoğalt" (once) and "Tekrarla" (as many as asked for), because
+ * they are the same operation with a different count — and because a second
+ * copy of this loop is a second place for the bounds arithmetic to be wrong.
+ */
+function repeatTrack(
   song: Song,
   section: Section,
   selection: BarSelection & { scope: "track" },
-  command: Parameters<typeof applyTransform>[2],
+  times: number,
+  notice: string | null,
 ): BarTransformResult {
-  const range = timeRange(section, selection.trackId, selection);
-  const result = applyTransform(song, range, command);
-  if (!result.ok) {
+  const start = selection.startBarIndex;
+  const end = selection.endBarIndex;
+  const length = end - start + 1;
+  const at = end + 1;
+
+  if (at + length * times > section.bars.length) {
     return fail(
-      result.error.code === "target_occupied"
-        ? "target_occupied"
-        : result.error.code === "target_grid_incompatible"
-          ? "target_grid_incompatible"
-          : "transform_failed",
-      result.error.message,
+      "no_room_to_move",
+      "Bölümün sonunda bu kadar tekrar için yer yok.",
     );
   }
+  if (trackRangeHasContent(section, selection.trackId, at, at + length * times - 1)) {
+    return fail(
+      "target_occupied",
+      "Hedefte içerik var. Üzerine yazmak için “Yerine koy” gerekiyor.",
+    );
+  }
+
+  const sources = section.bars
+    .slice(start, end + 1)
+    .map((bar) => barOfTrack(bar, selection.trackId));
+
+  let bars: readonly Bar[] = section.bars;
+  for (let round = 0; round < times; round += 1) {
+    const written = writeTrackRun(bars, selection.trackId, at + round * length, sources);
+    if (!written.ok) return written;
+    bars = written.bars;
+  }
+
   return {
     ok: true,
-    song: result.song,
-    selection,
-    warnings: result.warnings,
-    notice: null,
+    song: withBars(song, selection.sectionId, bars),
+    selection: { ...selection, startBarIndex: at, endBarIndex: at + length * times - 1 },
+    warnings: [],
+    notice,
   };
 }
 
@@ -407,17 +563,17 @@ export function copyBars(
       : null;
 
   if (selection.scope === "track") {
-    const range = timeRange(section, selection.trackId, selection);
-    const read = copySelection(song, range);
-    if (!read.ok) return fail("transform_failed", read.error.message);
+    const bars = section.bars
+      .slice(selection.startBarIndex, selection.endBarIndex + 1)
+      .map((bar) => barOfTrack(bar, selection.trackId));
     return {
       ok: true,
       clipboard: {
         kind: "track_bars",
         trackId: selection.trackId,
-        barCount: barSelectionLength(selection),
-        widthTicks: range.endTicks - range.startTicks,
-        region: read.clipboard,
+        barCount: bars.length,
+        widthTicks: bars.reduce((sum, bar) => sum + barWidthTicks(bar), 0),
+        bars,
       },
       selection,
       notice,
@@ -459,9 +615,6 @@ export function applyBarCommand(
       ? `Bağlantılı notalar nedeniyle seçim ${barSelectionLength(selection)} ölçüye genişletildi.`
       : null;
 
-  const withNotice = (result: BarTransformResult): BarTransformResult =>
-    result.ok ? { ...result, notice: result.notice ?? notice } : result;
-
   const length = barSelectionLength(selection);
   const { startBarIndex: start, endBarIndex: end } = selection;
 
@@ -470,10 +623,20 @@ export function applyBarCommand(
     case "cut_bars":
     case "delete_bars": {
       if (selection.scope === "track") {
-        // The bars stay; only this track's content goes.
-        return withNotice(
-          viaTimeSelection(song, section, selection, { kind: "delete_selection" }),
-        );
+        // The bars stay; only this track's content goes. Emptied rather than
+        // removed, because the reader can see the bar is still there and the
+        // next thing they do is often to write something else into it.
+        return {
+          ok: true,
+          song: withBars(
+            song,
+            selection.sectionId,
+            clearTrackRange(section, selection.trackId, start, end),
+          ),
+          selection,
+          warnings: [],
+          notice,
+        };
       }
       if (section.bars.length - length < 1) {
         return fail(
@@ -511,33 +674,27 @@ export function applyBarCommand(
             "Bu sürümde ölçü içeriği yalnız kopyalandığı enstrümana yapıştırılabilir.",
           );
         }
-        if (clipboard.region.events.length === 0 && clipboard.widthTicks === 0) {
-          return fail("clipboard_empty", "Pano boş.");
-        }
+        if (clipboard.bars.length === 0) return fail("clipboard_empty", "Pano boş.");
         if (!command.replace && rangeHasContent(section, selection)) {
           return fail(
             "target_occupied",
             "Hedefte içerik var. Üzerine yazmak için “Yerine koy” gerekiyor.",
           );
         }
-        const range = timeRange(section, selection.trackId, selection);
-        // Replace clears *only this track* in *only these bars*.
-        const cleared = command.replace
-          ? withBars(
-              song,
-              selection.sectionId,
-              clearTrackRange(section, selection.trackId, start, end),
-            )
-          : song;
-        const clearedSection = sectionOf(cleared, selection.sectionId);
-        if (!clearedSection) return fail("section_not_found", "Bölüm bulunamadı.");
-        return withNotice(
-          viaTimeSelection(cleared, clearedSection, selection, {
-            kind: "paste_selection",
-            clipboard: clipboard.region,
-            atTicks: range.startTicks,
-          }),
+        const written = writeTrackRun(
+          section.bars,
+          selection.trackId,
+          start,
+          clipboard.bars,
         );
+        if (!written.ok) return written;
+        return {
+          ok: true,
+          song: withBars(song, selection.sectionId, written.bars),
+          selection,
+          warnings: [],
+          notice,
+        };
       }
 
       if (clipboard.kind !== "full_bars") {
@@ -637,9 +794,8 @@ export function applyBarCommand(
     // ------------------------------------------------------------ multiply
     case "duplicate_bars": {
       if (selection.scope === "track") {
-        return withNotice(
-          viaTimeSelection(song, section, selection, { kind: "duplicate_selection" }),
-        );
+        // Content only: the copy lands in the bars that are already there.
+        return repeatTrack(song, section, selection, 1, notice);
       }
       const refused = limitRefusal(song, section, length);
       if (refused) return refused;
@@ -663,12 +819,23 @@ export function applyBarCommand(
 
     case "repeat_bars": {
       if (selection.scope === "track") {
-        return withNotice(
-          viaTimeSelection(song, section, selection, {
-            kind: "repeat_selection",
-            mode: command.mode,
-          }),
-        );
+        /*
+         * The section keeps its length: a track repeat writes into bars that
+         * already exist, so "to the end of the section" has a fixed meaning
+         * here that it does not have in the full scope.
+         */
+        const room = section.bars.length - (end + 1);
+        const times =
+          command.mode.kind === "fill_to_section_end"
+            ? Math.floor(room / length)
+            : Math.max(1, Math.floor(command.mode.count));
+        if (times < 1) {
+          return fail(
+            "no_room_to_move",
+            "Bölümün sonunda tekrar için yer kalmadı.",
+          );
+        }
+        return repeatTrack(song, section, selection, times, notice);
       }
       if (command.mode.kind === "fill_to_section_end") {
         /*
@@ -708,9 +875,8 @@ export function applyBarCommand(
       const left = command.kind === "move_bars_left";
 
       if (selection.scope === "track") {
-        const neighbourIndex = left ? start - 1 : end + 1;
-        const neighbour = section.bars[neighbourIndex];
-        if (!neighbour) {
+        const at = left ? start - 1 : start + 1;
+        if (at < 0 || at + length > section.bars.length) {
           return fail(
             "no_room_to_move",
             left
@@ -718,20 +884,37 @@ export function applyBarCommand(
               : "Bu ölçüden sonra bölüm içinde yer yok.",
           );
         }
-        const delta = left ? -barWidthTicks(neighbour) : barWidthTicks(neighbour);
-        const moved = viaTimeSelection(song, section, selection, {
-          kind: "move_selection_time",
-          deltaTicks: delta,
-        });
-        if (!moved.ok) return moved;
+        /*
+         * The bar the block is moving onto has to be free. A move that wrote
+         * over the neighbour would lose a bar of music to a gesture that reads
+         * like nudging, so it is refused rather than confirmed: "Taşı" is not
+         * where an overwrite belongs.
+         */
+        const landing = left ? at : end + 1;
+        if (trackRangeHasContent(section, selection.trackId, landing, landing)) {
+          return fail(
+            "target_occupied",
+            "Taşınacak yerde bu enstrümanın içeriği var.",
+          );
+        }
+        const sources = section.bars
+          .slice(start, end + 1)
+          .map((bar) => barOfTrack(bar, selection.trackId));
+        // Vacate first, so the bar left behind is empty even when the old and
+        // new ranges overlap.
+        const emptied = clearTrackRange(section, selection.trackId, start, end);
+        const written = writeTrackRun(emptied, selection.trackId, at, sources);
+        if (!written.ok) return written;
         return {
-          ...moved,
+          ok: true,
+          song: withBars(song, selection.sectionId, written.bars),
           selection: {
             ...selection,
-            startBarIndex: left ? start - 1 : start + 1,
-            endBarIndex: left ? end - 1 : end + 1,
+            startBarIndex: at,
+            endBarIndex: at + length - 1,
           },
-          notice: moved.notice ?? notice,
+          warnings: [],
+          notice,
         };
       }
 

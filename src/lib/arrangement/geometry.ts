@@ -72,6 +72,16 @@ export const TRACK_LABEL_WIDTH = 108;
 export const SECTION_HEADER_HEIGHT = MIN_TOUCH_TARGET_PX;
 
 /**
+ * Height of the bar-number strip under the section headers.
+ *
+ * A real touch target, because it is the one place a reader can take hold of
+ * *the whole bar* — every track in it, and the bar itself. That is a different
+ * thing from taking hold of one lane's cell, and the two need different
+ * places to press or the same gesture would have to mean both.
+ */
+export const BAR_NUMBER_HEIGHT = MIN_TOUCH_TARGET_PX;
+
+/**
  * How much of a whole note this bar lasts.
  *
  * 4/4 -> 1, 3/4 -> 0.75, 6/8 -> 0.75, 7/8 -> 0.875.

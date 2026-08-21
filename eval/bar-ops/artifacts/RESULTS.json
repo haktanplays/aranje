@@ -1,0 +1,189 @@
+{
+  "results": [
+    {
+      "name": "1 a cell press selects that track's bar",
+      "pass": false,
+      "detail": "Tüm enstrümanlar · 1 ölçü"
+    },
+    {
+      "name": "2 no time selection wakes with it",
+      "pass": true,
+      "detail": "band=0 otherBar=0"
+    },
+    {
+      "name": "3 a track selection offers no structural entries",
+      "pass": false,
+      "detail": "Ölçü işlemleri | Önüne boş ölçü ekle | Arkasına boş ölçü ekle"
+    },
+    {
+      "name": "4 a bar-number press selects the whole bar",
+      "pass": true,
+      "detail": "Tüm enstrümanlar · 1 ölçü"
+    },
+    {
+      "name": "5 a handle extends the range by whole bars",
+      "pass": true,
+      "detail": "Tüm enstrümanlar · 1 ölçü -> Tüm enstrümanlar · 2 ölçü"
+    },
+    {
+      "name": "6 a handle stops at the section boundary",
+      "pass": true,
+      "detail": "Tüm enstrümanlar · 5 ölçü error=\"\""
+    },
+    {
+      "name": "7 a preview writes nothing at all",
+      "pass": true,
+      "detail": "preview=\"1 ölçü bütün enstrümanlarda kesilecek.\" writes 1->1"
+    },
+    {
+      "name": "8 cancelling leaves the song exactly as found",
+      "pass": true,
+      "detail": "preview gone=true"
+    },
+    {
+      "name": "9 copy alone never writes",
+      "pass": true,
+      "detail": "notice=\"Ölçüler kopyalandı.\""
+    },
+    {
+      "name": "10 pasting into an empty bar is one write, one undo",
+      "pass": false,
+      "detail": "TimeoutError: locator.click: Timeout 6000ms exceeded. :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
+    },
+    {
+      "name": "11 an occupied target asks before overwriting",
+      "pass": true,
+      "detail": "preview=\"Hedefte içerik var.\" replace=1 apply=0"
+    },
+    {
+      "name": "12 the answer is one write, not two",
+      "pass": true,
+      "detail": "writes 1->2"
+    },
+    {
+      "name": "13 a grid the target cannot write is refused, not rounded",
+      "pass": false,
+      "detail": "preview=\"Hedefte içerik var.\""
+    },
+    {
+      "name": "14 a chain widens the selection and says so",
+      "pass": false,
+      "detail": "Tüm enstrümanlar · 2 ölçü / Bağlantılı notalar nedeniyle seçim 2 ölçüye genişletildi."
+    },
+    {
+      "name": "15 a chain out of the section is refused outright",
+      "pass": true,
+      "detail": "error=\"Bu ölçü sonraki bölüme bağlı. Bölüm sınırını aşan ölçü taşım\" actionBar=0"
+    },
+    {
+      "name": "16 a track delete empties the bar and keeps it",
+      "pass": false,
+      "detail": "bars 4 sounding=2 drums kept=true"
+    },
+    {
+      "name": "17 a full delete removes the bar",
+      "pass": false,
+      "detail": "3 -> 1"
+    },
+    {
+      "name": "18 a structural edit pauses and starts no second engine",
+      "pass": false,
+      "detail": "TimeoutError: locator.click: Timeout 6000ms exceeded. :: {\"actionBar\":0,\"sheet\":0,\"error\":null,\"summary\":null}"
+    },
+    {
+      "name": "19 a blank bar carries no track keys",
+      "pass": false,
+      "detail": "keys=[drums] res=8 ts=[4,4]"
+    },
+    {
+      "name": "20 the playhead lands on a bar that exists",
+      "pass": false,
+      "detail": "undefined -> intro:0"
+    },
+    {
+      "name": "21 a section can never be emptied",
+      "pass": true,
+      "detail": "held=Tüm enstrümanlar · 5 ölçü preview=\"Bir bölüm en az bir ölçü taşımalı.\" applyDisabled=true"
+    },
+    {
+      "name": "22 a tab bar-header press selects the active track",
+      "pass": true,
+      "detail": "summary=Ritim Gitar · 1 ölçü bands=0 header=intro:0"
+    },
+    {
+      "name": "23 a full selection is never offered a track clipboard",
+      "pass": false,
+      "detail": "Ölçü işlemleri | Buraya yapıştır | Önüne boş ölçü ekle | Arkasına boş ölçü ekle "
+    },
+    {
+      "name": "24 the reader's words, from the one table",
+      "pass": true,
+      "detail": "title=\"Enstrümanlar\" highGain=true"
+    },
+    {
+      "name": "25 the drum lane is a track like any other",
+      "pass": false,
+      "detail": "summary=Tüm enstrümanlar · 1 ölçü pasted=true"
+    },
+    {
+      "name": "26 a track repeat fills without growing the section",
+      "pass": false,
+      "detail": "TimeoutError: locator.click: Timeout 6000ms exceeded. :: {\"actionBar\":1,\"sheet\":1,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
+    },
+    {
+      "name": "27 a preview does not stop the music",
+      "pass": true,
+      "detail": "status playing -> playing, preview=\"1 ölçü şarkıdan çıkarılacak.\""
+    },
+    {
+      "name": "screenshots and measurements",
+      "pass": true,
+      "detail": "{\"h\":329,\"w\":320}"
+    },
+    {
+      "name": "console stayed quiet",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "measurements": {
+    "playheadAfter": {
+      "barKey": "intro:0",
+      "barIndex": 0,
+      "slotIndex": 0
+    },
+    "layout-390x844": {
+      "work": {
+        "h": 473,
+        "w": 390
+      },
+      "actionBar": {
+        "h": 161,
+        "w": 390
+      },
+      "barStrip": {
+        "h": 44,
+        "w": 96
+      },
+      "bodyOverflow": 0,
+      "small": []
+    },
+    "layout-320x700": {
+      "work": {
+        "h": 329,
+        "w": 320
+      },
+      "actionBar": {
+        "h": 161,
+        "w": 320
+      },
+      "barStrip": {
+        "h": 44,
+        "w": 96
+      },
+      "bodyOverflow": 0,
+      "small": []
+    }
+  },
+  "failed": 13
+}
