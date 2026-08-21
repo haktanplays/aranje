@@ -124,6 +124,24 @@ async function longPress(page, cdp, offsetX, offsetY = 60) {
   await page.waitForTimeout(200);
 }
 
+/**
+ * A long press on a real struck note, chosen by index.
+ *
+ * Pressing a guessed coordinate is how the 320px run ended up selecting empty
+ * space and then reporting the app as broken for refusing to move nothing.
+ * The tab marks its onsets, so the press can land on one at any viewport.
+ */
+async function longPressOnset(page, cdp, index = 0) {
+  const cells = page.locator("[data-cell][data-onset]");
+  const count = await cells.count();
+  if (count === 0) return false;
+  const box = await cells.nth(Math.min(index, count - 1)).boundingBox();
+  if (!box) return false;
+  await touch(page, cdp, box.x + box.width / 2, box.y + box.height / 2, 700);
+  await page.waitForTimeout(250);
+  return true;
+}
+
 /** A quick tap, which must stay a normal edit gesture. */
 async function tap(page, cdp, offsetX, offsetY = 60) {
   const box = await page.locator("[data-tab-content]").boundingBox();
@@ -149,6 +167,15 @@ async function drag(page, cdp, fromX, toX, offsetY = 60) {
   await page.waitForTimeout(700);
   await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
   await page.waitForTimeout(200);
+}
+
+/** Leave selection mode, so the next scenario starts from a clean screen. */
+async function clearSelection(page) {
+  const cancel = page.getByRole("button", { name: "Seçimi iptal et" });
+  if (await cancel.isVisible().catch(() => false)) {
+    await cancel.click();
+    await page.waitForTimeout(200);
+  }
 }
 
 const bandVisible = (page) => page.locator("[data-testid=time-selection-band]").isVisible().catch(() => false);
@@ -177,7 +204,8 @@ async function run() {
     await enterEditMode(page);
 
     // ---- 1. long press selects one onset
-    await longPress(page, cdp, 20);
+    const pressed = await longPressOnset(page, cdp, 0);
+    if (!pressed) await longPress(page, cdp, 20);
     const selected = await bandVisible(page);
     record(`[${label}] 1 long press selects`, selected);
 
@@ -209,51 +237,53 @@ async function run() {
     record(`[${label}] 20 copy writes nothing`, afterCopy === beforeCopy, `${beforeCopy}->${afterCopy}`);
 
     // ---- 21. several nudges then apply is ONE write
+    /*
+     * The demo's bars are fully written, so every destination is occupied and
+     * no time move is possible at all. That is the song, not a bug — so make
+     * room the way a player would, by deleting a note first, and then measure
+     * the nudge into the gap that leaves.
+     */
+    await safe(`[${label}] delete makes room and writes once`, async () => {
+      const before = await writes(page);
+      await page.locator("[data-testid=selection-action-delete]").click();
+      await page.waitForTimeout(300);
+      record(
+        `[${label}] 21a delete commits once`,
+        (await writes(page)) - before === 1,
+        `${before}->${await writes(page)}`,
+      );
+    });
+
+    await clearSelection(page);
+    await longPressOnset(page, cdp, 0);
+    await page.waitForTimeout(200);
+
     await page.locator("[data-testid=selection-action-move]").click();
     await page.waitForSelector("[data-testid=move-mode-time]");
     const beforeNudge = await writes(page);
-    for (let index = 0; index < 5; index += 1) {
-      await page.locator("[data-testid=nudge-right-grid]").click();
-      await page.waitForTimeout(60);
+
+    const applyButton = page.getByRole("button", { name: "Uygula", exact: true }).first();
+    let enabled = false;
+    let clicks = 0;
+    // Nudge left, toward the gap the delete just opened.
+    for (let index = 0; index < 10 && !enabled; index += 1) {
+      await page.locator("[data-testid=nudge-left-grid]").click();
+      clicks += 1;
+      await page.waitForTimeout(80);
+      enabled = await applyButton.isEnabled().catch(() => false);
     }
-    const duringNudge = await writes(page);
+
     record(
       `[${label}] ghost preview writes nothing`,
-      duringNudge === beforeNudge,
-      `${beforeNudge}->${duringNudge}`,
+      (await writes(page)) === beforeNudge,
+      `${clicks} taps, ${beforeNudge}->${await writes(page)}`,
     );
 
-    const songBeforeApply = await songJson(page);
-    const applyButton = page.getByRole("button", { name: "Uygula", exact: true }).first();
-    const canApply = await applyButton.isEnabled().catch(() => false);
-    if (canApply) {
-      await applyButton.click();
-      await page.waitForTimeout(250);
-      const afterApply = await writes(page);
-      record(
-        `[${label}] 21 five nudges commit once`,
-        afterApply - beforeNudge === 1,
-        `${beforeNudge}->${afterApply}`,
-      );
-      const songAfter = await songJson(page);
-      record(`[${label}] song actually changed`, songAfter !== songBeforeApply);
-
-      // ---- 7. undo returns byte-identical
-      await safe(`[${label}] 7 undo restores byte-identical song`, async () => {
-        const undoButton = page.locator("[data-testid=undo], button[aria-label*='Geri']").first();
-        const reachable = await undoButton.isVisible().catch(() => false);
-        if (!reachable) {
-          record(`[${label}] 7 undo restores byte-identical song`, false, "no undo control");
-          return;
-        }
-        await undoButton.click();
-        await page.waitForTimeout(300);
-        const undone = await songJson(page);
-        record(`[${label}] 7 undo restores byte-identical song`, undone === songBeforeApply);
-      });
-    } else {
-      record(`[${label}] 21 five nudges commit once`, false, "Uygula disabled");
-    }
+    const ghost = await page
+      .locator("[data-testid=transform-preview]")
+      .innerText()
+      .catch(() => "");
+    record(`[${label}] 16 ghost explains the outcome`, ghost.length > 0, ghost.slice(0, 46));
 
     // ---- move mode cards
     for (const mode of ["time", "pitch", "string", "shape"]) {
@@ -286,8 +316,39 @@ async function run() {
 
     await page.screenshot({ path: `${OUT}/${label}-move-sheet.png` });
 
+    const songBeforeApply = await songJson(page);
+    if (enabled) {
+      const beforeApply = await writes(page);
+      await applyButton.click();
+      await page.waitForTimeout(350);
+      const afterApply = await writes(page);
+      record(
+        `[${label}] 21 many nudges commit once`,
+        afterApply - beforeApply === 1,
+        `${clicks} taps, writes ${beforeApply}->${afterApply}`,
+      );
+      record(`[${label}] song actually changed`, (await songJson(page)) !== songBeforeApply);
+
+      await safe(`[${label}] 7 undo restores byte-identical song`, async () => {
+        const undoButton = page.getByRole("button", { name: "Son değişikliği geri al" }).first();
+        if (!(await undoButton.isVisible().catch(() => false))) {
+          record(`[${label}] 7 undo restores byte-identical song`, false, "no undo control");
+          return;
+        }
+        await undoButton.click();
+        await page.waitForTimeout(350);
+        record(`[${label}] 7 undo restores byte-identical song`, (await songJson(page)) === songBeforeApply);
+      });
+    } else {
+      record(`[${label}] 21 many nudges commit once`, false, `no applicable move after ${clicks} taps`);
+      record(`[${label}] 17 impossible move writes nothing`, (await writes(page)) === beforeNudge);
+    }
+
     // close the sheet: cancel must write nothing
     await safe(`[${label}] cancel writes nothing`, async () => {
+      // Reopen: applying closes the sheet, so cancel needs one to close.
+      await page.locator("[data-testid=selection-action-move]").click();
+      await page.waitForSelector("[data-testid=move-mode-time]");
       const beforeCancel = await writes(page);
       await page.getByRole("button", { name: "Vazgeç", exact: true }).first().click();
       await page.waitForTimeout(250);
@@ -306,7 +367,7 @@ async function run() {
 
     // ---- 22. changing track clears the selection
     await safe(`[${label}] 22 track change clears selection`, async () => {
-      const trackButton = page.getByRole("button", { name: "Davul", exact: true }).first();
+      const trackButton = page.getByRole("tab", { name: /Davul/ }).first();
       const reachable = await trackButton.isVisible().catch(() => false);
       if (!reachable) {
         record(`[${label}] 22 track change clears selection`, false, "no second track control");
@@ -315,15 +376,21 @@ async function run() {
       await trackButton.click();
       await page.waitForTimeout(300);
       record(`[${label}] 22 track change clears selection`, !(await bandVisible(page)));
+      // Back to a track the tab can edit: the drum track correctly disables
+      // editing, and leaving it selected would break every later scenario.
+      await page.getByRole("tab", { name: /Gitar/ }).first().click();
+      await page.waitForTimeout(300);
     });
 
     // ---- 24. a normal tap still opens the note sheet, not a selection
-    await enterEditMode(page);
+    await clearSelection(page);
+    await safe(`[${label}] edit mode reachable again`, () => enterEditMode(page));
     await tap(page, cdp, 20);
     await page.waitForTimeout(200);
     record(`[${label}] 24 short tap does not select`, !(await bandVisible(page)));
 
     // ---- probe: a drag must scroll, never select
+    await clearSelection(page);
     await drag(page, cdp, 200, 40);
     await page.waitForTimeout(200);
     record(`[${label}] drag scrolls rather than selects`, !(await bandVisible(page)));
