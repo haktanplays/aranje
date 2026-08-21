@@ -41,3 +41,20 @@ Turn 8'de iki `articulationContext` uyarısı: bağlanamayan hammer-on normal
 Provider tarafında şema tool definition/grammar olarak verilseydi bu mümkün
 olmazdı. Bu yüzden fence bir model bulgusu olarak sayılmadı; koşunun
 sınıflandırması da bu yüzden `transport_confounded`.
+
+## 5. Baglam basligindaki bpm bolumun bpm'i degil
+
+`prompt.ts:291` baglam satirina `request.song.bpm` yaziyor. Faz 2G'de bolum
+bazli tempo geldiginden beri bu deger bir bolumun gercek temposu olmak zorunda
+degil.
+
+Acoustic Bridge turunda model su iki satiri birlikte gordu:
+
+- `baglam`: `bpm: 138`
+- `parcanin bicimi`: `sec-5 "Acoustic Bridge" 6 bar 116 bpm`
+
+Ikisi celisiyor. Form satiri dogru, baslik yanlis. Model dogru olani secmek
+zorunda kaliyor; nota suresi veya nefes hesabi yapan bir turda bu sessiz bir
+hata kaynagi. Tek dogru deger `sectionTempo` olmali.
+
+Production'a bu kosuda dokunulmadi; 2H-B yeni production ozelligi eklemiyor.
