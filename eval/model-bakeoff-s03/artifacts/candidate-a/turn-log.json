@@ -82,5 +82,16 @@
     "touchedBars": 4,
     "explanation": "Motif Break hucresinin vurgu noktalarini oktav ustte tekrarliyor; bar 2 ayni cumleyi geciktirip hammer-on/pull-off ile suslüyor. Bar 3 kisa inen dortlu sekans, sonunda F# bend_half gerilim. Bar 4 ucleme gridinde alt registerden cikip uzun B4 kuyrugu uzerinden E5'e genis slide, cozulmemis F#5 vibratoyla Solo'ya asili kaliyor.",
     "warnings": []
+  },
+  {
+    "turn": 7,
+    "label": "Bridge / drums",
+    "role": "drums",
+    "attempt": 0,
+    "result": "accepted",
+    "patchId": "s03-a-p7-1",
+    "touchedBars": 4,
+    "explanation": "Bar 1-3: 8'lik hat uzerinde 2 ve 4'te net snare ile 4/4 temeli korundu; kick sadece gitarin X aksanlarina (b1: 1, 2&, 4e / b2: 1e, 3, 4e / b3: 1, 2&, 4) oturuyor, her onset'e vurulmadi. Bar 3 sonu open hat + kick ile pickup. Bar 4 rol degistirip ride'a geciyor, uclemeli tom fill Solo'ya crash+kick ile birakip son vurusta susu koruyor.",
+    "warnings": []
   }
 ]
