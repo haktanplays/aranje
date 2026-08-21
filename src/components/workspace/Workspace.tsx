@@ -10,7 +10,6 @@ import { PreviewSheet } from "@/components/workspace/PreviewSheet";
 import { SectionChips } from "@/components/workspace/SectionChips";
 import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { BAR_KEY_ATTRIBUTE, TabCanvas } from "@/components/workspace/TabCanvas";
-import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import { TrackSelector, trackSummary } from "@/components/workspace/TrackSelector";
 import { TrackSheet } from "@/components/workspace/TrackSheet";
 import { TransportBar } from "@/components/workspace/TransportBar";
@@ -31,6 +30,7 @@ import { useTransform } from "@/lib/song/use-transform";
 import {
   BAR_HEADER_HEIGHT,
   DRUM_ROW_HEIGHT,
+  GUTTER_WIDTH,
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
@@ -250,7 +250,7 @@ export function Workspace() {
       const content = scrollRef.current?.querySelector("[data-tab-content]");
       if (!content) return;
 
-      const x = event.clientX - content.getBoundingClientRect().left;
+      const x = event.clientX - content.getBoundingClientRect().left - GUTTER_WIDTH;
       const hit = slotAtX(timeline.bars, x);
       if (!hit || hit.sectionId !== selection.sectionId) return;
       const bar = selectedSection.bars[hit.barIndex];
@@ -663,7 +663,7 @@ export function Workspace() {
                 selection={transform.selection}
                 height={bandHeight}
                 label={transform.summary?.text ?? "Seçim"}
-                left={band.left}
+                left={band.left + GUTTER_WIDTH}
                 width={band.width}
                 onHandleDown={onHandleDown}
               />

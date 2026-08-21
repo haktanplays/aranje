@@ -195,7 +195,13 @@ export function TabCanvas({
     ({ clientX }) => {
       const element = contentRef.current;
       if (!element || !onSlotLongPress) return;
-      onSlotLongPress(clientX - element.getBoundingClientRect().left);
+      /*
+       * The content row begins with the sticky gutter, so a position measured
+       * from its left edge is one gutter too far right for the bars. Without
+       * this the finger lands a slot or two before the note it is over, and
+       * the selection quietly picks the wrong music.
+       */
+      onSlotLongPress(clientX - element.getBoundingClientRect().left - GUTTER_WIDTH);
     },
     { enabled: onSlotLongPress !== undefined },
   );
