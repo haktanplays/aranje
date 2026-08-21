@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
+import { ArrangementCanvas } from "@/components/workspace/ArrangementCanvas";
+import { buildArrangementModel } from "@/lib/arrangement/model";
+import { ViewSwitch, type WorkspaceView } from "@/components/workspace/ViewSwitch";
 import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { FretSheet, type FretSheetTarget } from "@/components/workspace/FretSheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
@@ -80,6 +83,20 @@ export function Workspace() {
   const [activeBarKey, setActiveBarKey] = useState<string | null>(null);
   const [trackSheetOpen, setTrackSheetOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
+
+  /*
+   * Which surface is on screen (spec 13.10, K-39).
+   *
+   * "Düzen" opens first, because the first question about a song someone has
+   * not seen before is what shape it is, not what the third bar of the first
+   * guitar looks like. This is a view preference and lives only here: it is
+   * never written to the Song, never reaches the fingerprint, and never enters
+   * a Copilot request — none of those are about what the reader is looking at.
+   */
+  const [view, setView] = useState<WorkspaceView>("arrange");
+  /** A bar the tab has to scroll to once it is actually mounted. */
+  const [pendingTabBar, setPendingTabBar] = useState<string | null>(null);
+  const arrangeScrollRef = useRef<HTMLDivElement | null>(null);
 
   const [editing, setEditing] = useState(false);
   const [cell, setCell] = useState<Cell | null>(null);
@@ -171,7 +188,14 @@ export function Workspace() {
    * the screen. Two things that both rewrite the same bars must not be live at
    * once (spec 13.1).
    */
-  const selectionEnabled = !previewOpen && !arrangeOpen && track !== undefined;
+  /*
+   * A time selection is a tab gesture. The arrangement has no staff to draw a
+   * band on and no slot to press, so the press machine is not armed there at
+   * all — rather than armed and then ignored, which is how a gesture ends up
+   * half-working on a surface nobody meant it for.
+   */
+  const selectionEnabled =
+    view === "tab" && !previewOpen && !arrangeOpen && track !== undefined;
 
   /** Where the band sits in tab coordinates, and how tall the staff is. */
   const band = useMemo(
@@ -350,6 +374,35 @@ export function Workspace() {
 
   const getPosition = useCallback(() => controller.getPosition(), [controller]);
 
+  /*
+   * The arrangement, rebuilt only when the song changes.
+   *
+   * It is a value: the same song gives a byte-equivalent model, so the view can
+   * re-render from it as often as it likes. An undo therefore shows the old
+   * structure for free — there is no separate arrangement state to invalidate.
+   */
+  const arrangement = useMemo(() => buildArrangementModel(song), [song]);
+
+  /**
+   * Leave for the structure view.
+   *
+   * A selection belongs to the tab: it is a span of time on one track, drawn on
+   * a staff that is about to be unmounted. Carrying it across would leave the
+   * reader with an action bar acting on something they cannot see. So the
+   * selection goes and any open sheet closes — *without* committing whatever it
+   * had staged, which is the whole point of a pending command.
+   *
+   * The clipboard stays. It is not tied to a surface, and someone who copied a
+   * bar, went to look at the structure and came back would rightly expect it to
+   * still be there. So does the undo history, which belongs to the song.
+   */
+  const enterArrange = useCallback(() => {
+    transform.clear();
+    setSheet(null);
+    setPasteAt({ kind: "idle" });
+    setView("arrange");
+  }, [transform]);
+
   const jumpToSection = useCallback((sectionId: string) => {
     const scroller = scrollRef.current;
     const target = scroller?.querySelector<HTMLElement>(
@@ -369,6 +422,35 @@ export function Workspace() {
     },
     [controller],
   );
+
+  /**
+   * A bar cell tap: the one navigation that crosses both surfaces.
+   *
+   * Four things, in the order a reader would expect them: the track becomes
+   * the active one, the transport moves to that bar, the tab takes the screen,
+   * and the tab scrolls to the bar. The scroll cannot happen here — the tab is
+   * not mounted yet — so the bar is remembered and an effect does it once the
+   * element exists.
+   */
+  const openBarInTab = useCallback(
+    (barKey: string) => {
+      seekToBar(barKey);
+      setPendingTabBar(barKey);
+      setView("tab");
+    },
+    [seekToBar],
+  );
+
+  useEffect(() => {
+    if (view !== "tab" || pendingTabBar === null) return;
+    const scroller = scrollRef.current;
+    const target = scroller?.querySelector<HTMLElement>(
+      `[${BAR_KEY_ATTRIBUTE}="${pendingTabBar}"]`,
+    );
+    if (!scroller || !target) return;
+    scroller.scrollLeft = Math.max(0, target.offsetLeft - GUTTER_WIDTH);
+    setPendingTabBar(null);
+  }, [view, pendingTabBar]);
 
   const toggleLoop = useCallback(() => {
     const current = activeBarKey?.split(":")[0] ?? runs[0]?.sectionId ?? null;
@@ -636,72 +718,111 @@ export function Workspace() {
         </p>
       ) : null}
 
+      <ViewSwitch
+        view={view}
+        onChange={(next) => (next === "arrange" ? enterArrange() : setView("tab"))}
+      />
+
       <SectionChips
         runs={runs}
         activeSectionId={activeSectionId}
         loopSectionId={state.loopSectionId}
-        onJump={jumpToSection}
+        onJump={(sectionId) => {
+          if (view === "tab") {
+            jumpToSection(sectionId);
+            return;
+          }
+          const section = arrangement.sections.find(
+            (entry) => entry.sectionId === sectionId,
+          );
+          const scroller = arrangeScrollRef.current;
+          if (!section || !scroller) return;
+          // Scrolls, and only scrolls. Seeking is a bar cell's job.
+          scroller.scrollTo({ left: section.left, behavior: "smooth" });
+        }}
       />
 
       <main className="min-h-0 flex-1">
-        <TabCanvas
-          timeline={timeline}
-          plan={plan}
-          getPosition={getPosition}
-          running={state.status === "playing"}
-          activeBarKey={activeBarKey}
-          onActiveBarChange={setActiveBarKey}
-          onSeekBar={seekToBar}
-          scrollRef={scrollRef}
-          onSlotLongPress={selectionEnabled ? onSlotLongPress : undefined}
-          onHandleMove={onHandleMove}
-          onHandleUp={onHandleUp}
-          selectionBand={
-            transform.selection && selectedSection && band ? (
-              <TimeSelectionBand
-                section={selectedSection}
-                selection={transform.selection}
-                height={bandHeight}
-                label={transform.summary?.text ?? "Seçim"}
-                left={band.left + GUTTER_WIDTH}
-                width={band.width}
-                onHandleDown={onHandleDown}
-              />
-            ) : null
-          }
-          editing={editing}
-          selectedCell={cell}
-          onCellSelect={(next) => {
-            setEditError(null);
-            setCell(next);
-          }}
-          onsetsForBar={(bar) => {
-            const onsetSlots =
-              onsetsOfSection.get(`${bar.sectionId}:${bar.barIndex}`) ??
-              EMPTY_SLOTS;
-            const selectedSlots =
-              (selectionView?.sectionId === bar.sectionId
-                ? selectionView.selected.get(bar.barIndex)
-                : undefined) ?? EMPTY_SLOTS;
-            return {
-              onsetSlots,
-              selectedSlots,
-              active: selection !== null,
-              onToggle: (slotIndex) =>
-                pickOnset(
-                  bar.sectionId,
-                  { barIndex: bar.barIndex, slotIndex },
-                  "toggle",
-                ),
-              onLongPress: (slotIndex) =>
-                pickOnset(
-                  bar.sectionId,
-                  { barIndex: bar.barIndex, slotIndex },
-                  selection?.sectionId === bar.sectionId ? "toggle" : "replace",
-                ),
-            };
-          }}
-        />
+        {/*
+          One surface at a time, and the other is unmounted rather than hidden.
+          Hiding would leave a second horizontal scroller alive behind the one
+          on screen and a second animation frame running against it — two
+          things this checkpoint promises there is exactly one of. The playback
+          controller is not here; it lives above both, so switching surfaces
+          rebuilds no engine, schedules nothing, and stops nothing.
+        */}
+        {view === "arrange" ? (
+          <ArrangementCanvas
+            model={arrangement}
+            scrollRef={arrangeScrollRef}
+            activeBarKey={activeBarKey}
+            selectedTrackId={track?.id ?? ""}
+            getPosition={getPosition}
+            running={state.status === "playing"}
+            onActiveBarChange={setActiveBarKey}
+            onOpenBar={openBarInTab}
+            onSelectTrack={setSelectedTrackId}
+          />
+        ) : (
+          <TabCanvas
+            timeline={timeline}
+            plan={plan}
+            getPosition={getPosition}
+            running={state.status === "playing"}
+            activeBarKey={activeBarKey}
+            onActiveBarChange={setActiveBarKey}
+            onSeekBar={seekToBar}
+            scrollRef={scrollRef}
+            onSlotLongPress={selectionEnabled ? onSlotLongPress : undefined}
+            onHandleMove={onHandleMove}
+            onHandleUp={onHandleUp}
+            selectionBand={
+              transform.selection && selectedSection && band ? (
+                <TimeSelectionBand
+                  section={selectedSection}
+                  selection={transform.selection}
+                  height={bandHeight}
+                  label={transform.summary?.text ?? "Seçim"}
+                  left={band.left + GUTTER_WIDTH}
+                  width={band.width}
+                  onHandleDown={onHandleDown}
+                />
+              ) : null
+            }
+            editing={editing}
+            selectedCell={cell}
+            onCellSelect={(next) => {
+              setEditError(null);
+              setCell(next);
+            }}
+            onsetsForBar={(bar) => {
+              const onsetSlots =
+                onsetsOfSection.get(`${bar.sectionId}:${bar.barIndex}`) ??
+                EMPTY_SLOTS;
+              const selectedSlots =
+                (selectionView?.sectionId === bar.sectionId
+                  ? selectionView.selected.get(bar.barIndex)
+                  : undefined) ?? EMPTY_SLOTS;
+              return {
+                onsetSlots,
+                selectedSlots,
+                active: selection !== null,
+                onToggle: (slotIndex) =>
+                  pickOnset(
+                    bar.sectionId,
+                    { barIndex: bar.barIndex, slotIndex },
+                    "toggle",
+                  ),
+                onLongPress: (slotIndex) =>
+                  pickOnset(
+                    bar.sectionId,
+                    { barIndex: bar.barIndex, slotIndex },
+                    selection?.sectionId === bar.sectionId ? "toggle" : "replace",
+                  ),
+              };
+            }}
+          />
+        )}
       </main>
 
       {transform.selection ? (
@@ -768,7 +889,14 @@ export function Workspace() {
         }}
       />
 
-      {track ? (
+      {/*
+        Both of these describe *the tab's* chosen track. The arrangement shows
+        every track at once, each with its own name and instrument, so on that
+        surface they are a second copy of what is already on screen — and a
+        second copy costs the lanes the room they need. At 320x700 the chrome
+        left the overview forty pixels: less than one lane of eight.
+      */}
+      {track && view === "tab" ? (
         <p className="text-muted truncate border-t border-line px-3 py-1.5 text-[11px]">
           {trackSummary(track)}
         </p>
@@ -801,8 +929,10 @@ export function Workspace() {
         canUndo={canUndo}
         onUndo={undo}
         showUndo={selection === null}
+        canToggleEdit={view === "tab"}
       />
 
+      {view === "tab" ? (
       <TrackSelector
         tracks={song.tracks}
         selectedTrackId={track?.id ?? ""}
@@ -819,6 +949,7 @@ export function Workspace() {
         }}
         onOpenDetails={() => setTrackSheetOpen(true)}
       />
+      ) : null}
 
       <TransportBar
         state={state}

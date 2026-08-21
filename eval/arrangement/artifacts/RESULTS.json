@@ -1,0 +1,353 @@
+{
+  "results": [
+    {
+      "name": "[390x844] 19 opens on the arrangement",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 19 the tab is not merely hidden",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 31 renders 32 bars across 8 tracks",
+      "pass": true,
+      "detail": "256 cells, 8 lanes"
+    },
+    {
+      "name": "[390x844] 32 no body overflow in Düzen",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] 33 one horizontal scroller in Düzen",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 34 every arrangement target is 44px or more",
+      "pass": true,
+      "detail": "270 targets"
+    },
+    {
+      "name": "[390x844] 21 a section header scrolls",
+      "pass": true,
+      "detail": "1536px"
+    },
+    {
+      "name": "[390x844] 21 a section header does not seek",
+      "pass": true,
+      "detail": "0 -> 0"
+    },
+    {
+      "name": "[390x844] 21 a section header writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 22 the tap opens the tab",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 22 the tap seeks to that bar's tick",
+      "pass": true,
+      "detail": "18432 (want 18432)"
+    },
+    {
+      "name": "[390x844] 22 the tap activates that track",
+      "pass": true,
+      "detail": "Solo Gitar"
+    },
+    {
+      "name": "[390x844] 22 navigation writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 23 the tab scrolled to that bar",
+      "pass": true,
+      "detail": "x=34 of 390"
+    },
+    {
+      "name": "[390x844] 32 no body overflow in Tab",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] 33 one horizontal scroller in Tab",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 20 no second engine is built",
+      "pass": true,
+      "detail": "1 -> 1"
+    },
+    {
+      "name": "[390x844] 20 playback is not stopped by the switch",
+      "pass": true,
+      "detail": "playing"
+    },
+    {
+      "name": "[390x844] 20 the transport clock keeps running",
+      "pass": true,
+      "detail": "18622 -> 19222"
+    },
+    {
+      "name": "[390x844] 20 practice rate survives the switch",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 24 the playing bar is marked across the lanes",
+      "pass": true,
+      "detail": "8 -> 8 cells on outro:3"
+    },
+    {
+      "name": "[390x844] 25 the view stays where it was put",
+      "pass": true,
+      "detail": "2200 -> 2200"
+    },
+    {
+      "name": "[390x844] 26 tapping a track name writes nothing",
+      "pass": true,
+      "detail": "1 -> 1"
+    },
+    {
+      "name": "[390x844] 26 tapping a track name selects it",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 27 leaving for Düzen clears the selection",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 29 the staged move is dropped, not committed",
+      "pass": true,
+      "detail": "1 -> 1"
+    },
+    {
+      "name": "[390x844] 29 the sheet is closed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 28 the clipboard survives the trip",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 30 the edit reached the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 30 an edit changes the arrangement",
+      "pass": true,
+      "detail": "804 -> 801 marks"
+    },
+    {
+      "name": "[390x844] 30 undo updates the arrangement",
+      "pass": true,
+      "detail": "801 -> 804 marks (want 804)"
+    },
+    {
+      "name": "[390x844] 35 no console or page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] viewport pass completed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 19 opens on the arrangement",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 19 the tab is not merely hidden",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 31 renders 32 bars across 8 tracks",
+      "pass": true,
+      "detail": "256 cells, 8 lanes"
+    },
+    {
+      "name": "[320x700] 32 no body overflow in Düzen",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] 33 one horizontal scroller in Düzen",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 34 every arrangement target is 44px or more",
+      "pass": true,
+      "detail": "270 targets"
+    },
+    {
+      "name": "[320x700] 21 a section header scrolls",
+      "pass": true,
+      "detail": "1536px"
+    },
+    {
+      "name": "[320x700] 21 a section header does not seek",
+      "pass": true,
+      "detail": "0 -> 0"
+    },
+    {
+      "name": "[320x700] 21 a section header writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 22 the tap opens the tab",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 22 the tap seeks to that bar's tick",
+      "pass": true,
+      "detail": "18432 (want 18432)"
+    },
+    {
+      "name": "[320x700] 22 the tap activates that track",
+      "pass": true,
+      "detail": "Solo Gitar"
+    },
+    {
+      "name": "[320x700] 22 navigation writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 23 the tab scrolled to that bar",
+      "pass": true,
+      "detail": "x=34 of 320"
+    },
+    {
+      "name": "[320x700] 32 no body overflow in Tab",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] 33 one horizontal scroller in Tab",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 20 no second engine is built",
+      "pass": true,
+      "detail": "1 -> 1"
+    },
+    {
+      "name": "[320x700] 20 playback is not stopped by the switch",
+      "pass": true,
+      "detail": "playing"
+    },
+    {
+      "name": "[320x700] 20 the transport clock keeps running",
+      "pass": true,
+      "detail": "18613 -> 19227"
+    },
+    {
+      "name": "[320x700] 20 practice rate survives the switch",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 24 the playing bar is marked across the lanes",
+      "pass": true,
+      "detail": "8 -> 8 cells on outro:3"
+    },
+    {
+      "name": "[320x700] 25 the view stays where it was put",
+      "pass": true,
+      "detail": "2200 -> 2200"
+    },
+    {
+      "name": "[320x700] 26 tapping a track name writes nothing",
+      "pass": true,
+      "detail": "1 -> 1"
+    },
+    {
+      "name": "[320x700] 26 tapping a track name selects it",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 27 leaving for Düzen clears the selection",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 29 the staged move is dropped, not committed",
+      "pass": true,
+      "detail": "1 -> 1"
+    },
+    {
+      "name": "[320x700] 29 the sheet is closed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 28 the clipboard survives the trip",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 30 the edit reached the song",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 30 an edit changes the arrangement",
+      "pass": true,
+      "detail": "804 -> 801 marks"
+    },
+    {
+      "name": "[320x700] 30 undo updates the arrangement",
+      "pass": true,
+      "detail": "801 -> 804 marks (want 804)"
+    },
+    {
+      "name": "[320x700] 35 no console or page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] viewport pass completed",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "measurements": {
+    "390x844": {
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "cells": 256,
+      "lanes": 8,
+      "small": 0,
+      "targets": 270
+    },
+    "320x700": {
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "cells": 256,
+      "lanes": 8,
+      "small": 0,
+      "targets": 270
+    }
+  },
+  "failed": 0
+}

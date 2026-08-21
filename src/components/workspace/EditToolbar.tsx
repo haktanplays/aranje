@@ -1,10 +1,16 @@
 "use client";
 
 /**
- * The compact strip that turns editing on (spec 13.1).
+ * The compact strip that turns editing on (spec 13.1, 13.10).
  *
- * Three controls and no more: the main surface stays a tab. Every choice these
- * open lives in a sheet, so nothing here grows into a form.
+ * Three controls and no more: the main surface stays the music. Every choice
+ * these open lives in a sheet, so nothing here grows into a form.
+ *
+ * On the arrangement surface the edit toggle is not shown, because there is no
+ * tab on screen for it to act on — a button whose target is not there is worse
+ * than a missing one. "Aranje et" and undo stay: the first opens a sheet and
+ * works from either surface, and the second belongs to the song rather than to
+ * whichever view happens to be up.
  */
 export function EditToolbar({
   editing,
@@ -16,6 +22,7 @@ export function EditToolbar({
   canUndo,
   onUndo,
   showUndo = true,
+  canToggleEdit = true,
 }: {
   editing: boolean;
   canEdit: boolean;
@@ -28,21 +35,25 @@ export function EditToolbar({
   onUndo: () => void;
   /** Hidden while the selection strip carries its own undo (spec 13.8). */
   showUndo?: boolean;
+  /** False on a surface with no tab to edit (spec 13.10). */
+  canToggleEdit?: boolean;
 }) {
   return (
     <div className="border-line flex flex-col gap-1 border-t px-3 py-1.5">
       <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onToggleEdit}
-          disabled={!canEdit}
-          aria-pressed={editing}
-          className={`min-h-11 flex-1 rounded-lg border px-3 text-sm disabled:opacity-40 ${
-            editing ? "border-bronze text-bronze" : "border-line text-muted"
-          }`}
-        >
-          {editing ? "Düzenlemeyi bitir" : "Düzenle"}
-        </button>
+        {canToggleEdit ? (
+          <button
+            type="button"
+            onClick={onToggleEdit}
+            disabled={!canEdit}
+            aria-pressed={editing}
+            className={`min-h-11 flex-1 rounded-lg border px-3 text-sm disabled:opacity-40 ${
+              editing ? "border-bronze text-bronze" : "border-line text-muted"
+            }`}
+          >
+            {editing ? "Düzenlemeyi bitir" : "Düzenle"}
+          </button>
+        ) : null}
         <button
           type="button"
           onClick={onArrange}
@@ -63,7 +74,7 @@ export function EditToolbar({
           </button>
         ) : null}
       </div>
-      {editDisabledReason ? (
+      {canToggleEdit && editDisabledReason ? (
         <p role="status" className="text-muted text-[11px]">
           {editDisabledReason}
         </p>

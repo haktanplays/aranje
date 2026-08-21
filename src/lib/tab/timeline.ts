@@ -36,8 +36,14 @@ import type {
   Track,
 } from "@/lib/song/schema";
 
-/** Top-to-bottom lane order, following drum notation habit. */
-const DRUM_LANE_ORDER: readonly DrumPiece[] = [
+/**
+ * Top-to-bottom lane order, following drum notation habit.
+ *
+ * Exported because the arrangement overview draws its drum cells against the
+ * same order. A second copy of this list is how the tab and the overview end
+ * up disagreeing about whether the kick is above or below the snare.
+ */
+export const DRUM_LANE_ORDER: readonly DrumPiece[] = [
   "crash",
   "china",
   "ride",

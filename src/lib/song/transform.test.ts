@@ -485,6 +485,65 @@ describe("ties and chains", () => {
     if (result.ok) return;
     expect(result.error.code).toBe("track_silent_here");
   });
+
+  /*
+   * A guitar that drops out for one bar is ordinary. The refusal above is
+   * about the *selection* reaching into that bar — not about the section
+   * containing one, which used to lock every edit anywhere in it.
+   */
+  it("still edits the bars a track does play, when it rests in another", () => {
+    const before = song([bar(slots([A3(), REST])), bar(slots([A3(), REST]))]);
+    const stripped = songSchema.parse({
+      ...before,
+      sections: before.sections.map((section) => ({
+        ...section,
+        bars: section.bars.map((entry, index) =>
+          index === 1 ? { ...entry, slots: {} } : entry,
+        ),
+      })),
+    });
+
+    const result = run(stripped, select(0, BAR), { kind: "delete_selection" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const section = result.song.sections[0];
+    expect(section?.bars[0]?.slots["gtr"]?.[0]).toBeNull();
+  });
+
+  it("leaves a bar the track was absent from absent", () => {
+    const before = song([bar(slots([A3(), REST])), bar(slots([A3(), REST]))]);
+    const stripped = songSchema.parse({
+      ...before,
+      sections: before.sections.map((section) => ({
+        ...section,
+        bars: section.bars.map((entry, index) =>
+          index === 1 ? { ...entry, slots: {} } : entry,
+        ),
+      })),
+    });
+
+    const result = run(stripped, select(0, BAR), { kind: "delete_selection" });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // Absence is a statement in the contract; a commit may not turn it into
+    // an empty array, which is a different statement about a different bar.
+    expect(result.song.sections[0]?.bars[1]?.slots).toEqual({});
+  });
+
+  it("refuses when the track is written in no bar of the section at all", () => {
+    const before = song([bar(slots([A3(), REST])), bar(slots([A3(), REST]))]);
+    const stripped = songSchema.parse({
+      ...before,
+      sections: before.sections.map((section) => ({
+        ...section,
+        bars: section.bars.map((entry) => ({ ...entry, slots: {} })),
+      })),
+    });
+    const result = run(stripped, select(0, BAR), { kind: "delete_selection" });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("track_silent_here");
+  });
 });
 
 describe("atomicity, purity and determinism", () => {

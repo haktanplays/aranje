@@ -182,7 +182,7 @@ describe("5. melodic onset summary", () => {
 });
 
 describe("6. drum summary", () => {
-  it("reports the pieces actually struck, and no contour", () => {
+  it("reports the pieces actually struck, in notation order", () => {
     const bar: Bar = {
       timeSignature: [4, 4],
       resolution: 8,
@@ -201,9 +201,37 @@ describe("6. drum summary", () => {
     };
     const model = buildArrangementModel(song([drumTrack()], [section([bar])]));
     const cell = cellOf(model, "drums", "s1:0");
-    expect(cell.marks.map((mark) => mark.at)).toEqual([0, 0.25]);
-    expect(cell.marks.every((mark) => mark.height === null)).toBe(true);
-    expect([...cell.pieces].sort()).toEqual(["closed_hat", "kick", "snare"]);
+    // Three hits across two struck slots: the snare and the hat share a moment.
+    expect(cell.marks.map((mark) => mark.at)).toEqual([0, 0.25, 0.25]);
+    // Density counts moments of rhythm, not hits.
+    expect(cell.density).toBeCloseTo(2 / 8);
+    expect(cell.pieces).toEqual(["closed_hat", "snare", "kick"]);
+  });
+
+  it("places the kick low and the cymbals high, in the tab's own lane order", () => {
+    const bar: Bar = {
+      timeSignature: [4, 4],
+      resolution: 8,
+      slots: {
+        drums: [
+          [{ piece: "kick" }],
+          [{ piece: "snare" }],
+          [{ piece: "crash" }],
+          [],
+          [],
+          [],
+          [],
+          [],
+        ],
+      },
+    };
+    const model = buildArrangementModel(song([drumTrack()], [section([bar])]));
+    const heights = cellOf(model, "drums", "s1:0").marks.map((mark) => mark.height);
+    const [kick, snare, crash] = heights;
+    expect(kick).toBe(0);
+    expect(crash).toBe(1);
+    expect(snare).toBeGreaterThan(kick ?? 0);
+    expect(snare).toBeLessThan(crash ?? 1);
   });
 });
 

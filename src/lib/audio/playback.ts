@@ -95,6 +95,20 @@ export type PlaybackOptions = {
 
 export class PlaybackController {
   private engine: Engine | null = null;
+  /**
+   * A seek asked for before there was an engine to seek.
+   *
+   * The audio engine is built on the first play, because a browser will not
+   * open an audio context outside a gesture. Until then `seekToBar` had
+   * nothing to write a tick to and quietly did nothing — so on a freshly
+   * opened song, tapping bar 27 and pressing play started the music at bar 1.
+   * Nothing announced the loss; the tap simply did not count.
+   *
+   * The position is remembered instead, and applied the moment the engine
+   * exists. A later seek replaces it, which is right: what the reader asked
+   * for last is where they want to be.
+   */
+  private pendingSeekTicks: number | null = null;
   private listeners = new Set<() => void>();
   private disposed = false;
   private state: PlaybackState;
@@ -157,7 +171,10 @@ export class PlaybackController {
 
   /** Raw transport clock, for the debug surface. */
   getTransportTicks(): number {
-    return this.engine?.context.transport.ticks ?? 0;
+    // Before the engine exists the remembered seek *is* the position: it is
+    // where the next play will start from, so it is what a reader is told.
+    if (!this.engine) return this.pendingSeekTicks ?? 0;
+    return this.engine.context.transport.ticks;
   }
 
   getTransportSeconds(): number {
@@ -214,6 +231,13 @@ export class PlaybackController {
     });
 
     this.engine = engine;
+
+    // A seek made before this existed is honoured now, not discarded.
+    if (this.pendingSeekTicks !== null) {
+      engine.context.transport.ticks = this.pendingSeekTicks;
+      this.pendingSeekTicks = null;
+    }
+
     this.applyLoop();
 
     // A loop wrap starts the section again, so nothing from the previous pass
@@ -282,7 +306,12 @@ export class PlaybackController {
     // Jumping somewhere else leaves anything that was sounding behind.
     this.engine?.expression.stopAll();
     const transport = this.engine?.context.transport;
-    if (transport) transport.ticks = start;
+    if (transport) {
+      transport.ticks = start;
+      this.pendingSeekTicks = null;
+    } else {
+      this.pendingSeekTicks = start;
+    }
     if (this.state.status === "ended") this.set({ status: "paused" });
   }
 

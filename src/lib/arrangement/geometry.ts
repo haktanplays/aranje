@@ -27,6 +27,7 @@
  * cancels. So "width from ticks" is *already* "width independent of grid", and
  * there is no second rule to keep in step with the first.
  */
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import {
   TICKS_PER_WHOLE,
   ticksPerBar,
@@ -49,8 +50,15 @@ export const LANE_HEIGHT = 44;
 /** Width of the sticky track-name column on the left. */
 export const TRACK_LABEL_WIDTH = 96;
 
-/** Height of the section header strip above the lanes. */
-export const SECTION_HEADER_HEIGHT = 34;
+/**
+ * Height of the section header strip above the lanes.
+ *
+ * A section header is a button — it takes you to that section — so it is a
+ * touch target and answers to the same minimum as every other one. It was 34px
+ * until a real viewport was measured, which is exactly the kind of number that
+ * looks fine in a screenshot and is not.
+ */
+export const SECTION_HEADER_HEIGHT = MIN_TOUCH_TARGET_PX;
 
 /**
  * How much of a whole note this bar lasts.

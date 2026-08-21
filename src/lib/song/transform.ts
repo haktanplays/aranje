@@ -284,19 +284,39 @@ const isClipboard = (value: Clipboard | { ok: false; error: TransformFailure }):
 
 // ------------------------------------------------------------------- writing
 
-/** A section's bars as mutable slot arrays for this track. */
-type Canvas = MelodicSlot[][];
+/**
+ * A section's bars as mutable slot arrays for this track.
+ *
+ * `null` where the track is not written in that bar. A track that plays in
+ * seven bars of eight is a completely ordinary thing — a guitar that drops out
+ * for one bar — and the absent bar is silence, not a defect (spec 5.5).
+ *
+ * This used to be `MelodicSlot[][]` and `canvasOf` returned null the moment any
+ * one bar was missing the track, which refused every edit anywhere in the
+ * section and said "this track is not written in this section" about a track
+ * that plainly was. The per-slot `writable` flag is what refuses an edit that
+ * actually reaches into a bar the track does not play in; the section as a
+ * whole has no business refusing on its behalf.
+ */
+type Canvas = (MelodicSlot[] | null)[];
 
 function canvasOf(section: Section, trackId: string): Canvas | null {
   const canvas: Canvas = [];
+  let written = false;
   for (const bar of section.bars) {
     const slots = bar.slots[trackId];
-    if (slots === undefined || !Array.isArray(slots)) return null;
+    if (slots === undefined) {
+      canvas.push(null);
+      continue;
+    }
+    if (!Array.isArray(slots)) return null;
     const melodic = slots as readonly MelodicSlot[];
     if (melodic.some((slot) => Array.isArray(slot))) return null;
     canvas.push([...melodic]);
+    written = true;
   }
-  return canvas;
+  // Not written in a single bar of the section: now the message is true.
+  return written ? canvas : null;
 }
 
 function applyCanvas(song: Song, sectionIndex: number, trackId: string, canvas: Canvas): Song {
@@ -304,10 +324,17 @@ function applyCanvas(song: Song, sectionIndex: number, trackId: string, canvas: 
     if (index !== sectionIndex) return section;
     return {
       ...section,
-      bars: section.bars.map((bar, barIndex) => ({
-        ...bar,
-        slots: { ...bar.slots, [trackId]: canvas[barIndex] ?? [] },
-      })),
+      bars: section.bars.map((bar, barIndex) => {
+        const written = canvas[barIndex];
+        /*
+         * A bar the track was absent from stays absent. "A missing key is
+         * silence" is a statement the contract makes (spec 5.5), and writing
+         * an empty array there would turn it into a different statement — as
+         * well as rewriting a bar nobody touched.
+         */
+        if (written === undefined || written === null) return bar;
+        return { ...bar, slots: { ...bar.slots, [trackId]: written } };
+      }),
     };
   });
   return { ...song, sections };
@@ -498,6 +525,31 @@ export function applyTransform(
     }
     return { ok: true, song: settled.song, warnings: settled.warnings, selection: resultSelection };
   };
+
+  /*
+   * The selection may not reach into a bar the track is not written in.
+   *
+   * That bar is silence, and silence is absence rather than a row of empty
+   * slots (spec 5.5) — there is nothing there to copy, move or delete. The
+   * check is on the *selection*, not on the section: a guitar that drops out
+   * for one bar is completely ordinary, and refusing every edit anywhere in
+   * its section because of that one bar was refusing on the music's behalf.
+   *
+   * `paste_selection` is not covered here because its region is the
+   * destination rather than the selection, and `writeEvents` already refuses
+   * a destination slot that cannot be written.
+   */
+  if (command.kind !== "paste_selection") {
+    for (const entry of stream) {
+      if (entry.startTicks < grown.startTicks) continue;
+      if (entry.startTicks >= grown.endTicks) break;
+      if (entry.writable) continue;
+      return fail(
+        "track_silent_here",
+        `Seçim, "${track.name}" track'inin yazılmadığı bir barı kapsıyor.`,
+      );
+    }
+  }
 
   switch (command.kind) {
     case "copy_selection": {
