@@ -41,9 +41,10 @@ const workspaceHooks = readdirSync("src/lib/workspace")
   .map((name) => `src/lib/workspace/${name}`);
 
 describe("38. the composition root stays a composition root", () => {
-  it("respects the line budgets honestly earned in 2L-R", () => {
-    expect(lineCount(WORKSPACE)).toBeLessThanOrEqual(900);
-    expect(lineCount(CANVAS)).toBeLessThanOrEqual(600);
+  it("respects the line budgets honestly earned in 2L-R and tightened in 2L-B", () => {
+    // 416 accepted at 2L-R plus at most 34 lines of lifecycle wiring (2L-B §2).
+    expect(lineCount(WORKSPACE)).toBeLessThanOrEqual(450);
+    expect(lineCount(CANVAS)).toBeLessThanOrEqual(470);
   });
 
   it("owns no state of its own", () => {
@@ -118,6 +119,30 @@ describe("39. one owner per state", () => {
         );
       }
     }
+  });
+
+  it("routes every lifecycle command through the one controller (2L-B)", () => {
+    /*
+     * The pure cores have exactly one caller. A sheet that imported
+     * `applyTrackCommand` itself would be a second gate — one that could
+     * commit without the ground, the no-op check or the survivor rule.
+     */
+    // The sheets may read a core's *vocabulary* (option helpers, labels);
+    // the apply functions are what must stay single-callered.
+    const applies = [
+      "applySongCommand",
+      "applySectionCommand",
+      "applyTrackCommand",
+    ];
+    for (const path of [...workspaceComponents, ...workspaceHooks]) {
+      if (path === "src/lib/workspace/use-lifecycle.ts") continue;
+      const names = identifiersOf(path);
+      for (const apply of applies) {
+        expect(names.has(apply), `${path} calls ${apply}`).toBe(false);
+      }
+    }
+    const owner = identifiersOf("src/lib/workspace/use-lifecycle.ts");
+    for (const apply of applies) expect(owner.has(apply), apply).toBe(true);
   });
 
   it("has no import cycle among the workspace modules", () => {
