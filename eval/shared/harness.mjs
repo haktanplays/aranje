@@ -102,3 +102,21 @@ export function makeRecorder(writeFileSync, outPath) {
   };
   return { results, measurements, record, flush };
 }
+
+/**
+ * The song under `aranje.song`, whichever format the key holds (2L-B gate).
+ *
+ * Since 2K-B the key carries the durable envelope; before it, a raw Song.
+ * Suites that read the stored song go through this one unwrap — the same
+ * decision the app's loader makes — instead of assuming either shape.
+ */
+export function unwrapStoredSong(raw) {
+  if (raw == null) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  return parsed?.format === "aranje.song" ? (parsed.current ?? null) : parsed;
+}

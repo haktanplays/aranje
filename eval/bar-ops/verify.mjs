@@ -17,7 +17,7 @@
  * `node eval/bar-ops/verify.mjs`
  */
 import { chromium } from "playwright";
-import { press, reveal } from "../shared/harness.mjs";
+import { press, reveal, unwrapStoredSong } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -159,8 +159,10 @@ async function dragHandle(page, cdp, edge, dx) {
 const writes = (page) => page.evaluate(() => window.__writes);
 const contexts = (page) => page.evaluate(() => window.__audioContexts ?? 0);
 const errors = (page) => page.evaluate(() => window.__consoleErrors ?? []);
-const stored = (page) =>
-  page.evaluate(() => JSON.parse(localStorage.getItem("aranje.song") ?? "null"));
+const stored = async (page) =>
+  unwrapStoredSong(
+    await page.evaluate(() => localStorage.getItem("aranje.song")),
+  );
 const debugPosition = (page) =>
   page.evaluate(() => window.__aranjeDebug?.position() ?? null);
 
@@ -176,7 +178,7 @@ const count = (page, selector) => page.locator(selector).count();
 
 const canUndo = (page) =>
   page
-    .locator("[aria-label='Son değişikliği geri al']")
+    .locator("[data-undo]")
     .first()
     .isDisabled()
     .then((disabled) => !disabled)
@@ -656,6 +658,17 @@ async function run() {
   // ---------------------------------------------------------------- 25
   await safe("25 the drum lane is a track like any other", async () => {
     const { context: c6, page: p6, cdp: d6 } = await openApp(browser);
+    // Every drums bar in the fixture carries the same beat, so a straight
+    // copy-paste would be a no-op the commit gate rightly refuses to write.
+    // Empty the target lane first — delete, copy, paste is the round trip
+    // any other track would take, and the paste becomes a real change.
+    const source = (await stored(p6))?.sections[0]?.bars[0]?.slots?.drums ?? null;
+    await press(p6, d6, cell("drums", "intro:1"));
+    await p6.locator("[data-bar-action=delete]").click();
+    await p6.waitForTimeout(300);
+    await p6.locator("[data-bar-apply]").click();
+    await p6.waitForTimeout(400);
+    await clearSelection(p6);
     await press(p6, d6, cell("drums", "intro:0"));
     const summary = await text(p6, "[data-bar-summary]");
     await p6.locator("[data-bar-action=copy]").click();
@@ -668,9 +681,11 @@ async function run() {
     await p6.waitForTimeout(300);
     await p6.locator("[role=dialog] button", { hasText: "Buraya yapıştır" }).click();
     await p6.waitForTimeout(300);
-    await p6.locator("[data-bar-replace]").click().catch(async () => {
-      await p6.locator("[data-bar-apply]").click();
-    });
+    const replaceOffered = await count(p6, "[data-bar-replace]");
+    await (replaceOffered
+      ? p6.locator("[data-bar-replace]")
+      : p6.locator("[data-bar-apply]")
+    ).click();
     await p6.waitForTimeout(400);
     const song = await stored(p6);
     const target = song?.sections[0]?.bars[1]?.slots?.drums ?? null;
@@ -680,8 +695,8 @@ async function run() {
         notice === "Ölçüler kopyalandı." &&
         (await writes(p6)) === before + 1 &&
         Array.isArray(target) &&
-        target.some((slot) => slot.length > 0),
-      `summary=${summary} pasted=${Array.isArray(target)}`,
+        JSON.stringify(target) === JSON.stringify(source),
+      `summary=${summary} pasted=${JSON.stringify(target) === JSON.stringify(source)}`,
     );
     await c6.close();
   });

@@ -17,7 +17,7 @@
  * `node eval/history/verify.mjs`
  */
 import { chromium } from "playwright";
-import { press, reveal } from "../shared/harness.mjs";
+import { press, reveal, unwrapStoredSong } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -139,8 +139,10 @@ async function openApp(browser, size = { width: 390, height: 844 }) {
 const writes = (page) => page.evaluate(() => window.__writes);
 const contexts = (page) => page.evaluate(() => window.__audioContexts ?? 0);
 const errors = (page) => page.evaluate(() => window.__consoleErrors ?? []);
-const storedSong = (page) =>
-  page.evaluate(() => JSON.parse(localStorage.getItem("aranje.song") ?? "null"));
+const storedSong = async (page) =>
+  unwrapStoredSong(
+    await page.evaluate(() => localStorage.getItem("aranje.song")),
+  );
 const debugPosition = (page) =>
   page.evaluate(() => window.__aranjeDebug?.position() ?? null);
 const debugLoop = (page) => page.evaluate(() => window.__aranjeDebug?.loop() ?? null);

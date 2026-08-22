@@ -7,18 +7,18 @@
     },
     {
       "name": "2 a track-bar delete undoes and redoes @390x844",
-      "pass": false,
+      "pass": true,
       "detail": "Geri al: Track içeriğini silme, writes +3"
     },
     {
       "name": "3 a full-bar delete undoes and redoes @390x844",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"undo\":\"Geri al: Track içeriğini silme\",\"redo\":\"Yinele\",\"sheet\":0,\"actionBar\":0}"
+      "pass": true,
+      "detail": "5 -> 4 -> 5 -> 4, Geri al: Ölçüleri silme"
     },
     {
       "name": "4 three edits undo and redo in order @390x844",
-      "pass": false,
-      "detail": "back to start=false, forward=false"
+      "pass": true,
+      "detail": "back to start=true, forward=true"
     },
     {
       "name": "5 an edit after two undos drops the redo branch @390x844",
@@ -37,8 +37,8 @@
     },
     {
       "name": "8 the surfaces share one history @390x844",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"undo\":\"Geri al\",\"redo\":\"Yinele: Ölçüleri silme\",\"sheet\":0,\"actionBar\":0}"
+      "pass": true,
+      "detail": "arrange=\"Geri al: Ölçüleri silme\" tab=\"Geri al: Ölçüleri silme\" redoAfter=true"
     },
     {
       "name": "9 undo puts the editing surfaces down @390x844",
@@ -52,8 +52,8 @@
     },
     {
       "name": "11 storage and the screen agree after undo and redo @390x844",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"undo\":\"Geri al\",\"redo\":\"Yinele: Ölçüleri silme\",\"sheet\":0,\"actionBar\":0}"
+      "pass": true,
+      "detail": "stored 5->4, drawn 11->10"
     },
     {
       "name": "12 playing stops for a structural edit and does not resume @390x844",
@@ -62,8 +62,8 @@
     },
     {
       "name": "13 the playhead stays on a bar that exists @390x844",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'flatMap') :: {\"undo\":\"Geri al: Ölçüleri silme\",\"redo\":\"Yinele\",\"sheet\":0,\"actionBar\":1}"
+      "pass": true,
+      "detail": "intro:4 -> intro:3"
     },
     {
       "name": "14 a loop survives an edit that leaves it intact @390x844",
@@ -72,8 +72,8 @@
     },
     {
       "name": "15 keyboard undo and redo @390x844",
-      "pass": false,
-      "detail": "ctrl+z=false shift=false ctrl+y=false"
+      "pass": true,
+      "detail": "ctrl+z=true shift=true ctrl+y=true"
     },
     {
       "name": "16 a shortcut inside a text field is the field's @390x844",
@@ -97,18 +97,18 @@
     },
     {
       "name": "2 a track-bar delete undoes and redoes @320x700",
-      "pass": false,
+      "pass": true,
       "detail": "Geri al: Track içeriğini silme, writes +3"
     },
     {
       "name": "3 a full-bar delete undoes and redoes @320x700",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"undo\":\"Geri al: Track içeriğini silme\",\"redo\":\"Yinele\",\"sheet\":0,\"actionBar\":0}"
+      "pass": true,
+      "detail": "5 -> 4 -> 5 -> 4, Geri al: Ölçüleri silme"
     },
     {
       "name": "4 three edits undo and redo in order @320x700",
-      "pass": false,
-      "detail": "back to start=false, forward=false"
+      "pass": true,
+      "detail": "back to start=true, forward=true"
     },
     {
       "name": "5 an edit after two undos drops the redo branch @320x700",
@@ -127,8 +127,8 @@
     },
     {
       "name": "8 the surfaces share one history @320x700",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"undo\":\"Geri al\",\"redo\":\"Yinele: Ölçüleri silme\",\"sheet\":0,\"actionBar\":0}"
+      "pass": true,
+      "detail": "arrange=\"Geri al: Ölçüleri silme\" tab=\"Geri al: Ölçüleri silme\" redoAfter=true"
     },
     {
       "name": "9 undo puts the editing surfaces down @320x700",
@@ -142,8 +142,8 @@
     },
     {
       "name": "11 storage and the screen agree after undo and redo @320x700",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"undo\":\"Geri al\",\"redo\":\"Yinele: Ölçüleri silme\",\"sheet\":0,\"actionBar\":0}"
+      "pass": true,
+      "detail": "stored 5->4, drawn 11->10"
     },
     {
       "name": "12 playing stops for a structural edit and does not resume @320x700",
@@ -152,8 +152,8 @@
     },
     {
       "name": "13 the playhead stays on a bar that exists @320x700",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'flatMap') :: {\"undo\":\"Geri al: Ölçüleri silme\",\"redo\":\"Yinele\",\"sheet\":0,\"actionBar\":1}"
+      "pass": true,
+      "detail": "intro:4 -> intro:3"
     },
     {
       "name": "14 a loop survives an edit that leaves it intact @320x700",
@@ -162,8 +162,8 @@
     },
     {
       "name": "15 keyboard undo and redo @320x700",
-      "pass": false,
-      "detail": "ctrl+z=false shift=false ctrl+y=false"
+      "pass": true,
+      "detail": "ctrl+z=true shift=true ctrl+y=true"
     },
     {
       "name": "16 a shortcut inside a text field is the field's @320x700",
@@ -186,6 +186,18 @@
       "built": 1,
       "after": 1
     },
+    "playhead-390x844": {
+      "before": {
+        "barKey": "intro:4",
+        "barIndex": 4,
+        "slotIndex": 2
+      },
+      "after": {
+        "barKey": "intro:3",
+        "barIndex": 3,
+        "slotIndex": 1
+      }
+    },
     "loop-390x844": {
       "before": {
         "on": true,
@@ -201,7 +213,7 @@
     "layout-390x844": {
       "bodyOverflow": 0,
       "scrollers": 1,
-      "undoLabel": "Geri al: Track içeriğini silme",
+      "undoLabel": "Geri al: Ölçüleri silme",
       "redoLabel": "Yinele",
       "canUndo": true,
       "canRedo": false,
@@ -218,6 +230,18 @@
       "built": 1,
       "after": 1
     },
+    "playhead-320x700": {
+      "before": {
+        "barKey": "intro:4",
+        "barIndex": 4,
+        "slotIndex": 2
+      },
+      "after": {
+        "barKey": "intro:3",
+        "barIndex": 3,
+        "slotIndex": 1
+      }
+    },
     "loop-320x700": {
       "before": {
         "on": true,
@@ -233,7 +257,7 @@
     "layout-320x700": {
       "bodyOverflow": 0,
       "scrollers": 1,
-      "undoLabel": "Geri al: Track içeriğini silme",
+      "undoLabel": "Geri al: Ölçüleri silme",
       "redoLabel": "Yinele",
       "canUndo": true,
       "canRedo": false,
@@ -247,5 +271,5 @@
       }
     }
   },
-  "failed": 14
+  "failed": 0
 }

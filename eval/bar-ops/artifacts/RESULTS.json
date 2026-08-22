@@ -47,8 +47,8 @@
     },
     {
       "name": "10 pasting into an empty bar is one write, one undo",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading '0') :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Ritim Gitar · 1 ölçü\"}"
+      "pass": true,
+      "detail": "writes 2->3 rhythm=written"
     },
     {
       "name": "11 an occupied target asks before overwriting",
@@ -77,13 +77,13 @@
     },
     {
       "name": "16 a track delete empties the bar and keeps it",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"actionBar\":0,\"sheet\":0,\"error\":\"Bu ölçü sonraki bölüme bağlı. Bölüm sınırını aşan ölçü taşıma henüz desteklenmiyor.\",\"summary\":null}"
+      "pass": true,
+      "detail": "bars 4 sounding=0 drums kept=true"
     },
     {
       "name": "17 a full delete removes the bar",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"actionBar\":0,\"sheet\":0,\"error\":\"Bu ölçü sonraki bölüme bağlı. Bölüm sınırını aşan ölçü taşıma henüz desteklenmiyor.\",\"summary\":null}"
+      "pass": true,
+      "detail": "4 -> 3"
     },
     {
       "name": "18 a structural edit pauses and starts no second engine",
@@ -92,13 +92,13 @@
     },
     {
       "name": "19 a blank bar carries no track keys",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading '0') :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
+      "pass": true,
+      "detail": "keys=[] res=8 ts=[4,4]"
     },
     {
       "name": "20 the playhead lands on a bar that exists",
-      "pass": false,
-      "detail": "TypeError: Cannot read properties of undefined (reading 'flatMap') :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
+      "pass": true,
+      "detail": "chorus:1 -> chorus:2"
     },
     {
       "name": "21 a section can never be emptied",
@@ -122,7 +122,7 @@
     },
     {
       "name": "25 the drum lane is a track like any other",
-      "pass": false,
+      "pass": true,
       "detail": "summary=Davul · 1 ölçü pasted=true"
     },
     {
@@ -155,6 +155,11 @@
     "audioContexts": {
       "before": 1,
       "after": 1
+    },
+    "playheadAfter": {
+      "barKey": "chorus:2",
+      "barIndex": 8,
+      "slotIndex": 1
     },
     "layout-390x844": {
       "work": {
@@ -189,5 +194,5 @@
       "small": []
     }
   },
-  "failed": 6
+  "failed": 0
 }
