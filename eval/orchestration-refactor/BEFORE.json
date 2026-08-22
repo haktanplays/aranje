@@ -1,0 +1,179 @@
+{
+  "baseline": {
+    "commit": "2061840",
+    "phase": "2L-R start"
+  },
+  "workspace": {
+    "lines": 1543,
+    "hooks": {
+      "useState": 18,
+      "useEffect": 2,
+      "useMemo": 17,
+      "useCallback": 26,
+      "useRef": 3
+    },
+    "useCallbackHandlers": 26,
+    "jsxEventProps": 71,
+    "importCount": 48,
+    "imports": [
+      "react",
+      "@/components/workspace/ArrangeSheet",
+      "@/components/workspace/ArrangementCanvas",
+      "@/components/workspace/BarActionBar",
+      "@/lib/arrangement/model",
+      "@/components/workspace/ViewSwitch",
+      "@/components/workspace/EditToolbar",
+      "@/components/workspace/FretSheet",
+      "@/components/workspace/InfoSheet",
+      "@/components/workspace/PreviewSheet",
+      "@/components/workspace/RecoveryBanner",
+      "@/components/workspace/PracticeRateControl",
+      "@/components/workspace/SectionNavigator",
+      "@/components/workspace/Sheet",
+      "@/components/workspace/SectionSheet",
+      "@/components/workspace/SelectionBar",
+      "@/components/workspace/TabCanvas",
+      "@/components/workspace/TrackSheet",
+      "@/components/workspace/TransportBar",
+      "@/lib/audio/use-debug-handle",
+      "@/lib/settings/use-settings",
+      "@/lib/audio/use-playback",
+      "@/components/workspace/SelectionActionBar",
+      "@/components/workspace/TimeSelectionBand",
+      "@/components/workspace/TransformSheet",
+      "@/components/workspace/selection-geometry",
+      "@/lib/song/use-transform",
+      "@/lib/song/use-bar-transform",
+      "@/lib/song/bar-transform",
+      "@/lib/song/bar-selection",
+      "@/components/workspace/geometry",
+      "@/lib/song/onset-block",
+      "@/lib/music/timing",
+      "@/components/workspace/ProjectFileSheet",
+      "@/components/workspace/WorkspaceHeader",
+      "@/lib/project/use-project-file",
+      "@/lib/ui/interaction",
+      "@/lib/copilot/ui-options",
+      "@/lib/copilot/use-co-arranger",
+      "@/lib/music/timing",
+      "@/lib/song/edit",
+      "@/lib/song/move",
+      "@/lib/song/onset-block",
+      "@/lib/song/selection",
+      "@/lib/song/use-song",
+      "@/lib/ui/use-edit-shortcuts",
+      "@/lib/tab/timeline",
+      "@/lib/validators"
+    ]
+  },
+  "arrangement": {
+    "lines": 881,
+    "hooks": {
+      "useState": 0,
+      "useEffect": 3,
+      "useMemo": 2,
+      "useCallback": 1,
+      "useRef": 5
+    },
+    "useCallbackHandlers": 1,
+    "jsxEventProps": 13,
+    "importCount": 8,
+    "imports": [
+      "react",
+      "@/lib/arrangement/geometry",
+      "@/lib/arrangement/links",
+      "@/lib/arrangement/model",
+      "@/lib/ui/use-long-press",
+      "@/lib/ui/interaction",
+      "@/lib/song/bar-selection",
+      "@/lib/audio/position"
+    ]
+  },
+  "workspaceStateGroups": {
+    "view_navigation": [
+      "view",
+      "pendingTabBar",
+      "activeBarKey",
+      "selectedTrackId",
+      "scrollRef",
+      "arrangeScrollRef"
+    ],
+    "playback": [
+      "usePlayback entry (lib)",
+      "toggleLoop",
+      "practice percent effect"
+    ],
+    "selection_clipboard": [
+      "transform (time selection + clipboard)",
+      "barTransform (bar selection + clipboard)",
+      "pasteAt",
+      "selection (onset group)",
+      "moveError",
+      "dragEdge"
+    ],
+    "bar_operations": [
+      "barSheet",
+      "selectBars",
+      "extendBars",
+      "selectBarsFromTab",
+      "applyBars",
+      "stageBarCommand"
+    ],
+    "sheets_overlays": [
+      "trackSheetOpen",
+      "sectionSheetOpen",
+      "practiceSheetOpen",
+      "infoOpen",
+      "projectSheetOpen",
+      "sheet (TransformSheetKind)"
+    ],
+    "copilot_preview": [
+      "useCoArranger",
+      "form",
+      "skills",
+      "previewOpen",
+      "arrangeOpen"
+    ],
+    "project_file": [
+      "useProjectFile",
+      "prepareForProjectApply"
+    ],
+    "recovery_history": [
+      "useSong fields",
+      "resetEditSurfaces",
+      "undoEdit",
+      "redoEdit",
+      "useEditShortcuts"
+    ],
+    "note_editing": [
+      "editing",
+      "cell",
+      "editError",
+      "runCommand",
+      "nudge",
+      "currentSpan",
+      "articulationWarning",
+      "fretTarget"
+    ]
+  },
+  "duplicatedEvalHelpers": {
+    "harnessesUsingCdpLongPress": [
+      "eval/arrangement/verify.mjs",
+      "eval/bar-ops/verify.mjs",
+      "eval/history/verify.mjs",
+      "eval/project-file/verify.mjs",
+      "eval/selection-ui/verify.mjs",
+      "eval/storage/verify.mjs"
+    ],
+    "duplicatedAcrossThreePlus": [
+      "press/long-press via Input.dispatchTouchEvent",
+      "reveal/scrollIntoView + settle wait",
+      "record/flush RESULTS.json accounting",
+      "safe() wrapper with failure screenshot",
+      "console/page error collection",
+      "mobile context creation (viewport, hasTouch, isMobile, DSF 2)",
+      "body overflow + horizontal scroller measurement",
+      "44px target box measurement"
+    ]
+  }
+}

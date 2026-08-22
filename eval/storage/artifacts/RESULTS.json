@@ -213,12 +213,12 @@
     {
       "name": "23 the malformed-JSON ledger, in order @390x844",
       "pass": true,
-      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787386479527\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787404597061\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
     },
     {
       "name": "24 the rescued-previous ledger, in order @390x844",
       "pass": true,
-      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787386480193:true\",\"set:aranje.song:true\"]"
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787404597806:true\",\"set:aranje.song:true\"]"
     },
     {
       "name": "25 a failed repair leaves the file alone and editing closed @390x844",
@@ -238,12 +238,12 @@
     {
       "name": "23 the malformed-JSON ledger, in order @320x700",
       "pass": true,
-      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787386489686\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787404607795\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
     },
     {
       "name": "24 the rescued-previous ledger, in order @320x700",
       "pass": true,
-      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787386490366:true\",\"set:aranje.song:true\"]"
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787404608628:true\",\"set:aranje.song:true\"]"
     },
     {
       "name": "25 a failed repair leaves the file alone and editing closed @320x700",
@@ -293,7 +293,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787386479527",
+        "key": "aranje.corrupt.1787404597061",
         "ok": true
       },
       {
@@ -315,7 +315,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787386480193",
+        "key": "aranje.corrupt.1787404597806",
         "ok": true
       },
       {
@@ -337,7 +337,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787386489686",
+        "key": "aranje.corrupt.1787404607795",
         "ok": true
       },
       {
@@ -359,7 +359,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787386490366",
+        "key": "aranje.corrupt.1787404608628",
         "ok": true
       },
       {

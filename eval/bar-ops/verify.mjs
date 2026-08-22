@@ -17,6 +17,7 @@
  * `node eval/bar-ops/verify.mjs`
  */
 import { chromium } from "playwright";
+import { press, reveal } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -124,49 +125,7 @@ async function openApp(browser, size = { width: 390, height: 844 }) {
   return { context, page, cdp };
 }
 
-/*
- * A real long press.
- *
- * Playwright's mouse API produces no `pointerdown` under touch emulation, so
- * every press here goes through CDP — the same reason the 2I-B and 2J
- * harnesses do.
- */
-async function press(page, cdp, selector, ms = 700) {
-  await reveal(page, selector);
-  const box = await page.locator(selector).first().boundingBox();
-  if (!box) throw new Error(`no box: ${selector}`);
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  await cdp.send("Input.dispatchTouchEvent", {
-    type: "touchStart",
-    touchPoints: [{ x, y }],
-  });
-  await page.waitForTimeout(ms);
-  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-  /*
-   * Longer than the app's own post-press click window (400ms), because a
-   * finished press arms a one-shot click swallower and a test click issued
-   * inside that window would be eaten by it. A person cannot tap that fast;
-   * a script can, and the resulting flake is the harness's, not the app's.
-   */
-  await page.waitForTimeout(550);
-}
 
-/**
- * Bring a bar into view before touching it.
- *
- * The arrangement is wider than the phone, so a bar in the third section has a
- * bounding box off the side of the glass. A touch dispatched at those
- * coordinates lands on nothing at all.
- */
-async function reveal(page, selector) {
-  await page.evaluate((sel) => {
-    document
-      .querySelector(sel)
-      ?.scrollIntoView({ block: "nearest", inline: "center" });
-  }, selector);
-  await page.waitForTimeout(300);
-}
 
 /** Drag a selection handle by whole bars. */
 async function dragHandle(page, cdp, edge, dx) {

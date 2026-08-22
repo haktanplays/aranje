@@ -10,6 +10,7 @@
  *   node eval/project-file/verify.mjs
  */
 import { chromium } from "playwright";
+import { press } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -239,20 +240,6 @@ async function openApp(browser, size, options = {}) {
 
 /* --------------------------------------------------------------- gestures */
 
-async function press(page, cdp, selector, ms = 700) {
-  await page.evaluate((sel) => {
-    document.querySelector(sel)?.scrollIntoView({ block: "nearest", inline: "center" });
-  }, selector);
-  await page.waitForTimeout(300);
-  const box = await page.locator(selector).first().boundingBox();
-  if (!box) throw new Error(`no box: ${selector}`);
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
-  await page.waitForTimeout(ms);
-  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-  await page.waitForTimeout(550);
-}
 
 /* ------------------------------------------------------------ observations */
 

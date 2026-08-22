@@ -2,8 +2,8 @@
   "results": [
     {
       "name": "1 a cell press selects that track's bar",
-      "pass": false,
-      "detail": "Tüm enstrümanlar · 1 ölçü"
+      "pass": true,
+      "detail": "Ritim Gitar · 1 ölçü"
     },
     {
       "name": "2 no time selection wakes with it",
@@ -12,8 +12,8 @@
     },
     {
       "name": "3 a track selection offers no structural entries",
-      "pass": false,
-      "detail": "Ölçü işlemleri | Önüne boş ölçü ekle | Arkasına boş ölçü ekle"
+      "pass": true,
+      "detail": "Ölçü işlemleri"
     },
     {
       "name": "4 a bar-number press selects the whole bar",
@@ -33,7 +33,7 @@
     {
       "name": "7 a preview writes nothing at all",
       "pass": true,
-      "detail": "preview=\"1 ölçü bütün enstrümanlarda kesilecek.\" writes 1->1"
+      "detail": "preview=\"1 ölçü bu enstrümanda kesilecek.\" writes 2->2"
     },
     {
       "name": "8 cancelling leaves the song exactly as found",
@@ -48,7 +48,7 @@
     {
       "name": "10 pasting into an empty bar is one write, one undo",
       "pass": false,
-      "detail": "TimeoutError: locator.click: Timeout 6000ms exceeded. :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
+      "detail": "TypeError: Cannot read properties of undefined (reading '0') :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Ritim Gitar · 1 ölçü\"}"
     },
     {
       "name": "11 an occupied target asks before overwriting",
@@ -58,17 +58,17 @@
     {
       "name": "12 the answer is one write, not two",
       "pass": true,
-      "detail": "writes 1->2"
+      "detail": "writes 3->4"
     },
     {
       "name": "13 a grid the target cannot write is refused, not rounded",
-      "pass": false,
-      "detail": "preview=\"Hedefte içerik var.\""
+      "pass": true,
+      "detail": "preview=\"Kopyalanan ölçü hedef ölçünün ritim aralığına tam oturmuyor.\""
     },
     {
       "name": "14 a chain widens the selection and says so",
-      "pass": false,
-      "detail": "Tüm enstrümanlar · 2 ölçü / Bağlantılı notalar nedeniyle seçim 2 ölçüye genişletildi."
+      "pass": true,
+      "detail": "Ritim Gitar · 2 ölçü / Bağlantılı notalar nedeniyle seçim 2 ölçüye genişletildi."
     },
     {
       "name": "15 a chain out of the section is refused outright",
@@ -78,27 +78,27 @@
     {
       "name": "16 a track delete empties the bar and keeps it",
       "pass": false,
-      "detail": "bars 4 sounding=2 drums kept=true"
+      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"actionBar\":0,\"sheet\":0,\"error\":\"Bu ölçü sonraki bölüme bağlı. Bölüm sınırını aşan ölçü taşıma henüz desteklenmiyor.\",\"summary\":null}"
     },
     {
       "name": "17 a full delete removes the bar",
       "pass": false,
-      "detail": "3 -> 1"
+      "detail": "TypeError: Cannot read properties of undefined (reading 'find') :: {\"actionBar\":0,\"sheet\":0,\"error\":\"Bu ölçü sonraki bölüme bağlı. Bölüm sınırını aşan ölçü taşıma henüz desteklenmiyor.\",\"summary\":null}"
     },
     {
       "name": "18 a structural edit pauses and starts no second engine",
-      "pass": false,
-      "detail": "TimeoutError: locator.click: Timeout 6000ms exceeded. :: {\"actionBar\":0,\"sheet\":0,\"error\":null,\"summary\":null}"
+      "pass": true,
+      "detail": "status playing -> idle, contexts 1 -> 1"
     },
     {
       "name": "19 a blank bar carries no track keys",
       "pass": false,
-      "detail": "keys=[drums] res=8 ts=[4,4]"
+      "detail": "TypeError: Cannot read properties of undefined (reading '0') :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
     },
     {
       "name": "20 the playhead lands on a bar that exists",
       "pass": false,
-      "detail": "undefined -> intro:0"
+      "detail": "TypeError: Cannot read properties of undefined (reading 'flatMap') :: {\"actionBar\":1,\"sheet\":0,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
     },
     {
       "name": "21 a section can never be emptied",
@@ -112,8 +112,8 @@
     },
     {
       "name": "23 a full selection is never offered a track clipboard",
-      "pass": false,
-      "detail": "Ölçü işlemleri | Buraya yapıştır | Önüne boş ölçü ekle | Arkasına boş ölçü ekle "
+      "pass": true,
+      "detail": "Ölçü işlemleri | Önüne boş ölçü ekle | Arkasına boş ölçü ekle"
     },
     {
       "name": "24 the reader's words, from the one table",
@@ -123,12 +123,12 @@
     {
       "name": "25 the drum lane is a track like any other",
       "pass": false,
-      "detail": "summary=Tüm enstrümanlar · 1 ölçü pasted=true"
+      "detail": "summary=Davul · 1 ölçü pasted=true"
     },
     {
       "name": "26 a track repeat fills without growing the section",
-      "pass": false,
-      "detail": "TimeoutError: locator.click: Timeout 6000ms exceeded. :: {\"actionBar\":1,\"sheet\":1,\"error\":null,\"summary\":\"Tüm enstrümanlar · 1 ölçü\"}"
+      "pass": true,
+      "detail": "preview=\"Hedefte içerik var.\" bars=5"
     },
     {
       "name": "27 a preview does not stop the music",
@@ -147,10 +147,14 @@
     }
   ],
   "measurements": {
-    "playheadAfter": {
-      "barKey": "intro:0",
-      "barIndex": 0,
-      "slotIndex": 0
+    "playheadBefore": {
+      "barKey": "chorus:1",
+      "barIndex": 6,
+      "slotIndex": 2
+    },
+    "audioContexts": {
+      "before": 1,
+      "after": 1
     },
     "layout-390x844": {
       "work": {
@@ -185,5 +189,5 @@
       "small": []
     }
   },
-  "failed": 13
+  "failed": 6
 }

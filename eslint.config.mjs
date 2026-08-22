@@ -19,6 +19,29 @@ const config = [
   ...nextCoreWebVitals,
   ...nextTypeScript,
   /*
+   * Eval helpers never enter the product bundle (2L-R). The specific blocks
+   * below override this rule for their files, so each of them carries the
+   * same pattern again.
+   */
+  {
+    files: ["src/**/*.ts", "src/**/*.tsx"],
+    // Product code only: a test may reach eval fixtures, the bundle may not.
+    ignores: ["src/**/*.test.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["**/eval/**"],
+              message: "Eval helpers are test scaffolding, not product code.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  /*
    * Project-file boundaries (spec 13.15, 2L-A), enforced on the real import
    * graph rather than by text search: the pure contract stays pure, the hook
    * persists only through the injected commit, and components take the whole
@@ -72,6 +95,10 @@ const config = [
           ],
           patterns: [
             {
+              group: ["**/eval/**"],
+              message: "Eval helpers are test scaffolding, not product code.",
+            },
+            {
               group: ["@/components/*"],
               message: "The project-file contract is pure.",
             },
@@ -101,6 +128,10 @@ const config = [
             },
           ],
           patterns: [
+            {
+              group: ["**/eval/**"],
+              message: "Eval helpers are test scaffolding, not product code.",
+            },
             {
               group: ["@/components/*"],
               message: "Hooks do not import components.",

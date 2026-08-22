@@ -31,7 +31,8 @@ import {
 } from "@/lib/music/timing";
 
 /** Bars are found by this attribute, so no child refs are needed. */
-export const BAR_KEY_ATTRIBUTE = "data-bar-key";
+// Re-exported from geometry so existing importers keep their path.
+export { BAR_KEY_ATTRIBUTE } from "@/components/workspace/geometry";
 
 /**
  * The grid to write on a bar's header, or nothing (spec 5.5, 13.x, K-34).

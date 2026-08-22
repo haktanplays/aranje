@@ -15,6 +15,12 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 
+import {
+  arithmeticIdentifiersOf,
+  commitActionKinds,
+  identifiersOf,
+} from "@/lib/dev/ast";
+
 const COMPONENTS = "src/components/workspace";
 
 const components = readdirSync(COMPONENTS)
@@ -35,9 +41,22 @@ describe("26. no component owns a history", () => {
   });
 
   it("never does cursor arithmetic", () => {
+    /*
+     * Asked of the syntax tree, not the text (2L-R): a `cursor-pointer`
+     * class, a comment or a reworded sentence cannot trip this, and hiding
+     * real cursor arithmetic behind a rename of *other* things cannot save
+     * it — the identifier taking part in the arithmetic is what is checked.
+     */
     for (const source of components) {
-      expect(source.text, source.name).not.toMatch(/cursor\s*[+-]/);
-      expect(source.text, source.name).not.toContain("recordEdit");
+      const path = `${COMPONENTS}/${source.name}`;
+      expect(
+        arithmeticIdentifiersOf(path).has("cursor"),
+        `${source.name} does cursor arithmetic`,
+      ).toBe(false);
+      expect(
+        identifiersOf(path).has("recordEdit"),
+        `${source.name} records history itself`,
+      ).toBe(false);
     }
   });
 
@@ -78,17 +97,27 @@ describe("27. every mutation path goes through the one gate", () => {
   });
 
   it("names an action at every commit, so no step is anonymous", () => {
-    const calls = workspace.match(/commit\([\s\S]{0,200}?\)/g) ?? [];
-    expect(calls.length).toBeGreaterThan(0);
-    for (const call of calls) {
-      expect(call).toContain("kind:");
-    }
+    // Read off the syntax tree (2L-R): every `commit(...)` call in the
+    // components and the workspace controllers carries a literal action kind.
+    const paths = [
+      ...components.map((source) => `${COMPONENTS}/${source.name}`),
+      ...readdirSync("src/lib/workspace")
+        .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
+        .map((name) => `src/lib/workspace/${name}`),
+    ];
+    const kinds = paths.flatMap((path) => commitActionKinds(path));
+    expect(kinds.length).toBeGreaterThan(0);
+    expect(kinds).not.toContain("<unnamed>");
   });
 
   it("routes riff edits, group moves and the Copilot through it", () => {
-    expect(workspace).toMatch(/commit\(result\.song, \{ kind: "note_edit" \}\)/);
-    expect(workspace).toMatch(/commit\(result\.song, \{ kind: "group_move" \}\)/);
-    expect(workspace).toContain('kind: "copilot_apply"');
+    // The commits moved with their owners (2L-R); the guarantee did not.
+    const editor = commitActionKinds("src/lib/workspace/use-note-editing.ts");
+    expect(editor).toContain("note_edit");
+    expect(editor).toContain("group_move");
+    expect(commitActionKinds(`${COMPONENTS}/Workspace.tsx`)).toContain(
+      "copilot_apply",
+    );
   });
 
   it("routes selection and bar transforms through their hooks", () => {

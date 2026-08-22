@@ -1,0 +1,259 @@
+{
+  "tag": "AFTER",
+  "viewports": {
+    "390x844": {
+      "bootToArrangement": {
+        "rounds": 20,
+        "medianMs": 249,
+        "p95Ms": 288,
+        "maxMs": 304
+      },
+      "arrangeBounds": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 57
+        },
+        "viewSwitch": {
+          "x": 0,
+          "y": 57,
+          "w": 390,
+          "h": 47
+        },
+        "main": {
+          "x": 0,
+          "y": 104,
+          "w": 390,
+          "h": 634
+        },
+        "arrangementScroller": {
+          "x": 0,
+          "y": 104,
+          "w": 390,
+          "h": 634
+        },
+        "transportStatusRow": null,
+        "playButton": {
+          "x": 64,
+          "y": 794,
+          "w": 56,
+          "h": 44
+        },
+        "firstTrackLabel": {
+          "x": 0,
+          "y": 192,
+          "w": 108,
+          "h": 44
+        }
+      },
+      "arrangeLayout": {
+        "bodyOverflow": 0,
+        "scrollers": 1
+      },
+      "arrangeLanes": 3,
+      "arrangeTargets": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "switchToTab": {
+        "rounds": 20,
+        "medianMs": 57,
+        "p95Ms": 76,
+        "maxMs": 78
+      },
+      "switchToArrange": {
+        "rounds": 20,
+        "medianMs": 62,
+        "p95Ms": 77,
+        "maxMs": 93
+      },
+      "tabBounds": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 57
+        },
+        "sectionNavigator": {
+          "x": 0,
+          "y": 104,
+          "w": 390,
+          "h": 49
+        },
+        "tabContent": {
+          "x": 0,
+          "y": 181,
+          "w": 3162,
+          "h": 200
+        },
+        "trackControl": {
+          "x": 0,
+          "y": 694,
+          "w": 390,
+          "h": 44
+        }
+      },
+      "tabLayout": {
+        "bodyOverflow": 0,
+        "scrollers": 1
+      },
+      "tabBars": 11,
+      "barSelectionOpen": {
+        "rounds": 20,
+        "medianMs": 1578,
+        "p95Ms": 1581,
+        "maxMs": 1581
+      },
+      "projectSheetOpen": {
+        "rounds": 20,
+        "medianMs": 91,
+        "p95Ms": 100,
+        "maxMs": 109
+      },
+      "audio": {
+        "audioContexts": 1,
+        "rafCallsPerSecondWhilePlaying": 61,
+        "statusAfterThreeSwitches": "playing",
+        "ticksProgressing": true,
+        "planTotalTicks": 8448,
+        "loopBounds": {
+          "on": true,
+          "startTicks": 0,
+          "endTicks": 3840
+        }
+      },
+      "consoleErrors": []
+    },
+    "320x700": {
+      "bootToArrangement": {
+        "rounds": 20,
+        "medianMs": 263,
+        "p95Ms": 288,
+        "maxMs": 290
+      },
+      "arrangeBounds": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 57
+        },
+        "viewSwitch": {
+          "x": 0,
+          "y": 57,
+          "w": 320,
+          "h": 47
+        },
+        "main": {
+          "x": 0,
+          "y": 104,
+          "w": 320,
+          "h": 490
+        },
+        "arrangementScroller": {
+          "x": 0,
+          "y": 104,
+          "w": 320,
+          "h": 490
+        },
+        "transportStatusRow": null,
+        "playButton": {
+          "x": 64,
+          "y": 650,
+          "w": 56,
+          "h": 44
+        },
+        "firstTrackLabel": {
+          "x": 0,
+          "y": 192,
+          "w": 108,
+          "h": 44
+        }
+      },
+      "arrangeLayout": {
+        "bodyOverflow": 0,
+        "scrollers": 1
+      },
+      "arrangeLanes": 3,
+      "arrangeTargets": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "switchToTab": {
+        "rounds": 20,
+        "medianMs": 53,
+        "p95Ms": 70,
+        "maxMs": 208
+      },
+      "switchToArrange": {
+        "rounds": 20,
+        "medianMs": 50,
+        "p95Ms": 74,
+        "maxMs": 74
+      },
+      "tabBounds": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 57
+        },
+        "sectionNavigator": {
+          "x": 0,
+          "y": 104,
+          "w": 320,
+          "h": 49
+        },
+        "tabContent": {
+          "x": 0,
+          "y": 181,
+          "w": 3162,
+          "h": 200
+        },
+        "trackControl": {
+          "x": 0,
+          "y": 550,
+          "w": 320,
+          "h": 44
+        }
+      },
+      "tabLayout": {
+        "bodyOverflow": 0,
+        "scrollers": 1
+      },
+      "tabBars": 11,
+      "barSelectionOpen": {
+        "rounds": 20,
+        "medianMs": 1579,
+        "p95Ms": 1584,
+        "maxMs": 1604
+      },
+      "projectSheetOpen": {
+        "rounds": 20,
+        "medianMs": 92,
+        "p95Ms": 95,
+        "maxMs": 137
+      },
+      "audio": {
+        "audioContexts": 1,
+        "rafCallsPerSecondWhilePlaying": 60,
+        "statusAfterThreeSwitches": "playing",
+        "ticksProgressing": true,
+        "planTotalTicks": 8448,
+        "loopBounds": {
+          "on": true,
+          "startTicks": 0,
+          "endTicks": 3840
+        }
+      },
+      "consoleErrors": []
+    }
+  }
+}

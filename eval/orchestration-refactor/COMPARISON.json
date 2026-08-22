@@ -1,0 +1,290 @@
+{
+  "note": "Masaüstü Chromium ölçümleri; fiziksel telefon kanıtı değildir.",
+  "boundsPixelIdentical": true,
+  "viewports": {
+    "390x844": {
+      "bootToArrangement": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 287,
+          "p95Ms": 334,
+          "maxMs": 347
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 249,
+          "p95Ms": 288,
+          "maxMs": 304
+        }
+      },
+      "switchToTab": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 75,
+          "p95Ms": 86,
+          "maxMs": 91
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 57,
+          "p95Ms": 76,
+          "maxMs": 78
+        }
+      },
+      "switchToArrange": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 62,
+          "p95Ms": 91,
+          "maxMs": 104
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 62,
+          "p95Ms": 77,
+          "maxMs": 93
+        }
+      },
+      "barSelectionOpen": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 1581,
+          "p95Ms": 1593,
+          "maxMs": 1600
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 1578,
+          "p95Ms": 1581,
+          "maxMs": 1581
+        }
+      },
+      "projectSheetOpen": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 92,
+          "p95Ms": 96,
+          "maxMs": 97
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 91,
+          "p95Ms": 100,
+          "maxMs": 109
+        }
+      },
+      "arrangeLayout": {
+        "before": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        },
+        "after": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        }
+      },
+      "tabLayout": {
+        "before": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        },
+        "after": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        }
+      },
+      "arrangeLanes": {
+        "before": 3,
+        "after": 3
+      },
+      "tabBars": {
+        "before": 11,
+        "after": 11
+      },
+      "arrangeTargets": {
+        "before": [
+          44,
+          44,
+          44,
+          44,
+          44
+        ],
+        "after": [
+          44,
+          44,
+          44,
+          44,
+          44
+        ]
+      },
+      "audio": {
+        "before": {
+          "audioContexts": 1,
+          "rafCallsPerSecondWhilePlaying": 60,
+          "statusAfterThreeSwitches": "playing",
+          "ticksProgressing": true,
+          "planTotalTicks": 8448,
+          "loopBounds": {
+            "on": true,
+            "startTicks": 0,
+            "endTicks": 3840
+          }
+        },
+        "after": {
+          "audioContexts": 1,
+          "rafCallsPerSecondWhilePlaying": 61,
+          "statusAfterThreeSwitches": "playing",
+          "ticksProgressing": true,
+          "planTotalTicks": 8448,
+          "loopBounds": {
+            "on": true,
+            "startTicks": 0,
+            "endTicks": 3840
+          }
+        }
+      }
+    },
+    "320x700": {
+      "bootToArrangement": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 268,
+          "p95Ms": 308,
+          "maxMs": 309
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 263,
+          "p95Ms": 288,
+          "maxMs": 290
+        }
+      },
+      "switchToTab": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 57,
+          "p95Ms": 71,
+          "maxMs": 74
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 53,
+          "p95Ms": 70,
+          "maxMs": 208
+        }
+      },
+      "switchToArrange": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 57,
+          "p95Ms": 68,
+          "maxMs": 71
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 50,
+          "p95Ms": 74,
+          "maxMs": 74
+        }
+      },
+      "barSelectionOpen": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 1581,
+          "p95Ms": 1593,
+          "maxMs": 1622
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 1579,
+          "p95Ms": 1584,
+          "maxMs": 1604
+        }
+      },
+      "projectSheetOpen": {
+        "before": {
+          "rounds": 20,
+          "medianMs": 92,
+          "p95Ms": 95,
+          "maxMs": 95
+        },
+        "after": {
+          "rounds": 20,
+          "medianMs": 92,
+          "p95Ms": 95,
+          "maxMs": 137
+        }
+      },
+      "arrangeLayout": {
+        "before": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        },
+        "after": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        }
+      },
+      "tabLayout": {
+        "before": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        },
+        "after": {
+          "bodyOverflow": 0,
+          "scrollers": 1
+        }
+      },
+      "arrangeLanes": {
+        "before": 3,
+        "after": 3
+      },
+      "tabBars": {
+        "before": 11,
+        "after": 11
+      },
+      "arrangeTargets": {
+        "before": [
+          44,
+          44,
+          44,
+          44,
+          44
+        ],
+        "after": [
+          44,
+          44,
+          44,
+          44,
+          44
+        ]
+      },
+      "audio": {
+        "before": {
+          "audioContexts": 1,
+          "rafCallsPerSecondWhilePlaying": 60,
+          "statusAfterThreeSwitches": "playing",
+          "ticksProgressing": true,
+          "planTotalTicks": 8448,
+          "loopBounds": {
+            "on": true,
+            "startTicks": 0,
+            "endTicks": 3840
+          }
+        },
+        "after": {
+          "audioContexts": 1,
+          "rafCallsPerSecondWhilePlaying": 60,
+          "statusAfterThreeSwitches": "playing",
+          "ticksProgressing": true,
+          "planTotalTicks": 8448,
+          "loopBounds": {
+            "on": true,
+            "startTicks": 0,
+            "endTicks": 3840
+          }
+        }
+      }
+    }
+  }
+}

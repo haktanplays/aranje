@@ -1,0 +1,229 @@
+{
+  "results": [
+    {
+      "name": "390x844 01 opening lands on the arrangement",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 02 tab and arrangement swap cleanly",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 03 playback survives three view switches",
+      "pass": true,
+      "detail": "status playing, contexts 1"
+    },
+    {
+      "name": "390x844 04 section navigation scrolls, does not seek",
+      "pass": true,
+      "detail": "scroll 0 → 774"
+    },
+    {
+      "name": "390x844 05 a bar tap seeks the transport",
+      "pass": true,
+      "detail": "{\"barKey\":\"intro:1\",\"barIndex\":1,\"slotIndex\":0}"
+    },
+    {
+      "name": "390x844 06 selecting a track marks it",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 07 a note edit commits once",
+      "pass": true,
+      "detail": "writes 0 → 1"
+    },
+    {
+      "name": "390x844 08 time selection and transform",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 09 full-bar operation applies",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 10 undo and redo carry the structure",
+      "pass": true,
+      "detail": "label Geri al: Ölçüleri silme"
+    },
+    {
+      "name": "390x844 11 copilot demo previews, rejects and applies",
+      "pass": true,
+      "detail": "rejected true, applied true, Geri al: Aranje önerisini uygulama"
+    },
+    {
+      "name": "390x844 12 the project backup downloads",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 13 project import previews, cancels, applies",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 16 the loop arms and disarms",
+      "pass": true,
+      "detail": "{\"on\":true,\"startTicks\":0,\"endTicks\":3840}"
+    },
+    {
+      "name": "390x844 17 practice rate steps from its sheet",
+      "pass": true,
+      "detail": "Çalışma hızı yüzde 100. Değiştir → Çalışma hızı yüzde 95. Değiştir"
+    },
+    {
+      "name": "390x844 18 sheets open and close",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 19 layout holds",
+      "pass": false,
+      "detail": "{\"bodyOverflow\":0,\"scrollers\":2,\"targets\":[44,44,44,44,44]}"
+    },
+    {
+      "name": "390x844 20 zero console and page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "390x844 14 recovery banner on a corrupt file",
+      "pass": true,
+      "detail": "corrupt_fallback"
+    },
+    {
+      "name": "390x844 15 the storage gate closes editing only",
+      "pass": true,
+      "detail": "storage_unavailable"
+    },
+    {
+      "name": "320x700 01 opening lands on the arrangement",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 02 tab and arrangement swap cleanly",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 03 playback survives three view switches",
+      "pass": true,
+      "detail": "status playing, contexts 1"
+    },
+    {
+      "name": "320x700 04 section navigation scrolls, does not seek",
+      "pass": true,
+      "detail": "scroll 0 → 844"
+    },
+    {
+      "name": "320x700 05 a bar tap seeks the transport",
+      "pass": true,
+      "detail": "{\"barKey\":\"intro:1\",\"barIndex\":1,\"slotIndex\":0}"
+    },
+    {
+      "name": "320x700 06 selecting a track marks it",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 07 a note edit commits once",
+      "pass": true,
+      "detail": "writes 0 → 1"
+    },
+    {
+      "name": "320x700 08 time selection and transform",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 09 full-bar operation applies",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 10 undo and redo carry the structure",
+      "pass": true,
+      "detail": "label Geri al: Ölçüleri silme"
+    },
+    {
+      "name": "320x700 11 copilot demo previews, rejects and applies",
+      "pass": true,
+      "detail": "rejected true, applied true, Geri al: Aranje önerisini uygulama"
+    },
+    {
+      "name": "320x700 12 the project backup downloads",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 13 project import previews, cancels, applies",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 16 the loop arms and disarms",
+      "pass": true,
+      "detail": "{\"on\":true,\"startTicks\":0,\"endTicks\":3840}"
+    },
+    {
+      "name": "320x700 17 practice rate steps from its sheet",
+      "pass": true,
+      "detail": "Çalışma hızı yüzde 100. Değiştir → Çalışma hızı yüzde 95. Değiştir"
+    },
+    {
+      "name": "320x700 18 sheets open and close",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 19 layout holds",
+      "pass": false,
+      "detail": "{\"bodyOverflow\":0,\"scrollers\":2,\"targets\":[44,44,44,44,44]}"
+    },
+    {
+      "name": "320x700 20 zero console and page errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "320x700 14 recovery banner on a corrupt file",
+      "pass": true,
+      "detail": "corrupt_fallback"
+    },
+    {
+      "name": "320x700 15 the storage gate closes editing only",
+      "pass": true,
+      "detail": "storage_unavailable"
+    }
+  ],
+  "measurements": {
+    "390x844-layout": {
+      "bodyOverflow": 0,
+      "scrollers": 2,
+      "targets": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ]
+    },
+    "320x700-layout": {
+      "bodyOverflow": 0,
+      "scrollers": 2,
+      "targets": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ]
+    }
+  },
+  "failed": 2
+}

@@ -1,0 +1,90 @@
+{
+  "workspace": {
+    "lines": 416,
+    "hooks": {
+      "useState": 0,
+      "useEffect": 1,
+      "useMemo": 5,
+      "useCallback": 10,
+      "useRef": 0
+    },
+    "useCallbackHandlers": 10,
+    "jsxEventProps": 19,
+    "importCount": 29,
+    "imports": [
+      "react",
+      "@/components/workspace/EditToolbar",
+      "@/components/workspace/RecoveryBanner",
+      "@/components/workspace/SectionNavigator",
+      "@/components/workspace/SelectionActionArea",
+      "@/components/workspace/SelectionBar",
+      "@/components/workspace/TransportBar",
+      "@/components/workspace/ViewSwitch",
+      "@/components/workspace/WorkspaceHeader",
+      "@/components/workspace/WorkspaceOverlays",
+      "@/components/workspace/WorkspaceSurface",
+      "@/components/workspace/TrackSheet",
+      "@/lib/arrangement/model",
+      "@/lib/audio/use-playback",
+      "@/lib/audio/use-debug-handle",
+      "@/lib/copilot/ui-options",
+      "@/lib/copilot/use-co-arranger",
+      "@/lib/music/timing",
+      "@/lib/project/use-project-file",
+      "@/lib/song/edit",
+      "@/lib/song/use-song",
+      "@/lib/settings/use-settings",
+      "@/lib/tab/timeline",
+      "@/lib/ui/interaction",
+      "@/lib/ui/use-edit-shortcuts",
+      "@/lib/workspace/use-note-editing",
+      "@/lib/workspace/use-selection-session",
+      "@/lib/workspace/use-workspace-navigation",
+      "@/lib/workspace/use-workspace-overlays"
+    ]
+  },
+  "arrangement": {
+    "lines": 470,
+    "hooks": {
+      "useState": 0,
+      "useEffect": 0,
+      "useMemo": 2,
+      "useCallback": 1,
+      "useRef": 1
+    },
+    "useCallbackHandlers": 1,
+    "jsxEventProps": 7,
+    "importCount": 9,
+    "imports": [
+      "react",
+      "@/lib/arrangement/geometry",
+      "@/lib/arrangement/links",
+      "@/lib/arrangement/model",
+      "@/components/workspace/arrangement/ArrangementCells",
+      "@/components/workspace/arrangement/SelectionHandle",
+      "@/components/workspace/arrangement/use-follow-playhead",
+      "@/lib/song/bar-selection",
+      "@/lib/audio/position"
+    ]
+  },
+  "extractedModules": {
+    "src/lib/workspace/use-workspace-navigation.ts": 176,
+    "src/lib/workspace/use-note-editing.ts": 368,
+    "src/lib/workspace/use-selection-session.ts": 558,
+    "src/lib/workspace/use-workspace-overlays.ts": 37,
+    "src/components/workspace/WorkspaceSurface.tsx": 167,
+    "src/components/workspace/WorkspaceOverlays.tsx": 216,
+    "src/components/workspace/SelectionActionArea.tsx": 158,
+    "src/components/workspace/arrangement/ArrangementCells.tsx": 259,
+    "src/components/workspace/arrangement/SelectionHandle.tsx": 96,
+    "src/components/workspace/arrangement/use-follow-playhead.ts": 109
+  },
+  "singleOwnerDecisions": {
+    "view/track/barFocus/scrollTargets": "use-workspace-navigation",
+    "timeSelection+barSelection+clipboards+stagedCommands+theirSheets": "use-selection-session",
+    "editMode+cell+onsetGroup": "use-note-editing",
+    "topLevelSheet(track|section|practice|info|project)": "use-workspace-overlays (typed enum, mutual exclusion by construction)",
+    "arrangeForm": "WorkspaceOverlays (the sheet's own draft)",
+    "workspaceRootUseStateCount": 0
+  }
+}

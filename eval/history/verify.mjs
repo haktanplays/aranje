@@ -17,6 +17,7 @@
  * `node eval/history/verify.mjs`
  */
 import { chromium } from "playwright";
+import { press, reveal } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -131,26 +132,7 @@ async function openApp(browser, size = { width: 390, height: 844 }) {
 
 /* --------------------------------------------------------------- gestures */
 
-async function reveal(page, selector) {
-  await page.evaluate((sel) => {
-    document.querySelector(sel)?.scrollIntoView({ block: "nearest", inline: "center" });
-  }, selector);
-  await page.waitForTimeout(300);
-}
 
-async function press(page, cdp, selector, ms = 700) {
-  await reveal(page, selector);
-  const box = await page.locator(selector).first().boundingBox();
-  if (!box) throw new Error(`no box: ${selector}`);
-  const x = box.x + box.width / 2;
-  const y = box.y + box.height / 2;
-  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] });
-  await page.waitForTimeout(ms);
-  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
-  // Past the app's own post-press click window, so a scripted click is not
-  // eaten by the swallower a finished long press arms.
-  await page.waitForTimeout(550);
-}
 
 /* ----------------------------------------------------------------- probes */
 

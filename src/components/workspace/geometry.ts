@@ -5,6 +5,9 @@
  * not as a grid. Drums share the density family but keep their own row height,
  * since a lane needs more room than a string.
  */
+/** The bar-header attribute both surfaces and the scroll targets share. */
+export const BAR_KEY_ATTRIBUTE = "data-bar-key";
+
 export const SLOT_WIDTH = 34;
 export const STRING_ROW_HEIGHT = 26;
 export const DRUM_ROW_HEIGHT = 30;

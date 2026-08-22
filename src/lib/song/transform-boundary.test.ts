@@ -13,6 +13,8 @@
 import { describe, expect, it } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 
+import { importsOf, valueImportsOf } from "@/lib/dev/ast";
+
 const COMPONENTS = "src/components/workspace";
 
 const sources = readdirSync(COMPONENTS)
@@ -37,9 +39,19 @@ describe("the transform core has one caller", () => {
     }
   });
 
-  it("routes everything through the hook", () => {
-    const workspace = readFileSync(`${COMPONENTS}/Workspace.tsx`, "utf8");
-    expect(workspace).toContain("useTransform");
+  it("routes everything through the session controller", () => {
+    // An import edge, not a substring (2L-R): the selection session is the
+    // one module that reaches the transform hook.
+    expect(importsOf("src/lib/workspace/use-selection-session.ts")).toContain(
+      "@/lib/song/use-transform",
+    );
+    // A type-only import is not a caller; a runtime edge would be.
+    for (const source of sources) {
+      expect(
+        valueImportsOf(`${COMPONENTS}/${source.name}`),
+        source.name,
+      ).not.toContain("@/lib/song/use-transform");
+    }
   });
 
   it("keeps the hook as the only module that reaches the core", () => {
