@@ -80,6 +80,23 @@ export const historyLimits = {
 } as const;
 
 /**
+ * Portable project files (spec 13.15, 2L-A).
+ *
+ * `maxImportBytes` is a client file-input safety bound, not a musical limit:
+ * the heaviest supported Song measured 2K-B serialises to roughly 799 KB, so
+ * two MiB is more than double the worst legitimate file. A byte count rather
+ * than a parse attempt, because the whole point is to refuse before reading.
+ *
+ * `maxFileNameChars` bounds the *title-derived stem* of an exported file name.
+ * Sixty is long enough for any reasonable song title and short enough that no
+ * filesystem or download UI truncates it into ambiguity.
+ */
+export const projectFileLimits = {
+  maxImportBytes: 2 * 1024 * 1024,
+  maxFileNameChars: 60,
+} as const;
+
+/**
  * Practice speed (spec 13.8, phase 2E).
  *
  * This is a **playback** setting, not a property of the music: the song keeps

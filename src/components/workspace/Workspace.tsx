@@ -55,8 +55,9 @@ import {
 } from "@/components/workspace/geometry";
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
 import { ticksPerBar, ticksPerSlot, slotsPerNotatedBeat } from "@/lib/music/timing";
-import { formatBpm } from "@/lib/audio/practice-rate";
-import { BRAND_NAME } from "@/lib/brand";
+import { ProjectFileSheet } from "@/components/workspace/ProjectFileSheet";
+import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
+import { useProjectFile } from "@/lib/project/use-project-file";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { availableSkills, targetsFor } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
@@ -727,6 +728,43 @@ export function Workspace() {
 
   useEditShortcuts({ canUndo, canRedo, onUndo: undoEdit, onRedo: redoEdit });
 
+  /* ------------------------------------------------------- project file */
+
+  const [projectSheetOpen, setProjectSheetOpen] = useState(false);
+
+  /**
+   * The ground a project lands on (spec 13.15).
+   *
+   * Opening a project replaces the whole song, so everything measured against
+   * the old one goes first: playback pauses, the loop is dropped *before* the
+   * rewind (a rewind with a loop on seeks to the loop, not the top), and the
+   * playhead goes to the start. Unlike an undo, the clipboards go too — a
+   * clipboard cut from a song that has been wholly replaced would paste
+   * another song's music. The view returns to the arrangement, which is where
+   * a song nobody has seen yet is best met.
+   */
+  const prepareForProjectApply = useCallback(() => {
+    controller.pause();
+    controller.setLoopSection(null);
+    controller.rewind();
+    resetEditSurfaces();
+    transform.clearClipboard();
+    barTransform.clearClipboard();
+    setEditing(false);
+    setActiveBarKey(null);
+    setPendingTabBar(null);
+    setSelectedTrackId("");
+    setView("arrange");
+  }, [barTransform, controller, resetEditSurfaces, transform]);
+
+  const project = useProjectFile({
+    song,
+    canPersist,
+    commit,
+    onBeforeApply: prepareForProjectApply,
+    onApplied: () => setProjectSheetOpen(false),
+  });
+
   const stageBarCommand = useCallback(
     (command: BarCommand) => {
       setBarSheet(null);
@@ -824,14 +862,29 @@ export function Workspace() {
     };
   }, [articulationWarning, cell, currentArticulation, currentFret, timeline]);
 
+  /*
+   * The builder gets the whole target: every command aims at the selected
+   * cell, so the one place that knows the cell is the one place that spells
+   * the target out.
+   */
   const runCommand = useCallback(
-    (build: (target: { sectionId: string; barIndex: number }) => EditCommand) => {
+    (
+      build: (target: {
+        sectionId: string;
+        trackId: string;
+        barIndex: number;
+        slotIndex: number;
+      }) => EditCommand,
+    ) => {
       if (!cell || !track) return;
       const [sectionId, barIndexText] = cell.barKey.split(":");
       const barIndex = Number(barIndexText);
       if (!sectionId || !Number.isInteger(barIndex)) return;
 
-      const result = applyEdit(song, build({ sectionId, barIndex }));
+      const result = applyEdit(
+        song,
+        build({ sectionId, trackId: track.id, barIndex, slotIndex: cell.slotIndex }),
+      );
       if (!result.ok) {
         setEditError(result.error.message);
         return;
@@ -962,61 +1015,15 @@ export function Workspace() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      {/*
-        Three columns, and the outer two are fixed.
-
-        The brand and the song title used to start at the very edge of the
-        screen, which is where a host shell puts its close control — so the
-        first characters of both sat underneath it. A title that is unreadable
-        at its start is worse than a truncated one, because truncation at least
-        happens at the end. The centre column is the only one that flexes, and
-        `min-w-0` is what lets it truncate instead of pushing the trailing
-        action off the screen.
-      */}
-      <header
-        className="border-line grid items-center gap-2 border-b px-2 py-1.5"
-        style={{
-          gridTemplateColumns: `${MIN_TOUCH_TARGET_PX}px minmax(0, 1fr) ${MIN_TOUCH_TARGET_PX}px`,
-        }}
-      >
-        {/*
-          Reserved, not decorative. The shell this runs inside draws its own
-          close control here; the header's job is to leave it the room rather
-          than to draw underneath it.
-        */}
-        <div aria-hidden style={{ width: MIN_TOUCH_TARGET_PX }} />
-
-        <div className="min-w-0">
-          {/* The mark stays. It was never the thing taking the room — it was
-              the thing starting underneath the shell's close control. */}
-          <p className="text-bronze truncate text-[9px] font-semibold tracking-[0.18em] uppercase">
-            {BRAND_NAME}
-          </p>
-          <h1 className="font-display truncate text-sm leading-tight">
-            {song.title}
-          </h1>
-          {/*
-            Key, tempo and meter on one line under the title. The tempo shown is
-            the one sounding now, not the song's top-level number: on a song
-            that changes tempo the two differ for most of its length, and a
-            header that is wrong most of the time is worse than no header
-            (spec 13.8, K-25).
-          */}
-          <p className="text-muted truncate text-[10px] leading-tight tabular-nums">
-            {song.key} · {state.hasTempoChanges ? `${formatBpm(state.activeBpm)} BPM •` : `${song.bpm} BPM`} · {meter}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setInfoOpen(true)}
-          aria-label="Ses kaynakları ve lisans"
-          className="text-muted border-line justify-self-end rounded-lg border text-sm"
-          style={{ width: MIN_TOUCH_TARGET_PX, height: MIN_TOUCH_TARGET_PX }}
-        >
-          <span aria-hidden>&#9432;</span>
-        </button>
-      </header>
+      <WorkspaceHeader
+        title={song.title}
+        songKey={song.key}
+        bpm={song.bpm}
+        meter={meter}
+        activeBpm={state.activeBpm}
+        hasTempoChanges={state.hasTempoChanges}
+        onInfo={() => setInfoOpen(true)}
+      />
 
       {/*
         One strip, and the recovery state owns it.
@@ -1442,65 +1449,30 @@ export function Workspace() {
           }}
           onNudge={nudge}
           onArticulation={(articulation) =>
-            runCommand(({ sectionId, barIndex }) => ({
+            runCommand((target) => ({
               kind: "set_articulation",
-              target: {
-                sectionId,
-                trackId: track.id,
-                barIndex,
-                slotIndex: cell?.slotIndex ?? 0,
-              },
+              target,
               stringIndex: cell?.stringIndex ?? 0,
               articulation,
             }))
           }
           onCommit={(fret) =>
-            runCommand(({ sectionId, barIndex }) => ({
+            runCommand((target) => ({
               kind: "set_note",
-              target: {
-                sectionId,
-                trackId: track.id,
-                barIndex,
-                slotIndex: cell?.slotIndex ?? 0,
-              },
+              target,
               stringIndex: cell?.stringIndex ?? 0,
               fret,
             }))
           }
           onClearString={() =>
-            runCommand(({ sectionId, barIndex }) => ({
+            runCommand((target) => ({
               kind: "clear_string",
-              target: {
-                sectionId,
-                trackId: track.id,
-                barIndex,
-                slotIndex: cell?.slotIndex ?? 0,
-              },
+              target,
               stringIndex: cell?.stringIndex ?? 0,
             }))
           }
-          onRest={() =>
-            runCommand(({ sectionId, barIndex }) => ({
-              kind: "set_rest",
-              target: {
-                sectionId,
-                trackId: track.id,
-                barIndex,
-                slotIndex: cell?.slotIndex ?? 0,
-              },
-            }))
-          }
-          onTie={() =>
-            runCommand(({ sectionId, barIndex }) => ({
-              kind: "set_tie",
-              target: {
-                sectionId,
-                trackId: track.id,
-                barIndex,
-                slotIndex: cell?.slotIndex ?? 0,
-              },
-            }))
-          }
+          onRest={() => runCommand((target) => ({ kind: "set_rest", target }))}
+          onTie={() => runCommand((target) => ({ kind: "set_tie", target }))}
         />
       ) : null}
 
@@ -1549,7 +1521,23 @@ export function Workspace() {
         onClose={() => setSectionSheetOpen(false)}
       />
 
-      <InfoSheet open={infoOpen} onClose={() => setInfoOpen(false)} />
+      <ProjectFileSheet
+        open={projectSheetOpen}
+        onClose={() => setProjectSheetOpen(false)}
+        handle={project}
+        canPersist={canPersist}
+      />
+
+      <InfoSheet
+        open={infoOpen}
+        onClose={() => setInfoOpen(false)}
+        onProjectBackup={project.downloadBackup}
+        projectBackupError={project.exportError}
+        onOpenProjectFile={() => {
+          setInfoOpen(false);
+          setProjectSheetOpen(true);
+        }}
+      />
     </div>
   );
 }

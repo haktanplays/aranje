@@ -79,6 +79,8 @@ export function historyActionLabel(action: HistoryAction): string {
         : TRACK_BAR_LABELS[action.command];
     case "copilot_apply":
       return "Aranje önerisini uygulama";
+    case "project_import":
+      return "Projeyi açma";
   }
 }
 

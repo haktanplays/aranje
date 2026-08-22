@@ -57,7 +57,9 @@ export type HistoryAction =
       readonly command: BarCommandKind;
       readonly scope: "track" | "full";
     }
-  | { readonly kind: "copilot_apply"; readonly skill: ArrangeSkill };
+  | { readonly kind: "copilot_apply"; readonly skill: ArrangeSkill }
+  /** A whole project file opened over the current song (spec 13.15). */
+  | { readonly kind: "project_import" };
 
 export type HistorySnapshot = {
   readonly song: Song;

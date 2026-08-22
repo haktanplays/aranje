@@ -78,6 +78,8 @@ export type BarTransformHandle = {
   /** Takes hold of bars, widening the range if a chain crosses its edge. */
   select: (selection: BarSelection) => void;
   clear: () => void;
+  /** Forget what was copied. Only opening a project asks for this (2L-A). */
+  clearClipboard: () => void;
   copy: () => void;
   stage: (command: BarCommand) => void;
   /**
@@ -194,6 +196,10 @@ export function useBarTransform(
     setPending(null);
     setError(null);
     setNotice(null);
+  }, []);
+
+  const clearClipboard = useCallback(() => {
+    setClipboard(null);
   }, []);
 
   const cancel = useCallback(() => {
@@ -317,6 +323,7 @@ export function useBarTransform(
     clipboardSummary,
     select,
     clear,
+    clearClipboard,
     copy,
     stage,
     stagePaste,

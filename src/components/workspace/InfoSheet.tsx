@@ -11,9 +11,18 @@ import { BRAND_NAME } from "@/lib/brand";
 export function InfoSheet({
   open,
   onClose,
+  onProjectBackup,
+  projectBackupError,
+  onOpenProjectFile,
 }: {
   open: boolean;
   onClose: () => void;
+  /** Downloads the current song as a project file, right here (spec 13.15). */
+  onProjectBackup: () => void;
+  /** Set when the last backup attempt was refused; shown under the button. */
+  projectBackupError: string | null;
+  /** Hands over to the project-file sheet, where a backup can be opened. */
+  onOpenProjectFile: () => void;
 }) {
   if (!open) return null;
 
@@ -31,6 +40,36 @@ export function InfoSheet({
         <div className="bg-line mx-auto mb-3 h-1 w-10 rounded-full" />
         <h2 className="font-display mb-1 text-lg">{BRAND_NAME}</h2>
         <p className="text-muted mb-4 text-xs">Ses kaynakları ve lisans</p>
+
+        {/* The project file lives behind the info control on purpose: it is
+            something done a few times a project, not something worth a
+            permanent slice of a phone screen (spec 13.15). */}
+        <section className="border-line mb-4 border-b pb-4">
+          <h3 className="text-muted mb-2 text-xs">Proje dosyası</h3>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              data-info-project-backup
+              onClick={onProjectBackup}
+              className="border-line min-h-11 flex-1 rounded-lg border text-sm"
+            >
+              Projeyi yedekle
+            </button>
+            <button
+              type="button"
+              data-info-project-open
+              onClick={onOpenProjectFile}
+              className="border-line min-h-11 flex-1 rounded-lg border text-sm"
+            >
+              Yedekten aç
+            </button>
+          </div>
+          {projectBackupError ? (
+            <p role="alert" className="text-reject mt-2 text-xs">
+              {projectBackupError}
+            </p>
+          ) : null}
+        </section>
 
         <dl className="divide-y divide-line text-sm">
           <div className="py-2">

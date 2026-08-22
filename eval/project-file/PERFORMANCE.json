@@ -1,0 +1,163 @@
+{
+  "method": {
+    "rounds": 30,
+    "warmupRounds": 5,
+    "statistic": "median / p95 / max over timed rounds after warm-up"
+  },
+  "honesty": [
+    "Bu bölümdeki sayılar masaüstü Node ölçümüdür; fiziksel telefon kanıtı değildir.",
+    "Android/iOS gerçek cihaz gecikmesi release gate'inde açık kalır."
+  ],
+  "node": {
+    "version": "v22.22.2",
+    "worstCaseSong": {
+      "fileBytes": {
+        "utf8Bytes": 799683,
+        "codeUnits": 799671,
+        "utf16ApproxBytes": 1599342
+      },
+      "exportSerialize": {
+        "rounds": 30,
+        "medianMs": 8.248,
+        "p95Ms": 9.173,
+        "maxMs": 10.664
+      },
+      "importJsonParse": {
+        "rounds": 30,
+        "medianMs": 3.94,
+        "p95Ms": 5.345,
+        "maxMs": 5.737
+      },
+      "strictSongValidation": {
+        "rounds": 30,
+        "medianMs": 11.972,
+        "p95Ms": 17.368,
+        "maxMs": 22.424
+      },
+      "validatorPipeline": {
+        "rounds": 30,
+        "medianMs": 101.512,
+        "p95Ms": 116.126,
+        "maxMs": 119.235
+      },
+      "fullImportDecision": {
+        "rounds": 30,
+        "medianMs": 119.801,
+        "p95Ms": 134.845,
+        "maxMs": 137.347
+      }
+    },
+    "demoSong": {
+      "fileBytes": {
+        "utf8Bytes": 14360,
+        "codeUnits": 14360,
+        "utf16ApproxBytes": 28720
+      },
+      "exportSerialize": {
+        "rounds": 30,
+        "medianMs": 0.114,
+        "p95Ms": 0.211,
+        "maxMs": 0.88
+      },
+      "importJsonParse": {
+        "rounds": 30,
+        "medianMs": 0.084,
+        "p95Ms": 0.103,
+        "maxMs": 0.105
+      },
+      "strictSongValidation": {
+        "rounds": 30,
+        "medianMs": 0.249,
+        "p95Ms": 1.103,
+        "maxMs": 1.309
+      },
+      "validatorPipeline": {
+        "rounds": 30,
+        "medianMs": 1.474,
+        "p95Ms": 3.052,
+        "maxMs": 3.47
+      },
+      "fullImportDecision": {
+        "rounds": 30,
+        "medianMs": 2.157,
+        "p95Ms": 4.464,
+        "maxMs": 5.339
+      }
+    },
+    "historyAtLimit": {
+      "snapshots": 51,
+      "jsonEquivalentUtf8Bytes": 40780992,
+      "jsonEquivalentMiB": 38.89,
+      "heap": {
+        "deltaBytes": 71600,
+        "deltaMiB": 0.07,
+        "note": "Node heap retained by the 50 edit snapshots ON TOP of an already-loaded baseline song (the app case: the baseline is shared, each edit copies one bar); a controlled measurement, not a phone number."
+      }
+    }
+  },
+  "chromium": {
+    "browser": "141.0.7390.37",
+    "honesty": [
+      "Bu bölümdeki sayılar masaüstü Chromium ölçümüdür; fiziksel telefon kanıtı değildir."
+    ],
+    "setItem": {
+      "worstEnvelope": {
+        "codeUnits": 1599320,
+        "write": {
+          "rounds": 30,
+          "medianMs": 10,
+          "p95Ms": 22.5,
+          "maxMs": 22.9
+        }
+      },
+      "demoEnvelope": {
+        "codeUnits": 28698,
+        "write": {
+          "rounds": 30,
+          "medianMs": 0,
+          "p95Ms": 0.1,
+          "maxMs": 0.1
+        }
+      }
+    },
+    "objectUrl": {
+      "worstProject": {
+        "create": {
+          "rounds": 30,
+          "medianMs": 0.1,
+          "p95Ms": 0.3,
+          "maxMs": 0.4
+        },
+        "revoke": {
+          "rounds": 30,
+          "medianMs": 0,
+          "p95Ms": 0.1,
+          "maxMs": 0.1
+        }
+      },
+      "demoProject": {
+        "create": {
+          "rounds": 30,
+          "medianMs": 0.1,
+          "p95Ms": 0.2,
+          "maxMs": 0.3
+        },
+        "revoke": {
+          "rounds": 30,
+          "medianMs": 0,
+          "p95Ms": 0.1,
+          "maxMs": 0.1
+        }
+      }
+    },
+    "songKeyUntouched": true,
+    "benchKeyRemoved": true,
+    "historyHeap": {
+      "snapshots": 51,
+      "amplification": 10,
+      "deltaBytes": 1143556,
+      "deltaMiB": 1.091,
+      "note": "CDP Runtime.getHeapUsage delta per 51-snapshot history INCLUDING a fresh copy of the baseline song, averaged over 10 retained copies (single-bar edits, structural sharing); a controlled simulation, not the app itself, not a phone."
+    }
+  }
+}

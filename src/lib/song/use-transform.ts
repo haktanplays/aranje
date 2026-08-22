@@ -56,6 +56,12 @@ export type TransformHandle = {
 
   select(next: TimeSelection | null): void;
   clear(): void;
+  /**
+   * Forget what was copied. Only opening a project asks for this (2L-A):
+   * an edit or an undo keeps the clipboard, but a clipboard cut from a song
+   * that has been wholly replaced would paste another song's music.
+   */
+  clearClipboard(): void;
   copy(): void;
   /** Stage a command and compute its ghost. Writes nothing. */
   stage(command: TransformCommand | null): void;
@@ -147,6 +153,10 @@ export function useTransform(store: Store, song: Song): TransformHandle {
     setNotice(null);
   }, []);
 
+  const clearClipboard = useCallback(() => {
+    setClipboard(EMPTY_CLIPBOARD);
+  }, []);
+
   const copy = useCallback(() => {
     if (!selection) return;
     const result = copySelection(song, selection);
@@ -209,6 +219,7 @@ export function useTransform(store: Store, song: Song): TransformHandle {
     preview,
     select,
     clear,
+    clearClipboard,
     copy,
     stage: setPending,
     apply,

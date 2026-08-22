@@ -11,115 +11,14 @@
  */
 import { writeFileSync } from "node:fs";
 
-import { songLimits } from "@/lib/limits";
-import { TUNING_PRESETS } from "@/lib/music/fretboard";
-import { slotCount } from "@/lib/music/timing";
+import { sizes, worstCaseSong } from "../shared/worst-case-song";
+
 import {
   nextEnvelope,
   decideLoad,
   type SongStorageEnvelopeV1,
 } from "@/lib/song/storage-envelope";
-import {
-  songSchema,
-  type Bar,
-  type DrumSlot,
-  type MelodicSlot,
-  type Section,
-  type Song,
-  type Track,
-} from "@/lib/song/schema";
-
-/**
- * Both sizes, because they answer different questions.
- *
- * UTF-8 bytes is what a network or a file would carry. localStorage stores
- * JavaScript strings, which are UTF-16 code units — so the number a browser
- * quota actually meters is closer to `codeUnits * 2`. Reporting only one of
- * them lets the other be silently assumed.
- */
-const sizes = (value: unknown) => {
-  const text = JSON.stringify(value);
-  return {
-    utf8Bytes: Buffer.byteLength(text, "utf8"),
-    codeUnits: text.length,
-    utf16ApproxBytes: text.length * 2,
-  };
-};
-
-function heaviestDrumSlots(count: number): DrumSlot[] {
-  return Array.from({ length: count }, () => [
-    { piece: "kick" as const },
-    { piece: "snare" as const },
-    { piece: "closed_hat" as const },
-  ]);
-}
-
-function worstCaseSong(): Song {
-  const resolution = 32 as const;
-  const count = slotCount([4, 4], resolution);
-
-  const melodic = (): MelodicSlot[] =>
-    Array.from({ length: count }, (_, index) => ({
-      notes: [
-        {
-          pitch: index % 2 === 0 ? "E2" : "G2",
-          position: { string: index % 6, fret: index % 12 },
-          velocity: 100,
-          articulation: "palm_mute" as const,
-        },
-      ],
-    }));
-
-  const guitarIds = ["t1", "t2", "t3", "t4", "t5", "t6", "t7"] as const;
-
-  const tracks: Track[] = [
-    ...guitarIds.map((id) => ({
-      id,
-      name: `Gitar ${id}`,
-      instrumentId: "electric_guitar",
-      presetId: "high_gain",
-      volumeDb: -5,
-      fretboard: {
-        tuning: [...(TUNING_PRESETS.e_standard?.tuning ?? [])],
-        capo: 0,
-      },
-    })),
-    {
-      id: "drums",
-      name: "Davul",
-      instrumentId: "drum_kit",
-      presetId: "metal",
-      volumeDb: -3,
-    },
-  ];
-
-  const bar = (): Bar => ({
-    timeSignature: [4, 4],
-    resolution,
-    slots: {
-      ...Object.fromEntries(guitarIds.map((id) => [id, melodic()])),
-      drums: heaviestDrumSlots(count),
-    },
-  });
-
-  const perSection = songLimits.barsPerSection;
-  const sectionCount = songLimits.totalBars / perSection;
-  const sections: Section[] = Array.from({ length: sectionCount }, (_, index) => ({
-    id: `s${index + 1}`,
-    name: `Bölüm ${index + 1}`,
-    status: "fixed" as const,
-    bars: Array.from({ length: perSection }, bar),
-  }));
-
-  return {
-    version: 2,
-    title: "En ağır şarkı",
-    bpm: 138,
-    key: "E minor",
-    tracks,
-    sections,
-  };
-}
+import { songSchema } from "@/lib/song/schema";
 
 const song = songSchema.parse(worstCaseSong());
 
