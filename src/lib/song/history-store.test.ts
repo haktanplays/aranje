@@ -18,6 +18,7 @@ import { guitarTrack, restSlots, section, song as makeSong } from "@/lib/song/fi
 import { createSongStore, type SongStore } from "@/lib/song/song-store";
 import { SONG_KEY, type StorageLike } from "@/lib/song/storage";
 import type { Bar, MelodicSlot, Song } from "@/lib/song/schema";
+import { decideLoad } from "@/lib/song/storage-envelope";
 import { applyTransform } from "@/lib/song/transform";
 
 const NOTE: HistoryAction = { kind: "note_edit" };
@@ -74,12 +75,25 @@ function storeOf(song: Song): {
   storage: ReturnType<typeof countingStorage>;
 } {
   const storage = countingStorage();
-  const store = createSongStore({ song, outcome: "stored" }, storage);
+  const store = createSongStore({ song, outcome: "stored", canPersist: true }, storage);
   return { store, storage };
 }
 
+/**
+ * The song on disk, read the way the app reads it.
+ *
+ * Since 2K-B the key holds a recovery envelope rather than a bare Song, so
+ * these tests go through the real decoder instead of reaching into the shape.
+ */
+const storedSong = (storage: { map: Map<string, string> }): Song | null => {
+  const decision = decideLoad(storage.map.get(SONG_KEY) ?? null);
+  return decision.kind === "envelope" || decision.kind === "legacy"
+    ? decision.song
+    : null;
+};
+
 const storedTitle = (storage: { map: Map<string, string> }) =>
-  (JSON.parse(storage.map.get(SONG_KEY) ?? "{}") as Partial<Song>).title;
+  storedSong(storage)?.title;
 
 describe("11. hydration is not an edit", () => {
   it("starts with nothing to undo and nothing written", () => {

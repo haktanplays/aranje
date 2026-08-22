@@ -9,9 +9,18 @@ import { describe, expect, it } from "vitest";
 
 import { applyMoveOnsetGroup, type OnsetMovement } from "@/lib/song/move";
 import { createSongStore } from "@/lib/song/song-store";
+import { decideLoad } from "@/lib/song/storage-envelope";
 import { SONG_KEY, type StorageLike } from "@/lib/song/storage";
 import { bar, note, readBar, slots, song, REST } from "@/test/move-fixtures";
 import type { Song } from "@/lib/song/schema";
+
+/** The song on disk, read through the real decoder (2K-B envelope). */
+function storedSong(storage: { map: Map<string, string> }): Song | null {
+  const decision = decideLoad(storage.map.get(SONG_KEY) ?? null);
+  return decision.kind === "envelope" || decision.kind === "legacy"
+    ? decision.song
+    : null;
+}
 
 function countingStorage(): StorageLike & { writes: number; map: Map<string, string> } {
   const map = new Map<string, string>();
@@ -56,7 +65,7 @@ function moveOn(
 describe("a successful group move", () => {
   it("writes to storage exactly once, however many chords moved", () => {
     const storage = countingStorage();
-    const store = createSongStore({ song: threeChords(), outcome: "stored" }, storage);
+    const store = createSongStore({ song: threeChords(), outcome: "stored", canPersist: true }, storage);
     const writesBefore = storage.writes;
 
     const result = moveOn(
@@ -78,7 +87,7 @@ describe("a successful group move", () => {
 
   it("comes back in one undo, not one per chord", () => {
     const before = threeChords();
-    const store = createSongStore({ song: before, outcome: "stored" }, countingStorage());
+    const store = createSongStore({ song: before, outcome: "stored", canPersist: true }, countingStorage());
 
     moveOn(
       store,
@@ -99,14 +108,14 @@ describe("a successful group move", () => {
 
   it("puts the stored song back where it was on that one undo", () => {
     const storage = countingStorage();
-    const store = createSongStore({ song: threeChords(), outcome: "stored" }, storage);
+    const store = createSongStore({ song: threeChords(), outcome: "stored", canPersist: true }, storage);
 
     moveOn(store, [{ barIndex: 0, slotIndex: 0 }], "next_slot");
     const afterMove = storage.map.get(SONG_KEY);
     store.undo();
 
     expect(storage.map.get(SONG_KEY)).not.toBe(afterMove);
-    expect(JSON.parse(storage.map.get(SONG_KEY) ?? "{}")).toEqual(
+    expect(storedSong(storage)).toEqual(
       JSON.parse(JSON.stringify(threeChords())),
     );
   });
@@ -117,7 +126,7 @@ describe("a refused group move", () => {
     const storage = countingStorage();
     // Two chords back to back: the second cannot move onto the first.
     const before = song([bar(slots([A3(), C4()]))]);
-    const store = createSongStore({ song: before, outcome: "stored" }, storage);
+    const store = createSongStore({ song: before, outcome: "stored", canPersist: true }, storage);
     const writesBefore = storage.writes;
     const stored = storage.map.get(SONG_KEY);
 
@@ -136,7 +145,7 @@ describe("a refused group move", () => {
     const before = song([
       bar(slots([A3(), REST, REST, REST, REST, REST, REST, C4()])),
     ]);
-    const store = createSongStore({ song: before, outcome: "stored" }, storage);
+    const store = createSongStore({ song: before, outcome: "stored", canPersist: true }, storage);
 
     const result = moveOn(
       store,

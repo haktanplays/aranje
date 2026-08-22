@@ -1,0 +1,235 @@
+{
+  "results": [
+    {
+      "name": "1 a note edit survives a hard reload @390x844",
+      "pass": true,
+      "detail": "identical=true, bars drawn 11"
+    },
+    {
+      "name": "2 a structural edit survives a hard reload @390x844",
+      "pass": true,
+      "detail": "5 -> 4 -> 4, drawn 10"
+    },
+    {
+      "name": "3 an undo survives a hard reload @390x844",
+      "pass": true,
+      "detail": "undone==start:true, reload matches:true"
+    },
+    {
+      "name": "4 a redo survives a hard reload @390x844",
+      "pass": true,
+      "detail": "redo==edit:true, reload matches:true"
+    },
+    {
+      "name": "5 the history and clipboard do not survive a reload @390x844",
+      "pass": true,
+      "detail": "undo true->false, paste offered=false"
+    },
+    {
+      "name": "6 a ghost is not on disk when the page closes @390x844",
+      "pass": true,
+      "detail": "ghost=true, disk unchanged=true, writes 1"
+    },
+    {
+      "name": "7 closing the page writes nothing extra @390x844",
+      "pass": true,
+      "detail": "edit=1, after unload events=1"
+    },
+    {
+      "name": "8 a legacy song opens and becomes an envelope on first edit @390x844",
+      "pass": true,
+      "detail": "legacy at load=true, writes at load=0, rev=1"
+    },
+    {
+      "name": "9 a broken current slot opens the previous one @390x844",
+      "pass": true,
+      "detail": "recovered_previous, title=Kurtarılan sürüm, backups=1"
+    },
+    {
+      "name": "10 both slots broken falls back and keeps the file @390x844",
+      "pass": true,
+      "detail": "corrupt_fallback, preserved=true"
+    },
+    {
+      "name": "11 malformed text does not crash the app @390x844",
+      "pass": true,
+      "detail": "corrupt_fallback, bars drawn 8, console 0"
+    },
+    {
+      "name": "12 a newer version is left byte-identical and locks editing @390x844",
+      "pass": true,
+      "detail": "unsupported_version, untouched=true, edit disabled=true"
+    },
+    {
+      "name": "13 a refused write leaves the screen showing the disk @390x844",
+      "pass": true,
+      "detail": "storage_write_failed, drawn 11->11, disk unchanged=true"
+    },
+    {
+      "name": "14 an undo during the same failure does not move @390x844",
+      "pass": true,
+      "detail": "undo still offered=true"
+    },
+    {
+      "name": "15 dismissing the banner writes nothing @390x844",
+      "pass": true,
+      "detail": "banner gone=true, writes 1"
+    },
+    {
+      "name": "16 the practice setting is untouched by a recovery @390x844",
+      "pass": true,
+      "detail": "settings={\"practiceRatePercent\":75}, pill=%75"
+    },
+    {
+      "name": "17 the envelope keeps one rung behind every step @390x844",
+      "pass": true,
+      "detail": "revisions 1/2/3"
+    },
+    {
+      "name": "18 a normal open shows no banner at all @390x844",
+      "pass": true,
+      "detail": "banner=none, console 0"
+    },
+    {
+      "name": "19 a banner fits the screen and has a real target @390x844",
+      "pass": true,
+      "detail": "dismiss {\"w\":44,\"h\":44}, overflow 0, scrollers 1"
+    },
+    {
+      "name": "20 no technical word reaches the reader @390x844",
+      "pass": true,
+      "detail": "Son kayıt açılamadı. Bir | Kaydedilmiş şarkı açılam | Kaydedilmiş şarkı açılam | Bu kayıt Aranjé'nin daha"
+    },
+    {
+      "name": "1 a note edit survives a hard reload @320x700",
+      "pass": true,
+      "detail": "identical=true, bars drawn 11"
+    },
+    {
+      "name": "2 a structural edit survives a hard reload @320x700",
+      "pass": true,
+      "detail": "5 -> 4 -> 4, drawn 10"
+    },
+    {
+      "name": "3 an undo survives a hard reload @320x700",
+      "pass": true,
+      "detail": "undone==start:true, reload matches:true"
+    },
+    {
+      "name": "4 a redo survives a hard reload @320x700",
+      "pass": true,
+      "detail": "redo==edit:true, reload matches:true"
+    },
+    {
+      "name": "5 the history and clipboard do not survive a reload @320x700",
+      "pass": true,
+      "detail": "undo true->false, paste offered=false"
+    },
+    {
+      "name": "6 a ghost is not on disk when the page closes @320x700",
+      "pass": true,
+      "detail": "ghost=true, disk unchanged=true, writes 1"
+    },
+    {
+      "name": "7 closing the page writes nothing extra @320x700",
+      "pass": true,
+      "detail": "edit=1, after unload events=1"
+    },
+    {
+      "name": "8 a legacy song opens and becomes an envelope on first edit @320x700",
+      "pass": true,
+      "detail": "legacy at load=true, writes at load=0, rev=1"
+    },
+    {
+      "name": "9 a broken current slot opens the previous one @320x700",
+      "pass": true,
+      "detail": "recovered_previous, title=Kurtarılan sürüm, backups=1"
+    },
+    {
+      "name": "10 both slots broken falls back and keeps the file @320x700",
+      "pass": true,
+      "detail": "corrupt_fallback, preserved=true"
+    },
+    {
+      "name": "11 malformed text does not crash the app @320x700",
+      "pass": true,
+      "detail": "corrupt_fallback, bars drawn 8, console 0"
+    },
+    {
+      "name": "12 a newer version is left byte-identical and locks editing @320x700",
+      "pass": true,
+      "detail": "unsupported_version, untouched=true, edit disabled=true"
+    },
+    {
+      "name": "13 a refused write leaves the screen showing the disk @320x700",
+      "pass": true,
+      "detail": "storage_write_failed, drawn 11->11, disk unchanged=true"
+    },
+    {
+      "name": "14 an undo during the same failure does not move @320x700",
+      "pass": true,
+      "detail": "undo still offered=true"
+    },
+    {
+      "name": "15 dismissing the banner writes nothing @320x700",
+      "pass": true,
+      "detail": "banner gone=true, writes 1"
+    },
+    {
+      "name": "16 the practice setting is untouched by a recovery @320x700",
+      "pass": true,
+      "detail": "settings={\"practiceRatePercent\":75}, pill=%75"
+    },
+    {
+      "name": "17 the envelope keeps one rung behind every step @320x700",
+      "pass": true,
+      "detail": "revisions 1/2/3"
+    },
+    {
+      "name": "18 a normal open shows no banner at all @320x700",
+      "pass": true,
+      "detail": "banner=none, console 0"
+    },
+    {
+      "name": "19 a banner fits the screen and has a real target @320x700",
+      "pass": true,
+      "detail": "dismiss {\"w\":44,\"h\":44}, overflow 0, scrollers 1"
+    },
+    {
+      "name": "20 no technical word reaches the reader @320x700",
+      "pass": true,
+      "detail": "Son kayıt açılamadı. Bir | Kaydedilmiş şarkı açılam | Kaydedilmiş şarkı açılam | Bu kayıt Aranjé'nin daha"
+    }
+  ],
+  "measurements": {
+    "writesPerEdit-390x844": 1,
+    "revisions-390x844": [
+      1,
+      2,
+      3
+    ],
+    "layout-390x844": {
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "dismiss": {
+        "w": 44,
+        "h": 44
+      }
+    },
+    "writesPerEdit-320x700": 1,
+    "revisions-320x700": [
+      1,
+      2,
+      3
+    ],
+    "layout-320x700": {
+      "bodyOverflow": 0,
+      "scrollers": 1,
+      "dismiss": {
+        "w": 44,
+        "h": 44
+      }
+    }
+  },
+  "failed": 0
+}

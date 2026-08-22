@@ -1,0 +1,16 @@
+{
+  "limits": {
+    "tracks": 8,
+    "bars": 32,
+    "resolution": 32
+  },
+  "rawSongBytes": 798516,
+  "envelopeCurrentOnlyBytes": 798592,
+  "envelopeCurrentAndPreviousBytes": 1597104,
+  "growthOverLegacy": {
+    "currentOnly": 1,
+    "withPrevious": 2
+  },
+  "worstCaseFileBytes": 1597104,
+  "worstCaseFileMiB": 1.523
+}

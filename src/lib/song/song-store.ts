@@ -50,7 +50,14 @@ import {
 } from "@/lib/song/edit-history";
 import { redoLabel, undoLabel } from "@/lib/song/history-labels";
 import { songSchema, type Song } from "@/lib/song/schema";
-import { loadSong, saveSong, type LoadResult, type StorageLike } from "@/lib/song/storage";
+import {
+  loadSong,
+  saveSong,
+  RECOVERY_MESSAGES,
+  type LoadResult,
+  type RecoveryState,
+  type StorageLike,
+} from "@/lib/song/storage";
 
 export type SongStoreSnapshot = {
   song: Song;
@@ -66,6 +73,21 @@ export type SongStoreSnapshot = {
   redoDepth: number;
   /** False when a write was refused, so the screen can say so. */
   persisted: boolean;
+  /**
+   * What the recovery banner should say, if anything (spec 13.14).
+   *
+   * A closed set rather than free text: whatever went wrong, the reader gets
+   * one of four sentences and never a diagnostic.
+   */
+  recovery: RecoveryState | null;
+  /** The sentence for `recovery`, from the one table. */
+  recoveryMessage: string | null;
+  /**
+   * False when this session must not write at all — a file from a newer
+   * Aranje is in the way. Editing stays visible but cannot be committed,
+   * because a commit would overwrite data this version cannot read.
+   */
+  canPersist: boolean;
 };
 
 export type SongStore = {
@@ -82,6 +104,8 @@ export type SongStore = {
   undo(): void;
   /** Step forward one edit. */
   redo(): void;
+  /** Put the recovery banner down. Changes nothing else, and writes nothing. */
+  dismissRecovery(): void;
   /**
    * Start again from a song that did not come from an edit.
    *
@@ -97,6 +121,8 @@ export function createSongStore(
 ): SongStore {
   let history: EditHistory = createEditHistory(initial.song);
   let persisted = true;
+  let canPersist = initial.canPersist;
+  let recovery: RecoveryState | null = initial.recovery ?? null;
   const listeners = new Set<() => void>();
 
   const readSnapshot = (): SongStoreSnapshot => ({
@@ -109,6 +135,9 @@ export function createSongStore(
     undoDepth: history.cursor,
     redoDepth: history.snapshots.length - 1 - history.cursor,
     persisted,
+    recovery,
+    recoveryMessage: recovery === null ? null : RECOVERY_MESSAGES[recovery],
+    canPersist,
   });
 
   let snapshot: SongStoreSnapshot = readSnapshot();
@@ -124,14 +153,45 @@ export function createSongStore(
    * Exactly one storage write and exactly one publish, whatever moved it —
    * a commit, an undo and a redo are the same event as far as the outside
    * world is concerned: the song changed to this one.
+   *
+   * ## Storage decides, and it decides first (spec 13.14, K-45)
+   *
+   * Nothing moves until the write has landed. A refused write used to leave
+   * the app showing an edit that was never saved, with a note underneath
+   * saying so — which is the app asking the reader to remember which of the
+   * things on screen are real. Now the edit simply does not happen, the
+   * banner says why, and what is on screen is what is on disk.
+   *
+   * The exception is storage that is not there at all — a private window, an
+   * embedded view. `setItem` was never called and never failed; the session
+   * runs in memory and said as much when it opened. Turning that into a
+   * read-only app would take editing away from someone whose browser merely
+   * declines to remember things.
    */
-  const write = (next: EditHistory) => {
+  const write = (next: EditHistory): boolean => {
     const song = currentSong(next);
-    // Storage first: if it refuses, the screen keeps working in memory and
-    // says so, rather than showing a state that was never saved.
-    persisted = storage === undefined ? saveSong(song) : saveSong(song, storage);
+    const saved = storage === undefined ? saveSong(song) : saveSong(song, storage);
+
+    if (!saved.ok && saved.reason !== "unavailable") {
+      /*
+       * Nothing advances: not the song, not the cursor, not the redo branch.
+       * The publish is only so the banner can appear — it carries no new song.
+       */
+      persisted = false;
+      recovery =
+        saved.reason === "unsupported_version"
+          ? "unsupported_version"
+          : "storage_write_failed";
+      if (saved.reason === "unsupported_version") canPersist = false;
+      publish();
+      return false;
+    }
+
+    persisted = saved.ok;
+    if (saved.ok && recovery === "storage_write_failed") recovery = null;
     history = next;
     publish();
+    return true;
   };
 
   return {
@@ -149,8 +209,7 @@ export function createSongStore(
        */
       if (!songSchema.safeParse(next).success) return false;
       if (sameSong(next, currentSong(history))) return false;
-      write(recordEdit(history, next, action));
-      return true;
+      return write(recordEdit(history, next, action));
     },
 
     undo() {
@@ -165,6 +224,13 @@ export function createSongStore(
 
     replaceBaseline(song) {
       history = resetEditHistory(song);
+      publish();
+    },
+
+    dismissRecovery() {
+      if (recovery === null) return;
+      recovery = null;
+      // The banner goes; the song, the history and storage are untouched.
       publish();
     },
   };

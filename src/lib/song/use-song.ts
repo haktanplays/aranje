@@ -32,6 +32,9 @@ const SERVER_SNAPSHOT: SongStoreSnapshot = {
   undoDepth: 0,
   redoDepth: 0,
   persisted: true,
+  recovery: null,
+  recoveryMessage: null,
+  canPersist: true,
 };
 
 export type SongHandle = SongStoreSnapshot & {
@@ -39,6 +42,7 @@ export type SongHandle = SongStoreSnapshot & {
   commit(next: Song, action: HistoryAction): boolean;
   undo(): void;
   redo(): void;
+  dismissRecovery(): void;
 };
 
 export function useSong(): SongHandle {
@@ -63,5 +67,9 @@ export function useSong(): SongHandle {
     store?.redo();
   }, [store]);
 
-  return { ...snapshot, commit, undo, redo };
+  const dismissRecovery = useCallback(() => {
+    store?.dismissRecovery();
+  }, [store]);
+
+  return { ...snapshot, commit, undo, redo, dismissRecovery };
 }

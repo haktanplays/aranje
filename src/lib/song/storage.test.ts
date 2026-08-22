@@ -42,7 +42,7 @@ describe("song storage (spec 5.6)", () => {
 
   it("reads back a song it wrote", () => {
     const { storage } = fakeStorage();
-    expect(saveSong(SAMPLE_SONG, storage)).toBe(true);
+    expect(saveSong(SAMPLE_SONG, storage).ok).toBe(true);
     const result = loadSong(storage, FROZEN_CLOCK);
     expect(result.outcome).toBe("stored");
     expect(result.song).toEqual(SAMPLE_SONG);
@@ -75,7 +75,7 @@ describe("song storage (spec 5.6)", () => {
     const result = loadSong(null, FROZEN_CLOCK);
     expect(result.outcome).toBe("unavailable");
     expect(result.song.title).toBe(SAMPLE_SONG.title);
-    expect(saveSong(SAMPLE_SONG, null)).toBe(false);
+    expect(saveSong(SAMPLE_SONG, null).ok).toBe(false);
   });
 
   it("keeps working when storage throws on read", () => {
@@ -99,13 +99,13 @@ describe("song storage (spec 5.6)", () => {
       },
       removeItem: () => {},
     };
-    expect(saveSong(SAMPLE_SONG, storage)).toBe(false);
+    expect(saveSong(SAMPLE_SONG, storage).ok).toBe(false);
   });
 
   it("refuses to persist a song that fails the schema", () => {
     const { storage, map } = fakeStorage();
     const invalid = { ...SAMPLE_SONG, bpm: 9000 };
-    expect(saveSong(invalid, storage)).toBe(false);
+    expect(saveSong(invalid, storage).ok).toBe(false);
     expect(map.has(SONG_KEY)).toBe(false);
   });
 });

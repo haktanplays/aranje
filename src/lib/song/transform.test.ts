@@ -577,7 +577,7 @@ describe("atomicity, purity and determinism", () => {
   it("writes once and leaves one undo step on success", () => {
     const storage = countingStorage();
     const store = createSongStore(
-      { song: song([bar(slots([A3(), REST, REST]))]), outcome: "stored" },
+      { song: song([bar(slots([A3(), REST, REST]))]), outcome: "stored", canPersist: true },
       storage,
     );
     const before = storage.writes;
@@ -597,7 +597,7 @@ describe("atomicity, purity and determinism", () => {
   it("writes nothing and records no undo step on failure", () => {
     const storage = countingStorage();
     const store = createSongStore(
-      { song: song([bar(slots([A3(), C4()]))]), outcome: "stored" },
+      { song: song([bar(slots([A3(), C4()]))]), outcome: "stored", canPersist: true },
       storage,
     );
     const before = storage.writes;

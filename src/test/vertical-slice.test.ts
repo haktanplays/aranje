@@ -21,6 +21,7 @@ import { touchesOnlyTarget } from "@/lib/copilot/preview";
 import { lockedFor } from "@/lib/copilot/ui-options";
 import { applyEdit } from "@/lib/song/edit";
 import { createSongStore } from "@/lib/song/song-store";
+import { decideLoad } from "@/lib/song/storage-envelope";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import { SONG_KEY, type StorageLike } from "@/lib/song/storage";
 import type { ArrangeSkill, CopilotRequest } from "@/lib/copilot/contract";
@@ -29,6 +30,14 @@ import { HARMONY_SONG, TEST_SONG, mainSection } from "@/test/copilot-fixtures";
 
 /** Any edit will do for these; the store cares that it was told, not which. */
 const NOTE_EDIT: HistoryAction = { kind: "note_edit" };
+
+/** The song on disk, read through the real decoder (2K-B envelope). */
+function storedSong(storage: { map: Map<string, string> }) {
+  const decision = decideLoad(storage.map.get(SONG_KEY) ?? null);
+  return decision.kind === "envelope" || decision.kind === "legacy"
+    ? decision.song
+    : null;
+}
 
 const SECTION_ID = mainSection().id;
 
@@ -94,7 +103,7 @@ describe("the vertical slice", () => {
   for (const entry of cases) {
     it(`${entry.skill}: preview shows a change, apply writes it, only to the target`, async () => {
       const storage = memoryStorage();
-      const store = createSongStore({ song: entry.song, outcome: "stored" }, storage);
+      const store = createSongStore({ song: entry.song, outcome: "stored", canPersist: true }, storage);
       const state = await readyState(entry.song, entry.skill, entry.target);
 
       // Opening the preview writes nothing.
@@ -109,18 +118,18 @@ describe("the vertical slice", () => {
       expect(
         touchesOnlyTarget(entry.song, written, SECTION_ID, entry.target),
       ).toBe(true);
-      expect(JSON.parse(storage.map.get(SONG_KEY) ?? "{}")).toEqual(written);
+      expect(storedSong(storage)).toEqual(written);
 
       // And one step back returns exactly what was there before.
       store.undo();
       expect(store.getSnapshot().song).toEqual(entry.song);
-      expect(JSON.parse(storage.map.get(SONG_KEY) ?? "{}")).toEqual(entry.song);
+      expect(storedSong(storage)).toEqual(entry.song);
     });
   }
 
   it("rejecting changes nothing at all", async () => {
     const storage = memoryStorage();
-    const store = createSongStore({ song: TEST_SONG, outcome: "stored" }, storage);
+    const store = createSongStore({ song: TEST_SONG, outcome: "stored", canPersist: true }, storage);
     const state = await readyState(TEST_SONG, "drums", "drums");
 
     const closed = previewReducer(state, { type: "close" });
@@ -131,7 +140,7 @@ describe("the vertical slice", () => {
   });
 
   it("a candidate cannot be applied after the song has moved", async () => {
-    const store = createSongStore({ song: TEST_SONG, outcome: "stored" }, memoryStorage());
+    const store = createSongStore({ song: TEST_SONG, outcome: "stored", canPersist: true }, memoryStorage());
     const state = await readyState(TEST_SONG, "drums", "drums");
 
     // The musician edits a note while the sheet is open.
@@ -150,7 +159,7 @@ describe("the vertical slice", () => {
   });
 
   it("an edit and an arrangement stack, and undo unwinds one step at a time", async () => {
-    const store = createSongStore({ song: TEST_SONG, outcome: "stored" }, memoryStorage());
+    const store = createSongStore({ song: TEST_SONG, outcome: "stored", canPersist: true }, memoryStorage());
 
     const edited = applyEdit(TEST_SONG, {
       kind: "set_note",
@@ -173,7 +182,7 @@ describe("the vertical slice", () => {
   });
 
   it("a blocked candidate never reaches the store", async () => {
-    const store = createSongStore({ song: TEST_SONG, outcome: "stored" }, memoryStorage());
+    const store = createSongStore({ song: TEST_SONG, outcome: "stored", canPersist: true }, memoryStorage());
     const request = requestFor(TEST_SONG, "drums", "drums");
     const outcome = await createDemoClient(() => "demo-1").arrange(request);
     if (!outcome.ok) return;
@@ -190,7 +199,7 @@ describe("the vertical slice", () => {
 
   it("an edit that fails validation leaves the store untouched", () => {
     const storage = memoryStorage();
-    const store = createSongStore({ song: TEST_SONG, outcome: "stored" }, storage);
+    const store = createSongStore({ song: TEST_SONG, outcome: "stored", canPersist: true }, storage);
 
     const result = applyEdit(TEST_SONG, {
       kind: "set_note",

@@ -18,6 +18,7 @@ import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { FretSheet, type FretSheetTarget } from "@/components/workspace/FretSheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
+import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
 import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
 import { SectionNavigator } from "@/components/workspace/SectionNavigator";
 import { Sheet } from "@/components/workspace/Sheet";
@@ -92,9 +93,13 @@ export function Workspace() {
     undoLabel,
     redoLabel,
     persisted,
+    recovery,
+    recoveryMessage,
+    canPersist,
     commit,
     undo,
     redo,
+    dismissRecovery,
   } = useSong();
   const { practiceRatePercent, setPracticeRatePercent } = useSettings();
   const { controller, state } = usePlayback(song, practiceRatePercent);
@@ -250,7 +255,11 @@ export function Workspace() {
    * half-working on a surface nobody meant it for.
    */
   const selectionEnabled =
-    view === "tab" && !previewOpen && !arrangeOpen && track !== undefined;
+    view === "tab" &&
+    canPersist &&
+    !previewOpen &&
+    !arrangeOpen &&
+    track !== undefined;
 
   /** Where the band sits in tab coordinates, and how tall the staff is. */
   const band = useMemo(
@@ -733,14 +742,23 @@ export function Workspace() {
     controller.setLoopSection(state.loopSectionId ? null : current);
   }, [activeBarKey, controller, runs, state.loopSectionId]);
 
-  // Editing and a candidate never share the screen: a candidate is measured
-  // against the song as it was when it was asked for.
-  const canEdit = track !== undefined && isEditableTrack(track) && !previewOpen;
+  /*
+   * Editing and a candidate never share the screen: a candidate is measured
+   * against the song as it was when it was asked for.
+   *
+   * `canPersist` is the other gate, and it is a harder one (spec 13.14). When
+   * a file from a newer version is in the way, an edit could not be saved and
+   * committing it would mean writing over data this version cannot read. The
+   * controls are disabled rather than left to fail at the end — a button that
+   * always refuses is worse than one that is visibly unavailable.
+   */
+  const canEdit =
+    track !== undefined && isEditableTrack(track) && !previewOpen && canPersist;
   const editDisabledReason =
-    track === undefined
+    track === undefined || canEdit
       ? null
-      : canEdit
-        ? null
+      : !canPersist
+        ? "Kayıt korunuyor; bu oturumda düzenleme yapılamıyor."
         : `"${track.name}" bu ekrandan düzenlenemiyor. Şimdilik yalnız akordu olan telli track'ler düzenlenebiliyor.`;
 
   const toggleEdit = useCallback(() => {
@@ -999,21 +1017,28 @@ export function Workspace() {
         </button>
       </header>
 
-      {message ? (
+      {/*
+        One strip, and the recovery state owns it.
+
+        The two ad-hoc notices this replaces could both be on screen at once,
+        stacked, saying overlapping things — and one of them carried whatever
+        sentence the loader had built, which is how a diagnostic reaches a
+        musician. Now there are four states and four sentences.
+      */}
+      {recovery && recoveryMessage ? (
+        <RecoveryBanner
+          state={recovery}
+          message={recoveryMessage}
+          onDismiss={dismissRecovery}
+        />
+      ) : !persisted && message ? (
+        /* Storage that was never there: said once, at the top, and not a
+           recovery — nothing went wrong with a file that does not exist. */
         <p
           role="status"
           className="border-reject/50 bg-raised border-b px-3 py-2 text-xs"
         >
           {message}
-        </p>
-      ) : null}
-
-      {!persisted ? (
-        <p
-          role="status"
-          className="border-reject/50 bg-raised border-b px-3 py-2 text-xs"
-        >
-          Değişiklikler kaydedilemiyor; bu oturumda bellekte tutuluyor.
         </p>
       ) : null}
 
@@ -1070,8 +1095,8 @@ export function Workspace() {
              * claiming to show what is about to change.
              */
             barSelection={ghostArrangement ? null : barTransform.selection}
-            onSelectBars={selectBars}
-            onExtendBars={extendBars}
+            onSelectBars={canPersist ? selectBars : undefined}
+            onExtendBars={canPersist ? extendBars : undefined}
           />
         ) : (
           <TabCanvas
@@ -1088,7 +1113,9 @@ export function Workspace() {
                * candidate is on it: a bar selection is an edit gesture, and
                * a candidate is measured against the song as it was asked for.
                */
-              previewOpen || arrangeOpen ? undefined : selectBarsFromTab
+              previewOpen || arrangeOpen || !canPersist
+                ? undefined
+                : selectBarsFromTab
             }
             scrollRef={scrollRef}
             onSlotLongPress={selectionEnabled ? onSlotLongPress : undefined}
@@ -1347,7 +1374,7 @@ export function Workspace() {
           clearSelection();
           copilot.open();
         }}
-        arrangeDisabled={skills.length === 0 || previewOpen}
+        arrangeDisabled={skills.length === 0 || previewOpen || !canPersist}
         canUndo={canUndo}
         canRedo={canRedo}
         undoLabel={undoLabel}
