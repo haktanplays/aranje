@@ -15,6 +15,7 @@ import type {
   HistoryAction,
   SelectionCommandKind,
 } from "@/lib/song/edit-history";
+import type { LifecycleCommandKind } from "@/lib/song/lifecycle-types";
 
 const SELECTION_LABELS: Readonly<Record<SelectionCommandKind, string>> = {
   copy_selection: "Seçimi kopyalama",
@@ -64,6 +65,33 @@ const FULL_BAR_LABELS: Readonly<Record<BarCommandKind, string>> = {
   move_bars_right: "Ölçüleri sağa taşıma",
 };
 
+/**
+ * The lifecycle commands, named for a reader (spec 13.17 §9).
+ *
+ * Sixteen commands, fifteen sentences: setting and clearing a section's
+ * tempo are the same story to the person undoing it — the section's tempo
+ * changes back — so both wear the same words.
+ */
+const LIFECYCLE_LABELS: Readonly<Record<LifecycleCommandKind, string>> = {
+  create_song: "Yeni şarkı oluşturma",
+  update_song_info: "Şarkı bilgilerini değiştirme",
+  create_section: "Bölüm ekleme",
+  rename_section: "Bölüm adını değiştirme",
+  duplicate_section: "Bölüm çoğaltma",
+  move_section: "Bölüm taşıma",
+  delete_section: "Bölüm silme",
+  set_section_tempo_override: "Bölüm temposunu değiştirme",
+  clear_section_tempo_override: "Bölüm temposunu değiştirme",
+  create_track: "Track ekleme",
+  rename_track: "Track adını değiştirme",
+  duplicate_track: "Track çoğaltma",
+  move_track: "Track taşıma",
+  delete_track: "Track silme",
+  update_track_setup: "Track ayarlarını değiştirme",
+  replace_track_setup_and_clear_content:
+    "Track içeriğini temizleyip ayar değiştirme",
+};
+
 /** The edit itself, named. */
 export function historyActionLabel(action: HistoryAction): string {
   switch (action.kind) {
@@ -81,6 +109,8 @@ export function historyActionLabel(action: HistoryAction): string {
       return "Aranje önerisini uygulama";
     case "project_import":
       return "Projeyi açma";
+    case "lifecycle":
+      return LIFECYCLE_LABELS[action.command];
   }
 }
 

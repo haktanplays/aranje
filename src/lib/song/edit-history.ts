@@ -33,6 +33,7 @@
  */
 import { historyLimits } from "@/lib/limits";
 import type { BarCommand } from "@/lib/song/bar-transform";
+import type { LifecycleCommandKind } from "@/lib/song/lifecycle-types";
 import type { Song } from "@/lib/song/schema";
 import type { TransformCommand } from "@/lib/song/transform";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
@@ -59,7 +60,9 @@ export type HistoryAction =
     }
   | { readonly kind: "copilot_apply"; readonly skill: ArrangeSkill }
   /** A whole project file opened over the current song (spec 13.15). */
-  | { readonly kind: "project_import" };
+  | { readonly kind: "project_import" }
+  /** A song, section or track lifecycle command (spec 13.17). */
+  | { readonly kind: "lifecycle"; readonly command: LifecycleCommandKind };
 
 export type HistorySnapshot = {
   readonly song: Song;
