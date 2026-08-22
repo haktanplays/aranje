@@ -98,3 +98,112 @@ hâlükârda fail-closed yakalanıyor.
 - **Aynı anda iki sekme.** `previous` diskten okunuyor, bellekten değil, bu
   yüzden basamak başka bir sekme yazmış olsa bile doğru. Ama iki sekmenin
   birbirinin düzenlemesini ezmesi bu checkpoint'in kapsamı değil.
+
+---
+
+# Faz 2K-B.1 — Kapanış: unavailable gate ve yazma defteri
+
+Başlangıç noktası `d6955cb`.
+
+## Kaldırılan davranış: bellekte düzenleme
+
+2K-B'nin "depo hiç yoksa bellekte çalış" istisnası kaldırıldı. Gerekçe
+spec'inki: kullanıcı düzenlediğini ve kaydedildiğini sanır, sekme kapanınca
+her şey gider — zarfın önlemeye çalıştığı kaybın uygulama eliyle üretilmiş
+hâli. Yeni davranış: şarkı görüntülenir, playback/navigation çalışır, bütün
+kalıcı mutasyonlar kapalı, jestler armed edilmez, banner non-dismissible.
+
+## Kabiliyet probe'u
+
+"Kaydedebilir miyim?" sorusunun tek dürüst cevabı denemektir. Açılışta
+`aranje.probe` anahtarına 1 `setItem` + 1 `removeItem` yapılır. Dolu ama
+okunabilir bir depo (probe reddi) gerçek şarkıyı **salt-okunur** açar — örnek
+şarkıyı değil.
+
+## `canPersist` karar tablosu
+
+| Durum | canPersist | Banner |
+| --- | --- | --- |
+| Depo API'si yok | false | `storage_unavailable` (kapatılamaz) |
+| Erişim/`getItem` exception | false | `storage_unavailable` (kapatılamaz) |
+| Açılış probe'u reddedildi | false | `storage_unavailable` (kapatılamaz) |
+| Gelecek sürüm dosyası | false | `unsupported_version` (kapatılamaz) |
+| Corrupt + karantina yazımı başarısız | false | `storage_write_failed` |
+| Rescue + repair yazımı başarısız | false | `storage_write_failed` |
+| Diğer her yol | true | — |
+
+`canPersist: false` iken store `commit`/`undo`/`redo` kapıda reddeder (sıfır
+fiziksel işlem), snapshot `canUndo`/`canRedo`'yu false yapar ve UI kontrolleri
+disabled olur. Kapı kalksa bile `saveSong`'un kendi redleri (unsupported,
+korunmamış corrupt, yazma hatası) ikinci hat olarak durur — ve testler artık
+iki katmanı **ayrı ayrı** görüyor (aşağıda).
+
+## Yazma raporundaki çelişkinin kapanışı
+
+2K-B raporu "bütün açılış yollarında 0 yazma" diyordu. İki düzeltme:
+
+1. **Probe artık var ve gizlenmiyor.** Her açılış `aranje.probe`'a 1 set +
+   1 remove öder; defterde açıkça görünür. Spec'in matrisi şarkı/karantina
+   anahtarları üzerinden okunur ve orada temiz yollar gerçekten 0/0'dır.
+2. **`removeItem` sayılıyor.** Eski sayaç yalnız `setItem`'a bakıyordu; oysa
+   karantina yolları ana anahtarı `removeItem` ile temizler. Defter artık
+   op + anahtar + sıra + başarı kaydeder.
+
+Ölçülen matris (birim testleri `storage-gate.test.ts` §22, tarayıcı
+senaryoları 23–24; defter uygulama kodundan önce kurulu):
+
+| Açılış durumu | probe | şarkı set | şarkı remove | karantina set | Sıra |
+| --- | --- | --- | --- | --- | --- |
+| Anahtar yok | 2 | 0 | 0 | 0 | probe |
+| Geçerli legacy | 2 | 0 | 0 | 0 | probe |
+| Geçerli V1 current | 2 | 0 | 0 | 0 | probe |
+| Gelecek sürüm | 2 | 0 | 0 | 0 | probe |
+| Malformed JSON | 2 | 0 | 1 | 1 | probe → karantina set → ana remove |
+| Current bozuk, previous sağlam | 2 | 1 (repair) | 0 | 1 | probe → karantina set → repair set |
+| İki slot bozuk | 2 | 0 | 1 | 1 | probe → karantina set → ana remove |
+
+## Kurtarma başarısızlık sırası
+
+- Karantina `setItem` başarısız → ana değer **byte-eş** durur (remove hiç
+  çalışmaz), `canPersist: false`, başarı raporlanmaz.
+- Repair `setItem` başarısız → eski zarf ana anahtarda byte-eş durur;
+  karantina kopyası (başarılıysa) kalır; kurtarılan şarkı ekranda ama
+  düzenlenemez.
+- Karantina başarısızsa repair **hiç denenmez**: broken zarftaki current
+  slot'un tek kopyası ham değerin kendisidir ve kopyalanmadan üzerine
+  yazılamaz.
+
+## Regresyon
+
+Normal commit / undo / redo hâlâ **tam 1** `setItem`; no-op/ghost/yapılamayan
+hareket 0; future version 0 yazma ve byte-eş; history zarfa girmiyor.
+(`storage-gate.test.ts` §22 defter sırasıyla, 50/50 tarayıcı koşusu.)
+
+## Boyut, iki birimle
+
+| | UTF-8 bayt | Code-unit | ≈UTF-16 bellek |
+| --- | --- | --- | --- |
+| Ham Song | 798.516 | 798.504 | 1.597.008 |
+| Zarf, yalnız current | 798.592 | 798.580 | 1.597.160 |
+| Zarf, current+previous | 1.597.104 | 1.597.080 | 3.194.160 |
+
+Kota garantisi değildir. **Production Chromium 141.0.7390.37'de gerçek
+`setItem`:** başarılı, round-trip byte-eş (`QUOTA.json`). Fiziksel iOS Safari
+kabulü açık kalır.
+
+## Testlerin kendisinde bulunan iki maskeleme
+
+İki yeni probe ilk koşuda yeşil döndü ve ikisi de aynı şeyi söylüyordu:
+**kapı, kemerini görünmez kılıyor.**
+
+- "Unavailable bellekte düzenlemeye düşüyor" probe'u: store kapısı kaldırılınca
+  bile `saveSong` her yazmayı reddettiği için hiçbir test kırılmıyordu. Ama
+  kapı olmadan başarısız commit, kapatılamayan `storage_unavailable`
+  banner'ını **kapatılabilir** `storage_write_failed` ile değiştirir ve deftere
+  başarısız bir fiziksel işlem ekler — test artık tam bunu ölçüyor.
+- "Future version guard'ı düşürülüyor" probe'u: `saveSong`'daki guard
+  kaldırılınca store kapısı (`canPersist: false`) commit'i zaten kesiyordu.
+  Test artık `saveSong`'u **doğrudan** da çağırıyor, iki savunma hattı ayrı
+  ayrı gözlenebilir.
+
+Sonuç: birim probe'ları **20/20 kırmızı** (13 × 2K-B + 7 × 2K-B.1).

@@ -14,9 +14,10 @@
  *
  * A recovery is bad news about a file, not about the song in front of the
  * reader. The transport keeps working, both surfaces keep working, and the
- * banner can be put down. The one exception is a file from a newer version:
- * there, editing is genuinely unsafe, so the banner stays as the explanation
- * for controls that are disabled — and it is the disabled controls, not the
+ * banner can be put down. Two exceptions stay on screen: a file from a newer
+ * version, and a device that cannot save at all. In both, editing is
+ * genuinely closed, so the banner is the standing explanation for controls
+ * that are disabled underneath it — and it is the disabled controls, not the
  * banner, that stop the reader.
  */
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
@@ -33,12 +34,13 @@ export function RecoveryBanner({
   onDismiss: () => void;
 }) {
   /*
-   * A file from a newer version is the only one that cannot be put down,
-   * because it is the reason half the controls below are disabled. Dismissing
-   * it would leave the reader looking at an app that refuses to edit and no
-   * longer says why.
+   * The two states that closed editing cannot be put down, because each is
+   * the reason half the controls below are disabled. Dismissing one would
+   * leave the reader looking at an app that refuses to edit and no longer
+   * says why.
    */
-  const canDismiss = state !== "unsupported_version";
+  const canDismiss =
+    state !== "unsupported_version" && state !== "storage_unavailable";
 
   return (
     <div

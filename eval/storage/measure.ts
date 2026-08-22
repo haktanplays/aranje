@@ -29,8 +29,22 @@ import {
   type Track,
 } from "@/lib/song/schema";
 
-const bytes = (value: unknown) =>
-  Buffer.byteLength(JSON.stringify(value), "utf8");
+/**
+ * Both sizes, because they answer different questions.
+ *
+ * UTF-8 bytes is what a network or a file would carry. localStorage stores
+ * JavaScript strings, which are UTF-16 code units — so the number a browser
+ * quota actually meters is closer to `codeUnits * 2`. Reporting only one of
+ * them lets the other be silently assumed.
+ */
+const sizes = (value: unknown) => {
+  const text = JSON.stringify(value);
+  return {
+    utf8Bytes: Buffer.byteLength(text, "utf8"),
+    codeUnits: text.length,
+    utf16ApproxBytes: text.length * 2,
+  };
+};
 
 function heaviestDrumSlots(count: number): DrumSlot[] {
   return Array.from({ length: count }, () => [
@@ -109,12 +123,11 @@ function worstCaseSong(): Song {
 
 const song = songSchema.parse(worstCaseSong());
 
-const rawBytes = bytes(song);
+const raw = sizes(song);
 const firstWrite: SongStorageEnvelopeV1 = nextEnvelope(song, { kind: "empty" });
-const currentOnly = bytes(firstWrite);
-const both = bytes(
-  nextEnvelope(song, decideLoad(JSON.stringify(firstWrite))),
-);
+const currentOnly = sizes(firstWrite);
+const fullEnvelope = nextEnvelope(song, decideLoad(JSON.stringify(firstWrite)));
+const both = sizes(fullEnvelope);
 
 const report = {
   limits: {
@@ -122,12 +135,12 @@ const report = {
     bars: song.sections.reduce((sum, section) => sum + section.bars.length, 0),
     resolution: 32,
   },
-  rawSongBytes: rawBytes,
-  envelopeCurrentOnlyBytes: currentOnly,
-  envelopeCurrentAndPreviousBytes: both,
+  rawSong: raw,
+  envelopeCurrentOnly: currentOnly,
+  envelopeCurrentAndPrevious: both,
   growthOverLegacy: {
-    currentOnly: Number((currentOnly / rawBytes).toFixed(3)),
-    withPrevious: Number((both / rawBytes).toFixed(3)),
+    currentOnly: Number((currentOnly.utf8Bytes / raw.utf8Bytes).toFixed(3)),
+    withPrevious: Number((both.utf8Bytes / raw.utf8Bytes).toFixed(3)),
   },
   /*
    * Not a limit anyone invented: the ceiling this checkpoint has to live
@@ -135,9 +148,11 @@ const report = {
    * costs. Whether a given browser has that much is a runtime question, and
    * the only honest answer to it is a real `setItem` that either works or
    * throws — which is why the write path fails closed rather than predicting.
+   * `quota-check.mjs` performs that real attempt in production Chromium; it
+   * is not an iOS Safari acceptance, which stays open.
    */
-  worstCaseFileBytes: both,
-  worstCaseFileMiB: Number((both / (1024 * 1024)).toFixed(3)),
+  worstCaseFile: both,
+  worstCaseFileMiB: Number((both.utf8Bytes / (1024 * 1024)).toFixed(3)),
 };
 
 writeFileSync(
@@ -145,4 +160,14 @@ writeFileSync(
   `${JSON.stringify(report, null, 2)}\n`,
   "utf8",
 );
+
+/*
+ * The payload, on request, for the real-browser write attempt. Behind an env
+ * flag so the checked-in artifact stays a report, not a 1.5 MiB fixture.
+ */
+const payloadOut = process.env.WORST_OUT;
+if (payloadOut) {
+  writeFileSync(payloadOut, JSON.stringify(fullEnvelope), "utf8");
+}
+
 console.log(JSON.stringify(report, null, 2));

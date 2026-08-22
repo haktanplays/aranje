@@ -65,19 +65,38 @@ async function safe(name, fn) {
   }
 }
 
+/*
+ * The wrapper is an init script, so it exists before the first line of app
+ * code runs — the physical operations of the *load itself* are on the ledger,
+ * not just the ones made after the harness got around to looking.
+ *
+ * `__refuse` modes: false (normal), true (every write throws), "song-only"
+ * (only the song key throws — the shape of a big value hitting quota that a
+ * one-byte probe slid under).
+ */
 const INSTRUMENT = `
   window.__writes = 0;
+  window.__ops = [];
   window.__consoleErrors = [];
   window.__refuse = false;
+  const refused = (key) =>
+    window.__refuse === true || (window.__refuse === "song-only" && key === "aranje.song");
   const originalSet = Storage.prototype.setItem;
+  const originalRemove = Storage.prototype.removeItem;
   Storage.prototype.setItem = function (key, value) {
-    if (window.__refuse) {
+    if (refused(key)) {
+      window.__ops.push({ op: "set", key, ok: false });
       const error = new Error("quota");
       error.name = "QuotaExceededError";
       throw error;
     }
+    originalSet.call(this, key, value);
+    window.__ops.push({ op: "set", key, ok: true });
     if (key === "aranje.song") window.__writes += 1;
-    return originalSet.call(this, key, value);
+  };
+  Storage.prototype.removeItem = function (key) {
+    originalRemove.call(this, key);
+    window.__ops.push({ op: "remove", key, ok: true });
   };
 `;
 
@@ -87,7 +106,7 @@ const INSTRUMENT = `
  * `seed` is written before the counter is wrapped, so seeding is never
  * counted as an edit — the harness must not measure itself.
  */
-async function openApp(browser, size, seed = FIXTURE) {
+async function openApp(browser, size, seed = FIXTURE, options = {}) {
   const context = await browser.newContext({
     viewport: size,
     hasTouch: true,
@@ -117,6 +136,14 @@ async function openApp(browser, size, seed = FIXTURE) {
     );
   }
   await context.addInitScript(INSTRUMENT);
+  if (options.refuseFromStart) {
+    await context.addInitScript(
+      (mode) => {
+        window.__refuse = mode;
+      },
+      options.refuseFromStart,
+    );
+  }
   const page = await context.newPage();
   lastPage = page;
   page.setDefaultTimeout(6000);
@@ -743,6 +770,188 @@ async function run() {
         seen.length === 4 && seen.every((text) => text.length > 0 && !forbidden.test(text)),
         seen.map((t) => t.slice(0, 24)).join(" | "),
       );
+    });
+  }
+
+  for (const [label, size] of [
+    ["390x844", { width: 390, height: 844 }],
+    ["320x700", { width: 320, height: 700 }],
+  ]) {
+    const at = (name) => `${name} @${label}`;
+
+    // ----------------------------------------------------------------- 21
+    await safe(at("21 no storage at all opens read-only, still playable"), async () => {
+      const context = await browser.newContext({
+        viewport: size,
+        hasTouch: true,
+        isMobile: true,
+      });
+      // Storage denied before anything else exists: every access throws.
+      await context.addInitScript(() => {
+        Object.defineProperty(window, "localStorage", {
+          get() {
+            throw new DOMException("denied", "SecurityError");
+          },
+        });
+      });
+      const page = await context.newPage();
+      lastPage = page;
+      page.setDefaultTimeout(6000);
+      const consoleErrors = [];
+      page.on("pageerror", (error) => consoleErrors.push(String(error)));
+      page.on("console", (message) => {
+        if (message.type() === "error") consoleErrors.push(message.text());
+      });
+      await page.goto(`${BASE}/?debug=1`, { waitUntil: "networkidle" });
+      await page.waitForSelector("[data-arrangement-scroller]");
+      await page.waitForTimeout(400);
+
+      const shown = await banner(page);
+      // Play still works: the music is not storage's hostage.
+      await page.locator("[aria-label=Çal]").first().click();
+      await page.waitForTimeout(1100);
+      const playing = await page.evaluate(() => window.__aranjeDebug?.status());
+      await page.locator("[aria-label=Duraklat]").first().click();
+      // Navigation still works.
+      await page.locator("[data-testid=view-tab]").click();
+      await page.waitForTimeout(400);
+      const controls = await page.evaluate(() => {
+        const buttons = [...document.querySelectorAll("button")];
+        const find = (text) => buttons.find((n) => (n.textContent ?? "").includes(text));
+        return {
+          edit: find("Düzenle")?.disabled ?? null,
+          arrange: find("Aranje et")?.disabled ?? null,
+          undo: document.querySelector("[data-undo]")?.disabled ?? null,
+          redo: document.querySelector("[data-redo]")?.disabled ?? null,
+        };
+      });
+      const layout = await page.evaluate(() => ({
+        bodyOverflow: document.body.scrollWidth - document.body.clientWidth,
+        scrollers: [...document.querySelectorAll("*")].filter(
+          (node) =>
+            node.scrollWidth > node.clientWidth + 1 &&
+            ["auto", "scroll"].includes(getComputedStyle(node).overflowX),
+        ).length,
+      }));
+
+      record(
+        at("21 no storage at all opens read-only, still playable"),
+        shown?.state === "storage_unavailable" &&
+          shown.text ===
+            "Cihazda kayıt açılamadı. Çalışmanı kaybetmemek için düzenleme kapatıldı; şarkıyı dinlemeye devam edebilirsin." &&
+          shown.dismissBox === null &&
+          playing === "playing" &&
+          controls.edit === true &&
+          controls.arrange === true &&
+          controls.undo === true &&
+          controls.redo === true &&
+          layout.bodyOverflow === 0 &&
+          layout.scrollers === 1 &&
+          consoleErrors.length === 0,
+        `${shown?.state}, playing=${playing}, controls=${JSON.stringify(controls)}, errors=${consoleErrors.length}`,
+      );
+      await page.screenshot({ path: `${OUT}/${label}-unavailable.png` });
+      await context.close();
+    });
+
+    // ----------------------------------------------------------------- 22
+    await safe(at("22 a refused probe shows the real song, read-only"), async () => {
+      const { context, page, cdp } = await openApp(browser, size, FIXTURE, {
+        refuseFromStart: true,
+      });
+      const shown = await banner(page);
+      const title = await page.evaluate(
+        () => document.querySelector("header h1")?.textContent ?? "",
+      );
+
+      // A long press arms no selection: the gesture is not offered at all.
+      await press(page, cdp, cell("rhythm", "intro:0"));
+      const actionBar = await page.locator("[data-bar-action-bar]").count();
+      await press(page, cdp, barHeader("intro:1"));
+      const actionBarFull = await page.locator("[data-bar-action-bar]").count();
+
+      record(
+        at("22 a refused probe shows the real song, read-only"),
+        shown?.state === "storage_unavailable" &&
+          shown.dismissBox === null &&
+          /Fikstür/.test(title) &&
+          actionBar === 0 &&
+          actionBarFull === 0,
+        `${shown?.state}, title="${title}", actionBars ${actionBar}/${actionBarFull}`,
+      );
+      await context.close();
+    });
+
+    // ----------------------------------------------------------------- 23
+    await safe(at("23 the malformed-JSON ledger, in order"), async () => {
+      const { context, page } = await openApp(browser, size, "{not json");
+      const ops = await page.evaluate(() => window.__ops);
+      const expected = [
+        { op: "set", key: "aranje.probe", ok: true },
+        { op: "remove", key: "aranje.probe", ok: true },
+        { op: "set", key: ops[2]?.key ?? "", ok: true }, // aranje.corrupt.<now>
+        { op: "remove", key: "aranje.song", ok: true },
+      ];
+      const corruptKeyed = (ops[2]?.key ?? "").startsWith("aranje.corrupt.");
+      measurements[`ledger-malformed-${label}`] = ops;
+      record(
+        at("23 the malformed-JSON ledger, in order"),
+        JSON.stringify(ops) === JSON.stringify(expected) && corruptKeyed,
+        JSON.stringify(ops),
+      );
+      await context.close();
+    });
+
+    // ----------------------------------------------------------------- 24
+    await safe(at("24 the rescued-previous ledger, in order"), async () => {
+      const { context, page } = await openApp(
+        browser,
+        size,
+        wrap({ half: "written" }, RESCUED, 6),
+      );
+      const ops = await page.evaluate(() => window.__ops);
+      const shape = ops.map((entry) => `${entry.op}:${entry.key}:${entry.ok}`);
+      const corrupt = ops[2]?.key ?? "";
+      measurements[`ledger-rescue-${label}`] = ops;
+      record(
+        at("24 the rescued-previous ledger, in order"),
+        shape.length === 4 &&
+          shape[0] === "set:aranje.probe:true" &&
+          shape[1] === "remove:aranje.probe:true" &&
+          corrupt.startsWith("aranje.corrupt.") &&
+          shape[2] === `set:${corrupt}:true` &&
+          shape[3] === "set:aranje.song:true",
+        JSON.stringify(shape),
+      );
+      await context.close();
+    });
+
+    // ----------------------------------------------------------------- 25
+    await safe(at("25 a failed repair leaves the file alone and editing closed"), async () => {
+      const raw = wrap({ half: "written" }, RESCUED, 6);
+      const { context, page, cdp } = await openApp(browser, size, raw, {
+        refuseFromStart: "song-only",
+      });
+      const shown = await banner(page);
+      const title = await page.evaluate(
+        () => document.querySelector("header h1")?.textContent ?? "",
+      );
+      const still = await rawKey(page);
+
+      // The rescued song is on screen but nothing can mutate it.
+      await press(page, cdp, cell("rhythm", "intro:0"));
+      const actionBar = await page.locator("[data-bar-action-bar]").count();
+
+      record(
+        at("25 a failed repair leaves the file alone and editing closed"),
+        shown?.state === "storage_write_failed" &&
+          /Kurtarılan/.test(title) &&
+          still === raw &&
+          actionBar === 0,
+        `${shown?.state}, title="${title}", file untouched=${still === raw}, actionBar=${actionBar}`,
+      );
+      await page.screenshot({ path: `${OUT}/${label}-repair-failed.png` });
+      await context.close();
     });
   }
 

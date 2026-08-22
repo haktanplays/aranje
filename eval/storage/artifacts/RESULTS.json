@@ -199,6 +199,56 @@
       "name": "20 no technical word reaches the reader @320x700",
       "pass": true,
       "detail": "Son kayıt açılamadı. Bir | Kaydedilmiş şarkı açılam | Kaydedilmiş şarkı açılam | Bu kayıt Aranjé'nin daha"
+    },
+    {
+      "name": "21 no storage at all opens read-only, still playable @390x844",
+      "pass": true,
+      "detail": "storage_unavailable, playing=playing, controls={\"edit\":true,\"arrange\":true,\"undo\":true,\"redo\":true}, errors=0"
+    },
+    {
+      "name": "22 a refused probe shows the real song, read-only @390x844",
+      "pass": true,
+      "detail": "storage_unavailable, title=\"Ölçü İşlemleri Fikstürü\", actionBars 0/0"
+    },
+    {
+      "name": "23 the malformed-JSON ledger, in order @390x844",
+      "pass": true,
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787386479527\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+    },
+    {
+      "name": "24 the rescued-previous ledger, in order @390x844",
+      "pass": true,
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787386480193:true\",\"set:aranje.song:true\"]"
+    },
+    {
+      "name": "25 a failed repair leaves the file alone and editing closed @390x844",
+      "pass": true,
+      "detail": "storage_write_failed, title=\"Kurtarılan sürüm\", file untouched=true, actionBar=0"
+    },
+    {
+      "name": "21 no storage at all opens read-only, still playable @320x700",
+      "pass": true,
+      "detail": "storage_unavailable, playing=playing, controls={\"edit\":true,\"arrange\":true,\"undo\":true,\"redo\":true}, errors=0"
+    },
+    {
+      "name": "22 a refused probe shows the real song, read-only @320x700",
+      "pass": true,
+      "detail": "storage_unavailable, title=\"Ölçü İşlemleri Fikstürü\", actionBars 0/0"
+    },
+    {
+      "name": "23 the malformed-JSON ledger, in order @320x700",
+      "pass": true,
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787386489686\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+    },
+    {
+      "name": "24 the rescued-previous ledger, in order @320x700",
+      "pass": true,
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787386490366:true\",\"set:aranje.song:true\"]"
+    },
+    {
+      "name": "25 a failed repair leaves the file alone and editing closed @320x700",
+      "pass": true,
+      "detail": "storage_write_failed, title=\"Kurtarılan sürüm\", file untouched=true, actionBar=0"
     }
   ],
   "measurements": {
@@ -229,7 +279,95 @@
         "w": 44,
         "h": 44
       }
-    }
+    },
+    "ledger-malformed-390x844": [
+      {
+        "op": "set",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.corrupt.1787386479527",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.song",
+        "ok": true
+      }
+    ],
+    "ledger-rescue-390x844": [
+      {
+        "op": "set",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.corrupt.1787386480193",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.song",
+        "ok": true
+      }
+    ],
+    "ledger-malformed-320x700": [
+      {
+        "op": "set",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.corrupt.1787386489686",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.song",
+        "ok": true
+      }
+    ],
+    "ledger-rescue-320x700": [
+      {
+        "op": "set",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.corrupt.1787386490366",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.song",
+        "ok": true
+      }
+    ]
   },
   "failed": 0
 }

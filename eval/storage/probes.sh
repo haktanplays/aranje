@@ -6,9 +6,9 @@
 # reaches the branch it names looks exactly like a check that passes. Each
 # probe below breaks one guarantee and asserts a named test actually goes red.
 #
-# Thirteen run against the unit suite. Six need the real browser, because what
-# they guard — a reload, a quota error, a disabled control — has no meaning
-# without one.
+# Twenty run against the unit suite (thirteen from 2K-B, seven from 2K-B.1).
+# The rest need the real browser, because what they guard — a reload, a quota
+# error, a disabled control — has no meaning without one.
 set -u
 
 pass=0; fail=0
@@ -85,9 +85,9 @@ probe "5 a future version is treated as corrupt" \
 # 6 — nothing moves until the write has landed
 probe "6 the commit changes memory before storage" \
   src/lib/song/song-store.ts \
-  '    if (!saved.ok && saved.reason !== "unavailable") {' \
+  '    if (!saved.ok) {' \
   '    history = next;
-    if (!saved.ok && saved.reason !== "unavailable") {' \
+    if (!saved.ok) {' \
   "$U"
 
 # 7 — a quota error is not success
@@ -156,12 +156,80 @@ probe "12 recovery leaves an undo behind it" \
 # the wiring off disk.
 probe "13 a component reads storage directly" \
   src/components/workspace/RecoveryBanner.tsx \
-  '  const canDismiss = state !== "unsupported_version";' \
+  '  const canDismiss =
+    state !== "unsupported_version" && state !== "storage_unavailable";' \
   '  const canDismiss =
     state !== "unsupported_version" &&
+    state !== "storage_unavailable" &&
     typeof window !== "undefined" &&
     window.localStorage.getItem("aranje.song") !== null;' \
   "$U"
+
+# ----------------------------------------------------------------- 2K-B.1
+
+G="npx vitest run src/lib/song/storage-gate.test.ts src/lib/song/durable-save.test.ts src/lib/song/song-store.test.ts"
+
+# 14 — a session that cannot write does not edit; there is no memory mode
+probe "14 unavailable falls back to memory editing" \
+  src/lib/song/song-store.ts \
+  '      if (!canPersist) return false;' \
+  '' \
+  "$G"
+
+# 15 — nothing writes over the raw value until a copy of it exists
+probe "15 the quarantine clears the key before copying" \
+  src/lib/song/storage.ts \
+  '    storage.setItem(backupKey, raw);
+    if (clear) storage.removeItem(SONG_KEY);' \
+  '    if (clear) storage.removeItem(SONG_KEY);
+    storage.setItem(backupKey, raw);' \
+  "$G"
+
+# 16 — a rescue whose repair failed is not a success
+probe "16 a failed repair is reported as persisted" \
+  src/lib/song/storage.ts \
+  '      const repaired =
+        backupKey !== undefined &&
+        writeEnvelope(' \
+  '      const repaired =
+        true ||
+        writeEnvelope(' \
+  "$G"
+
+# 17 — the ledger counts removals, not just writes
+probe "17 the quarantine stops clearing the key" \
+  src/lib/song/storage.ts \
+  '    if (clear) storage.removeItem(SONG_KEY);' \
+  '' \
+  "$G"
+
+# 18 — a newer version's file is never written over
+probe "18 the future-version save guard is dropped" \
+  src/lib/song/storage.ts \
+  '  if (onDisk.kind === "unsupported_version") {
+    return { ok: false, reason: "unsupported_version" };
+  }' \
+  '' \
+  "$G"
+
+# 19 — a normal commit is one physical write
+probe "19 a commit writes the song twice" \
+  src/lib/song/song-store.ts \
+  '    const saved = storage === undefined ? saveSong(song) : saveSong(song, storage);' \
+  '    if (storage !== undefined) saveSong(song, storage);
+    const saved = storage === undefined ? saveSong(song) : saveSong(song, storage);' \
+  "$G"
+
+# 20 — "can I save here?" is a real attempt, not an assumption
+probe "20 the capability probe assumes yes" \
+  src/lib/song/storage.ts \
+  '  try {
+    storage.setItem(WRITE_CHECK_KEY, "1");
+  } catch {
+    return false;
+  }' \
+  '' \
+  "$G"
 
 echo
 echo "unit probes: $pass red, $fail vacuous"

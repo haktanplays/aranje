@@ -104,16 +104,22 @@ describe("the song store", () => {
     expect(store.getSnapshot().recovery).toBe("storage_write_failed");
   });
 
-  it("keeps working in memory when there is no storage at all", () => {
-    // A private window: `setItem` was never called and never failed, and the
-    // session said at load that nothing would be saved.
+  /*
+   * Changed deliberately in 2K-B.1. A session with no storage used to keep
+   * editing in memory — an hour of work that looks saved and dies with the
+   * tab. That is the exact loss the envelope exists to prevent, delivered by
+   * the app itself, so editing is closed instead: the song stays visible and
+   * playable, and every mutation is refused at the gate.
+   */
+  it("refuses to edit when there is no storage at all", () => {
     const store = createSongStore(
       { song: SAMPLE_SONG, outcome: "unavailable", canPersist: false },
       null,
     );
-    expect(store.commit(RENAMED, NOTE_EDIT)).toBe(true);
-    expect(store.getSnapshot().song.title).toBe("Yeni ad");
-    expect(store.getSnapshot().persisted).toBe(false);
+    expect(store.commit(RENAMED, NOTE_EDIT)).toBe(false);
+    expect(store.getSnapshot().song.title).toBe(SAMPLE_SONG.title);
+    expect(store.getSnapshot().canUndo).toBe(false);
+    expect(store.getSnapshot().canRedo).toBe(false);
   });
 
   it("carries the loader's message through", () => {

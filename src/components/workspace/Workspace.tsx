@@ -87,12 +87,10 @@ const EMPTY_SLOTS: ReadonlySet<number> = new Set<number>();
 export function Workspace() {
   const {
     song,
-    message,
     canUndo,
     canRedo,
     undoLabel,
     redoLabel,
-    persisted,
     recovery,
     recoveryMessage,
     canPersist,
@@ -758,7 +756,10 @@ export function Workspace() {
     track === undefined || canEdit
       ? null
       : !canPersist
-        ? "Kayıt korunuyor; bu oturumda düzenleme yapılamıyor."
+        ? // One sentence for every reason writing is closed — the banner above
+          // carries the specific one, and repeating it here would be two
+          // voices saying slightly different things about the same fact.
+          "Değişiklikler kaydedilemeyeceği için düzenleme kapalı."
         : `"${track.name}" bu ekrandan düzenlenemiyor. Şimdilik yalnız akordu olan telli track'ler düzenlenebiliyor.`;
 
   const toggleEdit = useCallback(() => {
@@ -1031,15 +1032,6 @@ export function Workspace() {
           message={recoveryMessage}
           onDismiss={dismissRecovery}
         />
-      ) : !persisted && message ? (
-        /* Storage that was never there: said once, at the top, and not a
-           recovery — nothing went wrong with a file that does not exist. */
-        <p
-          role="status"
-          className="border-reject/50 bg-raised border-b px-3 py-2 text-xs"
-        >
-          {message}
-        </p>
       ) : null}
 
       <ViewSwitch

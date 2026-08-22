@@ -170,14 +170,21 @@ describe("12. a broken current slot is rescued by previous", () => {
     expect(decision.revision).toBe(7);
   });
 
-  it("does not report success when the repair itself is refused", () => {
+  it("closes editing when nothing can be written at all", () => {
+    // Every write refused: the capability probe fails, so the session is
+    // read-only from the start — and it neither quarantines nor repairs,
+    // because a rescue whose results cannot be kept is not a rescue.
     const storage = countingStorage({ [SONG_KEY]: broken() });
+    const raw = broken();
     storage.refuse = true;
     const result = loadSong(storage, FROZEN);
 
     expect(result.song.title).toBe("Kurtarılan");
-    expect(result.recovery).toBe("storage_write_failed");
+    expect(result.recovery).toBe("storage_unavailable");
     expect(result.canPersist).toBe(false);
+    // The broken envelope is untouched, waiting for a session that can help.
+    expect(storage.map.get(SONG_KEY)).toBe(raw);
+    expect(quarantined(storage)).toEqual([]);
   });
 
   it("gives a second rescue its own key rather than overwriting the first", () => {
@@ -248,6 +255,18 @@ describe("14. a file from a newer version is left alone", () => {
     expect(store.getSnapshot().canUndo).toBe(false);
     expect(store.getSnapshot().recovery).toBe("unsupported_version");
     expect(store.getSnapshot().canPersist).toBe(false);
+
+    /*
+     * The refusal lives in `saveSong` itself, not only in the store's gate.
+     * The gate closes editing anyway, so without this direct call a dropped
+     * `saveSong` guard would be invisible — masked by the very layer that is
+     * supposed to be its second line of defence, not its first.
+     */
+    const direct = saveSong(titled(base(), "Yeni"), storage);
+    expect(direct.ok).toBe(false);
+    if (direct.ok) return;
+    expect(direct.reason).toBe("unsupported_version");
+    expect(storage.map.get(SONG_KEY)).toBe(raw);
   });
 });
 

@@ -4,13 +4,29 @@
     "bars": 32,
     "resolution": 32
   },
-  "rawSongBytes": 798516,
-  "envelopeCurrentOnlyBytes": 798592,
-  "envelopeCurrentAndPreviousBytes": 1597104,
+  "rawSong": {
+    "utf8Bytes": 798516,
+    "codeUnits": 798504,
+    "utf16ApproxBytes": 1597008
+  },
+  "envelopeCurrentOnly": {
+    "utf8Bytes": 798592,
+    "codeUnits": 798580,
+    "utf16ApproxBytes": 1597160
+  },
+  "envelopeCurrentAndPrevious": {
+    "utf8Bytes": 1597104,
+    "codeUnits": 1597080,
+    "utf16ApproxBytes": 3194160
+  },
   "growthOverLegacy": {
     "currentOnly": 1,
     "withPrevious": 2
   },
-  "worstCaseFileBytes": 1597104,
+  "worstCaseFile": {
+    "utf8Bytes": 1597104,
+    "codeUnits": 1597080,
+    "utf16ApproxBytes": 3194160
+  },
   "worstCaseFileMiB": 1.523
 }

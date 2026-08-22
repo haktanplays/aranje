@@ -128,8 +128,8 @@ export function createSongStore(
   const readSnapshot = (): SongStoreSnapshot => ({
     song: currentSong(history),
     ...(initial.message === undefined ? {} : { message: initial.message }),
-    canUndo: historyCanUndo(history),
-    canRedo: historyCanRedo(history),
+    canUndo: canPersist && historyCanUndo(history),
+    canRedo: canPersist && historyCanRedo(history),
     undoLabel: undoLabel(undoAction(history)),
     redoLabel: redoLabel(redoAction(history)),
     undoDepth: history.cursor,
@@ -162,33 +162,41 @@ export function createSongStore(
    * things on screen are real. Now the edit simply does not happen, the
    * banner says why, and what is on screen is what is on disk.
    *
-   * The exception is storage that is not there at all — a private window, an
-   * embedded view. `setItem` was never called and never failed; the session
-   * runs in memory and said as much when it opened. Turning that into a
-   * read-only app would take editing away from someone whose browser merely
-   * declines to remember things.
+   * There is no memory-only exception any more (2K-B.1). A session whose
+   * storage was never there used to keep editing in memory; that is an hour
+   * of work that looks saved and dies with the tab — the exact loss the
+   * envelope exists to prevent, delivered by the app itself. `canPersist`
+   * closes editing before this function is ever reached; the check here is
+   * the belt to that suspender, for storage that disappears mid-session.
    */
   const write = (next: EditHistory): boolean => {
     const song = currentSong(next);
     const saved = storage === undefined ? saveSong(song) : saveSong(song, storage);
 
-    if (!saved.ok && saved.reason !== "unavailable") {
+    if (!saved.ok) {
       /*
        * Nothing advances: not the song, not the cursor, not the redo branch.
        * The publish is only so the banner can appear — it carries no new song.
+       *
+       * A `write_failed` keeps `canPersist` true, because a full disk can be
+       * emptied and the next attempt may land. The other two do not come
+       * back on their own: a vanished storage and a newer version's file
+       * close the session's editing until a reload finds the world changed.
        */
       persisted = false;
       recovery =
         saved.reason === "unsupported_version"
           ? "unsupported_version"
-          : "storage_write_failed";
-      if (saved.reason === "unsupported_version") canPersist = false;
+          : saved.reason === "unavailable"
+            ? "storage_unavailable"
+            : "storage_write_failed";
+      if (saved.reason !== "write_failed") canPersist = false;
       publish();
       return false;
     }
 
-    persisted = saved.ok;
-    if (saved.ok && recovery === "storage_write_failed") recovery = null;
+    persisted = true;
+    if (recovery === "storage_write_failed") recovery = null;
     history = next;
     publish();
     return true;
@@ -203,6 +211,13 @@ export function createSongStore(
 
     commit(next, action) {
       /*
+       * A session that cannot persist does not edit (2K-B.1). This is the
+       * same gate the UI disables its controls behind; here it is load-
+       * bearing rather than cosmetic, so a call that slips past a disabled
+       * button still changes nothing.
+       */
+      if (!canPersist) return false;
+      /*
        * The schema, before anything else. A song that cannot be parsed cannot
        * be stored, and one that cannot be stored has no business being a step
        * someone can come back to.
@@ -213,12 +228,12 @@ export function createSongStore(
     },
 
     undo() {
-      if (!historyCanUndo(history)) return;
+      if (!canPersist || !historyCanUndo(history)) return;
       write(historyUndo(history));
     },
 
     redo() {
-      if (!historyCanRedo(history)) return;
+      if (!canPersist || !historyCanRedo(history)) return;
       write(historyRedo(history));
     },
 
@@ -229,6 +244,15 @@ export function createSongStore(
 
     dismissRecovery() {
       if (recovery === null) return;
+      /*
+       * Two states cannot be put down, because each is the standing
+       * explanation for controls that are disabled underneath it. A reader
+       * looking at an app that refuses to edit and no longer says why has
+       * been given a puzzle, not a notification.
+       */
+      if (recovery === "unsupported_version" || recovery === "storage_unavailable") {
+        return;
+      }
       recovery = null;
       // The banner goes; the song, the history and storage are untouched.
       publish();
