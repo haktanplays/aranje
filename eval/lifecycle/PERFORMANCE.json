@@ -1,0 +1,95 @@
+{
+  "method": {
+    "rounds": 30,
+    "warmupRounds": 5,
+    "statistic": "median / p95 / max over timed rounds after warm-up"
+  },
+  "honesty": [
+    "Bu bölümdeki sayılar masaüstü Node ölçümüdür; fiziksel telefon kanıtı değildir.",
+    "Android/iOS gerçek cihaz gecikmesi release gate'inde açık kalır.",
+    "Duplicate ölçümleri limitin bir altındaki en ağır girdide alınmıştır: tam limitte işlem haklı olarak reddedilir ve ölçülecek bir iş kalmaz."
+  ],
+  "node": {
+    "version": "v22.22.2",
+    "subjects": {
+      "worstCase": {
+        "utf8Bytes": 799636,
+        "codeUnits": 799624,
+        "utf16ApproxBytes": 1599248
+      },
+      "sectionRoom": {
+        "sections": 3,
+        "bars": 24,
+        "tracks": 8
+      },
+      "trackRoom": {
+        "sections": 4,
+        "bars": 32,
+        "tracks": 7
+      }
+    },
+    "templateMaterialization": {
+      "empty": {
+        "rounds": 30,
+        "medianMs": 0.004,
+        "p95Ms": 0.033,
+        "maxMs": 0.138
+      },
+      "rock_band": {
+        "rounds": 30,
+        "medianMs": 0.006,
+        "p95Ms": 0.011,
+        "maxMs": 0.046
+      },
+      "acoustic": {
+        "rounds": 30,
+        "medianMs": 0.004,
+        "p95Ms": 0.004,
+        "maxMs": 0.005
+      }
+    },
+    "sectionDuplicate": {
+      "rounds": 30,
+      "medianMs": 230.595,
+      "p95Ms": 280.14,
+      "maxMs": 282.684
+    },
+    "trackDuplicate": {
+      "rounds": 30,
+      "medianMs": 248.278,
+      "p95Ms": 277.993,
+      "maxMs": 290.563
+    },
+    "validatorPipeline": {
+      "rounds": 30,
+      "medianMs": 201.237,
+      "p95Ms": 243.606,
+      "maxMs": 267.03
+    },
+    "historyAtLimit": {
+      "snapshots": 51,
+      "jsonEquivalentUtf8Bytes": 40780992,
+      "jsonEquivalentMiB": 38.89,
+      "heap": {
+        "deltaBytes": 71816,
+        "deltaMiB": 0.07,
+        "note": "Node heap retained by the 50 edit snapshots on top of an already-loaded baseline song (single-bar edits, structural sharing); a controlled measurement, not a phone number."
+      }
+    }
+  },
+  "chromium": {
+    "honesty": [
+      "Bu bölümdeki sayılar masaüstü Chromium ölçümüdür; fiziksel telefon kanıtı değildir."
+    ],
+    "lifecycleCommitEnvelopeSetItem": {
+      "codeUnits": 1399758,
+      "write": {
+        "rounds": 30,
+        "medianMs": 15.6,
+        "p95Ms": 17.4,
+        "maxMs": 17.7
+      },
+      "songKeyUntouched": true
+    }
+  }
+}

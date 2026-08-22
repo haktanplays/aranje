@@ -143,7 +143,7 @@
     {
       "name": "@390x844 28 Silinen döngü hedefi: loop kapanır, playhead geçerli",
       "pass": true,
-      "detail": "loop=null ticks=0/6144"
+      "detail": "loop=null pressed=false ticks=0/6144"
     },
     {
       "name": "@390x844 29 canPersist kapalı: oluşturma kapalı, yedek çalışır",
@@ -313,7 +313,7 @@
     {
       "name": "@320x700 28 Silinen döngü hedefi: loop kapanır, playhead geçerli",
       "pass": true,
-      "detail": "loop=null ticks=0/6144"
+      "detail": "loop=null pressed=false ticks=0/6144"
     },
     {
       "name": "@320x700 29 canPersist kapalı: oluşturma kapalı, yedek çalışır",

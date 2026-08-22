@@ -836,15 +836,24 @@ async function run(browser, size, label) {
       await page.locator("[data-section-confirm-delete]").click();
       await page.waitForTimeout(400);
       const after = await debug(page);
+      /*
+       * The engine clears the transport loop for an unknown section on its
+       * own, so the *state* is asserted too: a loop button still pressed for
+       * a section that no longer exists would be the UI lying.
+       */
+      const buttonPressed = await page
+        .locator("[aria-label='Bölüm döngüsü']")
+        .getAttribute("aria-pressed");
       record(
         at("28 Silinen döngü hedefi: loop kapanır, playhead geçerli"),
         loopedOn &&
           (after.loop === null || after.loop.on === false) &&
+          buttonPressed === "false" &&
           after.ticks !== null &&
           after.totalTicks !== null &&
           after.ticks >= 0 &&
           after.ticks <= after.totalTicks,
-        `loop=${JSON.stringify(after.loop)} ticks=${after.ticks}/${after.totalTicks}`,
+        `loop=${JSON.stringify(after.loop)} pressed=${buttonPressed} ticks=${after.ticks}/${after.totalTicks}`,
       );
       await closeSheet(page);
     });

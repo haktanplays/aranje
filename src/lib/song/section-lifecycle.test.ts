@@ -3,6 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { worstCasePlayableSong } from "../../../eval/shared/worst-case-song";
 import { songLimits } from "@/lib/limits";
 import { sameSong } from "@/lib/song/edit-history";
 import { survivorIndex } from "@/lib/song/lifecycle-guard";
@@ -269,6 +270,22 @@ describe("47. rename, reorder, tempo, delete", () => {
       sectionId: result.song.sections[0]!.id,
     });
     expect(!last.ok && last.error.code).toBe("last_section_undeletable");
+  });
+
+  it("warnings ride along with a success and never block (2L-B §10)", () => {
+    // The heaviest supported song carries fret-jump warnings; a rename on it
+    // must succeed and hand the warnings over rather than refusing.
+    const warned = worstCasePlayableSong();
+    const result = applySectionCommand(warned, {
+      kind: "rename_section",
+      sectionId: warned.sections[0]!.id,
+      name: "Uyarılı Bölüm",
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.warnings.length).toBeGreaterThan(0);
+      expect(result.song.sections[0]?.name).toBe("Uyarılı Bölüm");
+    }
   });
 
   it("chooses the survivor deterministically: same index, else previous", () => {
