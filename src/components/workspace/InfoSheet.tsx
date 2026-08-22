@@ -14,6 +14,8 @@ export function InfoSheet({
   onProjectBackup,
   projectBackupError,
   onOpenProjectFile,
+  onNewSong,
+  onSongInfo,
 }: {
   open: boolean;
   onClose: () => void;
@@ -23,6 +25,10 @@ export function InfoSheet({
   projectBackupError: string | null;
   /** Hands over to the project-file sheet, where a backup can be opened. */
   onOpenProjectFile: () => void;
+  /** Hands over to the new-song sheet (spec 13.17). */
+  onNewSong: () => void;
+  /** Hands over to the song-info sheet (spec 13.17). */
+  onSongInfo: () => void;
 }) {
   if (!open) return null;
 
@@ -45,7 +51,25 @@ export function InfoSheet({
             something done a few times a project, not something worth a
             permanent slice of a phone screen (spec 13.15). */}
         <section className="border-line mb-4 border-b pb-4">
-          <h3 className="text-muted mb-2 text-xs">Proje dosyası</h3>
+          <h3 className="text-muted mb-2 text-xs">Proje</h3>
+          <div className="mb-2 flex gap-2">
+            <button
+              type="button"
+              data-info-new-song
+              onClick={onNewSong}
+              className="border-line min-h-11 flex-1 rounded-lg border text-sm"
+            >
+              Yeni şarkı
+            </button>
+            <button
+              type="button"
+              data-info-song-info
+              onClick={onSongInfo}
+              className="border-line min-h-11 flex-1 rounded-lg border text-sm"
+            >
+              Şarkı bilgileri
+            </button>
+          </div>
           <div className="flex gap-2">
             <button
               type="button"

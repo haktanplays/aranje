@@ -17,7 +17,17 @@
  */
 import { useCallback, useState } from "react";
 
-export type WorkspaceSheet = "track" | "section" | "practice" | "info" | "project";
+export type WorkspaceSheet =
+  | "track"
+  | "section"
+  | "practice"
+  | "info"
+  | "project"
+  /* The lifecycle sheets (2L-B): same modal family, same single owner. */
+  | "newSong"
+  | "songInfo"
+  | "sectionManage"
+  | "trackManage";
 
 export type WorkspaceOverlayState = {
   readonly sheet: WorkspaceSheet | null;

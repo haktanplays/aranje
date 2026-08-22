@@ -44,12 +44,15 @@ export function TrackSheet({
   open,
   onSelect,
   onClose,
+  onManage,
 }: {
   tracks: readonly Track[];
   selectedTrackId: string;
   open: boolean;
   onSelect: (trackId: string) => void;
   onClose: () => void;
+  /** Hands over to the track manager (spec 13.17, 2L-B). */
+  onManage: () => void;
 }) {
   const track =
     tracks.find((entry) => entry.id === selectedTrackId) ?? tracks[0];
@@ -112,6 +115,15 @@ export function TrackSheet({
         ) : null}
         <Row label="Ses" value={`${track.volumeDb} dB`} />
       </dl>
+      <button
+        type="button"
+        data-track-manage
+        onClick={onManage}
+        className="border-line mt-3 w-full rounded-lg border text-sm"
+        style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+      >
+        Track&apos;leri düzenle
+      </button>
     </Sheet>
   );
 }

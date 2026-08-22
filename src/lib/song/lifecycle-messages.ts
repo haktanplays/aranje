@@ -55,6 +55,10 @@ export const LIFECYCLE_MESSAGES: Readonly<Record<LifecycleErrorCode, string>> =
 export const NEW_SONG_WARNING =
   "Mevcut şarkının yerine yeni bir şarkı oluşturulacak.";
 
+/** Every lifecycle apply while writing is closed (spec 13.14). */
+export const LIFECYCLE_BLOCKED_MESSAGE =
+  "Değişiklikler kaydedilemeyeceği için bu işlem şu an kapalı.";
+
 /** Names the section and says how many bars go with it (spec 2L-B §6). */
 export function sectionDeleteConfirmation(section: Section): string {
   return `"${section.name}" bölümü ve içindeki ${section.bars.length} ölçü silinecek.`;

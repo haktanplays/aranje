@@ -46,6 +46,7 @@ import { useSettings } from "@/lib/settings/use-settings";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { useEditShortcuts } from "@/lib/ui/use-edit-shortcuts";
+import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
 import { useSelectionSession } from "@/lib/workspace/use-selection-session";
 import { useWorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
@@ -253,6 +254,38 @@ export function Workspace() {
     copilot.open();
   }, [copilot, noteEditing, pause]);
 
+  /* ------------------------------------------------------------ lifecycle */
+
+  /**
+   * The structural ground (2L-B §6/§7): pause, then selections, ghosts, staged
+   * commands, clipboards and the bar focus — everything measured against a
+   * shape about to change. Loop and playhead are not touched: the engine
+   * re-derives both from the committed song, on undo/redo's own path.
+   */
+  const prepareForStructuralApply = useCallback(() => {
+    pause();
+    resetEditSurfaces();
+    session.clearClipboards();
+    navigation.dropBarFocus();
+  }, [navigation, pause, resetEditSurfaces, session]);
+
+  const focusSection = useCallback(
+    (sectionId: string) => navigation.setActiveBarKey(`${sectionId}:0`),
+    [navigation],
+  );
+
+  const lifecycle = useLifecycle({
+    song,
+    canPersist,
+    commit,
+    onBeforeNewSong: prepareForProjectApply,
+    onBeforeStructural: prepareForStructuralApply,
+    activeSectionId: navigation.activeSectionId,
+    selectedTrackId: track?.id ?? null,
+    setActiveSection: focusSection,
+    selectTrack,
+  });
+
   /* -------------------------------------------------------------- models */
 
   const arrangement = useMemo(() => buildArrangementModel(song), [song]);
@@ -405,6 +438,7 @@ export function Workspace() {
         previewOpen={previewOpen}
         arrangeOpen={arrangeOpen}
         project={project}
+        lifecycle={lifecycle}
         canPersist={canPersist}
         songBpm={state.songBpm}
         practicePercent={state.practicePercent}

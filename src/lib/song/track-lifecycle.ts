@@ -22,7 +22,7 @@
  * required exactly when the registry says the instrument has one.
  */
 import { songLimits } from "@/lib/limits";
-import { MAX_CAPO } from "@/lib/music/fretboard";
+import { MAX_CAPO, TUNING_PRESETS, type TuningPreset } from "@/lib/music/fretboard";
 import { PITCH_PATTERN } from "@/lib/music/pitch";
 import { getInstrument, isCorePreset } from "@/lib/instruments/registry";
 import { guardCandidate } from "@/lib/song/lifecycle-guard";
@@ -73,6 +73,29 @@ export type TrackCommand =
 /** Does the registry say this instrument is played on a fretboard? */
 export function isFrettedInstrument(instrumentId: string): boolean {
   return getInstrument(instrumentId)?.defaultTuningPresetId !== undefined;
+}
+
+/**
+ * The tuning presets a track form may offer for an instrument (2L-B §7).
+ *
+ * Derived, not listed: every preset with the same string count as the
+ * instrument's registry default, default first. A guitar is offered E
+ * Standard and Drop D; a bass only its own standard; a fretboard-less
+ * instrument gets an empty list, which is the form's cue to show no tuning
+ * control at all.
+ */
+export function tuningOptionsFor(instrumentId: string): readonly TuningPreset[] {
+  const defaultId = getInstrument(instrumentId)?.defaultTuningPresetId;
+  const fallback = defaultId ? TUNING_PRESETS[defaultId] : undefined;
+  if (!fallback) return [];
+  return [
+    fallback,
+    ...Object.values(TUNING_PRESETS).filter(
+      (preset) =>
+        preset.id !== fallback.id &&
+        preset.tuning.length === fallback.tuning.length,
+    ),
+  ];
 }
 
 const trackIndex = (song: Song, trackId: string): number =>

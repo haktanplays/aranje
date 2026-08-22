@@ -224,9 +224,10 @@ export function applySectionCommand(
       const index = sectionIndex(song, command.sectionId);
       if (index < 0) return { ok: false, error: { code: "section_not_found" } };
       const sections = song.sections.map((section, at) => {
-        if (at !== index) return section;
-        const { bpmOverride: _cleared, ...rest } = section;
-        return rest;
+        if (at !== index || section.bpmOverride === undefined) return section;
+        const cleared = { ...section };
+        delete cleared.bpmOverride;
+        return cleared;
       });
       return guardCandidate(withSections(song, sections));
     }

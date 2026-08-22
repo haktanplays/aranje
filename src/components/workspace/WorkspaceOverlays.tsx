@@ -15,11 +15,15 @@ import { useState } from "react";
 import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
 import { FretSheet } from "@/components/workspace/FretSheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
+import { NewSongSheet } from "@/components/workspace/NewSongSheet";
 import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
 import { ProjectFileSheet } from "@/components/workspace/ProjectFileSheet";
+import { SectionManagerSheet } from "@/components/workspace/SectionManagerSheet";
 import { SectionSheet } from "@/components/workspace/SectionSheet";
 import { Sheet } from "@/components/workspace/Sheet";
+import { SongInfoSheet } from "@/components/workspace/SongInfoSheet";
+import { TrackManagerSheet } from "@/components/workspace/TrackManagerSheet";
 import { TrackSheet } from "@/components/workspace/TrackSheet";
 import { targetsFor } from "@/lib/copilot/ui-options";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
@@ -27,6 +31,7 @@ import type { CoArrangerHandle } from "@/lib/copilot/use-co-arranger";
 import type { ProjectFileHandle } from "@/lib/project/use-project-file";
 import type { Song } from "@/lib/song/schema";
 import type { SectionRun } from "@/lib/tab/timeline";
+import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { WorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import type { WorkspaceOverlayState } from "@/lib/workspace/use-workspace-overlays";
@@ -42,6 +47,7 @@ export function WorkspaceOverlays({
   previewOpen,
   arrangeOpen,
   project,
+  lifecycle,
   canPersist,
   songBpm,
   practicePercent,
@@ -58,6 +64,7 @@ export function WorkspaceOverlays({
   previewOpen: boolean;
   arrangeOpen: boolean;
   project: ProjectFileHandle;
+  lifecycle: LifecycleHandle;
   canPersist: boolean;
   songBpm: number;
   practicePercent: number;
@@ -108,6 +115,49 @@ export function WorkspaceOverlays({
           onSelect={onSelectTrack}
           open={overlays.isOpen("track")}
           onClose={overlays.close}
+          onManage={() => overlays.open("trackManage")}
+        />
+      ) : null}
+
+      {/*
+        The lifecycle sheets (2L-B). Mounted only while open, so each opening
+        starts from a fresh draft — the draft is the sheet's own state, and a
+        sheet that remembered a half-typed form from last week would be
+        presenting stale intentions as current ones.
+      */}
+      {overlays.isOpen("newSong") ? (
+        <NewSongSheet
+          open
+          onClose={overlays.close}
+          lifecycle={lifecycle}
+          onBackup={project.downloadBackup}
+          backupError={project.exportError}
+        />
+      ) : null}
+      {overlays.isOpen("songInfo") ? (
+        <SongInfoSheet
+          open
+          onClose={overlays.close}
+          song={song}
+          lifecycle={lifecycle}
+        />
+      ) : null}
+      {overlays.isOpen("sectionManage") ? (
+        <SectionManagerSheet
+          open
+          onClose={overlays.close}
+          song={song}
+          activeSectionId={navigation.activeSectionId}
+          lifecycle={lifecycle}
+        />
+      ) : null}
+      {overlays.isOpen("trackManage") ? (
+        <TrackManagerSheet
+          open
+          onClose={overlays.close}
+          song={song}
+          selectedTrackId={track?.id ?? null}
+          lifecycle={lifecycle}
         />
       ) : null}
 
@@ -195,6 +245,7 @@ export function WorkspaceOverlays({
         open={overlays.isOpen("section")}
         onJump={navigation.jumpToSection}
         onClose={overlays.close}
+        onManage={() => overlays.open("sectionManage")}
       />
 
       <ProjectFileSheet
@@ -210,6 +261,8 @@ export function WorkspaceOverlays({
         onProjectBackup={project.downloadBackup}
         projectBackupError={project.exportError}
         onOpenProjectFile={() => overlays.open("project")}
+        onNewSong={() => overlays.open("newSong")}
+        onSongInfo={() => overlays.open("songInfo")}
       />
     </>
   );

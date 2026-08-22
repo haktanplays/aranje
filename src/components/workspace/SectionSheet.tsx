@@ -30,12 +30,15 @@ export function SectionSheet({
   open,
   onJump,
   onClose,
+  onManage,
 }: {
   runs: readonly SectionRun[];
   activeSectionId: string | null;
   open: boolean;
   onJump: (sectionId: string) => void;
   onClose: () => void;
+  /** Hands over to the section manager (spec 13.17, 2L-B). */
+  onManage: () => void;
 }) {
   if (!open) return null;
 
@@ -76,6 +79,15 @@ export function SectionSheet({
           );
         })}
       </div>
+      <button
+        type="button"
+        data-section-manage
+        onClick={onManage}
+        className="border-line mt-3 w-full rounded-lg border text-sm"
+        style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+      >
+        Bölümleri düzenle
+      </button>
     </Sheet>
   );
 }
