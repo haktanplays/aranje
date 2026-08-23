@@ -37,13 +37,17 @@ function IconButton({
   active,
   disabled,
   children,
+  ...rest
 }: {
   label: string;
   onClick: () => void;
   active?: boolean;
   disabled?: boolean;
   children: React.ReactNode;
-}) {
+} & Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  "onClick" | "disabled" | "children"
+>) {
   return (
     <button
       type="button"
@@ -51,6 +55,7 @@ function IconButton({
       disabled={disabled}
       aria-label={label}
       aria-pressed={active}
+      {...rest}
       className={`flex min-h-11 min-w-11 items-center justify-center rounded-lg border text-sm disabled:opacity-40 ${
         active
           ? "border-bronze/60 bg-raised text-bronze"
@@ -69,6 +74,8 @@ export function TransportBar({
   onRewind,
   onToggleLoop,
   onToggleMetronome,
+  onOpenMixer,
+  auditioning,
   onOpenPracticeRate,
 }: {
   state: PlaybackState;
@@ -77,6 +84,10 @@ export function TransportBar({
   onRewind: () => void;
   onToggleLoop: () => void;
   onToggleMetronome: () => void;
+  /** Opens the mixer sheet (spec 13.18). */
+  onOpenMixer: () => void;
+  /** Any track silenced or soloed this session, so the control says so. */
+  auditioning: boolean;
   onOpenPracticeRate: () => void;
 }) {
   const busy = BUSY.includes(state.status);
@@ -122,6 +133,25 @@ export function TransportBar({
           disabled={busy || runs.length === 0}
         >
           <span aria-hidden>&#8635;</span>
+        </IconButton>
+
+        <IconButton
+          /*
+           * The mixer is a listening tool, so it sits with the listening
+           * controls. It stays lit while anything is silenced or soloed:
+           * a track muted ten minutes ago is easy to forget, and the
+           * transport is where you would notice something is missing.
+           */
+          label={
+            auditioning
+              ? "Mikser: bir track susturulmuş veya tek dinleniyor"
+              : "Mikser"
+          }
+          onClick={onOpenMixer}
+          active={auditioning}
+          data-open-mixer
+        >
+          <span aria-hidden>&#9707;</span>
         </IconButton>
 
         <IconButton

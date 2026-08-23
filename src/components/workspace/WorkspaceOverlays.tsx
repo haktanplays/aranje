@@ -15,6 +15,7 @@ import { useState } from "react";
 import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
 import { FretSheet } from "@/components/workspace/FretSheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
+import { MixerSheet } from "@/components/workspace/MixerSheet";
 import { NewSongSheet } from "@/components/workspace/NewSongSheet";
 import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
@@ -32,6 +33,7 @@ import type { ProjectFileHandle } from "@/lib/project/use-project-file";
 import type { Song } from "@/lib/song/schema";
 import type { SectionRun } from "@/lib/tab/timeline";
 import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
+import type { MixerHandle } from "@/lib/workspace/use-mixer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { WorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import type { WorkspaceOverlayState } from "@/lib/workspace/use-workspace-overlays";
@@ -48,6 +50,7 @@ export function WorkspaceOverlays({
   arrangeOpen,
   project,
   lifecycle,
+  mixer,
   canPersist,
   songBpm,
   practicePercent,
@@ -65,6 +68,7 @@ export function WorkspaceOverlays({
   arrangeOpen: boolean;
   project: ProjectFileHandle;
   lifecycle: LifecycleHandle;
+  mixer: MixerHandle;
   canPersist: boolean;
   songBpm: number;
   practicePercent: number;
@@ -149,6 +153,14 @@ export function WorkspaceOverlays({
           song={song}
           activeSectionId={navigation.activeSectionId}
           lifecycle={lifecycle}
+        />
+      ) : null}
+      {overlays.isOpen("mixer") ? (
+        <MixerSheet
+          open
+          onClose={overlays.close}
+          mixer={mixer}
+          canPersist={canPersist}
         />
       ) : null}
       {overlays.isOpen("trackManage") ? (

@@ -27,12 +27,12 @@ import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
 import { SectionNavigator } from "@/components/workspace/SectionNavigator";
 import { SelectionActionArea } from "@/components/workspace/SelectionActionArea";
 import { SelectionBar } from "@/components/workspace/SelectionBar";
+import { TrackControl } from "@/components/workspace/TrackControl";
 import { TransportBar } from "@/components/workspace/TransportBar";
 import { ViewSwitch } from "@/components/workspace/ViewSwitch";
 import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
 import { WorkspaceOverlays } from "@/components/workspace/WorkspaceOverlays";
 import { WorkspaceSurface } from "@/components/workspace/WorkspaceSurface";
-import { trackLine } from "@/components/workspace/TrackSheet";
 import { buildArrangementModel } from "@/lib/arrangement/model";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
@@ -40,13 +40,13 @@ import { availableSkills } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { formatTimeSignature } from "@/lib/music/timing";
 import { useProjectFile } from "@/lib/project/use-project-file";
-import { isEditableTrack } from "@/lib/song/edit";
 import { useSong } from "@/lib/song/use-song";
 import { useSettings } from "@/lib/settings/use-settings";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
-import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { useEditShortcuts } from "@/lib/ui/use-edit-shortcuts";
+import { editGate } from "@/lib/workspace/edit-gate";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
+import { useMixer } from "@/lib/workspace/use-mixer";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
 import { useSelectionSession } from "@/lib/workspace/use-selection-session";
 import { useWorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
@@ -111,6 +111,19 @@ export function Workspace() {
 
   const overlays = useWorkspaceOverlays();
 
+  /* ---------------------------------------------------------------- mixer */
+
+  const mixerAudio = useMemo(
+    () => ({
+      previewMix: controller.setTrackMix.bind(controller),
+      clearPreview: controller.clearTrackMixPreview.bind(controller),
+      setAudibility: controller.setTrackAudibility.bind(controller),
+    }),
+    [controller],
+  );
+  const mixer = useMixer({ song, canPersist, commit, audio: mixerAudio });
+
+
   const copilot = useCoArranger(song, {
     onApply: (candidate, skill) => commit(candidate, { kind: "copilot_apply", skill }),
     onBeforePreviewPlay: pause,
@@ -140,6 +153,9 @@ export function Workspace() {
 
   const resetSelections = session.resetAll;
   const resetNoteEditing = noteEditing.reset;
+  /* Stable member, like `closeCopilot`: the handle itself is rebuilt each
+     render, and depending on it would rebuild every callback that grounds. */
+  const clearAudition = mixer.clearAudition;
 
   /**
    * Put every editing surface down before the song moves under it.
@@ -201,7 +217,9 @@ export function Workspace() {
     session.clearClipboards();
     noteEditing.exitEditMode();
     navigation.resetForNewSong();
-  }, [controller, navigation, noteEditing, resetEditSurfaces, session]);
+    // Different music: nothing carried over about who was being listened to.
+    clearAudition();
+  }, [clearAudition, controller, navigation, noteEditing, resetEditSurfaces, session]);
 
   const project = useProjectFile({
     song,
@@ -219,22 +237,11 @@ export function Workspace() {
     controller.setLoopSection(state.loopSectionId ? null : current);
   }, [controller, navigation.activeSectionId, runs, state.loopSectionId]);
 
-  /*
-   * Editing and a candidate never share the screen: a candidate is measured
-   * against the song as it was when it was asked for. `canPersist` is the
-   * harder gate (spec 13.14): controls are disabled rather than left to fail
-   * at the end.
-   */
-  const canEdit =
-    track !== undefined && isEditableTrack(track) && !previewOpen && canPersist;
-  const editDisabledReason =
-    track === undefined || canEdit
-      ? null
-      : !canPersist
-        ? // One sentence for every reason writing is closed — the banner above
-          // carries the specific one.
-          "Değişiklikler kaydedilemeyeceği için düzenleme kapalı."
-        : `"${track.name}" bu ekrandan düzenlenemiyor. Şimdilik yalnız akordu olan telli track'ler düzenlenebiliyor.`;
+  const { canEdit, editDisabledReason } = editGate({
+    track,
+    previewOpen,
+    canPersist,
+  });
 
   /** A track change costs the edit session; composed here, owned there. */
   const selectTrack = useCallback(
@@ -374,22 +381,8 @@ export function Workspace() {
 
       <SelectionActionArea session={session} />
 
-      {/* The tab's one-line track control (2J-P): the full track list lives
-          in the sheet it opens, behind the same select path. */}
-      {track && navigation.view === "tab" ? (
-        <button
-          type="button"
-          data-track-control
-          onClick={() => overlays.open("track")}
-          aria-label={`Aktif track: ${trackLine(track)}. Track değiştir`}
-          className="border-line flex items-center justify-between gap-2 border-t px-3 text-left"
-          style={{ minHeight: MIN_TOUCH_TARGET_PX }}
-        >
-          <span className="text-bronze truncate text-sm">{trackLine(track)}</span>
-          <span className="text-muted shrink-0 text-xs" aria-hidden>
-            &#9662;
-          </span>
-        </button>
+      {navigation.view === "tab" ? (
+        <TrackControl track={track} onOpen={() => overlays.open("track")} />
       ) : null}
 
       {noteEditing.editing ? (
@@ -424,6 +417,11 @@ export function Workspace() {
         onRewind={() => controller.rewind()}
         onToggleLoop={toggleLoop}
         onToggleMetronome={() => controller.setMetronome(!state.metronome)}
+        onOpenMixer={() => {
+          mixer.begin();
+          overlays.open("mixer");
+        }}
+        auditioning={mixer.auditioning}
         onOpenPracticeRate={() => overlays.open("practice")}
       />
 
@@ -439,6 +437,7 @@ export function Workspace() {
         arrangeOpen={arrangeOpen}
         project={project}
         lifecycle={lifecycle}
+        mixer={mixer}
         canPersist={canPersist}
         songBpm={state.songBpm}
         practicePercent={state.practicePercent}

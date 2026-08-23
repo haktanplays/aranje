@@ -121,6 +121,30 @@ describe("39. one owner per state", () => {
     }
   });
 
+  it("keeps the mixer out of the arrangement and off the engine (2L-C)", () => {
+    /*
+     * The arrangement draws bars; it has no business knowing how loud a
+     * track is, and a mixer import there would be the first line of a second
+     * mixing surface. The sheet is the other half of the same rule: it may
+     * read a typed view-model and call back, and may not reach the audio
+     * graph, the store, storage or the history itself.
+     */
+    for (const specifier of valueImportsOf(CANVAS)) {
+      expect(/mix/i.test(specifier), `canvas → ${specifier}`).toBe(false);
+    }
+    const sheet = "src/components/workspace/MixerSheet.tsx";
+    for (const specifier of valueImportsOf(sheet)) {
+      expect(
+        /^@\/lib\/(audio|song\/song-store|song\/storage)/.test(specifier),
+        `${sheet} → ${specifier}`,
+      ).toBe(false);
+    }
+    const names = identifiersOf(sheet);
+    for (const forbidden of ["commit", "recordEdit", "localStorage"]) {
+      expect(names.has(forbidden), `${sheet} uses ${forbidden}`).toBe(false);
+    }
+  });
+
   it("routes every lifecycle command through the one controller (2L-B)", () => {
     /*
      * The pure cores have exactly one caller. A sheet that imported

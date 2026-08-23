@@ -91,19 +91,29 @@ export type MixerHandle = {
   clearAudition(): void;
 };
 
-export function useMixer(options: {
-  song: Song;
-  canPersist: boolean;
-  commit(next: Song, action: HistoryAction): boolean;
-  /** Preview one track on the running graph. Injected: no engine import. */
+/**
+ * The three things this controller may do to the sound.
+ *
+ * Injected as one stable object so the controller never imports the engine
+ * or the playback controller, and so the effect that pushes the audition to
+ * the graph has something stable to depend on.
+ */
+export type MixerAudio = {
+  /** Preview one track on the running graph. */
   previewMix(trackId: string, volumeDb: number, pan: number): void;
   /** Put the graph back on the song's own levels. */
   clearPreview(): void;
   /** Tell the graph who is heard. */
   setAudibility(audibleTrackIds: readonly string[]): void;
+};
+
+export function useMixer(options: {
+  song: Song;
+  canPersist: boolean;
+  commit(next: Song, action: HistoryAction): boolean;
+  audio: MixerAudio;
 }): MixerHandle {
-  const { song, canPersist, commit, previewMix, clearPreview, setAudibility } =
-    options;
+  const { song, canPersist, commit, audio } = options;
 
   const [staged, setStaged] = useState<TrackMixMap>(() => readTrackMixes(song));
   const [audition, setAudition] = useState<TrackAudition>(EMPTY_AUDITION);
@@ -135,8 +145,8 @@ export function useMixer(options: {
 
   /* The graph hears every audition change at once — session, not draft. */
   useEffect(() => {
-    setAudibility(audible);
-  }, [audible, setAudibility]);
+    audio.setAudibility(audible);
+  }, [audible, audio]);
 
   const begin = useCallback(() => {
     setOpenedSong(song);
@@ -157,12 +167,12 @@ export function useMixer(options: {
           pan: patch.pan ?? existing.pan,
         };
         // The sound follows the slider, and only the sound.
-        previewMix(trackId, next.volumeDb, next.pan);
+        audio.previewMix(trackId, next.volumeDb, next.pan);
         return { ...current, [trackId]: next };
       });
       setError(null);
     },
-    [previewMix],
+    [audio],
   );
 
   const setVolume = useCallback(
@@ -202,8 +212,8 @@ export function useMixer(options: {
     setStaged(readTrackMixes(song));
     setError(null);
     setWarnings([]);
-    clearPreview();
-  }, [clearPreview, song]);
+    audio.clearPreview();
+  }, [audio, song]);
 
   const apply = useCallback((): boolean => {
     if (stale) {

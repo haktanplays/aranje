@@ -27,7 +27,9 @@ export type WorkspaceSheet =
   | "newSong"
   | "songInfo"
   | "sectionManage"
-  | "trackManage";
+  | "trackManage"
+  /* The mixer (2L-C): same modal family, same single owner. */
+  | "mixer";
 
 export type WorkspaceOverlayState = {
   readonly sheet: WorkspaceSheet | null;
