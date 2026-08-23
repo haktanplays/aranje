@@ -11,3 +11,4 @@ next-env.d.ts
 .bakeoff-s03/
 eval/mixer/.render/
 eval/mixer/artifacts/
+eval/export/.render/

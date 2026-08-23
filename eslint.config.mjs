@@ -11,6 +11,7 @@ const config = [
       ".grid-check/**",
       ".bakeoff-s03/**",
       "eval/mixer/.render/**",
+      "eval/export/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",
