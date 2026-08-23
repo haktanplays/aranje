@@ -10,17 +10,17 @@
  * touches history or runs a validator.
  *
  * The create form offers only what the music can actually be written in:
- * the core meters, and for each meter only the grids `timing.ts` can state
- * exactly — labelled the way the product already labels them ("1/16",
- * "1/8 üçleme"), never as a bare "resolution".
+ * every meter the Song Contract holds, and for each of them only the grids
+ * `timing.ts` can state exactly — labelled the way the product already
+ * labels them ("1/16", "1/8 üçleme"), never as a bare "resolution".
  */
 import { useState } from "react";
 
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { bpmRange, songLimits } from "@/lib/limits";
 import {
-  CORE_TIME_SIGNATURES,
   RESOLUTIONS,
+  TIME_SIGNATURES,
   formatTimeSignature,
   isRepresentableGrid,
   resolutionLabel,
@@ -78,7 +78,13 @@ export function SectionManagerSheet({
     song.sections[0];
   if (!selected) return null;
 
-  const meterOption = CORE_TIME_SIGNATURES[meterIndex] ?? CORE_TIME_SIGNATURES[0]!;
+  /*
+   * Every meter the Song Contract can hold, and for each of them only the
+   * grids `timing.ts` can write it on. Both lists are *derived* — there is
+   * no compatibility table in this file to drift from the one in the timing
+   * core, and a pair the core cannot state simply never appears.
+   */
+  const meterOption = TIME_SIGNATURES[meterIndex] ?? TIME_SIGNATURES[0]!;
   const meter = [meterOption[0], meterOption[1]] as TimeSignature;
   const grids = RESOLUTIONS.filter((entry) =>
     isRepresentableGrid(meter, entry),
@@ -190,7 +196,7 @@ export function SectionManagerSheet({
               }}
               className={FIELD}
             >
-              {CORE_TIME_SIGNATURES.map((entry, index) => (
+              {TIME_SIGNATURES.map((entry, index) => (
                 <option key={formatTimeSignature(entry)} value={index}>
                   {formatTimeSignature(entry)}
                 </option>

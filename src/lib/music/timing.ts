@@ -72,12 +72,6 @@ export const TRIPLET_RESOLUTIONS: readonly Resolution[] = [12, 24];
 export const DEFAULT_TIME_SIGNATURE: TimeSignature = [4, 4];
 export const DEFAULT_RESOLUTION: Resolution = 8;
 
-/** Meters enabled in the core scope (spec 2.6). */
-export const CORE_TIME_SIGNATURES: readonly TimeSignature[] = [
-  [4, 4],
-  [6, 8],
-];
-
 export function isTripletGrid(resolution: number): boolean {
   return TRIPLET_RESOLUTIONS.includes(resolution as Resolution);
 }
@@ -173,12 +167,6 @@ export function slotsPerFeltBeat(
   const base = slotsPerNotatedBeat(timeSignature, resolution);
   if (denominator === 8 && numerator % 3 === 0) return base * 3;
   return base;
-}
-
-export function isCoreTimeSignature(timeSignature: TimeSignature): boolean {
-  return CORE_TIME_SIGNATURES.some(
-    (core) => core[0] === timeSignature[0] && core[1] === timeSignature[1],
-  );
 }
 
 export function formatTimeSignature(timeSignature: TimeSignature): string {

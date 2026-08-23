@@ -17,7 +17,7 @@
  */
 import { chromium } from "playwright";
 import { layoutProbe, targetEdges, unwrapStoredSong } from "../shared/harness.mjs";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = process.env.LIFECYCLE_OUT ?? "eval/lifecycle/artifacts";

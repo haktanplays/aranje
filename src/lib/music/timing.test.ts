@@ -1,14 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  CORE_TIME_SIGNATURES,
   PPQ,
   RESOLUTIONS,
   TICKS_PER_WHOLE,
   TIME_SIGNATURES,
   TRIPLET_RESOLUTIONS,
   formatTimeSignature,
-  isCoreTimeSignature,
   isRepresentableGrid,
   isTripletGrid,
   resolutionLabel,
@@ -191,12 +189,31 @@ describe("where the beats fall", () => {
 });
 
 describe("meters", () => {
-  it("marks only 4/4 and 6/8 as core (spec 2.6)", () => {
-    expect(CORE_TIME_SIGNATURES).toHaveLength(2);
-    expect(isCoreTimeSignature([4, 4])).toBe(true);
-    expect(isCoreTimeSignature([6, 8])).toBe(true);
-    expect(isCoreTimeSignature([3, 4])).toBe(false);
-    expect(isCoreTimeSignature([7, 8])).toBe(false);
+  /*
+   * 2L-C opened 3/4 and 7/8 in the section form, so the narrowing constant
+   * that used to gate it is gone rather than left behind saying something
+   * the editor no longer does. What replaces it is the property the form
+   * actually relies on: every meter the contract holds is writable on at
+   * least one grid, and the pairs it cannot state are named.
+   */
+  it("gives every contract meter at least one grid it can be written on", () => {
+    expect(TIME_SIGNATURES).toHaveLength(4);
+    for (const meter of TIME_SIGNATURES) {
+      const grids = RESOLUTIONS.filter((resolution) =>
+        isRepresentableGrid(meter, resolution),
+      );
+      expect(grids.length, formatTimeSignature(meter)).toBeGreaterThan(0);
+    }
+  });
+
+  it("names exactly the meter/grid pairs the core refuses", () => {
+    const refused = TIME_SIGNATURES.flatMap((meter) =>
+      RESOLUTIONS.filter(
+        (resolution) => !isRepresentableGrid(meter, resolution),
+      ).map((resolution) => `${formatTimeSignature(meter)}@${resolution}`),
+    );
+    // A triplet grid cannot write an eighth-note meter's own note value.
+    expect(refused).toEqual(["6/8@12", "7/8@12"]);
   });
 
   it("formats a meter for display", () => {
