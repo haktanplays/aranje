@@ -15,6 +15,7 @@
  */
 import {
   createEngine,
+  loadTone,
   scheduleSong,
   setTrackAudibility,
   type Engine,
@@ -61,10 +62,19 @@ export type RenderOptions = {
   readonly offline?: OfflineRenderer;
 };
 
+/**
+ * The renderer, through the app's own Tone loader.
+ *
+ * Not a bare `import("tone")`: the package points its `browser` field at a
+ * UMD bundle, so in a client build that import resolves to a file which
+ * publishes itself on the global object and hands back an *empty* namespace —
+ * `Tone.Offline` is simply not there. `loadTone` already knows all three
+ * shapes, and using it keeps the export on the same loader as playback.
+ */
 async function toneOffline(): Promise<OfflineRenderer> {
-  const Tone = await import("tone");
+  const tone = await loadTone();
   return (build, seconds, channels, sampleRate) =>
-    Tone.Offline(build as never, seconds, channels, sampleRate) as unknown as Promise<RenderedBuffer>;
+    tone.Offline(build as never, seconds, channels, sampleRate) as unknown as Promise<RenderedBuffer>;
 }
 
 /**
