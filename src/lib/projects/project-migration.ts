@@ -165,7 +165,15 @@ function adoptOrphans(
  */
 export function settleProjects(
   storage: EnumerableStorage | null,
-  now: Clock = () => Date.now(),
+  /**
+   * Required, with no default.
+   *
+   * A default of `() => Date.now()` would read a clock on the production path
+   * while every test passed a fixed one — which is exactly how a module ends
+   * up being deterministic only where it is being watched. The one caller
+   * that has a real clock is the session, and it says so.
+   */
+  now: Clock,
 ): SettleOutcome {
   const steps: string[] = [];
   if (!storage) {
