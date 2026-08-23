@@ -23,6 +23,7 @@ export function WorkspaceHeader({
   activeBpm,
   hasTempoChanges,
   onInfo,
+  onProjects,
 }: {
   title: string;
   songKey: string;
@@ -32,6 +33,14 @@ export function WorkspaceHeader({
   activeBpm: number;
   hasTempoChanges: boolean;
   onInfo: () => void;
+  /**
+   * The project library (2O-A §17).
+   *
+   * On the title, because the title *is* the open project: tapping the name
+   * of the thing you are in to see the others is where a reader looks first,
+   * and it costs no room in a header that has none.
+   */
+  onProjects: () => void;
 }) {
   return (
     <header
@@ -47,7 +56,14 @@ export function WorkspaceHeader({
       */}
       <div aria-hidden style={{ width: MIN_TOUCH_TARGET_PX }} />
 
-      <div className="min-w-0">
+      <button
+        type="button"
+        data-open-projects
+        onClick={onProjects}
+        aria-label={`Açık proje: ${title}. Projeler`}
+        className="min-w-0 text-left"
+        style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+      >
         <p className="text-bronze truncate text-[9px] font-semibold tracking-[0.18em] uppercase">
           {BRAND_NAME}
         </p>
@@ -62,7 +78,7 @@ export function WorkspaceHeader({
         <p className="text-muted truncate text-[10px] leading-tight tabular-nums">
           {songKey} · {hasTempoChanges ? `${formatBpm(activeBpm)} BPM •` : `${bpm} BPM`} · {meter}
         </p>
-      </div>
+      </button>
 
       <button
         type="button"

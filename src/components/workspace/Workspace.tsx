@@ -249,6 +249,7 @@ export function Workspace() {
         activeBpm={state.activeBpm}
         hasTempoChanges={state.hasTempoChanges}
         onInfo={() => overlays.open("info")}
+        onProjects={library.open}
       />
 
       {/* One strip, and the recovery state owns it: four states, four
