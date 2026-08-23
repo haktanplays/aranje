@@ -426,30 +426,76 @@ describe("ties and chains", () => {
     expect(readBar(result.song, 0)).toEqual([".", ".", ".", "A3", "-", "-", ".", "."]);
   });
 
-  it("grows a range that starts in the middle of a held note", () => {
+  it("refuses a range that starts in the middle of a held note, until told what to do", () => {
+    /*
+     * This used to grow silently to the whole note (spec 13.20 §2). It now
+     * asks. Without a decision nothing happens at all, and `include_chain` is
+     * what produces the old — correct, but no longer automatic — answer.
+     */
     const before = song([bar(slots([A3(), TIE, TIE, REST]))]);
-    // Asking for the second tie alone: the policy expands to the whole note.
-    const copied = copySelection(before, select(STEP, STEP * 2));
-    expect(copied.ok).toBe(true);
-    if (!copied.ok) return;
-    expect(copied.selection.startTicks).toBe(0);
-    expect(copied.selection.endTicks).toBe(STEP * 3);
-    expect(copied.clipboard.events).toHaveLength(1);
-    expect(copied.clipboard.events[0]?.durationTicks).toBe(STEP * 3);
+    const asked = copySelection(before, select(STEP, STEP * 2));
+    expect(asked.ok).toBe(false);
+    if (asked.ok) return;
+    expect(asked.error.code).toBe("chain_policy_required");
+
+    const whole = copySelection(before, select(STEP, STEP * 2), {
+      chainPolicy: "include_chain",
+    });
+    expect(whole.ok).toBe(true);
+    if (!whole.ok) return;
+    expect(whole.selection.startTicks).toBe(0);
+    expect(whole.selection.endTicks).toBe(STEP * 3);
+    expect(whole.clipboard.events).toHaveLength(1);
+    expect(whole.clipboard.events[0]?.durationTicks).toBe(STEP * 3);
   });
 
-  it("grows a range that would cut a legato chain", () => {
+  it("will not detach a range that begins on a tie", () => {
+    // There is no honest repair: the strike is outside, so "only what I
+    // selected" would be the tail of somebody else's note.
+    const before = song([bar(slots([A3(), TIE, TIE, REST]))]);
+    const detached = copySelection(before, select(STEP, STEP * 2), {
+      chainPolicy: "detach_boundary",
+    });
+    expect(detached.ok).toBe(false);
+    if (detached.ok) return;
+    expect(detached.error.code).toBe("selection_starts_inside_tie");
+  });
+
+  it("asks before cutting a legato chain, and can do either thing", () => {
     const struck: MelodicSlot = { notes: [{ pitch: "A3", position: { string: 1, fret: 12 } }] };
     const hammered: MelodicSlot = {
       notes: [{ pitch: "B3", position: { string: 1, fret: 14 }, articulation: "hammer_on" }],
     };
     const before = song([bar(slots([struck, hammered, REST, REST]))]);
-    // Selecting only the hammer-on pulls in the note it needs to sound.
-    const copied = copySelection(before, select(STEP, STEP * 2));
-    expect(copied.ok).toBe(true);
-    if (!copied.ok) return;
-    expect(copied.selection.startTicks).toBe(0);
-    expect(copied.clipboard.events).toHaveLength(2);
+
+    const asked = copySelection(before, select(STEP, STEP * 2));
+    expect(asked.ok).toBe(false);
+    if (asked.ok) return;
+    expect(asked.error.code).toBe("chain_policy_required");
+
+    // Whole chain: the note it leans on comes too.
+    const whole = copySelection(before, select(STEP, STEP * 2), {
+      chainPolicy: "include_chain",
+    });
+    expect(whole.ok).toBe(true);
+    if (!whole.ok) return;
+    expect(whole.selection.startTicks).toBe(0);
+    expect(whole.clipboard.events).toHaveLength(2);
+
+    // Only the note asked for, with the bond removed rather than carried.
+    const alone = copySelection(before, select(STEP, STEP * 2), {
+      chainPolicy: "detach_boundary",
+    });
+    expect(alone.ok).toBe(true);
+    if (!alone.ok) return;
+    expect(alone.selection.startTicks).toBe(STEP);
+    expect(alone.clipboard.events).toHaveLength(1);
+    expect(alone.clipboard.events[0]?.notes[0]?.articulation).toBeUndefined();
+    // ...and the song it was read from is untouched.
+    expect(readBar(before, 0)).toEqual(["A3", "B3", ".", ".", ".", ".", ".", "."]);
+    expect(
+      before.sections[0]?.bars[0]?.slots.gtr?.[1],
+    ).toEqual(hammered);
   });
 
   it("refuses to write into the middle of a held note", () => {

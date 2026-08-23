@@ -82,7 +82,9 @@ describe("summaries", () => {
 
   it("says a single note is a single note", () => {
     const target = song([bar(slots([note("A3", 1, 12), REST]))]);
-    expect(summariseSelection(target, sel(0, STEP)).text).toBe("1 nota");
+    const summary = summariseSelection(target, sel(0, STEP));
+    expect(summary.held).toBe(false);
+    expect(summary.text).toBe("1 nota");
   });
 
   it("adds the bar count only when one onset really crosses a bar line", () => {
@@ -95,7 +97,9 @@ describe("summaries", () => {
     const summary = summariseSelection(target, sel(STEP * 7, STEP * 9));
     expect(summary.onsetCount).toBe(1);
     expect(summary.barCount).toBe(2);
-    expect(summary.text).toBe("1 nota · 2 ölçü");
+    // "Uzatılan" is why the band is wider than the slot that was pressed.
+    expect(summary.held).toBe(true);
+    expect(summary.text).toBe("1 uzatılan nota · 2 ölçü");
   });
 
   it("counts single notes as notes and says how many bars", () => {

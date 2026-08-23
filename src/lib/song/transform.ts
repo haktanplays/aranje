@@ -17,25 +17,36 @@
  * - **Validated.** Success means the strict schema and the whole validator
  *   chain accepted the result. Errors block; warnings come back to the caller.
  *
- * ## The chain policy, in one place
+ * ## The chain decision is the caller's, and it is required
  *
  * Music holds notes together in two ways: a tie chain (an onset and the `"-"`
  * slots that keep it sounding) and a legato chain (consecutive onsets bound by
  * `slide`, `hammer_on` or `pull_off`, which only sound if the note before them
- * is still there). Either can be cut in half by a careless range.
+ * is still there). Either can be cut in half by a range that stops inside it.
  *
- * **The policy is expansion, applied identically to both.** A selection that
- * touches any part of a chain is grown to cover the whole of it before
- * anything happens, and the grown range is what the command reports acting on.
- * Selecting one string of a chord therefore selects the chord, and selecting
- * the middle of a held note selects the note.
+ * This used to answer that silently, by growing every range to cover the whole
+ * chain before doing anything. The answer was safe and the silence was not: it
+ * moved music nobody had selected. So the growing is gone, and in its place is
+ * a rule with no default (spec 13.20 §2):
  *
- * There is deliberately no `selection_splits_chain` error. On the source side
- * expansion has already dealt with the problem. On the destination side the
- * case cannot be reached: a tie slot is occupancy, not empty space, so the
- * inside of a chain always collides before it can be split, and the refusal is
- * honestly `target_occupied`. A code that can never fire would only suggest a
- * guard that is not there.
+ * **A command that would cut a chain does not run without a `chainPolicy`.**
+ *
+ * `chain-preflight.ts` says whether a chain is involved and what would break.
+ * If it is, the caller must pass one of two decisions — `include_chain` to act
+ * on the whole chain, `detach_boundary` to act on exactly the range and cut
+ * the connections at its edges — and passing neither is the third outcome:
+ * a typed refusal, `chain_policy_required`, which changes nothing.
+ *
+ * That gate lives here rather than in a sheet on purpose. A UI-only guard
+ * would be one careless direct call away from the old behaviour, and the most
+ * dangerous version of that bug is a preview showing "only the chord" while
+ * the commit quietly moves the run. Preview and commit are the same function
+ * with the same policy, so they cannot describe different acts.
+ *
+ * There is deliberately no `selection_splits_chain` error on the destination
+ * side: a tie slot is occupancy, not empty space, so the inside of a chain
+ * always collides before it can be split, and the refusal is honestly
+ * `target_occupied`.
  */
 import {
   maxCapoRelativeFret,
@@ -48,6 +59,13 @@ import {
   sectionSlotStream,
   type SlotPosition,
 } from "@/lib/song/onset-block";
+import {
+  CHAINING_ARTICULATIONS,
+  chainImpactOf,
+  type ChainImpact,
+  type ChainPolicy,
+  type DetachEdit,
+} from "@/lib/song/chain-preflight";
 import {
   EMPTY_CLIPBOARD,
   selectionWidth,
@@ -96,11 +114,43 @@ export type TransformErrorCode =
   | "position_not_derivable"
   /** Repeats would run past the end of the section. */
   | "section_overflow"
+  /**
+   * The command would cut a tie or a legato chain and no decision was given.
+   *
+   * Not a failure of the music: a question the caller has to answer. See the
+   * header — there is deliberately no default, because the default is what
+   * silently moved music nobody selected.
+   */
+  | "chain_policy_required"
+  /**
+   * The chain carries on into another section, where neither answer exists:
+   * the range cannot be grown across a section line, and detaching would mean
+   * editing music the reader is not looking at. Fails closed.
+   */
+  | "chain_crosses_section"
+  /**
+   * The range begins on a tie rather than on the note that struck it, so
+   * "only what I selected" would be the tail of somebody else's note. Take
+   * the whole note or nothing; nothing is repaired quietly.
+   */
+  | "selection_starts_inside_tie"
   | "validation_failed";
 
 export type TransformFailure = {
   readonly code: TransformErrorCode;
   readonly message: string;
+};
+
+/**
+ * What a caller may decide about the music around the range.
+ *
+ * Optional in the type and required in practice: a command that would cut a
+ * chain refuses without it (`chain_policy_required`). Making it optional keeps
+ * the ninety per cent of calls that touch nothing readable, and the refusal
+ * makes the other ten per cent impossible to get wrong by forgetting.
+ */
+export type TransformOptions = {
+  readonly chainPolicy?: ChainPolicy;
 };
 
 export type TransformResult =
@@ -138,9 +188,6 @@ const fail = (code: TransformErrorCode, message: string): { ok: false; error: Tr
   ok: false,
   error: { code, message },
 });
-
-/** Legato articulations only sound when the note before them is still there. */
-const CHAINING_ARTICULATIONS = new Set(["slide", "hammer_on", "pull_off"]);
 
 // ---------------------------------------------------------------- resolution
 
@@ -186,59 +233,130 @@ const isStruck = (entry: SlotPosition | undefined): boolean =>
 const notesOf = (entry: SlotPosition): readonly NoteEvent[] =>
   entry.slot && entry.slot !== "-" ? entry.slot.notes : [];
 
-// ------------------------------------------------------------- chain growing
+// ------------------------------------------------------- chain, and detaching
 
 /**
- * Grow a range until it holds whole chains at both ends.
+ * Apply the preflight's detach edits to a section, exactly as listed.
  *
- * This is the single implementation of the policy documented at the top of the
- * file; every command runs its input through it before doing anything else.
+ * Pure, and the only place a chain relation is ever removed. The edits come
+ * from `chain-preflight`, so preview, clipboard and commit all cut in the same
+ * places — the alternative, each caller deciding for itself, is how a preview
+ * that says "only the chord" ends up committing the whole run.
+ *
+ * `articulation` is deleted rather than set to `"normal"`: the contract says an
+ * absent field is an ordinary note (spec 5.4), and writing the word would be a
+ * second spelling of the same fact. Articulations that are not chain relations
+ * — vibrato, palm mute, a bend — are left exactly where they are.
  */
-function expandToChains(
-  stream: readonly SlotPosition[],
-  selection: TimeSelection,
-): TimeSelection {
-  let start = selection.startTicks;
-  let end = selection.endTicks;
+function applyDetach(
+  song: Song,
+  sectionIndex: number,
+  trackId: string,
+  edits: readonly DetachEdit[],
+): Song {
+  if (edits.length === 0) return song;
 
-  /* Backwards: off a tie onto its onset, then off any legato note onto the
-   * note that has to be struck before it can sound. */
-  for (;;) {
-    const index = stream.findIndex((entry) => entry.startTicks === start);
-    const entry = index >= 0 ? stream[index] : undefined;
-    const previous = index > 0 ? stream[index - 1] : undefined;
-    if (!entry || !previous || !previous.writable) break;
-
-    const continuesTie = entry.writable && entry.slot === "-";
-    const needsPredecessor =
-      isStruck(entry) &&
-      isStruck(previous) &&
-      notesOf(entry).some(
-        (note) => note.articulation && CHAINING_ARTICULATIONS.has(note.articulation),
-      );
-
-    if (!continuesTie && !needsPredecessor) break;
-    start = previous.startTicks;
+  const byBar = new Map<number, DetachEdit[]>();
+  for (const edit of edits) {
+    const list = byBar.get(edit.barIndex) ?? [];
+    list.push(edit);
+    byBar.set(edit.barIndex, list);
   }
 
-  /* Forwards: over the ties that keep the last note sounding, and over any
-   * following note that is bound to it by a legato articulation. */
-  for (;;) {
-    const next = stream.find((entry) => entry.startTicks === end);
-    if (!next || !next.writable) break;
+  return {
+    ...song,
+    sections: song.sections.map((section, index) => {
+      if (index !== sectionIndex) return section;
+      return {
+        ...section,
+        bars: section.bars.map((bar, barIndex) => {
+          const list = byBar.get(barIndex);
+          if (!list) return bar;
+          const slots = bar.slots[trackId];
+          if (!Array.isArray(slots)) return bar;
+          const next = [...(slots as readonly MelodicSlot[])];
 
-    const isTail = next.slot === "-";
-    const boundToPrevious =
-      isStruck(next) &&
-      notesOf(next).some(
-        (note) => note.articulation && CHAINING_ARTICULATIONS.has(note.articulation),
-      );
+          for (const edit of list) {
+            const slot = next[edit.slotIndex];
+            if (edit.kind === "rest") {
+              next[edit.slotIndex] = null;
+              continue;
+            }
+            if (!slot || slot === "-") continue;
+            next[edit.slotIndex] = {
+              notes: slot.notes.map((note) => {
+                if (
+                  note.articulation === undefined ||
+                  !CHAINING_ARTICULATIONS.has(note.articulation)
+                ) {
+                  return note;
+                }
+                /*
+                 * Rebuilt without the field rather than with it set to
+                 * `"normal"`: the contract says an absent articulation is an
+                 * ordinary note, and writing the word would be a second way
+                 * of saying so that every reader downstream would have to
+                 * know about.
+                 */
+                const bare: NoteEvent = { pitch: note.pitch };
+                if (note.velocity !== undefined) bare.velocity = note.velocity;
+                if (note.position !== undefined) bare.position = note.position;
+                return bare;
+              }),
+            };
+          }
 
-    if (!isTail && !boundToPrevious) break;
-    end = next.startTicks + next.durationTicks;
+          return { ...bar, slots: { ...bar.slots, [trackId]: next } };
+        }),
+      };
+    }),
+  };
+}
+
+/**
+ * Turn a range plus a decision into the range the command will really act on.
+ *
+ * Every refusal a chain can cause is made here, once, so no command can be
+ * written that forgets to ask.
+ */
+type Scope =
+  | {
+      readonly ok: true;
+      readonly selection: TimeSelection;
+      readonly impact: ChainImpact;
+      readonly detach: readonly DetachEdit[];
+    }
+  | { readonly ok: false; readonly error: TransformFailure };
+
+function resolveScope(
+  impact: ChainImpact,
+  policy: ChainPolicy | undefined,
+): Scope {
+  if (impact.kind === "no_chain_impact") {
+    return { ok: true, selection: impact.selection, impact, detach: [] };
   }
-
-  return { ...selection, startTicks: start, endTicks: end };
+  if (impact.kind === "crosses_section_boundary") {
+    return fail(
+      "chain_crosses_section",
+      "Bu bağlantı bir sonraki bölüme uzanıyor; işlem uygulanmadı.",
+    );
+  }
+  if (policy === undefined) {
+    return fail(
+      "chain_policy_required",
+      "Bu seçim bir bağlantıyı kesiyor; nasıl davranılacağı seçilmeden uygulanmaz.",
+    );
+  }
+  if (policy === "include_chain") {
+    return { ok: true, selection: impact.expanded, impact, detach: [] };
+  }
+  if (impact.startsInsideTie) {
+    return fail(
+      "selection_starts_inside_tie",
+      "Seçim uzayan bir sesin ortasından başlıyor; ya sesin tamamı alınır ya da hiçbiri.",
+    );
+  }
+  return { ok: true, selection: impact.selection, impact, detach: impact.detach };
 }
 
 // ------------------------------------------------------------------- reading
@@ -262,10 +380,21 @@ function readRegion(
     }
     if (!isStruck(entry)) continue;
 
-    // Ties are folded in: one event, with the length it actually sounds for.
+    /*
+     * Ties are folded in: one event, with the length it actually sounds for —
+     * but never past the end of the range.
+     *
+     * The clip matters now that a range is not silently grown to cover whole
+     * chains (spec 13.20 §2). Under `detach_boundary` the tie slots beyond the
+     * edge are being turned into rests, so folding them into this note's
+     * length would move a duration whose tail no longer exists. Under
+     * `include_chain` the range already covers the whole run, so clipping
+     * there changes nothing.
+     */
     let duration = entry.durationTicks;
     for (const tail of stream) {
       if (tail.startTicks !== entry.startTicks + duration) continue;
+      if (tail.startTicks >= selection.endTicks) break;
       if (!tail.writable || tail.slot !== "-") break;
       duration += tail.durationTicks;
     }
@@ -479,8 +608,24 @@ function mapNotes(
 
 // ------------------------------------------------------------------ commands
 
-/** Copy reads and changes nothing, so it has its own result shape. */
-export function copySelection(song: Song, selection: TimeSelection): ClipboardResult {
+/**
+ * Copy reads and changes nothing, so it has its own result shape.
+ *
+ * It takes the same decision as every other command, for the same reason: a
+ * clipboard cut out of the middle of a chain would carry a hammer-on that
+ * leans on a note it did not bring with it, and pasting that anywhere else
+ * would produce a bond pointing at whatever happened to be there. With
+ * `detach_boundary` the dependency is removed before the region is read, so
+ * what is on the clipboard stands on its own.
+ *
+ * The **source song is never touched**: detaching is done on a copy that is
+ * read and thrown away.
+ */
+export function copySelection(
+  song: Song,
+  selection: TimeSelection,
+  options: TransformOptions = {},
+): ClipboardResult {
   const resolved = resolve(song, selection);
   if (!isResolved(resolved)) return resolved;
   if (selectionWidth(selection) === 0) {
@@ -490,37 +635,95 @@ export function copySelection(song: Song, selection: TimeSelection): ClipboardRe
     return fail("selection_out_of_bounds", "Seçim bölümün dışına çıkıyor.");
   }
 
-  const grown = expandToChains(resolved.stream, selection);
-  const clipboard = readRegion(resolved.stream, grown);
+  const impact = chainImpactOf(
+    {
+      song,
+      sectionIndex: resolved.sectionIndex,
+      trackId: resolved.track.id,
+      stream: resolved.stream,
+    },
+    selection,
+  );
+  const scope = resolveScope(impact, options.chainPolicy);
+  if (!scope.ok) return scope;
+
+  // Read from a detached copy, so the clipboard is self-contained and the
+  // song the reader is looking at is exactly as it was.
+  const source =
+    scope.detach.length === 0
+      ? song
+      : applyDetach(song, resolved.sectionIndex, resolved.track.id, scope.detach);
+  const stream =
+    source === song
+      ? resolved.stream
+      : sectionSlotStream(source.sections[resolved.sectionIndex]!, resolved.track.id);
+
+  const clipboard = readRegion(stream, scope.selection);
   if (!isClipboard(clipboard)) return clipboard;
-  return { ok: true, clipboard, selection: grown };
+  return { ok: true, clipboard, selection: scope.selection };
 }
 
 export function applyTransform(
   song: Song,
   selection: TimeSelection,
   command: TransformCommand,
+  options: TransformOptions = {},
 ): TransformResult {
-  const resolved = resolve(song, selection);
-  if (!isResolved(resolved)) return resolved;
-
-  const { section, sectionIndex, track, fretboard, stream, totalTicks } = resolved;
+  const initial = resolve(song, selection);
+  if (!isResolved(initial)) return initial;
 
   if (command.kind !== "paste_selection" && selectionWidth(selection) === 0) {
     return fail("selection_empty", "Seçim boş.");
   }
-  if (selection.startTicks < 0 || selection.endTicks > totalTicks) {
+  if (selection.startTicks < 0 || selection.endTicks > initial.totalTicks) {
     return fail("selection_out_of_bounds", "Seçim bölümün dışına çıkıyor.");
   }
 
-  const grown = expandToChains(stream, selection);
+  /*
+   * The decision, before anything else happens.
+   *
+   * `paste_selection` is the one command whose region is the destination
+   * rather than the selection, so nothing of the selection's own is cut and
+   * no decision is owed. Every other command goes through the gate.
+   */
+  const impact = chainImpactOf(
+    {
+      song,
+      sectionIndex: initial.sectionIndex,
+      trackId: initial.track.id,
+      stream: initial.stream,
+    },
+    selection,
+  );
+  const scope =
+    command.kind === "paste_selection"
+      ? ({ ok: true, selection, impact, detach: [] } as const)
+      : resolveScope(impact, options.chainPolicy);
+  if (!scope.ok) return scope;
+
+  /*
+   * Detaching happens on the song, before the command runs, so what follows
+   * sees one consistent piece of music. The result is still one Song out of
+   * one call: there is no state in which the connections are cut and the
+   * command has not happened.
+   */
+  const base =
+    scope.detach.length === 0
+      ? song
+      : applyDetach(song, initial.sectionIndex, initial.track.id, scope.detach);
+  const resolved = base === song ? initial : resolve(base, selection);
+  if (!isResolved(resolved)) return resolved;
+
+  const { section, sectionIndex, track, fretboard, stream, totalTicks } = resolved;
+  const grown = scope.selection;
+
   const canvas = canvasOf(section, track.id);
   if (!canvas) {
     return fail("track_silent_here", `"${track.name}" bu bölümde yazılı değil.`);
   }
 
   const finish = (next: Canvas, resultSelection: TimeSelection): TransformResult => {
-    const settled = settle(applyCanvas(song, sectionIndex, track.id, next));
+    const settled = settle(applyCanvas(base, sectionIndex, track.id, next));
     if (!settled.ok) {
       return fail("validation_failed", "Düzenleme kontrollerden geçmedi ve uygulanmadı.");
     }
@@ -554,7 +757,8 @@ export function applyTransform(
 
   switch (command.kind) {
     case "copy_selection": {
-      // Copy changes nothing; the song comes back untouched.
+      // Copy changes nothing; the song comes back untouched — the original,
+      // not the detached working copy, which exists only to be read.
       return { ok: true, song, warnings: [], selection: grown };
     }
 
@@ -757,8 +961,16 @@ export function commitTransform(
   },
   selection: TimeSelection,
   command: TransformCommand,
+  options: TransformOptions = {},
 ): TransformResult {
-  const result = applyTransform(store.getSnapshot().song, selection, command);
+  /*
+   * The decision travels with the command. Without this parameter the bridge
+   * would be a way of reaching the core that can never answer the chain
+   * question, so every chained selection would come back refused — and the
+   * obvious "fix" for that is exactly the silent expansion this checkpoint
+   * removed.
+   */
+  const result = applyTransform(store.getSnapshot().song, selection, command, options);
   if (result.ok) {
     // The action is built here rather than asked for, so this bridge cannot
     // become a way to write a song into the history without saying what it was.

@@ -23,6 +23,8 @@ export type SelectionSummary = {
   readonly barCount: number;
   /** True when the range covers a root, a fifth and an octave struck together. */
   readonly looksLikePowerChord: boolean;
+  /** True when a note in the range is held on past the slot that struck it. */
+  readonly held: boolean;
   /** The whole thing, ready to read. */
   readonly text: string;
 };
@@ -59,6 +61,7 @@ export function summariseSelection(
     noteCount: 0,
     barCount: 0,
     looksLikePowerChord: false,
+    held: false,
     text: "Seçim yok",
   };
   if (!section) return empty;
@@ -68,6 +71,7 @@ export function summariseSelection(
   let chordCount = 0;
   let noteCount = 0;
   let power = false;
+  let held = false;
   const bars = new Set<number>();
 
   for (const entry of stream) {
@@ -75,7 +79,11 @@ export function summariseSelection(
     if (entry.startTicks >= selection.endTicks) break;
     bars.add(entry.barIndex);
     if (!entry.writable || entry.slot === null || entry.slot === undefined) continue;
-    if (entry.slot === "-") continue;
+    if (entry.slot === "-") {
+      // A tie inside the range means something in it is being held on.
+      held = true;
+      continue;
+    }
 
     const notes = entry.slot.notes;
     onsetCount += 1;
@@ -108,11 +116,21 @@ export function summariseSelection(
     parts.push("Boş seçim");
     parts.push(plural(barCount, "ölçü"));
   } else if (onsetCount === 1) {
+    /*
+     * "Uzatılan" is why the band is wider than one slot.
+     *
+     * Pressing the middle of a held note selects the whole sound, so the band
+     * reaches back to the strike and forward over the ties. Without a word for
+     * it the reader is left to guess why one finger produced a band three
+     * slots wide, which is the same confusion the chain expansion used to
+     * cause — this time about something they really did select.
+     */
     if (noteCount === 1) {
-      parts.push("1 nota");
+      parts.push(held ? "1 uzatılan nota" : "1 nota");
     } else {
       parts.push(power ? "1 power chord" : "1 akor");
       parts.push(plural(noteCount, "nota"));
+      if (held) parts.push("uzatılıyor");
     }
     if (barCount > 1) parts.push(plural(barCount, "ölçü"));
   } else {
@@ -126,6 +144,7 @@ export function summariseSelection(
     noteCount,
     barCount,
     looksLikePowerChord: power,
+    held,
     text: parts.join(" · "),
   };
 }

@@ -46,6 +46,7 @@ import type { HistoryAction } from "@/lib/song/edit-history";
 import type { TransformCommand } from "@/lib/song/transform";
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
 import { pickOnsetAt } from "@/lib/song/onset-selection";
+import { summariseSelection } from "@/lib/song/selection-summary";
 import type { Section, Song, Track } from "@/lib/song/schema";
 import { useBarTransform, type BarTransformHandle } from "@/lib/song/use-bar-transform";
 import { useTransform, type TransformHandle } from "@/lib/song/use-transform";
@@ -68,6 +69,8 @@ export type TimeSelectionSession = {
   readonly pasteCommand: TransformCommand | null;
   readonly pastePreview: ReturnType<TransformHandle["previewOf"]> | null;
   readonly previewText: string | null;
+  /** The whole chain, summarised, for the decision sheet to show. */
+  readonly chainScopeText: string;
   readonly selectedSection: Section | null;
   readonly band: { left: number; width: number } | null;
   readonly bandHeight: number;
@@ -78,6 +81,8 @@ export type TimeSelectionSession = {
   startPasteFlow(): void;
   applyStaged(): void;
   closeSheet(): void;
+  /** Drop a waiting chain decision and the action behind it. Writes nothing. */
+  cancelChainDecision(): void;
   onSlotLongPress(x: number): void;
   onHandleDown(edge: "start" | "end", event: ReactPointerEvent): void;
   onHandleMove(event: ReactPointerEvent): void;
@@ -309,6 +314,19 @@ export function useSelectionSession(options: {
       : "Uygulanmaya hazır.";
   }, [pastePreview, transform.preview]);
 
+  /**
+   * The real widened scope, in the words the selection summary already uses.
+   *
+   * Computed from the preflight's own `expanded` range rather than described
+   * in general terms, so "Bağlantıyla birlikte taşı" is followed by the actual
+   * amount of music that would move (spec 13.20 §2).
+   */
+  const chainScopeText = useMemo(() => {
+    const impact = transform.chainDecision?.impact;
+    if (!impact) return "";
+    return summariseSelection(song, impact.expanded).text;
+  }, [song, transform.chainDecision]);
+
   const clearTime = useCallback(() => {
     transform.clear();
     setSheet(null);
@@ -316,9 +334,24 @@ export function useSelectionSession(options: {
   }, [transform]);
 
   /**
-   * A long press picks the slot under the finger and asks the core to
-   * normalise it. What comes back is the whole chord, and the whole chain it
-   * belongs to — so the band the reader sees is the music that will move.
+   * "Vazgeç".
+   *
+   * The waiting action is dropped and the sheet behind it closed. The
+   * selection stays, because the reader has not said they are done with it —
+   * only that they did not want this command on these terms.
+   */
+  const cancelChainDecision = useCallback(() => {
+    transform.cancelChainDecision();
+    setSheet(null);
+    setPasteAt({ kind: "idle" });
+  }, [transform]);
+
+  /**
+   * A long press picks up the onset group under the finger (spec 13.20 §1).
+   *
+   * The chord struck at that moment and the ties holding it, and nothing
+   * further: what the chain around it would cost is asked separately, once an
+   * action has been chosen.
    */
   const onSlotLongPress = useCallback(
     (x: number) => {
@@ -538,6 +571,7 @@ export function useSelectionSession(options: {
       pasteCommand,
       pastePreview,
       previewText,
+      chainScopeText,
       selectedSection,
       band,
       bandHeight,
@@ -548,6 +582,7 @@ export function useSelectionSession(options: {
       startPasteFlow,
       applyStaged,
       closeSheet,
+      cancelChainDecision,
       onSlotLongPress,
       onHandleDown,
       onHandleMove,

@@ -24,6 +24,18 @@ const MESSAGES: Readonly<Record<TransformErrorCode, string>> = {
   string_collision: "İki nota aynı tele düşüyor.",
   position_not_derivable: "Bu nota aynı telde bu şekilde çalınamıyor.",
   section_overflow: "Tekrarlar bölümün sonuna sığmıyor.",
+  /*
+   * Not a fault, a question (spec 13.20 §2). It reaches the screen only when
+   * something calls the core without a decision; the reader normally sees the
+   * three choices instead, and this is the sentence for the case where they
+   * somehow did not.
+   */
+  chain_policy_required:
+    "Bu seçim bir bağlantıyı kesiyor. Önce ne yapılacağını seç.",
+  chain_crosses_section:
+    "Bu bağlantı bir sonraki bölüme uzanıyor; bu sürümde buradan düzenlenemiyor.",
+  selection_starts_inside_tie:
+    "Seçim uzayan bir sesin ortasından başlıyor. Sesin tamamını seç.",
   validation_failed: "Bu düzenleme müzik kurallarına takıldı ve uygulanmadı.",
 };
 

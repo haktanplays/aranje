@@ -13,6 +13,7 @@ import {
   BarActionBar,
   type BarRepeatChoice,
 } from "@/components/workspace/BarActionBar";
+import { ChainDecisionSheet } from "@/components/workspace/ChainDecisionSheet";
 import { SelectionActionBar } from "@/components/workspace/SelectionActionBar";
 import { TransformSheet } from "@/components/workspace/TransformSheet";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
@@ -152,6 +153,18 @@ export function SelectionActionArea({ session }: { session: SelectionSession }) 
         onStage={time.handle.stage}
         onApply={time.applyStaged}
         onClose={time.closeSheet}
+      />
+
+      {/*
+        The chain decision sits in front of everything, because nothing has
+        happened yet and nothing may until it is answered (spec 13.20 §2).
+      */}
+      <ChainDecisionSheet
+        decision={time.handle.chainDecision}
+        scopeText={time.chainScopeText}
+        isChord={(time.handle.summary?.chordCount ?? 0) > 0}
+        onChoose={time.handle.chooseChainPolicy}
+        onCancel={time.cancelChainDecision}
       />
     </>
   );

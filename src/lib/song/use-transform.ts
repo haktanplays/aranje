@@ -29,6 +29,11 @@ import {
   type TransformCommand,
   type TransformErrorCode,
 } from "@/lib/song/transform";
+import {
+  chainImpact,
+  type ChainImpact,
+  type ChainPolicy,
+} from "@/lib/song/chain-preflight";
 import { EMPTY_CLIPBOARD, type Clipboard, type TimeSelection } from "@/lib/song/time-selection";
 import { summariseSelection, type SelectionSummary } from "@/lib/song/selection-summary";
 import { transformMessage } from "@/lib/song/transform-messages";
@@ -41,9 +46,32 @@ export type Preview =
   | { readonly ok: true; readonly song: Song; readonly selection: TimeSelection; readonly warnings: readonly ValidationIssue[] }
   | { readonly ok: false; readonly code: TransformErrorCode; readonly message: string };
 
+/**
+ * A command waiting on the reader's decision about the music around it.
+ *
+ * The command is held rather than run, so nothing has happened yet: no ghost,
+ * no write, no history step. `then` records what it was on its way to doing,
+ * so choosing an option resumes exactly that rather than a similar thing.
+ */
+export type ChainDecision = {
+  readonly command: TransformCommand;
+  readonly then: "stage" | "apply" | "copy";
+  readonly impact: ChainImpact;
+};
+
 export type TransformHandle = {
   readonly selection: TimeSelection | null;
   readonly summary: SelectionSummary | null;
+  /** What the current selection would cut, read before anything runs. */
+  readonly impact: ChainImpact | null;
+  /** The decision already taken for this selection, if any. */
+  readonly chainPolicy: ChainPolicy | null;
+  /** Set when an action is waiting for that decision. Nothing has run. */
+  readonly chainDecision: ChainDecision | null;
+  /** Answer it, and carry on with whatever was waiting. */
+  chooseChainPolicy(policy: ChainPolicy): void;
+  /** Drop the waiting action. Song, clipboard, storage and history untouched. */
+  cancelChainDecision(): void;
   readonly clipboard: Clipboard;
   readonly hasClipboard: boolean;
   /** Set after a refusal; cleared by the next action. */
@@ -82,16 +110,45 @@ export function useTransform(store: Store, song: Song): TransformHandle {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<TransformCommand | null>(null);
+  /**
+   * The decision about the music around the selection, and the action waiting
+   * on it (spec 13.20 §2).
+   *
+   * Both are cleared whenever the selection changes: a policy chosen for one
+   * chord means nothing about the next one, and a policy that outlived its
+   * selection would be the old silent expansion wearing a different name.
+   */
+  const [chainPolicy, setChainPolicy] = useState<ChainPolicy | null>(null);
+  const [chainDecision, setChainDecision] = useState<ChainDecision | null>(null);
 
   const summary = useMemo(
     () => (selection ? summariseSelection(song, selection) : null),
     [song, selection],
   );
 
+  const impact = useMemo(
+    () => (selection ? chainImpact(song, selection) : null),
+    [song, selection],
+  );
+
+  /*
+   * One options object, built in one place.
+   *
+   * Preview and commit both take their policy from here, so the scope shown
+   * and the scope written are the same value rather than two computations that
+   * happen to agree today. That is the regression this checkpoint most needs
+   * to make impossible: a ghost promising "only the chord" while the commit
+   * moves the whole run.
+   */
+  const options = useMemo(
+    () => (chainPolicy === null ? {} : { chainPolicy }),
+    [chainPolicy],
+  );
+
   const runPreview = useCallback(
     (command: TransformCommand): Preview | null => {
       if (!selection) return null;
-      const result = applyTransform(song, selection, command);
+      const result = applyTransform(song, selection, command, options);
       if (!result.ok) {
         return { ok: false, code: result.error.code, message: transformMessage(result.error.code) };
       }
@@ -102,12 +159,22 @@ export function useTransform(store: Store, song: Song): TransformHandle {
         warnings: result.warnings,
       };
     },
-    [selection, song],
+    [options, selection, song],
   );
 
   const preview = useMemo(
     () => (pending ? runPreview(pending) : null),
     [pending, runPreview],
+  );
+
+  /** True when this command cannot run until the reader has decided. */
+  const needsDecision = useCallback(
+    (): boolean =>
+      impact !== null &&
+      impact.kind !== "no_chain_impact" &&
+      impact.kind !== "crosses_section_boundary" &&
+      chainPolicy === null,
+    [chainPolicy, impact],
   );
 
   /**
@@ -127,6 +194,8 @@ export function useTransform(store: Store, song: Song): TransformHandle {
     setError(null);
     setNotice(null);
     setPending(null);
+    setChainPolicy(null);
+    setChainDecision(null);
     setSelection(next);
   }, []);
 
@@ -135,31 +204,52 @@ export function useTransform(store: Store, song: Song): TransformHandle {
     setPending(null);
     setError(null);
     setNotice(null);
+    setChainPolicy(null);
+    setChainDecision(null);
   }, []);
 
   const clearClipboard = useCallback(() => {
     setClipboard(EMPTY_CLIPBOARD);
   }, []);
 
-  const copy = useCallback(() => {
-    if (!selection) return;
-    const result = copySelection(song, selection);
-    if (!result.ok) {
-      setError(transformMessage(result.error.code));
-      return;
-    }
-    // Reading changes nothing: no commit, no write, no undo step.
-    setClipboard(result.clipboard);
-    setError(null);
-    setNotice("Seçim kopyalandı.");
-  }, [selection, song]);
+  /**
+   * Copy, with the decision applied to the clipboard rather than to the song.
+   *
+   * "Yalnız akoru kopyala" has to mean the clipboard does not carry a bond to
+   * a note it left behind, or the next paste would produce a hammer-on leaning
+   * on whatever happened to be in front of it.
+   */
+  const runCopy = useCallback(
+    (policy: ChainPolicy | null) => {
+      if (!selection) return;
+      const result = copySelection(
+        song,
+        selection,
+        policy === null ? {} : { chainPolicy: policy },
+      );
+      if (!result.ok) {
+        setError(transformMessage(result.error.code));
+        return;
+      }
+      // Reading changes nothing: no commit, no write, no undo step.
+      setClipboard(result.clipboard);
+      setError(null);
+      setNotice("Seçim kopyalandı.");
+    },
+    [selection, song],
+  );
 
-  const apply = useCallback(
-    (command?: TransformCommand): boolean => {
-      const target = command ?? pending;
-      if (!selection || !target) return false;
+  const runApply = useCallback(
+    (target: TransformCommand, policy: ChainPolicy | null): boolean => {
+      if (!selection) return false;
+      const withPolicy = policy === null ? {} : { chainPolicy: policy };
 
-      const result = applyTransform(store.getSnapshot().song, selection, target);
+      const result = applyTransform(
+        store.getSnapshot().song,
+        selection,
+        target,
+        withPolicy,
+      );
       if (!result.ok) {
         // A refusal touches neither the store nor the history.
         setError(transformMessage(result.error.code));
@@ -168,7 +258,7 @@ export function useTransform(store: Store, song: Song): TransformHandle {
 
       // Cut fills the clipboard only once the commit has actually happened.
       if (target.kind === "cut_selection") {
-        const read = copySelection(store.getSnapshot().song, selection);
+        const read = copySelection(store.getSnapshot().song, selection, withPolicy);
         if (read.ok) setClipboard(read.clipboard);
       }
 
@@ -188,12 +278,97 @@ export function useTransform(store: Store, song: Song): TransformHandle {
       );
       return true;
     },
-    [pending, selection, store],
+    [selection, store],
   );
+
+  /*
+   * The gate, on every way in.
+   *
+   * `stage`, `apply` and `copy` all pass through here, so there is no action
+   * that can start without the decision having been made. Asking at *stage*
+   * time rather than at apply time is deliberate: the ghost a reader nudges
+   * around has to be the real one, and a ghost computed before the policy
+   * exists could only be a refusal.
+   */
+  const gate = useCallback(
+    (command: TransformCommand, then: ChainDecision["then"]): boolean => {
+      if (needsDecision() && impact !== null) {
+        setChainDecision({ command, then, impact });
+        setError(null);
+        return false;
+      }
+      return true;
+    },
+    [impact, needsDecision],
+  );
+
+  const stage = useCallback(
+    (command: TransformCommand | null) => {
+      if (command === null) {
+        setPending(null);
+        return;
+      }
+      if (!gate(command, "stage")) return;
+      setPending(command);
+    },
+    [gate],
+  );
+
+  const apply = useCallback(
+    (command?: TransformCommand): boolean => {
+      const target = command ?? pending;
+      if (!selection || !target) return false;
+      if (!gate(target, "apply")) return false;
+      return runApply(target, chainPolicy);
+    },
+    [chainPolicy, gate, pending, runApply, selection],
+  );
+
+  const copy = useCallback(() => {
+    if (!selection) return;
+    if (!gate({ kind: "copy_selection" }, "copy")) return;
+    runCopy(chainPolicy);
+  }, [chainPolicy, gate, runCopy, selection]);
+
+  /**
+   * The reader decided. Remember it, and resume exactly what was waiting.
+   *
+   * Resuming rather than asking the reader to press the button again is the
+   * difference between a decision and an interruption.
+   */
+  const chooseChainPolicy = useCallback(
+    (policy: ChainPolicy) => {
+      setChainPolicy(policy);
+      const waiting = chainDecision;
+      setChainDecision(null);
+      if (!waiting) return;
+      if (waiting.then === "stage") {
+        setPending(waiting.command);
+        return;
+      }
+      if (waiting.then === "copy") {
+        runCopy(policy);
+        return;
+      }
+      runApply(waiting.command, policy);
+    },
+    [chainDecision, runApply, runCopy],
+  );
+
+  /** "Vazgeç": the song, the clipboard, storage and the history all untouched. */
+  const cancelChainDecision = useCallback(() => {
+    setChainDecision(null);
+    setPending(null);
+  }, []);
 
   return {
     selection,
     summary,
+    impact,
+    chainPolicy,
+    chainDecision,
+    chooseChainPolicy,
+    cancelChainDecision,
     clipboard,
     hasClipboard: clipboard.events.length > 0 || clipboard.widthTicks > 0,
     error,
@@ -204,7 +379,7 @@ export function useTransform(store: Store, song: Song): TransformHandle {
     clear,
     clearClipboard,
     copy,
-    stage: setPending,
+    stage,
     apply,
     previewOf: runPreview,
   };
