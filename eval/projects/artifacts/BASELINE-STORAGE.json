@@ -1,0 +1,197 @@
+{
+  "measuredOn": "desktop Node against production storage.ts — not a phone",
+  "keys": {
+    "song": "aranje.song",
+    "settings": "aranje.settings",
+    "quarantine": "aranje.corrupt.<ms>[.n]",
+    "writeProbe": "aranje.probe",
+    "copilotSubject": "written by use-co-arranger, not part of the song envelope"
+  },
+  "envelope": {
+    "shape": "{ format: 'aranje.song', version: 1, revision, current, previous }",
+    "revision": "disk revision + 1; legacy/empty/corrupt start at 1",
+    "previous": "whatever was readable ON DISK a moment ago, re-read per save",
+    "writesPerCommit": 1
+  },
+  "states": [
+    {
+      "id": "empty",
+      "what": "hiç anahtar yok",
+      "load": {
+        "outcome": "empty",
+        "recovery": null,
+        "canPersist": true,
+        "isSample": true,
+        "title": "Metal Demo",
+        "backupKey": null,
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe"
+        ]
+      },
+      "commit": {
+        "ok": true,
+        "revision": 1,
+        "ops": [
+          "get aranje.song",
+          "set aranje.song"
+        ]
+      }
+    },
+    {
+      "id": "legacy",
+      "what": "geçerli ham legacy Song",
+      "load": {
+        "outcome": "stored",
+        "recovery": null,
+        "canPersist": true,
+        "isSample": false,
+        "title": "Eski Şarkı",
+        "backupKey": null,
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe"
+        ]
+      },
+      "commit": {
+        "ok": true,
+        "revision": 1,
+        "ops": [
+          "get aranje.song",
+          "set aranje.song"
+        ]
+      }
+    },
+    {
+      "id": "envelope",
+      "what": "geçerli V1 envelope",
+      "load": {
+        "outcome": "stored",
+        "recovery": null,
+        "canPersist": true,
+        "isSample": false,
+        "title": "Eski Şarkı",
+        "backupKey": null,
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe"
+        ]
+      },
+      "commit": {
+        "ok": true,
+        "revision": 5,
+        "ops": [
+          "get aranje.song",
+          "set aranje.song"
+        ]
+      }
+    },
+    {
+      "id": "current_broken",
+      "what": "current bozuk, previous sağlam",
+      "load": {
+        "outcome": "stored",
+        "recovery": "recovered_previous",
+        "canPersist": true,
+        "isSample": false,
+        "title": "İkinci Şarkı",
+        "backupKey": "aranje.corrupt.1700000000000",
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe",
+          "get aranje.corrupt.1700000000000",
+          "set aranje.corrupt.1700000000000",
+          "set aranje.song"
+        ]
+      },
+      "commit": {
+        "ok": true,
+        "revision": 6,
+        "ops": [
+          "get aranje.song",
+          "set aranje.song"
+        ]
+      }
+    },
+    {
+      "id": "both_broken",
+      "what": "iki slot da bozuk",
+      "load": {
+        "outcome": "recovered",
+        "recovery": "corrupt_fallback",
+        "canPersist": true,
+        "isSample": true,
+        "title": "Metal Demo",
+        "backupKey": "aranje.corrupt.1700000000000",
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe",
+          "get aranje.corrupt.1700000000000",
+          "set aranje.corrupt.1700000000000",
+          "remove aranje.song"
+        ]
+      },
+      "commit": {
+        "ok": true,
+        "revision": 1,
+        "ops": [
+          "get aranje.song",
+          "set aranje.song"
+        ]
+      }
+    },
+    {
+      "id": "malformed",
+      "what": "bozuk JSON",
+      "load": {
+        "outcome": "recovered",
+        "recovery": "corrupt_fallback",
+        "canPersist": true,
+        "isSample": true,
+        "title": "Metal Demo",
+        "backupKey": "aranje.corrupt.1700000000000",
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe",
+          "get aranje.corrupt.1700000000000",
+          "set aranje.corrupt.1700000000000",
+          "remove aranje.song"
+        ]
+      },
+      "commit": {
+        "ok": true,
+        "revision": 1,
+        "ops": [
+          "get aranje.song",
+          "set aranje.song"
+        ]
+      }
+    },
+    {
+      "id": "future",
+      "what": "gelecek sürüm envelope",
+      "load": {
+        "outcome": "stored",
+        "recovery": "unsupported_version",
+        "canPersist": false,
+        "isSample": true,
+        "title": "Metal Demo",
+        "backupKey": null,
+        "ops": [
+          "get aranje.song",
+          "set aranje.probe",
+          "remove aranje.probe"
+        ]
+      },
+      "commit": {
+        "skipped": "canPersist false"
+      }
+    }
+  ]
+}

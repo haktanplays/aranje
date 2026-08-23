@@ -1,0 +1,10 @@
+{
+  "opsOnFirstLoad": [
+    "get aranje.song",
+    "set aranje.probe (1B)",
+    "remove aranje.probe",
+    "get aranje.settings"
+  ],
+  "keys": [],
+  "consoleErrors": []
+}
