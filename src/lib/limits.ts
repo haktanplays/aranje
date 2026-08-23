@@ -97,6 +97,28 @@ export const projectFileLimits = {
 } as const;
 
 /**
+ * The mixer's own bounds (spec 13.18, 2L-C).
+ *
+ * The Song Contract already bounds `volumeDb` at `volumeDbRange` (-60..+6),
+ * which is what a *file* may legally hold. These are the narrower bounds the
+ * mixer offers a person: -60 dB is not a level anyone reaches for on a
+ * slider, it is silence with extra steps, and mute is the honest control for
+ * that. -24 keeps the whole usable range under the thumb.
+ *
+ * `step` is what one nudge moves. Bounds are enforced by the pure core;
+ * the step is a control affordance and is not enforced there, because a
+ * value that arrives from an imported file has every right to sit between
+ * two steps.
+ *
+ * Mute is deliberately absent: it is an audibility decision, never
+ * "volume at minus infinity" (spec 13.18 §4).
+ */
+export const mixerLimits = {
+  volumeDb: { min: -24, max: 6, step: 0.5 },
+  pan: { min: -1, max: 1, step: 0.05, center: 0 },
+} as const;
+
+/**
  * Practice speed (spec 13.8, phase 2E).
  *
  * This is a **playback** setting, not a property of the music: the song keeps

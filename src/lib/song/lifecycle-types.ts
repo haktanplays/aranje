@@ -88,10 +88,12 @@ export type LifecycleError = {
  * and the caller decides whether it becomes a commit. Warnings are the
  * validator chain's non-blocking findings about the new song.
  */
-export type LifecycleResult =
+export type GuardResult<Code extends string> =
   | {
       readonly ok: true;
       readonly song: Song;
       readonly warnings: readonly ValidationIssue[];
     }
-  | { readonly ok: false; readonly error: LifecycleError };
+  | { readonly ok: false; readonly error: { readonly code: Code } };
+
+export type LifecycleResult = GuardResult<LifecycleErrorCode>;

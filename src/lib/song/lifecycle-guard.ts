@@ -14,14 +14,25 @@
 import { songSchema, type Song } from "@/lib/song/schema";
 import { hasErrors, runValidators, warningsOnly } from "@/lib/validators";
 import type {
-  LifecycleErrorCode,
+  GuardResult,
   LifecycleResult,
 } from "@/lib/song/lifecycle-types";
 
+/*
+ * Generic over the refusal code since 2L-C: the mixer is not a lifecycle
+ * command and speaks its own small vocabulary, but it must be judged by
+ * exactly the same schema and the same validator chain. One gate, several
+ * callers, no second opinion about what a valid song is.
+ */
+export function guardCandidate(candidate: Song): LifecycleResult;
+export function guardCandidate<Code extends string>(
+  candidate: Song,
+  failCode: Code,
+): GuardResult<Code>;
 export function guardCandidate(
   candidate: Song,
-  failCode: LifecycleErrorCode = "validation_failed",
-): LifecycleResult {
+  failCode: string = "validation_failed",
+): GuardResult<string> {
   const parsed = songSchema.safeParse(candidate);
   if (!parsed.success) return { ok: false, error: { code: failCode } };
   const issues = runValidators(parsed.data);

@@ -62,7 +62,15 @@ export type HistoryAction =
   /** A whole project file opened over the current song (spec 13.15). */
   | { readonly kind: "project_import" }
   /** A song, section or track lifecycle command (spec 13.17). */
-  | { readonly kind: "lifecycle"; readonly command: LifecycleCommandKind };
+  | { readonly kind: "lifecycle"; readonly command: LifecycleCommandKind }
+  /**
+   * One mixer apply, however many tracks moved in it (spec 13.18).
+   *
+   * Deliberately one action rather than one per track: the reader pushed
+   * several sliders and pressed Uygula once, so undo puts all of them back
+   * once. Mute and solo are not here at all — they never touch the song.
+   */
+  | { readonly kind: "track_mix_update" };
 
 export type HistorySnapshot = {
   readonly song: Song;

@@ -111,6 +111,8 @@ export function historyActionLabel(action: HistoryAction): string {
       return "Projeyi açma";
     case "lifecycle":
       return LIFECYCLE_LABELS[action.command];
+    case "track_mix_update":
+      return "Track miksini değiştirme";
   }
 }
 
