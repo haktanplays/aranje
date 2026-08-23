@@ -1,0 +1,116 @@
+{
+  "method": {
+    "rounds": 25,
+    "warmupRounds": 5,
+    "statistic": "median / p95 / max over timed rounds after warm-up",
+    "note": "WAV encode worst-case ve project export 10 turda ölçüldü: her tur onlarca MB yazıyor ve 25 tur ölçümü daha doğru yapmıyor, yalnız uzatıyor."
+  },
+  "honesty": [
+    "Bu bölümdeki sayılar masaüstü Node ölçümüdür; fiziksel telefon kanıtı değildir.",
+    "Offline render Node'da koşamaz; onun süresi Chromium bölümündedir.",
+    "Encode süresi frame sayısının fonksiyonudur, içeriğin değil: sessizlik aynı işi ölçer."
+  ],
+  "node": {
+    "version": "v22.22.2",
+    "subjects": {
+      "sample": {
+        "utf8Bytes": 14313,
+        "codeUnits": 14313,
+        "utf16ApproxBytes": 28626,
+        "seconds": 17.55,
+        "wavBytes": 3095064,
+        "midiBytes": 2035,
+        "midiEvents": 483
+      },
+      "worstCase": {
+        "utf8Bytes": 799636,
+        "codeUnits": 799624,
+        "utf16ApproxBytes": 1599248,
+        "seconds": 58.65,
+        "wavBytes": 10346288,
+        "wavMiB": 9.87,
+        "midiBytes": 82254,
+        "midiEvents": 20523
+      }
+    },
+    "durationPlan": {
+      "rounds": 25,
+      "medianMs": 60.699,
+      "p95Ms": 82.306,
+      "maxMs": 129.448
+    },
+    "wavEstimate": {
+      "rounds": 25,
+      "medianMs": 60.09,
+      "p95Ms": 78.763,
+      "maxMs": 79.889
+    },
+    "wavEncodeSample": {
+      "rounds": 25,
+      "medianMs": 10.704,
+      "p95Ms": 12.416,
+      "maxMs": 13.626
+    },
+    "wavEncodeWorst": {
+      "rounds": 10,
+      "medianMs": 32.91,
+      "p95Ms": 37.388,
+      "maxMs": 37.388
+    },
+    "midiPlanSample": {
+      "rounds": 25,
+      "medianMs": 1.332,
+      "p95Ms": 2.86,
+      "maxMs": 4.189
+    },
+    "midiPlanWorst": {
+      "rounds": 25,
+      "medianMs": 74.675,
+      "p95Ms": 89.715,
+      "maxMs": 94.347
+    },
+    "midiWriteWorst": {
+      "rounds": 25,
+      "medianMs": 10.558,
+      "p95Ms": 11.638,
+      "maxMs": 13.053
+    },
+    "projectExportWorst": {
+      "rounds": 10,
+      "medianMs": 188.301,
+      "p95Ms": 200.117,
+      "maxMs": 200.117
+    },
+    "heap": {
+      "encodedBytes": 10346288,
+      "deltaBytes": 120,
+      "deltaMiB": 0,
+      "note": "Worst-case WAV'ın encode edilmesi sırasında tutulan Node heap farkı (kontrollü ölçüm, telefon sayısı değil)."
+    }
+  },
+  "chromium": {
+    "honesty": [
+      "Bu bölümdeki sayılar masaüstü Chromium ölçümüdür; fiziksel telefon kanıtı değildir.",
+      "Tam offline render 5 turda ölçüldü: her tur bütün şarkıyı render ediyor ve yirmi tur ölçümü daha doğru yapmıyor, yalnız uzatıyor. Tur sayısı burada yazılıdır."
+    ],
+    "offlineRender": {
+      "rounds": 5,
+      "medianMs": 106,
+      "p95Ms": 115,
+      "maxMs": 115,
+      "note": "Warm-up sonrası; sample bankları ilk turda çözülüp önbelleğe alınmıştır.",
+      "renderedSeconds": 5,
+      "frames": 220500,
+      "wavBytes": 882044,
+      "wavMiB": 0.84,
+      "activeAfterDispose": 0
+    },
+    "objectUrlRoundTrip": {
+      "rounds": 20,
+      "medianMs": 0.2,
+      "p95Ms": 0.4,
+      "maxMs": 2.5,
+      "note": "3 MB'lık bir blob için createObjectURL + revokeObjectURL."
+    }
+  }
+}

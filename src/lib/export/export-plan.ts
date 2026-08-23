@@ -35,8 +35,15 @@ export type RenderDuration = {
   /**
    * How far past that the last expressive gesture still runs.
    *
-   * A bend or a legato chain planned across the final note can finish after
-   * the bar line; the plan knows when, so the render does not have to guess.
+   * **Measured, and currently always zero.** The expression planner clamps
+   * every gesture inside its own note — a bend, a vibrato and a legato chain
+   * all finish by the note's end — so nothing reaches past the last bar line
+   * today, and it is the sample decay (the tail) that actually needs room.
+   *
+   * The term is kept because it is the correct shape, not because it is
+   * doing work: if the planner ever lets a gesture ring on past its note,
+   * the render length follows it without anyone having to remember to look.
+   * A test pins the current zero so the day it stops being zero is visible.
    */
   readonly expressionSeconds: number;
   /** The engine's decay allowance, from the one central constant. */
@@ -52,6 +59,10 @@ export type RenderDuration = {
  * still runs past it, plus the central tail that lets a sample decay instead
  * of being chopped. A fixed number in a component is exactly how the last
  * chord of somebody's song goes missing, so there isn't one.
+ *
+ * Of those three, the expression term is zero for every song the planner can
+ * currently produce — see `RenderDuration.expressionSeconds`. The tail is
+ * what keeps the last note whole.
  *
  * Always at the song's own tempo. Practice rate is a rehearsal aid and has no
  * business deciding how long an exported file is — or how fast it sounds.

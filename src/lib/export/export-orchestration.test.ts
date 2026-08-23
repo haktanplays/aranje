@@ -9,6 +9,7 @@
  */
 import { describe, expect, it, vi } from "vitest";
 
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { audioExportLimits } from "@/lib/limits";
 import { surfaceDigest } from "@/lib/copilot/scope";
 import { createSongStore } from "@/lib/song/song-store";
@@ -212,6 +213,31 @@ describe("75. what the rendered file contains", () => {
     const options = vi.mocked(scheduleSong).mock.calls.at(-1)?.[2];
     // A rehearsal click is not part of the record.
     expect(options?.metronomeEnabled?.()).toBe(false);
+  });
+
+  it("schedules at the song's own tempo, never a practice rate", async () => {
+    /*
+     * A file that carried rehearsal speed would be a different piece of music
+     * to everyone who opened it. The tempo map handed to the scheduler is
+     * inspected directly, because "we did not pass a percent" is not visible
+     * from the outside — and it is the one thing standing between a slowed
+     * practice session and a slowed export.
+     */
+    const { scheduleSong } = await import("@/lib/audio/engine");
+    vi.mocked(scheduleSong).mockClear();
+
+    const record = fresh();
+    await renderSongToBuffer(SAMPLE_SONG, { offline: fakeOffline(record) });
+
+    const map = vi.mocked(scheduleSong).mock.calls.at(-1)?.[1];
+    expect(map?.practicePercent).toBe(100);
+    expect(map?.totalSeconds).toBeCloseTo(
+      buildTempoMap(SAMPLE_SONG).totalSeconds,
+      6,
+    );
+    for (const segment of map?.segments ?? []) {
+      expect(segment.bpm).toBe(segment.writtenBpm);
+    }
   });
 
   it("does not touch audibility at all when every track was asked for", async () => {
