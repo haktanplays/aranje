@@ -33,18 +33,18 @@ import { ViewSwitch } from "@/components/workspace/ViewSwitch";
 import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
 import { WorkspaceOverlays } from "@/components/workspace/WorkspaceOverlays";
 import { WorkspaceSurface } from "@/components/workspace/WorkspaceSurface";
-import { buildArrangementModel } from "@/lib/arrangement/model";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { availableSkills } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
-import { formatTimeSignature } from "@/lib/music/timing";
 import { useProjectFile } from "@/lib/project/use-project-file";
 import { useSong } from "@/lib/song/use-song";
 import { useSettings } from "@/lib/settings/use-settings";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 import { useEditShortcuts } from "@/lib/ui/use-edit-shortcuts";
 import { editGate } from "@/lib/workspace/edit-gate";
+import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
+import { useExport } from "@/lib/workspace/use-export";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { useMixer } from "@/lib/workspace/use-mixer";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
@@ -123,6 +123,13 @@ export function Workspace() {
   );
   const mixer = useMixer({ song, canPersist, commit, audio: mixerAudio });
 
+  /* Export reads; it never writes. `pause` is the only thing it asks of the
+     live app, and the mixer is the only owner of who is being listened to. */
+  const exporter = useExport({
+    song,
+    audibleTrackIds: mixer.audibleTrackIds,
+    pausePlayback: pause,
+  });
 
   const copilot = useCoArranger(song, {
     onApply: (candidate, skill) => commit(candidate, { kind: "copilot_apply", skill }),
@@ -295,23 +302,10 @@ export function Workspace() {
 
   /* -------------------------------------------------------------- models */
 
-  const arrangement = useMemo(() => buildArrangementModel(song), [song]);
-
-  /**
-   * The arrangement a staged command would leave behind: the ghost song,
-   * built and thrown away with the preview. Nothing here reaches the store,
-   * the history or the playback plan.
-   */
-  const ghostArrangement = useMemo(
-    () =>
-      session.bars.handle.previewSong
-        ? buildArrangementModel(session.bars.handle.previewSong)
-        : null,
-    [session.bars.handle.previewSong],
-  );
-
-  const firstBar = song.sections[0]?.bars[0];
-  const meter = firstBar ? formatTimeSignature(firstBar.timeSignature) : "";
+  const { arrangement, ghostArrangement, meter } = useArrangementModels({
+    song,
+    previewSong: session.bars.handle.previewSong,
+  });
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
@@ -438,6 +432,7 @@ export function Workspace() {
         project={project}
         lifecycle={lifecycle}
         mixer={mixer}
+        exporter={exporter}
         canPersist={canPersist}
         songBpm={state.songBpm}
         practicePercent={state.practicePercent}

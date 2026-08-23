@@ -71,7 +71,7 @@ export type MidiWriteErrorCode =
   | "midi_tick_not_integer";
 
 export type MidiWriteResult =
-  | { readonly ok: true; readonly bytes: Uint8Array }
+  | { readonly ok: true; readonly bytes: Uint8Array<ArrayBuffer> }
   | { readonly ok: false; readonly code: MidiWriteErrorCode };
 
 /* ------------------------------------------------------------- byte tools */

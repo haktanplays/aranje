@@ -12,6 +12,7 @@ export function InfoSheet({
   open,
   onClose,
   onProjectBackup,
+  onExport,
   projectBackupError,
   onOpenProjectFile,
   onNewSong,
@@ -21,6 +22,7 @@ export function InfoSheet({
   onClose: () => void;
   /** Downloads the current song as a project file, right here (spec 13.15). */
   onProjectBackup: () => void;
+  onExport: () => void;
   /** Set when the last backup attempt was refused; shown under the button. */
   projectBackupError: string | null;
   /** Hands over to the project-file sheet, where a backup can be opened. */
@@ -70,6 +72,17 @@ export function InfoSheet({
               Şarkı bilgileri
             </button>
           </div>
+          {/* The export surface (2M-A): the one visible place a song leaves
+              the app, whichever format it leaves as. The one-tap backup
+              beside it stays because backing up is a habit, not a decision. */}
+          <button
+            type="button"
+            data-info-export
+            onClick={onExport}
+            className="border-line mb-2 min-h-11 w-full rounded-lg border text-sm"
+          >
+            Dışa aktar
+          </button>
           <div className="flex gap-2">
             <button
               type="button"
@@ -143,8 +156,8 @@ export function InfoSheet({
           <div className="py-2">
             <dt className="text-muted text-xs">Çıkış</dt>
             <dd className="text-muted mt-1">
-              İki kanal, aynı sinyal (dual-mono). Pan ve stereo sahne henüz
-              uygulanmadı.
+              Stereo. Her track kendi ses seviyesi ve stereo konumuyla çalınır
+              (Mikser).
             </dd>
           </div>
         </dl>

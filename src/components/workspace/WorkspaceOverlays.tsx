@@ -19,6 +19,7 @@ import { MixerSheet } from "@/components/workspace/MixerSheet";
 import { NewSongSheet } from "@/components/workspace/NewSongSheet";
 import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
+import { ExportSheet } from "@/components/workspace/ExportSheet";
 import { ProjectFileSheet } from "@/components/workspace/ProjectFileSheet";
 import { SectionManagerSheet } from "@/components/workspace/SectionManagerSheet";
 import { SectionSheet } from "@/components/workspace/SectionSheet";
@@ -29,6 +30,7 @@ import { TrackSheet } from "@/components/workspace/TrackSheet";
 import { targetsFor } from "@/lib/copilot/ui-options";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
 import type { CoArrangerHandle } from "@/lib/copilot/use-co-arranger";
+import type { ExportHandle } from "@/lib/workspace/use-export";
 import type { ProjectFileHandle } from "@/lib/project/use-project-file";
 import type { Song } from "@/lib/song/schema";
 import type { SectionRun } from "@/lib/tab/timeline";
@@ -49,6 +51,7 @@ export function WorkspaceOverlays({
   previewOpen,
   arrangeOpen,
   project,
+  exporter,
   lifecycle,
   mixer,
   canPersist,
@@ -67,6 +70,7 @@ export function WorkspaceOverlays({
   previewOpen: boolean;
   arrangeOpen: boolean;
   project: ProjectFileHandle;
+  exporter: ExportHandle;
   lifecycle: LifecycleHandle;
   mixer: MixerHandle;
   canPersist: boolean;
@@ -260,6 +264,13 @@ export function WorkspaceOverlays({
         onManage={() => overlays.open("sectionManage")}
       />
 
+      <ExportSheet
+        open={overlays.isOpen("export")}
+        onClose={overlays.close}
+        handle={exporter}
+        canPersist={canPersist}
+      />
+
       <ProjectFileSheet
         open={overlays.isOpen("project")}
         onClose={overlays.close}
@@ -271,6 +282,7 @@ export function WorkspaceOverlays({
         open={overlays.isOpen("info")}
         onClose={overlays.close}
         onProjectBackup={project.downloadBackup}
+        onExport={() => overlays.open("export")}
         projectBackupError={project.exportError}
         onOpenProjectFile={() => overlays.open("project")}
         onNewSong={() => overlays.open("newSong")}

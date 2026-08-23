@@ -20,7 +20,7 @@ export type WavEncodeErrorCode =
   | "wav_invalid_sample_rate";
 
 export type WavEncodeResult =
-  | { readonly ok: true; readonly bytes: Uint8Array }
+  | { readonly ok: true; readonly bytes: Uint8Array<ArrayBuffer> }
   | { readonly ok: false; readonly code: WavEncodeErrorCode };
 
 const RIFF_HEADER_BYTES = 44;

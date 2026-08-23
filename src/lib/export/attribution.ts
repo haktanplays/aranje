@@ -56,3 +56,17 @@ export function attributionText(): string {
 export function attributionLine(): string {
   return SAMPLE_LICENSE.attribution;
 }
+
+/**
+ * The licence facts the export surface prints.
+ *
+ * Re-stated here so a view never has to reach into the audio layer for a
+ * string: the sheet imports its licence text from the export module that
+ * owns it, and the boundary rule against components touching `lib/audio`
+ * stays exactly as strict as it should be.
+ */
+export const LICENSE_DISPLAY = {
+  name: SAMPLE_LICENSE.name,
+  spdx: SAMPLE_LICENSE.spdx,
+  url: SAMPLE_LICENSE.url,
+} as const;

@@ -77,6 +77,14 @@ export type MixerHandle = {
   readonly warnings: readonly ValidationIssue[];
   /** True while any track is silenced or soloed, for the entry control. */
   readonly auditioning: boolean;
+  /**
+   * Who the session is currently listening to, in song order.
+   *
+   * Read by the export surface when — and only when — the user chose "Şu anda
+   * duyduklarım" (2M-A §3). Exposed as the computed list rather than the raw
+   * audition so no other surface has to re-derive the mute/solo rules.
+   */
+  readonly audibleTrackIds: readonly string[];
   /** Take the copy the session will draft against. */
   begin(): void;
   setVolume(trackId: string, volumeDb: number): void;
@@ -277,6 +285,7 @@ export function useMixer(options: {
     error,
     warnings,
     auditioning: audition.muted.size > 0 || audition.soloed.size > 0,
+    audibleTrackIds: audible,
     begin,
     setVolume,
     setPan,

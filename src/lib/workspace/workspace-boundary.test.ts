@@ -145,6 +145,54 @@ describe("39. one owner per state", () => {
     }
   });
 
+  it("keeps export off the canvas and out of the components (2M-A)", () => {
+    /*
+     * The arrangement draws bars. An export import there would be the first
+     * line of a second download path, and the reason there is only one is so
+     * a future entitlement check has one place to live rather than three.
+     *
+     * The sheet is the other half: it may read a typed view-model and call
+     * back, and may not reach Tone, the scheduler, the project serializer,
+     * the WAV encoder or the MIDI writer. A component that could encode
+     * could also encode differently from the controller.
+     */
+    for (const specifier of valueImportsOf(CANVAS)) {
+      expect(/export|wav|midi/i.test(specifier), `canvas → ${specifier}`).toBe(false);
+    }
+
+    const sheet = "src/components/workspace/ExportSheet.tsx";
+    for (const specifier of valueImportsOf(sheet)) {
+      expect(
+        /^(tone|@\/lib\/audio\/|@\/lib\/project\/project-file$|@\/lib\/export\/(wav-encoder|midi-writer|midi-plan|render-wav)$)/.test(
+          specifier,
+        ),
+        `${sheet} → ${specifier}`,
+      ).toBe(false);
+    }
+
+    // No component may mint or revoke an Object URL: that lifecycle has one
+    // owner per flow, and a stale file is exactly what a second one produces.
+    for (const path of workspaceComponents) {
+      const names = identifiersOf(path);
+      expect(names.has("createObjectURL"), `${path} mints a URL`).toBe(false);
+      expect(names.has("revokeObjectURL"), `${path} revokes a URL`).toBe(false);
+    }
+  });
+
+  it("gives the export exactly one implementation per format (2M-A)", () => {
+    /*
+     * Encoding lives in the pure cores and reaches the app through the one
+     * controller. If a second module started calling `encodeWav` or
+     * `writeMidiFile`, "the file the user gets" would stop having a single
+     * definition.
+     */
+    const callers = [...workspaceComponents, ...workspaceHooks].filter((path) => {
+      const names = identifiersOf(path);
+      return names.has("encodeWav") || names.has("writeMidiFile");
+    });
+    expect(callers).toEqual(["src/lib/workspace/use-export.ts"]);
+  });
+
   it("routes every lifecycle command through the one controller (2L-B)", () => {
     /*
      * The pure cores have exactly one caller. A sheet that imported
