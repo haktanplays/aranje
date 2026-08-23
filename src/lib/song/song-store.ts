@@ -51,11 +51,11 @@ import {
 import { redoLabel, undoLabel } from "@/lib/song/history-labels";
 import { songSchema, type Song } from "@/lib/song/schema";
 import {
-  loadSong,
   saveSong,
   RECOVERY_MESSAGES,
   type LoadResult,
   type RecoveryState,
+  type SaveResult,
   type StorageLike,
 } from "@/lib/song/storage";
 
@@ -115,9 +115,23 @@ export type SongStore = {
   replaceBaseline(song: Song): void;
 };
 
+/**
+ * Where a commit is written.
+ *
+ * The store has one way to save; since 2O-A it does not decide *which key*
+ * that save lands on. A single-song session passes nothing and gets the
+ * historical `aranje.song` behaviour; a library session passes the open
+ * project's port. There is still exactly one store and one commit path — the
+ * destination is a parameter, not a second engine.
+ */
+export type SongPersistence = {
+  save(song: Song): SaveResult;
+};
+
 export function createSongStore(
   initial: LoadResult,
   storage?: StorageLike | null,
+  persistence?: SongPersistence,
 ): SongStore {
   let history: EditHistory = createEditHistory(initial.song);
   let persisted = true;
@@ -171,7 +185,11 @@ export function createSongStore(
    */
   const write = (next: EditHistory): boolean => {
     const song = currentSong(next);
-    const saved = storage === undefined ? saveSong(song) : saveSong(song, storage);
+    const saved = persistence
+      ? persistence.save(song)
+      : storage === undefined
+        ? saveSong(song)
+        : saveSong(song, storage);
 
     if (!saved.ok) {
       /*
@@ -260,10 +278,8 @@ export function createSongStore(
   };
 }
 
-let browserStore: SongStore | null = null;
-
-/** The store the screen uses. Created once, on the client. */
-export function getSongStore(): SongStore {
-  browserStore ??= createSongStore(loadSong());
-  return browserStore;
-}
+/*
+ * The singleton lives in `projects/project-session.ts` since 2O-A: the store
+ * and the project it writes to are one decision, and splitting them across two
+ * owners is how a library ends up with a store pointed at a key nobody chose.
+ */

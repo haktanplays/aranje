@@ -2,11 +2,9 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
+import { getProjectSession } from "@/lib/projects/project-session";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
-import {
-  getSongStore,
-  type SongStoreSnapshot,
-} from "@/lib/song/song-store";
+import { type SongStoreSnapshot } from "@/lib/song/song-store";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song } from "@/lib/song/schema";
 
@@ -46,7 +44,13 @@ export type SongHandle = SongStoreSnapshot & {
 };
 
 export function useSong(): SongHandle {
-  const store = typeof window === "undefined" ? null : getSongStore();
+  /*
+   * One store, and the project session owns it (2O-A §8). The song the engine
+   * reads and the song on screen have to be the same object, and since the
+   * song now has a project behind it, "which store" and "which project" are
+   * one question with one owner.
+   */
+  const store = typeof window === "undefined" ? null : getProjectSession().store;
 
   const snapshot = useSyncExternalStore(
     store ? store.subscribe : () => () => {},
