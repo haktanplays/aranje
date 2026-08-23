@@ -67,6 +67,8 @@ export type BarRepeatChoice =
   | { readonly kind: "fill_to_section_end" };
 
 export type BarMoreAction =
+  /** Open the meter-and-rhythm sheet for this bar (spec 13.20 §6). */
+  | "timing"
   | "paste"
   | "blank_before"
   | "blank_after"
@@ -274,6 +276,17 @@ export function BarActionBar({
         labelledBy="bar-more-title"
       >
         <div className="flex flex-col gap-2">
+          {/*
+            How this bar is counted, alongside what can be done to its contents
+            (spec 13.20 §6). It sits first because it is the question a reader
+            arrives with — "why does this bar have eight cells" — rather than
+            something they go looking for after deciding to edit.
+          */}
+          {full ? (
+            <SheetButton data-testid="bar-more-timing" onClick={() => onMore("timing")}>
+              Ölçü ve ritim
+            </SheetButton>
+          ) : null}
           {canPaste ? (
             <SheetButton onClick={() => onMore("paste")}>Buraya yapıştır</SheetButton>
           ) : null}

@@ -39,6 +39,8 @@ import type { MixerHandle } from "@/lib/workspace/use-mixer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { WorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import type { WorkspaceOverlayState } from "@/lib/workspace/use-workspace-overlays";
+import type { TimingChangeHandle } from "@/lib/workspace/use-timing-change";
+import { TimingSheet } from "@/components/workspace/TimingSheet";
 
 export function WorkspaceOverlays({
   song,
@@ -60,6 +62,7 @@ export function WorkspaceOverlays({
   onPracticePercent,
   onSelectTrack,
   onChooseSection,
+  timing,
 }: {
   song: Song;
   runs: readonly SectionRun[];
@@ -73,6 +76,8 @@ export function WorkspaceOverlays({
    * behind, so the door itself does not get to decide.
    */
   onChooseSection: (sectionId: string) => void;
+  /** The meter-and-rhythm sheet, opened from the bar sheet or from here. */
+  timing: TimingChangeHandle;
   noteEditing: NoteEditing;
   copilot: CoArrangerHandle;
   copilotSkills: readonly ArrangeSkill[];
@@ -165,6 +170,7 @@ export function WorkspaceOverlays({
           onClose={overlays.close}
           song={song}
           activeSectionId={navigation.viewedSectionId}
+          onOpenTiming={timing.open}
           lifecycle={lifecycle}
         />
       ) : null}
@@ -263,6 +269,8 @@ export function WorkspaceOverlays({
         onApply={copilot.apply}
         onReject={copilot.close}
       />
+
+      <TimingSheet timing={timing} />
 
       <SectionSheet
         runs={runs}

@@ -70,7 +70,13 @@ export type HistoryAction =
    * several sliders and pressed Uygula once, so undo puts all of them back
    * once. Mute and solo are not here at all — they never touch the song.
    */
-  | { readonly kind: "track_mix_update" };
+  | { readonly kind: "track_mix_update" }
+  /**
+   * One bar's — or one section's — meter and rhythm grid changed (spec 13.20
+   * §6). One action however many bars moved: the reader chose once, so undo
+   * puts all of them back once.
+   */
+  | { readonly kind: "bar_timing_change"; readonly scope: "bar" | "section" };
 
 export type HistorySnapshot = {
   readonly song: Song;

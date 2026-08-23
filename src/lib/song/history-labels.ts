@@ -113,6 +113,10 @@ export function historyActionLabel(action: HistoryAction): string {
       return LIFECYCLE_LABELS[action.command];
     case "track_mix_update":
       return "Track miksini değiştirme";
+    case "bar_timing_change":
+      return action.scope === "section"
+        ? "Bölümün ölçü ve ritmini değiştirme"
+        : "Ölçü ve ritmi değiştirme";
   }
 }
 

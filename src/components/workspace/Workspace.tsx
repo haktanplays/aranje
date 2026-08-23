@@ -40,6 +40,7 @@ import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { useProjectFile } from "@/lib/project/use-project-file";
 import { useSong } from "@/lib/song/use-song";
 import { useSessionGround } from "@/lib/workspace/use-session-ground";
+import { useTimingChange } from "@/lib/workspace/use-timing-change";
 import { useSettings } from "@/lib/settings/use-settings";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 import { editGate } from "@/lib/workspace/edit-gate";
@@ -110,6 +111,10 @@ export function Workspace() {
   });
 
   const overlays = useWorkspaceOverlays();
+
+  /* How a bar is counted, reachable from the bar sheet and from section
+     management — one sheet, two doors (spec 13.20 §6). */
+  const timing = useTimingChange({ getSnapshot: () => ({ song }), commit }, song);
 
   /* ---------------------------------------------------------------- mixer */
 
@@ -307,7 +312,7 @@ export function Workspace() {
         copilotOwnsScreen={previewOpen || arrangeOpen}
       />
 
-      <SelectionActionArea session={session} />
+      <SelectionActionArea session={session} onOpenTiming={timing.open} />
 
       {navigation.view === "tab" ? (
         <TrackControl track={track} onOpen={() => overlays.open("track")} />
@@ -373,6 +378,7 @@ export function Workspace() {
         onPracticePercent={setPracticeRatePercent}
         onSelectTrack={selectTrack}
         onChooseSection={focusSection}
+        timing={timing}
       />
     </div>
   );

@@ -17,8 +17,16 @@ import { ChainDecisionSheet } from "@/components/workspace/ChainDecisionSheet";
 import { SelectionActionBar } from "@/components/workspace/SelectionActionBar";
 import { TransformSheet } from "@/components/workspace/TransformSheet";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
+import type { TimingTarget } from "@/lib/workspace/use-timing-change";
 
-export function SelectionActionArea({ session }: { session: SelectionSession }) {
+export function SelectionActionArea({
+  session,
+  onOpenTiming,
+}: {
+  session: SelectionSession;
+  /** Opens the meter-and-rhythm sheet; owned by the timing controller. */
+  onOpenTiming: (target: TimingTarget) => void;
+}) {
   const { time, bars } = session;
 
   return (
@@ -75,6 +83,19 @@ export function SelectionActionArea({ session }: { session: SelectionSession }) 
           }
           onMore={(action) => {
             switch (action) {
+              case "timing": {
+                // The bar the reader is holding, named by its own selection.
+                const selection = bars.handle.selection;
+                bars.setSheet(null);
+                if (selection) {
+                  onOpenTiming({
+                    sectionId: selection.sectionId,
+                    scope: { kind: "bar", barIndex: selection.startBarIndex },
+                    title: `${selection.startBarIndex + 1}. ölçü · ölçü ve ritim`,
+                  });
+                }
+                return;
+              }
               case "paste":
                 bars.setSheet(null);
                 bars.handle.stagePaste();

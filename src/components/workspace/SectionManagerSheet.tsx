@@ -27,6 +27,7 @@ import {
   resolutionLabel,
 } from "@/lib/music/timing";
 import { dedupeName } from "@/lib/song/lifecycle-ids";
+import type { TimingTarget } from "@/lib/workspace/use-timing-change";
 import { sectionDeleteConfirmation } from "@/lib/song/lifecycle-messages";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type { Resolution, Song, TimeSignature } from "@/lib/song/schema";
@@ -51,12 +52,15 @@ export function SectionManagerSheet({
   onClose,
   song,
   activeSectionId,
+  onOpenTiming,
   lifecycle,
 }: {
   open: boolean;
   onClose: () => void;
   song: Song;
   activeSectionId: string | null;
+  /** Opens the shared meter-and-rhythm sheet, scoped to the whole section. */
+  onOpenTiming: (target: TimingTarget) => void;
   lifecycle: LifecycleHandle;
 }) {
   const [mode, setMode] = useState<Mode>({ kind: "list" });
@@ -359,6 +363,24 @@ export function SectionManagerSheet({
             }
           >
             Çoğalt
+          </SheetButton>
+          {/*
+            How the section is counted, beside how fast it is played (spec
+            13.20 §6). The two are deliberately separate controls: changing the
+            grid does not touch `bpmOverride`, and a reader looking for one
+            should not find the other.
+          */}
+          <SheetButton
+            data-section-action="timing"
+            onClick={() =>
+              onOpenTiming({
+                sectionId: selected.id,
+                scope: { kind: "section" },
+                title: `"${selected.name}" · ölçü ve ritim`,
+              })
+            }
+          >
+            Bölümün ölçü ve ritmi
           </SheetButton>
           <SheetButton
             data-section-action="tempo"
