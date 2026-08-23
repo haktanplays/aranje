@@ -35,9 +35,20 @@ describe("one bus per track", () => {
   const engine = withoutComments(ENGINE);
   const voice = withoutComments(VOICE);
 
-  it("puts the pan on the track's channel, once", () => {
+  it("puts the pan on the track's channel and nowhere else", () => {
     expect(engine).toContain("channel.pan.value = track.pan");
-    expect(engine.match(/\.pan\.value/g) ?? []).toHaveLength(1);
+    /*
+     * 2L-C added a second write — the mixer's runtime setter, which moves a
+     * live track's position without rebuilding the graph. The claim this test
+     * exists to defend is unchanged and is now stated directly: every pan
+     * write in the engine lands on a track's own channel, so there is still
+     * exactly one bus per track and no second panning system.
+     */
+    const all = engine.match(/\.pan\.value/g) ?? [];
+    const onChannel = engine.match(/channel\.pan\.value/g) ?? [];
+    expect(all.length).toBeGreaterThan(0);
+    expect(onChannel).toHaveLength(all.length);
+    expect(/new .*\.Panner/.test(engine)).toBe(false);
   });
 
   it("sends every source of a track to that same channel", () => {

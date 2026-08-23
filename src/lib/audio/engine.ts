@@ -649,6 +649,50 @@ export function scheduleSong(
 }
 
 /** Maps a drum piece onto the synthesised voices. */
+/**
+ * Write one track's persisted mix onto the graph that is already playing
+ * (spec 13.18, 2L-C §7).
+ *
+ * The whole point is what it does *not* do: no engine is built, no event is
+ * rescheduled, no sample is fetched or decoded, and the transport does not
+ * move. It sets two parameters on the channel this track already owns.
+ *
+ * Because every one of a track's sources — the sampler, the drum voices and
+ * every expressive/legato voice — is connected to that same channel, one
+ * write reaches all of them, and a voice that starts a moment later arrives
+ * at the level already set. Nothing here can reach another track's channel.
+ */
+export function setTrackMix(
+  engine: Engine,
+  trackId: string,
+  volumeDb: number,
+  pan: number,
+): boolean {
+  const voice = engine.voices.get(trackId);
+  if (!voice) return false;
+  voice.channel.volume.value = volumeDb;
+  voice.channel.pan.value = pan;
+  return true;
+}
+
+/**
+ * Who is heard, as the session's audition decided (spec 13.18, §5, §7).
+ *
+ * Audibility is a mute on each track's own channel, never a level: a track
+ * put back on comes back to the volume it had, because that volume was never
+ * touched. The metronome is not in `voices` — it hangs off the master — so
+ * no combination of mutes and solos can silence it.
+ */
+export function setTrackAudibility(
+  engine: Engine,
+  audibleTrackIds: readonly string[],
+): void {
+  const audible = new Set(audibleTrackIds);
+  for (const [trackId, voice] of engine.voices) {
+    voice.channel.mute = !audible.has(trackId);
+  }
+}
+
 export function playDrum(
   drums: DrumVoices,
   piece: DrumPiece,

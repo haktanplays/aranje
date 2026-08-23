@@ -22,6 +22,10 @@ import {
   applyTempoMap,
   createLiveEngine,
   scheduleSong,
+  // Aliased: the class exposes methods of the same names, and inside the
+  // class body a method would shadow the import.
+  setTrackAudibility as writeTrackAudibility,
+  setTrackMix as writeTrackMix,
   type Engine,
 } from "@/lib/audio/engine";
 import {
@@ -119,9 +123,20 @@ export class PlaybackController {
   private builds = 0;
   /** The tempo timeline at the current practice rate, kept rather than rebuilt. */
   private tempoCache: { percent: number; map: TempoMap };
+  /**
+   * Levels asked for by an open mixer that have not been committed yet, and
+   * the audition the session is listening through.
+   *
+   * Both are remembered rather than only written, because the graph may not
+   * exist yet: someone can open the mixer, move a slider and only then press
+   * play. What they set is applied the moment the engine appears, in the same
+   * place a pending seek is (spec 13.18 §6).
+   */
+  private mixOverrides = new Map<string, { volumeDb: number; pan: number }>();
+  private audibleTrackIds: readonly string[] | null = null;
 
   constructor(
-    private readonly song: Song,
+    private song: Song,
     options: PlaybackOptions = {},
   ) {
     this.plan = buildSongPlan(song);
@@ -237,6 +252,14 @@ export class PlaybackController {
     if (this.pendingSeekTicks !== null) {
       engine.context.transport.ticks = this.pendingSeekTicks;
       this.pendingSeekTicks = null;
+    }
+
+    // Nor is a level moved, or a track silenced, before there was a graph.
+    for (const [trackId, mix] of this.mixOverrides) {
+      writeTrackMix(engine, trackId, mix.volumeDb, mix.pan);
+    }
+    if (this.audibleTrackIds !== null) {
+      writeTrackAudibility(engine, this.audibleTrackIds);
     }
 
     this.applyLoop();
@@ -361,6 +384,56 @@ export class PlaybackController {
       transport.ticks >= bounds.endTicks
     ) {
       transport.ticks = bounds.startTicks;
+    }
+  }
+
+  /**
+   * Preview one track's levels without changing the song (spec 13.18 §6).
+   *
+   * This is what a slider drag calls. It writes the graph and remembers the
+   * value; it does not commit, does not write storage and does not add a
+   * history step — the mixer's Uygula does that, once, through the one gate.
+   */
+  setTrackMix(trackId: string, volumeDb: number, pan: number): void {
+    this.mixOverrides.set(trackId, { volumeDb, pan });
+    if (this.engine) writeTrackMix(this.engine, trackId, volumeDb, pan);
+  }
+
+  /** Who the session is listening to. Session only; never reaches the song. */
+  setTrackAudibility(audibleTrackIds: readonly string[]): void {
+    this.audibleTrackIds = [...audibleTrackIds];
+    if (this.engine) writeTrackAudibility(this.engine, this.audibleTrackIds);
+  }
+
+  /**
+   * Put the graph back on the song's own levels (spec 13.18 §6, cancel).
+   *
+   * Every previewed value is forgotten and the committed one written in its
+   * place. The audition is deliberately left alone: mute and solo are not a
+   * draft of anything, they are how the reader is listening right now.
+   */
+  clearTrackMixPreview(): void {
+    this.mixOverrides.clear();
+    if (!this.engine) return;
+    for (const track of this.song.tracks) {
+      writeTrackMix(this.engine, track.id, track.volumeDb, track.pan ?? 0);
+    }
+  }
+
+  /**
+   * The song changed, and the only thing that changed was the mix.
+   *
+   * The caller has already asked `isMixOnlyChange`. Nothing is rebuilt: the
+   * plan, the schedule, the samples, the transport position and the loop are
+   * all still right, because none of them is about how loud a track is. The
+   * new levels are written onto the channels that are playing them.
+   */
+  applyMixOnly(next: Song): void {
+    this.song = next;
+    this.mixOverrides.clear();
+    if (!this.engine) return;
+    for (const track of next.tracks) {
+      writeTrackMix(this.engine, track.id, track.volumeDb, track.pan ?? 0);
     }
   }
 

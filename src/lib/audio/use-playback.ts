@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSyncExternalStore } from "react";
 
 import { PlaybackController, type PlaybackState } from "@/lib/audio/playback";
+import { isMixOnlyChange } from "@/lib/song/track-mix";
 import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 import type { Song } from "@/lib/song/schema";
 
@@ -19,6 +20,37 @@ const SERVER_STATE: PlaybackState = {
   progress: null,
   error: null,
 };
+
+/**
+ * The controller for a song that is genuinely different music.
+ *
+ * The position and the practice speed carry across, and so does the loop —
+ * but only if its section is still real (spec 13.13, K-44). A loop whose
+ * section is gone is turned **off** rather than quietly re-pointed at
+ * whichever section now sits at those ticks, because a loop that keeps
+ * running over different music is the app playing something nobody asked
+ * for. No graph is built here: a seek on an engine-less controller is a
+ * remembered tick and nothing else.
+ */
+function carriedController(
+  previous: PlaybackController,
+  song: Song,
+): PlaybackController {
+  const next = new PlaybackController(song, {
+    practicePercent: previous.getPracticePercent(),
+  });
+
+  const at = previous.getPosition().barKey;
+  if (at !== null) next.seekToNearestBar(at);
+
+  const loopSectionId = previous.getState().loopSectionId;
+  const stillThere = song.sections.some(
+    (section) => section.id === loopSectionId && section.bars.length > 0,
+  );
+  if (loopSectionId !== null && stillThere) next.setLoopSection(loopSectionId);
+
+  return next;
+}
 
 /**
  * Owns one controller per song. The controller survives play and pause; it is
@@ -39,50 +71,32 @@ export function usePlayback(
     }),
   }));
 
-  /*
-   * A different song means a different graph. Replacing the entry here lets the
-   * effect below dispose the one it replaces. The practice speed is a session
-   * setting, so it carries across the replacement rather than resetting.
-   *
-   * So does the position. Editing the structure of a song moves bars around
-   * (spec 13.12) and every edit used to throw the transport back to bar one,
-   * which turns "insert a bar here" into "and now find your place again". The
-   * new controller is asked for the nearest bar it still has, so a bar that
-   * was deleted lands beside where it was rather than at the top. It is a seek
-   * on a controller with no engine yet, which is a remembered tick and nothing
-   * else — no graph is built here and no event is scheduled.
-   */
   if (entry.song !== song) {
-    const next = new PlaybackController(song, {
-      practicePercent: entry.controller.getPracticePercent(),
-    });
-    const at = entry.controller.getPosition().barKey;
-    if (at !== null) next.seekToNearestBar(at);
-
     /*
-     * The loop, but only if it is still real (spec 13.13, K-44).
+     * A different song usually means a different graph, and replacing the
+     * entry is what lets the effect below dispose the one it replaces.
      *
-     * A loop is a section, and its boundaries are that section's first and
-     * last bar — so bars appearing and disappearing inside it move the
-     * boundaries, and the new plan is where the new ones come from. If the
-     * section itself is gone there is nothing to re-derive: the loop is turned
-     * **off** rather than quietly re-pointed at whichever section now sits at
-     * those ticks, because a loop that keeps running over different music is
-     * the app playing something nobody asked for.
+     * Unless the only thing that changed is the mix (spec 13.18 §7). A
+     * rebuild re-decodes every sample, so doing it for a volume slider would
+     * stop the music in order to change how loud it is. The decision is the
+     * central `isMixOnlyChange`, never a condition written here: one
+     * predicate, held to account by its own tests.
      */
-    const loopSectionId = entry.controller.getState().loopSectionId;
-    const stillThere = song.sections.some(
-      (section) => section.id === loopSectionId && section.bars.length > 0,
-    );
-    if (loopSectionId !== null && stillThere) next.setLoopSection(loopSectionId);
-
-    setEntry({ song, controller: next });
+    if (isMixOnlyChange(entry.song, song)) {
+      entry.controller.applyMixOnly(song);
+      setEntry({ song, controller: entry.controller });
+    } else {
+      setEntry({ song, controller: carriedController(entry.controller, song) });
+    }
   }
 
-  useEffect(() => {
-    const { controller } = entry;
-    return () => controller.dispose();
-  }, [entry]);
+  /*
+   * Keyed on the controller, not the entry: a mix-only change swaps the
+   * remembered song while keeping the controller, and disposing it there
+   * would tear down the very graph that path exists to preserve.
+   */
+  const { controller } = entry;
+  useEffect(() => () => controller.dispose(), [controller]);
 
   const state = useSyncExternalStore(
     entry.controller.subscribe,
