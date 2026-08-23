@@ -7,13 +7,16 @@ import { FretGlyph } from "@/components/workspace/FretGlyph";
 import {
   BAR_HEADER_HEIGHT,
   RHYTHM_ROW_HEIGHT,
+  RHYTHM_STRIP_HEIGHT,
   SLOT_WIDTH,
   STRING_ROW_HEIGHT,
   barWidth,
   slotCentre,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
+import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
+import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 import { pitchToMidi } from "@/lib/music/pitch";
@@ -112,6 +115,13 @@ export function FrettedBarBlock({
   onBarLongPress?: () => void;
 }) {
   const width = barWidth(bar.slotCount);
+  /*
+   * One reading of the bar's rhythm, shared by the strip and the guide. The
+   * guide's "a chord is one onset, a tie is not" comes from these states
+   * rather than from a second look at the bar (spec 13.20 §7).
+   */
+  const states = frettedRhythm(bar);
+  const guide = buildRhythmGuide(states, bar.timeSignature, bar.resolution);
   const staffHeight = stringCount * STRING_ROW_HEIGHT;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
 
@@ -328,8 +338,12 @@ export function FrettedBarBlock({
           : null}
       </div>
 
-      <div style={{ height: RHYTHM_ROW_HEIGHT }}>
-        <RhythmStrip states={frettedRhythm(bar)} slotsPerBeat={beat} />
+      <div style={{ height: RHYTHM_ROW_HEIGHT }} className="relative">
+        <RhythmStrip states={states} slotsPerBeat={beat} />
+        {/* Below the ticks, so the beams sit under the rhythm they describe. */}
+        <div className="absolute inset-x-0" style={{ top: RHYTHM_STRIP_HEIGHT }}>
+          <RhythmGuideLayer guide={guide} />
+        </div>
       </div>
     </Frame>
   );

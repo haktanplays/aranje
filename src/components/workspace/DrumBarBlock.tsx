@@ -2,11 +2,14 @@ import {
   BAR_HEADER_HEIGHT,
   DRUM_ROW_HEIGHT,
   RHYTHM_ROW_HEIGHT,
+  RHYTHM_STRIP_HEIGHT,
   SLOT_WIDTH,
   barWidth,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
+import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
+import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
 import { NO_PRESS, useLongPress } from "@/lib/ui/use-long-press";
 import { drumRhythm, type DrumBar } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/song/schema";
@@ -47,6 +50,8 @@ export function DrumBarBlock({
   const width = barWidth(bar.slotCount);
   const gridHeight = Math.max(laneCount, 1) * DRUM_ROW_HEIGHT;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
+  /* One reading of the bar's rhythm, shared by the strip and the guide. */
+  const states = drumRhythm(bar);
   const barPress = useLongPress(onBarLongPress ?? NO_PRESS, {
     enabled: onBarLongPress !== undefined,
   });
@@ -108,8 +113,15 @@ export function DrumBarBlock({
 
       </div>
 
-      <div style={{ height: RHYTHM_ROW_HEIGHT }}>
-        <RhythmStrip states={drumRhythm(bar)} slotsPerBeat={beat} />
+      <div style={{ height: RHYTHM_ROW_HEIGHT }} className="relative">
+        <RhythmStrip states={states} slotsPerBeat={beat} />
+        {/* Drums get the same guide from the same states: a row of hi-hat
+            eighths is exactly the rhythm this is for (spec 13.20 §7). */}
+        <div className="absolute inset-x-0" style={{ top: RHYTHM_STRIP_HEIGHT }}>
+          <RhythmGuideLayer
+            guide={buildRhythmGuide(states, bar.timeSignature, bar.resolution)}
+          />
+        </div>
       </div>
     </button>
   );

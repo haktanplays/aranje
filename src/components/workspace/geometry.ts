@@ -11,7 +11,18 @@ export const BAR_KEY_ATTRIBUTE = "data-bar-key";
 export const SLOT_WIDTH = 34;
 export const STRING_ROW_HEIGHT = 26;
 export const DRUM_ROW_HEIGHT = 30;
-export const RHYTHM_ROW_HEIGHT = 18;
+/**
+ * The strip under the staff.
+ *
+ * It grew from 18 to 28 in 2N-A: the beat ticks and the onset dots were all it
+ * carried, and the rhythmic guide (spec 13.20 §7) needs room under them for a
+ * stem, up to three beam lines and a triplet "3". Vertical only — nothing here
+ * widens a bar, so the horizontal-overflow and scroller counts are unchanged.
+ */
+export const RHYTHM_ROW_HEIGHT = 28;
+
+/** How much of that row the beat ticks and onset dots use; the guide is under. */
+export const RHYTHM_STRIP_HEIGHT = 14;
 export const GUTTER_WIDTH = 34;
 export const BAR_HEADER_HEIGHT = 22;
 
