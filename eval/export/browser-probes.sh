@@ -17,6 +17,13 @@ restart() {
 
 probe() {
   local name="$1" file="$2" find="$3" repl="$4"
+  # A leftover backup means another probe run is touching this file. Two
+  # runs racing over one source silently restore each other's mutation and
+  # can leave a real edit behind, so this refuses rather than guesses.
+  if [ -e "$file.probebak" ]; then
+    echo "ABORT $name: $file.probebak exists — another probe run is in flight"
+    exit 2
+  fi
   cp "$file" "$file.probebak"
   python3 - "$file" "$find" "$repl" <<'PY'
 import io,sys

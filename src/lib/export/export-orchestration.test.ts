@@ -8,6 +8,7 @@
  * that exported is indistinguishable from one that did not.
  */
 import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 
 import { buildTempoMap } from "@/lib/audio/tempo";
 import { audioExportLimits } from "@/lib/limits";
@@ -315,5 +316,71 @@ describe("75. what the rendered file contains", () => {
         .frames,
     );
     spy.mockRestore();
+  });
+});
+
+describe("76. the project backup is not behind the export door (2M-A.1 §5)", () => {
+  it("serialises through the one pure serializer, from both entry points", async () => {
+    /*
+     * The product decision, written down where it can be broken.
+     *
+     * There are two ways to get a project file: the one-tap "Projeyi yedekle"
+     * in the info sheet, and the export surface. That is deliberate, not an
+     * oversight — a safety backup should stay one tap away and must never end
+     * up behind an entitlement check, whereas WAV and MIDI go through the one
+     * export controller precisely so such a check has somewhere to live.
+     *
+     * What both paths must share is the *serializer*: one `exportProject`,
+     * one file format, byte for byte. A second serializer is the thing this
+     * test exists to prevent.
+     */
+    const project = await import("@/lib/project/project-file");
+    const surface = Object.keys(project).sort();
+    expect(surface).toContain("exportProject");
+    // Exactly one function in the codebase turns a Song into a project file.
+    expect(surface.filter((name) => /^export|^serialize/.test(name))).toEqual([
+      "exportProject",
+      "serializeProjectFile",
+    ]);
+
+    const first = project.exportProject(SAMPLE_SONG);
+    const second = project.exportProject(SAMPLE_SONG);
+    expect(first.ok && second.ok).toBe(true);
+    if (!first.ok || !second.ok) return;
+    expect(first.text).toBe(second.text);
+  });
+
+  it("keeps both callers on it, and neither on a serializer of its own", () => {
+    const controller = readFileSync("src/lib/workspace/use-export.ts", "utf8");
+    const backup = readFileSync("src/lib/project/use-project-file.ts", "utf8");
+
+    for (const [name, source] of [
+      ["use-export", controller],
+      ["use-project-file", backup],
+    ] as const) {
+      expect(source, name).toContain("exportProject");
+      // No hand-rolled JSON of a Song anywhere near either path.
+      expect(source, name).not.toContain("JSON.stringify(song)");
+      expect(source, name).not.toContain("aranje.project");
+    }
+  });
+
+  it("does not gate the backup on anything the audio formats are gated on", () => {
+    /*
+     * `canPersist:false` closes editing, not exporting — and in particular
+     * not the backup, which is exactly what someone in that state needs. The
+     * export controller has no entitlement concept at all today; if one
+     * arrives, this test is where the decision that the backup stays outside
+     * it is recorded.
+     */
+    const backup = readFileSync("src/lib/project/use-project-file.ts", "utf8");
+    const inDownload = backup.slice(
+      backup.indexOf("const downloadBackup"),
+      backup.indexOf("const openFile"),
+    );
+    expect(inDownload).toContain("exportProject");
+    expect(inDownload).not.toContain("canPersist");
+    expect(inDownload).not.toContain("entitle");
+    expect(inDownload).not.toContain("quota");
   });
 });

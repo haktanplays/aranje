@@ -47,7 +47,7 @@
     {
       "name": "the metronome is not a track and keeps clicking",
       "pass": true,
-      "detail": "silent 0, with metronome 0.077082"
+      "detail": "silent 0, with metronome 0.082698"
     },
     {
       "name": "the legacy muted/soloed flags change nothing you can hear",
@@ -309,10 +309,10 @@
     },
     "all-muted-with-metronome": {
       "name": "all-muted-with-metronome",
-      "peak": 0.077082,
-      "rms": 0.001247,
-      "leftRms": 0.001274,
-      "rightRms": 0.001219,
+      "peak": 0.082698,
+      "rms": 0.001269,
+      "leftRms": 0.0013,
+      "rightRms": 0.001236,
       "channels": 2,
       "builds": 1,
       "fetchedUrls": 13,

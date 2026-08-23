@@ -29,10 +29,13 @@ licence FluidR3 appears under somewhere else.
 ## Open item
 
 The full legal text is not vendored yet: `creativecommons.org` is not reachable
-from the build environment, and a legal text must be copied, never
-reconstructed. Fetch `https://creativecommons.org/licenses/by/3.0/us/legalcode`
-into `CC-BY-3.0-US.txt` in this directory before any public release, and rerun
-`node scripts/fetch-samples.mjs` so the manifest flips `textVendored` to true.
+from the build environment (the proxy answers `CONNECT` with 403), and a legal
+text must be copied, never reconstructed.
+
+The steps, the expected file path, the official download URL and what must
+*not* be done instead are written down in **`OWNER-ACTION.md`** beside this
+file. It blocks the public release gate; it does not block the export code
+closure.
 
 Per-file source URLs, byte sizes and SHA-256 checksums are in
 `public/samples/manifest.json`.

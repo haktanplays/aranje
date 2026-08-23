@@ -13,18 +13,18 @@
       "pressure": "süre ve bellek",
       "total": {
         "rounds": 3,
-        "medianMs": 2302,
-        "maxMs": 2440
+        "medianMs": 2191,
+        "maxMs": 2390
       },
       "render": {
         "rounds": 3,
-        "medianMs": 2139,
-        "maxMs": 2274
+        "medianMs": 2030,
+        "maxMs": 2235
       },
       "encode": {
         "rounds": 3,
-        "medianMs": 163,
-        "maxMs": 167
+        "medianMs": 161,
+        "maxMs": 169
       },
       "failure": null,
       "shape": {
@@ -46,8 +46,8 @@
         "rms": 0.00796,
         "tailRms": 0.000201,
         "activeAfterDispose": 0,
-        "heapBeforeBytes": 17100000,
-        "heapAfterBytes": 17100000,
+        "heapBeforeBytes": 12700000,
+        "heapAfterBytes": 12700000,
         "heapDeltaMiB": 0
       },
       "realTimeFactor": 0.01
@@ -57,18 +57,18 @@
       "pressure": "scheduler, expression planner, voice pool",
       "total": {
         "rounds": 3,
-        "medianMs": 190183,
-        "maxMs": 207746
+        "medianMs": 206202,
+        "maxMs": 216933
       },
       "render": {
         "rounds": 3,
-        "medianMs": 190030,
-        "maxMs": 207593
+        "medianMs": 206053,
+        "maxMs": 216760
       },
       "encode": {
         "rounds": 3,
-        "medianMs": 153,
-        "maxMs": 153
+        "medianMs": 149,
+        "maxMs": 173
       },
       "failure": null,
       "shape": {
@@ -87,14 +87,14 @@
         "wavDataBytes": 10346240,
         "headerMatchesFile": true,
         "peak": 0.710194,
-        "rms": 0.132467,
+        "rms": 0.132474,
         "tailRms": 0.005712,
         "activeAfterDispose": 0,
-        "heapBeforeBytes": 17100000,
-        "heapAfterBytes": 17100000,
+        "heapBeforeBytes": 12700000,
+        "heapAfterBytes": 12700000,
         "heapDeltaMiB": 0
       },
-      "realTimeFactor": 3.24
+      "realTimeFactor": 3.52
     }
   },
   "objectUrls": {
@@ -105,7 +105,7 @@
     {
       "name": "worst-longest-duration renders at the product's real limits",
       "pass": true,
-      "detail": "2302 ms median, 2440 ms max"
+      "detail": "2191 ms median, 2390 ms max"
     },
     {
       "name": "worst-longest-duration file matches the formula to the byte",
@@ -130,7 +130,7 @@
     {
       "name": "worst-heaviest-events renders at the product's real limits",
       "pass": true,
-      "detail": "190183 ms median, 207746 ms max"
+      "detail": "206202 ms median, 216933 ms max"
     },
     {
       "name": "worst-heaviest-events file matches the formula to the byte",
@@ -150,7 +150,7 @@
     {
       "name": "worst-heaviest-events carries audio, not silence",
       "pass": true,
-      "detail": "peak 0.710194, rms 0.132467"
+      "detail": "peak 0.710194, rms 0.132474"
     },
     {
       "name": "a render mints no Object URL of its own",
@@ -169,8 +169,8 @@
       "case": "worst-heaviest-events",
       "label": "En yoğun olay (8 track, 32 bar, 1/32)",
       "severity": "release-risk",
-      "realTimeFactor": 3.24,
-      "finding": "Masaüstü Chromium'da 58.7 saniyelik ses 190.2 saniyede render ediliyor (gerçek zamanın 3.2 katı). Telefonda daha yavaş olması beklenir; sınırlar küçültülmedi, risk kayda geçirildi."
+      "realTimeFactor": 3.52,
+      "finding": "Masaüstü Chromium'da 58.7 saniyelik ses 206.2 saniyede render ediliyor (gerçek zamanın 3.5 katı). Telefonda daha yavaş olması beklenir; sınırlar küçültülmedi, risk kayda geçirildi."
     }
   ]
 }
