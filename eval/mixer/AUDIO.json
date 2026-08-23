@@ -1,0 +1,291 @@
+{
+  "honesty": [
+    "Bu ölçümler gain/pan/audibility doğruluğudur; müzikal mix kalitesi kanıtı değildir.",
+    "Masaüstü Chromium offline render'ıdır; fiziksel telefon kanıtı değildir."
+  ],
+  "checks": [
+    {
+      "name": "volume follows the dB it was given",
+      "pass": true,
+      "detail": "-6 dB measured -6 dB, -12 dB measured -12 dB"
+    },
+    {
+      "name": "the stereo position moves the energy the right way",
+      "pass": true,
+      "detail": "centre L-R 0 dB, left L-R Infinity dB, right L-R -Infinity dB"
+    },
+    {
+      "name": "two tracks sit on opposite sides",
+      "pass": true,
+      "detail": "L 0.046986, R 0.037089"
+    },
+    {
+      "name": "every voice of a chord shares the track's position",
+      "pass": true,
+      "detail": "L-R Infinity dB"
+    },
+    {
+      "name": "an expressive voice takes the same track mix as the sampler",
+      "pass": true,
+      "detail": "hammered L-R Infinity dB, plain L-R Infinity dB"
+    },
+    {
+      "name": "a session mute takes its track out of the render",
+      "pass": true,
+      "detail": "both 0.037008, guitar muted 0.026226"
+    },
+    {
+      "name": "a session solo leaves only the track being listened to",
+      "pass": true,
+      "detail": "both 0.037008, guitar alone 0.033224, bass alone 0.026226"
+    },
+    {
+      "name": "every track muted is silence, not a fallback",
+      "pass": true,
+      "detail": "peak 0"
+    },
+    {
+      "name": "the metronome is not a track and keeps clicking",
+      "pass": true,
+      "detail": "silent 0, with metronome 0.068463"
+    },
+    {
+      "name": "no voice is left sounding after dispose",
+      "pass": true,
+      "detail": "active after dispose: 0"
+    },
+    {
+      "name": "the page stayed quiet",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": 0,
+  "measurements": {
+    "level-0": {
+      "name": "level-0",
+      "peak": 0.439353,
+      "rms": 0.033224,
+      "leftRms": 0.033224,
+      "rightRms": 0.033224,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "level--6": {
+      "name": "level--6",
+      "peak": 0.220198,
+      "rms": 0.016652,
+      "leftRms": 0.016652,
+      "rightRms": 0.016652,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "level--12": {
+      "name": "level--12",
+      "peak": 0.11036,
+      "rms": 0.008346,
+      "leftRms": 0.008346,
+      "rightRms": 0.008346,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "pan-centre": {
+      "name": "pan-centre",
+      "peak": 0.439353,
+      "rms": 0.033224,
+      "leftRms": 0.033224,
+      "rightRms": 0.033224,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "pan-left": {
+      "name": "pan-left",
+      "peak": 0.621339,
+      "rms": 0.033224,
+      "leftRms": 0.046986,
+      "rightRms": 0,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "pan-right": {
+      "name": "pan-right",
+      "peak": 0.621339,
+      "rms": 0.033224,
+      "leftRms": 0,
+      "rightRms": 0.046986,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "two-tracks-split": {
+      "name": "two-tracks-split",
+      "peak": 0.656207,
+      "rms": 0.042328,
+      "leftRms": 0.046986,
+      "rightRms": 0.037089,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 13,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 13,
+        "loadedBuffers": 13
+      }
+    },
+    "chord-shares-pan": {
+      "name": "chord-shares-pan",
+      "peak": 0.972068,
+      "rms": 0.042564,
+      "leftRms": 0.060195,
+      "rightRms": 0,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "expressive-shares-mix": {
+      "name": "expressive-shares-mix",
+      "peak": 0.311407,
+      "rms": 0.020782,
+      "leftRms": 0.02939,
+      "rightRms": 0,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "expressive-plain": {
+      "name": "expressive-plain",
+      "peak": 0.311407,
+      "rms": 0.016652,
+      "leftRms": 0.023549,
+      "rightRms": 0,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "both-audible": {
+      "name": "both-audible",
+      "peak": 0.594069,
+      "rms": 0.037008,
+      "leftRms": 0.037008,
+      "rightRms": 0.037008,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 13,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 13,
+        "loadedBuffers": 13
+      }
+    },
+    "session-mute-guitar": {
+      "name": "session-mute-guitar",
+      "peak": 0.464008,
+      "rms": 0.026226,
+      "leftRms": 0.026226,
+      "rightRms": 0.026226,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 13,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 13,
+        "loadedBuffers": 13
+      }
+    },
+    "session-solo-guitar": {
+      "name": "session-solo-guitar",
+      "peak": 0.439353,
+      "rms": 0.033224,
+      "leftRms": 0.033224,
+      "rightRms": 0.033224,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 13,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 13,
+        "loadedBuffers": 13
+      }
+    },
+    "all-muted": {
+      "name": "all-muted",
+      "peak": 0,
+      "rms": 0,
+      "leftRms": 0,
+      "rightRms": 0,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 13,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 13,
+        "loadedBuffers": 13
+      }
+    },
+    "all-muted-with-metronome": {
+      "name": "all-muted-with-metronome",
+      "peak": 0.068463,
+      "rms": 0.001252,
+      "leftRms": 0.001216,
+      "rightRms": 0.001287,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 13,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 13,
+        "loadedBuffers": 13
+      }
+    }
+  }
+}

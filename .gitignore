@@ -9,3 +9,4 @@ next-env.d.ts
 .shadow-eval/
 .grid-check/
 .bakeoff-s03/
+eval/mixer/.render/

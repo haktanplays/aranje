@@ -10,6 +10,7 @@ const config = [
       ".shadow-eval-s02/**",
       ".grid-check/**",
       ".bakeoff-s03/**",
+      "eval/mixer/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",
