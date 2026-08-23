@@ -11,7 +11,7 @@ import { describe, expect, it } from "vitest";
 
 import { beamLevels, buildRhythmGuide, rhythmGroupLabel } from "@/lib/tab/rhythm-guide";
 import { frettedRhythm, type SlotState } from "@/lib/tab/timeline";
-import type { Resolution, TimeSignature } from "@/lib/music/timing";
+import { ticksPerSlot, type Resolution, type TimeSignature } from "@/lib/music/timing";
 
 const guide = (
   states: readonly SlotState[],
@@ -74,6 +74,21 @@ describe("109. silence and length break a beam", () => {
   it("does not beam a quarter note", () => {
     // Four sixteenths of sound is a quarter; a quarter has no beam.
     expect(guide(read("osssossso.......")).groups).toEqual([]);
+
+    /*
+     * And asserted at the seam that decides it.
+     *
+     * The bar above is empty of groups for a second reason as well: in 4/4 the
+     * beat *is* a quarter, so two of them never share one and the run is
+     * flushed before the beam count is ever consulted. A probe that gave
+     * quarters a beam therefore left that expectation green. The note-value
+     * rule has to be pinned where it lives.
+     */
+    const quarter = ticksPerSlot(4);
+    expect(beamLevels(quarter * 2, 16)).toBe(0);
+    expect(beamLevels(quarter, 16)).toBe(0);
+    expect(beamLevels(quarter / 2, 16)).toBe(1);
+    expect(beamLevels(quarter / 4, 16)).toBe(2);
   });
 
   it("beams a note whose length is short even on a coarse grid", () => {

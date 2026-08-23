@@ -1,0 +1,84 @@
+{
+  "measuredOn": "desktop Node — not a phone, and not evidence about one",
+  "node": "v22.22.2",
+  "grids": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32
+  ],
+  "rhythmGuide": {
+    "8 bars × 1/32, single line (states + guide)": {
+      "rounds": 60,
+      "medianMs": 0.0412,
+      "p95Ms": 0.0672,
+      "maxMs": 0.406
+    },
+    "8 bars × 1/32, six-string chords (states + guide)": {
+      "rounds": 60,
+      "medianMs": 0.0471,
+      "p95Ms": 0.0632,
+      "maxMs": 0.0804
+    },
+    "8 bars × 1/32, six-string chords (guide model alone)": {
+      "rounds": 60,
+      "medianMs": 0.0239,
+      "p95Ms": 0.036,
+      "maxMs": 0.0588
+    },
+    "onsetsPerBar": 32,
+    "barsPerSection": 8
+  },
+  "sectionTimingChange": {
+    "8 bars, 1/16 → 1/8, strict schema and validators included": {
+      "rounds": 60,
+      "medianMs": 1.0221,
+      "p95Ms": 2.08,
+      "maxMs": 3.8714
+    },
+    "barsChanged": 8,
+    "warnings": 0
+  },
+  "browser": {
+    "measuredOn": "desktop Chromium — not a phone, and not evidence about one",
+    "base": "http://127.0.0.1:3100",
+    "viewports": {
+      "390x844": {
+        "dom": {
+          "totalNodes": 603,
+          "guideGroups": 7,
+          "guideNodes": 49
+        },
+        "playheadFrames": {
+          "idlePerSecond": 61.3,
+          "playingPerSecond": 60.4,
+          "unchanged": true
+        },
+        "audioContexts": {
+          "afterPlay": 1,
+          "afterViewSwitch": 1,
+          "unchangedAcrossSwitch": true
+        }
+      },
+      "320x700": {
+        "dom": {
+          "totalNodes": 603,
+          "guideGroups": 7,
+          "guideNodes": 49
+        },
+        "playheadFrames": {
+          "idlePerSecond": 61.5,
+          "playingPerSecond": 60.3,
+          "unchanged": true
+        },
+        "audioContexts": {
+          "afterPlay": 1,
+          "afterViewSwitch": 1,
+          "unchangedAcrossSwitch": true
+        }
+      }
+    }
+  }
+}
