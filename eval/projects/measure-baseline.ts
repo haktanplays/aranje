@@ -50,7 +50,8 @@ function recording(seed: Record<string, string> = {}, fail?: (op: Op) => boolean
 const clock = () => 1_700_000_000_000;
 
 const rows = START_STATES.map((state) => {
-  const seed = state.raw === null ? {} : { "aranje.song": state.raw };
+  const seed: Record<string, string> =
+    state.raw === null ? {} : { "aranje.song": state.raw };
   const { storage, ops, data } = recording(seed);
   const result = loadSong(storage, clock);
 
