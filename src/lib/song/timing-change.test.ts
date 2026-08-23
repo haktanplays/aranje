@@ -9,6 +9,8 @@
 import { describe, expect, it } from "vitest";
 
 import { barTimeline, buildNotatedPlan } from "@/lib/audio/schedule";
+import { buildMidiPlan } from "@/lib/export/midi-plan";
+import { exportProject, parseProjectText } from "@/lib/project/project-file";
 import { ticksPerSlot } from "@/lib/music/timing";
 import { changeTiming, type TimingChange } from "@/lib/song/timing-change";
 import type { Bar, MelodicSlot, Song } from "@/lib/song/schema";
@@ -430,5 +432,113 @@ describe("107. everything after the bar re-derives from the change", () => {
     // The notes in the later bars moved with their bars, not on their own.
     const plan = buildNotatedPlan(result.song);
     expect(plan.events.map((event) => event.time)).toEqual(afterStarts);
+  });
+});
+
+describe("113. everything downstream reads the change without being told", () => {
+  /**
+   * Three readers that each build their own view of time from the bars, and
+   * none of which knows this command exists: the MIDI plan, the project file
+   * and the tab timeline. If a timing change had to be announced to any of
+   * them, that announcement would be a second source of truth.
+   */
+  const threeBars = (): Song =>
+    song([
+      bar(slots([note("A3", 12), REST, REST, REST])),
+      bar(slots([note("C4", 15), REST])),
+      bar(slots([note("B3", 14), REST])),
+    ]);
+
+  const shortenFirst = (target: Song) =>
+    changeTiming(target, change({ timeSignature: [3, 4], resolution: 8 }));
+
+  it("writes the new meter into MIDI, and moves the onsets after it", () => {
+    const before = buildMidiPlan(threeBars());
+    const result = shortenFirst(threeBars());
+    expect(result.ok).toBe(true);
+    if (!result.ok || !before.ok) return;
+    const after = buildMidiPlan(result.song);
+    expect(after.ok).toBe(true);
+    if (!after.ok) return;
+
+    /* The conductor is the first track of a format-1 file. */
+    const meters = (built: typeof before) =>
+      built.ok
+        ? (built.plan.tracks[0]?.events ?? [])
+            .filter((event) => event.kind === "timeSignature")
+            .map((event) =>
+              event.kind === "timeSignature"
+                ? `${event.numerator}/${event.denominator}@${event.tick}`
+                : "",
+            )
+        : [];
+
+    // A 4/4 song carries one meter event; this one now changes at the line.
+    expect(meters(before)).toEqual(["4/4@0"]);
+    expect(meters(after)).toEqual(["3/4@0", "4/4@576"]);
+
+    const onsets = (built: typeof before) =>
+      built.ok
+        ? built.plan.tracks
+            .slice(1)
+            .flatMap((entry) => entry.events)
+            .filter((event) => event.kind === "noteOn")
+            .map((event) => event.tick)
+        : [];
+    // One quarter — 192 ticks — earlier for everything after the first bar.
+    expect(onsets(before)).toEqual([0, 768, 1536]);
+    expect(onsets(after)).toEqual([0, 576, 1344]);
+  });
+
+  it("carries a quarter grid through a project file byte for byte", () => {
+    /*
+     * The grid added in 2N-A §5 travels like any other value, which is the
+     * point: the project file has no list of resolutions of its own to update.
+     */
+    /*
+     * Held for a whole quarter each: a note written *short* at 1/8 cannot be
+     * written at 1/4 at all, which is the previous test's business rather
+     * than this one's.
+     */
+    const held = song([
+      bar(slots([note("A3", 12), TIE, note("C4", 15), TIE, REST, REST, REST, REST])),
+    ]);
+    const quarter = changeTiming(held, change({ resolution: 4 }));
+    expect(quarter.ok).toBe(true);
+    if (!quarter.ok) return;
+    expect(sectionOf(quarter.song).bars[0]?.resolution).toBe(4);
+
+    const written = exportProject(quarter.song);
+    expect(written.ok).toBe(true);
+    if (!written.ok) return;
+    const read = parseProjectText(written.text);
+    expect(read.ok).toBe(true);
+    if (!read.ok) return;
+    expect(JSON.stringify(read.song)).toBe(JSON.stringify(quarter.song));
+  });
+
+  it("moves the bars the tab draws, without redrawing the ones before", () => {
+    const before = buildNotatedPlan(threeBars()).bars.map((entry) => entry.time);
+    const result = shortenFirst(threeBars());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const after = buildNotatedPlan(result.song).bars.map((entry) => entry.time);
+    expect(after[0]).toBe(before[0]);
+    expect((before[1] ?? 0) - (after[1] ?? 0)).toBe(192);
+    expect((before[2] ?? 0) - (after[2] ?? 0)).toBe(192);
+  });
+
+  it("gives a loop over that section a new length, not the old ticks", () => {
+    /*
+     * A loop is a section's span, and a section's span is the sum of its bars.
+     * Nothing stores it, so shortening a bar shortens the loop — the failure
+     * this pins is a loop that kept the tick it was set at.
+     */
+    const before = buildNotatedPlan(threeBars());
+    const result = shortenFirst(threeBars());
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const after = buildNotatedPlan(result.song);
+    expect(before.totalTicks - after.totalTicks).toBe(192);
   });
 });

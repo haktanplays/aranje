@@ -1,0 +1,847 @@
+{
+  "results": [
+    {
+      "name": "[390x844] 1 bağlantısız tek nota → 1 onset",
+      "pass": true,
+      "detail": "0-96 \"1 nota\""
+    },
+    {
+      "name": "[390x844] 2 power chord → yalnız 2 nota",
+      "pass": true,
+      "detail": "192-288 \"1 power chord · 2 nota\""
+    },
+    {
+      "name": "[390x844] 3 zincir ortası → başlangıçta yalnız akor",
+      "pass": true,
+      "detail": "480-576 \"1 power chord · 2 nota\""
+    },
+    {
+      "name": "[390x844] 4 \"bağlantıyla birlikte\" gerçek kapsamı gösteriyor",
+      "pass": true,
+      "detail": "Bağlantıyla birlikte sil · Bağlantının tamamı birlikte silinir: 6 nota · 1 ölçü."
+    },
+    {
+      "name": "[390x844] 5 \"yalnız akor\" ne kaldıracağını söylüyor",
+      "pass": true,
+      "detail": "Yalnız akoru sil · Bu akor dışındaki slide, hammer-on veya pull-off bağlantısı kaldırılacak."
+    },
+    {
+      "name": "[390x844] 6 vazgeç → 0 yazım",
+      "pass": true,
+      "detail": "0 yazım"
+    },
+    {
+      "name": "[390x844] 7 uygula → 1 yazım",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 8 undo → zincir byte-eş geri",
+      "pass": true,
+      "detail": "{\"notes\":[{\"pitch\":\"G2\",\"articulation\":\"hammer_on\",\"position\":{\"string"
+    },
+    {
+      "name": "[390x844] 9 Intro → Ana: tab digest gerçekten değişiyor",
+      "pass": true,
+      "detail": "intro:0 → main:0, digest değişti"
+    },
+    {
+      "name": "[390x844] 11 bar dokunuşu açık seek",
+      "pass": true,
+      "detail": "0 → 4608 tick"
+    },
+    {
+      "name": "[390x844] 10.a çalınan bölüm görünürken playhead çiziliyor",
+      "pass": true,
+      "detail": "intro:0 · opacity 1"
+    },
+    {
+      "name": "[390x844] 10 çalarken bölüm değişimi gizli seek yapmıyor",
+      "pass": true,
+      "detail": "transport intro:1, viewed main, playhead 0"
+    },
+    {
+      "name": "[390x844] 12 4/4 · 1/4 barı 4 hücre çiziyor",
+      "pass": true,
+      "detail": "4 hücre (edit dışı 0)"
+    },
+    {
+      "name": "[390x844] 13 4/4 · 1/16 açıklaması",
+      "pass": true,
+      "detail": "4 ana vuruş · 16 adım"
+    },
+    {
+      "name": "[390x844] 14 6/8 felt-beat kaynağıyla doğru",
+      "pass": true,
+      "detail": "2 ana vuruş · 12 adım"
+    },
+    {
+      "name": "[390x844] 15 7/8 uydurma grouping göstermiyor",
+      "pass": true,
+      "detail": "7 sekizlik · 14 adım"
+    },
+    {
+      "name": "[390x844] 16.a önizleme 0 yazım yapıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 16 tek bar 1/16 → 1/8 tam temsil edilebilen içerikle geçiyor",
+      "pass": true,
+      "detail": "resolution 8, 1 yazım"
+    },
+    {
+      "name": "[390x844] 16.b undo 1 yazım, redo 1 yazım, ikisi de byte-eş",
+      "pass": true,
+      "detail": "undo 1 / redo 1"
+    },
+    {
+      "name": "[390x844] 17 temsil edilemeyen dönüşüm reddediliyor",
+      "pass": true,
+      "detail": "2. ölçü bu ritim aralığında birebir yazılamıyor; en yakın ad · 0 yazım"
+    },
+    {
+      "name": "[390x844] 17.b reddedilen işlemde sheet açık kalıyor, yarım state yok",
+      "pass": true,
+      "detail": "2. ölçü bu ritim aralığında birebir yazılamıyor; en yakın ad"
+    },
+    {
+      "name": "[390x844] 18 4/4 → 3/4 sığan içerikle geçiyor",
+      "pass": true,
+      "detail": "[3,4] · hata yok"
+    },
+    {
+      "name": "[390x844] 19 sığmayan içerik atomik reddediliyor",
+      "pass": true,
+      "detail": "2. ölçü yeni ölçüye sığmıyor; hiçbir şey kesilmedi."
+    },
+    {
+      "name": "[390x844] 21 tie sınırı korunuyor veya açıkça reddediliyor",
+      "pass": true,
+      "detail": "Bu değişiklik ölçü çizgisini aşan bir bağlantıyı koparıyor."
+    },
+    {
+      "name": "[390x844] 20 bölümün bütün ölçülerine timing değişimi tek commit",
+      "pass": true,
+      "detail": "gridler 16,16,16"
+    },
+    {
+      "name": "[390x844] 20.c bölüm dönüşümü başarısızsa sheet açık kalıyor, yarım state yok",
+      "pass": true,
+      "detail": "2. ölçü bu ritim aralığında birebir yazılamıyor; en yak · 0 yazım"
+    },
+    {
+      "name": "[390x844] 20.b AudioContext 1 → 1, ikinci scheduler yok",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] L1 döngü sınırı yeni bar uzunluğundan türüyor, eski tick'te kalmıyor",
+      "pass": true,
+      "detail": "0-2688 → 0-2496, toplam 4992 → 4800"
+    },
+    {
+      "name": "[390x844] L2 çalarken timing değişimi: transport duruyor, playhead yeni plandaki bar başında",
+      "pass": true,
+      "detail": "playing@580 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
+    },
+    {
+      "name": "[390x844] L3 AudioContext 1 → 1, ikinci scheduler kurulmuyor",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "[390x844] 23 beam'de chord tek onset",
+      "pass": true,
+      "detail": "Ritim grubu: 4 nota, 1/16 | Ritim grubu: 3 nota, 1/16"
+    },
+    {
+      "name": "[390x844] 24 rest beam'i kesiyor",
+      "pass": true,
+      "detail": "Ritim grubu: 4 nota, 1/16 | Ritim grubu: 3 nota, 1/16"
+    },
+    {
+      "name": "[390x844] 26 triplet \"3\" işareti görünüyor",
+      "pass": true,
+      "detail": "4 grup, 4 işaret"
+    },
+    {
+      "name": "[390x844] 27 1/32 üç beam seviyesi gösteriyor",
+      "pass": true,
+      "detail": "3 çizgi"
+    },
+    {
+      "name": "[390x844] 27.b 1/4 barı hiç beam almıyor",
+      "pass": true,
+      "detail": "0 grup"
+    },
+    {
+      "name": "[390x844] 28 beam ↔ fret/articulation/selection/playhead çakışması 0",
+      "pass": true,
+      "detail": "{\"fret\":0,\"articulation\":0,\"selection\":0,\"playhead\":0}"
+    },
+    {
+      "name": "[390x844] 28.b beam işaretleri dokunma hedefi/listener oluşturmuyor",
+      "pass": true,
+      "detail": "{\"count\":7,\"buttons\":0,\"pointerEvents\":0,\"handlers\":0}"
+    },
+    {
+      "name": "[390x844] 25 tie yeni beam onset'i oluşturmuyor",
+      "pass": true,
+      "detail": "Ritim grubu: 2 nota, 1/8 | Ritim grubu: 2 nota, 1/8"
+    },
+    {
+      "name": "[390x844] 9.b kısa şarkıda da seçilen bölüm görünür yüzeyin kaynağı",
+      "pass": true,
+      "detail": "intro:0 → main:0"
+    },
+    {
+      "name": "[390x844] T1 data-tab-tail müzikal bar veya seçim hedefi değil",
+      "pass": true,
+      "detail": "{\"exists\":true,\"isBar\":false,\"hasCells\":false,\"bars\":2,\"box\":{\"x\":306,\"y\":181,\"w\":390,\"h\":210}}"
+    },
+    {
+      "name": "[390x844] T2 boş alana dokunmak 0 seek, 0 seçim, 0 yazım",
+      "pass": true,
+      "detail": "{\"writes\":0,\"bar\":null,\"band\":false}"
+    },
+    {
+      "name": "[390x844] T3 tail şarkıya, arrangement bar sayısına veya export'a girmiyor",
+      "pass": true,
+      "detail": "2 bar, arrangement 2 hücre"
+    },
+    {
+      "name": "[390x844] 29 body yatay taşma 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 30 kasıtlı yatay scroller 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 31 44 px altı etkileşim hedefi 0",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "name": "[390x844] 32 console/page error 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 33 dış ağ isteği 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 1 bağlantısız tek nota → 1 onset",
+      "pass": true,
+      "detail": "0-96 \"1 nota\""
+    },
+    {
+      "name": "[320x700] 2 power chord → yalnız 2 nota",
+      "pass": true,
+      "detail": "192-288 \"1 power chord · 2 nota\""
+    },
+    {
+      "name": "[320x700] 3 zincir ortası → başlangıçta yalnız akor",
+      "pass": true,
+      "detail": "480-576 \"1 power chord · 2 nota\""
+    },
+    {
+      "name": "[320x700] 4 \"bağlantıyla birlikte\" gerçek kapsamı gösteriyor",
+      "pass": true,
+      "detail": "Bağlantıyla birlikte sil · Bağlantının tamamı birlikte silinir: 6 nota · 1 ölçü."
+    },
+    {
+      "name": "[320x700] 5 \"yalnız akor\" ne kaldıracağını söylüyor",
+      "pass": true,
+      "detail": "Yalnız akoru sil · Bu akor dışındaki slide, hammer-on veya pull-off bağlantısı kaldırılacak."
+    },
+    {
+      "name": "[320x700] 6 vazgeç → 0 yazım",
+      "pass": true,
+      "detail": "0 yazım"
+    },
+    {
+      "name": "[320x700] 7 uygula → 1 yazım",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 8 undo → zincir byte-eş geri",
+      "pass": true,
+      "detail": "{\"notes\":[{\"pitch\":\"G2\",\"articulation\":\"hammer_on\",\"position\":{\"string"
+    },
+    {
+      "name": "[320x700] 9 Intro → Ana: tab digest gerçekten değişiyor",
+      "pass": true,
+      "detail": "intro:0 → main:0, digest değişti"
+    },
+    {
+      "name": "[320x700] 11 bar dokunuşu açık seek",
+      "pass": true,
+      "detail": "0 → 4608 tick"
+    },
+    {
+      "name": "[320x700] 10.a çalınan bölüm görünürken playhead çiziliyor",
+      "pass": true,
+      "detail": "intro:0 · opacity 1"
+    },
+    {
+      "name": "[320x700] 10 çalarken bölüm değişimi gizli seek yapmıyor",
+      "pass": true,
+      "detail": "transport intro:1, viewed main, playhead 0"
+    },
+    {
+      "name": "[320x700] 12 4/4 · 1/4 barı 4 hücre çiziyor",
+      "pass": true,
+      "detail": "4 hücre (edit dışı 0)"
+    },
+    {
+      "name": "[320x700] 13 4/4 · 1/16 açıklaması",
+      "pass": true,
+      "detail": "4 ana vuruş · 16 adım"
+    },
+    {
+      "name": "[320x700] 14 6/8 felt-beat kaynağıyla doğru",
+      "pass": true,
+      "detail": "2 ana vuruş · 12 adım"
+    },
+    {
+      "name": "[320x700] 15 7/8 uydurma grouping göstermiyor",
+      "pass": true,
+      "detail": "7 sekizlik · 14 adım"
+    },
+    {
+      "name": "[320x700] 16.a önizleme 0 yazım yapıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 16 tek bar 1/16 → 1/8 tam temsil edilebilen içerikle geçiyor",
+      "pass": true,
+      "detail": "resolution 8, 1 yazım"
+    },
+    {
+      "name": "[320x700] 16.b undo 1 yazım, redo 1 yazım, ikisi de byte-eş",
+      "pass": true,
+      "detail": "undo 1 / redo 1"
+    },
+    {
+      "name": "[320x700] 17 temsil edilemeyen dönüşüm reddediliyor",
+      "pass": true,
+      "detail": "2. ölçü bu ritim aralığında birebir yazılamıyor; en yakın ad · 0 yazım"
+    },
+    {
+      "name": "[320x700] 17.b reddedilen işlemde sheet açık kalıyor, yarım state yok",
+      "pass": true,
+      "detail": "2. ölçü bu ritim aralığında birebir yazılamıyor; en yakın ad"
+    },
+    {
+      "name": "[320x700] 18 4/4 → 3/4 sığan içerikle geçiyor",
+      "pass": true,
+      "detail": "[3,4] · hata yok"
+    },
+    {
+      "name": "[320x700] 19 sığmayan içerik atomik reddediliyor",
+      "pass": true,
+      "detail": "2. ölçü yeni ölçüye sığmıyor; hiçbir şey kesilmedi."
+    },
+    {
+      "name": "[320x700] 21 tie sınırı korunuyor veya açıkça reddediliyor",
+      "pass": true,
+      "detail": "Bu değişiklik ölçü çizgisini aşan bir bağlantıyı koparıyor."
+    },
+    {
+      "name": "[320x700] 20 bölümün bütün ölçülerine timing değişimi tek commit",
+      "pass": true,
+      "detail": "gridler 16,16,16"
+    },
+    {
+      "name": "[320x700] 20.c bölüm dönüşümü başarısızsa sheet açık kalıyor, yarım state yok",
+      "pass": true,
+      "detail": "2. ölçü bu ritim aralığında birebir yazılamıyor; en yak · 0 yazım"
+    },
+    {
+      "name": "[320x700] 20.b AudioContext 1 → 1, ikinci scheduler yok",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] L1 döngü sınırı yeni bar uzunluğundan türüyor, eski tick'te kalmıyor",
+      "pass": true,
+      "detail": "0-2688 → 0-2496, toplam 4992 → 4800"
+    },
+    {
+      "name": "[320x700] L2 çalarken timing değişimi: transport duruyor, playhead yeni plandaki bar başında",
+      "pass": true,
+      "detail": "playing@579 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
+    },
+    {
+      "name": "[320x700] L3 AudioContext 1 → 1, ikinci scheduler kurulmuyor",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "[320x700] 23 beam'de chord tek onset",
+      "pass": true,
+      "detail": "Ritim grubu: 4 nota, 1/16 | Ritim grubu: 3 nota, 1/16"
+    },
+    {
+      "name": "[320x700] 24 rest beam'i kesiyor",
+      "pass": true,
+      "detail": "Ritim grubu: 4 nota, 1/16 | Ritim grubu: 3 nota, 1/16"
+    },
+    {
+      "name": "[320x700] 26 triplet \"3\" işareti görünüyor",
+      "pass": true,
+      "detail": "4 grup, 4 işaret"
+    },
+    {
+      "name": "[320x700] 27 1/32 üç beam seviyesi gösteriyor",
+      "pass": true,
+      "detail": "3 çizgi"
+    },
+    {
+      "name": "[320x700] 27.b 1/4 barı hiç beam almıyor",
+      "pass": true,
+      "detail": "0 grup"
+    },
+    {
+      "name": "[320x700] 28 beam ↔ fret/articulation/selection/playhead çakışması 0",
+      "pass": true,
+      "detail": "{\"fret\":0,\"articulation\":0,\"selection\":0,\"playhead\":0}"
+    },
+    {
+      "name": "[320x700] 28.b beam işaretleri dokunma hedefi/listener oluşturmuyor",
+      "pass": true,
+      "detail": "{\"count\":7,\"buttons\":0,\"pointerEvents\":0,\"handlers\":0}"
+    },
+    {
+      "name": "[320x700] 25 tie yeni beam onset'i oluşturmuyor",
+      "pass": true,
+      "detail": "Ritim grubu: 2 nota, 1/8 | Ritim grubu: 2 nota, 1/8"
+    },
+    {
+      "name": "[320x700] 9.b kısa şarkıda da seçilen bölüm görünür yüzeyin kaynağı",
+      "pass": true,
+      "detail": "intro:0 → main:0"
+    },
+    {
+      "name": "[320x700] T1 data-tab-tail müzikal bar veya seçim hedefi değil",
+      "pass": true,
+      "detail": "{\"exists\":true,\"isBar\":false,\"hasCells\":false,\"bars\":2,\"box\":{\"x\":306,\"y\":181,\"w\":320,\"h\":210}}"
+    },
+    {
+      "name": "[320x700] T2 boş alana dokunmak 0 seek, 0 seçim, 0 yazım",
+      "pass": true,
+      "detail": "{\"writes\":0,\"bar\":null,\"band\":false}"
+    },
+    {
+      "name": "[320x700] T3 tail şarkıya, arrangement bar sayısına veya export'a girmiyor",
+      "pass": true,
+      "detail": "2 bar, arrangement 2 hücre"
+    },
+    {
+      "name": "[320x700] 29 body yatay taşma 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 30 kasıtlı yatay scroller 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 31 44 px altı etkileşim hedefi 0",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "name": "[320x700] 32 console/page error 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 33 dış ağ isteği 0",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "measurements": {
+    "390x844.chainPress": {
+      "present": true,
+      "startTicks": 480,
+      "endTicks": 576,
+      "summary": "1 power chord · 2 nota"
+    },
+    "390x844.audioContexts": 0,
+    "390x844.playbackStep": {
+      "playing": {
+        "status": "playing",
+        "bar": "intro:0",
+        "playhead": "1"
+      },
+      "stepped": {
+        "status": "playing",
+        "bar": "intro:1",
+        "viewed": "main",
+        "playhead": "0"
+      }
+    },
+    "390x844.shortenedBar": {
+      "timeSignature": [
+        3,
+        4
+      ],
+      "resolution": 8,
+      "slots": {
+        "gtr": [
+          {
+            "notes": [
+              {
+                "pitch": "E2",
+                "position": {
+                  "string": 0,
+                  "fret": 0
+                }
+              }
+            ]
+          },
+          "-",
+          {
+            "notes": [
+              {
+                "pitch": "G2",
+                "position": {
+                  "string": 0,
+                  "fret": 3
+                }
+              }
+            ]
+          },
+          "-",
+          {
+            "notes": [
+              {
+                "pitch": "A2",
+                "position": {
+                  "string": 0,
+                  "fret": 5
+                }
+              }
+            ]
+          },
+          "-"
+        ],
+        "drums": [
+          [
+            {
+              "piece": "kick"
+            }
+          ],
+          [],
+          [
+            {
+              "piece": "snare"
+            }
+          ],
+          [],
+          [
+            {
+              "piece": "kick"
+            }
+          ],
+          []
+        ]
+      }
+    },
+    "390x844.sectionTiming": {
+      "error": null,
+      "grids": [
+        16,
+        16,
+        16
+      ],
+      "writes": 1
+    },
+    "390x844.loop": {
+      "loopBefore": {
+        "loop": {
+          "on": true,
+          "startTicks": 0,
+          "endTicks": 2688
+        },
+        "total": 4992
+      },
+      "loopAfter": {
+        "loop": {
+          "on": true,
+          "startTicks": 0,
+          "endTicks": 2496
+        },
+        "total": 4800
+      },
+      "shortenError": null
+    },
+    "390x844.timingWhilePlaying": {
+      "playing": {
+        "status": "playing",
+        "ticks": 580
+      },
+      "after": {
+        "status": "idle",
+        "ticks": 1344,
+        "total": 4800,
+        "at": {
+          "barKey": null,
+          "barIndex": -1,
+          "slotIndex": 0
+        }
+      }
+    },
+    "390x844.beams": [
+      {
+        "bar": "grids:1",
+        "label": "Ritim grubu: 4 nota, 1/16",
+        "lines": 2,
+        "triplets": 0
+      },
+      {
+        "bar": "grids:1",
+        "label": "Ritim grubu: 3 nota, 1/16",
+        "lines": 2,
+        "triplets": 0
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:3",
+        "label": "Ritim grubu: 8 nota, 1/32",
+        "lines": 3,
+        "triplets": 0
+      }
+    ],
+    "390x844.overlaps": {
+      "fret": 0,
+      "articulation": 0,
+      "selection": 0,
+      "playhead": 0
+    },
+    "390x844.layout": {
+      "bodyOverflow": 0,
+      "scrollers": 1
+    },
+    "320x700.chainPress": {
+      "present": true,
+      "startTicks": 480,
+      "endTicks": 576,
+      "summary": "1 power chord · 2 nota"
+    },
+    "320x700.audioContexts": 0,
+    "320x700.playbackStep": {
+      "playing": {
+        "status": "playing",
+        "bar": "intro:0",
+        "playhead": "1"
+      },
+      "stepped": {
+        "status": "playing",
+        "bar": "intro:1",
+        "viewed": "main",
+        "playhead": "0"
+      }
+    },
+    "320x700.shortenedBar": {
+      "timeSignature": [
+        3,
+        4
+      ],
+      "resolution": 8,
+      "slots": {
+        "gtr": [
+          {
+            "notes": [
+              {
+                "pitch": "E2",
+                "position": {
+                  "string": 0,
+                  "fret": 0
+                }
+              }
+            ]
+          },
+          "-",
+          {
+            "notes": [
+              {
+                "pitch": "G2",
+                "position": {
+                  "string": 0,
+                  "fret": 3
+                }
+              }
+            ]
+          },
+          "-",
+          {
+            "notes": [
+              {
+                "pitch": "A2",
+                "position": {
+                  "string": 0,
+                  "fret": 5
+                }
+              }
+            ]
+          },
+          "-"
+        ],
+        "drums": [
+          [
+            {
+              "piece": "kick"
+            }
+          ],
+          [],
+          [
+            {
+              "piece": "snare"
+            }
+          ],
+          [],
+          [
+            {
+              "piece": "kick"
+            }
+          ],
+          []
+        ]
+      }
+    },
+    "320x700.sectionTiming": {
+      "error": null,
+      "grids": [
+        16,
+        16,
+        16
+      ],
+      "writes": 1
+    },
+    "320x700.loop": {
+      "loopBefore": {
+        "loop": {
+          "on": true,
+          "startTicks": 0,
+          "endTicks": 2688
+        },
+        "total": 4992
+      },
+      "loopAfter": {
+        "loop": {
+          "on": true,
+          "startTicks": 0,
+          "endTicks": 2496
+        },
+        "total": 4800
+      },
+      "shortenError": null
+    },
+    "320x700.timingWhilePlaying": {
+      "playing": {
+        "status": "playing",
+        "ticks": 579
+      },
+      "after": {
+        "status": "idle",
+        "ticks": 1344,
+        "total": 4800,
+        "at": {
+          "barKey": null,
+          "barIndex": -1,
+          "slotIndex": 0
+        }
+      }
+    },
+    "320x700.beams": [
+      {
+        "bar": "grids:1",
+        "label": "Ritim grubu: 4 nota, 1/16",
+        "lines": 2,
+        "triplets": 0
+      },
+      {
+        "bar": "grids:1",
+        "label": "Ritim grubu: 3 nota, 1/16",
+        "lines": 2,
+        "triplets": 0
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:2",
+        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
+        "lines": 1,
+        "triplets": 1
+      },
+      {
+        "bar": "grids:3",
+        "label": "Ritim grubu: 8 nota, 1/32",
+        "lines": 3,
+        "triplets": 0
+      }
+    ],
+    "320x700.overlaps": {
+      "fret": 0,
+      "articulation": 0,
+      "selection": 0,
+      "playhead": 0
+    },
+    "320x700.layout": {
+      "bodyOverflow": 0,
+      "scrollers": 1
+    }
+  },
+  "failed": 0
+}

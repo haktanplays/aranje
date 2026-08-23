@@ -351,3 +351,71 @@ describe("41. eval stays out of the product", () => {
     }
   });
 });
+
+describe("41. the seven responsibilities 2N-A separated (spec 13.20 §8)", () => {
+  /**
+   * Each of them names a *pure* module, and the reason is the same every time:
+   * a component that owned one of these would make it unreachable from a test
+   * and impossible to share between the two surfaces that need it.
+   */
+  const OWNERS: Readonly<Record<string, string>> = {
+    "onset selection intent": "src/lib/song/onset-selection.ts",
+    "chain-impact preflight": "src/lib/song/chain-preflight.ts",
+    "boundary detach/repair": "src/lib/song/chain-preflight.ts",
+    "timing display formatter": "src/lib/music/rhythm-language.ts",
+    "bar/section timing transform": "src/lib/song/timing-change.ts",
+    "rhythm guide/beam model": "src/lib/tab/rhythm-guide.ts",
+    "section navigation transition": "src/lib/workspace/section-navigation.ts",
+  };
+
+  it("keeps every one of them out of React", () => {
+    for (const [what, path] of Object.entries(OWNERS)) {
+      for (const specifier of valueImportsOf(path)) {
+        expect(specifier === "react", `${what}: ${path} → ${specifier}`).toBe(false);
+        expect(
+          specifier.startsWith("@/components/"),
+          `${what}: ${path} → ${specifier}`,
+        ).toBe(false);
+      }
+    }
+  });
+
+  it("keeps the components out of the logic", () => {
+    /*
+     * A component may *call* these modules; what it may not do is compute the
+     * same answers itself. The three that would be easiest to reimplement in
+     * a render — beam levels, the beat grouping and the plain rhythm reading —
+     * are checked by name, on the syntax tree rather than on the text.
+     */
+    const forbidden = ["buildRhythmGuide", "beamLevels", "readRhythm"];
+    for (const path of workspaceComponents) {
+      const identifiers = identifiersOf(path);
+      for (const name of forbidden) {
+        if (!identifiers.has(name)) continue;
+        // Calling one is fine; declaring one is a second implementation.
+        const source = readFileSync(path, "utf8");
+        expect(source.includes(`function ${name}`), `${path} declares ${name}`).toBe(
+          false,
+        );
+      }
+    }
+  });
+
+  it("gives the chain decision exactly one set of callers", () => {
+    /*
+     * Named rather than merely absent from the workspace folder, which would
+     * pass for a codebase that had moved the second implementation somewhere
+     * else. `transform` applies the preflight's edits and `use-transform`
+     * carries the reader's decision to it; a third name here would be a second
+     * opinion about what a chain costs.
+     */
+    const users = walk("src/lib")
+      .concat(walk("src/components"))
+      .filter((path) => valueImportsOf(path).includes("@/lib/song/chain-preflight"))
+      .sort();
+    expect(users).toEqual([
+      "src/lib/song/transform.ts",
+      "src/lib/song/use-transform.ts",
+    ]);
+  });
+});
