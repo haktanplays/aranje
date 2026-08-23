@@ -20,8 +20,10 @@ import {
 } from "@/lib/music/timing";
 
 describe("the grids that exist (spec 5.5, K-34)", () => {
-  it("is exactly the five the contract names", () => {
-    expect([...RESOLUTIONS]).toEqual([8, 12, 16, 24, 32]);
+  it("is exactly the six the contract names", () => {
+    // 4 joined them in 2N-A (spec 13.20 §5): the grid a chord chart is
+    // written on, one cell per beat.
+    expect([...RESOLUTIONS]).toEqual([4, 8, 12, 16, 24, 32]);
   });
 
   it("does not include 64", () => {
@@ -113,7 +115,13 @@ describe("slot count (spec 5.5)", () => {
         rejected.push(`${formatTimeSignature(timeSignature)}@${resolution}`);
       }
     }
-    expect(rejected).toEqual(["6/8@12", "7/8@12"]);
+    /*
+     * The quarter grid reaches the meters counted in quarters and not the ones
+     * counted in eighths, and that is the representability rule doing its job
+     * rather than a list someone maintains: 6/8 and 7/8 count an eighth, and a
+     * grid of quarters cannot write one.
+     */
+    expect(rejected).toEqual(["6/8@4", "6/8@12", "7/8@4", "7/8@12"]);
   });
 });
 
@@ -123,7 +131,7 @@ describe("ticks (spec 8.3)", () => {
     const perSlot = Object.fromEntries(
       RESOLUTIONS.map((resolution) => [resolution, ticksPerSlot(resolution)]),
     );
-    expect(perSlot).toEqual({ 8: 96, 12: 64, 16: 48, 24: 32, 32: 24 });
+    expect(perSlot).toEqual({ 4: 192, 8: 96, 12: 64, 16: 48, 24: 32, 32: 24 });
     for (const value of Object.values(perSlot)) {
       expect(Number.isInteger(value)).toBe(true);
     }
@@ -212,8 +220,9 @@ describe("meters", () => {
         (resolution) => !isRepresentableGrid(meter, resolution),
       ).map((resolution) => `${formatTimeSignature(meter)}@${resolution}`),
     );
-    // A triplet grid cannot write an eighth-note meter's own note value.
-    expect(refused).toEqual(["6/8@12", "7/8@12"]);
+    // A triplet grid cannot write an eighth-note meter's own note value, and
+    // nor can a quarter grid (spec 13.20 §5).
+    expect(refused).toEqual(["6/8@4", "6/8@12", "7/8@4", "7/8@12"]);
   });
 
   it("formats a meter for display", () => {

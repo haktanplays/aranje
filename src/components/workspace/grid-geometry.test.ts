@@ -18,7 +18,9 @@ describe("a bar is as wide as it has slots", () => {
     const widths = RESOLUTIONS.map((resolution) =>
       barWidth(slotCount([4, 4], resolution)),
     );
-    expect(widths).toEqual([8, 12, 16, 24, 32].map((n) => n * SLOT_WIDTH));
+    // One cell per slot at every grid, from the four of a chord chart to the
+    // thirty-two of a fill.
+    expect(widths).toEqual([4, 8, 12, 16, 24, 32].map((n) => n * SLOT_WIDTH));
     // Strictly increasing: nothing gets narrower as it gets denser.
     for (let i = 1; i < widths.length; i += 1) {
       expect(widths[i]).toBeGreaterThan(widths[i - 1] ?? 0);

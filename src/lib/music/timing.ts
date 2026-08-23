@@ -5,7 +5,7 @@
  * A bar does not store how many slots it has. It stores a meter and a
  * resolution, and everything else — slot count, slot length in ticks, where
  * the beats fall, how wide the bar is drawn — is *derived* here. That was
- * already true while there were two resolutions; with five it is the only
+ * already true while there were two resolutions; with six it is the only
  * thing keeping the eye, the ear and the editor on the same grid.
  *
  * ## The grids
@@ -13,11 +13,24 @@
  * Resolution is "divisions of a whole note", which is why the same number
  * works in every meter:
  *
+ *   4   quarter grid           4/4 -> 4 slots, 3/4 -> 3 slots
  *   8   eighth grid            4/4 -> 8 slots
  *   12  eighth triplets        4/4 -> 12 slots
  *   16  sixteenth grid         4/4 -> 16 slots
  *   24  sixteenth triplets     4/4 -> 24 slots
  *   32  thirty-second grid     4/4 -> 32 slots
+ *
+ * **4 was added in 2N-A** (spec 13.20 §5) and changes no meaning: it is the
+ * same "divisions of a whole note" everywhere else uses. It is the grid a
+ * chord chart is written on — one cell per beat — and until it existed the
+ * coarsest thing anyone could write was eighths, which forces a rest into
+ * every other cell of music that has none.
+ *
+ * It reaches x/4 meters and not the eighth-note ones, and that falls out of
+ * the representability rule below rather than being decided here: 4/4 and 3/4
+ * count in quarters, so a quarter grid can write their note value; 6/8 and 7/8
+ * count in eighths, and a grid of quarters cannot write an eighth. Nothing
+ * offers 1/4 for those meters and nothing rounds to make it fit.
  *
  * 12 and 24 are triplet grids: three slots to the note value rather than two.
  * They are not "slightly denser straight grids" and nothing here or upstream
@@ -62,7 +75,7 @@ export const TIME_SIGNATURES = [
 
 export type TimeSignature = (typeof TIME_SIGNATURES)[number];
 
-export const RESOLUTIONS = [8, 12, 16, 24, 32] as const;
+export const RESOLUTIONS = [4, 8, 12, 16, 24, 32] as const;
 
 export type Resolution = (typeof RESOLUTIONS)[number];
 
@@ -79,9 +92,9 @@ export function isTripletGrid(resolution: number): boolean {
 /**
  * How long one slot lasts, in ticks.
  *
- * 8 -> 96, 12 -> 64, 16 -> 48, 24 -> 32, 32 -> 24. Every supported grid
- * divides `TICKS_PER_WHOLE` exactly, so slot time is always a whole number
- * of ticks and no timing anywhere needs a rounding step.
+ * 4 -> 192, 8 -> 96, 12 -> 64, 16 -> 48, 24 -> 32, 32 -> 24. Every supported
+ * grid divides `TICKS_PER_WHOLE` exactly, so slot time is always a whole
+ * number of ticks and no timing anywhere needs a rounding step.
  */
 export function ticksPerSlot(resolution: number): number {
   return TICKS_PER_WHOLE / resolution;
@@ -110,9 +123,9 @@ export function isRepresentableGrid(
  *
  * slotCount = numerator * resolution / denominator
  *
- * 4/4 at 8 -> 8, 4/4 at 12 -> 12, 4/4 at 16 -> 16, 4/4 at 24 -> 24,
- * 4/4 at 32 -> 32, 6/8 at 8 -> 6, 6/8 at 16 -> 12, 3/4 at 12 -> 9,
- * 7/8 at 8 -> 7.
+ * 4/4 at 4 -> 4, 4/4 at 8 -> 8, 4/4 at 12 -> 12, 4/4 at 16 -> 16,
+ * 4/4 at 24 -> 24, 4/4 at 32 -> 32, 3/4 at 4 -> 3, 6/8 at 8 -> 6,
+ * 6/8 at 16 -> 12, 3/4 at 12 -> 9, 7/8 at 8 -> 7.
  *
  * Throws on a grid the meter cannot be written on, because a caller that got
  * `10.5` back would go on to build a bar with half a slot in it.

@@ -34,13 +34,15 @@ export const timeSignatureSchema = z.union([
  * 64 is deliberately absent — see `lib/music/timing.ts` for why, and spec 5.5
  * for the open gap that leaves.
  */
-export const resolutionSchema = z.union([
-  z.literal(8),
-  z.literal(12),
-  z.literal(16),
-  z.literal(24),
-  z.literal(32),
-]);
+/*
+ * Derived from the timing core's list rather than restated.
+ *
+ * It was a hand-written union of literals, which is a second place the set of
+ * grids lived — and adding 1/4 in 2N-A would have meant patching it by hand,
+ * with nothing to notice if someone forgot. `z.literal` over the const array
+ * keeps both the runtime check and the inferred type coming from one source.
+ */
+export const resolutionSchema = z.literal(RESOLUTIONS);
 
 /**
  * How one note is played (spec 5.4, 8.5).

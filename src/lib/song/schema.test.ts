@@ -168,15 +168,16 @@ describe("song schema (spec 5)", () => {
     }
   });
 
-  it("takes the five grids the contract names and nothing else (K-34)", () => {
+  it("takes the six grids the contract names and nothing else (K-34, 2N-A)", () => {
     for (const resolution of [8, 12, 16, 24, 32]) {
       expect(
         barSchema.safeParse({ timeSignature: [4, 4], resolution, slots: {} })
           .success,
       ).toBe(true);
     }
-    // 64 is the one people will ask for; it is deliberately not here.
-    for (const rejected of [1, 4, 6, 10, 20, 48, 64, 128, 16.5, -16]) {
+    // 64 is the one people will ask for; it is deliberately not here. 4 is,
+    // since 2N-A — a quarter grid, which is why it left this list.
+    for (const rejected of [1, 6, 10, 20, 48, 64, 128, 16.5, -16]) {
       expect(
         barSchema.safeParse({
           timeSignature: [4, 4],

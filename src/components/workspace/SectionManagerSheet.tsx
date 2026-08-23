@@ -18,6 +18,7 @@ import { useState } from "react";
 
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { bpmRange, songLimits } from "@/lib/limits";
+import { readRhythm } from "@/lib/music/rhythm-language";
 import {
   RESOLUTIONS,
   TIME_SIGNATURES,
@@ -204,6 +205,18 @@ export function SectionManagerSheet({
             </select>
           </label>
         </div>
+
+        {/*
+          What the chosen pair actually is, in both readings (spec 13.20 §4).
+          The technical line stays: someone learning the notation needs to see
+          the two next to each other, and someone who already reads it would
+          find its absence patronising.
+        */}
+        <p data-section-rhythm className="text-muted mb-2 text-xs">
+          {readRhythm(meter, grid).plain}
+          <span className="opacity-70"> · {readRhythm(meter, grid).technical}</span>
+        </p>
+
         <div className="flex gap-2">
           <label className="block flex-1">
             <span className="text-muted mb-1 block text-xs">Ritim aralığı</span>
@@ -215,7 +228,7 @@ export function SectionManagerSheet({
             >
               {grids.map((entry) => (
                 <option key={entry} value={String(entry)}>
-                  {resolutionLabel(entry)}
+                  {readRhythm(meter, entry).plain} · {resolutionLabel(entry)}
                 </option>
               ))}
             </select>
