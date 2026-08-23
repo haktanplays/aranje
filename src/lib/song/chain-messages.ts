@@ -91,9 +91,41 @@ export function chainDetachExplain(impact: ChainImpact, isChord: boolean): strin
   return `Bu ${subject} dışındaki slide, hammer-on, pull-off veya uzatma bağlantısı kaldırılacak.`;
 }
 
+/**
+ * What taking the whole chain will do — in the verb of the command itself.
+ *
+ * One generic sentence was safe for the code and wrong for the reader: "the
+ * whole connection moves together" under a button that deletes promises the
+ * music will be somewhere else afterwards, when in fact it will be gone.
+ * Someone who does not read music has no way to catch that; the sentence is
+ * the only thing telling them what is about to happen.
+ *
+ * A total table rather than a default, so a new command cannot inherit a
+ * sentence that happens not to describe it.
+ */
+const INCLUDE_OUTCOMES: Readonly<Record<CommandKind, string>> = {
+  delete_selection: "Bağlantının tamamı birlikte silinir",
+  cut_selection: "Bağlantının tamamı birlikte kesilir",
+  copy_selection: "Bağlantının tamamı kopyalanır",
+  duplicate_selection: "Bağlantının tamamı birlikte çoğaltılır",
+  move_selection_time: "Bağlantının tamamı birlikte taşınır",
+  repeat_selection: "Bağlantının tamamı birlikte tekrarlanır",
+  transpose_pitch: "Bağlantının tamamının sesi değişir",
+  restring_same_pitch: "Bağlantının tamamı başka tele taşınır",
+  translate_fret_shape: "Bağlantının tamamının şekli taşınır",
+  /*
+   * Paste never reaches this question: its region is the destination, so it
+   * cuts nothing of the selection's own and the core does not ask (see
+   * `transform.ts`). The entry exists because the table is total by type, and
+   * a total table is what makes a missing sentence a compile error rather
+   * than a wrong one at runtime.
+   */
+  paste_selection: "Bağlantının tamamı birlikte yapıştırılır",
+};
+
 /** Why the whole-chain option is the safe one, and what it will really touch. */
-export function chainIncludeExplain(scopeText: string): string {
-  return `Bağlantının tamamı birlikte hareket eder: ${scopeText}.`;
+export function chainIncludeExplain(kind: CommandKind, scopeText: string): string {
+  return `${INCLUDE_OUTCOMES[kind]}: ${scopeText}.`;
 }
 
 /** Said when neither answer is available, so the reader is not left guessing. */

@@ -83,7 +83,7 @@ export function ChainDecisionSheet({
         </p>
       ) : (
         <div className="flex flex-col gap-2">
-          {option("include_chain", chainIncludeExplain(scopeText))}
+          {option("include_chain", chainIncludeExplain(command.kind, scopeText))}
           {option("detach_boundary", chainDetachExplain(impact, isChord))}
         </div>
       )}
