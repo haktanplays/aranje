@@ -82,18 +82,10 @@ export function useTransform(store: Store, song: Song): TransformHandle {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [pending, setPending] = useState<TransformCommand | null>(null);
-  /**
-   * Whether the core widened the last selection to keep a chain whole.
-   *
-   * State rather than a ref: the summary is derived from it during render, and
-   * a ref read at render time is both a lint error and a real staleness bug —
-   * the badge would lag the selection by one commit.
-   */
-  const [expanded, setExpanded] = useState(false);
 
   const summary = useMemo(
-    () => (selection ? summariseSelection(song, selection, { expanded }) : null),
-    [song, selection, expanded],
+    () => (selection ? summariseSelection(song, selection) : null),
+    [song, selection],
   );
 
   const runPreview = useCallback(
@@ -118,35 +110,27 @@ export function useTransform(store: Store, song: Song): TransformHandle {
     [pending, runPreview],
   );
 
-  const select = useCallback(
-    (next: TimeSelection | null) => {
-      setError(null);
-      setNotice(null);
-      setPending(null);
-      if (!next) {
-        setExpanded(false);
-        setSelection(null);
-        return;
-      }
-      // Ask the core where the selection really is, so the band the reader
-      // sees is the music the command will act on — chain and all.
-      const normalised = copySelection(song, next);
-      if (normalised.ok) {
-        setExpanded(
-          normalised.selection.startTicks !== next.startTicks ||
-            normalised.selection.endTicks !== next.endTicks,
-        );
-        setSelection(normalised.selection);
-        return;
-      }
-      setExpanded(false);
-      setSelection(next);
-    },
-    [song],
-  );
+  /**
+   * Hold exactly what the caller handed over (spec 13.20 §1).
+   *
+   * This used to run the range through the transform core first and store what
+   * came back, which meant a press on one chord became the whole legato chain
+   * before the band was ever drawn. The reader had no way to ask for the chord
+   * they touched, because no state anywhere remembered it.
+   *
+   * The chain has not stopped mattering. It is a fact about the *command* —
+   * what would break if this music moved — and it is worked out by the
+   * preflight when an action is chosen, where the reader can be shown it and
+   * given a choice. Selecting stays a statement about a finger.
+   */
+  const select = useCallback((next: TimeSelection | null) => {
+    setError(null);
+    setNotice(null);
+    setPending(null);
+    setSelection(next);
+  }, []);
 
   const clear = useCallback(() => {
-    setExpanded(false);
     setSelection(null);
     setPending(null);
     setError(null);
@@ -194,7 +178,6 @@ export function useTransform(store: Store, song: Song): TransformHandle {
         kind: "selection_transform",
         command: target.kind,
       });
-      setExpanded(false);
       setSelection(result.selection);
       setPending(null);
       setError(null);

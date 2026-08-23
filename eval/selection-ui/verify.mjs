@@ -939,12 +939,20 @@ async function run() {
         return;
       }
       const summary = await page.locator("[data-testid=selection-summary]").innerText();
-      // A pattern's rests are part of it, so the summary owes the reader a
-      // width, not only a note count — but an empty selection saying "1 ölçü"
-      // would satisfy that while proving nothing, so check it holds a note.
+      /*
+       * What the summary owes the reader changed in 2N-A.
+       *
+       * It used to owe a *width*, because a press was widened to a whole chain
+       * before the band was drawn and the reader needed telling how far it had
+       * gone. A press now picks up exactly one onset group, so what it owes is
+       * a name for the thing under the finger. A pattern wider than that is
+       * something the reader drags a handle to make, and the width is reported
+       * then. An empty selection would satisfy any wording, so this still
+       * checks a note is really held.
+       */
       record(
-        `[${label}] 9 selection reports a width, not just a count`,
-        (await selectionHasNotes(page)) && /ölçü|vuruş/.test(summary),
+        `[${label}] 9 selection names what it holds`,
+        (await selectionHasNotes(page)) && /nota|akor|power chord/.test(summary),
         summary,
       );
       await page.locator("[data-testid=selection-action-repeat]").click();

@@ -45,6 +45,7 @@ import { sameBarSelection, type BarSelection } from "@/lib/song/bar-selection";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { TransformCommand } from "@/lib/song/transform";
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
+import { pickOnsetAt } from "@/lib/song/onset-selection";
 import type { Section, Song, Track } from "@/lib/song/schema";
 import { useBarTransform, type BarTransformHandle } from "@/lib/song/use-bar-transform";
 import { useTransform, type TransformHandle } from "@/lib/song/use-transform";
@@ -348,12 +349,24 @@ export function useSelectionSession(options: {
       barTransform.clear();
       setBarSheet(null);
 
-      transform.select({
-        sectionId: section.id,
-        trackId: track.id,
-        startTicks,
-        endTicks: startTicks + step,
-      });
+      /*
+       * One onset group, and only that (spec 13.20 §1).
+       *
+       * The press names a moment; `pickOnsetAt` turns it into the chord struck
+       * there and the ties that keep it sounding. It deliberately does not
+       * reach along the legato chain — what a chain would cost is a question
+       * the preflight answers when an action is chosen, not something a finger
+       * decides on the reader's behalf.
+       */
+      const picked = pickOnsetAt(section, track.id, startTicks);
+      transform.select(
+        picked?.selection ?? {
+          sectionId: section.id,
+          trackId: track.id,
+          startTicks,
+          endTicks: startTicks + step,
+        },
+      );
     },
     [barTransform, pasteAt.kind, pause, song.sections, timeline, track, transform],
   );

@@ -29,7 +29,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { defectSong, shortSong } from "./fixture.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
-const OUT = "eval/tab";
+/*
+ * Where the record goes. The committed `DEFECTS.json` is the *before*: it was
+ * taken on the build that still had both defects and is not overwritten by a
+ * later run. Point this somewhere else to re-run the same measurements
+ * against a fixed build.
+ */
+const OUT = process.env.DEFECTS_OUT ?? "eval/tab";
 mkdirSync(OUT, { recursive: true });
 
 /** From `components/workspace/geometry.ts`; the fixture is written to it. */

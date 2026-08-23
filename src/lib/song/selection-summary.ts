@@ -23,8 +23,6 @@ export type SelectionSummary = {
   readonly barCount: number;
   /** True when the range covers a root, a fifth and an octave struck together. */
   readonly looksLikePowerChord: boolean;
-  /** Set when the core widened the range to keep a chain whole. */
-  readonly expanded: boolean;
   /** The whole thing, ready to read. */
   readonly text: string;
 };
@@ -51,7 +49,6 @@ const plural = (count: number, word: string) => `${count} ${word}`;
 export function summariseSelection(
   song: Song,
   selection: TimeSelection,
-  options: { readonly expanded?: boolean } = {},
 ): SelectionSummary {
   const section: Section | undefined = song.sections.find(
     (entry) => entry.id === selection.sectionId,
@@ -62,7 +59,6 @@ export function summariseSelection(
     noteCount: 0,
     barCount: 0,
     looksLikePowerChord: false,
-    expanded: options.expanded ?? false,
     text: "Seçim yok",
   };
   if (!section) return empty;
@@ -96,27 +92,41 @@ export function summariseSelection(
   // more use than "0 nota".
   const barCount = bars.size > 0 ? bars.size : coveredBars(section, selection);
 
+  /*
+   * One onset is described as the thing it is, and by how many notes it holds
+   * (spec 13.20 §1). "1 power chord · 2 nota" is what a reader can check
+   * against their own finger; "6 nota · 2 ölçü · zincir tamamlandı" — what
+   * this said before — described something they never asked for.
+   *
+   * The bar count is added to a single onset only when it really spans more
+   * than one, which happens when a tie carries the note over a bar line.
+   * Printing "· 1 ölçü" after every chord is noise; leaving it out when the
+   * note genuinely crosses a line would be a small lie.
+   */
   const parts: string[] = [];
   if (onsetCount === 0) {
     parts.push("Boş seçim");
-  } else if (chordCount === onsetCount && onsetCount === 1) {
-    parts.push(power ? "1 power chord şekli" : "1 akor");
-  } else if (chordCount > 0) {
-    parts.push(plural(noteCount, "nota"));
+    parts.push(plural(barCount, "ölçü"));
+  } else if (onsetCount === 1) {
+    if (noteCount === 1) {
+      parts.push("1 nota");
+    } else {
+      parts.push(power ? "1 power chord" : "1 akor");
+      parts.push(plural(noteCount, "nota"));
+    }
+    if (barCount > 1) parts.push(plural(barCount, "ölçü"));
   } else {
-    parts.push(plural(onsetCount, "nota"));
+    parts.push(plural(noteCount, "nota"));
+    parts.push(plural(barCount, "ölçü"));
   }
-  parts.push(plural(barCount, "ölçü"));
 
-  const text = parts.join(" · ");
   return {
     onsetCount,
     chordCount,
     noteCount,
     barCount,
     looksLikePowerChord: power,
-    expanded: options.expanded ?? false,
-    text: options.expanded ? `${text} · zincir tamamlandı` : text,
+    text: parts.join(" · "),
   };
 }
 

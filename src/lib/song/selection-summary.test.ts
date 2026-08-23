@@ -11,7 +11,7 @@ import { transformMessage } from "@/lib/song/transform-messages";
 import type { TransformErrorCode } from "@/lib/song/transform";
 import { ticksPerSlot } from "@/lib/music/timing";
 import type { MelodicSlot } from "@/lib/song/schema";
-import { bar, note, slots, song, TRACK_ID, REST } from "@/test/move-fixtures";
+import { bar, note, slots, song, TIE, TRACK_ID, REST } from "@/test/move-fixtures";
 
 const STEP = ticksPerSlot(8);
 const sel = (startTicks: number, endTicks: number) => ({
@@ -41,12 +41,61 @@ describe("power chord is a label, not a type", () => {
 });
 
 describe("summaries", () => {
-  it("counts a chord as one chord", () => {
+  it("says what one onset is and how many notes it holds", () => {
+    /*
+     * The line the brief asked for, exactly (spec 13.20 §1): a reader can
+     * check "1 power chord · 3 nota" against their own finger. The bar count
+     * is deliberately absent — a chord that lasts one bar does not need to be
+     * told it lasts one bar.
+     */
     const target = song([bar(slots([POWER, REST]))]);
     const summary = summariseSelection(target, sel(0, STEP));
     expect(summary.onsetCount).toBe(1);
     expect(summary.noteCount).toBe(3);
-    expect(summary.text).toContain("power chord");
+    expect(summary.text).toBe("1 power chord · 3 nota");
+  });
+
+  it("calls a two-note shape a power chord and a triad a chord", () => {
+    const twoNote = song([
+      bar(slots([{ notes: [POWER.notes[0]!, POWER.notes[1]!] }, REST])),
+    ]);
+    expect(summariseSelection(twoNote, sel(0, STEP)).text).toBe(
+      "1 power chord · 2 nota",
+    );
+
+    const triad = song([
+      bar(
+        slots([
+          {
+            notes: [
+              { pitch: "E2", position: { string: 0, fret: 0 } },
+              { pitch: "G#2", position: { string: 1, fret: 0 } },
+              { pitch: "B2", position: { string: 1, fret: 2 } },
+            ],
+          },
+          REST,
+        ]),
+      ),
+    ]);
+    expect(summariseSelection(triad, sel(0, STEP)).text).toBe("1 akor · 3 nota");
+  });
+
+  it("says a single note is a single note", () => {
+    const target = song([bar(slots([note("A3", 1, 12), REST]))]);
+    expect(summariseSelection(target, sel(0, STEP)).text).toBe("1 nota");
+  });
+
+  it("adds the bar count only when one onset really crosses a bar line", () => {
+    // A held note whose ties carry it into the next bar: saying "1 nota" alone
+    // there would hide that the selection reaches into a second bar.
+    const target = song([
+      bar(slots([...Array.from({ length: 7 }, () => REST), note("A3", 1, 12)])),
+      bar(slots([TIE, REST])),
+    ]);
+    const summary = summariseSelection(target, sel(STEP * 7, STEP * 9));
+    expect(summary.onsetCount).toBe(1);
+    expect(summary.barCount).toBe(2);
+    expect(summary.text).toBe("1 nota · 2 ölçü");
   });
 
   it("counts single notes as notes and says how many bars", () => {
@@ -60,10 +109,18 @@ describe("summaries", () => {
     expect(summary.text).toBe("3 nota · 2 ölçü");
   });
 
-  it("says when the core widened the range", () => {
+  it("never announces music the reader did not select", () => {
+    /*
+     * The 2N-A regression, stated as a rule. Before this checkpoint a press on
+     * one chord of a legato run was widened to the whole run and the summary
+     * said so — "zincir tamamlandı" — which made a selection nobody asked for
+     * look like a feature. The summary describes the range it is given and
+     * nothing beyond it; what a chain would cost belongs to the preflight.
+     */
     const target = song([bar(slots([note("A3", 1, 12), REST]))]);
-    const summary = summariseSelection(target, sel(0, STEP), { expanded: true });
-    expect(summary.text).toContain("zincir tamamlandı");
+    const summary = summariseSelection(target, sel(0, STEP));
+    expect(summary.text).toBe("1 nota");
+    expect(summary.text).not.toContain("zincir");
   });
 
   it("never puts a tick or a slot index in the text", () => {
