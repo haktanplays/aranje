@@ -156,11 +156,59 @@ function soundingTicks(
   return total;
 }
 
-/** Everything that has to sound, with the times it has to sound at. */
-export function buildSongPlan(song: Song): SongPlan {
+/**
+ * A note as the score writes it: the full tie-merged length, and the velocity
+ * the musician wrote rather than a gain derived from it.
+ *
+ * This is deliberately a separate shape from `NoteEventPlan`. Playback wants
+ * a *shortened* note — `articulationHold` lifts the finger early so a palm
+ * mute sounds like a palm mute — while a score reader (2M-A: MIDI export)
+ * wants the length the note is written to last. Both are derived from this
+ * one traversal, so there is exactly one place that knows how a tie crosses
+ * a bar line and how a mixed grid turns into ticks.
+ */
+export type NotatedNote = {
+  kind: "note";
+  trackId: string;
+  /** Ticks from the start of the song. */
+  time: number;
+  /** The whole sounding length, ties across bars already merged. */
+  durationTicks: number;
+  pitch: string;
+  /** 1-127, as written; absent means the contract's default. */
+  velocity: number;
+  articulation?: Articulation;
+};
+
+export type NotatedDrum = {
+  kind: "drum";
+  trackId: string;
+  time: number;
+  piece: DrumPiece;
+  velocity: number;
+};
+
+export type NotatedPlan = {
+  events: (NotatedNote | NotatedDrum)[];
+  bars: BarMarker[];
+  totalTicks: number;
+};
+
+const writtenVelocity = (velocity?: number) =>
+  Math.min(velocityRange.max, Math.max(velocityRange.min, velocity ?? DEFAULT_VELOCITY));
+
+/**
+ * Every written event in the song, in playing order.
+ *
+ * The single traversal both the audio scheduler and the MIDI writer are built
+ * on. Nothing here shortens, swings or interprets: that is the caller's job,
+ * and keeping it out means the two callers cannot drift apart about when a
+ * note starts or how long a tie lasts.
+ */
+export function buildNotatedPlan(song: Song): NotatedPlan {
   const bars = barTimeline(song);
   const barStart = new Map(bars.map((bar) => [bar.barKey, bar.time]));
-  const events: (NoteEventPlan | DrumEventPlan)[] = [];
+  const events: (NotatedNote | NotatedDrum)[] = [];
 
   for (const track of song.tracks) {
     const timeline = buildTrackTimeline(song, track.id);
@@ -173,19 +221,18 @@ export function buildSongPlan(song: Song): SongPlan {
         const step = ticksPerSlot(bar.resolution);
 
         for (const span of bar.spans) {
-          // A span that began in an earlier bar was already scheduled there.
+          // A span that began in an earlier bar was already counted there.
           if (span.openStart) continue;
-          const full = soundingTicks(timeline.bars, barIndex, span);
           events.push({
             kind: "note",
             trackId: track.id,
             time: start + span.startSlot * step,
-            durationTicks: Math.max(
-              1,
-              Math.round(full * articulationHold(span.articulation)),
-            ),
+            durationTicks: soundingTicks(timeline.bars, barIndex, span),
             pitch: span.pitch,
-            gain: velocityGain(span.velocity),
+            velocity: writtenVelocity(span.velocity),
+            ...(span.articulation !== undefined
+              ? { articulation: span.articulation }
+              : {}),
           });
         }
       });
@@ -200,7 +247,7 @@ export function buildSongPlan(song: Song): SongPlan {
             trackId: track.id,
             time: start + mark.slotIndex * step,
             piece: mark.piece,
-            gain: velocityGain(mark.velocity),
+            velocity: writtenVelocity(mark.velocity),
           });
         }
       }
@@ -215,6 +262,40 @@ export function buildSongPlan(song: Song): SongPlan {
     bars,
     totalTicks: last ? last.time + last.durationTicks : 0,
   };
+}
+
+/**
+ * Everything that has to sound, with the times it has to sound at.
+ *
+ * The written plan, played: each note shortened by its articulation and each
+ * velocity turned into a gain. Derived rather than re-walked, so the sounding
+ * onset of a note is by construction the onset a score reader would see.
+ */
+export function buildSongPlan(song: Song): SongPlan {
+  const notated = buildNotatedPlan(song);
+  const events: (NoteEventPlan | DrumEventPlan)[] = notated.events.map((event) =>
+    event.kind === "note"
+      ? {
+          kind: "note",
+          trackId: event.trackId,
+          time: event.time,
+          durationTicks: Math.max(
+            1,
+            Math.round(event.durationTicks * articulationHold(event.articulation)),
+          ),
+          pitch: event.pitch,
+          gain: velocityGain(event.velocity),
+        }
+      : {
+          kind: "drum",
+          trackId: event.trackId,
+          time: event.time,
+          piece: event.piece,
+          gain: velocityGain(event.velocity),
+        },
+  );
+
+  return { events, bars: notated.bars, totalTicks: notated.totalTicks };
 }
 
 /** Tone accepts a raw tick count written with the `i` suffix. */

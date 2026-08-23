@@ -134,3 +134,24 @@ export const practiceRateLimits = {
   stepPercent: 5,
   defaultPercent: 100,
 } as const;
+
+/**
+ * Audio and MIDI export (spec 13.19, phase 2M-A).
+ *
+ * `sampleRate` and `bitDepth` are the contract of the file that leaves the
+ * app, not a rendering preference: a listener's player has to accept it
+ * everywhere, and 44.1 kHz / 16-bit PCM is the format that does.
+ *
+ * `tailSeconds` is the one place the render knows to keep going after the
+ * last written note. A sample decays, a release envelope finishes, and a
+ * fixed guess in a component would cut whichever song happened to end on a
+ * long ring. It is stated once here and derived from the engine's own
+ * longest release, so a change to the instruments moves it in one edit.
+ */
+export const audioExportLimits = {
+  sampleRate: 44100,
+  bitDepth: 16,
+  channels: 2,
+  maxChannels: 2,
+  tailSeconds: 3,
+} as const;

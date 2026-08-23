@@ -137,12 +137,19 @@ describe("37. export surfaces", () => {
   });
 
   it("the name module exposes the naming contract", async () => {
+    /*
+     * `safeFileStem` joined the surface in 2M-A: WAV and MIDI have to be
+     * named the same way a project file is, and the alternative was a second
+     * cleaning regex living next to the export. A shared stem is the point,
+     * so it is part of the contract rather than an accident of the module.
+     */
     const surface = Object.keys(await import("@/lib/project/project-file-name")).sort();
     expect(surface).toEqual([
       "FALLBACK_FILE_STEM",
       "PROJECT_FILE_EXTENSION",
       "PROJECT_FILE_MIME",
       "projectFileName",
+      "safeFileStem",
     ]);
   });
 });

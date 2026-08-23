@@ -24,7 +24,11 @@ const FORBIDDEN = /[/\\?%*:|"<>]/g;
 const CONTROL = /[\u0000-\u001F\u007F]/g;
 
 /**
- * `<safe-title>.aranje.json`.
+ * The cleaned stem every exported filename is built on.
+ *
+ * Shared rather than re-derived per format (2M-A §5): a `.wav` and a `.mid`
+ * of the same song must be named the same thing, and a second regex
+ * somewhere else is how they stop being.
  *
  * Order matters: whitespace collapses first (a tab is both whitespace and a
  * control character, and it should read as a separator, not vanish), the
@@ -33,7 +37,7 @@ const CONTROL = /[\u0000-\u001F\u007F]/g;
  * spaces and hyphens are trimmed last — a name that begins with a dot is a
  * hidden file on half the world's machines.
  */
-export function projectFileName(title: string): string {
+export function safeFileStem(title: string): string {
   const cleaned = title
     .replace(/\s+/g, "-")
     .replace(CONTROL, "")
@@ -43,5 +47,10 @@ export function projectFileName(title: string): string {
     // The cut may have exposed a new trailing dot or hyphen; trim once more.
     .replace(/[-. ]+$/g, "");
 
-  return `${cleaned === "" ? FALLBACK_FILE_STEM : cleaned}${PROJECT_FILE_EXTENSION}`;
+  return cleaned === "" ? FALLBACK_FILE_STEM : cleaned;
+}
+
+/** `<safe-title>.aranje.json`. */
+export function projectFileName(title: string): string {
+  return `${safeFileStem(title)}${PROJECT_FILE_EXTENSION}`;
 }
