@@ -239,10 +239,10 @@ export function Workspace() {
   /* ----------------------------------------------------------- the gates */
 
   const toggleLoop = useCallback(() => {
-    const current =
-      navigation.activeSectionId ?? runs[0]?.sectionId ?? null;
-    controller.setLoopSection(state.loopSectionId ? null : current);
-  }, [controller, navigation.activeSectionId, runs, state.loopSectionId]);
+    // The loop belongs to the section being *read*, not to wherever the
+    // transport is. That id is always a real section, so there is no fallback.
+    controller.setLoopSection(state.loopSectionId ? null : navigation.viewedSectionId);
+  }, [controller, navigation.viewedSectionId, state.loopSectionId]);
 
   const { canEdit, editDisabledReason } = editGate({
     track,
@@ -283,9 +283,14 @@ export function Workspace() {
     navigation.dropBarFocus();
   }, [navigation, pause, resetEditSurfaces, session]);
 
+  /* The one door onto a section (spec 13.20 §3): a selection, a ghost or an open
+     cell sheet describes music leaving the screen, so it leaves with it. */
   const focusSection = useCallback(
-    (sectionId: string) => navigation.setActiveBarKey(`${sectionId}:0`),
-    [navigation],
+    (sectionId: string) => {
+      resetEditSurfaces();
+      navigation.viewSection(sectionId);
+    },
+    [navigation, resetEditSurfaces],
   );
 
   const lifecycle = useLifecycle({
@@ -294,7 +299,7 @@ export function Workspace() {
     commit,
     onBeforeNewSong: prepareForProjectApply,
     onBeforeStructural: prepareForStructuralApply,
-    activeSectionId: navigation.activeSectionId,
+    activeSectionId: navigation.viewedSectionId,
     selectedTrackId: track?.id ?? null,
     setActiveSection: focusSection,
     selectTrack,
@@ -352,9 +357,9 @@ export function Workspace() {
       {navigation.view === "tab" ? (
         <SectionNavigator
           runs={runs}
-          activeSectionId={navigation.activeSectionId}
+          activeSectionId={navigation.viewedSectionId}
           loopSectionId={state.loopSectionId}
-          onJump={navigation.jumpToSection}
+          onJump={focusSection}
           onOpenList={() => overlays.open("section")}
         />
       ) : null}
@@ -438,6 +443,7 @@ export function Workspace() {
         practicePercent={state.practicePercent}
         onPracticePercent={setPracticeRatePercent}
         onSelectTrack={selectTrack}
+        onChooseSection={focusSection}
       />
     </div>
   );

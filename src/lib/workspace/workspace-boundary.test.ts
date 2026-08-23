@@ -110,13 +110,39 @@ describe("39. one owner per state", () => {
   });
 
   it("keeps the controllers from importing each other", () => {
-    // The session hooks are siblings composed by the root; an edge between
-    // them is the start of the next god module.
+    /*
+     * The session hooks are siblings composed by the root; an edge between
+     * them is the start of the next god module.
+     *
+     * The rule is about *controllers*, not about the folder. A controller may
+     * own a pure module that lives beside it — `edit-gate`, and since 2N-A the
+     * section-navigation transition — and pushing those somewhere else to
+     * satisfy a path check would scatter the logic the §8 boundary exists to
+     * keep together. What the next test enforces is that such a module really
+     * is pure: no React, no controller of its own.
+     */
+    const isController = (specifier: string) =>
+      specifier.startsWith("@/lib/workspace/use-");
     for (const path of workspaceHooks) {
+      if (!path.includes("/use-")) continue;
       for (const specifier of valueImportsOf(path)) {
-        expect(specifier.startsWith("@/lib/workspace/"), `${path} → ${specifier}`).toBe(
-          false,
-        );
+        expect(isController(specifier), `${path} → ${specifier}`).toBe(false);
+      }
+    }
+  });
+
+  it("keeps the pure modules beside the controllers actually pure", () => {
+    // A "pure helper" that reaches for React or for a controller is a second
+    // controller wearing a filename that hides it from the rule above.
+    const pureModules = workspaceHooks.filter((path) => !path.includes("/use-"));
+    expect(pureModules.length).toBeGreaterThan(0);
+    for (const path of pureModules) {
+      for (const specifier of valueImportsOf(path)) {
+        expect(specifier === "react", `${path} → ${specifier}`).toBe(false);
+        expect(
+          specifier.startsWith("@/lib/workspace/use-"),
+          `${path} → ${specifier}`,
+        ).toBe(false);
       }
     }
   });

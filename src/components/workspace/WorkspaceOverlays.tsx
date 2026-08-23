@@ -59,11 +59,20 @@ export function WorkspaceOverlays({
   practicePercent,
   onPracticePercent,
   onSelectTrack,
+  onChooseSection,
 }: {
   song: Song;
   runs: readonly SectionRun[];
   overlays: WorkspaceOverlayState;
   navigation: WorkspaceNavigation;
+  /**
+   * Move to a section and clear what belonged to the last one.
+   *
+   * Injected rather than reached for: the list is one of several doors onto a
+   * section (spec 13.20 §3) and they all have to leave the same nothing
+   * behind, so the door itself does not get to decide.
+   */
+  onChooseSection: (sectionId: string) => void;
   noteEditing: NoteEditing;
   copilot: CoArrangerHandle;
   copilotSkills: readonly ArrangeSkill[];
@@ -155,7 +164,7 @@ export function WorkspaceOverlays({
           open
           onClose={overlays.close}
           song={song}
-          activeSectionId={navigation.activeSectionId}
+          activeSectionId={navigation.viewedSectionId}
           lifecycle={lifecycle}
         />
       ) : null}
@@ -257,9 +266,9 @@ export function WorkspaceOverlays({
 
       <SectionSheet
         runs={runs}
-        activeSectionId={navigation.activeSectionId}
+        activeSectionId={navigation.viewedSectionId}
         open={overlays.isOpen("section")}
-        onJump={navigation.jumpToSection}
+        onJump={onChooseSection}
         onClose={overlays.close}
         onManage={() => overlays.open("sectionManage")}
       />

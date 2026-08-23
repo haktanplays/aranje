@@ -111,6 +111,8 @@ export function WorkspaceSurface({
              */
             copilotOwnsScreen || !canPersist ? undefined : bars.selectFromTab
           }
+          viewedSectionId={navigation.viewedSectionId}
+          followsPlayback={navigation.followsPlayback}
           scrollRef={navigation.scrollRef}
           onSlotLongPress={selectionEnabled ? time.onSlotLongPress : undefined}
           onHandleMove={time.onHandleMove}

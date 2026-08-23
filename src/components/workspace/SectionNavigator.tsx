@@ -35,10 +35,17 @@ export function SectionNavigator({
 }) {
   if (runs.length === 0) return null;
 
-  const index = Math.max(
-    0,
-    runs.findIndex((run) => run.sectionId === activeSectionId),
-  );
+  /*
+   * No fallback to the first section.
+   *
+   * This used to clamp a missing id to index 0, which is how the stepper spent
+   * a whole checkpoint saying "Intro Riff" while the tab was showing Ana Riff:
+   * the id it was given came from the transport and often matched nothing, and
+   * the clamp turned that into a confident wrong answer. The viewed section is
+   * always a real section now (spec 13.20 §3); if it somehow is not, saying
+   * nothing is better than saying the wrong thing.
+   */
+  const index = runs.findIndex((run) => run.sectionId === activeSectionId);
   const current = runs[index];
   const previous = runs[index - 1];
   const next = runs[index + 1];

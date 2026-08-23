@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import {
@@ -99,6 +99,8 @@ export function TabCanvas({
   getPosition,
   running,
   activeBarKey,
+  viewedSectionId,
+  followsPlayback = true,
   onActiveBarChange,
   onSeekBar,
   onBarLongPress,
@@ -117,6 +119,23 @@ export function TabCanvas({
   getPosition: () => PlayPosition;
   running: boolean;
   activeBarKey: string | null;
+  /**
+   * The section this surface answers for (spec 13.20 §3).
+   *
+   * The tab draws the whole song in one scroller, so "which section is on
+   * screen" used to be whatever the scroll position happened to show. It is
+   * now told, and it says so in the DOM — the drawn surface declares its own
+   * source rather than leaving it to be inferred from pixels.
+   */
+  viewedSectionId?: string;
+  /**
+   * False once the reader has stepped away from the playhead.
+   *
+   * Two things stop: the tab no longer chases the music horizontally, and the
+   * playhead is not drawn over music it is not playing. A line sliding across
+   * a section the transport is nowhere near is not a playhead.
+   */
+  followsPlayback?: boolean;
   onActiveBarChange: (barKey: string | null) => void;
   onSeekBar: (barKey: string) => void;
   /**
@@ -158,8 +177,21 @@ export function TabCanvas({
       const x = playheadX(plan, position);
       const element = playheadRef.current;
 
+      /*
+       * The playhead belongs only over the music it is playing.
+       *
+       * While the reader is reading another section the transport carries on,
+       * and the line would be drawn far off to one side of a surface they are
+       * not looking at — or, worse, dragged into view by the follow scroll
+       * below. Both are hidden together, because they are the same rule.
+       */
+      const playingSection = position.barKey?.split(":")[0] ?? null;
+      const here =
+        viewedSectionId === undefined ||
+        (playingSection !== null && playingSection === viewedSectionId);
+
       if (element) {
-        if (x === null) {
+        if (x === null || !here) {
           element.style.opacity = "0";
         } else {
           element.style.opacity = "1";
@@ -173,7 +205,7 @@ export function TabCanvas({
       }
 
       const scroller = scrollRef.current;
-      if (scroller && x !== null) {
+      if (scroller && x !== null && here && followsPlayback) {
         const target = followScrollLeft(
           x,
           { scrollLeft: scroller.scrollLeft, clientWidth: scroller.clientWidth },
@@ -188,9 +220,45 @@ export function TabCanvas({
 
     frame = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(frame);
-  }, [running, plan, getPosition, onActiveBarChange, scrollRef]);
+  }, [
+    running,
+    plan,
+    getPosition,
+    onActiveBarChange,
+    scrollRef,
+    viewedSectionId,
+    followsPlayback,
+  ]);
 
   const contentRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+   * Room after the last bar, so every section can reach the reading position.
+   *
+   * Without it the tab can only scroll until its content runs out, and on a
+   * short song that is nowhere near far enough: the reproduction measured a
+   * requested scroll of 272 against a possible 188, so asking for the second
+   * section left the first one exactly where it was and the notes on screen
+   * never changed (spec 13.20 §3, `eval/tab/DEFECTS.json`). Scrolling is how
+   * the surface answers the reader's choice; a surface that *cannot* answer it
+   * makes the choice meaningless.
+   *
+   * One viewport's width is enough for any single bar to reach the left edge,
+   * and it is re-measured on resize because a phone that rotates is a
+   * different viewport.
+   */
+  const [tailWidth, setTailWidth] = useState(0);
+
+  useEffect(() => {
+    const scroller = scrollRef.current;
+    if (!scroller) return;
+    const measure = () => setTailWidth(scroller.clientWidth);
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(scroller);
+    return () => observer.disconnect();
+  }, [scrollRef]);
 
   /*
    * The press is measured against the content, not the viewport, so the tick
@@ -241,6 +309,7 @@ export function TabCanvas({
       >
         <div
           data-tab-content
+          data-viewed-section={viewedSectionId}
           className="relative flex min-w-max"
           ref={contentRef}
           {...longPress}
@@ -333,6 +402,14 @@ export function TabCanvas({
                   />
                 </BarSlot>
               ))}
+          {/* The room described above. Empty, and never a hit target. */}
+          <div
+            aria-hidden
+            data-tab-tail
+            className="shrink-0"
+            style={{ width: tailWidth }}
+          />
+
           <PlayheadLayer
             layerRef={playheadRef}
             height={BAR_HEADER_HEIGHT + bodyHeight + RHYTHM_ROW_HEIGHT}

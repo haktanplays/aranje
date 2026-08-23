@@ -16,6 +16,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type RefObject,
@@ -24,21 +25,44 @@ import {
 import { BAR_KEY_ATTRIBUTE, GUTTER_WIDTH } from "@/components/workspace/geometry";
 import type { WorkspaceView } from "@/components/workspace/ViewSwitch";
 import type { Song, Track } from "@/lib/song/schema";
+import {
+  initialSectionView,
+  nextSectionView,
+  playheadBelongsHere,
+  sectionNeighbours,
+  type SectionNavEvent,
+} from "@/lib/workspace/section-navigation";
 
 export type WorkspaceNavigation = {
   readonly view: WorkspaceView;
   readonly activeBarKey: string | null;
-  readonly activeSectionId: string | null;
+  /**
+   * The section the reader is looking at (spec 13.20 §3).
+   *
+   * Its own state, never read off `activeBarKey`. The transport's section is
+   * `playingSectionId`, and the two are allowed to differ — that is what
+   * happens the moment someone steps away from the playhead to read ahead.
+   */
+  readonly viewedSectionId: string;
+  /** The section the transport is on, which is a different question. */
+  readonly playingSectionId: string | null;
+  /** True while the transport may still carry the view along. */
+  readonly followsPlayback: boolean;
+  /** Draw the playhead only over the music it is really playing. */
+  readonly playheadVisible: boolean;
+  /** The step either side, for the stepper's arrows. */
+  readonly neighbourSections: { previous: string | null; next: string | null };
   /** The selected track, resolved against the current song. */
   readonly track: Track | undefined;
   /** The tab's scroller. Lives here because scroll targets are navigation. */
   readonly scrollRef: RefObject<HTMLDivElement | null>;
   readonly arrangeScrollRef: RefObject<HTMLDivElement | null>;
   setActiveBarKey(barKey: string | null): void;
+  /** The stepper, the list, the arrangement: an explicit choice of section. */
+  viewSection(sectionId: string): void;
   selectTrack(trackId: string): void;
   showArrange(): void;
   showTab(): void;
-  jumpToSection(sectionId: string): void;
   seekToBar(barKey: string): void;
   /** Track, transport, surface, scroll — the one tap that crosses both. */
   openBarInTab(barKey: string): void;
@@ -75,30 +99,85 @@ export function useWorkspaceNavigation(options: {
   /** A bar the tab has to scroll to once it is actually mounted. */
   const [pendingTabBar, setPendingTabBar] = useState<string | null>(null);
 
+  /*
+   * The viewed section, held rather than derived (spec 13.20 §3).
+   *
+   * The song's section ids are passed to every transition, so a section that
+   * has just been deleted cannot go on being the thing the reader is looking
+   * at, and the fallback is deterministic.
+   */
+  const sectionIds = useMemo(
+    () => song.sections.map((section) => section.id),
+    [song.sections],
+  );
+  const [sectionView, setSectionView] = useState(() => initialSectionView(sectionIds));
+
+  const dispatchSection = useCallback(
+    (event: SectionNavEvent) => {
+      setSectionView((current) => nextSectionView(current, event, sectionIds));
+    },
+    [sectionIds],
+  );
+
+  /*
+   * A song whose sections changed under the view — a delete, an import, an
+   * undo — is resolved when the value is *read*, not by an effect that writes
+   * state back. An effect would mean one render in which the view still names
+   * a section that is gone, and every reader downstream would have to survive
+   * it. `nextSectionView` settles the stored value on every transition; this
+   * settles what comes out in between.
+   */
+  const viewedSectionId = sectionIds.includes(sectionView.viewedSectionId)
+    ? sectionView.viewedSectionId
+    : (sectionIds[0] ?? "");
+  const settledView = { viewedSectionId, followsPlayback: sectionView.followsPlayback };
+
+  /**
+   * Choose a section: the stepper, the list, the arrangement's header.
+   *
+   * The choice is recorded first and the scroll follows from it. That order is
+   * the point of §3 — scrolling is what the view *does* about the reader's
+   * choice, not where the choice comes from. Queuing the scroll through the
+   * same pending-bar mechanism the bar tap uses means it also works when the
+   * tab is not on screen yet.
+   */
+  const viewSection = useCallback(
+    (sectionId: string) => {
+      dispatchSection({ kind: "choose_section", sectionId });
+      setPendingTabBar(`${sectionId}:0`);
+    },
+    [dispatchSection],
+  );
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const arrangeScrollRef = useRef<HTMLDivElement | null>(null);
 
   const track =
     song.tracks.find((entry) => entry.id === selectedTrackId) ?? song.tracks[0];
 
-  const jumpToSection = useCallback((sectionId: string) => {
-    const scroller = scrollRef.current;
-    const target = scroller?.querySelector<HTMLElement>(
-      `[${BAR_KEY_ATTRIBUTE}="${sectionId}:0"]`,
-    );
-    if (!scroller || !target) return;
-    scroller.scrollTo({
-      left: Math.max(0, target.offsetLeft - GUTTER_WIDTH),
-      behavior: "smooth",
-    });
-  }, []);
-
   const seekToBar = useCallback(
     (barKey: string) => {
       seek(barKey);
       setActiveBarKey(barKey);
+      // Pointing at a bar is a choice as well as a seek: the reader has said
+      // where they want to be, so the view is with the music again.
+      dispatchSection({ kind: "open_bar", barKey });
     },
-    [seek],
+    [dispatchSection, seek],
+  );
+
+  /**
+   * The transport moved to a new bar.
+   *
+   * It carries the view only while the reader has not taken over. Playback is
+   * never allowed to drag someone off the section they chose to read.
+   */
+  const reportPlaybackBar = useCallback(
+    (barKey: string | null) => {
+      setActiveBarKey(barKey);
+      dispatchSection({ kind: "playback_moved", barKey });
+    },
+    [dispatchSection],
   );
 
   /**
@@ -118,6 +197,15 @@ export function useWorkspaceNavigation(options: {
     [seekToBar],
   );
 
+  /*
+   * The scroll a choice asks for, once the tab is really on screen.
+   *
+   * Set directly rather than smoothly. A smooth scroll is still moving while
+   * anything downstream asks where the tab is, and "still animating" is not a
+   * position: the first reproduction of this defect measured 460 against a
+   * target of 1088 for exactly that reason. The reader sees a jump to the
+   * section they asked for, which is what they asked for.
+   */
   useEffect(() => {
     if (view !== "tab" || pendingTabBar === null) return;
     const scroller = scrollRef.current;
@@ -149,24 +237,31 @@ export function useWorkspaceNavigation(options: {
   const resetForNewSong = useCallback(() => {
     setActiveBarKey(null);
     setPendingTabBar(null);
+    dispatchSection({ kind: "song_replaced" });
     // Empty on purpose: the resolver above falls back to the new song's
     // first track, which is the deterministic place to meet an unknown song.
     setSelectedTrackId("");
     setView("arrange");
-  }, []);
+  }, [dispatchSection]);
+
+  const playingSectionId = activeBarKey?.split(":")[0] ?? null;
 
   return {
     view,
     activeBarKey,
-    activeSectionId: activeBarKey?.split(":")[0] ?? null,
+    viewedSectionId,
+    playingSectionId,
+    followsPlayback: sectionView.followsPlayback,
+    playheadVisible: playheadBelongsHere(settledView, activeBarKey),
+    neighbourSections: sectionNeighbours(sectionIds, viewedSectionId),
     track,
     scrollRef,
     arrangeScrollRef,
-    setActiveBarKey,
+    setActiveBarKey: reportPlaybackBar,
+    viewSection,
     selectTrack: setSelectedTrackId,
     showArrange,
     showTab,
-    jumpToSection,
     seekToBar,
     openBarInTab,
     dropBarFocus,
