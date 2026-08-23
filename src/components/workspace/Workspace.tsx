@@ -37,7 +37,6 @@ import { usePlayback } from "@/lib/audio/use-playback";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { availableSkills } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
-import { useProjectFile } from "@/lib/project/use-project-file";
 import { useSong } from "@/lib/song/use-song";
 import { useSessionGround } from "@/lib/workspace/use-session-ground";
 import { useTimingChange } from "@/lib/workspace/use-timing-change";
@@ -45,10 +44,10 @@ import { useSettings } from "@/lib/settings/use-settings";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 import { editGate } from "@/lib/workspace/edit-gate";
 import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
-import { useExport } from "@/lib/workspace/use-export";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { useMixer } from "@/lib/workspace/use-mixer";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
+import { useWorkspaceFiles } from "@/lib/workspace/use-workspace-files";
 import { useSelectionSession } from "@/lib/workspace/use-selection-session";
 import { useWorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import { useWorkspaceOverlays } from "@/lib/workspace/use-workspace-overlays";
@@ -128,14 +127,6 @@ export function Workspace() {
   );
   const mixer = useMixer({ song, canPersist, commit, audio: mixerAudio });
 
-  /* Export reads; it never writes. `pause` is the only thing it asks of the
-     live app, and the mixer is the only owner of who is being listened to. */
-  const exporter = useExport({
-    song,
-    audibleTrackIds: mixer.audibleTrackIds,
-    pausePlayback: pause,
-  });
-
   const copilot = useCoArranger(song, {
     onApply: (candidate, skill) => commit(candidate, { kind: "copilot_apply", skill }),
     onBeforePreviewPlay: pause,
@@ -183,12 +174,15 @@ export function Workspace() {
   });
   const { undoEdit, redoEdit, focusSection } = ground;
 
-  /* ------------------------------------------------------- project file */
+  /* ------------------------------------- backups, exports and the library */
 
-  const project = useProjectFile({
+  /* Three owners that all move a whole song, and all stand on one ground. */
+  const { project, exporter, library } = useWorkspaceFiles({
     song,
     canPersist,
     commit,
+    audibleTrackIds: mixer.audibleTrackIds,
+    pausePlayback: pause,
     onBeforeApply: ground.prepareForProjectApply,
     onApplied: overlays.close,
   });
@@ -372,6 +366,7 @@ export function Workspace() {
         lifecycle={lifecycle}
         mixer={mixer}
         exporter={exporter}
+        library={library}
         canPersist={canPersist}
         songBpm={state.songBpm}
         practicePercent={state.practicePercent}

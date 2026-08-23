@@ -31,7 +31,11 @@ import { targetsFor } from "@/lib/copilot/ui-options";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
 import type { CoArrangerHandle } from "@/lib/copilot/use-co-arranger";
 import type { ExportHandle } from "@/lib/workspace/use-export";
+import { ProjectDeleteSheet } from "@/components/workspace/ProjectDeleteSheet";
+import { ProjectLibrarySheet } from "@/components/workspace/ProjectLibrarySheet";
+import { SONG_TEMPLATES } from "@/lib/song/song-templates";
 import type { ProjectFileHandle } from "@/lib/project/use-project-file";
+import type { ProjectLibraryHandle } from "@/lib/workspace/use-project-library";
 import type { Song } from "@/lib/song/schema";
 import type { SectionRun } from "@/lib/tab/timeline";
 import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
@@ -54,6 +58,7 @@ export function WorkspaceOverlays({
   arrangeOpen,
   project,
   exporter,
+  library,
   lifecycle,
   mixer,
   canPersist,
@@ -85,6 +90,8 @@ export function WorkspaceOverlays({
   arrangeOpen: boolean;
   project: ProjectFileHandle;
   exporter: ExportHandle;
+  /** Every project on the device, and the five things that can be done to one. */
+  library: ProjectLibraryHandle;
   lifecycle: LifecycleHandle;
   mixer: MixerHandle;
   canPersist: boolean;
@@ -295,6 +302,36 @@ export function WorkspaceOverlays({
         canPersist={canPersist}
       />
 
+      {/*
+        The library, and the confirmation that stands in front of a deletion.
+        Two sheets rather than one, so the confirmation cannot disappear with
+        the row that opened it.
+      */}
+      {library.isOpen ? (
+        <ProjectLibrarySheet
+          library={library}
+          templates={SONG_TEMPLATES}
+          onNew={(templateId) => library.createFrom(templateId)}
+          onImport={() => {
+            library.close();
+            overlays.open("project");
+          }}
+          onBackup={(projectId) => project.downloadProject(library.songOf(projectId))}
+          now={library.openedAt}
+        />
+      ) : null}
+
+      <ProjectDeleteSheet
+        target={library.pendingDelete}
+        onBackup={() =>
+          project.downloadProject(
+            library.pendingDelete ? library.songOf(library.pendingDelete.id) : null,
+          )
+        }
+        onCancel={library.cancelDelete}
+        onDelete={library.confirmDelete}
+      />
+
       <InfoSheet
         open={overlays.isOpen("info")}
         onClose={overlays.close}
@@ -304,6 +341,7 @@ export function WorkspaceOverlays({
         onOpenProjectFile={() => overlays.open("project")}
         onNewSong={() => overlays.open("newSong")}
         onSongInfo={() => overlays.open("songInfo")}
+        onProjects={library.open}
       />
     </>
   );

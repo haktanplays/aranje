@@ -17,6 +17,7 @@ export function InfoSheet({
   onOpenProjectFile,
   onNewSong,
   onSongInfo,
+  onProjects,
 }: {
   open: boolean;
   onClose: () => void;
@@ -31,6 +32,8 @@ export function InfoSheet({
   onNewSong: () => void;
   /** Hands over to the song-info sheet (spec 13.17). */
   onSongInfo: () => void;
+  /** The project library — the second door onto it, beside the header title. */
+  onProjects: () => void;
 }) {
   if (!open) return null;
 
@@ -54,6 +57,19 @@ export function InfoSheet({
             permanent slice of a phone screen (spec 13.15). */}
         <section className="border-line mb-4 border-b pb-4">
           <h3 className="text-muted mb-2 text-xs">Proje</h3>
+          {/*
+            The library, first: since 2O-A "yeni şarkı" makes a new project
+            beside the current one, so the place they all live is the thing a
+            reader most often wants from here.
+          */}
+          <button
+            type="button"
+            data-info-projects
+            onClick={onProjects}
+            className="border-line mb-2 min-h-11 w-full rounded-lg border text-sm"
+          >
+            Projeler
+          </button>
           <div className="mb-2 flex gap-2">
             <button
               type="button"

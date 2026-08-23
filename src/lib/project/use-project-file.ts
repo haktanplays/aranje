@@ -55,6 +55,8 @@ export type ProjectFileHandle = {
   readonly exportError: string | null;
   /** Serialise the current song and hand the browser a download. */
   downloadBackup(): void;
+  /** The same, for any project's song — including one that is not open. */
+  downloadProject(song: Song | null): void;
   /** A picked file: size gate first, then read, then the pure parse. */
   openFile(file: File): void;
   /** Put the previewed song in place of the current one, as one edit. */
@@ -96,8 +98,24 @@ export function useProjectFile(options: {
     };
   }, []);
 
-  const downloadBackup = useCallback(() => {
-    const result = exportProject(song);
+  /**
+   * Back up any song, not only the open one (2O-A §20).
+   *
+   * The library backs up a project the reader is not looking at — before
+   * deleting it, most importantly — and it must not have to open it first.
+   * The same pure serializer, the same file name rule, the same single Object
+   * URL: there is no second export path, only a second caller.
+   *
+   * A null song is a project that could not be read. Nothing is written and no
+   * empty file is offered: a backup of a project this app cannot open would be
+   * a file that claims to hold music it does not.
+   */
+  const downloadProject = useCallback((target: Song | null) => {
+    if (target === null) {
+      setExportError(EXPORT_BLOCKED_MESSAGE);
+      return;
+    }
+    const result = exportProject(target);
     if (!result.ok) {
       setExportError(EXPORT_BLOCKED_MESSAGE);
       return;
@@ -112,7 +130,7 @@ export function useProjectFile(options: {
     // browser treat it as a download rather than a popup.
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = projectFileName(song.title);
+    anchor.download = projectFileName(target.title);
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -121,7 +139,11 @@ export function useProjectFile(options: {
       URL.revokeObjectURL(url);
       pendingUrls.current.delete(url);
     }, 0);
-  }, [song]);
+  }, []);
+
+  const downloadBackup = useCallback(() => {
+    downloadProject(song);
+  }, [downloadProject, song]);
 
   const openFile = useCallback((file: File) => {
     // The byte count refuses before a single byte is read (spec 13.15).
@@ -200,5 +222,13 @@ export function useProjectFile(options: {
     setExportError(null);
   }, []);
 
-  return { state, exportError, downloadBackup, openFile, apply, cancel };
+  return {
+    state,
+    exportError,
+    downloadBackup,
+    downloadProject,
+    openFile,
+    apply,
+    cancel,
+  };
 }

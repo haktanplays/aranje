@@ -40,6 +40,14 @@ const workspaceHooks = readdirSync("src/lib/workspace")
   .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
   .map((name) => `src/lib/workspace/${name}`);
 
+/**
+ * Hooks that exist only to call other hooks (2O-A §5).
+ *
+ * Listed rather than inferred from the name, so adding one is a decision
+ * somebody made on purpose and can be seen in a diff.
+ */
+const COMPOSITION_HOOKS = new Set(["src/lib/workspace/use-workspace-files.ts"]);
+
 describe("38. the composition root stays a composition root", () => {
   it("respects the line budgets honestly earned in 2L-R and tightened in 2L-B", () => {
     // 416 accepted at 2L-R plus at most 34 lines of lifecycle wiring (2L-B §2).
@@ -125,8 +133,33 @@ describe("39. one owner per state", () => {
       specifier.startsWith("@/lib/workspace/use-");
     for (const path of workspaceHooks) {
       if (!path.includes("/use-")) continue;
+      if (COMPOSITION_HOOKS.has(path)) continue;
       for (const specifier of valueImportsOf(path)) {
         expect(isController(specifier), `${path} → ${specifier}`).toBe(false);
+      }
+    }
+  });
+
+  /**
+   * The one exception, and the price of it.
+   *
+   * A composition hook exists to call several controllers so the root does not
+   * have to — `use-workspace-files` calls the backup, the export and the
+   * library controllers because all three stand on the same ground, and
+   * spelling that out three times in `Workspace.tsx` is how a composition root
+   * turns back into a god module.
+   *
+   * What stops it becoming a fourth controller is that it may own **nothing**.
+   * No state, no ref, no effect, no memo: it composes and returns. A
+   * composition hook that started remembering something would be a controller
+   * that had hidden itself behind this exemption, so the exemption checks.
+   */
+  it("lets a composition hook compose, and own nothing", () => {
+    expect(COMPOSITION_HOOKS.size).toBeGreaterThan(0);
+    for (const path of COMPOSITION_HOOKS) {
+      const source = readFileSync(path, "utf8");
+      for (const owned of ["useState", "useRef", "useEffect", "useMemo", "useReducer"]) {
+        expect(source, `${path} owns ${owned}`).not.toContain(owned);
       }
     }
   });

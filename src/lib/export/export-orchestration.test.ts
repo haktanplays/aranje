@@ -373,9 +373,15 @@ describe("76. the project backup is not behind the export door (2M-A.1 §5)", ()
      * arrives, this test is where the decision that the backup stays outside
      * it is recorded.
      */
+    /*
+     * `downloadProject` is where the bytes are made since 2O-A — the library
+     * backs up projects that are not open, and `downloadBackup` is now a
+     * one-line caller of it. The rule is unchanged and reads the function that
+     * actually does the work.
+     */
     const backup = readFileSync("src/lib/project/use-project-file.ts", "utf8");
     const inDownload = backup.slice(
-      backup.indexOf("const downloadBackup"),
+      backup.indexOf("const downloadProject"),
       backup.indexOf("const openFile"),
     );
     expect(inDownload).toContain("exportProject");

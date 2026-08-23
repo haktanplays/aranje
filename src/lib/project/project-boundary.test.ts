@@ -103,11 +103,22 @@ describe("36. components take the flow through the hook", () => {
   });
 
   it("Workspace holds no project-file machinery of its own", () => {
+    /*
+     * Since 2O-A the root reaches the backup/import flow through
+     * `use-workspace-files`, which composes it with the export controller and
+     * the project library — three owners that all move a whole song and all
+     * stand on the same ground. What the rule protects is unchanged: the root
+     * never sees the parser, the error table or the file-name helper.
+     */
     const specifiers = importsOf("src/components/workspace/Workspace.tsx");
-    expect(specifiers).toContain("@/lib/project/use-project-file");
+    expect(specifiers).toContain("@/lib/workspace/use-workspace-files");
     expect(specifiers).not.toContain("@/lib/project/project-file");
     expect(specifiers).not.toContain("@/lib/project/project-file-errors");
     expect(specifiers).not.toContain("@/lib/project/project-file-name");
+
+    const files = importsOf("src/lib/workspace/use-workspace-files.ts");
+    expect(files).toContain("@/lib/project/use-project-file");
+    expect(files).not.toContain("@/lib/project/project-file");
   });
 
   it("ArrangementCanvas gained no project wiring", () => {
