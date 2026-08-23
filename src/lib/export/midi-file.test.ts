@@ -31,9 +31,16 @@ import {
   writeMidiFile,
   type MidiEvent,
 } from "@/lib/export/midi-writer";
+import { parseMidiFile, pitchBendCount } from "@/lib/dev/midi-reader";
 
 /* ------------------------------------------------------------- decoding */
 
+/*
+ * The file is read back with the strict reader in `lib/dev`, which walks
+ * chunks, delta times, meta and SysEx lengths and running status exactly as a
+ * player would. Assertions are therefore about decoded *events*, not about
+ * bytes that happen to look like events.
+ */
 type Decoded = {
   format: number;
   ppq: number;
@@ -49,99 +56,100 @@ type DecodedEvent = {
   text?: string;
 };
 
-/** A minimal SMF reader, so the assertions are about the real file. */
+/** The parsed events, flattened into the shape these assertions read. */
 function decodeMidi(bytes: Uint8Array): Decoded {
-  const data = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const id = (at: number) => String.fromCharCode(...bytes.subarray(at, at + 4));
-  expect(id(0)).toBe("MThd");
-  expect(data.getUint32(4, false)).toBe(6);
-
-  const format = data.getUint16(8, false);
-  const trackCount = data.getUint16(10, false);
-  const ppq = data.getUint16(12, false);
-
-  const tracks: DecodedEvent[][] = [];
-  let cursor = 14;
-  for (let index = 0; index < trackCount; index += 1) {
-    expect(id(cursor)).toBe("MTrk");
-    const length = data.getUint32(cursor + 4, false);
-    let at = cursor + 8;
-    const end = at + length;
-    let tick = 0;
-    const events: DecodedEvent[] = [];
-
-    while (at < end) {
-      let delta = 0;
-      for (;;) {
-        const byte = bytes[at]!;
-        at += 1;
-        delta = (delta << 7) | (byte & 0x7f);
-        if ((byte & 0x80) === 0) break;
-      }
-      tick += delta;
-
-      const status = bytes[at]!;
-      at += 1;
-
-      if (status === 0xff) {
-        const meta = bytes[at]!;
-        at += 1;
-        let length2 = 0;
-        for (;;) {
-          const byte = bytes[at]!;
-          at += 1;
-          length2 = (length2 << 7) | (byte & 0x7f);
-          if ((byte & 0x80) === 0) break;
-        }
-        const payload = bytes.subarray(at, at + length2);
-        at += length2;
-        if (meta === 0x51) {
-          events.push({
-            tick,
-            type: "tempo",
-            a: (payload[0]! << 16) | (payload[1]! << 8) | payload[2]!,
-          });
-        } else if (meta === 0x58) {
-          events.push({
-            tick,
+  const parsed = parseMidiFile(bytes);
+  const tracks = parsed.tracks.map((events) =>
+    events.map((event): DecodedEvent => {
+      switch (event.kind) {
+        case "tempo":
+          return { tick: event.tick, type: "tempo", a: event.microsecondsPerQuarter };
+        case "timeSignature":
+          return {
+            tick: event.tick,
             type: "timeSignature",
-            a: payload[0]!,
-            b: 2 ** payload[1]!,
-          });
-        } else if (meta === 0x03) {
-          events.push({
-            tick,
-            type: "trackName",
-            text: String.fromCharCode(...payload),
-          });
-        } else if (meta === 0x2f) {
-          events.push({ tick, type: "endOfTrack" });
-        }
-        continue;
+            a: event.numerator,
+            b: event.denominator,
+          };
+        case "trackName":
+          return { tick: event.tick, type: "trackName", text: event.text };
+        case "endOfTrack":
+          return { tick: event.tick, type: "endOfTrack" };
+        case "otherMeta":
+          return { tick: event.tick, type: "otherMeta", a: event.type };
+        case "sysex":
+          return { tick: event.tick, type: "sysex", a: event.length };
+        case "noteOn":
+          return {
+            tick: event.tick,
+            type: "noteOn",
+            channel: event.channel,
+            a: event.data[0],
+            b: event.data[1],
+          };
+        case "noteOff":
+          return {
+            tick: event.tick,
+            type: "noteOff",
+            channel: event.channel,
+            a: event.data[0],
+            b: event.data[1],
+          };
+        case "controlChange":
+          return {
+            tick: event.tick,
+            type: "controlChange",
+            channel: event.channel,
+            a: event.data[0],
+            b: event.data[1],
+          };
+        case "programChange":
+          return {
+            tick: event.tick,
+            type: "programChange",
+            channel: event.channel,
+            a: event.data[0],
+          };
+        default:
+          return { tick: event.tick, type: event.kind, channel: event.channel };
       }
+    }),
+  );
+  // Nothing this app writes needs running status, and a file that used it
+  // would be harder for a strict reader to accept.
+  expect(parsed.usedRunningStatus).toBe(false);
+  return { format: parsed.format, ppq: parsed.ppq, tracks };
+}
 
-      // No running status is written, so every event carries its own status.
-      expect(status & 0x80).toBe(0x80);
-      const kind = status & 0xf0;
-      const channel = status & 0x0f;
-      if (kind === 0xc0) {
-        events.push({ tick, type: "programChange", channel, a: bytes[at]! });
-        at += 1;
-      } else {
-        const a = bytes[at]!;
-        const b = bytes[at + 1]!;
-        at += 2;
-        const type =
-          kind === 0x90 ? "noteOn" : kind === 0x80 ? "noteOff" : "controlChange";
-        events.push({ tick, type, channel, a, b });
-      }
-    }
-    expect(at).toBe(end);
-    tracks.push(events);
-    cursor = end;
-  }
-  expect(cursor).toBe(bytes.length);
-  return { format, ppq, tracks };
+/**
+ * Put one real pitch-bend message at the end of the first track.
+ *
+ * Written by hand because the writer has no pitch-bend event kind — which is
+ * the point of the design, and the reason a test needs another way to produce
+ * one. The MTrk length is corrected so the result is a file a strict reader
+ * accepts rather than a broken one it happens to reject.
+ */
+function injectPitchBend(bytes: Uint8Array<ArrayBuffer>): Uint8Array {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const trackLength = view.getUint32(18, false);
+  const bodyStart = 22;
+  const bodyEnd = bodyStart + trackLength;
+
+  // delta 0, pitch bend on channel 0, LSB 0, MSB 0x50.
+  const message = [0x00, 0xe0, 0x00, 0x50];
+  // The end-of-track meta is the last four bytes: delta + FF 2F 00.
+  const endOfTrack = [...bytes.subarray(bodyEnd - 4, bodyEnd)];
+  const body = [
+    ...bytes.subarray(bodyStart, bodyEnd - 4),
+    ...message,
+    ...endOfTrack,
+  ];
+
+  const out = new Uint8Array(bodyStart + body.length);
+  out.set(bytes.subarray(0, bodyStart), 0);
+  out.set(body, bodyStart);
+  new DataView(out.buffer).setUint32(18, body.length, false);
+  return out;
 }
 
 const written = (song: Song) => {
@@ -451,16 +459,99 @@ describe("69. the notes are the score, not the performance", () => {
         ],
       },
     ]);
-    const { bytes, decoded } = written(song);
-    for (const track of decoded.tracks) {
-      for (const event of track) {
-        expect(event.type).not.toBe("pitchBend");
-      }
+    const { bytes } = written(song);
+    const parsed = parseMidiFile(bytes);
+
+    // Decoded events, not bytes that look like events (2M-A.1 §4).
+    expect(pitchBendCount(parsed)).toBe(0);
+    expect(
+      parsed.channelEvents.map((event) => event.kind).filter((kind) => kind === "pitchBend"),
+    ).toEqual([]);
+    // Nor any of the other channel-wide gestures a bend could hide behind.
+    for (const event of parsed.channelEvents) {
+      expect(event.kind).not.toBe("channelAftertouch");
+      expect(event.kind).not.toBe("polyAftertouch");
     }
-    // Byte-level too: no 0xEn status byte anywhere in the file.
-    for (let index = 0; index < bytes.length; index += 1) {
-      expect(bytes[index]! & 0xf0, `byte ${index}`).not.toBe(0xe0);
-    }
+  });
+
+  it("counts events, not bytes: a name full of 0xE0 is still bend-free", () => {
+    /*
+     * The non-vacuity fixture for the check above.
+     *
+     * A raw scan for `0xE0…0xEF` is not a statement about MIDI events: those
+     * byte values appear constantly inside data. The writer encodes meta text
+     * as Latin-1, so "à" (U+00E0) becomes the single byte `0xE0` — which is
+     * literally a pitch-bend status byte — and "ç" (U+00E7) becomes `0xE7`.
+     * A Turkish song title is enough to plant several of them.
+     *
+     * So: the raw bytes really do contain 0xE0-range bytes, the parser really
+     * does report zero pitch bends, and the next test proves the parser is not
+     * simply blind to them.
+     */
+    const song: Song = {
+      ...SAMPLE_SONG,
+      title: "Àçaì Càfè çà",
+      tracks: SAMPLE_SONG.tracks.map((track, index) =>
+        index === 0 ? { ...track, name: "Gitar çà" } : track,
+      ),
+    };
+    const { bytes } = written(song);
+
+    // The byte a naive scan would trip over is genuinely in the file.
+    expect([...bytes].some((byte) => (byte & 0xf0) === 0xe0)).toBe(true);
+    expect([...bytes].filter((byte) => (byte & 0xf0) === 0xe0).length).toBeGreaterThan(1);
+
+    // And the file still carries no pitch-bend event.
+    const parsed = parseMidiFile(bytes);
+    expect(pitchBendCount(parsed)).toBe(0);
+
+    // The names survive the round trip, so the fixture is doing what it says.
+    const names = parsed.tracks
+      .flat()
+      .filter((event) => event.kind === "trackName")
+      .map((event) => (event as { text: string }).text);
+    // Every character here is inside Latin-1, so the round trip is exact and
+    // the fixture cannot be passing by accident of replacement characters.
+    expect(names[0]).toBe("Àçaì Càfè çà");
+    expect(names).toContain("Gitar çà");
+  });
+
+  it("sees a pitch bend when there really is one", () => {
+    /*
+     * The other half of the non-vacuity argument: a parser that always
+     * answered zero would pass every test above. One real bend, written
+     * through the same writer, has to be found.
+     */
+    const withBend = writeMidiFile({
+      ppq: PPQ,
+      tracks: [
+        {
+          events: [
+            { kind: "trackName", text: "Bend", tick: 0, order: 0 },
+            {
+              kind: "controlChange",
+              channel: 0,
+              controller: 7,
+              value: 100,
+              tick: 0,
+              order: 2,
+            },
+            { kind: "endOfTrack", tick: 10, order: 9 },
+          ],
+        },
+      ],
+    });
+    expect(withBend.ok).toBe(true);
+    if (!withBend.ok) return;
+
+    // Splice a real pitch-bend message into the track, adjusting the chunk
+    // length so the file stays well-formed for a strict reader.
+    const injected = injectPitchBend(withBend.bytes);
+    const parsed = parseMidiFile(injected);
+    expect(pitchBendCount(parsed)).toBe(1);
+    expect(parsed.channelEvents.find((event) => event.kind === "pitchBend")).toMatchObject(
+      { channel: 0, data: [0, 0x50] },
+    );
   });
 });
 

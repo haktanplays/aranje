@@ -39,6 +39,7 @@ O="npx vitest run src/lib/export/export-orchestration.test.ts"
 N="npx vitest run src/lib/audio/notated-plan.test.ts"
 L="npx vitest run src/lib/song/legacy-audibility.test.ts"
 B="npx vitest run src/lib/workspace/workspace-boundary.test.ts"
+X="npx vitest run src/lib/export/worst-case.test.ts"
 
 # 1 — the file claims one channel while carrying two, or carries only one
 probe "1 the WAV is written as mono" \
@@ -301,6 +302,100 @@ probe "28 the export sheet encodes for itself" \
   'import { encodeWav } from "@/lib/export/wav-encoder";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";' \
   "$B"
+
+# --------------------------------------------------------------- 2M-A.1 §3
+# The worst-case arithmetic. The first report of this checkpoint quoted a
+# figure taken from a 138 BPM fixture; these are the mutations that would
+# have let that number through unnoticed.
+
+# 38 — a comfortable tempo stands in for the slowest one the contract allows
+probe "38 the worst case uses 120 BPM instead of the minimum" \
+  eval/shared/export-worst-case.ts \
+  '    title: "En Uzun Sure",
+    bpm: bpmRange.min,' \
+  '    title: "En Uzun Sure",
+    bpm: 120,' \
+  "$X"
+
+# 39 — a shorter song stands in for every bar the contract allows
+probe "39 the worst case is shorter than the bar limit" \
+  eval/shared/export-worst-case.ts \
+  '    sections: sectionsOf(
+      songLimits.totalBars,
+      (barIndex) =>
+        barIndex === last' \
+  '    sections: sectionsOf(
+      8,
+      (barIndex) =>
+        barIndex === last' \
+  "$X"
+
+# 40 — the tail is reported but never rendered
+probe "40 the tail leaves the frame count" \
+  src/lib/export/export-plan.ts \
+  '  const { totalSeconds } = renderDuration(song);
+  const sampleRate = audioExportLimits.sampleRate;' \
+  '  const { notatedSeconds: totalSeconds } = renderDuration(song);
+  const sampleRate = audioExportLimits.sampleRate;' \
+  "$X"
+
+# 41 — the second channel falls out of the size formula
+probe "41 the size formula drops a channel" \
+  src/lib/export/export-plan.ts \
+  '    bytes: wavByteLength(frames, channels),' \
+  '    bytes: wavByteLength(frames, 1),' \
+  "$X"
+
+# 42 — the bit depth falls out of the size formula
+probe "42 the size formula drops the bit depth" \
+  src/lib/export/wav-encoder.ts \
+  '  return RIFF_HEADER_BYTES + frames * channels * BYTES_PER_SAMPLE;' \
+  '  return RIFF_HEADER_BYTES + frames * channels;' \
+  "$X"
+
+# 43 — the encoder and the estimate stop agreeing about the same frames
+probe "43 the encoder writes a different size than the estimate" \
+  src/lib/export/wav-encoder.ts \
+  '  const bytes = new Uint8Array(RIFF_HEADER_BYTES + dataBytes);' \
+  '  const bytes = new Uint8Array(RIFF_HEADER_BYTES + dataBytes + 2);' \
+  "$X"
+
+# 44 — the two worst cases collapse into one fixture again
+probe "44 the heaviest fixture is the longest one" \
+  eval/shared/export-worst-case.ts \
+  '    bpm: 138,' \
+  '    bpm: bpmRange.min,' \
+  "$X"
+
+# --------------------------------------------------------------- 2M-A.1 §4
+# The pitch-bend evidence. The old check scanned raw bytes, which is not a
+# statement about MIDI events at all; these prove the reader is doing real
+# work rather than answering zero.
+
+# 45 — the reader stops seeing pitch bends, so "none found" means nothing
+probe "45 the reader is blind to pitch bend" \
+  src/lib/dev/midi-reader.ts \
+  '  return parsed.channelEvents.filter((event) => event.kind === "pitchBend").length;' \
+  '  void parsed;
+  return 0;' \
+  "$M"
+
+# 46 — the reader miscounts a channel message's data bytes and desynchronises
+probe "46 the reader mis-sizes a channel message" \
+  src/lib/dev/midi-reader.ts \
+  '  0xe0: 2, // pitch bend' \
+  '  0xe0: 1, // pitch bend' \
+  "$M"
+
+# 47 — the reader stops honouring meta lengths, so text bytes become events
+probe "47 the reader ignores meta event lengths" \
+  src/lib/dev/midi-reader.ts \
+  '        const metaLength = readVlq();
+        need(metaLength, "meta payload");' \
+  '        const metaLength = 0;
+        readVlq();
+        need(metaLength, "meta payload");' \
+  "$M"
 
 echo
 echo "RED: $pass  VACUOUS: $fail"
