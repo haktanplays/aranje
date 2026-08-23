@@ -1,47 +1,56 @@
 "use client";
 
 /**
- * Starting a new song (spec 13.17, 2L-B §3).
+ * Starting a new song (spec 13.17, 2L-B §3; retargeted in 2O-A §18).
  *
- * The sheet says plainly that the current song is being replaced, offers the
- * 2L-A backup on the spot — the same export path, not a second serializer —
- * and only then the three templates. Creating goes through the lifecycle
- * controller as one commit; undo brings the old song back whole.
+ * It no longer replaces anything. A new song is a **new project** beside the
+ * one that is open, so the sentence about losing the current song is gone and
+ * so is the undo that used to bring it back — there is nothing to bring back,
+ * because nothing was taken. The old project is one tap away in the library.
+ *
+ * The backup is still offered on the spot, through the same export path and
+ * not a second serializer: someone about to start something new is exactly
+ * who wants a copy of what they have.
  */
 import { useState } from "react";
 
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
-import { NEW_SONG_WARNING } from "@/lib/song/lifecycle-messages";
 import { SONG_TEMPLATES, type SongTemplateId } from "@/lib/song/song-templates";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
-import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
 
 export function NewSongSheet({
   open,
   onClose,
-  lifecycle,
+  onCreate,
+  createError,
+  canCreate,
   onBackup,
   backupError,
 }: {
   open: boolean;
   onClose: () => void;
-  lifecycle: LifecycleHandle;
+  /**
+   * Make a project out of this template (2O-A §18).
+   *
+   * It used to replace the open song. It does not any more: a new song is a
+   * new project beside the one the reader has, and the old one is still there
+   * when they go back to it. Returns false when the library refused, so the
+   * sheet stays open with the reason.
+   */
+  onCreate: (templateId: SongTemplateId) => boolean;
+  createError: string | null;
+  /** False while writing is closed: a new project cannot be persisted. */
+  canCreate: boolean;
   /** The 2L-A download, unchanged (spec 13.15). */
   onBackup: () => void;
   backupError: string | null;
 }) {
   const [templateId, setTemplateId] = useState<SongTemplateId>("empty");
-  const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
   const create = () => {
-    const outcome = lifecycle.runSong({ kind: "create_song", templateId });
-    if (outcome.status === "rejected" || outcome.status === "blocked") {
-      setError(outcome.message);
-      return;
-    }
-    setError(null);
+    if (!onCreate(templateId)) return;
     onClose();
   };
 
@@ -60,14 +69,17 @@ export function NewSongSheet({
             data-new-song-create
             tone="primary"
             onClick={create}
-            disabled={!lifecycle.canApply}
+            disabled={!canCreate}
           >
             Yeni şarkı oluştur
           </SheetButton>
         </div>
       }
     >
-      <p className="text-sm">{NEW_SONG_WARNING}</p>
+      <p className="text-sm">
+        Yeni proje, mevcut projenin yanına eklenir. Şu an açık olan şarkın
+        olduğu gibi kalır ve Projeler listesinden geri açabilirsin.
+      </p>
 
       <button
         type="button"
@@ -115,15 +127,15 @@ export function NewSongSheet({
         })}
       </div>
 
-      {!lifecycle.canApply ? (
+      {!canCreate ? (
         <p className="text-muted mt-3 text-xs">
           Değişiklikler kaydedilemediği için yeni şarkı oluşturma kapalı.
           Dinleme ve yedekleme çalışmaya devam eder.
         </p>
       ) : null}
-      {error ? (
+      {createError ? (
         <p role="alert" data-lifecycle-error className="text-reject mt-3 text-xs">
-          {error}
+          {createError}
         </p>
       ) : null}
     </Sheet>

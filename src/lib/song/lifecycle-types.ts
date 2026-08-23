@@ -25,7 +25,6 @@ import type { ValidationIssue } from "@/lib/validators/types";
  * needs to know which one it is undoing, the reader does not.
  */
 export type LifecycleCommandKind =
-  | "create_song"
   | "update_song_info"
   | "create_section"
   | "rename_section"

@@ -73,7 +73,6 @@ const FULL_BAR_LABELS: Readonly<Record<BarCommandKind, string>> = {
  * changes back — so both wear the same words.
  */
 const LIFECYCLE_LABELS: Readonly<Record<LifecycleCommandKind, string>> = {
-  create_song: "Yeni şarkı oluşturma",
   update_song_info: "Şarkı bilgilerini değiştirme",
   create_section: "Bölüm ekleme",
   rename_section: "Bölüm adını değiştirme",

@@ -158,7 +158,9 @@ export function WorkspaceOverlays({
         <NewSongSheet
           open
           onClose={overlays.close}
-          lifecycle={lifecycle}
+          onCreate={library.createFrom}
+          createError={library.error}
+          canCreate={library.canModify}
           onBackup={project.downloadBackup}
           backupError={project.exportError}
         />
@@ -300,6 +302,12 @@ export function WorkspaceOverlays({
         onClose={overlays.close}
         handle={project}
         canPersist={canPersist}
+        onAddAsNew={(imported) => {
+          if (library.importAsNew(imported)) {
+            project.cancel();
+            overlays.close();
+          }
+        }}
       />
 
       {/*

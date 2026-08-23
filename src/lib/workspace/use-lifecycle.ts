@@ -87,8 +87,6 @@ export function useLifecycle(options: {
   song: Song;
   canPersist: boolean;
   commit(next: Song, action: HistoryAction): boolean;
-  /** The whole-song ground: the same one a project import stands on. */
-  onBeforeNewSong(): void;
   /** The structural ground: pause, selections, ghosts, clipboards, focus. */
   onBeforeStructural(): void;
   /** What the navigation currently points at, for the survivor rules. */
@@ -102,7 +100,6 @@ export function useLifecycle(options: {
     song,
     canPersist,
     commit,
-    onBeforeNewSong,
     onBeforeStructural,
     activeSectionId,
     selectedTrackId,
@@ -141,14 +138,16 @@ export function useLifecycle(options: {
     [canPersist, commit, song],
   );
 
+  /*
+   * No song command grounds the session any more (2O-A §18). "New song" used
+   * to replace the open one and needed everything put down first; it now makes
+   * a project of its own and the library owns that ground. What is left here —
+   * renaming, key, tempo — changes three fields and disturbs nothing.
+   */
   const runSong = useCallback(
     (command: SongLifecycleCommand): LifecycleOutcome =>
-      finish(
-        applySongCommand(song, command),
-        command.kind,
-        command.kind === "create_song" ? onBeforeNewSong : null,
-      ),
-    [finish, onBeforeNewSong, song],
+      finish(applySongCommand(song, command), command.kind, null),
+    [finish, song],
   );
 
   const runSection = useCallback(

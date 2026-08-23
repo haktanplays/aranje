@@ -110,25 +110,21 @@ describe("42. the three templates", () => {
     }
   });
 
-  it("creates through the command without reading the current song", () => {
-    const fromSample = applySongCommand(SAMPLE_SONG, {
-      kind: "create_song",
-      templateId: "empty",
-    });
-    expect(fromSample.ok).toBe(true);
-    if (fromSample.ok) {
-      expect(sameSong(fromSample.song, materializeTemplate("empty"))).toBe(true);
-    }
-    expect(JSON.stringify(SAMPLE_SONG)).toBe(frozenSample);
-  });
-
-  it("refuses a template that does not exist", () => {
-    const result = applySongCommand(SAMPLE_SONG, {
-      kind: "create_song",
-      templateId: "does_not_exist",
-    });
+  it("no longer offers a command that replaces the open song", () => {
+    /*
+     * `create_song` is gone (2O-A §18). It was the only command that threw the
+     * reader's music away, and its replacement makes a project beside it
+     * instead. Leaving the old command callable would have left a live route
+     * back to the behaviour the checkpoint exists to remove — so this asserts
+     * the route is closed, at the type level and at runtime.
+     */
+    const command = { kind: "create_song", templateId: "empty" };
+    const result = applySongCommand(
+      SAMPLE_SONG,
+      command as unknown as Parameters<typeof applySongCommand>[1],
+    );
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error.code).toBe("unknown_template");
+    expect(JSON.stringify(SAMPLE_SONG)).toBe(frozenSample);
   });
 });
 
@@ -228,10 +224,9 @@ describe("43. the song info command", () => {
   });
 });
 
-describe("44. the fifteen reader labels", () => {
+describe("44. the fourteen reader labels", () => {
   it("names every lifecycle command without leaking a command id", () => {
     const labels = [
-      "create_song",
       "update_song_info",
       "create_section",
       "rename_section",
@@ -255,7 +250,7 @@ describe("44. the fifteen reader labels", () => {
       expect(label).not.toContain("_");
       seen.add(label);
     }
-    // Sixteen commands, fifteen sentences: set/clear tempo share one.
-    expect(seen.size).toBe(15);
+    // Fifteen commands, fourteen sentences: set/clear tempo share one.
+    expect(seen.size).toBe(14);
   });
 });

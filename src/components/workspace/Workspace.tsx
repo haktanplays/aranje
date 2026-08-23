@@ -225,7 +225,6 @@ export function Workspace() {
     song,
     canPersist,
     commit,
-    onBeforeNewSong: ground.prepareForProjectApply,
     onBeforeStructural: ground.prepareForStructuralApply,
     activeSectionId: navigation.viewedSectionId,
     selectedTrackId: track?.id ?? null,

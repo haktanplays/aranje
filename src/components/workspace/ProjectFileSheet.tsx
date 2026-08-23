@@ -12,6 +12,7 @@
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { instrumentLabel } from "@/lib/instruments/registry";
 import type { ProjectFileHandle } from "@/lib/project/use-project-file";
+import type { Song } from "@/lib/song/schema";
 import { PROJECT_FILE_MESSAGES } from "@/lib/project/project-file-errors";
 
 function PreviewRow({ label, value }: { label: string; value: string }) {
@@ -28,11 +29,20 @@ export function ProjectFileSheet({
   onClose,
   handle,
   canPersist,
+  onAddAsNew,
 }: {
   open: boolean;
   onClose: () => void;
   handle: ProjectFileHandle;
   canPersist: boolean;
+  /**
+   * Add the previewed song as a project of its own (2O-A §19).
+   *
+   * Injected rather than reached for: the library owns creating projects, and
+   * a sheet that could make one would be a second door onto the same command
+   * with its own idea of what to do first.
+   */
+  onAddAsNew: (song: Song) => void;
 }) {
   const { state, exportError } = handle;
 
@@ -137,9 +147,17 @@ export function ProjectFileSheet({
               </p>
             ) : null}
 
+            {/*
+              Two destinations, and they are not the same act (2O-A §19).
+              Adding is offered first and carries the primary weight, because
+              it is the one that cannot cost the reader anything: it leaves
+              every project they have exactly where it is. Replacing is still
+              here, still one history step, and still says out loud which song
+              it is about to stand in for.
+            */}
             <p className="text-muted mt-3 text-xs">
-              Mevcut şarkın henüz değişmedi. Bu proje mevcut şarkının yerini
-              alacak. İstersen önce mevcut şarkını yedekleyebilirsin.
+              Mevcut projen henüz değişmedi. Bu dosyayı yeni bir proje olarak
+              ekleyebilir ya da açık projenin yerine koyabilirsin.
             </p>
             {canPersist ? null : (
               <p data-project-persist-note role="alert" className="text-reject mt-2 text-xs">
@@ -149,10 +167,18 @@ export function ProjectFileSheet({
 
             <div className="mt-3 flex flex-col gap-2">
               <SheetButton
+                data-project-add-new
+                tone="primary"
+                onClick={() => onAddAsNew(state.song)}
+                disabled={!canPersist}
+              >
+                Yeni proje olarak ekle
+              </SheetButton>
+              <SheetButton
                 data-project-backup-current
                 onClick={handle.downloadBackup}
               >
-                Mevcut şarkıyı yedekle
+                Mevcut projeyi yedekle
               </SheetButton>
               <div className="flex gap-2">
                 <SheetButton data-project-cancel onClick={handle.cancel}>
@@ -160,11 +186,10 @@ export function ProjectFileSheet({
                 </SheetButton>
                 <SheetButton
                   data-project-apply
-                  tone="primary"
                   onClick={handle.apply}
                   disabled={!canPersist}
                 >
-                  Projeyi aç
+                  Mevcut projeyi değiştir
                 </SheetButton>
               </div>
             </div>

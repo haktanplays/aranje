@@ -15,7 +15,6 @@ import { applyTrackCommand } from "@/lib/song/track-lifecycle";
 import { createSongStore } from "@/lib/song/song-store";
 import { decideLoad } from "@/lib/song/storage-envelope";
 import { sameSong } from "@/lib/song/edit-history";
-import { materializeTemplate } from "@/lib/song/song-templates";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import { SONG_KEY, type StorageLike } from "@/lib/song/storage";
 
@@ -54,23 +53,27 @@ const freshStore = () => {
 };
 
 describe("52. one apply, one write, one step", () => {
-  it("creates a new song as a single commit undo can reverse byte-equally", () => {
+  it("applies a song command as a single commit undo can reverse byte-equally", () => {
+    /*
+     * `update_song_info` since 2O-A: "new song" is no longer a command that
+     * replaces the open one, it is a new project, and the library owns it.
+     * What this test is about — one apply, one write, one reversible step —
+     * is unchanged and is the same for every song command.
+     */
     const { storage, store } = freshStore();
     const result = applySongCommand(store.getSnapshot().song, {
-      kind: "create_song",
-      templateId: "rock_band",
+      kind: "update_song_info",
+      info: { title: "Başka Ad", tonic: "A", mode: "minor", bpm: 96 },
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
 
     const before = storage.writes();
     expect(
-      store.commit(result.song, { kind: "lifecycle", command: "create_song" }),
+      store.commit(result.song, { kind: "lifecycle", command: "update_song_info" }),
     ).toBe(true);
     expect(storage.writes()).toBe(before + 1);
-    expect(sameSong(storedSong(storage), materializeTemplate("rock_band"))).toBe(
-      true,
-    );
+    expect(sameSong(storedSong(storage), result.song)).toBe(true);
 
     // Undo restores the old song on disk as well — and writes once, because
     // undo persists (2K-B contract).
@@ -80,9 +83,7 @@ describe("52. one apply, one write, one step", () => {
 
     store.redo();
     expect(storage.writes()).toBe(before + 3);
-    expect(sameSong(storedSong(storage), materializeTemplate("rock_band"))).toBe(
-      true,
-    );
+    expect(sameSong(storedSong(storage), result.song)).toBe(true);
   });
 
   it("labels the undo control with the lifecycle sentence", () => {
@@ -191,13 +192,13 @@ describe("53. nothing advances on refusal or no-op", () => {
       storage,
     );
     const result = applySongCommand(store.getSnapshot().song, {
-      kind: "create_song",
-      templateId: "empty",
+      kind: "update_song_info",
+      info: { title: "Başka Ad", tonic: "A", mode: "minor", bpm: 96 },
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(
-      store.commit(result.song, { kind: "lifecycle", command: "create_song" }),
+      store.commit(result.song, { kind: "lifecycle", command: "update_song_info" }),
     ).toBe(false);
     expect(storage.writes()).toBe(0);
     expect(sameSong(store.getSnapshot().song, SAMPLE_SONG)).toBe(true);

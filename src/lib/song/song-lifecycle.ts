@@ -15,7 +15,6 @@
 import { bpmRange } from "@/lib/limits";
 import { KEY_PATTERN, type Song } from "@/lib/song/schema";
 import { guardCandidate } from "@/lib/song/lifecycle-guard";
-import { materializeTemplate } from "@/lib/song/song-templates";
 import type { LifecycleResult } from "@/lib/song/lifecycle-types";
 
 /**
@@ -65,7 +64,6 @@ export type SongInfo = {
 };
 
 export type SongLifecycleCommand =
-  | { readonly kind: "create_song"; readonly templateId: string }
   | { readonly kind: "update_song_info"; readonly info: SongInfo };
 
 export function applySongCommand(
@@ -73,11 +71,6 @@ export function applySongCommand(
   command: SongLifecycleCommand,
 ): LifecycleResult {
   switch (command.kind) {
-    case "create_song": {
-      const created = materializeTemplate(command.templateId);
-      if (!created) return { ok: false, error: { code: "unknown_template" } };
-      return guardCandidate(created);
-    }
     case "update_song_info": {
       const { info } = command;
       const title = info.title.trim();
@@ -99,5 +92,16 @@ export function applySongCommand(
       // the three top-level facts change, and only those three.
       return guardCandidate({ ...song, title, bpm: info.bpm, key });
     }
+    default:
+      /*
+       * Unreachable through the type, and a refusal anyway.
+       *
+       * A `switch` with no default returns `undefined` for a command it does
+       * not know, and `undefined` is not a refusal — it is a caller reading
+       * `.ok` off nothing. `create_song` was removed in 2O-A and anything
+       * still sending it, or any command added without a case, gets a typed
+       * no rather than a crash.
+       */
+      return { ok: false, error: { code: "unknown_template" } };
   }
 }
