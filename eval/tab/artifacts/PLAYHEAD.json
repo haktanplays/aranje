@@ -1,0 +1,262 @@
+{
+  "measuredOn": "desktop Chromium — not a phone, and not evidence about one",
+  "base": "http://127.0.0.1:3100",
+  "note": "globalRaf is the display's own frame rate measured by this harness; it is not a playhead number.",
+  "windows": {
+    "idle": {
+      "state": "ready/idle",
+      "windowMs": 1100,
+      "globalRaf": 61.3,
+      "tab": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "playing": {
+      "state": "playing",
+      "windowMs": 1100,
+      "globalRaf": 60.8,
+      "tab": {
+        "scheduled": 67,
+        "drawn": 67,
+        "live": 1
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "paused": {
+      "state": "paused",
+      "windowMs": 1100,
+      "globalRaf": 61.1,
+      "tab": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "ended": {
+      "state": "ended (ended)",
+      "windowMs": 1100,
+      "globalRaf": 61.7,
+      "tab": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "tabUnmounted": {
+      "state": "tab unmounted (Düzen görünümü)",
+      "windowMs": 1100,
+      "globalRaf": 61.2,
+      "tab": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "switchedIdle": {
+      "state": "idle after 3 view switches",
+      "windowMs": 1100,
+      "globalRaf": 61.7,
+      "tab": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "switchedPlaying": {
+      "state": "playing after 3 view switches",
+      "windowMs": 1100,
+      "globalRaf": 60,
+      "tab": {
+        "scheduled": 68,
+        "drawn": 68,
+        "live": 1
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "elsewhere": {
+      "state": "playing in another section",
+      "windowMs": 1100,
+      "globalRaf": 60.2,
+      "tab": {
+        "scheduled": 67,
+        "drawn": 67,
+        "live": 1
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "afterTimingChange": {
+      "state": "after a timing change made it idle",
+      "windowMs": 1100,
+      "globalRaf": 61.4,
+      "tab": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      },
+      "arrangement": {
+        "scheduled": 0,
+        "drawn": 0,
+        "live": 0
+      }
+    },
+    "disposed": {
+      "tabDisposed": {
+        "state": "tab disposed while playing",
+        "windowMs": 1100,
+        "globalRaf": 60.8,
+        "tab": {
+          "scheduled": 0,
+          "drawn": 0,
+          "live": 0
+        },
+        "arrangement": {
+          "scheduled": 67,
+          "drawn": 67,
+          "live": 1
+        }
+      },
+      "arrangementDisposed": {
+        "state": "arrangement disposed while playing",
+        "windowMs": 1100,
+        "globalRaf": 60,
+        "tab": {
+          "scheduled": 68,
+          "drawn": 68,
+          "live": 1
+        },
+        "arrangement": {
+          "scheduled": 0,
+          "drawn": 0,
+          "live": 0
+        }
+      }
+    }
+  },
+  "playingCallbackRate": {
+    "samples": [
+      60.9,
+      60.9,
+      61.8
+    ],
+    "medianPerSecond": 60.9,
+    "p95PerSecond": 61.8,
+    "maxPerSecond": 61.8,
+    "globalRafPerSecond": [
+      60.8,
+      60,
+      60.2
+    ]
+  },
+  "results": [
+    {
+      "name": "1 idle: canlı loop 0, tekrar eden callback 0",
+      "pass": true,
+      "detail": "live 0, drawn 0, global rAF 61.3/s"
+    },
+    {
+      "name": "1.b global rAF ile playhead callback'i aynı şey değil",
+      "pass": true,
+      "detail": "global 61.3/s ↔ playhead 0/pencere"
+    },
+    {
+      "name": "2 playing: canlı loop tam 1",
+      "pass": true,
+      "detail": "live 1, drawn 67, global rAF 60.8/s"
+    },
+    {
+      "name": "3 paused: canlı loop 0, tekrar eden callback 0",
+      "pass": true,
+      "detail": "live 0, drawn 0 (geçiş boyaması)"
+    },
+    {
+      "name": "4 ended: canlı loop 0",
+      "pass": true,
+      "detail": "status ended, live 0, drawn 0"
+    },
+    {
+      "name": "5 tab unmount edilmişken tab loop 0",
+      "pass": true,
+      "detail": "tab DOM yok, tab live 0/drawn 0, arrangement live 0"
+    },
+    {
+      "name": "6 üç görünüm geçişinden sonra idle: canlı loop 0",
+      "pass": true,
+      "detail": "live 0, drawn 0"
+    },
+    {
+      "name": "7 üç geçişten sonra playing: canlı loop tam 1, ikinci loop yok",
+      "pass": true,
+      "detail": "tab live 1, arrangement live 0, drawn 68"
+    },
+    {
+      "name": "8 başka bölüm okunurken: tek loop, gizli seek yok, sahte playhead yok",
+      "pass": true,
+      "detail": "live 1, tick 471 → 791, playhead opacity 0"
+    },
+    {
+      "name": "AudioContext 1 → 1",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "9 timing değişimi idle'a aldıktan sonra loop sonlanıyor",
+      "pass": true,
+      "detail": "çalarken live 1 → status idle, live 0, drawn 0"
+    },
+    {
+      "name": "10 dispose sonrası o yüzeyin loop'u 0 ve callback'i durmuş",
+      "pass": true,
+      "detail": "tab DOM yok live 0 drawn 0 · arrangement DOM yok live 0 drawn 0"
+    },
+    {
+      "name": "beam/selection/tail yeni rAF döngüsü kurmuyor",
+      "pass": true,
+      "detail": "tab live 1 (yalnız playhead)"
+    }
+  ],
+  "failed": 0
+}

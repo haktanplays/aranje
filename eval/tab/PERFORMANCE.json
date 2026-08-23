@@ -12,21 +12,21 @@
   "rhythmGuide": {
     "8 bars × 1/32, single line (states + guide)": {
       "rounds": 60,
-      "medianMs": 0.0412,
-      "p95Ms": 0.0672,
-      "maxMs": 0.406
+      "medianMs": 0.0329,
+      "p95Ms": 0.0468,
+      "maxMs": 0.0784
     },
     "8 bars × 1/32, six-string chords (states + guide)": {
       "rounds": 60,
-      "medianMs": 0.0471,
-      "p95Ms": 0.0632,
-      "maxMs": 0.0804
+      "medianMs": 0.0383,
+      "p95Ms": 0.048,
+      "maxMs": 0.0665
     },
     "8 bars × 1/32, six-string chords (guide model alone)": {
       "rounds": 60,
-      "medianMs": 0.0239,
-      "p95Ms": 0.036,
-      "maxMs": 0.0588
+      "medianMs": 0.0184,
+      "p95Ms": 0.0283,
+      "maxMs": 0.0525
     },
     "onsetsPerBar": 32,
     "barsPerSection": 8
@@ -34,9 +34,20 @@
   "sectionTimingChange": {
     "8 bars, 1/16 → 1/8, strict schema and validators included": {
       "rounds": 60,
-      "medianMs": 1.0221,
-      "p95Ms": 2.08,
-      "maxMs": 3.8714
+      "medianMs": 0.907,
+      "p95Ms": 2.1471,
+      "maxMs": 2.5095
+    },
+    "fixture": {
+      "scope": "one section, all of its bars",
+      "sections": 1,
+      "bars": 8,
+      "tracks": 1,
+      "slotsPerBarBefore": 16,
+      "slotsPerBarAfter": 8,
+      "soundingEventsPerBar": 8,
+      "soundingEventsTotal": 64,
+      "comparableWith": "not the worst-case validator figures of 2L-B/2M-A: those were a 32-bar, 8-track song"
     },
     "barsChanged": 8,
     "warnings": 0
@@ -51,10 +62,11 @@
           "guideGroups": 7,
           "guideNodes": 49
         },
-        "playheadFrames": {
+        "displayFrames": {
+          "note": "the browser's own rAF rate — NOT the playhead loop; see PLAYHEAD.json",
           "idlePerSecond": 61.3,
-          "playingPerSecond": 60.4,
-          "unchanged": true
+          "playingPerSecond": 61.4,
+          "unchangedByPlayback": true
         },
         "audioContexts": {
           "afterPlay": 1,
@@ -68,10 +80,11 @@
           "guideGroups": 7,
           "guideNodes": 49
         },
-        "playheadFrames": {
-          "idlePerSecond": 61.5,
-          "playingPerSecond": 60.3,
-          "unchanged": true
+        "displayFrames": {
+          "note": "the browser's own rAF rate — NOT the playhead loop; see PLAYHEAD.json",
+          "idlePerSecond": 61,
+          "playingPerSecond": 61.8,
+          "unchangedByPlayback": true
         },
         "audioContexts": {
           "afterPlay": 1,

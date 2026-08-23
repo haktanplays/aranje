@@ -276,17 +276,29 @@ describe("39. one owner per state", () => {
 });
 
 describe("40. the arrangement stays one frame, one listener set", () => {
-  it("runs its animation frame only in the follow-playhead hook", () => {
-    const owner = "src/components/workspace/arrangement/use-follow-playhead.ts";
-    expect(callCount(owner, "requestAnimationFrame")).toBe(2);
-    for (const path of workspaceComponents) {
+  it("asks the browser for a frame in exactly one module", () => {
+    /*
+     * The two surfaces each drew a playhead and each had its own copy of the
+     * same loop. They agreed, but nothing made them: the rule that decides
+     * whether a phone burns frames while nothing is playing was written
+     * twice, and a fix to one would not have reached the other.
+     *
+     * Now `playhead-loop.ts` owns it, and the browser's API is reached for in
+     * exactly one place inside it — the default scheduler. Everything else,
+     * including the loop's own two requests, goes through the injected one,
+     * which is what makes "how many loops are alive" a countable question
+     * rather than a claim. No component and no workspace hook may reach for a
+     * frame itself.
+     */
+    const owner = "src/lib/workspace/playhead-loop.ts";
+    expect(callCount(owner, "requestAnimationFrame")).toBe(1);
+    expect(callCount(owner, "cancelAnimationFrame")).toBe(1);
+
+    for (const path of [...workspaceComponents, ...workspaceHooks]) {
       if (path === owner) continue;
-      if (path.endsWith("TabCanvas.tsx")) continue; // the tab's own single loop
       expect(callCount(path, "requestAnimationFrame"), path).toBe(0);
+      expect(callCount(path, "cancelAnimationFrame"), path).toBe(0);
     }
-    expect(
-      callCount("src/components/workspace/TabCanvas.tsx", "requestAnimationFrame"),
-    ).toBe(2);
   });
 
   it("gives a cell exactly the listeners it had", () => {

@@ -219,6 +219,29 @@ const sectionTiming = bench(() => changeTiming(timingSong, timingChange));
 
 /* ------------------------------------------------------------------ report */
 
+/*
+ * What the timing figure is a figure *of* (2N-A.1).
+ *
+ * "~1,1 ms" means nothing without the shape it was measured on, and it is not
+ * comparable to the whole-song validator numbers reported in earlier
+ * checkpoints: those ran the chain over a song at the 32-bar / 8-track limits,
+ * this one over a single eight-bar section on one track. Recorded here so the
+ * two can never be read as the same measurement.
+ */
+const timingFixture = {
+  scope: "one section, all of its bars",
+  sections: timingSong.sections.length,
+  bars: timingSong.sections[0]?.bars.length ?? 0,
+  tracks: timingSong.tracks.length,
+  slotsPerBarBefore: slotCount([4, 4], 16),
+  slotsPerBarAfter: slotCount([4, 4], 8),
+  soundingEventsPerBar: slotCount([4, 4], 16) / 2,
+  soundingEventsTotal:
+    ((timingSong.sections[0]?.bars.length ?? 0) * slotCount([4, 4], 16)) / 2,
+  comparableWith:
+    "not the worst-case validator figures of 2L-B/2M-A: those were a 32-bar, 8-track song",
+};
+
 const report = {
   measuredOn: "desktop Node — not a phone, and not evidence about one",
   node: process.version,
@@ -232,6 +255,7 @@ const report = {
   },
   sectionTimingChange: {
     "8 bars, 1/16 → 1/8, strict schema and validators included": sectionTiming,
+    fixture: timingFixture,
     barsChanged: trial.barsChanged,
     warnings: trial.warnings.length,
   },

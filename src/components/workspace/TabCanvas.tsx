@@ -20,6 +20,7 @@ import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { followScrollLeft, playheadX } from "@/components/workspace/playhead";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { useLongPress } from "@/lib/ui/use-long-press";
+import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import type { PlayPosition } from "@/lib/audio/position";
 import type { SongPlan } from "@/lib/audio/schedule";
 import type { SectionStatus } from "@/lib/song/schema";
@@ -168,10 +169,12 @@ export function TabCanvas({
    * The playhead is driven from the transport on an animation frame. Audio is
    * never scheduled here, and the element is moved by transform rather than by
    * React state, so a frame costs no render.
+   *
+   * When a frame happens is `playhead-loop.ts`'s rule, shared with the
+   * arrangement: one paint whenever the loop starts, and further frames only
+   * while the transport is running.
    */
   useEffect(() => {
-    let frame = 0;
-
     const draw = () => {
       const position = getPosition();
       const x = playheadX(plan, position);
@@ -214,12 +217,9 @@ export function TabCanvas({
         // Set directly: a smooth scroll every frame would trail the playhead.
         if (target !== null) scroller.scrollLeft = target;
       }
-
-      if (running) frame = requestAnimationFrame(draw);
     };
 
-    frame = requestAnimationFrame(draw);
-    return () => cancelAnimationFrame(frame);
+    return runPlayheadLoop({ source: "tab", running, draw });
   }, [
     running,
     plan,

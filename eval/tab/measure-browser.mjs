@@ -1,10 +1,11 @@
 /**
  * The browser half of the 2N-A performance report (spec 13.20 §11).
  *
- * Three things only a real page can answer: how many DOM nodes the rhythm
- * guide adds, whether the playhead still runs at one frame per frame with the
- * beams on screen, and whether switching between the arrangement and the tab
- * builds a second AudioContext.
+ * Two things only a real page can answer: how many DOM nodes the rhythm guide
+ * adds, and whether switching between the arrangement and the tab builds a
+ * second AudioContext. The display's frame rate is recorded beside them as a
+ * baseline — the playhead loop's own counts are a different measurement and
+ * live in `PLAYHEAD.json` (2N-A.1).
  *
  * These are **desktop Chromium** numbers on this machine and are labelled as
  * such. They are not phone measurements and are not evidence about one;
@@ -88,13 +89,14 @@ for (const [label, size] of VIEWPORTS) {
   });
 
   /*
-   * Frames, not a claim about frames.
+   * The **display's** frame rate, and nothing else (corrected in 2N-A.1).
    *
-   * The baseline is this browser's own rAF rate on the same page with nothing
-   * playing; the second figure is the rate while the transport runs and the
-   * playhead is being drawn over a tab that has beams on it. "Unchanged" means
-   * these two agree, which is a comparison rather than an assertion that 60 is
-   * the right number.
+   * This number was previously reported as "playhead rAF", which it never
+   * was: `requestAnimationFrame` fires about sixty times a second on any page,
+   * including one where nothing has asked for a frame, so counting our own
+   * frames measures the screen rather than the app. It is kept because it is
+   * the baseline the hook's own counts are read against — never as a playhead
+   * figure. Those live in `PLAYHEAD.json`, taken at the hook seam.
    */
   const rafIdle = await page.evaluate(
     () =>
@@ -138,10 +140,11 @@ for (const [label, size] of VIEWPORTS) {
 
   viewports[label] = {
     dom,
-    playheadFrames: {
+    displayFrames: {
+      note: "the browser's own rAF rate — NOT the playhead loop; see PLAYHEAD.json",
       idlePerSecond: rafIdle,
       playingPerSecond: rafPlaying,
-      unchanged: Math.abs(rafIdle - rafPlaying) <= 3,
+      unchangedByPlayback: Math.abs(rafIdle - rafPlaying) <= 3,
     },
     audioContexts: {
       afterPlay: audioAfterPlay,
