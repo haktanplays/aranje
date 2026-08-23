@@ -13,9 +13,13 @@
  */
 import { renderSongToBuffer } from "@/lib/export/render-wav";
 import { encodeWav } from "@/lib/export/wav-encoder";
-import { renderDuration } from "@/lib/export/export-plan";
+import { estimateWav, renderDuration } from "@/lib/export/export-plan";
 import { audibleTrackIds, EMPTY_AUDITION, setTrackMuted, setTrackSoloed } from "@/lib/song/track-mix";
 import { songSchema, type Song, type Track } from "@/lib/song/schema";
+import {
+  heaviestEventSong,
+  longestDurationSong,
+} from "../shared/export-worst-case";
 
 const GUITAR = ["E2", "A2", "D3", "G3", "B3", "E4"];
 const BASS = ["E1", "A1", "D2", "G2"];
@@ -136,6 +140,16 @@ export type ExportMeasurement = {
    */
   readonly tailRms: number;
   readonly activeAfterDispose: number;
+  /**
+   * What the pre-flight estimate predicted, beside what was rendered.
+   *
+   * The estimate rounds the frame count up, so the size a user is shown is
+   * never smaller than the file they get; the render may land one frame
+   * short of it. Reported as two numbers rather than one, because "the
+   * estimate is the file" is only true to within that rounding.
+   */
+  readonly estimatedFrames: number;
+  readonly estimatedBytes: number;
   /** The encoded file, read back from its own header. */
   readonly wavBytes: number;
   readonly wavChannels: number;
@@ -143,6 +157,16 @@ export type ExportMeasurement = {
   readonly wavBitDepth: number;
   readonly wavDataBytes: number;
   readonly headerMatchesFile: boolean;
+  /** How long `encodeWav` took, apart from the render. */
+  readonly encodeMillis: number;
+  /**
+   * A JS heap reading either side of the encode, when the browser exposes it.
+   *
+   * `performance.memory` is Chromium-only and coarse, so it is reported as
+   * what it is — a controlled desktop observation, not an allocation profile.
+   */
+  readonly heapBeforeBytes: number | null;
+  readonly heapAfterBytes: number | null;
 };
 
 type Case = {
@@ -232,16 +256,36 @@ const CASES: Readonly<Record<string, () => Case>> = {
   "tail-held-note": () => ({
     song: build([guitar()], { gtr: heldToTheEnd() }),
   }),
+
+  /*
+   * The two real worst cases (2M-A.1 §2), derived from the product's limits
+   * rather than from whatever a fixture happened to be set to.
+   *
+   * They are separate because the pressures are: one is the longest file the
+   * app can produce (slowest tempo, longest bars — bytes and memory), the
+   * other is the heaviest event load (every track, finest grid, real legato —
+   * scheduler and voice pool). Rendering only one of them and calling the
+   * result "worst case" is how a wrong number gets reported.
+   */
+  "worst-longest-duration": () => ({ song: longestDurationSong() }),
+  "worst-heaviest-events": () => ({ song: heaviestEventSong() }),
 };
 
 export function caseNames(): readonly string[] {
   return Object.keys(CASES);
 }
 
+/** Chromium's coarse heap reading, or null where the browser has none. */
+function readHeap(): number | null {
+  const memory = (performance as { memory?: { usedJSHeapSize?: number } }).memory;
+  return typeof memory?.usedJSHeapSize === "number" ? memory.usedJSHeapSize : null;
+}
+
 export async function renderExportCase(name: string): Promise<ExportMeasurement> {
   const make = CASES[name];
   if (!make) throw new Error(`unknown case: ${name}`);
   const { song, audible } = make();
+  const heapBefore = readHeap();
 
   const rendered = await renderSongToBuffer(
     song,
@@ -287,11 +331,13 @@ export async function renderExportCase(name: string): Promise<ExportMeasurement>
       Math.max(1, tailChannels.length),
   );
 
-  /* The real encoder, and the header read back out of its own bytes. */
+  /* The real encoder, timed separately from the render it follows. */
+  const encodeStarted = performance.now();
   const encoded = encodeWav({
     channels: rendered.channels,
     sampleRate: rendered.sampleRate,
   });
+  const encodeMillis = performance.now() - encodeStarted;
   if (!encoded.ok) throw new Error(`encode refused: ${encoded.code}`);
   const view = new DataView(
     encoded.bytes.buffer,
@@ -301,6 +347,7 @@ export async function renderExportCase(name: string): Promise<ExportMeasurement>
   const dataBytes = view.getUint32(40, true);
 
   const duration = renderDuration(song);
+  const estimate = estimateWav(song);
   const round = (value: number) => Number(value.toFixed(6));
 
   return {
@@ -324,5 +371,10 @@ export async function renderExportCase(name: string): Promise<ExportMeasurement>
     wavBitDepth: view.getUint16(34, true),
     wavDataBytes: dataBytes,
     headerMatchesFile: dataBytes + 44 === encoded.bytes.length,
+    estimatedFrames: estimate.frames,
+    estimatedBytes: estimate.bytes,
+    encodeMillis: Number(encodeMillis.toFixed(1)),
+    heapBeforeBytes: heapBefore,
+    heapAfterBytes: readHeap(),
   };
 }

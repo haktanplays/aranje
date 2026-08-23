@@ -1,0 +1,176 @@
+{
+  "honesty": [
+    "Bu ölçümler masaüstü Chromium'dur; fiziksel Android/iOS kanıtı değildir.",
+    "Her fixture 3 turda ölçüldü; tur sayısı burada yazılıdır.",
+    "Süre baskısı ile olay baskısı ayrı fixture'lardır ve tek 'worst case' kelimesinde birleştirilmemiştir.",
+    "Heap okuması Chromium'un kaba performance.memory değeridir; allocation profili değildir."
+  ],
+  "rounds": 3,
+  "timeoutMs": 300000,
+  "results": {
+    "worst-longest-duration": {
+      "label": "En uzun süre (32 bar, 4/4, 40 BPM)",
+      "pressure": "süre ve bellek",
+      "total": {
+        "rounds": 3,
+        "medianMs": 2302,
+        "maxMs": 2440
+      },
+      "render": {
+        "rounds": 3,
+        "medianMs": 2139,
+        "maxMs": 2274
+      },
+      "encode": {
+        "rounds": 3,
+        "medianMs": 163,
+        "maxMs": 167
+      },
+      "failure": null,
+      "shape": {
+        "seconds": 195,
+        "notatedSeconds": 192,
+        "tailSeconds": 3,
+        "frames": 8599500,
+        "estimatedFrames": 8599500,
+        "estimatedBytes": 34398044,
+        "estimateOverBytes": 0,
+        "wavBytes": 34398044,
+        "wavMiB": 32.8,
+        "wavChannels": 2,
+        "wavSampleRate": 44100,
+        "wavBitDepth": 16,
+        "wavDataBytes": 34398000,
+        "headerMatchesFile": true,
+        "peak": 0.439353,
+        "rms": 0.00796,
+        "tailRms": 0.000201,
+        "activeAfterDispose": 0,
+        "heapBeforeBytes": 17100000,
+        "heapAfterBytes": 17100000,
+        "heapDeltaMiB": 0
+      },
+      "realTimeFactor": 0.01
+    },
+    "worst-heaviest-events": {
+      "label": "En yoğun olay (8 track, 32 bar, 1/32)",
+      "pressure": "scheduler, expression planner, voice pool",
+      "total": {
+        "rounds": 3,
+        "medianMs": 190183,
+        "maxMs": 207746
+      },
+      "render": {
+        "rounds": 3,
+        "medianMs": 190030,
+        "maxMs": 207593
+      },
+      "encode": {
+        "rounds": 3,
+        "medianMs": 153,
+        "maxMs": 153
+      },
+      "failure": null,
+      "shape": {
+        "seconds": 58.652154,
+        "notatedSeconds": 55.652174,
+        "tailSeconds": 3,
+        "frames": 2586560,
+        "estimatedFrames": 2586561,
+        "estimatedBytes": 10346288,
+        "estimateOverBytes": 4,
+        "wavBytes": 10346284,
+        "wavMiB": 9.87,
+        "wavChannels": 2,
+        "wavSampleRate": 44100,
+        "wavBitDepth": 16,
+        "wavDataBytes": 10346240,
+        "headerMatchesFile": true,
+        "peak": 0.710194,
+        "rms": 0.132467,
+        "tailRms": 0.005712,
+        "activeAfterDispose": 0,
+        "heapBeforeBytes": 17100000,
+        "heapAfterBytes": 17100000,
+        "heapDeltaMiB": 0
+      },
+      "realTimeFactor": 3.24
+    }
+  },
+  "objectUrls": {
+    "created": 0,
+    "revoked": 0
+  },
+  "checks": [
+    {
+      "name": "worst-longest-duration renders at the product's real limits",
+      "pass": true,
+      "detail": "2302 ms median, 2440 ms max"
+    },
+    {
+      "name": "worst-longest-duration file matches the formula to the byte",
+      "pass": true,
+      "detail": "44 + 8599500 × 2 × 2 = 34398044, file 34398044"
+    },
+    {
+      "name": "worst-longest-duration pre-flight estimate is an upper bound, never an under-count",
+      "pass": true,
+      "detail": "estimate 34398044 B vs file 34398044 B (+0 B, 0 frame rounding)"
+    },
+    {
+      "name": "worst-longest-duration leaves no voice sounding after dispose",
+      "pass": true,
+      "detail": "active after dispose: 0"
+    },
+    {
+      "name": "worst-longest-duration carries audio, not silence",
+      "pass": true,
+      "detail": "peak 0.439353, rms 0.00796"
+    },
+    {
+      "name": "worst-heaviest-events renders at the product's real limits",
+      "pass": true,
+      "detail": "190183 ms median, 207746 ms max"
+    },
+    {
+      "name": "worst-heaviest-events file matches the formula to the byte",
+      "pass": true,
+      "detail": "44 + 2586560 × 2 × 2 = 10346284, file 10346284"
+    },
+    {
+      "name": "worst-heaviest-events pre-flight estimate is an upper bound, never an under-count",
+      "pass": true,
+      "detail": "estimate 10346288 B vs file 10346284 B (+4 B, 1 frame rounding)"
+    },
+    {
+      "name": "worst-heaviest-events leaves no voice sounding after dispose",
+      "pass": true,
+      "detail": "active after dispose: 0"
+    },
+    {
+      "name": "worst-heaviest-events carries audio, not silence",
+      "pass": true,
+      "detail": "peak 0.710194, rms 0.132467"
+    },
+    {
+      "name": "a render mints no Object URL of its own",
+      "pass": true,
+      "detail": "export blobs created 0, revoked 0 (the download lifecycle itself is proven in verify.mjs)"
+    },
+    {
+      "name": "the page stayed alive and quiet",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": 0,
+  "findings": [
+    {
+      "case": "worst-heaviest-events",
+      "label": "En yoğun olay (8 track, 32 bar, 1/32)",
+      "severity": "release-risk",
+      "realTimeFactor": 3.24,
+      "finding": "Masaüstü Chromium'da 58.7 saniyelik ses 190.2 saniyede render ediliyor (gerçek zamanın 3.2 katı). Telefonda daha yavaş olması beklenir; sınırlar küçültülmedi, risk kayda geçirildi."
+    }
+  ]
+}
