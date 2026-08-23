@@ -122,9 +122,11 @@ export function volumeDbToCc7(volumeDb: number): number {
 /**
  * A track's stereo position as CC10.
  *
- * −1 → 0 (hard left), 0 → 64 (the centre every sequencer agrees on), +1 → 127.
- * 64 rather than 63.5 rounded: centre has to be exact, because a mix that
- * drifts one step left every export is a bug nobody can see.
+ * −1 → 0 (hard left), 0 → 64 (the centre every sequencer agrees on), +1 → 127
+ * — the three landmarks a reader will check, all exact. Scaling by 63.5
+ * rather than 63 is what reaches a true hard left instead of stopping one
+ * step short of it, and centre is stated outright so a mix can never drift a
+ * step left every time it is exported.
  */
 export function panToCc10(pan: number): number {
   if (!Number.isFinite(pan)) return 64;
@@ -133,5 +135,5 @@ export function panToCc10(pan: number): number {
     Math.max(mixerLimits.pan.min, pan),
   );
   if (clamped === mixerLimits.pan.center) return 64;
-  return clampData(Math.round(64 + clamped * 63));
+  return clampData(Math.round((clamped + 1) * 63.5));
 }
