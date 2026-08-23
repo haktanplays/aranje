@@ -1,0 +1,184 @@
+{
+  "honesty": [
+    "Masaüstü Chromium'da 390x844 phone context; fiziksel telefon kanıtı değildir.",
+    "Ölçümler üretim build'i üzerinde alındı; src/ içinde hiçbir değişiklik yapılmadı.",
+    "Digest çizilen fret glyph'lerinden üretilir (perde + slot), yalnız başlık metninden değil."
+  ],
+  "base": "http://127.0.0.1:3100",
+  "pageErrors": [],
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "findings": [
+    {
+      "defect": "A tek akor seçimi",
+      "reproduced": true,
+      "detail": "dokunulan onset 2 nota (G2+D3), seçim 6 nota / 3 onset / 2 ölçü, bant 576–864 tick (3 slot), özet \"6 nota · 2 ölçü · zincir tamamlandı\"",
+      "measured": {
+        "touchedNotes": [
+          "G2",
+          "D3"
+        ],
+        "touchedSlotTicks": 672,
+        "band": {
+          "present": true,
+          "startTicks": 576,
+          "endTicks": 864,
+          "summary": "6 nota · 2 ölçü · zincir tamamlandı",
+          "selectedCells": 0
+        },
+        "slotSpan": 3,
+        "barsTouched": 2,
+        "onsetsSelected": 3,
+        "selectedNotes": [
+          "intro:0:6:E2",
+          "intro:0:6:B2",
+          "intro:0:7:G2",
+          "intro:0:7:D3",
+          "intro:1:0:A2",
+          "intro:1:0:E3"
+        ]
+      }
+    },
+    {
+      "defect": "B bölüm senkronizasyonu — üst seçicideki ok",
+      "reproduced": true,
+      "detail": "istenen main; seçicide intro, tab'ın çizdiği main, ilk görünür bar main:0, scroll 0 → 1088 (hedef 1088), nota digest değişti",
+      "measured": {
+        "before": {
+          "scrollLeft": 0,
+          "stepperLabel": "Bölüm: Intro Riff, 4 ölçü. Tüm bölümler",
+          "firstVisibleBarKey": "intro:0",
+          "firstVisibleSectionId": "intro",
+          "visibleBarKeys": [
+            "intro:0",
+            "intro:1"
+          ],
+          "visibleDigest": "B2@204 D3@238 E2@204 G2@238 A2@0 E3@0",
+          "headings": [
+            "Intro Riff",
+            "Ana Riff"
+          ]
+        },
+        "after": {
+          "scrollLeft": 1088,
+          "stepperLabel": "Bölüm: Intro Riff, 4 ölçü. Tüm bölümler",
+          "firstVisibleBarKey": "main:0",
+          "firstVisibleSectionId": "main",
+          "visibleBarKeys": [
+            "main:0",
+            "main:1"
+          ],
+          "visibleDigest": "A4@136 B4@204 D4@0 E4@68 A4@136 B4@204 D4@0 E4@68",
+          "headings": [
+            "Intro Riff",
+            "Ana Riff"
+          ]
+        },
+        "agreement": {
+          "requested": "main",
+          "stepperSays": "intro",
+          "tabDraws": "main",
+          "firstVisibleBarKey": "main:0",
+          "scrollLeft": 1088,
+          "expectedScroll": 1088,
+          "digestChanged": true
+        }
+      }
+    },
+    {
+      "defect": "B bölüm senkronizasyonu — bölüm listesi",
+      "reproduced": true,
+      "detail": "istenen main; seçicide intro, tab'ın çizdiği main, ilk görünür bar main:0, scroll 0 → 1088 (hedef 1088), nota digest değişti",
+      "measured": {
+        "before": {
+          "scrollLeft": 0,
+          "stepperLabel": "Bölüm: Intro Riff, 4 ölçü. Tüm bölümler",
+          "firstVisibleBarKey": "intro:0",
+          "firstVisibleSectionId": "intro",
+          "visibleBarKeys": [
+            "intro:0",
+            "intro:1"
+          ],
+          "visibleDigest": "B2@204 D3@238 E2@204 G2@238 A2@0 E3@0",
+          "headings": [
+            "Intro Riff",
+            "Ana Riff"
+          ]
+        },
+        "after": {
+          "scrollLeft": 1088,
+          "stepperLabel": "Bölüm: Intro Riff, 4 ölçü. Tüm bölümler",
+          "firstVisibleBarKey": "main:0",
+          "firstVisibleSectionId": "main",
+          "visibleBarKeys": [
+            "main:0",
+            "main:1"
+          ],
+          "visibleDigest": "A4@136 B4@204 D4@0 E4@68 A4@136 B4@204 D4@0 E4@68",
+          "headings": [
+            "Intro Riff",
+            "Ana Riff"
+          ]
+        },
+        "agreement": {
+          "requested": "main",
+          "stepperSays": "intro",
+          "tabDraws": "main",
+          "firstVisibleBarKey": "main:0",
+          "scrollLeft": 1088,
+          "expectedScroll": 1088,
+          "digestChanged": true
+        }
+      }
+    },
+    {
+      "defect": "B bölüm senkronizasyonu — listedeki seçili bölüm",
+      "reproduced": true,
+      "detail": "iki atlamadan sonra listede seçili görünen bölüm: null",
+      "measured": {
+        "listSelection": null
+      }
+    },
+    {
+      "defect": "B bölüm senkronizasyonu — kısa şarkı (bildirilen belirti)",
+      "reproduced": true,
+      "detail": "istenen main; ilk görünür bar intro:0 → intro:0, scroll 0 → 188 (hedef 272, mümkün olan en fazla 188), nota digest DEĞİŞMEDİ",
+      "measured": {
+        "before": {
+          "scrollLeft": 0,
+          "stepperLabel": "Bölüm: Intro Riff, 1 ölçü. Tüm bölümler",
+          "firstVisibleBarKey": "intro:0",
+          "firstVisibleSectionId": "intro",
+          "visibleBarKeys": [
+            "intro:0",
+            "main:0"
+          ],
+          "visibleDigest": "B2@204 D3@238 E2@204 G2@238 A4@136 B4@204 D4@0 E4@68",
+          "headings": [
+            "Intro Riff",
+            "Ana Riff"
+          ]
+        },
+        "after": {
+          "scrollLeft": 188,
+          "stepperLabel": "Bölüm: Intro Riff, 1 ölçü. Tüm bölümler",
+          "firstVisibleBarKey": "intro:0",
+          "firstVisibleSectionId": "intro",
+          "visibleBarKeys": [
+            "intro:0",
+            "main:0"
+          ],
+          "visibleDigest": "B2@204 D3@238 E2@204 G2@238 A4@136 B4@204 D4@0 E4@68",
+          "headings": [
+            "Intro Riff",
+            "Ana Riff"
+          ]
+        },
+        "wanted": 272,
+        "maxScroll": 188
+      }
+    }
+  ]
+}
