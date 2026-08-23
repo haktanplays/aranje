@@ -12,3 +12,4 @@ next-env.d.ts
 eval/mixer/.render/
 eval/mixer/artifacts/
 eval/export/.render/
+eval/export/artifacts/
