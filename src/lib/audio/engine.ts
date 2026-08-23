@@ -272,7 +272,16 @@ function buildVoice(
 ): VoiceBuild | null {
   const channel = new tone.Channel({ context, volume: track.volumeDb });
   if (track.pan !== undefined) channel.pan.value = track.pan;
-  if (track.muted) channel.mute = true;
+  /*
+   * The contract's phase-0 `muted`/`soloed` flags are deliberately *not*
+   * read here (2M-A §0). Until this checkpoint a song carrying `muted: true`
+   * — from an old file, or hand-edited — silenced its track in the live
+   * engine and would have silenced it in an export, with no control anywhere
+   * in the product able to see or undo it. Audibility now has exactly one
+   * owner: `setTrackAudibility`, fed by the session audition (13.18) or by
+   * the export's explicit content choice. The fields stay in the schema and
+   * still round-trip through a project file; they simply decide nothing.
+   */
   channel.connect(master);
 
   if (isDrumInstrument(track.instrumentId)) {

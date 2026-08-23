@@ -181,6 +181,21 @@ const CASES: Readonly<Record<string, () => Case>> = {
     song: oneBar([guitar(), bass()], { gtr: oneNote(), bass: bassNote() }),
     audible: [],
   }),
+  /*
+   * The phase-0 contract flags, set on a track that must still be heard
+   * (2M-A §0). Until that checkpoint `buildVoice` turned `muted: true` into
+   * a muted channel, so a song carrying the flag rendered silent with no
+   * control anywhere able to show why. Rendered rather than asserted,
+   * because "it changes nothing you can hear" is a claim about sound.
+   */
+  "legacy-flags-guitar": () => ({
+    song: oneBar([guitar({ muted: true, soloed: true } as Partial<Track>)], {
+      gtr: oneNote(),
+    }),
+  }),
+  "legacy-flags-baseline": () => ({
+    song: oneBar([guitar()], { gtr: oneNote() }),
+  }),
   "all-muted-with-metronome": () => ({
     song: oneBar([guitar(), bass()], { gtr: oneNote(), bass: bassNote() }),
     audible: [],

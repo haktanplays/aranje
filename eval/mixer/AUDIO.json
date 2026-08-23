@@ -46,8 +46,13 @@
     },
     {
       "name": "the metronome is not a track and keeps clicking",
-      "pass": false,
-      "detail": "silent 0, with metronome 0"
+      "pass": true,
+      "detail": "silent 0, with metronome 0.077082"
+    },
+    {
+      "name": "the legacy muted/soloed flags change nothing you can hear",
+      "pass": true,
+      "detail": "flagged rms 0.033224 peak 0.439353, plain rms 0.033224 peak 0.439353"
     },
     {
       "name": "no voice is left sounding after dispose",
@@ -60,7 +65,7 @@
       "detail": ""
     }
   ],
-  "failed": 1,
+  "failed": 0,
   "measurements": {
     "level-0": {
       "name": "level-0",
@@ -272,12 +277,42 @@
         "loadedBuffers": 13
       }
     },
+    "legacy-flags-guitar": {
+      "name": "legacy-flags-guitar",
+      "peak": 0.439353,
+      "rms": 0.033224,
+      "leftRms": 0.033224,
+      "rightRms": 0.033224,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
+    "legacy-flags-baseline": {
+      "name": "legacy-flags-baseline",
+      "peak": 0.439353,
+      "rms": 0.033224,
+      "leftRms": 0.033224,
+      "rightRms": 0.033224,
+      "channels": 2,
+      "builds": 1,
+      "fetchedUrls": 7,
+      "activeAfterDispose": 0,
+      "diagnostics": {
+        "expectedBuffers": 7,
+        "loadedBuffers": 7
+      }
+    },
     "all-muted-with-metronome": {
       "name": "all-muted-with-metronome",
-      "peak": 0,
-      "rms": 0,
-      "leftRms": 0,
-      "rightRms": 0,
+      "peak": 0.077082,
+      "rms": 0.001247,
+      "leftRms": 0.001274,
+      "rightRms": 0.001219,
       "channels": 2,
       "builds": 1,
       "fetchedUrls": 13,

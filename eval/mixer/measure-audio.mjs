@@ -135,6 +135,18 @@ claim(
   `silent ${silence.peak}, with metronome ${withClick.peak}`,
 );
 
+/* The phase-0 contract flags are carried by the file and heard by nobody. */
+const legacy = at("legacy-flags-guitar");
+const plainTrack = at("legacy-flags-baseline");
+claim(
+  "the legacy muted/soloed flags change nothing you can hear",
+  legacy.peak > 1e-3 &&
+    Math.abs(legacy.rms - plainTrack.rms) < 1e-6 &&
+    Math.abs(legacy.peak - plainTrack.peak) < 1e-6,
+  `flagged rms ${legacy.rms} peak ${legacy.peak}, ` +
+    `plain rms ${plainTrack.rms} peak ${plainTrack.peak}`,
+);
+
 /* Nothing is left sounding after the graph is torn down. */
 claim(
   "no voice is left sounding after dispose",
