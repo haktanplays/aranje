@@ -14,6 +14,7 @@ import {
   clearTrackAudition,
   effectiveTrackGain,
   isMixOnlyChange,
+  isStaleMixDraft,
   pruneAudition,
   readTrackMixes,
   setTrackMuted,
@@ -211,6 +212,32 @@ describe("56. the persisted mix command", () => {
 
   it("reads an absent pan as the centre", () => {
     expect(trackPan(SAMPLE_SONG.tracks[0]!)).toBe(mixerLimits.pan.center);
+  });
+});
+
+describe("56b. a draft that no longer matches the music", () => {
+  /*
+   * §6: what the mixer staged belongs to the song it was opened on. If that
+   * song moved — an undo, a Copilot apply, an imported project — the draft
+   * may not land, and it may not be silently rebased onto the new music
+   * either. Both halves are asserted, because "always stale" would be as
+   * wrong as "never stale".
+   */
+  it("says no while the music is the one the draft was read from", () => {
+    expect(isStaleMixDraft(SAMPLE_SONG, SAMPLE_SONG)).toBe(false);
+
+    // Same music, different object: a re-parse is not a change.
+    const reparsed = JSON.parse(JSON.stringify(SAMPLE_SONG)) as Song;
+    expect(isStaleMixDraft(SAMPLE_SONG, reparsed)).toBe(false);
+  });
+
+  it("says yes as soon as the music moves under the open mixer", () => {
+    const retitled: Song = { ...SAMPLE_SONG, title: "Baska" };
+    expect(isStaleMixDraft(SAMPLE_SONG, retitled)).toBe(true);
+
+    const moved = update(SAMPLE_SONG, { gtr: { volumeDb: -3, pan: 0.2 } });
+    if (!moved.ok) throw new Error("move refused");
+    expect(isStaleMixDraft(SAMPLE_SONG, moved.song)).toBe(true);
   });
 });
 

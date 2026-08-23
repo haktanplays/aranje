@@ -2038,6 +2038,157 @@ akorlar veride `NoteEvent[]` olarak açık durur · `status: "rejected"` (§5.3)
 33 px butonlar ve 860 px masaüstü yerleşimi (§13.6) · Google Fonts CDN link'i ·
 `Tone.Distortion` dışındaki prototip efekt kurgusu §8.1 ile sınırlanır.
 
+### §13.18 Minimal mixer ve canlı mix önizlemesi (§19 K-49)
+
+**Amaç.** Kullanıcı track'lerin sesini ve stereo konumunu tek yerden, çalarken
+duyarak ayarlayabilsin; "sustur"/"tek dinle" ile çalışırken dinleme odağını
+değiştirebilsin. Efekt, otomasyon, bus ve gerçek mastering kapsam dışıdır.
+
+**Ön kapı.** Ürün koduna başlamadan önce bölüm oluşturma formu Song
+Contract'ın bütün ölçü işaretlerini gösterir hale getirildi (ayrı commit):
+`TIME_SIGNATURES` doğrudan kullanılır, form kendi uyumluluk tablosunu
+tutmaz, her ölçü için yalnızca `timing.ts`'in tam yazabildiği ritim
+aralıkları listelenir (`isRepresentableGrid`). 4/4 ve 6/8 davranışı
+değişmedi; 3/4 ve 7/8 artık seçilebilir ve `6/8@12` ile `7/8@12` hâlâ
+reddedilir. Formu daraltan `CORE_TIME_SIGNATURES`/`isCoreTimeSignature`
+silindi.
+
+**İki ayrı durum sınıfı — bu bölümün taşıyıcı kararı.**
+
+- **Kalıcı mix (proje verisi):** track `volumeDb` ve `pan`. Song
+  Contract'ta, proje dosyasında, Copilot fingerprint'inde, undo/redo'da ve
+  depoda yaşar; offline render bu değerleri okur.
+- **Oturum dinlemesi (session audition):** `mute` ve `solo`. Song'a **hiç**
+  yazılmaz — alan yok, dosya yok, fingerprint yok, history yok, depo yok.
+  Reload, yeni şarkı ve proje import'u onu bırakır; silinen track'in id'si
+  temizlenir; görünüm değiştirmek ve sheet açıp kapamak korur.
+
+Song Contract'a `mute`/`solo` alanı **eklenmedi** (faz 0'dan kalan opsiyonel
+`muted`/`soloed` alanlarına hiçbir şey yazmaz ve mixer onları yönetmez).
+Mute "−sonsuz dB" olarak da modellenmedi: duyulurluk seviyeden ayrı bir
+karardır, aksi halde "sustur"u kaldırmak hangi seviyeye dönüleceği konusunda
+belirsiz olurdu. `effectiveTrackGain` seviyeyi, `audibleTrackIds` kimin
+duyulduğunu söyler.
+
+**Saf çekirdek** (`src/lib/song/track-mix.ts`). Kalıcı komut iki biçimdir:
+`update_track_mix` (bir apply'da kaç track varsa hepsi) ve
+`reset_track_mix_to_opened_value`. Komut yalnız `volumeDb`/`pan` değiştirir;
+nota, pozisyon, akort, capo, bölüm ve ölçü girdiden okunup dokunulmadan geri
+verilir, girdi mutate edilmez, davul da diğer track'ler gibi mikslenir.
+Aday tek kapıdan (`guardCandidate`) strict şema + merkezi validator
+zincirinden geçer: error atomik red (typed kodlar, tek Türkçe tablo),
+warning taşınır ve engellemez. **Sınır dışı değer clamp edilmez, reddedilir**
+— bıraktığı yerden başka yere kayan bir slider güvenilmez bir slider'dır.
+No-op apply history ve yazma üretmez (aynı müzik geri geldiğinde commit
+kapısı reddeder; ikinci bir no-op kuralı yazılmadı). Aynı girdi beş koşuda
+byte-eş sonuç verir.
+
+**Merkezî limitler** (`mixerLimits`). Ses −24…+6 dB, adım 0,5; stereo −1…+1,
+adım 0,05, merkez 0. Bu sayılar tek kaynakta yaşar; component, engine ve
+hook onları tekrar yazmaz. Okunuşlar tek yerde: "−6 dB", "0 dB", "+2.5 dB",
+"Merkez", "Sol %30", "Sağ %25".
+
+**Solo/mute truth table.** Solo listesi boşsa mute edilmeyen her track
+duyulur; herhangi bir solo varsa yalnız solo'lananlar ve içlerinden mute
+edilmemiş olanlar duyulur — **mute solo'ya üstün gelir**. Çoklu solo
+serbesttir. Metronom track değildir (`voices` haritasında yoktur, master'a
+bağlıdır), hiçbir mute/solo kombinasyonu onu susturmaz. Bilinmeyen/silinmiş
+id'ler deterministik temizlenir. **Bütün track'lerin mute edilmesi geçerli
+bir sessizliktir** — hata değil, fallback değil.
+
+**Canlı önizleme, apply, vazgeç, bayat taslak.** Mixer açılırken o anki
+şarkının kopyası ve kimliği alınır. Slider yalnız taslağı ve çalan ses
+düğümünü değiştirir: şarkı, depo ve history'ye dokunmaz. Mute/solo anında
+etkilidir ve oturumsaldır. "Uygula" bütün taslağı tek Song adayına, tek
+commit'e, tek history adımına ve **tam 1** depo yazımına çevirir; sheet
+kapanır, runtime düğümleri commit edilmiş değerde kalır. "Vazgeç"/Escape/
+backdrop taslağı açılıştaki değerlere döndürür, runtime'ı geri yazar,
+mute/solo'ya dokunmaz ve **0** yazma/history üretir. Mixer açıkken şarkı
+değişmişse taslak **inemez**: `isStaleMixDraft` merkezî kararıyla Uygula
+kapanır ve güvenli cümle görünür ("Mikser açıldıktan sonra şarkı değişti.
+Değerleri yeniden açarak düzenle."); sessiz rebase yoktur, ham
+fingerprint/diagnostic UI'a taşmaz.
+
+**Ses grafiği.** İkinci scheduler veya ikinci motor yok. Her track'in
+kazancı ve konumu **kendi kanalına** yazılır: `setTrackMix(trackId,
+volumeDb, pan)` ve `setTrackAudibility(audibleTrackIds)` typed runtime
+yüzeyleridir. Global sampler detune, global gain hilesi ve master pan
+yoktur; bir track'in değişimi başka bir track'in düğümünü yazmaz. Sample
+yeniden fetch/decode edilmez, schedule listesi değişmez, playhead, çalışma
+hızı ve loop sınırları değişmez. Sampler, akor sesleri ve bütün
+expressive/legato sesler aynı `voice.channel`'a bağlı olduğu için kararı
+birlikte alır. **Mix-only yol bir component koşulu değildir:** merkezî saf
+`isMixOnlyChange` yüklenici, `usePlayback` içinde motoru koruyan tek karar
+noktasıdır; başka her değişiklik olağan yeniden kurulumu alır.
+
+**Offline render paritesi** (`eval/mixer/`, 15 case, `AUDIO.json`). Ölçülen:
+−12/−6/0 dB aynı track'te beklenen yönde (−6 dB → −6,00 dB; −12 dB →
+−12,01 dB RMS), pan −1/0/+1 doğru kanalda (merkez L−R 0,00 dB; sert pan
+sonsuz oran), iki track iki yana ayrılıyor, akor sesleri track'in panını
+paylaşıyor, expressive ses sampler ile aynı miksi alıyor, oturum mute'u
+hedefi susturuyor, oturum solo'su yalnız seçileni bırakıyor, bütün track'ler
+mute edildiğinde tepe 0, metronom aynı durumda 0,068463 tepeyle çalmaya
+devam ediyor, dispose sonrası aktif ses 0. **Bu ölçümler gain/pan/audibility
+doğruluğudur; profesyonel mix kalitesi kanıtı değildir.**
+
+**History ve yazma atomikliği.** Tek typed aksiyon `track_mix_update`,
+okuyucu etiketi "Track miksini değiştirme". Bir apply = bir history adımı,
+kaç track değişirse değişsin; undo hepsini tek adımda eski değerlerine
+döndürür ve mute/solo'ya dokunmaz; redo commit edilmiş değerleri geri
+getirir ve yine mute/solo'ya dokunmaz. Undo/redo sırasında runtime düğümleri
+ikinci motor kurulmadan Song ile eşleşir.
+
+**Yaşam döngüsü entegrasyonu.** Yeni şarkı ve proje import apply'ı oturum
+dinlemesini temizler; import **önizlemesi** değiştirmez; track silme o id'yi
+düşürür; yeniden adlandırma ve sıralama (id tabanlı olduğu için) korur;
+kopyalanan track sustursuz/solo'suz başlar; aynı id ile setup değişimi
+korur; undo ile geri gelen track eski mute'unu **diriltmez**.
+`canPersist:false` iken kalıcı Uygula kapalıdır, mute/solo çalışır, şarkı
+çalınır ve "Sustur ve Tek dinle yalnız bu oturumda çalışır" notu görünür.
+
+**Copilot ve proje dosyası sınırı.** Kalıcı `volumeDb`/`pan` fingerprint'e
+doğal olarak girer (`surfaceDigest.tracks`); mute/solo ve mixer taslağı
+girmez. Locked-surface guard, modelin track miksini değiştirme denemesini
+`tracks` ihlali olarak yakalamaya devam eder. Proje export'u yalnız commit
+edilmiş `volumeDb`/`pan` taşır; mute/solo ve taslak dosyaya girmez; import
+commit edilmiş değerleri geri getirir. Bu bölümde provider çağrısı yoktur.
+
+**UI.** Transport'ta kullanıcıya görünür "Mikser" girişi (bir track
+susturulmuş veya tek dinleniyorsa etiket bunu söyler). Her satırda: track
+adı, enstrüman etiketi, "Sustur", "Tek dinle", ses slider'ı, erişilebilir
+"−/+" ince ayarları, güncel dB, stereo slider'ı, "Sol/Merkez/Sağ" okunuşu ve
+44px merkeze alma kontrolü; altta "Vazgeç" ve "Uygula". Mute/solo yalnız
+renkle değil metin, basılı durum, `aria-pressed` ve açık erişilebilir adla
+anlatılır; çıplak "M", "S", "pan", "gain", "bus" yoktur. Kapsam cümlesi
+açıkça yazılıdır: "Bu ayarlar track'in bütün bölümlerdeki sesini
+değiştirir." Sınırlar korundu: `Workspace.tsx` 449 satır (bütçe ≤450),
+`ArrangementCanvas.tsx` 470 (bütçe ≤470) ve mixer'ı **import etmiyor**;
+`MixerSheet` yalnız typed view-model ve callback alır — audio engine, Song
+commit, depo ve history'ye erişmez (AST ile bağlı).
+
+**Dürüst kalite boşluğu (kapatılmadı).** Solo yapılan bölümde arkadaki
+enstrümanları yalnız o bölüm için yükseltmek **mümkün değildir**: ses ve
+stereo konumu track'in bütün bölümlerine uygulanır. Bölüm bazlı volume
+override ve otomasyon bu checkpoint'te **yoktur** ve Song Contract'a böyle
+bir alan eklenmedi. Bu, çözülmüş bir problem olarak raporlanmaz; açık bir
+kalite boşluğu olarak burada ve K-49'da kayıtlıdır.
+
+**Doğrulama.** 50+ birim testi (saf komut, audibility, staging/stale,
+runtime, history ve sınırlar); 35 tarayıcı senaryosu × 2 viewport = **70/70**
+gerçek production build'de — ses iddiaları DOM'dan değil gerçek Web Audio
+grafiğinden okunur (Tone param'ı zamanlayarak yazdığı için `setValueAtTime`
+ve rampalar da yakalanır; beklenen lineer kazanç ve pan değeri birebir
+aranır). 30 vacuity probe (20 unit + 8 tarayıcı + 2 ses) kırmızı. Performans
+(Node + masaüstü Chromium; **fiziksel telefon kanıtı değil**): 8 track staged
+mix güncellemesi ~0,001 ms, audibility hesabı ~0,003 ms, tek mixer apply
+~167 ms (≈147 ms'i validator zinciri), runtime gain/pan yazımı ~0,003 ms,
+runtime audibility yazımı ~0,05 ms, mix commit ~0,04 ms (Node); mix commit
+zarfı `setItem` ~11,8 ms median / 14,1 ms max, 25 slider hareketi 211 ms,
+apply gidiş-dönüşü 458 ms, motor kurulumundan sonra sample isteği 21 → 21
+(masaüstü Chromium).
+
+---
+
 ---
 
 ## §14 Stack, mimari ve fazlar
@@ -2318,7 +2469,8 @@ maliyettir** (§11.2/7).
 | **K-45** | **Kayıt bir zarf içindedir ve bir basamak geride tutar (§13.14).** Her başarılı düzenleme zaten kaydediliyordu; yapmadığı şey **yerine geçtiği şarkıyı saklamaktı** — yarım inen bir yazma, şemanın altından kayması ya da tek slotun bozulmasının başka bir yolu müzisyenin işini götürüp yerine örnek şarkıyı bırakıyordu. `aranje.song` artık `{format, version, revision, current, previous}` taşır: **tek nesne**, çünkü iki slot + pointer normal bir commit'i iki-üç fiziksel yazıma çıkarır ve yazmanın yarım kalabildiği an, bu checkpoint'in kaldırmaya çalıştığı andır. Normal commit hâlâ **tam 1** `setItem`'dır. `current` ve `previous` **ayrı ayrı** doğrulanır — ikisini birden tek Zod hatasına bağlamak, iki tane tutmanın bütün anlamını yok ederdi. **Okuma saf bir karardır:** `decideLoad` ham string alır, hiçbir şeye dokunmaz ve altı sonuçtan birini döner (empty · legacy · envelope · recovered_previous · corrupt · unsupported_version), böylece yalnız bir şeyler zaten bozulduğunda çalışan dallar birebir test edilebilir. **Sürüm şekilden önce okunur:** format etiketi ve version *gevşek* bir şemayla bakılır, çünkü gelecek bir sürümün şekli hiç bu olmayabilir; tanımadığı bir dosyayı karantinaya almak, bu sürümün okuyamadığı gerekçesiyle yeni sürümün işini yok etmesi olurdu. Future version **fail-closed**: silinmez, taşınmaz, üzerine yazılmaz ve o oturumda kalıcı düzenleme kontrolleri **disabled** olur. **Legacy migration sessizdir:** eski ham Song normal açılır, açılışta **hiç yazma yapılmaz**, ilk gerçek düzenlemede zarfa geçer ve eski şarkı `previous`'a girer; migration history adımı değildir ve kullanıcıya mesaj gösterilmez. **Commit atomikliği tersine döndü:** eskiden reddedilen bir yazma, ekranda kaydedilmemiş bir düzenleme ve altında "kaydedilemiyor" notu bırakıyordu — yani okuyucudan, önündeki şeylerin hangisinin gerçek olduğunu hatırlamasını istiyordu. Artık `setItem` başarısızsa **hiçbir şey ilerlemez**: ne şarkı, ne cursor, ne redo dalı; banner sebebini söyler ve ekranda görünen, diskte olandır. Tek istisna deponun **hiç olmaması**dır (private pencere): `setItem` çağrılmadı ve başarısız olmadı, oturum bellekte çalışır ve bunu açılışta zaten söyler — tarayıcısı hatırlamayı reddeden birinden düzenlemeyi almak, koruma değil ceza olurdu. **Undo ve redo da diske yeni bir current yazar** (her biri tam 1 `setItem`), `previous` işlemden hemen önce diskte olandır ve `revision` monoton artar. Geçmiş hâlâ oturumluktur; zarfa snapshot veya cursor yazılmaz. **Kurtarma ekranı dört durumdan ibarettir** (`recovered_previous`, `corrupt_fallback`, `unsupported_version`, `storage_write_failed`) ve banner bir *durum* alır, bir cümle değil — diagnostic'ten okuyucuya giden kod yolu yoktur. Karantina anahtarı çakışırsa deterministik `.1`, `.2` soneki alır: ikinci bir kurtarmanın birincinin kanıtını ezmesi, bu fonksiyonun bir kat aşağıda önlediği hatanın ta kendisidir. Ölçüm: en ağır şarkı (8 track × 32 bar × 1/32, her slot dolu) ham **798.516 B**, zarf current-only **798.592 B** (+76 B), current+previous **1.597.104 B** (≈1,52 MiB, 2,00×). Tarayıcının tahmini kotası garanti sayılmaz; gerçek `setItem` her hâlükârda fail-closed yakalanır. **Timer/interval/debounce autosave yoktur** ve `beforeunload`/`visibilitychange`/`pagehide` dinleyicisi **hiç kaydedilmez** — kapanırken çalışan ikinci bir yazma yolu, yanlış olduğunu keşfetmek için mümkün olan en kötü andır. **2K-B.1 kapanışı:** bellekte-düzenleme modu kaldırıldı — depo yoksa, erişim exception veriyorsa veya açılıştaki yazma probe'u (`aranje.probe`, 1 set + 1 remove) başarısızsa `canPersist: false` olur; şarkı görüntülenir ve çalınır, bütün kalıcı mutasyonlar disabled olur, jestler armed edilmez ve non-dismissible banner sebebini söyler. Kurtarma sırası kayıpsızdır: ham değer kopyalanmadan ana anahtar silinmez/yazılmaz, karantina veya repair başarısızsa `canPersist: false` ve başarı raporlanmaz. Fiziksel işlem defteri uygulamadan önce kurulur ve `removeItem` dahil anahtar+sıra+sonuç sayar; temiz açılış yolları şarkı ve karantina anahtarlarında 0/0'dır, probe'un kendi 2 işlemi açıkça raporlanır. Boyut iki birimle ölçüldü (worst case 1.597.104 B UTF-8 / 1.597.080 code-unit / ≈3.194.160 B UTF-16) ve production Chromium 141'de gerçek `setItem` başarılı, round-trip byte-eş; fiziksel iOS Safari kabulü açık. | Claude Code önerisi — çekirdek şartlı kabul, 2K-B.1 kapanışıyla **Haktan onayladı 22.08.2026** |
 | **K-46** | **Taşınabilir proje yedeği ve güvenli açma (§13.15).** Şarkı tek, strict, versioned bir dosya olarak cihaza iner ve güvenle geri açılır: `{format: "aranje.project", version: 1, song}`, uzantı `.aranje.json`. **Storage zarfı dosyaya girmez** — `current/previous/revision`, recovery state, history, clipboard, ayarlar, fingerprint, örnekler ve cihaz bilgisi dosyada yoktur; dosya müziği taşır, oturumu değil. **Export deterministiktir:** kanonik sıralı anahtarlar + compact JSON + tek satır sonu; aynı şarkı beş kez byte-eş dosya üretir ve yapısal eşitlik byte eşitliğini getirir. Export öncesi strict Song şeması + merkezi validator zinciri çalışır; error export'u reddeder, warning etmez. Export hiçbir şey yazmaz, history adımı oluşturmaz, playback'i durdurmaz ve **`canPersist: false` iken de çalışır** — kaydedemeyen cihazdaki şarkı dosya olarak kurtarılabilir. Dosya adı tek saf yardımcıdan gelir (yasak/kontrol karakterleri temizlenir, Unicode korunur, boş başlık `aranje-proje`ye düşer, uzunluk merkezî sabitte). **Import saf bir karar sırasıdır:** byte sınırı (`projectFileLimits.maxImportBytes = 2 MiB`, içerik okunmadan) → UTF-8 + BOM → JSON → ham legacy Song reddi (storage migration ile taşınabilir dosya ayrı sınırlardır) → gevşek etiketle sürüm (gelecek sürüm fail-closed, "bozuk" değil) → strict dış kabuk → strict Song → merkezi validator zinciri; onarım, clamp, alan düşürme, sessiz varsayılan yoktur ve `__proto__`/`constructor`/`prototype` her derinlikte reddedilir. Hatalar dokuz sabit koddur ve tek Türkçe tabloyla konuşur; ham JSON/diagnostic UI'a taşmaz. **Preview hiçbir şeyi değiştirmez** (şarkı, depo, history, playback, seçim, pano; ikinci AudioContext kurulmaz), apply açık kararla tek `commit(next, {kind: "project_import"})`'tir: tam 1 yazma, tam 1 history adımı, "Geri al: Projeyi açma", undo/redo byte-eş. Apply zemini deterministiktir: playback durur, loop kapanır (aynı section id yeniden görünse bile), playhead başa döner, seçimler/ghost/pano temizlenir, görünüm Düzen'e döner. **Orkestrasyon sınırı tutuldu:** saf contract `src/lib/project`'te, akış `use-project-file`'da, görünüm `ProjectFileSheet`'te; `Workspace.tsx` 1555 → 1543 satır (dürüst: başlık çıkarımı + davranış-koruyan sadeleştirme), `ArrangementCanvas.tsx` 881'de kaldı ve proje kablosu almadı. **Yeni boundary'ler grep değil:** gerçek import graph (TypeScript AST), export yüzeyi ve ESLint `no-restricted-imports`. Performans ölçüldü (PERFORMANCE.json): worst-case desteklenen şarkıda export serialize ~8 ms, JSON parse ~4 ms, strict doğrulama ~12 ms, validator zinciri ~102 ms median (Node); worst-case zarf `setItem` ~10-18 ms median / ~23-34 ms max (masaüstü Chromium 141); 51 snapshot history JSON-eşdeğeri ≈38,9 MiB üst sınır, gerçek tutulan bellek tek-bar düzenlemelerde ≈0,07 MiB (Node, taban hariç) / ≈1,1 MiB (Chromium, taban dahil) — bunlar masaüstü ölçümüdür, fiziksel telefon kanıtı değildir; Android/iOS gecikmesi release gate'inde açıktır. Kapsam dışı: audio/MIDI export, çoklu proje kütüphanesi, cloud sync, yeni şarkı akışı, mixer. | Claude Code önerisi — **Haktan onayladı 22.08.2026** |
 | **K-47** | **Workspace bir composition root'tur (§13.16, 2L-R).** Davranış-korumalı ayrıştırma; yeni özellik yok. `Workspace.tsx` 1543 → **416** satır (useState 0 — bütün state kendi sahibinde), `ArrangementCanvas.tsx` 881 → **470**. Sahiplik: view/track/bar-focus/scroll hedefleri `use-workspace-navigation`; iki seçim modeli + panolar + staged komutlar + sheet'leri `use-selection-session` (tek-seferde-bir kuralı artık tek sahibin yapısı); edit modu + hücre + onset grubu `use-note-editing` (nota/grup commit köprüsü burada); üst düzey sheet'ler `use-workspace-overlays`'ta typed enum (karşılıklı dışlama tipin özelliği); görünüm `WorkspaceSurface`/`WorkspaceOverlays`/`SelectionActionArea`'da. Arrangement'ın hücreleri, seçim tutamacı ve follow-scroll rAF'i `arrangement/` altına taşındı — model/geometri semantiği, tek rAF, hücre başına dinleyici sayısı ve `data-*` yüzeyleri değişmedi. **Parite ölçüldü:** iki viewport'ta önce/sonra bounds piksel-eş, yatay scroller 1, body taşması 0, hedefler 44px, AudioContext 1, oynatmada ~60 rAF/s, üç görünüm geçişinde çalma sürüyor, console/page error 0; boot/geçiş/seçim/sheet süreleri eşit veya daha iyi (COMPARISON.json). **Sınırlar artık gerçek sözdiziminde:** AST import-graph + tanımlayıcı/çağrı sayaçları + export yüzeyi + ESLint `no-restricted-imports` (`**/eval/**` ürün koduna kapalı); history cursor kontrolü grep'ten AST aritmetik analizine çevrildi (Tailwind `cursor-pointer` artık yanlış pozitif veremez — probe bunu kanıtlıyor). Eval'de üçten fazla harness'ın kopyaladığı press/reveal/layout/44px/hata-toplama/kayıt yardımcıları `eval/shared/harness.mjs`'te ortaklandı, dört suite ona bağlandı ve eski kopyalar silindi; storage 50/50 ve project-file 52/52 aynen yeşil. **Dürüst kayıt:** bar-ops (23/29) ve history (22/36) suite'lerinin düşen senaryoları baseline commit'te birebir aynı listeyle düşüyor — 2K-B zarfı ve undo/redo yazma semantiği sonrası çürümüş beklentiler; bu checkpoint'te ne kırıldı ne de sessizce onarıldı, kayda geçirildi. Yeni 20 senaryoluk regresyon paketi (2 viewport, 40/40) navigation'dan Copilot demo döngüsüne ve depolama kapısına kadar akışları ölçüyor. 16 vacuity probe (12 unit + 4 tarayıcı) kırmızı. | Claude Code önerisi — **Haktan onayladı 22.08.2026** |
-| **K-48** | **Yeni şarkı, bölüm ve track yaşam döngüsü (§13.17, 2L-B).** Ön kapı: 2K-B'den beri çürümüş bar-ops ve history tarayıcı paketleri güncel zarf + durable-save sözleşmesine onarıldı (yalnız eval, ayrı commit; `unwrapStoredSong` paylaşılan yardımcı) — bar-ops **29/29**, history **36/36**. **On altı saf komut, üç ayrı modül:** şarkı (şablondan oluşturma + başlık/tonik/mod/tempo), bölüm (create/rename/duplicate/move/delete/set/clear tempo override), track (create/rename/duplicate/move/delete + iki ayrı setup yolu). Her aday tek kapıdan strict şema + merkezi validator zincirinden geçer; error atomik red, warning taşınır ve engellemez; red kodları typed ve tek Türkçe tabloda. **Determinizm:** timestamp/UUID/randomness yok (AST ile bağlı); ID ve kopya adları merkezî collision-safe üreticilerden (`track-1`, `gtr-copy`, "Gitar 1 kopyası"); aynı girdi beş koşuda byte-eş. **Üç şablon tek merkezî tabloda** (Boş başlangıç / Rock grubu / Akustik; "Yeni Şarkı", E minor, 120 BPM, 4/4, 1/16, "Bölüm 1", 4 ölçü) ve enstrüman ayrıntıları registry'den; üç Song da validator zincirinden sıfır hatayla geçer; sessizlik eksik anahtardır. **Setup güvenliği iki ayrı yoldur:** güvenli güncelleme içerik korunarak şema+validator'a sorulur ve bozulma atomik reddedilir (pozisyon silinmez/clamp edilmez); "Track içeriğini temizleyip değiştir" ayrı, onaylı ve yıkıcıdır — tek commit, undo eski setup'ı ve bütün müziği byte-eş getirir. **Tek controller** (`use-lifecycle`): red → no-op → blocked → zemin + tek commit + normalizasyon; sheet'ler commit/storage/history/validator görmez (AST ile bağlı); yeni şarkı sheet'i zorunlu uyarı cümlesini ve 2L-A yedeğini taşır; `canPersist:false`'ta oluşturma kapalı, dinleme + yedek açık. Silme sonrası aktif bölüm/track deterministik (`survivorIndex`: aynı index, yoksa önceki); loop/playhead motorun undo/redo yolundan normalize olur; yapısal apply'da çalan transport güvenle durur, ikinci AudioContext kurulmaz. **History:** typed `{kind:"lifecycle", command}`; 16 komut 15 okuyucu etiketi (set/clear tempo aynı cümle); ham komut ID UI'da yok. **Ürün dili:** "Track" mevcut ürün dili olarak korundu (yarım lokalizasyon yapılmadı; enstrüman listesi başlığı "Enstrümanlar" kalır), "resolution" yerine "Ritim aralığı" + mevcut Türkçe grid etiketleri; yalnız core ölçü işaretleri ve `timing.ts`'in tam yazabildiği grid çiftleri sunulur. **Doğrulama:** 50 birim testi; satır bütçeleri daraltıldı (Workspace ≤450, fiili 450; ArrangementCanvas ≤470, dokunulmadı); 32+ tarayıcı senaryosu × 2 viewport = 68/68 gerçek production build'de, her apply gerçek `setItem` sayımıyla (başarı tam 1, vazgeç/no-op/red 0); Copilot hedef listesi Song'dan yeniden türer, provider çağrısı 0; proje dosyası formatı değişmedi. Performans (Node + masaüstü Chromium, telefon kanıtı değil): şablon ~0,005 ms; limit-altı en ağır girdide section/track duplicate ~231/~248 ms median (≈200 ms'i validator zinciri); lifecycle commit zarfı setItem ~15,6 ms median; 51 snapshot ≈38,9 MiB JSON-eşdeğer üst sınır / ≈0,07 MiB tutulan Node heap. 25 vacuity probe (16 unit + 9 tarayıcı) kırmızı. Kapsam dışı: mixer (2L-C), audio export, çoklu proje, gerçek provider, release hardening. | Claude Code önerisi — **Haktan onayı bekliyor** |
+| **K-48** | **Yeni şarkı, bölüm ve track yaşam döngüsü (§13.17, 2L-B).** Ön kapı: 2K-B'den beri çürümüş bar-ops ve history tarayıcı paketleri güncel zarf + durable-save sözleşmesine onarıldı (yalnız eval, ayrı commit; `unwrapStoredSong` paylaşılan yardımcı) — bar-ops **29/29**, history **36/36**. **On altı saf komut, üç ayrı modül:** şarkı (şablondan oluşturma + başlık/tonik/mod/tempo), bölüm (create/rename/duplicate/move/delete/set/clear tempo override), track (create/rename/duplicate/move/delete + iki ayrı setup yolu). Her aday tek kapıdan strict şema + merkezi validator zincirinden geçer; error atomik red, warning taşınır ve engellemez; red kodları typed ve tek Türkçe tabloda. **Determinizm:** timestamp/UUID/randomness yok (AST ile bağlı); ID ve kopya adları merkezî collision-safe üreticilerden (`track-1`, `gtr-copy`, "Gitar 1 kopyası"); aynı girdi beş koşuda byte-eş. **Üç şablon tek merkezî tabloda** (Boş başlangıç / Rock grubu / Akustik; "Yeni Şarkı", E minor, 120 BPM, 4/4, 1/16, "Bölüm 1", 4 ölçü) ve enstrüman ayrıntıları registry'den; üç Song da validator zincirinden sıfır hatayla geçer; sessizlik eksik anahtardır. **Setup güvenliği iki ayrı yoldur:** güvenli güncelleme içerik korunarak şema+validator'a sorulur ve bozulma atomik reddedilir (pozisyon silinmez/clamp edilmez); "Track içeriğini temizleyip değiştir" ayrı, onaylı ve yıkıcıdır — tek commit, undo eski setup'ı ve bütün müziği byte-eş getirir. **Tek controller** (`use-lifecycle`): red → no-op → blocked → zemin + tek commit + normalizasyon; sheet'ler commit/storage/history/validator görmez (AST ile bağlı); yeni şarkı sheet'i zorunlu uyarı cümlesini ve 2L-A yedeğini taşır; `canPersist:false`'ta oluşturma kapalı, dinleme + yedek açık. Silme sonrası aktif bölüm/track deterministik (`survivorIndex`: aynı index, yoksa önceki); loop/playhead motorun undo/redo yolundan normalize olur; yapısal apply'da çalan transport güvenle durur, ikinci AudioContext kurulmaz. **History:** typed `{kind:"lifecycle", command}`; 16 komut 15 okuyucu etiketi (set/clear tempo aynı cümle); ham komut ID UI'da yok. **Ürün dili:** "Track" mevcut ürün dili olarak korundu (yarım lokalizasyon yapılmadı; enstrüman listesi başlığı "Enstrümanlar" kalır), "resolution" yerine "Ritim aralığı" + mevcut Türkçe grid etiketleri; yalnız core ölçü işaretleri ve `timing.ts`'in tam yazabildiği grid çiftleri sunulur. **Doğrulama:** 50 birim testi; satır bütçeleri daraltıldı (Workspace ≤450, fiili 450; ArrangementCanvas ≤470, dokunulmadı); 32+ tarayıcı senaryosu × 2 viewport = 68/68 gerçek production build'de, her apply gerçek `setItem` sayımıyla (başarı tam 1, vazgeç/no-op/red 0); Copilot hedef listesi Song'dan yeniden türer, provider çağrısı 0; proje dosyası formatı değişmedi. Performans (Node + masaüstü Chromium, telefon kanıtı değil): şablon ~0,005 ms; limit-altı en ağır girdide section/track duplicate ~231/~248 ms median (≈200 ms'i validator zinciri); lifecycle commit zarfı setItem ~15,6 ms median; 51 snapshot ≈38,9 MiB JSON-eşdeğer üst sınır / ≈0,07 MiB tutulan Node heap. 25 vacuity probe (16 unit + 9 tarayıcı) kırmızı. Kapsam dışı: mixer (2L-C), audio export, çoklu proje, gerçek provider, release hardening. | Claude Code önerisi — **Haktan onayladı 22.08.2026** |
+| **K-49** | **Minimal mixer ve canlı mix önizlemesi (§13.18, 2L-C).** Ön kapı: bölüm formu artık Song Contract'ın bütün ölçü işaretlerini gösterir (3/4 ve 7/8 dahil); form kendi uyumluluk tablosunu tutmaz, her ölçü için yalnız `timing.ts`'in tam yazabildiği ritim aralıkları listelenir; `6/8@12` ve `7/8@12` hâlâ reddedilir; formu daraltan `CORE_TIME_SIGNATURES` silindi. **Taşıyıcı karar iki ayrı durum sınıfıdır:** kalıcı mix (`volumeDb` + `pan`) proje verisidir — contract, dosya, fingerprint, undo/redo, depo ve offline render onu okur; oturum dinlemesi (mute/solo) **Song'a hiç yazılmaz** — alan yok, dosya yok, fingerprint yok, history yok, depo yok. Contract'a `mute`/`solo` alanı eklenmedi; mute "−sonsuz dB" olarak da modellenmedi (duyulurluk seviyeden ayrı bir karardır: `effectiveTrackGain` seviyeyi, `audibleTrackIds` kimin duyulduğunu söyler). **Saf çekirdek** (`track-mix.ts`) yalnız iki alanı değiştirir, girdiyi mutate etmez, davulu da mikslar, tek kapıdan strict şema + validator zincirinden geçer (error atomik red, warning taşınır) ve **sınır dışını clamp etmez, reddeder**; no-op apply history/yazma üretmez; beş koşuda byte-eş. **Merkezî `mixerLimits`:** ses −24…+6 dB adım 0,5; stereo −1…+1 adım 0,05, merkez 0 — sayılar component/engine/hook'ta tekrarlanmaz. **Truth table:** solo yoksa mute edilmeyen herkes; solo varsa yalnız solo'lananlar eksi mute'lananlar — **mute solo'ya üstün gelir**; çoklu solo serbest; bilinmeyen id'ler deterministik temizlenir; metronom track değildir ve hiçbir kombinasyon onu susturmaz; hepsi mute geçerli sessizliktir. **Canlı yol:** slider yalnız taslağı ve çalan düğümü değiştirir; Uygula = tek Song adayı, tek commit, tek history adımı, tam 1 yazma; Vazgeç/Escape/backdrop = açılış değerlerine dönüş, runtime geri yazımı, mute/solo korunur, 0 yazma; şarkı mixer açıkken değiştiyse merkezî `isStaleMixDraft` taslağı indirmez — sessiz rebase yok, Uygula kapalı, güvenli cümle, ham diagnostic yok. **Ses grafiği:** ikinci scheduler/motor yok; kazanç ve konum track'in **kendi kanalına** yazılır (`setTrackMix`, `setTrackAudibility`); global detune/gain/master pan yok; sample yeniden decode edilmez, schedule/playhead/hız/loop değişmez; sampler, akor ve expressive sesler aynı kanalı paylaştığı için kararı birlikte alır; mix-only yol bir component koşulu değil, merkezî saf `isMixOnlyChange` yüklenicisidir. **Offline render ölçüldü** (15 case, AUDIO.json, 11/11): −6 dB → −6,00; −12 dB → −12,01; merkez L−R 0,00 dB; sert pan sonsuz oran; akor ve expressive sesler track miksini paylaşıyor; oturum mute/solo doğru track'i bırakıyor; hepsi mute → tepe 0 iken metronom 0,068463 tepeyle çalıyor; dispose sonrası aktif ses 0 — **bunlar gain/pan/audibility doğruluğudur, mix kalitesi kanıtı değildir**. **Lifecycle/Copilot/dosya sınırı:** yeni şarkı ve import apply oturum durumunu temizler, import önizlemesi temizlemez, track silme id'yi düşürür, ad/sıra korur, kopya sustursuz başlar, undo ile dönen track eski mute'unu diriltmez; `canPersist:false`'ta Uygula kapalı, mute/solo açık, oturumsallık notu görünür; fingerprint kalıcı miksi izler ve locked-surface guard modelin mix denemesini yakalar; export yalnız commit edilmiş miksi taşır. **UI:** görünür "Mikser" girişi; satırda ad, enstrüman, "Sustur", "Tek dinle", ses slider'ı, −/+ ince ayar, dB, stereo slider'ı, Sol/Merkez/Sağ okunuşu, 44px merkezleme; mute/solo renk dışında metin + `aria-pressed` ile anlatılır; çıplak "M"/"S"/"pan"/"gain"/"bus" yok; kapsam cümlesi ("bütün bölümlerdeki sesini değiştirir") yazılı; `Workspace.tsx` 449 (≤450), `ArrangementCanvas.tsx` 470 ve mixer'ı import etmiyor, `MixerSheet` engine/commit/depo/history görmüyor (AST ile bağlı). **Dürüst kalite boşluğu — kapatılmadı:** solo yapılan bölümde arkadaki enstrümanları yalnız o bölüm için yükseltmek mümkün değildir; ses ve stereo track'in bütün bölümlerine uygulanır; bölüm bazlı override/otomasyon yoktur ve Contract'a eklenmedi. **Doğrulama:** 50+ birim testi; 35 senaryo × 2 viewport = 70/70 gerçek production build'de, ses iddiaları DOM'dan değil gerçek Web Audio param yazımından (Tone zamanlayarak yazdığı için `setValueAtTime`/rampalar da yakalanır, beklenen lineer kazanç birebir aranır); 30 vacuity probe (20 unit + 8 tarayıcı + 2 ses) kırmızı. Performans (Node + masaüstü Chromium, telefon kanıtı değil): staged mix ~0,001 ms, audibility ~0,003 ms, apply ~167 ms (≈147 ms validator), runtime gain/pan ~0,003 ms, audibility yazımı ~0,05 ms, mix commit ~0,04 ms; zarf `setItem` ~11,8 ms median / 14,1 ms max; 25 slider hareketi 211 ms, apply gidiş-dönüş 458 ms, sample isteği 21 → 21. Kapsam dışı: audio/MIDI export, section automation, efektler, gerçek provider, çoklu proje kütüphanesi, release hardening. | Claude Code önerisi — **Haktan onayı bekliyor** |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
@@ -2356,6 +2508,7 @@ maliyettir** (§11.2/7).
 | Yazma başarısızsa | düzenleme ekranda kalıyordu | **Hiçbir şey ilerlemez; ekran diski gösterir** (K-45) |
 | En ağır şarkı dosyası | 798.516 B | **1.597.104 B (≈1,52 MiB, 2,00×)** (K-45) |
 | Proje yedeği | yoktu | **Tek taşınabilir `.aranje.json` dosyası; deterministik export, güvenli import, undo ile geri dönüş** (K-46) |
+| Mixer | yoktu | **Kalıcı ses/stereo (proje verisi) ile oturumsal sustur/tek dinle ayrı; canlı önizleme, tek commit, bölüm otomasyonu yok** (K-49) |
 | Enstrüman/akort niyeti | sabit rol tablosu | **Blueprint niyeti registry üzerinden taşınır** (K-35, K-36); sessiz fallback yok |
 
 ---

@@ -165,6 +165,30 @@ describe("locked surface (spec 11.1, K-18)", () => {
     expect(unchanged(represet).map((v) => v.field)).toContain("tracks");
   });
 
+  it("catches a track mix the model tried to move (2L-C)", () => {
+    /*
+     * The mixer writes `volumeDb` and `pan`; an arrange request may not.
+     * Both fields are part of the track list digest, so an answer that
+     * changed how loud a track is — or where it sits — is refused by the
+     * same lock that refuses a retune.
+     */
+    const louder: Song = {
+      ...TEST_SONG,
+      tracks: TEST_SONG.tracks.map((track) =>
+        track.id === "gtr" ? { ...track, volumeDb: track.volumeDb - 6 } : track,
+      ),
+    };
+    expect(unchanged(louder).map((v) => v.field)).toContain("tracks");
+
+    const panned: Song = {
+      ...TEST_SONG,
+      tracks: TEST_SONG.tracks.map((track) =>
+        track.id === "gtr" ? { ...track, pan: -0.45 } : track,
+      ),
+    };
+    expect(unchanged(panned).map((v) => v.field)).toContain("tracks");
+  });
+
   it("catches changed song metadata", () => {
     for (const song of [
       { ...TEST_SONG, title: "Baska" },

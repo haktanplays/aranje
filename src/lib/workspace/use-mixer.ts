@@ -40,6 +40,7 @@ import {
   applyMixCommand,
   audibleTrackIds,
   clearTrackAudition,
+  isStaleMixDraft,
   pruneAudition,
   readTrackMixes,
   setTrackMuted,
@@ -155,7 +156,7 @@ export function useMixer(options: {
     setWarnings([]);
   }, [song]);
 
-  const stale = !sameSong(song, openedSong);
+  const stale = isStaleMixDraft(openedSong, song);
 
   const stage = useCallback(
     (trackId: string, patch: { volumeDb?: number; pan?: number }) => {

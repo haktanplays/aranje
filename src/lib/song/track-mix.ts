@@ -137,6 +137,19 @@ export function applyMixCommand(song: Song, command: MixCommand): MixResult {
   return guardCandidate({ ...song, tracks }, "mix_validation_failed");
 }
 
+/**
+ * Has the music moved out from under an open mixer (spec 13.18 §6)?
+ *
+ * The staged levels were read from one song; if the song being edited is no
+ * longer that song, applying them would write levels onto music they were
+ * never chosen for — and rebasing them silently would be worse, because the
+ * reader would never learn that anything happened. Central and pure so the
+ * sheet, the controller and the tests all ask the same question.
+ */
+export function isStaleMixDraft(openedSong: Song, currentSong: Song): boolean {
+  return !sameSong(openedSong, currentSong);
+}
+
 /* ---------------------------------------------------------- the audition */
 
 /**

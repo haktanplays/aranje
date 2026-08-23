@@ -1,0 +1,111 @@
+{
+  "method": {
+    "rounds": 25,
+    "warmupRounds": 5,
+    "statistic": "median / p95 / max over timed rounds after warm-up"
+  },
+  "honesty": [
+    "Bu bölümdeki sayılar masaüstü Node ölçümüdür; fiziksel telefon kanıtı değildir.",
+    "Chromium bölümü masaüstü tarayıcı ölçümüdür ve ayrı tutulmuştur.",
+    "Motor/schedule/decode sayıları ölçüm değil sayımdır: doğru ya da yanlıştır.",
+    "Bu ölçümler müzikal mix kabulü değildir; ses tablosu AUDIO.json içindedir."
+  ],
+  "node": {
+    "version": "v22.22.2",
+    "subject": {
+      "utf8Bytes": 799636,
+      "codeUnits": 799624,
+      "utf16ApproxBytes": 1599248,
+      "tracks": 8,
+      "stagedTracks": 8,
+      "audition": {
+        "muted": 4,
+        "soloed": 1
+      }
+    },
+    "stagedMixUpdate": {
+      "rounds": 25,
+      "medianMs": 0.001,
+      "p95Ms": 0.003,
+      "maxMs": 0.01
+    },
+    "audibilityComputation": {
+      "rounds": 25,
+      "medianMs": 0.003,
+      "p95Ms": 0.007,
+      "maxMs": 0.008
+    },
+    "mixerApply": {
+      "rounds": 25,
+      "medianMs": 166.752,
+      "p95Ms": 185.212,
+      "maxMs": 187.604
+    },
+    "mixerReset": {
+      "rounds": 25,
+      "medianMs": 167.421,
+      "p95Ms": 190.161,
+      "maxMs": 202.113
+    },
+    "validatorPipeline": {
+      "rounds": 25,
+      "medianMs": 146.777,
+      "p95Ms": 162.371,
+      "maxMs": 183.928
+    },
+    "runtimeGainPanWrite": {
+      "writes": 25,
+      "totalMs": 0.07,
+      "perWriteMs": 0.0028
+    },
+    "runtimeAudibilityWrite": {
+      "tracks": 8,
+      "ms": 0.0515
+    },
+    "runtimeMixCommit": {
+      "ms": 0.0361
+    },
+    "constancy": {
+      "engineBuilds": {
+        "before": 1,
+        "after": 1
+      },
+      "sampleDecodes": {
+        "before": 8,
+        "after": 8
+      },
+      "transportSchedules": {
+        "before": 0,
+        "after": 0
+      },
+      "transportCancels": {
+        "before": 1,
+        "after": 1
+      },
+      "note": "Ses/stereo/audibility/mix commit sırasında motor, schedule ve decode sayıları değişmemelidir."
+    }
+  },
+  "chromium": {
+    "honesty": [
+      "Bu bölümdeki sayılar masaüstü Chromium ölçümüdür; fiziksel telefon kanıtı değildir."
+    ],
+    "mixCommitEnvelopeSetItem": {
+      "codeUnits": 1599403,
+      "write": {
+        "rounds": 25,
+        "medianMs": 11.8,
+        "p95Ms": 14.1,
+        "maxMs": 14.1
+      },
+      "songKeyUntouched": true
+    },
+    "mixCommit": {
+      "stagedSliderMoves": 25,
+      "stagedTotalMs": 211,
+      "applyRoundTripMs": 458,
+      "samplesAfterEngineBuild": 21,
+      "samplesAfterMixCommit": 21,
+      "note": "Fill + apply süreleri Playwright'ın tur süresi dahildir; alt sınır değil üst sınırdır."
+    }
+  }
+}

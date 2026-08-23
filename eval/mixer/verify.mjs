@@ -81,6 +81,64 @@ const eightTrackSong = () => ({
   ],
 });
 
+/**
+ * Three tracks carrying the ids a new "Rock grubu" song will also use.
+ *
+ * Deliberate: if a new song's tracks had fresh ids, dropping the audition
+ * would be indistinguishable from pruning ids that no longer exist, and the
+ * scenario would pass without the clearing ever happening.
+ */
+const numberedSong = () => ({
+  ...eightTrackSong(),
+  title: "Numaralı",
+  tracks: [
+    track("track-1", "Ritim Gitar"),
+    track("track-2", "Solo Gitar"),
+    track("track-3", "Bas", {
+      instrumentId: "electric_bass",
+      presetId: "finger",
+      fretboard: { tuning: ["E1", "A1", "D2", "G2"], capo: 0 },
+    }),
+  ],
+  sections: [
+    {
+      id: "s1",
+      name: "Giriş",
+      status: "fixed",
+      bars: [{ timeSignature: [4, 4], resolution: 8, slots: {} }],
+    },
+  ],
+});
+
+/**
+ * The eight-track song with one id kept from the song it will replace.
+ *
+ * Same reason as above: an import whose every id is new would have its
+ * audition pruned away, so the scenario could not tell "different music, put
+ * the audition down" from "that track no longer exists".
+ */
+const overlappingSong = () => {
+  const song = eightTrackSong();
+  return {
+    ...song,
+    title: "Örtüşen",
+    tracks: song.tracks.map((entry, index) =>
+      index === 0 ? { ...entry, id: "track-2" } : entry,
+    ),
+    sections: song.sections.map((section) => ({
+      ...section,
+      bars: section.bars.map((bar) => {
+        const slots = { ...bar.slots };
+        if ("t1" in slots) {
+          slots["track-2"] = slots.t1;
+          delete slots.t1;
+        }
+        return { ...bar, slots };
+      }),
+    })),
+  };
+};
+
 const projectFile = (song) =>
   JSON.stringify({ format: "aranje.project", version: 1, song });
 
@@ -755,11 +813,13 @@ async function run(browser, size, label) {
 
   /* --------------------------- 23-27: lifecycle and project integration */
   {
-    const { context, page } = await openApp(browser, size);
+    const { context, page } = await openApp(browser, size, {
+      seed: numberedSong(),
+    });
 
     const armAudition = async () => {
       await openMixer(page);
-      await page.locator("[data-mixer-mute='acc']").click();
+      await page.locator("[data-mixer-mute='track-1']").click();
       await page.waitForTimeout(150);
       await closeMixerByCancel(page);
     };
@@ -778,10 +838,15 @@ async function run(browser, size, label) {
           (node) => node.getAttribute("aria-pressed") === "true",
         ),
       );
+      // The muted id exists in the new song too, so only a real clearing
+      // can have unmuted it — pruning would have left it alone.
+      const survivor = await pressed(page, "[data-mixer-mute='track-1']");
       record(
         at("23 Yeni şarkı dinleme durumunu temizler"),
         anyPressed === false &&
+          survivor === "false" &&
           (await page.locator("[data-mixer-row]").count()) === 3,
+        `track-1 pressed=${survivor}`,
       );
       await closeMixerByCancel(page);
     });
@@ -793,7 +858,7 @@ async function run(browser, size, label) {
       await closeMixerByCancel(page);
 
       const path = join(tmpdir(), "aranje-2lc-import.aranje.json");
-      writeFileSync(path, projectFile(eightTrackSong()), "utf8");
+      writeFileSync(path, projectFile(overlappingSong()), "utf8");
       await openInfo(page);
       await page.locator("[data-info-project-open]").click();
       await page.waitForSelector("[data-project-sheet]");
@@ -832,10 +897,15 @@ async function run(browser, size, label) {
           (node) => node.getAttribute("aria-pressed") === "true",
         ),
       );
+      // `track-2` is in the opened project as well, so a surviving mute
+      // could only have been cleared deliberately, not pruned away.
+      const survivor = await pressed(page, "[data-mixer-mute='track-2']");
       record(
         at("25 Import uygulaması dinleme durumunu temizler"),
         anyPressed === false &&
+          survivor === "false" &&
           (await page.locator("[data-mixer-row]").count()) === 8,
+        `track-2 pressed=${survivor}`,
       );
       await closeMixerByCancel(page);
     });

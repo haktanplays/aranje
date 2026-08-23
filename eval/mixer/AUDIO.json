@@ -46,8 +46,8 @@
     },
     {
       "name": "the metronome is not a track and keeps clicking",
-      "pass": true,
-      "detail": "silent 0, with metronome 0.068463"
+      "pass": false,
+      "detail": "silent 0, with metronome 0"
     },
     {
       "name": "no voice is left sounding after dispose",
@@ -60,7 +60,7 @@
       "detail": ""
     }
   ],
-  "failed": 0,
+  "failed": 1,
   "measurements": {
     "level-0": {
       "name": "level-0",
@@ -274,10 +274,10 @@
     },
     "all-muted-with-metronome": {
       "name": "all-muted-with-metronome",
-      "peak": 0.068463,
-      "rms": 0.001252,
-      "leftRms": 0.001216,
-      "rightRms": 0.001287,
+      "peak": 0,
+      "rms": 0,
+      "leftRms": 0,
+      "rightRms": 0,
       "channels": 2,
       "builds": 1,
       "fetchedUrls": 13,

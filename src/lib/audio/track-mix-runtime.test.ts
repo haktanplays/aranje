@@ -214,6 +214,32 @@ describe("59. one level, one channel", () => {
     bench.controller.applyMixOnly(result.song);
     expect(bench.channels.get("gtr")!.volume.value).toBe(-11);
   });
+
+  it("drops the staged levels the commit replaced, not just their sound", async () => {
+    /*
+     * Writing the committed value onto the channel is only half of it: a
+     * preview the commit superseded must also stop being *pending*, or it
+     * comes back the next time a graph is built and quietly overrides the
+     * music. Staged before there is any engine, so the only thing that can
+     * carry the value into the build is the pending list itself.
+     */
+    const result = applyMixCommand(SAMPLE_SONG, {
+      kind: "update_track_mix",
+      mixes: { gtr: { volumeDb: -11, pan: -0.25 } },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    // The graph will be built from the committed song, so anything other
+    // than -11/-0.25 on that channel can only have come from the pending list.
+    const bench = harness(result.song);
+    bench.controller.setTrackMix("gtr", 5, 0.9);
+    bench.controller.applyMixOnly(result.song);
+
+    await bench.controller.play();
+    expect(bench.channels.get("gtr")!.volume.value).toBe(-11);
+    expect(bench.channels.get("gtr")!.pan.value).toBe(-0.25);
+  });
 });
 
 describe("60. who is heard, on the graph", () => {
