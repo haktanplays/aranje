@@ -22,17 +22,32 @@ import { ticksPerSlot, type Resolution } from "@/lib/music/timing";
 import type { DrumSlot, MelodicSlot } from "@/lib/song/schema";
 
 /**
+ * Why a bar could not be written on the target grid.
+ *
+ * Two different problems, and a caller that can only see "no" cannot tell a
+ * reader which of them it is (spec 13.20 §6). A rhythm that falls between two
+ * slots is a *grid* problem and changing the bar's length will not help; music
+ * that runs past the end of a shorter bar is a *length* problem and changing
+ * the grid will not help.
+ */
+export type RegridRefusal = "grid_incompatible" | "exceeds_measure";
+
+export type RegridResult<Slot> =
+  | { readonly ok: true; readonly slots: Slot[] }
+  | { readonly ok: false; readonly reason: RegridRefusal };
+
+/**
  * Re-express melodic slots on another grid.
  *
  * `null` when any sounding run — its onset or its end — would fall between two
  * slots of the target.
  */
-export function regridMelodic(
+export function regridMelodicDetailed(
   slots: readonly MelodicSlot[],
   fromResolution: Resolution,
   toResolution: Resolution,
   toSlotCount: number,
-): MelodicSlot[] | null {
+): RegridResult<MelodicSlot> {
   const fromStep = ticksPerSlot(fromResolution);
   const toStep = ticksPerSlot(toResolution);
 
@@ -78,12 +93,22 @@ export function regridMelodic(
   const out: MelodicSlot[] = Array.from({ length: toSlotCount }, () => null);
 
   for (const run of runs) {
-    if (run.startTicks % toStep !== 0) return null;
-    if (run.durationTicks % toStep !== 0) return null;
+    /*
+     * The grid is asked first, then the length.
+     *
+     * A run that falls between two slots cannot be written whatever the bar's
+     * length is, so "your rhythm does not fit this grid" is the more useful
+     * thing to say; a run that lands cleanly and then overruns is genuinely a
+     * question about the bar being too short.
+     */
+    if (run.startTicks % toStep !== 0) return { ok: false, reason: "grid_incompatible" };
+    if (run.durationTicks % toStep !== 0) {
+      return { ok: false, reason: "grid_incompatible" };
+    }
 
     const at = run.startTicks / toStep;
     const span = run.durationTicks / toStep;
-    if (at + span > toSlotCount) return null;
+    if (at + span > toSlotCount) return { ok: false, reason: "exceeds_measure" };
 
     if (run.notes === null || run.notes === "-") {
       for (let offset = 0; offset < span; offset += 1) out[at + offset] = "-";
@@ -93,7 +118,18 @@ export function regridMelodic(
     for (let offset = 1; offset < span; offset += 1) out[at + offset] = "-";
   }
 
-  return out;
+  return { ok: true, slots: out };
+}
+
+/** The same answer as a nullable, for callers that only need yes or no. */
+export function regridMelodic(
+  slots: readonly MelodicSlot[],
+  fromResolution: Resolution,
+  toResolution: Resolution,
+  toSlotCount: number,
+): MelodicSlot[] | null {
+  const result = regridMelodicDetailed(slots, fromResolution, toResolution, toSlotCount);
+  return result.ok ? result.slots : null;
 }
 
 /**
@@ -103,12 +139,12 @@ export function regridMelodic(
  * and therefore nothing to rebuild. A hit either lands on the target grid or
  * the bar cannot be written there.
  */
-export function regridDrums(
+export function regridDrumsDetailed(
   slots: readonly DrumSlot[],
   fromResolution: Resolution,
   toResolution: Resolution,
   toSlotCount: number,
-): DrumSlot[] | null {
+): RegridResult<DrumSlot> {
   const fromStep = ticksPerSlot(fromResolution);
   const toStep = ticksPerSlot(toResolution);
   const out: DrumSlot[] = Array.from({ length: toSlotCount }, () => []);
@@ -118,12 +154,23 @@ export function regridDrums(
     if (!slot || slot.length === 0) continue;
 
     const startTicks = index * fromStep;
-    if (startTicks % toStep !== 0) return null;
+    if (startTicks % toStep !== 0) return { ok: false, reason: "grid_incompatible" };
     const target = startTicks / toStep;
-    if (target >= toSlotCount) return null;
+    if (target >= toSlotCount) return { ok: false, reason: "exceeds_measure" };
 
     out[target] = slot.map((hit) => ({ ...hit }));
   }
 
-  return out;
+  return { ok: true, slots: out };
+}
+
+/** The same answer as a nullable, for callers that only need yes or no. */
+export function regridDrums(
+  slots: readonly DrumSlot[],
+  fromResolution: Resolution,
+  toResolution: Resolution,
+  toSlotCount: number,
+): DrumSlot[] | null {
+  const result = regridDrumsDetailed(slots, fromResolution, toResolution, toSlotCount);
+  return result.ok ? result.slots : null;
 }

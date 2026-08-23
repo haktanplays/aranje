@@ -39,9 +39,9 @@ import { availableSkills } from "@/lib/copilot/ui-options";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { useProjectFile } from "@/lib/project/use-project-file";
 import { useSong } from "@/lib/song/use-song";
+import { useSessionGround } from "@/lib/workspace/use-session-ground";
 import { useSettings } from "@/lib/settings/use-settings";
 import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
-import { useEditShortcuts } from "@/lib/ui/use-edit-shortcuts";
 import { editGate } from "@/lib/workspace/edit-gate";
 import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useExport } from "@/lib/workspace/use-export";
@@ -156,83 +156,35 @@ export function Workspace() {
   const skills = useMemo(() => availableSkills(song), [song]);
   const plan = controller.getPlan();
 
-  /* ------------------------------------------------------- undo and redo */
+  /* ------------------------------------------------- grounding the session */
 
-  const resetSelections = session.resetAll;
-  const resetNoteEditing = noteEditing.reset;
-  /* Stable member, like `closeCopilot`: the handle itself is rebuilt each
-     render, and depending on it would rebuild every callback that grounds. */
-  const clearAudition = mixer.clearAudition;
-
-  /**
-   * Put every editing surface down before the song moves under it.
-   *
-   * A selection is a range of ticks or bars in the song as it stands, a ghost
-   * is a command staged against it, and a Copilot candidate was measured
-   * against the song as it was when it was asked for. After an undo none of
-   * those describe anything. The clipboards stay: someone who copied a bar,
-   * undid an unrelated edit and came back would rightly expect them.
+  /*
+   * Undo, a new project, a structural command and a section change all leave
+   * the same things behind, and they differ only in how far they go. That
+   * difference is one module's job rather than four call sites' (2N-A §6).
    */
-  const resetEditSurfaces = useCallback(() => {
-    resetSelections();
-    resetNoteEditing();
-    // Disposes the preview engine as well as closing the sheet, so no second
-    // graph is left playing a candidate that is no longer on the table.
-    closeCopilot();
-  }, [closeCopilot, resetNoteEditing, resetSelections]);
-
-  /**
-   * Step the history, once.
-   *
-   * Playback stops first and does not start again on its own: the music under
-   * the playhead is about to become different music, and resuming into it
-   * would be the app deciding to play something the reader did not ask for.
-   */
-  const undoEdit = useCallback(() => {
-    if (!canUndo) return;
-    pause();
-    resetEditSurfaces();
-    undo();
-  }, [canUndo, pause, resetEditSurfaces, undo]);
-
-  const redoEdit = useCallback(() => {
-    if (!canRedo) return;
-    pause();
-    resetEditSurfaces();
-    redo();
-  }, [canRedo, pause, redo, resetEditSurfaces]);
-
-  useEditShortcuts({ canUndo, canRedo, onUndo: undoEdit, onRedo: redoEdit });
+  const ground = useSessionGround({
+    session,
+    noteEditing,
+    navigation,
+    closeCopilot,
+    clearAudition: mixer.clearAudition,
+    pause,
+    transport: controller,
+    canUndo,
+    canRedo,
+    undo,
+    redo,
+  });
+  const { undoEdit, redoEdit, focusSection } = ground;
 
   /* ------------------------------------------------------- project file */
-
-  /**
-   * The ground a project lands on (spec 13.15).
-   *
-   * Opening a project replaces the whole song, so everything measured against
-   * the old one goes first: playback pauses, the loop is dropped *before* the
-   * rewind (a rewind with a loop on seeks to the loop, not the top), and the
-   * playhead goes to the start. Unlike an undo, the clipboards go too — a
-   * clipboard cut from a song that has been wholly replaced would paste
-   * another song's music.
-   */
-  const prepareForProjectApply = useCallback(() => {
-    controller.pause();
-    controller.setLoopSection(null);
-    controller.rewind();
-    resetEditSurfaces();
-    session.clearClipboards();
-    noteEditing.exitEditMode();
-    navigation.resetForNewSong();
-    // Different music: nothing carried over about who was being listened to.
-    clearAudition();
-  }, [clearAudition, controller, navigation, noteEditing, resetEditSurfaces, session]);
 
   const project = useProjectFile({
     song,
     canPersist,
     commit,
-    onBeforeApply: prepareForProjectApply,
+    onBeforeApply: ground.prepareForProjectApply,
     onApplied: overlays.close,
   });
 
@@ -270,35 +222,12 @@ export function Workspace() {
 
   /* ------------------------------------------------------------ lifecycle */
 
-  /**
-   * The structural ground (2L-B §6/§7): pause, then selections, ghosts, staged
-   * commands, clipboards and the bar focus — everything measured against a
-   * shape about to change. Loop and playhead are not touched: the engine
-   * re-derives both from the committed song, on undo/redo's own path.
-   */
-  const prepareForStructuralApply = useCallback(() => {
-    pause();
-    resetEditSurfaces();
-    session.clearClipboards();
-    navigation.dropBarFocus();
-  }, [navigation, pause, resetEditSurfaces, session]);
-
-  /* The one door onto a section (spec 13.20 §3): a selection, a ghost or an open
-     cell sheet describes music leaving the screen, so it leaves with it. */
-  const focusSection = useCallback(
-    (sectionId: string) => {
-      resetEditSurfaces();
-      navigation.viewSection(sectionId);
-    },
-    [navigation, resetEditSurfaces],
-  );
-
   const lifecycle = useLifecycle({
     song,
     canPersist,
     commit,
-    onBeforeNewSong: prepareForProjectApply,
-    onBeforeStructural: prepareForStructuralApply,
+    onBeforeNewSong: ground.prepareForProjectApply,
+    onBeforeStructural: ground.prepareForStructuralApply,
     activeSectionId: navigation.viewedSectionId,
     selectedTrackId: track?.id ?? null,
     setActiveSection: focusSection,
