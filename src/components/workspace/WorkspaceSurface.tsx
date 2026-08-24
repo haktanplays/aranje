@@ -1,23 +1,27 @@
 "use client";
 
 /**
- * The main work area: the arrangement or the tab, one at a time (2L-R).
+ * The main work area: the arrangement, the multi-track view or the tab —
+ * one at a time (2L-R, 2Q-A §4).
  *
- * One surface at a time, and the other is unmounted rather than hidden.
+ * One surface at a time, and the others are unmounted rather than hidden.
  * Hiding would leave a second horizontal scroller alive behind the one on
  * screen and a second animation frame running against it — two things the
- * workspace promises there is exactly one of. The playback controller is not
- * here; it lives above both, so switching surfaces rebuilds no engine,
- * schedules nothing, and stops nothing.
+ * workspace promises there is exactly one of, and a third surface is a third
+ * chance to get it wrong. The playback controller is not here; it lives
+ * above all three, so switching surfaces rebuilds no engine, schedules
+ * nothing, and stops nothing.
  */
 import type { ArrangementModel } from "@/lib/arrangement/model";
 import { ArrangementCanvas } from "@/components/workspace/ArrangementCanvas";
+import { MultiTrackCanvas } from "@/components/workspace/MultiTrackCanvas";
 import { TabCanvas } from "@/components/workspace/TabCanvas";
 import { TimeSelectionBand } from "@/components/workspace/TimeSelectionBand";
 import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import type { PlayPosition } from "@/lib/audio/position";
 import type { SongPlan } from "@/lib/audio/schedule";
 import type { TrackTimeline } from "@/lib/tab/timeline";
+import type { MultiTrackView } from "@/lib/workspace/use-multitrack-session";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { WorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
@@ -32,6 +36,8 @@ export function WorkspaceSurface({
   arrangement,
   ghostArrangement,
   timeline,
+  multi,
+  onSelectTrack,
   plan,
   getPosition,
   running,
@@ -45,6 +51,16 @@ export function WorkspaceSurface({
   /** The song a staged bar command would produce, drawn half-lit. */
   ghostArrangement: ArrangementModel | null;
   timeline: TrackTimeline;
+  multi: MultiTrackView;
+  /**
+   * The composed track change, not the navigation's raw setter.
+   *
+   * A lane tap in the multi view happens while an edit session may be armed,
+   * so it has to go through the one that stops it and clears the selection.
+   * The arrangement keeps the raw setter it already used: nothing is armed
+   * on that surface, so there is nothing to stand down.
+   */
+  onSelectTrack: (trackId: string) => void;
   plan: SongPlan;
   getPosition: () => PlayPosition;
   running: boolean;
@@ -93,6 +109,20 @@ export function WorkspaceSurface({
           barSelection={ghostArrangement ? null : bars.handle.selection}
           onSelectBars={canPersist ? bars.select : undefined}
           onExtendBars={canPersist ? bars.extend : undefined}
+        />
+      ) : navigation.view === "multi" ? (
+        <MultiTrackCanvas
+          model={multi.model}
+          session={multi.session}
+          getPosition={getPosition}
+          running={running}
+          activeBarKey={navigation.activeBarKey}
+          scrollRef={navigation.scrollRef}
+          onActivateTrack={onSelectTrack}
+          onSelectBar={navigation.seekToBar}
+          onActiveBarChange={navigation.setActiveBarKey}
+          followsPlayback={navigation.followsPlayback}
+          playheadVisible={navigation.playheadVisible}
         />
       ) : (
         <TabCanvas

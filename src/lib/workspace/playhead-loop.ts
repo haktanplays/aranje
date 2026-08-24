@@ -41,8 +41,14 @@ export const browserFrames: FrameScheduler = {
   cancel: (handle) => cancelAnimationFrame(handle),
 };
 
-/** Which surface a count belongs to, so the two can never be added up blind. */
-export type PlayheadSource = "tab" | "arrangement";
+/**
+ * Which surface a count belongs to, so they can never be added up blind.
+ *
+ * Three surfaces now, and exactly one of them is mounted at a time (2Q-A §4),
+ * which is what makes "live loops while playing" a number with one right
+ * answer rather than a sum nobody can check.
+ */
+export type PlayheadSource = "tab" | "arrangement" | "multi";
 
 /**
  * The opt-in counter.

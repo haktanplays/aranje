@@ -29,6 +29,26 @@ export const BAR_HEADER_HEIGHT = 22;
 /** Space above the staff, so the music sits high in the work area. */
 export const STAFF_TOP_PADDING = 28;
 
+/**
+ * The multi-track view's lane geometry (2Q-A §7).
+ *
+ * Here rather than in the lane components, for the reason every other number
+ * in this file is here: three components draw lanes and a fourth measures
+ * them, and four copies of "44" is how a header stops being a touch target
+ * without anything failing.
+ *
+ * `LANE_HEADER_HEIGHT` is the finger's minimum, not a look. The notation
+ * heights are the same row heights the single-track tab uses, so a guitar
+ * does not become a different instrument when it is read beside a bass.
+ */
+export const LANE_HEADER_HEIGHT = 44;
+/** Breathing room under a lane's notation, before the next lane's header. */
+export const LANE_GAP = 6;
+/** A collapsed lane keeps its header and a thin digest, and never vanishes. */
+export const LANE_DIGEST_HEIGHT = 14;
+/** How tall a pitched lane's note field is, whatever its range. */
+export const PITCHED_LANE_HEIGHT = 72;
+
 export function barWidth(slotCount: number): number {
   return slotCount * SLOT_WIDTH;
 }

@@ -44,6 +44,9 @@ import { useSettings } from "@/lib/settings/use-settings";
 import { editGate } from "@/lib/workspace/edit-gate";
 import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
+import { mixerAudioOf } from "@/lib/workspace/mixer-audio";
+import { useMultiTrackView } from "@/lib/workspace/use-multitrack-session";
+import { useSelectTrack } from "@/lib/workspace/use-select-track";
 import { useMixer } from "@/lib/workspace/use-mixer";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
 import { useWorkspaceFiles } from "@/lib/workspace/use-workspace-files";
@@ -114,14 +117,7 @@ export function Workspace() {
 
   /* ---------------------------------------------------------------- mixer */
 
-  const mixerAudio = useMemo(
-    () => ({
-      previewMix: controller.setTrackMix.bind(controller),
-      clearPreview: controller.clearTrackMixPreview.bind(controller),
-      setAudibility: controller.setTrackAudibility.bind(controller),
-    }),
-    [controller],
-  );
+  const mixerAudio = useMemo(() => mixerAudioOf(controller), [controller]);
   const mixer = useMixer({ song, canPersist, commit, audio: mixerAudio });
 
   const copilot = useCoArranger(song, {
@@ -184,6 +180,14 @@ export function Workspace() {
     onApplied: overlays.close,
   });
 
+  /* Every instrument of the viewed section, and what this sitting folded. */
+  const multi = useMultiTrackView({
+    song,
+    viewedSectionId: navigation.viewedSectionId,
+    activeTrackId: track?.id ?? "",
+    projectId: library.activeProjectId,
+  });
+
   /* ----------------------------------------------------------- the gates */
 
   const toggleLoop = useCallback(() => {
@@ -198,17 +202,11 @@ export function Workspace() {
     canPersist,
   });
 
-  /** A track change costs the edit session; composed here, owned there. */
-  const selectTrack = useCallback(
-    (trackId: string) => {
-      noteEditing.stopForTrackChange();
-      // A selection belongs to one track and one section (2I-A V1), so it
-      // cannot survive a change of either.
-      session.time.clear();
-      navigation.selectTrack(trackId);
-    },
-    [navigation, noteEditing, session.time],
-  );
+  const selectTrack = useSelectTrack({
+    stopEditing: noteEditing.stopForTrackChange,
+    clearTimeSelection: session.time.clear,
+    setTrack: navigation.selectTrack,
+  });
 
   const openCopilot = useCallback(() => {
     pause();
@@ -262,18 +260,17 @@ export function Workspace() {
       <ViewSwitch
         view={navigation.view}
         onChange={(next) => {
-          if (next === "arrange") {
-            /*
-             * A time selection belongs to the tab: it is a span of time on
-             * one track, drawn on a staff that is about to be unmounted.
-             * It goes — without committing whatever it had staged. The
-             * clipboards and the history stay; they belong to the song.
-             */
-            session.time.clear();
-            navigation.showArrange();
-          } else {
-            navigation.showTab();
-          }
+          /*
+           * A time selection belongs to the tab: it is a span of time on one
+           * track, drawn on a staff that is about to be unmounted. Leaving
+           * for either of the other two surfaces drops it — without
+           * committing whatever it had staged. The clipboards and the history
+           * stay; they belong to the song.
+           */
+          if (next !== "tab") session.time.clear();
+          if (next === "arrange") navigation.showArrange();
+          else if (next === "multi") navigation.showMulti();
+          else navigation.showTab();
         }}
       />
 
@@ -296,6 +293,8 @@ export function Workspace() {
         arrangement={arrangement}
         ghostArrangement={ghostArrangement}
         timeline={timeline}
+        multi={multi}
+        onSelectTrack={selectTrack}
         plan={plan}
         getPosition={getPosition}
         running={state.status === "playing"}

@@ -20,6 +20,7 @@ import {
 
 const WORKSPACE = "src/components/workspace/Workspace.tsx";
 const CANVAS = "src/components/workspace/ArrangementCanvas.tsx";
+const MULTI_CANVAS = "src/components/workspace/MultiTrackCanvas.tsx";
 
 const lineCount = (path: string) => {
   const text = readFileSync(path, "utf8");
@@ -60,10 +61,19 @@ const COMPOSITION_HOOKS = new Set([
 ]);
 
 describe("38. the composition root stays a composition root", () => {
-  it("respects the line budgets honestly earned in 2L-R and tightened in 2L-B", () => {
-    // 416 accepted at 2L-R plus at most 34 lines of lifecycle wiring (2L-B §2).
-    expect(lineCount(WORKSPACE)).toBeLessThanOrEqual(450);
+  it("respects the line budgets honestly earned in 2L-R and tightened since", () => {
+    /*
+     * 416 was accepted at 2L-R, 450 allowed for lifecycle wiring at 2L-B, and
+     * the root has been under that ever since. 2Q-A pins the number it
+     * actually stood at rather than the ceiling it was allowed: a third
+     * surface is exactly the kind of work that spends a budget quietly, and
+     * the wiring for it was paid for by extracting two things that were never
+     * root work (`mixer-audio`, `use-select-track`).
+     */
+    expect(lineCount(WORKSPACE)).toBeLessThanOrEqual(379);
     expect(lineCount(CANVAS)).toBeLessThanOrEqual(470);
+    // Budgeted from the start rather than discovered later (2Q-A §14).
+    expect(lineCount(MULTI_CANVAS)).toBeLessThanOrEqual(500);
   });
 
   it("owns no state of its own", () => {
