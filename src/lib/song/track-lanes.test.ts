@@ -318,6 +318,27 @@ describe("198. the first note on a bar the track is not written in", () => {
     expect(canonicalJson(legacy)).toBe(before);
   });
 
+  it("lays no lane for a track the reader has no note editor for", () => {
+    /*
+     * Drums are edited through the kit's own surface, not through a fret
+     * cell (`isEditableTrack`). A `set_note` aimed at a kit is refused — and
+     * the refusal has to be total: materialising a drum lane on the way to
+     * saying no would write silence the reader never asked for, into a bar
+     * that until then said "this track is not written here".
+     */
+    const legacy = withMissingKeys("drums");
+    const before = canonicalJson(legacy);
+    const result = applyEdit(legacy, {
+      kind: "set_note",
+      target: { ...target, trackId: "drums" },
+      stringIndex: 0,
+      fret: 3,
+    });
+    expect(result.ok).toBe(false);
+    expect(barsWrittenIn(legacy, "drums")).toBe(0);
+    expect(canonicalJson(legacy)).toBe(before);
+  });
+
   it("does not materialise a lane for a rest, a tie or a clear", () => {
     const legacy = withMissingKeys("gtr");
     for (const command of [

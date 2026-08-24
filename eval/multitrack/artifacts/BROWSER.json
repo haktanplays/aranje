@@ -45,12 +45,17 @@
     {
       "name": "[390x844] 52 tekrar Çal takibi geri verir",
       "pass": true,
-      "detail": "600→280"
+      "detail": "600→277"
     },
     {
       "name": "[390x844] 8 çalarken üç görünüm geçişi",
       "pass": true,
       "detail": "context 1→1 · çalıyor true · canlı rAF 1"
+    },
+    {
+      "name": "[390x844] 53 görünüm değişimi yeni örnek isteği doğurmuyor",
+      "pass": true,
+      "detail": "örnek 13→13 · context 1→1"
     },
     {
       "name": "[390x844] 10 döngü korunur",
@@ -85,7 +90,7 @@
     {
       "name": "[390x844] 15 dört track aynı bar çizgisinde",
       "pass": true,
-      "detail": "[-632,-360,-88,184]"
+      "detail": "[-698,-426,-154,118]"
     },
     {
       "name": "[390x844] 16 gtr şeridi",
@@ -106,6 +111,11 @@
       "name": "[390x844] 22 track header dokunuşu aktif eder",
       "pass": true,
       "detail": "gtr→bass · kaydırma 120→120 · yazma 0"
+    },
+    {
+      "name": "[390x844] 54 şerit başlığı kaydırınca ekranda kalır",
+      "pass": true,
+      "detail": "kaydırma 500 · başlık 10→8"
     },
     {
       "name": "[390x844] 20 sessiz track listeden düşmez",
@@ -360,12 +370,17 @@
     {
       "name": "[320x700] 52 tekrar Çal takibi geri verir",
       "pass": true,
-      "detail": "600→306"
+      "detail": "600→300"
     },
     {
       "name": "[320x700] 8 çalarken üç görünüm geçişi",
       "pass": true,
       "detail": "context 1→1 · çalıyor true · canlı rAF 1"
+    },
+    {
+      "name": "[320x700] 53 görünüm değişimi yeni örnek isteği doğurmuyor",
+      "pass": true,
+      "detail": "örnek 13→13 · context 1→1"
     },
     {
       "name": "[320x700] 10 döngü korunur",
@@ -400,7 +415,7 @@
     {
       "name": "[320x700] 15 dört track aynı bar çizgisinde",
       "pass": true,
-      "detail": "[-660,-388,-116,156]"
+      "detail": "[-768,-496,-224,48]"
     },
     {
       "name": "[320x700] 16 gtr şeridi",
@@ -421,6 +436,11 @@
       "name": "[320x700] 22 track header dokunuşu aktif eder",
       "pass": true,
       "detail": "gtr→bass · kaydırma 120→120 · yazma 0"
+    },
+    {
+      "name": "[320x700] 54 şerit başlığı kaydırınca ekranda kalır",
+      "pass": true,
+      "detail": "kaydırma 500 · başlık 10→8"
     },
     {
       "name": "[320x700] 20 sessiz track listeden düşmez",

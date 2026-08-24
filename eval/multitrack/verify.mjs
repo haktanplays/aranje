@@ -326,6 +326,33 @@ async function run(page, errors, vp) {
     );
   });
 
+  await safe(at("53 görünüm değişimi yeni örnek isteği doğurmuyor"), async () => {
+    /*
+     * The sample bank is shared, so reading the same music on another
+     * surface must not fetch a single buffer again (§11). Counted at the
+     * fetch, not inferred from the bank's own bookkeeping.
+     */
+    await view(page, "multi").click();
+    await page.waitForTimeout(200);
+    if ((await pause(page).count()) === 0) {
+      await play(page).click();
+      await page.waitForTimeout(1500);
+    }
+    const before = await page.evaluate(() => window.__sampleRequests);
+    const contextsBefore = await contexts(page);
+    for (const id of ["tab", "arrange", "multi", "tab", "multi"]) {
+      await view(page, id).click();
+      await page.waitForTimeout(200);
+    }
+    const after = await page.evaluate(() => window.__sampleRequests);
+    const contextsAfter = await contexts(page);
+    record_(
+      at("53 görünüm değişimi yeni örnek isteği doğurmuyor"),
+      after === before && contextsAfter === contextsBefore && before > 0,
+      `örnek ${before}→${after} · context ${contextsBefore}→${contextsAfter}`,
+    );
+  });
+
   await safe(at("10 döngü korunur"), async () => {
     const loop = page.locator("footer button[aria-label='Bölüm döngüsü']");
     await loop.click();
@@ -453,6 +480,45 @@ async function run(page, errors, vp) {
         ledger.n("set:projectPayload") === 0,
       `${before}→${after.active} · kaydırma ${scrollBefore}→${after.scroll} · yazma ${ledger.n("set:projectPayload")}`,
     );
+  });
+
+  await safe(at("54 şerit başlığı kaydırınca ekranda kalır"), async () => {
+    /*
+     * The header is the only way to tell which lane is which, so it stays at
+     * the left edge while the notation scrolls under it (§6). Measured as a
+     * box on screen rather than as a class name.
+     */
+    await view(page, "multi").click();
+    await page.waitForTimeout(200);
+    await page.evaluate(() => {
+      document.querySelector("[data-multi-scroll]").scrollLeft = 0;
+    });
+    await page.waitForTimeout(120);
+    const before = await page.evaluate(
+      () =>
+        document.querySelector("[data-multi-lane-header]").getBoundingClientRect().left,
+    );
+    await page.evaluate(() => {
+      document.querySelector("[data-multi-scroll]").scrollLeft = 500;
+    });
+    await page.waitForTimeout(200);
+    const after = await page.evaluate(() => {
+      const rect = document
+        .querySelector("[data-multi-lane-header]")
+        .getBoundingClientRect();
+      return { left: rect.left, width: rect.width };
+    });
+    const scrolled = await page.evaluate(() =>
+      Math.round(document.querySelector("[data-multi-scroll]").scrollLeft),
+    );
+    record_(
+      at("54 şerit başlığı kaydırınca ekranda kalır"),
+      scrolled >= 400 && Math.abs(after.left - before) <= 2 && after.width > 40,
+      `kaydırma ${scrolled} · başlık ${Math.round(before)}→${Math.round(after.left)}`,
+    );
+    await page.evaluate(() => {
+      document.querySelector("[data-multi-scroll]").scrollLeft = 0;
+    });
   });
 
   await safe(at("20 sessiz track listeden düşmez"), async () => {

@@ -270,6 +270,25 @@ describe("201. the axis is arithmetic, and tempo is not in it", () => {
     expect(slotX(bar, bar.slotCount - 1)).toBe(bar.x + (bar.slotCount - 1) * SLOT);
   });
 
+  it("takes a slot's width from its own bar, not from a shared constant", () => {
+    /*
+     * The same bars laid out at a width that is deliberately not `SLOT`. A
+     * `slotX` that reached for the component's constant instead of dividing
+     * the bar it was handed would agree with the test above and disagree
+     * here — which is the whole failure mode.
+     */
+    const song = seed("mixedGrid");
+    const model = buildMultiTrackModel(song, song.sections[0]!.id, "gtr");
+    const wide = timeAxis(model.bars, SLOT + 7);
+    for (const bar of wide.bars) {
+      expect(slotX(bar, 0)).toBe(bar.x);
+      expect(slotX(bar, 1) - slotX(bar, 0)).toBe(SLOT + 7);
+      expect(slotX(bar, bar.slotCount - 1)).toBe(
+        bar.x + (bar.slotCount - 1) * (SLOT + 7),
+      );
+    }
+  });
+
   it("handles a section with no bars without dividing by nothing", () => {
     const song = seed("fourPart");
     const empty: Song = {
