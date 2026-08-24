@@ -6,6 +6,8 @@
  * into the other — not by inventing a file, not by borrowing another
  * preset's samples, and not by rewriting somebody's song.
  */
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -122,6 +124,47 @@ describe("169. a launch template hands over something that can be heard", () => 
     // build, and the template says so by refusing.
     expect(playableCorePresets("piano")).toEqual([]);
     expect(materializeTemplate("no-such-template")).toBeNull();
+  });
+
+  it("starts every track at the level the headroom render found clip-free", () => {
+    /*
+     * Added while probing 2O-B.1 (§19, probe 15): nothing asserted the level
+     * a new track starts at, so the number the headroom work measured
+     * against could have been changed without a single test noticing.
+     *
+     * The measurement, not the preference, is what this pins. `HEADROOM.json`
+     * rendered the same six-note Am7 at three track levels: −6 dB peaked at
+     * 0.9066 with no clipped frame, and 0 dB peaked at 1.8090 and lost 788
+     * frames to the encoder's clamp. So the default is read back out of the
+     * artefact rather than typed here, and a change of default has to be a
+     * change somebody argues for.
+     */
+    const headroom = JSON.parse(
+      readFileSync("eval/chord-audio/artifacts/HEADROOM.json", "utf8"),
+    ) as {
+      cases: Record<
+        string,
+        { trackVolumesDb: number[]; clippedFrames: number; preEncodePeak: number }
+      >;
+    };
+    const safe = headroom.cases["minor-7-dense-minus-6"]!;
+    const loud = headroom.cases["minor-7-dense-0"]!;
+    expect(safe.clippedFrames).toBe(0);
+    expect(loud.clippedFrames).toBeGreaterThan(0);
+
+    const measuredSafeDb = safe.trackVolumesDb[0]!;
+    for (const template of SONG_TEMPLATES) {
+      for (const track of materializeTemplate(template.id)!.tracks) {
+        expect(track.volumeDb, `${template.id}/${track.id}`).toBe(measuredSafeDb);
+      }
+    }
+    // And the mix of the whole default template was rendered at that level.
+    expect(headroom.cases["launch-template-mix"]!.trackVolumesDb).toEqual([
+      measuredSafeDb,
+      measuredSafeDb,
+      measuredSafeDb,
+    ]);
+    expect(headroom.cases["launch-template-mix"]!.clippedFrames).toBe(0);
   });
 });
 

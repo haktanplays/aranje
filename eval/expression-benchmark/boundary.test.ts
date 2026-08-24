@@ -70,6 +70,28 @@ describe("190. the production expression contract did not move", () => {
     ]);
   });
 
+  it("answers for every articulation the contract has, in the matrix", () => {
+    /*
+     * Added while probing 2P-A (§19, probe 35): dropping an articulation from
+     * the generated matrix changed the document and broke nothing, which made
+     * the matrix a document that could quietly stop being an inventory.
+     *
+     * The roles table is generated from `articulationSchema.options`, so this
+     * asks the document the same question the schema answers — every name has
+     * a row, and the count the prose states is the count the schema has.
+     */
+    const matrix = readFileSync(
+      "eval/expression-benchmark/ARTICULATION-MATRIX.md",
+      "utf8",
+    );
+    for (const name of articulationSchema.options) {
+      expect(matrix, name).toContain(`| \`${name}\` |`);
+    }
+    expect(matrix).toContain(
+      `Song Contract'taki artikülasyon sayısı: **${articulationSchema.options.length}**`,
+    );
+  });
+
   it("keeps the bend and slide numbers this checkpoint measured against", () => {
     /*
      * The benchmark's whole value depends on the baseline being the shipping
