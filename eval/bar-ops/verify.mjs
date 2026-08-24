@@ -17,8 +17,15 @@
  * `node eval/bar-ops/verify.mjs`
  */
 import { chromium } from "playwright";
-import { press, reveal, unwrapStoredSong } from "../shared/harness.mjs";
+import { press, reveal } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { deviceWith, readActiveSong } from "../shared/project-storage.mjs";
+/*
+ * 2Q-B §1.3: the seed is a project device and the song is read back out of
+ * the project record. Seeding `aranje.song` sent every run through the
+ * legacy migration first, and counting writes on that key counted a key the
+ * product has not used since K-52.
+ */
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = process.env.BAR_OPS_OUT ?? "eval/bar-ops/artifacts";
@@ -99,14 +106,14 @@ async function openApp(browser, size = { width: 390, height: 844 }) {
   });
   await context.addInitScript(INSTRUMENT);
   await context.addInitScript(
-    ([key, songJson]) => {
+    (entries) => {
       try {
-        localStorage.setItem(key, songJson);
+        for (const [key, value] of entries) localStorage.setItem(key, value);
       } catch {
         /* a private window is not a reason to fail the run */
       }
     },
-    ["aranje.song", FIXTURE],
+    Object.entries(deviceWith(JSON.parse(FIXTURE))),
   );
   const page = await context.newPage();
   lastPage = page;
@@ -159,10 +166,7 @@ async function dragHandle(page, cdp, edge, dx) {
 const writes = (page) => page.evaluate(() => window.__writes);
 const contexts = (page) => page.evaluate(() => window.__audioContexts ?? 0);
 const errors = (page) => page.evaluate(() => window.__consoleErrors ?? []);
-const stored = async (page) =>
-  unwrapStoredSong(
-    await page.evaluate(() => localStorage.getItem("aranje.song")),
-  );
+const stored = (page) => readActiveSong(page);
 const debugPosition = (page) =>
   page.evaluate(() => window.__aranjeDebug?.position() ?? null);
 

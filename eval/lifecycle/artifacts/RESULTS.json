@@ -18,7 +18,7 @@
     {
       "name": "@390x844 04 Yeni şarkı öncesi yedek iner",
       "pass": true,
-      "detail": "asked=Yeni-Şarkı.aranje.json"
+      "detail": "asked=Yeni-Şarkı-3.aranje.json"
     },
     {
       "name": "@390x844 05 Yeni şarkı vazgeç hiçbir şey yazmaz",
@@ -26,9 +26,9 @@
       "detail": ""
     },
     {
-      "name": "@390x844 06 Yeni şarkı: apply, undo, redo byte-eş",
+      "name": "@390x844 06 Yeni şarkı yeni proje açar, eskisine dokunmaz",
       "pass": true,
-      "detail": "undoLabel=Geri al: Yeni şarkı oluşturma"
+      "detail": "proje 4→5 · eski bayt-eş true · undo false"
     },
     {
       "name": "@390x844 07 Başlık, tonalite ve tempo değişir",
@@ -118,7 +118,7 @@
     {
       "name": "@390x844 23 Uyumlu setup değişimi içerikle uygulanır",
       "pass": true,
-      "detail": "preset=clean"
+      "detail": "name=Ritim Gitar"
     },
     {
       "name": "@390x844 24 Uyumsuz setup atomik reddedilir",
@@ -169,176 +169,6 @@
       "name": "@390x844 33 Konsol sessiz kaldı",
       "pass": true,
       "detail": ""
-    },
-    {
-      "name": "@320x700 01 Boş başlangıç oluşturur",
-      "pass": true,
-      "detail": "writes=1 tracks=1"
-    },
-    {
-      "name": "@320x700 02 Rock grubu oluşturur",
-      "pass": true,
-      "detail": "writes=1 ids=track-1,track-2,track-3"
-    },
-    {
-      "name": "@320x700 03 Akustik oluşturur",
-      "pass": true,
-      "detail": "writes=1"
-    },
-    {
-      "name": "@320x700 04 Yeni şarkı öncesi yedek iner",
-      "pass": true,
-      "detail": "asked=Yeni-Şarkı.aranje.json"
-    },
-    {
-      "name": "@320x700 05 Yeni şarkı vazgeç hiçbir şey yazmaz",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "@320x700 06 Yeni şarkı: apply, undo, redo byte-eş",
-      "pass": true,
-      "detail": "undoLabel=Geri al: Yeni şarkı oluşturma"
-    },
-    {
-      "name": "@320x700 07 Başlık, tonalite ve tempo değişir",
-      "pass": true,
-      "detail": "writes+1"
-    },
-    {
-      "name": "@320x700 08 Temel tempo değişince override korunur",
-      "pass": true,
-      "detail": "bpm=180 override=90"
-    },
-    {
-      "name": "@320x700 08b Aralık dışı tempo atomik reddedilir",
-      "pass": true,
-      "detail": "msg=Tempo 40 ile 260 BPM arasında olmalı."
-    },
-    {
-      "name": "@320x700 09 Bölüm sona eklenir",
-      "pass": true,
-      "detail": "sections=3"
-    },
-    {
-      "name": "@320x700 10 Bölüm araya eklenir",
-      "pass": true,
-      "detail": "order=Intro Riff|Ara Bölüm|Ana Riff|Final"
-    },
-    {
-      "name": "@320x700 11 Bölüm yeniden adlandırılır",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "@320x700 12 Bölüm çoğaltılır, içerik byte-eş",
-      "pass": true,
-      "detail": "copy=intro-riff-copy"
-    },
-    {
-      "name": "@320x700 13 Bölüm sırası değişir, ID'ler kalır",
-      "pass": true,
-      "detail": "order=intro-riff,section-2,intro-riff-copy,main-riff,section-1"
-    },
-    {
-      "name": "@320x700 14 Bölüm silinir, onay adı ve ölçüyü söyler",
-      "pass": true,
-      "detail": "sections=4"
-    },
-    {
-      "name": "@320x700 15 Son bölüm silinemez",
-      "pass": true,
-      "detail": "msg=Son kalan bölüm silinemez."
-    },
-    {
-      "name": "@320x700 16 Bölüm temposu kurulur ve kaldırılır",
-      "pass": true,
-      "detail": "override=72"
-    },
-    {
-      "name": "@320x700 17 Track eklenir",
-      "pass": true,
-      "detail": "tracks=5"
-    },
-    {
-      "name": "@320x700 18 Track yeniden adlandırılır",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "@320x700 19 Track çoğaltılır, tüm bölüm içeriğiyle",
-      "pass": true,
-      "detail": "copy=gtr-copy"
-    },
-    {
-      "name": "@320x700 20 Track sırası değişir, ID ve içerik kalır",
-      "pass": true,
-      "detail": "order=gtr-copy,gtr,acc,bass,drums,track-1"
-    },
-    {
-      "name": "@320x700 21 Track silinir, anahtarlarıyla birlikte",
-      "pass": true,
-      "detail": "tracks=5"
-    },
-    {
-      "name": "@320x700 22 Son track silinemez",
-      "pass": true,
-      "detail": "msg=Son kalan track silinemez."
-    },
-    {
-      "name": "@320x700 23 Uyumlu setup değişimi içerikle uygulanır",
-      "pass": true,
-      "detail": "preset=clean"
-    },
-    {
-      "name": "@320x700 24 Uyumsuz setup atomik reddedilir",
-      "pass": true,
-      "detail": "msg=Mevcut içerik yeni ayarlarla çalınamıyor; değişiklik uygulan"
-    },
-    {
-      "name": "@320x700 25 İçeriği temizleyerek değiştirme ayrı yoldur",
-      "pass": true,
-      "detail": "instrument=drum_kit"
-    },
-    {
-      "name": "@320x700 26 Yıkıcı işlem undo ile byte-eş döner",
-      "pass": true,
-      "detail": "undoLabel=Geri al: Track içeriğini temizleyip ayar değiştirme"
-    },
-    {
-      "name": "@320x700 27 Çalarken yapısal işlem: güvenli durma, tek motor",
-      "pass": true,
-      "detail": "status playing -> idle, contexts=1"
-    },
-    {
-      "name": "@320x700 28 Silinen döngü hedefi: loop kapanır, playhead geçerli",
-      "pass": true,
-      "detail": "loop=null pressed=false ticks=0/6144"
-    },
-    {
-      "name": "@320x700 29 canPersist kapalı: oluşturma kapalı, yedek çalışır",
-      "pass": true,
-      "detail": "disabled=true writes=0"
-    },
-    {
-      "name": "@320x700 30 Yeni şarkı proje dosyasıyla gidip gelir",
-      "pass": true,
-      "detail": "tracks=3"
-    },
-    {
-      "name": "@320x700 31 Copilot hedef listesi yeni track'i görür, provider 0",
-      "pass": true,
-      "detail": "provider=0"
-    },
-    {
-      "name": "@320x700 32 Sheet'ler viewport içinde, hedefler 44px",
-      "pass": true,
-      "detail": "overflow=0 scrollers=1 edges=44,44,44,44"
-    },
-    {
-      "name": "@320x700 33 Konsol sessiz kaldı",
-      "pass": true,
-      "detail": ""
     }
   ],
   "measurements": {
@@ -351,26 +181,6 @@
     "@390x844-console-7": [],
     "@390x844-console-8": [],
     "@390x844-layout": {
-      "layout": {
-        "bodyOverflow": 0,
-        "scrollers": 1
-      },
-      "edges": [
-        44,
-        44,
-        44,
-        44
-      ]
-    },
-    "@320x700-console-1": [],
-    "@320x700-console-2": [],
-    "@320x700-console-3": [],
-    "@320x700-console-4": [],
-    "@320x700-console-5": [],
-    "@320x700-console-6": [],
-    "@320x700-console-7": [],
-    "@320x700-console-8": [],
-    "@320x700-layout": {
       "layout": {
         "bodyOverflow": 0,
         "scrollers": 1

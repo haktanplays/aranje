@@ -18,7 +18,14 @@
 import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-import { layoutProbe, targetEdges, unwrapStoredSong } from "../shared/harness.mjs";
+import { layoutProbe, targetEdges } from "../shared/harness.mjs";
+import { deviceWith, readActiveSong } from "../shared/project-storage.mjs";
+/*
+ * 2Q-B §1.3: the seed is a project device and the song is read back out of
+ * the project record. Seeding `aranje.song` sent every run through the
+ * legacy migration first, and counting writes on that key counted a key the
+ * product has not used since K-52.
+ */
 import {
   rhythmSong,
   selectionSong,
@@ -79,7 +86,7 @@ const INSTRUMENT = `
   const originalSet = Storage.prototype.setItem;
   Storage.prototype.setItem = function (key, value) {
     originalSet.call(this, key, value);
-    if (key === "aranje.song") window.__writes += 1;
+    if (key.indexOf("aranje.project.") === 0) window.__writes += 1;
   };
   for (const name of ["AudioContext", "webkitAudioContext"]) {
     const Original = window[name];
@@ -155,14 +162,14 @@ async function openApp(browser, size, seed, { debug = false } = {}) {
     acceptDownloads: true,
   });
   await context.addInitScript(
-    ([key, value]) => {
+    (entries) => {
       try {
-        localStorage.setItem(key, value);
+        for (const [key, value] of entries) localStorage.setItem(key, value);
       } catch {
         /* a private window is not a reason to fail the run */
       }
     },
-    ["aranje.song", JSON.stringify(seed)],
+    Object.entries(deviceWith(seed)),
   );
   await context.addInitScript(INSTRUMENT);
 
@@ -204,7 +211,7 @@ const consoleErrors = (page) => page.evaluate(() => window.__consoleErrors);
  * perfectly well.
  */
 const stored = async (page) =>
-  unwrapStoredSong(await page.evaluate(() => localStorage.getItem("aranje.song")));
+  readActiveSong(page);
 
 /**
  * A song as a string that depends on its content and not on key order.

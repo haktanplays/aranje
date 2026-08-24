@@ -16,10 +16,17 @@
  *   ONE_VIEWPORT=1 node eval/mixer/verify.mjs
  */
 import { chromium } from "playwright";
-import { layoutProbe, targetEdges, unwrapStoredSong } from "../shared/harness.mjs";
+import { layoutProbe, targetEdges } from "../shared/harness.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { deviceWith, readActiveSong } from "../shared/project-storage.mjs";
+/*
+ * 2Q-B §1.3: the seed is a project device and the song is read back out of
+ * the project record. Seeding `aranje.song` sent every run through the
+ * legacy migration first, and counting writes on that key counted a key the
+ * product has not used since K-52.
+ */
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = process.env.MIXER_OUT ?? "eval/mixer/artifacts";
@@ -197,7 +204,7 @@ const INSTRUMENT = `
   const originalSet = Storage.prototype.setItem;
   Storage.prototype.setItem = function (key, value) {
     originalSet.call(this, key, value);
-    if (key === "aranje.song") window.__writes += 1;
+    if (key.indexOf("aranje.project.") === 0) window.__writes += 1;
   };
 
   const originalFetch = window.fetch.bind(window);
@@ -291,14 +298,14 @@ async function openApp(browser, size, options = {}) {
   });
   if (options.seed) {
     await context.addInitScript(
-      ([key, value]) => {
+      (entries) => {
         try {
-          localStorage.setItem(key, value);
+          for (const [key, value] of entries) localStorage.setItem(key, value);
         } catch {
           /* a private window is not a reason to fail the run */
         }
       },
-      ["aranje.song", JSON.stringify(options.seed)],
+      Object.entries(deviceWith(options.seed)),
     );
   }
   await context.addInitScript(INSTRUMENT);
@@ -348,7 +355,7 @@ const gainOf = (db) => 10 ** (db / 20);
 const wrote = (list, value) =>
   list.some((entry) => Math.abs(entry - value) < 1e-6);
 const stored = async (page) =>
-  unwrapStoredSong(await page.evaluate(() => localStorage.getItem("aranje.song")));
+  readActiveSong(page);
 const debug = (page) =>
   page.evaluate(() => ({
     status: window.__aranjeDebug?.status() ?? null,

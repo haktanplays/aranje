@@ -19,6 +19,13 @@
  */
 import { chromium } from "playwright";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { activeSongBytes, deviceWith } from "../shared/project-storage.mjs";
+/*
+ * 2Q-B §1.3: the seed is a project device and the song is read back out of
+ * the project record. Seeding `aranje.song` sent every run through the
+ * legacy migration first, and counting writes on that key counted a key the
+ * product has not used since K-52.
+ */
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = process.env.ARRANGEMENT_OUT ?? "eval/arrangement/artifacts";
@@ -88,14 +95,14 @@ async function openApp(browser, size) {
   });
   await context.addInitScript(INSTRUMENT);
   await context.addInitScript(
-    ([key, songJson]) => {
+    (entries) => {
       try {
-        localStorage.setItem(key, songJson);
+        for (const [key, value] of entries) localStorage.setItem(key, value);
       } catch {
         /* a private window is not a reason to fail the run */
       }
     },
-    ["aranje.song", FIXTURE],
+    Object.entries(deviceWith(JSON.parse(FIXTURE))),
   );
   const page = await context.newPage();
   page.setDefaultTimeout(5000);
@@ -120,8 +127,7 @@ async function openApp(browser, size) {
 
 const writes = (page) => page.evaluate(() => window.__writes);
 const contexts = (page) => page.evaluate(() => window.__audioContexts ?? 0);
-const songJson = (page) =>
-  page.evaluate(() => localStorage.getItem("aranje.song"));
+const songJson = (page) => activeSongBytes(page);
 const debugTicks = (page) =>
   page.evaluate(() => window.__aranjeDebug?.ticks() ?? null);
 const debugPosition = (page) =>

@@ -33,7 +33,7 @@
     {
       "name": "7 a preview writes nothing at all",
       "pass": true,
-      "detail": "preview=\"1 ölçü bu enstrümanda kesilecek.\" writes 2->2"
+      "detail": "preview=\"1 ölçü bu enstrümanda kesilecek.\" writes 3->3"
     },
     {
       "name": "8 cancelling leaves the song exactly as found",
@@ -48,7 +48,7 @@
     {
       "name": "10 pasting into an empty bar is one write, one undo",
       "pass": true,
-      "detail": "writes 2->3 rhythm=written"
+      "detail": "writes 3->4 rhythm=written"
     },
     {
       "name": "11 an occupied target asks before overwriting",
@@ -58,7 +58,7 @@
     {
       "name": "12 the answer is one write, not two",
       "pass": true,
-      "detail": "writes 3->4"
+      "detail": "writes 4->5"
     },
     {
       "name": "13 a grid the target cannot write is refused, not rounded",
@@ -113,7 +113,7 @@
     {
       "name": "23 a full selection is never offered a track clipboard",
       "pass": true,
-      "detail": "Ölçü işlemleri | Önüne boş ölçü ekle | Arkasına boş ölçü ekle"
+      "detail": "Ölçü işlemleri | Ölçü ve ritim | Önüne boş ölçü ekle | Arkasına boş ölçü ekle"
     },
     {
       "name": "24 the reader's words, from the one table",

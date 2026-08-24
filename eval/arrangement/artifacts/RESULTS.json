@@ -28,7 +28,7 @@
     {
       "name": "[390x844] 34 every arrangement target is 44px or more",
       "pass": true,
-      "detail": "270 targets"
+      "detail": "271 targets"
     },
     {
       "name": "[390x844] 21 a section header scrolls",
@@ -93,7 +93,7 @@
     {
       "name": "[390x844] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18618 -> 19223"
+      "detail": "18662 -> 19316"
     },
     {
       "name": "[390x844] 20 practice rate survives the switch",
@@ -103,7 +103,7 @@
     {
       "name": "[390x844] 24 the playing bar is marked across the lanes",
       "pass": true,
-      "detail": "8 -> 8 cells on outro:3"
+      "detail": "8 -> 8 cells on outro:4"
     },
     {
       "name": "[390x844] 25 the view stays where it was put",
@@ -113,7 +113,7 @@
     {
       "name": "[390x844] 26 tapping a track name writes nothing",
       "pass": true,
-      "detail": "1 -> 1"
+      "detail": "3 -> 3"
     },
     {
       "name": "[390x844] 26 tapping a track name selects it",
@@ -128,7 +128,7 @@
     {
       "name": "[390x844] 29 the staged move is dropped, not committed",
       "pass": true,
-      "detail": "1 -> 1"
+      "detail": "3 -> 3"
     },
     {
       "name": "[390x844] 29 the sheet is closed",
@@ -152,8 +152,8 @@
     },
     {
       "name": "[390x844] 30 undo updates the arrangement",
-      "pass": true,
-      "detail": "662 -> 665 marks (want 665)"
+      "pass": false,
+      "detail": "undo not usable (visible=false)"
     },
     {
       "name": "[390x844] 35 no console or page errors",
@@ -193,7 +193,7 @@
     {
       "name": "[320x700] 34 every arrangement target is 44px or more",
       "pass": true,
-      "detail": "270 targets"
+      "detail": "271 targets"
     },
     {
       "name": "[320x700] 21 a section header scrolls",
@@ -258,7 +258,7 @@
     {
       "name": "[320x700] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18631 -> 19240"
+      "detail": "18653 -> 19307"
     },
     {
       "name": "[320x700] 20 practice rate survives the switch",
@@ -268,7 +268,7 @@
     {
       "name": "[320x700] 24 the playing bar is marked across the lanes",
       "pass": true,
-      "detail": "8 -> 8 cells on outro:3"
+      "detail": "8 -> 8 cells on outro:4"
     },
     {
       "name": "[320x700] 25 the view stays where it was put",
@@ -278,7 +278,7 @@
     {
       "name": "[320x700] 26 tapping a track name writes nothing",
       "pass": true,
-      "detail": "1 -> 1"
+      "detail": "3 -> 3"
     },
     {
       "name": "[320x700] 26 tapping a track name selects it",
@@ -293,7 +293,7 @@
     {
       "name": "[320x700] 29 the staged move is dropped, not committed",
       "pass": true,
-      "detail": "1 -> 1"
+      "detail": "3 -> 3"
     },
     {
       "name": "[320x700] 29 the sheet is closed",
@@ -317,8 +317,8 @@
     },
     {
       "name": "[320x700] 30 undo updates the arrangement",
-      "pass": true,
-      "detail": "662 -> 665 marks (want 665)"
+      "pass": false,
+      "detail": "undo not usable (visible=false)"
     },
     {
       "name": "[320x700] 35 no console or page errors",
@@ -338,7 +338,7 @@
       "cells": 256,
       "lanes": 8,
       "small": 0,
-      "targets": 270
+      "targets": 271
     },
     "320x700": {
       "bodyOverflow": 0,
@@ -346,8 +346,8 @@
       "cells": 256,
       "lanes": 8,
       "small": 0,
-      "targets": 270
+      "targets": 271
     }
   },
-  "failed": 0
+  "failed": 2
 }

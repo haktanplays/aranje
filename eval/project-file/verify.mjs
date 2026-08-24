@@ -14,6 +14,13 @@ import { press } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { deviceWith } from "../shared/project-storage.mjs";
+/*
+ * 2Q-B §1.3: the seed is a project device and the song is read back out of
+ * the project record. Seeding `aranje.song` sent every run through the
+ * legacy migration first, and counting writes on that key counted a key the
+ * product has not used since K-52.
+ */
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = process.env.PROJECT_OUT ?? "eval/project-file/artifacts";
@@ -145,7 +152,7 @@ const INSTRUMENT = `
   const originalSet = Storage.prototype.setItem;
   Storage.prototype.setItem = function (key, value) {
     originalSet.call(this, key, value);
-    if (key === "aranje.song") window.__writes += 1;
+    if (key.indexOf("aranje.project.") === 0) window.__writes += 1;
   };
   const originalCreate = URL.createObjectURL.bind(URL);
   URL.createObjectURL = (value) => {
@@ -200,16 +207,16 @@ async function openApp(browser, size, options = {}) {
     deviceScaleFactor: 2,
   });
   await context.addInitScript(
-    ([key, value]) => {
+    (entries) => {
       try {
         if (sessionStorage.getItem("aranje.harness.seeded") === "1") return;
         sessionStorage.setItem("aranje.harness.seeded", "1");
-        localStorage.setItem(key, value);
+        for (const [key, value] of entries) localStorage.setItem(key, value);
       } catch {
         /* a private window is not a reason to fail the run */
       }
     },
-    ["aranje.song", FIXTURE],
+    Object.entries(deviceWith(JSON.parse(FIXTURE))),
   );
   await context.addInitScript(INSTRUMENT);
   if (options.refuseWriteCheck) await context.addInitScript(REFUSE_WRITE_CHECK);

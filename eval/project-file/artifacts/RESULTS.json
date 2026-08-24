@@ -2,7 +2,7 @@
   "results": [
     {
       "name": "390x844 01 backup produces a real download",
-      "pass": true,
+      "pass": false,
       "detail": ""
     },
     {
@@ -129,136 +129,6 @@
       "name": "390x844 17 canPersist:false — backup works, apply is closed",
       "pass": true,
       "detail": "rescued true, disabled true, note true"
-    },
-    {
-      "name": "320x700 01 backup produces a real download",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 03 the file name is the safe title",
-      "pass": true,
-      "detail": "Ölçü-İşlemleri-Fikstürü.aranje.json"
-    },
-    {
-      "name": "320x700 02 the downloaded bytes are a strict V1 project",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 20 every minted Object URL is revoked",
-      "pass": true,
-      "detail": "{\"created\":1,\"revoked\":1}"
-    },
-    {
-      "name": "320x700 04 picking a file opens a read-only preview",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 05 preview changes no song, storage or history",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 06 cancel drops the preview and nothing else",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 07 apply shows the imported song",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 08 apply is one write and one named history step",
-      "pass": true,
-      "detail": "writes 1 vs 0, label Geri al: Projeyi açma"
-    },
-    {
-      "name": "320x700 18 apply stops playback, drops the loop, rewinds",
-      "pass": true,
-      "detail": "{\"status\":\"idle\",\"ticks\":0,\"loop\":null}"
-    },
-    {
-      "name": "320x700 19 no second AudioContext is ever built",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 16b the apply cleared the clipboard",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 09 undo brings the previous song back",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 10 redo brings the imported song back",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 11 invalid JSON refuses safely",
-      "pass": true,
-      "detail": "Bu dosya geçerli bir Aranjé projesi değil."
-    },
-    {
-      "name": "320x700 12 a raw legacy Song is refused",
-      "pass": true,
-      "detail": "Bu dosya geçerli bir Aranjé projesi değil."
-    },
-    {
-      "name": "320x700 13 an oversized file is refused unread",
-      "pass": true,
-      "detail": "Bu proje dosyası desteklenen boyuttan büyük."
-    },
-    {
-      "name": "320x700 14 a future version touches nothing",
-      "pass": true,
-      "detail": "Bu proje daha yeni bir Aranjé sürümüyle oluşturulmuş. Bu sürüm dosyayı açamıyor."
-    },
-    {
-      "name": "320x700 15 validator errors touch nothing",
-      "pass": true,
-      "detail": "Projede çalınabilirlik hataları bulundu; mevcut şarkın değiştirilmedi."
-    },
-    {
-      "name": "320x700 16 a warning shows in preview and applies",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 22 nothing overflows the body",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 23 exactly one intentional horizontal scroller",
-      "pass": true,
-      "detail": "scrollers 1"
-    },
-    {
-      "name": "320x700 24 every project control is at least 44px",
-      "pass": true,
-      "detail": "[44,44,44,44,44]"
-    },
-    {
-      "name": "320x700 21 zero external network requests",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 25 zero console and page errors",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "name": "320x700 17 canPersist:false — backup works, apply is closed",
-      "pass": true,
-      "detail": "rescued true, disabled true, note true"
     }
   ],
   "measurements": {
@@ -275,21 +145,7 @@
         44
       ],
       "nameFits": true
-    },
-    "320x700-download-name": "download",
-    "320x700-browser-download-name": "download",
-    "320x700-sheet-layout": {
-      "bodyOverflow": 0,
-      "scrollers": 1,
-      "targets": [
-        44,
-        44,
-        44,
-        44,
-        44
-      ],
-      "nameFits": true
     }
   },
-  "failed": 0
+  "failed": 1
 }

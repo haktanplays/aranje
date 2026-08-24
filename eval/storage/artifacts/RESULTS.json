@@ -28,7 +28,7 @@
     {
       "name": "6 a ghost is not on disk when the page closes @390x844",
       "pass": true,
-      "detail": "ghost=true, disk unchanged=true, writes 1"
+      "detail": "ghost=true, disk unchanged=true, writes 2"
     },
     {
       "name": "7 closing the page writes nothing extra @390x844",
@@ -36,9 +36,9 @@
       "detail": "edit=1, after unload events=1"
     },
     {
-      "name": "8 a legacy song opens and becomes an envelope on first edit @390x844",
+      "name": "8 a legacy song becomes a project at load, once @390x844",
       "pass": true,
-      "detail": "legacy at load=true, writes at load=0, rev=1"
+      "detail": "legacy=kaldırıldı, load=1, rev 1→2, reload=0"
     },
     {
       "name": "9 a broken current slot opens the previous one @390x844",
@@ -73,7 +73,7 @@
     {
       "name": "15 dismissing the banner writes nothing @390x844",
       "pass": true,
-      "detail": "banner gone=true, writes 1"
+      "detail": "banner gone=true, writes 2"
     },
     {
       "name": "16 the practice setting is untouched by a recovery @390x844",
@@ -83,7 +83,7 @@
     {
       "name": "17 the envelope keeps one rung behind every step @390x844",
       "pass": true,
-      "detail": "revisions 1/2/3"
+      "detail": "revisions 2/3/4"
     },
     {
       "name": "18 a normal open shows no banner at all @390x844",
@@ -128,7 +128,7 @@
     {
       "name": "6 a ghost is not on disk when the page closes @320x700",
       "pass": true,
-      "detail": "ghost=true, disk unchanged=true, writes 1"
+      "detail": "ghost=true, disk unchanged=true, writes 2"
     },
     {
       "name": "7 closing the page writes nothing extra @320x700",
@@ -136,9 +136,9 @@
       "detail": "edit=1, after unload events=1"
     },
     {
-      "name": "8 a legacy song opens and becomes an envelope on first edit @320x700",
+      "name": "8 a legacy song becomes a project at load, once @320x700",
       "pass": true,
-      "detail": "legacy at load=true, writes at load=0, rev=1"
+      "detail": "legacy=kaldırıldı, load=1, rev 1→2, reload=0"
     },
     {
       "name": "9 a broken current slot opens the previous one @320x700",
@@ -173,7 +173,7 @@
     {
       "name": "15 dismissing the banner writes nothing @320x700",
       "pass": true,
-      "detail": "banner gone=true, writes 1"
+      "detail": "banner gone=true, writes 2"
     },
     {
       "name": "16 the practice setting is untouched by a recovery @320x700",
@@ -183,7 +183,7 @@
     {
       "name": "17 the envelope keeps one rung behind every step @320x700",
       "pass": true,
-      "detail": "revisions 1/2/3"
+      "detail": "revisions 2/3/4"
     },
     {
       "name": "18 a normal open shows no banner at all @320x700",
@@ -213,12 +213,12 @@
     {
       "name": "23 the malformed-JSON ledger, in order @390x844",
       "pass": true,
-      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787404597061\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787612933348\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.project.project-1\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.projects\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
     },
     {
       "name": "24 the rescued-previous ledger, in order @390x844",
       "pass": true,
-      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787404597806:true\",\"set:aranje.song:true\"]"
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787612934108:true\",\"set:aranje.song:true\",\"set:aranje.project.project-1:true\",\"set:aranje.projects:true\",\"remove:aranje.song:true\"]"
     },
     {
       "name": "25 a failed repair leaves the file alone and editing closed @390x844",
@@ -238,12 +238,12 @@
     {
       "name": "23 the malformed-JSON ledger, in order @320x700",
       "pass": true,
-      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787404607795\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787612944077\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.project.project-1\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.projects\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
     },
     {
       "name": "24 the rescued-previous ledger, in order @320x700",
       "pass": true,
-      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787404608628:true\",\"set:aranje.song:true\"]"
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787612944813:true\",\"set:aranje.song:true\",\"set:aranje.project.project-1:true\",\"set:aranje.projects:true\",\"remove:aranje.song:true\"]"
     },
     {
       "name": "25 a failed repair leaves the file alone and editing closed @320x700",
@@ -253,10 +253,11 @@
   ],
   "measurements": {
     "writesPerEdit-390x844": 1,
+    "writesAtLoad-390x844": 1,
     "revisions-390x844": [
-      1,
       2,
-      3
+      3,
+      4
     ],
     "layout-390x844": {
       "bodyOverflow": 0,
@@ -267,10 +268,11 @@
       }
     },
     "writesPerEdit-320x700": 1,
+    "writesAtLoad-320x700": 1,
     "revisions-320x700": [
-      1,
       2,
-      3
+      3,
+      4
     ],
     "layout-320x700": {
       "bodyOverflow": 0,
@@ -293,7 +295,32 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787404597061",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.corrupt.1787612933348",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.song",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.project.project-1",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.projects",
         "ok": true
       },
       {
@@ -315,11 +342,36 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787404597806",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
         "ok": true
       },
       {
         "op": "set",
+        "key": "aranje.corrupt.1787612934108",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.song",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.project.project-1",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.projects",
+        "ok": true
+      },
+      {
+        "op": "remove",
         "key": "aranje.song",
         "ok": true
       }
@@ -337,7 +389,32 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787404607795",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.corrupt.1787612944077",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.song",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.project.project-1",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.projects",
         "ok": true
       },
       {
@@ -359,11 +436,36 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787404608628",
+        "key": "aranje.probe",
+        "ok": true
+      },
+      {
+        "op": "remove",
+        "key": "aranje.probe",
         "ok": true
       },
       {
         "op": "set",
+        "key": "aranje.corrupt.1787612944813",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.song",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.project.project-1",
+        "ok": true
+      },
+      {
+        "op": "set",
+        "key": "aranje.projects",
+        "ok": true
+      },
+      {
+        "op": "remove",
         "key": "aranje.song",
         "ok": true
       }
