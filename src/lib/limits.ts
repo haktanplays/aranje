@@ -190,3 +190,29 @@ export const voicingLimits = {
   /** A chord needs at least this many sounding strings to be one. */
   minNotes: 2,
 } as const;
+
+/**
+ * Chord voicings for instruments with no fretboard (spec 13.22, phase 2O-B).
+ *
+ * **These are not an instrument's range.** Aranje deliberately has no numeric
+ * range for a piano, an organ, a synth or a string section: `range.ts` defers
+ * them rather than inventing bounds, and this checkpoint does not overturn
+ * that decision. What is written here is about *writing*, not about playing.
+ *
+ * `lowestMidi` and `highestMidi` are the pitches the Song Contract can spell
+ * at all — scientific pitch notation runs from octave -1 to octave 9, and
+ * anything outside that cannot be written down whatever instrument is holding
+ * it.
+ *
+ * `registerSpanSemitones` is how far a chord may climb above the note the
+ * reader picked before it stops being a chord in the place they asked for one.
+ * Two octaves is wide enough for a four-note seventh and all of its
+ * inversions, and narrow enough that "a chord around middle C" does not answer
+ * with one three octaves up.
+ */
+export const keyboardVoicingLimits = {
+  lowestMidi: 0,
+  highestMidi: 127,
+  registerSpanSemitones: 24,
+  maxVariations: 4,
+} as const;
