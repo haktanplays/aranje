@@ -41,6 +41,9 @@ import type { SectionRun } from "@/lib/tab/timeline";
 import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
 import type { MixerHandle } from "@/lib/workspace/use-mixer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
+import type { ChordBuilderHandle } from "@/lib/workspace/use-chord-builder";
+import { chordTargetAt } from "@/lib/chords/chord-target";
+import { ChordBuilderSheet } from "@/components/workspace/ChordBuilderSheet";
 import type { WorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import type { WorkspaceOverlayState } from "@/lib/workspace/use-workspace-overlays";
 import type { TimingChangeHandle } from "@/lib/workspace/use-timing-change";
@@ -52,6 +55,8 @@ export function WorkspaceOverlays({
   overlays,
   navigation,
   noteEditing,
+  chords,
+  onAudition,
   copilot,
   copilotSkills,
   previewOpen,
@@ -84,6 +89,9 @@ export function WorkspaceOverlays({
   /** The meter-and-rhythm sheet, opened from the bar sheet or from here. */
   timing: TimingChangeHandle;
   noteEditing: NoteEditing;
+  /** The chord builder session, and the one way to hear a shape. */
+  chords: ChordBuilderHandle;
+  onAudition: (voicingId: string) => void;
   copilot: CoArrangerHandle;
   copilotSkills: readonly ArrangeSkill[];
   previewOpen: boolean;
@@ -239,8 +247,41 @@ export function WorkspaceOverlays({
           onTie={() =>
             noteEditing.runCommand((target) => ({ kind: "set_tie", target }))
           }
+          /*
+           * The two doors onto the chord builder, from the cell the reader is
+           * already standing on. Which of them is offered says out loud what
+           * will happen: an empty vurus gets written, an occupied one gets
+           * stood in for.
+           */
+          onChord={(power) => {
+            const cell = noteEditing.cell;
+            if (!cell || !track) return;
+            const [sectionId, barIndexText] = cell.barKey.split(":");
+            const barIndex = Number(barIndexText);
+            if (!sectionId || !Number.isInteger(barIndex)) return;
+            const target = chordTargetAt(song, {
+              sectionId,
+              trackId: track.id,
+              barIndex,
+              slotIndex: cell.slotIndex,
+              barNumber: noteEditing.fretTarget?.barNumber ?? barIndex + 1,
+              anchorFret: noteEditing.currentFret,
+            });
+            if (!target) return;
+            noteEditing.closeCell();
+            chords.open(target);
+            // The door the reader pressed already answered the first step,
+            // so the sheet opens on the root grid rather than asking again.
+            chords.chooseType(power);
+          }}
         />
       ) : null}
+
+      <ChordBuilderSheet
+        builder={chords}
+        capo={fretboard?.capo ?? 0}
+        onAudition={onAudition}
+      />
 
       <ArrangeSheet
         open={arrangeOpen}

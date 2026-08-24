@@ -64,6 +64,7 @@ export function FretSheet({
   onTie,
   onNudge,
   onArticulation,
+  onChord,
   error,
 }: {
   open: boolean;
@@ -76,6 +77,13 @@ export function FretSheet({
   onTie: () => void;
   onNudge: (delta: { slot?: number; string?: number }) => void;
   onArticulation: (articulation: Articulation | null) => void;
+  /**
+   * Open the chord builder on this cell.
+   *
+   * Two doors rather than one button, because the reader is choosing between
+   * two different things to write, not confirming a mode.
+   */
+  onChord: (power: boolean) => void;
   /** Set when the last command was refused, in words the reader can act on. */
   error: string | null;
 }) {
@@ -210,6 +218,17 @@ export function FretSheet({
       </div>
 
       <div className="border-line flex flex-wrap gap-2 border-t py-3">
+        {/*
+          Beside the single note, not instead of it: writing one fret is still
+          the ordinary thing to do here, and the chord builder is a second
+          way in rather than a replacement for it.
+        */}
+        <SheetButton data-fret-power onClick={() => onChord(true)}>
+          Power chord
+        </SheetButton>
+        <SheetButton data-fret-chord onClick={() => onChord(false)}>
+          Akor
+        </SheetButton>
         <SheetButton tone="danger" onClick={onClearString}>
           Bu telde sil
         </SheetButton>

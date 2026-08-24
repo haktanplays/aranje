@@ -41,7 +41,6 @@ import { useSong } from "@/lib/song/use-song";
 import { useSessionGround } from "@/lib/workspace/use-session-ground";
 import { useTimingChange } from "@/lib/workspace/use-timing-change";
 import { useSettings } from "@/lib/settings/use-settings";
-import { buildTrackTimeline, sectionRuns } from "@/lib/tab/timeline";
 import { editGate } from "@/lib/workspace/edit-gate";
 import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
@@ -49,6 +48,7 @@ import { useMixer } from "@/lib/workspace/use-mixer";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
 import { useWorkspaceFiles } from "@/lib/workspace/use-workspace-files";
 import { useSelectionSession } from "@/lib/workspace/use-selection-session";
+import { useTabView } from "@/lib/workspace/use-tab-view";
 import { useWorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import { useWorkspaceOverlays } from "@/lib/workspace/use-workspace-overlays";
 
@@ -90,11 +90,8 @@ export function Workspace() {
   const navigation = useWorkspaceNavigation({ song, seek });
   const track = navigation.track;
 
-  const timeline = useMemo(
-    () => buildTrackTimeline(song, track?.id ?? ""),
-    [song, track?.id],
-  );
-  const runs = useMemo(() => sectionRuns(song), [song]);
+  const tab = useTabView({ song, track, canPersist, commit, pause });
+  const { chords, timeline, runs } = tab;
 
   const noteEditing = useNoteEditing({ song, track, timeline, commit, pause });
 
@@ -358,6 +355,8 @@ export function Workspace() {
         overlays={overlays}
         navigation={navigation}
         noteEditing={noteEditing}
+        chords={chords}
+        onAudition={tab.audition}
         copilot={copilot}
         copilotSkills={skills}
         previewOpen={previewOpen}

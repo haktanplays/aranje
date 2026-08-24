@@ -76,7 +76,19 @@ export type HistoryAction =
    * §6). One action however many bars moved: the reader chose once, so undo
    * puts all of them back once.
    */
-  | { readonly kind: "bar_timing_change"; readonly scope: "bar" | "section" };
+  | { readonly kind: "bar_timing_change"; readonly scope: "bar" | "section" }
+  /**
+   * One chord written or replaced (spec 13.22, 2O-B).
+   *
+   * One action, however many notes the chord has: the reader chose a chord
+   * once, so undo takes the whole chord back once. `mode` separates writing
+   * into an empty vurus from standing in for notes that were already there,
+   * because those read differently in the history line.
+   */
+  | {
+      readonly kind: "chord";
+      readonly mode: "chord_insert" | "chord_replace";
+    };
 
 export type HistorySnapshot = {
   readonly song: Song;

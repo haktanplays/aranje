@@ -216,3 +216,18 @@ export const keyboardVoicingLimits = {
   registerSpanSemitones: 24,
   maxVariations: 4,
 } as const;
+
+/**
+ * Hearing a chord before choosing it (spec 13.22 §16, phase 2O-B).
+ *
+ * `referenceVoices` is how many notes an audition is scaled against: at or
+ * below it nothing changes, and above it the preview is quietened in
+ * proportion so six strings do not clip where one note did not.
+ *
+ * This is a **preview-only** number. It never reaches the velocity written
+ * into a Song, the mixer, or an exported file — an audition that flattered
+ * the chord would be telling the reader something the song does not say.
+ */
+export const chordPreviewLimits = {
+  referenceVoices: 3,
+} as const;

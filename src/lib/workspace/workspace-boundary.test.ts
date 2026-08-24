@@ -46,7 +46,18 @@ const workspaceHooks = readdirSync("src/lib/workspace")
  * Listed rather than inferred from the name, so adding one is a decision
  * somebody made on purpose and can be seen in a diff.
  */
-const COMPOSITION_HOOKS = new Set(["src/lib/workspace/use-workspace-files.ts"]);
+/**
+ * Hooks that compose other controllers instead of owning state.
+ *
+ * They are allowed to import a controller precisely because they add nothing
+ * of their own: each one exists so the composition root does not have to
+ * spell the same relationship out several times. A hook earns a place here by
+ * holding no `useState` of its own, which the rule below checks.
+ */
+const COMPOSITION_HOOKS = new Set([
+  "src/lib/workspace/use-workspace-files.ts",
+  "src/lib/workspace/use-tab-view.ts",
+]);
 
 describe("38. the composition root stays a composition root", () => {
   it("respects the line budgets honestly earned in 2L-R and tightened in 2L-B", () => {

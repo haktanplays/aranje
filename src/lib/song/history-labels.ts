@@ -116,6 +116,8 @@ export function historyActionLabel(action: HistoryAction): string {
       return action.scope === "section"
         ? "Bölümün ölçü ve ritmini değiştirme"
         : "Ölçü ve ritmi değiştirme";
+    case "chord":
+      return action.mode === "chord_replace" ? "Akoru değiştirme" : "Akor ekleme";
   }
 }
 
