@@ -1,0 +1,723 @@
+{
+  "what": "2O-B.1 §1 — registry, manifest ve launch şablonlarının ses denetimi",
+  "measuredOn": "Node; ses render'ı yok — duyulur kanıt §2 tarayıcı ölçümünde",
+  "rule": "Registry'de görünmek ile oynatılabilir olmak ayrı iki sütundur.",
+  "license": {
+    "spdx": "CC-BY-3.0-US",
+    "textVendored": false
+  },
+  "totals": {
+    "registryPairs": 24,
+    "coreSelectablePairs": 5,
+    "playablePairs": 6,
+    "vendoredPacks": 3,
+    "manifestFilesMissingOnDisk": 0,
+    "silentCoreSelectablePairs": [
+      "electric_guitar/clean"
+    ]
+  },
+  "manifestPacks": [
+    {
+      "id": "electric_guitar/high_gain",
+      "baseUrl": "/samples/electric_guitar/high_gain",
+      "directoryOnDisk": "public/samples/electric_guitar/high_gain",
+      "directoryExists": true,
+      "fileCount": 7,
+      "notes": [
+        "E2",
+        "A2",
+        "C3",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "missingUrls": [],
+      "bytes": 170099
+    },
+    {
+      "id": "steel_acoustic/finger",
+      "baseUrl": "/samples/steel_acoustic/finger",
+      "directoryOnDisk": "public/samples/steel_acoustic/finger",
+      "directoryExists": true,
+      "fileCount": 8,
+      "notes": [
+        "E2",
+        "A2",
+        "C3",
+        "E3",
+        "A3",
+        "C4",
+        "E4",
+        "A4"
+      ],
+      "missingUrls": [],
+      "bytes": 150028
+    },
+    {
+      "id": "electric_bass/finger",
+      "baseUrl": "/samples/electric_bass/finger",
+      "directoryOnDisk": "public/samples/electric_bass/finger",
+      "directoryExists": true,
+      "fileCount": 6,
+      "notes": [
+        "E1",
+        "A1",
+        "C2",
+        "E2",
+        "A2",
+        "C3"
+      ],
+      "missingUrls": [],
+      "bytes": 94360
+    }
+  ],
+  "pairs": [
+    {
+      "instrumentId": "electric_guitar",
+      "presetId": "clean",
+      "registryVisible": true,
+      "selectableInCoreScope": true,
+      "templateUsesIt": [
+        "empty",
+        "rock_band"
+      ],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "electric_guitar",
+      "presetId": "crunch",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "electric_guitar",
+      "presetId": "high_gain",
+      "registryVisible": true,
+      "selectableInCoreScope": true,
+      "templateUsesIt": [],
+      "playableInProduction": true,
+      "soundSource": "sample_pack",
+      "silentReason": null,
+      "manifestEntryCount": 1,
+      "expectedSampleCount": 7,
+      "missingUrls": [],
+      "attributionId": "CC-BY-3.0-US"
+    },
+    {
+      "instrumentId": "steel_acoustic",
+      "presetId": "finger",
+      "registryVisible": true,
+      "selectableInCoreScope": true,
+      "templateUsesIt": [
+        "acoustic"
+      ],
+      "playableInProduction": true,
+      "soundSource": "sample_pack",
+      "silentReason": null,
+      "manifestEntryCount": 1,
+      "expectedSampleCount": 8,
+      "missingUrls": [],
+      "attributionId": "CC-BY-3.0-US"
+    },
+    {
+      "instrumentId": "steel_acoustic",
+      "presetId": "pick",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "electric_bass",
+      "presetId": "finger",
+      "registryVisible": true,
+      "selectableInCoreScope": true,
+      "templateUsesIt": [
+        "rock_band"
+      ],
+      "playableInProduction": true,
+      "soundSource": "sample_pack",
+      "silentReason": null,
+      "manifestEntryCount": 1,
+      "expectedSampleCount": 6,
+      "missingUrls": [],
+      "attributionId": "CC-BY-3.0-US"
+    },
+    {
+      "instrumentId": "electric_bass",
+      "presetId": "pick",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "electric_bass",
+      "presetId": "driven",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "drum_kit",
+      "presetId": "rock",
+      "registryVisible": true,
+      "selectableInCoreScope": true,
+      "templateUsesIt": [
+        "rock_band"
+      ],
+      "playableInProduction": true,
+      "soundSource": "synthesised",
+      "silentReason": null,
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "drum_kit",
+      "presetId": "metal",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": true,
+      "soundSource": "synthesised",
+      "silentReason": null,
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "drum_kit",
+      "presetId": "electronic",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": true,
+      "soundSource": "synthesised",
+      "silentReason": null,
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "nylon_guitar",
+      "presetId": "warm",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "nylon_guitar",
+      "presetId": "bright",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "piano",
+      "presetId": "grand",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "piano",
+      "presetId": "upright",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "electric_piano",
+      "presetId": "soft",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "electric_piano",
+      "presetId": "bright",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "organ",
+      "presetId": "rock",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "organ",
+      "presetId": "church",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "strings",
+      "presetId": "sustain",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "strings",
+      "presetId": "staccato",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "synth",
+      "presetId": "lead",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "synth",
+      "presetId": "warm_pad",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    },
+    {
+      "instrumentId": "synth",
+      "presetId": "dark_pad",
+      "registryVisible": true,
+      "selectableInCoreScope": false,
+      "templateUsesIt": [],
+      "playableInProduction": false,
+      "soundSource": "none",
+      "silentReason": "sample_pack_missing",
+      "manifestEntryCount": 0,
+      "expectedSampleCount": 0,
+      "missingUrls": [],
+      "attributionId": null
+    }
+  ],
+  "templates": [
+    {
+      "id": "empty",
+      "label": "Boş başlangıç",
+      "materialises": true,
+      "silentTracks": [
+        "Ritim Gitar"
+      ],
+      "tracks": [
+        {
+          "name": "Ritim Gitar",
+          "instrumentId": "electric_guitar",
+          "presetId": "clean",
+          "volumeDb": -6,
+          "packId": null,
+          "audible": false
+        }
+      ],
+      "schemaValid": true,
+      "validatorErrors": []
+    },
+    {
+      "id": "rock_band",
+      "label": "Rock grubu",
+      "materialises": true,
+      "silentTracks": [
+        "Ritim Gitar"
+      ],
+      "tracks": [
+        {
+          "name": "Ritim Gitar",
+          "instrumentId": "electric_guitar",
+          "presetId": "clean",
+          "volumeDb": -6,
+          "packId": null,
+          "audible": false
+        },
+        {
+          "name": "Bas",
+          "instrumentId": "electric_bass",
+          "presetId": "finger",
+          "volumeDb": -6,
+          "packId": "electric_bass/finger",
+          "audible": true
+        },
+        {
+          "name": "Davul",
+          "instrumentId": "drum_kit",
+          "presetId": "rock",
+          "volumeDb": -6,
+          "packId": null,
+          "audible": true
+        }
+      ],
+      "schemaValid": true,
+      "validatorErrors": []
+    },
+    {
+      "id": "acoustic",
+      "label": "Akustik",
+      "materialises": true,
+      "silentTracks": [],
+      "tracks": [
+        {
+          "name": "Akustik Gitar",
+          "instrumentId": "steel_acoustic",
+          "presetId": "finger",
+          "volumeDb": -6,
+          "packId": "steel_acoustic/finger",
+          "audible": true
+        }
+      ],
+      "schemaValid": true,
+      "validatorErrors": []
+    }
+  ],
+  "questions": [
+    {
+      "q": "1. electric_guitar/clean registry'de var mı?",
+      "answer": "Evet",
+      "evidence": {
+        "preset": {
+          "id": "clean",
+          "displayName": "Clean",
+          "engine": "sampler",
+          "scope": "core"
+        },
+        "coreScope": true
+      },
+      "measuredBy": "instrument registry"
+    },
+    {
+      "q": "2. Sample manifest'i var mı?",
+      "answer": "Hayır — manifest'te bu id ile pack yok",
+      "evidence": {
+        "manifestPackIds": [
+          "electric_guitar/high_gain",
+          "steel_acoustic/finger",
+          "electric_bass/finger"
+        ]
+      },
+      "measuredBy": "public/samples/manifest.json"
+    },
+    {
+      "q": "3. Sample dosyaları gerçekten vendor edilmiş mi?",
+      "answer": "Hayır — public/samples/electric_guitar/clean dizini yok",
+      "evidence": {
+        "directoryExists": false,
+        "vendoredDirectories": [
+          {
+            "id": "electric_guitar/high_gain",
+            "exists": true,
+            "files": 7,
+            "missing": 0
+          },
+          {
+            "id": "steel_acoustic/finger",
+            "exists": true,
+            "files": 8,
+            "missing": 0
+          },
+          {
+            "id": "electric_bass/finger",
+            "exists": true,
+            "files": 6,
+            "missing": 0
+          }
+        ]
+      },
+      "measuredBy": "dosya sistemi"
+    },
+    {
+      "q": "4. Loader bunu hata mı sayıyor, sessiz bank mı kuruyor?",
+      "answer": "İkisi de değil: pack yoksa buildVoice() null döner ve createEngine o track'i grafiğe hiç eklemez. Boş bank kurulmaz, hata da atılmaz — track sessizce yok sayılır ve motor başarı bildirir.",
+      "evidence": {
+        "buildVoiceReturnsNull": true,
+        "engineSkipsSilently": true,
+        "progressCountsOnlyExistingPacks": true
+      },
+      "measuredBy": "src/lib/audio/engine.ts — gerçek render kanıtı §2'de"
+    },
+    {
+      "q": "5. Şablon oluşturulduğunda validator bunu görüyor mu?",
+      "answer": "Hayır. trackReferences yalnız preset'in registry'de var olup olmadığını sorar; clean vardır, dolayısıyla şablon temiz geçer. Bugün hiçbir validator oynatılabilirliği sormuyor.",
+      "evidence": {
+        "templateValidatorErrors": [
+          {
+            "id": "empty",
+            "errors": [],
+            "silentTracks": [
+              "Ritim Gitar"
+            ]
+          },
+          {
+            "id": "rock_band",
+            "errors": [],
+            "silentTracks": [
+              "Ritim Gitar"
+            ]
+          },
+          {
+            "id": "acoustic",
+            "errors": [],
+            "silentTracks": []
+          }
+        ],
+        "validatorAsksRegistryOnly": true
+      },
+      "measuredBy": "runValidators(materializeTemplate(...))"
+    },
+    {
+      "q": "6. UI bunu seçilebilir bir preset gibi gösteriyor mu?",
+      "answer": "Evet. Track kurulum sayfası corePresets() listesini olduğu gibi bir <select> içine döküyor; sessiz preset ile duyulan preset arasında hiçbir görsel ayrım yok.",
+      "evidence": {
+        "listsCorePresetsVerbatim": true,
+        "offeredForElectricGuitar": [
+          "clean",
+          "high_gain"
+        ]
+      },
+      "measuredBy": "src/components/workspace/TrackManagerSheet.tsx"
+    },
+    {
+      "q": "7. Proje import'u bu preset'i koruyor mu?",
+      "answer": "Evet — ve bu doğru davranış. presetId şarkı byte'ının parçası; import onu olduğu gibi okur, şema kabul eder, validator hata vermez. Hiçbir yerde sessiz bir fallback yok.",
+      "evidence": {
+        "schemaAcceptsAnyPresetString": true,
+        "importMutatesPreset": false
+      },
+      "measuredBy": "src/lib/song/schema.ts + validator zinciri"
+    },
+    {
+      "q": "8. Playback ve preview aynı unavailable kararı veriyor mu?",
+      "answer": "Evet, çünkü ikisi de aynı createEngine/buildVoice yolundan geçiyor. Ayrı bir preview kararı yok; ikisi de aynı sessizliği üretiyor.",
+      "evidence": {
+        "previewUsesPlaybackController": true,
+        "playbackUsesCreateLiveEngine": true,
+        "createLiveEngineDelegates": true
+      },
+      "measuredBy": "import zinciri"
+    },
+    {
+      "q": "9. Hangi elektrik gitar presetleri gerçekten çalışıyor?",
+      "answer": "clean (core): sessiz, crunch (phase_2_5): sessiz, high_gain (core): çalışıyor",
+      "evidence": {
+        "presets": [
+          {
+            "id": "clean",
+            "scope": "core",
+            "engine": "sampler",
+            "packId": null
+          },
+          {
+            "id": "crunch",
+            "scope": "phase_2_5",
+            "engine": "sampler_fx",
+            "packId": null
+          },
+          {
+            "id": "high_gain",
+            "scope": "core",
+            "engine": "sampler_fx",
+            "packId": "electric_guitar/high_gain"
+          }
+        ]
+      },
+      "measuredBy": "registry × manifest"
+    },
+    {
+      "q": "10. Hangi launch şablonları sessiz track üretiyor?",
+      "answer": "empty → Ritim Gitar | rock_band → Ritim Gitar",
+      "evidence": {
+        "templatePicksFirstCorePreset": true,
+        "templates": [
+          {
+            "id": "empty",
+            "tracks": [
+              {
+                "name": "Ritim Gitar",
+                "instrumentId": "electric_guitar",
+                "presetId": "clean",
+                "volumeDb": -6,
+                "packId": null,
+                "audible": false
+              }
+            ],
+            "silentTracks": [
+              "Ritim Gitar"
+            ]
+          },
+          {
+            "id": "rock_band",
+            "tracks": [
+              {
+                "name": "Ritim Gitar",
+                "instrumentId": "electric_guitar",
+                "presetId": "clean",
+                "volumeDb": -6,
+                "packId": null,
+                "audible": false
+              },
+              {
+                "name": "Bas",
+                "instrumentId": "electric_bass",
+                "presetId": "finger",
+                "volumeDb": -6,
+                "packId": "electric_bass/finger",
+                "audible": true
+              },
+              {
+                "name": "Davul",
+                "instrumentId": "drum_kit",
+                "presetId": "rock",
+                "volumeDb": -6,
+                "packId": null,
+                "audible": true
+              }
+            ],
+            "silentTracks": [
+              "Ritim Gitar"
+            ]
+          },
+          {
+            "id": "acoustic",
+            "tracks": [
+              {
+                "name": "Akustik Gitar",
+                "instrumentId": "steel_acoustic",
+                "presetId": "finger",
+                "volumeDb": -6,
+                "packId": "steel_acoustic/finger",
+                "audible": true
+              }
+            ],
+            "silentTracks": []
+          }
+        ]
+      },
+      "measuredBy": "materializeTemplate(...) × manifest"
+    }
+  ]
+}
