@@ -25,6 +25,7 @@ import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import { canonicalJson } from "@/lib/copilot/fingerprint";
 import { exportProject, parseProjectText } from "@/lib/project/project-file";
 import { errorsOnly, runValidators } from "@/lib/validators";
+import { identifiersOf, valueImportsOf } from "@/lib/dev/ast";
 
 const trackOn = (instrumentId: string, presetId: string, name = "Track"): Track => ({
   id: "track-1",
@@ -212,5 +213,53 @@ describe("171. availability is not part of the Song Contract", () => {
     // their own songs.
     expect(songSchema.safeParse(legacy).success).toBe(true);
     expect(errorsOnly(runValidators(legacy))).toEqual([]);
+  });
+});
+
+describe("176. where the availability layer and the preview bank may reach", () => {
+  const MODULES = [
+    "src/lib/audio/preset-availability.ts",
+    "src/lib/audio/buffer-bank.ts",
+    "src/lib/audio/preview-bank.ts",
+  ];
+
+  it("reaches no store, no history, no project file and no copilot", () => {
+    for (const path of MODULES) {
+      for (const specifier of valueImportsOf(path)) {
+        for (const banned of [
+          "@/lib/song/song-store",
+          "@/lib/song/storage",
+          "@/lib/song/edit-history",
+          "@/lib/project/project-file",
+          "@/lib/copilot/fingerprint",
+        ]) {
+          expect(specifier, `${path} -> ${specifier}`).not.toBe(banned);
+        }
+        expect(specifier.includes("/projects/"), `${path} -> ${specifier}`).toBe(false);
+        expect(specifier.includes("/components/"), `${path} -> ${specifier}`).toBe(false);
+        expect(specifier.startsWith("eval/"), `${path} -> ${specifier}`).toBe(false);
+      }
+    }
+  });
+
+  it("keeps the availability decision free of Tone and of any context", () => {
+    // The question "can this be heard" is answered from vendored data, not
+    // from an audio graph, which is why a template can ask it.
+    const names = identifiersOf("src/lib/audio/preset-availability.ts");
+    for (const banned of ["AudioContext", "fetch", "window", "document"]) {
+      expect(names.has(banned), `preset-availability uses ${banned}`).toBe(false);
+    }
+    for (const specifier of valueImportsOf("src/lib/audio/preset-availability.ts")) {
+      expect(specifier.startsWith("tone")).toBe(false);
+      expect(specifier).not.toBe("@/lib/audio/engine");
+    }
+  });
+
+  it("loads no Tone module of its own in the bank cache", () => {
+    // Tone is handed in, so this module is importable during a server render
+    // and testable without an audio context.
+    for (const specifier of valueImportsOf("src/lib/audio/buffer-bank.ts")) {
+      expect(specifier.startsWith("tone")).toBe(false);
+    }
   });
 });

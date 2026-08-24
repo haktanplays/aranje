@@ -106,11 +106,16 @@ describe("one bank, every reader (spec 8.5, 8.1, K-28)", () => {
     expect(sampler.slice(0, 300)).not.toContain("baseUrl");
   });
 
-  it("is keyed by the pack, not by the track", () => {
-    // A track-keyed cache is what made two guitars decode the same seven
-    // files twice in the S-01 rehearsal.
-    expect(bankCode).toContain("packs.get(pack.id)");
+  it("has no vocabulary for a track at all", () => {
+    /*
+     * A track-keyed cache is what made two guitars decode the same seven
+     * files twice in the S-01 rehearsal. That the cache is keyed by the
+     * decoded asset set is proven behaviourally in `buffer-bank.test.ts`;
+     * what is checked here is that the module has no way to be keyed by a
+     * track, because it never learns what one is.
+     */
     expect(bankCode).not.toContain("track.id");
+    expect(bankCode).not.toContain("Track");
   });
 
   it("releases rather than disposes, so one track cannot silence another", () => {

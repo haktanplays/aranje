@@ -49,6 +49,7 @@ import {
 } from "@/lib/audio/practice-rate";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { silentTrackNotice } from "@/lib/audio/preset-availability";
+import type { PreviewBankSession } from "@/lib/audio/preview-bank";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
 import type { Song } from "@/lib/song/schema";
 
@@ -108,6 +109,15 @@ export type PlaybackOptions = {
   practicePercent?: number;
   /** Injected so the controller can be driven without an audio context. */
   createEngine?: EngineFactory;
+  /**
+   * Keeps decoded sample banks alive across the engines this controller
+   * builds and throws away (2O-B.1 §3).
+   *
+   * Passed by a caller that builds many short-lived controllers — the chord
+   * audition builds one per shape — and left out by the song's own playback,
+   * which builds one engine and keeps it.
+   */
+  bankSession?: PreviewBankSession;
 };
 
 export class PlaybackController {
@@ -146,6 +156,7 @@ export class PlaybackController {
    */
   private mixOverrides = new Map<string, { volumeDb: number; pan: number }>();
   private audibleTrackIds: readonly string[] | null = null;
+  private readonly bankSession: PreviewBankSession | undefined;
 
   constructor(
     private song: Song,
@@ -153,6 +164,7 @@ export class PlaybackController {
   ) {
     this.plan = buildSongPlan(song);
     this.createEngine = options.createEngine ?? createLiveEngine;
+    this.bankSession = options.bankSession;
     const practicePercent = clampPercent(
       options.practicePercent ?? DEFAULT_PRACTICE_PERCENT,
     );
@@ -260,6 +272,13 @@ export class PlaybackController {
     });
 
     this.engine = engine;
+    /*
+     * Before anything can be released: the engine has just taken its handles
+     * on the sample banks, and retention has to be open before this
+     * controller is disposed or the count reaches zero and the bank goes
+     * with it (2O-B.1 §3). Which context that is, is not known until here.
+     */
+    this.bankSession?.open(engine.context);
     this.set({ silentTrackNotice: silentTrackNotice(engine.silentTracks) });
 
     // A seek made before this existed is honoured now, not discarded.
