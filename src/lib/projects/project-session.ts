@@ -22,7 +22,7 @@ import { settleProjects } from "@/lib/projects/project-migration";
 import { readRecord, type EnumerableStorage } from "@/lib/projects/project-storage";
 import { createSongStore, type SongStore } from "@/lib/song/song-store";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
-import type { LoadResult } from "@/lib/song/storage";
+import type { LoadResult, RecoveryState } from "@/lib/song/storage";
 import type { Song } from "@/lib/song/schema";
 
 export type ProjectSession = {
@@ -65,20 +65,34 @@ function asLoadResult(
   song: Song | null,
   canPersist: boolean,
   notice: ProjectErrorCode | null,
+  recovery: RecoveryState | null,
 ): LoadResult {
+  /*
+   * The recovery state comes from the settle, not from a guess made here
+   * (2Q-B §1.3). It used to be invented: any notice at all became "this
+   * device cannot save", so a song rescued from the previous slot arrived
+   * silently and a file from a newer Aranje was blamed on the device. The
+   * settle knows which of the four sentences is true; this only carries it.
+   *
+   * A session that cannot write still says so, because that is true
+   * regardless of how the song was found.
+   */
+  const said = recovery ?? (canPersist ? null : "storage_unavailable");
   if (song === null) {
     return {
       song: SAMPLE_SONG,
       outcome: "unavailable",
       canPersist: false,
-      ...(notice === null ? {} : { recovery: "storage_unavailable" as const }),
+      ...(said === null && notice === null
+        ? {}
+        : { recovery: said ?? ("storage_unavailable" as const) }),
     };
   }
   return {
     song,
     outcome: "stored",
     canPersist,
-    ...(canPersist ? {} : { recovery: "storage_unavailable" as const }),
+    ...(said === null ? {} : { recovery: said }),
   };
 }
 
@@ -105,7 +119,12 @@ export function createProjectSession(
       : null;
 
   const store = createSongStore(
-    asLoadResult(settled.song, settled.canPersist && port !== null, settled.notice),
+    asLoadResult(
+      settled.song,
+      settled.canPersist && port !== null,
+      settled.notice,
+      settled.recovery,
+    ),
     storage,
     port ?? undefined,
   );

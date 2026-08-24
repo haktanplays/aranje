@@ -57,6 +57,7 @@ import {
 } from "@/lib/projects/project-storage";
 import { sameSong } from "@/lib/song/edit-history";
 import { SONG_KEY, loadSong, type Clock } from "@/lib/song/storage";
+import type { RecoveryState } from "@/lib/song/storage";
 import type { Song } from "@/lib/song/schema";
 
 export const FIRST_PROJECT_ID = "project-1";
@@ -70,6 +71,17 @@ export type SettleOutcome = {
   readonly canPersist: boolean;
   /** One safe sentence's worth of news, or nothing. */
   readonly notice: ProjectErrorCode | null;
+  /**
+   * Which of the four recovery sentences the reader should see (2Q-B §1.3).
+   *
+   * `notice` names the *situation* for the library's own bookkeeping;
+   * this names what the reader is told. They were the same thing while
+   * there was one song and one key. They are not now: a project whose last
+   * save was unreadable still opened the previous one, and the session used
+   * to hand the store nothing, so the banner never appeared and the reader
+   * kept working on an older song believing it was theirs.
+   */
+  readonly recovery: RecoveryState | null;
   /** What happened, for the report and the tests. Never shown to a reader. */
   readonly steps: readonly string[];
 };
@@ -182,6 +194,7 @@ export function settleProjects(
       song: null,
       canPersist: false,
       notice: "project_storage_unavailable",
+      recovery: "storage_unavailable",
       steps: ["no_storage"],
     };
   }
@@ -205,6 +218,7 @@ export function settleProjects(
       song: null,
       canPersist: false,
       notice: "project_catalog_future_version",
+      recovery: "unsupported_version",
       steps,
     };
   }
@@ -263,6 +277,8 @@ function finishWithCatalog(
       notice:
         notice ??
         (active.kind === "recovered_previous" ? "project_corrupt" : null),
+      // The last save did not come back; the one before it did. Say so.
+      recovery: active.kind === "recovered_previous" ? "recovered_previous" : null,
       steps: [...steps, `active_${active.kind}`],
     };
   }
@@ -272,6 +288,7 @@ function finishWithCatalog(
       song: null,
       canPersist: false,
       notice: "project_future_version",
+      recovery: "unsupported_version",
       steps: [...steps, "active_future_version"],
     };
   }
@@ -280,6 +297,8 @@ function finishWithCatalog(
     song: null,
     canPersist: writable,
     notice: active.kind === "empty" ? "project_not_found" : "project_corrupt",
+    // Nothing readable to open: the sample song appears, and it is not theirs.
+    recovery: "corrupt_fallback",
     steps: [...steps, `active_${active.kind}`],
   };
 }
@@ -313,6 +332,7 @@ function migrateSingleSong(
       notice: legacy.recovery === "unsupported_version"
         ? "project_future_version"
         : "project_storage_unavailable",
+      recovery: legacy.recovery ?? "storage_unavailable",
       steps: [...steps, "migration_skipped_read_only"],
     };
   }
@@ -333,6 +353,10 @@ function migrateSingleSong(
         existing.kind === "future_version"
           ? "project_future_version"
           : "project_migration_failed",
+      recovery:
+        existing.kind === "future_version"
+          ? "unsupported_version"
+          : "storage_write_failed",
       steps,
     };
   }
@@ -345,6 +369,7 @@ function migrateSingleSong(
       song: legacy.song,
       canPersist: false,
       notice: "project_migration_failed",
+      recovery: "storage_write_failed",
       steps,
     };
   }
@@ -357,6 +382,7 @@ function migrateSingleSong(
       song: legacy.song,
       canPersist: false,
       notice: "project_migration_failed",
+      recovery: "storage_write_failed",
       steps,
     };
   }
@@ -376,6 +402,7 @@ function migrateSingleSong(
       song: legacy.song,
       canPersist: false,
       notice: "project_migration_failed",
+      recovery: "storage_write_failed",
       steps,
     };
   }
@@ -404,6 +431,13 @@ function migrateSingleSong(
      * again (it does not: a valid catalog returns before this path).
      */
     notice: null,
+    /*
+     * The migration succeeded, which says nothing about whether the song it
+     * migrated was the reader's last save. If the legacy envelope had lost
+     * its current slot, the previous one came through here — and that is
+     * still news.
+     */
+    recovery: legacy.recovery ?? null,
     steps,
   };
 }
