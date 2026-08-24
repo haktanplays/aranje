@@ -1,0 +1,277 @@
+{
+  "measuredOn": "desktop Node — not a phone, and not evidence about one",
+  "question": "what does Aranje do about chords before 2O-B?",
+  "trackAbilities": [
+    {
+      "instrumentId": "electric_guitar",
+      "hasFretboard": true,
+      "editableInTab": true,
+      "rangeSupport": "fretboard",
+      "offeredInTrackManager": true,
+      "samplePack": null
+    },
+    {
+      "instrumentId": "electric_bass",
+      "hasFretboard": true,
+      "editableInTab": true,
+      "rangeSupport": "fretboard",
+      "offeredInTrackManager": true,
+      "samplePack": "electric_bass/finger"
+    },
+    {
+      "instrumentId": "piano",
+      "hasFretboard": false,
+      "editableInTab": false,
+      "rangeSupport": "deferred",
+      "offeredInTrackManager": false,
+      "samplePack": null
+    },
+    {
+      "instrumentId": "synth",
+      "hasFretboard": false,
+      "editableInTab": false,
+      "rangeSupport": "deferred",
+      "offeredInTrackManager": false,
+      "samplePack": null
+    },
+    {
+      "instrumentId": "strings",
+      "hasFretboard": false,
+      "editableInTab": false,
+      "rangeSupport": "deferred",
+      "offeredInTrackManager": false,
+      "samplePack": null
+    },
+    {
+      "instrumentId": "drum_kit",
+      "hasFretboard": false,
+      "editableInTab": false,
+      "rangeSupport": "drums",
+      "offeredInTrackManager": true,
+      "samplePack": null
+    }
+  ],
+  "writingAm7Today": {
+    "commandsNeeded": 5,
+    "edits": [
+      "ok 1/0",
+      "ok 2/2",
+      "ok 3/0",
+      "ok 4/1",
+      "ok 5/0"
+    ],
+    "pitches": [
+      "A2",
+      "E3",
+      "G3",
+      "C4",
+      "E4"
+    ]
+  },
+  "existingSearch": {
+    "kind": "placed",
+    "count": 32,
+    "first": [
+      "1:0",
+      "2:2",
+      "3:2",
+      "4:1",
+      "5:0"
+    ],
+    "note": "candidateVoicings needs concrete pitches; it does not know a chord formula"
+  },
+  "keyboardSong": {
+    "schemaAccepts": true,
+    "validatorErrors": [],
+    "editorAccepts": false
+  },
+  "tunings": {
+    "standard": [
+      {
+        "stringIndex": 0,
+        "written": "E2",
+        "soundingAtFret0": "E2"
+      },
+      {
+        "stringIndex": 1,
+        "written": "A2",
+        "soundingAtFret0": "A2"
+      },
+      {
+        "stringIndex": 2,
+        "written": "D3",
+        "soundingAtFret0": "D3"
+      },
+      {
+        "stringIndex": 3,
+        "written": "G3",
+        "soundingAtFret0": "G3"
+      },
+      {
+        "stringIndex": 4,
+        "written": "B3",
+        "soundingAtFret0": "B3"
+      },
+      {
+        "stringIndex": 5,
+        "written": "E4",
+        "soundingAtFret0": "E4"
+      }
+    ],
+    "drop_d": [
+      {
+        "stringIndex": 0,
+        "written": "D2",
+        "soundingAtFret0": "D2"
+      },
+      {
+        "stringIndex": 1,
+        "written": "A2",
+        "soundingAtFret0": "A2"
+      },
+      {
+        "stringIndex": 2,
+        "written": "D3",
+        "soundingAtFret0": "D3"
+      },
+      {
+        "stringIndex": 3,
+        "written": "G3",
+        "soundingAtFret0": "G3"
+      },
+      {
+        "stringIndex": 4,
+        "written": "B3",
+        "soundingAtFret0": "B3"
+      },
+      {
+        "stringIndex": 5,
+        "written": "E4",
+        "soundingAtFret0": "E4"
+      }
+    ],
+    "capo_2": [
+      {
+        "stringIndex": 0,
+        "written": "E2",
+        "soundingAtFret0": "F#2"
+      },
+      {
+        "stringIndex": 1,
+        "written": "A2",
+        "soundingAtFret0": "B2"
+      },
+      {
+        "stringIndex": 2,
+        "written": "D3",
+        "soundingAtFret0": "E3"
+      },
+      {
+        "stringIndex": 3,
+        "written": "G3",
+        "soundingAtFret0": "A3"
+      },
+      {
+        "stringIndex": 4,
+        "written": "B3",
+        "soundingAtFret0": "C#4"
+      },
+      {
+        "stringIndex": 5,
+        "written": "E4",
+        "soundingAtFret0": "F#4"
+      }
+    ],
+    "dadgad": [
+      {
+        "stringIndex": 0,
+        "written": "D2",
+        "soundingAtFret0": "D2"
+      },
+      {
+        "stringIndex": 1,
+        "written": "A2",
+        "soundingAtFret0": "A2"
+      },
+      {
+        "stringIndex": 2,
+        "written": "D3",
+        "soundingAtFret0": "D3"
+      },
+      {
+        "stringIndex": 3,
+        "written": "G3",
+        "soundingAtFret0": "G3"
+      },
+      {
+        "stringIndex": 4,
+        "written": "A3",
+        "soundingAtFret0": "A3"
+      },
+      {
+        "stringIndex": 5,
+        "written": "D4",
+        "soundingAtFret0": "D4"
+      }
+    ],
+    "bass": [
+      {
+        "stringIndex": 0,
+        "written": "E1",
+        "soundingAtFret0": "E1"
+      },
+      {
+        "stringIndex": 1,
+        "written": "A1",
+        "soundingAtFret0": "A1"
+      },
+      {
+        "stringIndex": 2,
+        "written": "D2",
+        "soundingAtFret0": "D2"
+      },
+      {
+        "stringIndex": 3,
+        "written": "G2",
+        "soundingAtFret0": "G2"
+      }
+    ]
+  },
+  "registry": {
+    "all": [
+      "electric_guitar",
+      "steel_acoustic",
+      "electric_bass",
+      "drum_kit",
+      "nylon_guitar",
+      "piano",
+      "electric_piano",
+      "organ",
+      "strings",
+      "synth"
+    ],
+    "core": [
+      "electric_guitar",
+      "steel_acoustic",
+      "electric_bass",
+      "drum_kit"
+    ],
+    "packs": [
+      "electric_guitar/high_gain",
+      "steel_acoustic/finger",
+      "electric_bass/finger"
+    ]
+  },
+  "contradictions": [
+    {
+      "id": "no_numeric_range_for_non_fretted",
+      "brief": "2O-B §7/§10: keyboard voicings must stay inside the track range",
+      "codebase": "range.ts deliberately defers non-fretted instruments: 'a range is not something to invent'. There is no numeric range for piano, electric piano, organ, synth or strings anywhere in the repo."
+    },
+    {
+      "id": "no_editing_surface_for_non_fretted",
+      "brief": "2O-B §7/§26: piano, synth and strings chord scenarios in the UI",
+      "codebase": "isEditableTrack() requires a fretboard, the tab draws string rows, and the track manager only offers core instruments — so a reader cannot create, see or edit a keyboard track today."
+    }
+  ]
+}
