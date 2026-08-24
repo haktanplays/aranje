@@ -384,7 +384,7 @@ describe("127. an interrupted delete resolves one way, deterministically", () =>
   });
 });
 
-describe("128. a write is not believed until it has been read back", () => {
+describe("146. migration believes no write it has not read back", () => {
   /**
    * The failure mode this whole migration is shaped around.
    *
