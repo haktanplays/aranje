@@ -155,3 +155,38 @@ export const audioExportLimits = {
   maxChannels: 2,
   tailSeconds: 3,
 } as const;
+
+/**
+ * Chord voicing search (spec 13.22, phase 2O-B).
+ *
+ * What a hand can hold, and how much of the search a reader is shown. These
+ * are the numbers a component would otherwise carry as literals — a "4 fret
+ * stretch" typed into a sheet is a second definition of playable, and the two
+ * would disagree the first time one moved.
+ *
+ * `maxFretSpan` counts fretted notes only: an open string is held by the other
+ * hand and costs no stretch, which is why an open chord can reach across the
+ * neck and a barre chord cannot. Two is where a shape stops being a chord
+ * shape and starts being a stretch, and it is not a guess: every one of the
+ * eleven qualities, at all twelve roots, still has playable shapes on standard
+ * tuning, Drop D, capo 2, DADGAD and a four-string bass — 660 combinations,
+ * none of them emptied by the limit. Both fifth-position A minor sevenths fit
+ * inside it, spanning two frets and none.
+ *
+ * `maxInteriorSkips` is one because real shapes need exactly that much: the
+ * fifth-position A minor 7 played `5 x 5 5 5 x` skips one inner string and is
+ * an ordinary thing to play. Two or more inner skips start to describe shapes
+ * a hand cannot mute cleanly, and the search does not offer them.
+ *
+ * `maxVariations` and `maxPerRegion` are about the reader rather than the
+ * hand: four cards is what a phone can show without a scroll, and two from the
+ * same neck position is where a list stops teaching and starts listing.
+ */
+export const voicingLimits = {
+  maxFretSpan: 2,
+  maxInteriorSkips: 1,
+  maxVariations: 4,
+  maxPerRegion: 2,
+  /** A chord needs at least this many sounding strings to be one. */
+  minNotes: 2,
+} as const;
