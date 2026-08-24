@@ -49,6 +49,7 @@ import { MultiTrackLane } from "@/components/workspace/MultiTrackLane";
 import { PitchedMultiLane } from "@/components/workspace/PitchedMultiLane";
 import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { followScrollLeft } from "@/components/workspace/playhead";
+import { useScrollTakeover } from "@/components/workspace/use-scroll-takeover";
 import { timeAxis } from "@/lib/multitrack/geometry";
 import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import { drumRhythm, frettedRhythm } from "@/lib/tab/timeline";
@@ -124,6 +125,13 @@ export function MultiTrackCanvas({
   const axis = useMemo(() => timeAxis(model.bars, SLOT_WIDTH), [model.bars]);
   const layerRef = useRef<HTMLDivElement | null>(null);
   const lastBarKey = useRef<string | null>(null);
+  /*
+   * Who owns the horizontal position. Without this, activating a lane moved
+   * the view: the re-render restarts the loop, the loop paints once whether
+   * or not the transport is running, and that paint dragged the reader back
+   * to a paused playhead they had scrolled away from (§6, defect C).
+   */
+  const takeover = useScrollTakeover({ scrollRef, running });
 
   const stackHeight =
     model.lanes.length * (LANE_BODY_HEIGHT + LANE_GAP) + STAFF_TOP_PADDING;
@@ -158,13 +166,19 @@ export function MultiTrackCanvas({
       }
 
       const scroller = scrollRef.current;
-      if (scroller && x !== null && playheadVisible && followsPlayback) {
+      if (
+        scroller &&
+        x !== null &&
+        playheadVisible &&
+        followsPlayback &&
+        takeover.follows()
+      ) {
         const target = followScrollLeft(
           x,
           { scrollLeft: scroller.scrollLeft, clientWidth: scroller.clientWidth },
           scroller.scrollWidth,
         );
-        if (target !== null) scroller.scrollLeft = target;
+        if (target !== null) takeover.scrollTo(target);
       }
     };
 
@@ -177,6 +191,7 @@ export function MultiTrackCanvas({
     scrollRef,
     followsPlayback,
     playheadVisible,
+    takeover,
   ]);
 
   return (

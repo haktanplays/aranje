@@ -1,0 +1,636 @@
+{
+  "what": "2Q-A §16 — Çoklu görünüm, yazılabilir track ve mobil transport kabulü",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "results": [
+    {
+      "name": "[390x844] 1 açılış varsayılan Düzen",
+      "pass": true,
+      "detail": "Düzen"
+    },
+    {
+      "name": "[390x844] 2 Çoklu görünüm açılır",
+      "pass": true,
+      "detail": "4 şerit"
+    },
+    {
+      "name": "[390x844] 3 Tab açılır",
+      "pass": true,
+      "detail": "1 tab içeriği"
+    },
+    {
+      "name": "[390x844] 4 üç görünüm arasında geçiş",
+      "pass": true,
+      "detail": "view-arrange,view-multi,view-tab,view-multi,view-arrange"
+    },
+    {
+      "name": "[390x844] 5 AudioContext 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 7 çalarken canlı rAF 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 9 tick ilerliyor",
+      "pass": true,
+      "detail": "playhead hareket etti"
+    },
+    {
+      "name": "[390x844] 51 manuel kaydırma takibi durdurur",
+      "pass": true,
+      "detail": "600→600 · playhead ilerledi"
+    },
+    {
+      "name": "[390x844] 52 tekrar Çal takibi geri verir",
+      "pass": true,
+      "detail": "600→280"
+    },
+    {
+      "name": "[390x844] 8 çalarken üç görünüm geçişi",
+      "pass": true,
+      "detail": "context 1→1 · çalıyor true · canlı rAF 1"
+    },
+    {
+      "name": "[390x844] 10 döngü korunur",
+      "pass": true,
+      "detail": "Döngü: Bölüm 1"
+    },
+    {
+      "name": "[390x844] 50 dispose sonrası aktif ses 0",
+      "pass": true,
+      "detail": "canlı rAF 0"
+    },
+    {
+      "name": "[390x844] 6 boşta canlı rAF 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 11 bakılan bölüm korunur",
+      "pass": true,
+      "detail": "s1"
+    },
+    {
+      "name": "[390x844] 13 Çoklu tek yatay scroller",
+      "pass": true,
+      "detail": "1 bildirilen"
+    },
+    {
+      "name": "[390x844] 14 lane başına scroller 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 15 dört track aynı bar çizgisinde",
+      "pass": true,
+      "detail": "[-632,-360,-88,184]"
+    },
+    {
+      "name": "[390x844] 16 gtr şeridi",
+      "pass": true,
+      "detail": "4 bar"
+    },
+    {
+      "name": "[390x844] 17 bass şeridi",
+      "pass": true,
+      "detail": "4 bar"
+    },
+    {
+      "name": "[390x844] 18 drums şeridi",
+      "pass": true,
+      "detail": "4 bar"
+    },
+    {
+      "name": "[390x844] 22 track header dokunuşu aktif eder",
+      "pass": true,
+      "detail": "gtr→bass · kaydırma 120→120 · yazma 0"
+    },
+    {
+      "name": "[390x844] 20 sessiz track listeden düşmez",
+      "pass": true,
+      "detail": "gtr,lead,bass,drums"
+    },
+    {
+      "name": "[390x844] 43 transport bütün kontroller görünür (Çoklu)",
+      "pass": true,
+      "detail": "355.7/390px · kırpılan 0 · 6 kontrol"
+    },
+    {
+      "name": "[390x844] 43.1 transport bütün kontroller görünür (Tab)",
+      "pass": true,
+      "detail": "355.7/390px · kırpılan 0 · 6 kontrol"
+    },
+    {
+      "name": "[390x844] 43.2 transport bütün kontroller görünür (Düzen)",
+      "pass": true,
+      "detail": "355.7/390px · kırpılan 0 · 6 kontrol"
+    },
+    {
+      "name": "[390x844] 44 practice pill görünür",
+      "pass": true,
+      "detail": "59.7px · \"%100\""
+    },
+    {
+      "name": "[390x844] 45 44 px altı hedef 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 46 body taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] 47 kasıtlı yatay scroller 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 43.3 sheet açıkken transport bozulmuyor",
+      "pass": true,
+      "detail": "kırpılan 0 · <44 0 · body 0"
+    },
+    {
+      "name": "[390x844] 48 konsol/sayfa hatası 0",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 49 dış ağ isteği 0",
+      "pass": true,
+      "detail": "yok"
+    },
+    {
+      "name": "[390x844] 12 başka bölüm okunurken sahte playhead yok",
+      "pass": true,
+      "detail": "s1(0) → s2(0)"
+    },
+    {
+      "name": "[390x844] 11.b bölüm değişince eksen yeniden hizalanır",
+      "pass": true,
+      "detail": "[2,274,546,818]"
+    },
+    {
+      "name": "[390x844] 15.karışık grid bar çizgileri hizalı (karışık grid)",
+      "pass": true,
+      "detail": "4 şerit · [2,274,818,1226]"
+    },
+    {
+      "name": "[390x844] 15.3/4 bar çizgileri hizalı (3/4)",
+      "pass": true,
+      "detail": "4 şerit · [2,308,614,920]"
+    },
+    {
+      "name": "[390x844] 15.7/8 bar çizgileri hizalı (7/8)",
+      "pass": true,
+      "detail": "4 şerit · [2,240,478,716]"
+    },
+    {
+      "name": "[390x844] 19 perde şeridi",
+      "pass": true,
+      "detail": "16 nota · E3,G3,B3"
+    },
+    {
+      "name": "[390x844] 19.b perde şeridinde tel/perde uydurulmuyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 21 sekiz track dikey scroll ile erişilebilir",
+      "pass": true,
+      "detail": "8 şerit · son şerit görünür true"
+    },
+    {
+      "name": "[390x844] 21.b lane daraltma yüksekliği geri veriyor",
+      "pass": true,
+      "detail": "1801→1605px · daraltılan 1 · hedef 44x44"
+    },
+    {
+      "name": "[390x844] 24.c daraltma Song'a veya depoya girmiyor",
+      "pass": true,
+      "detail": "payload 0 · katalog 0"
+    },
+    {
+      "name": "[390x844] 21.c daraltılan lane açılabiliyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 23 pasif şeritteki nota dokunuşu önce aktif eder",
+      "pass": true,
+      "detail": "gtr→bass · yazma 0"
+    },
+    {
+      "name": "[390x844] 30 hücre ızgarası yalnız aktif şeritte",
+      "pass": true,
+      "detail": "{\"gtr\":192,\"bass\":0,\"lead\":0}"
+    },
+    {
+      "name": "[390x844] 24 edit sheet açılır",
+      "pass": true,
+      "detail": "1 fret alanı"
+    },
+    {
+      "name": "[390x844] 25 nota yazımı tek write, tek history",
+      "pass": true,
+      "detail": "payload 1 · katalog 0 · geri alınabilir true"
+    },
+    {
+      "name": "[390x844] 26 geri al / yinele",
+      "pass": true,
+      "detail": "geri 1 · yinele 1"
+    },
+    {
+      "name": "[390x844] 27 uzun basış onset seçimi açar",
+      "pass": true,
+      "detail": "6 hücre seçili"
+    },
+    {
+      "name": "[390x844] 28 akor tek onset olarak seçilir",
+      "pass": true,
+      "detail": "6 hücre · 1 slot"
+    },
+    {
+      "name": "[390x844] 31 seçim yalnız ilgili şeritte çizilir",
+      "pass": true,
+      "detail": "{\"gtr\":6,\"bass\":0,\"lead\":0,\"drums\":0}"
+    },
+    {
+      "name": "[390x844] 29 seçim çubuğu ve taşıma kontrolleri açılıyor",
+      "pass": true,
+      "detail": "4 taşıma kontrolü"
+    },
+    {
+      "name": "[390x844] 32 yatay kaydırma seçim açmaz",
+      "pass": true,
+      "detail": "0 seçili"
+    },
+    {
+      "name": "[390x844] 33 dikey kaydırma seçim açmaz",
+      "pass": true,
+      "detail": "0 seçili"
+    },
+    {
+      "name": "[390x844] 34 akor kurucu aktif fretted şeritte açılır",
+      "pass": true,
+      "detail": "1 akor sheet"
+    },
+    {
+      "name": "[390x844] 35 davulda akor kurucu sunulmuyor",
+      "pass": true,
+      "detail": "düzenle kapalı true · {\"cells\":0,\"chordDoor\":0,\"chordSheet\":0}"
+    },
+    {
+      "name": "[390x844] 36 yeni track oluşturuluyor",
+      "pass": true,
+      "detail": "5 şerit · payload 1"
+    },
+    {
+      "name": "[390x844] 37 yeni track'in ızgarası görünüyor",
+      "pass": true,
+      "detail": "track-1 · 4 bar · açık true"
+    },
+    {
+      "name": "[390x844] 38 ilk nota yazılıyor",
+      "pass": true,
+      "detail": "payload 1 · onset 6"
+    },
+    {
+      "name": "[390x844] 40 başarısız ilk nota 0 write",
+      "pass": true,
+      "detail": "payload 0 · buton kapalı false"
+    },
+    {
+      "name": "[390x844] 41 track silme",
+      "pass": true,
+      "detail": "4 şerit · payload 1"
+    },
+    {
+      "name": "[390x844] 42 track silme geri alınabiliyor",
+      "pass": true,
+      "detail": "5 şerit"
+    },
+    {
+      "name": "[390x844] 39 proje değişince şerit durumu sıfırlanır",
+      "pass": true,
+      "detail": "1 → 0 · gtr,bass,drums,keys"
+    },
+    {
+      "name": "[320x700] 1 açılış varsayılan Düzen",
+      "pass": true,
+      "detail": "Düzen"
+    },
+    {
+      "name": "[320x700] 2 Çoklu görünüm açılır",
+      "pass": true,
+      "detail": "4 şerit"
+    },
+    {
+      "name": "[320x700] 3 Tab açılır",
+      "pass": true,
+      "detail": "1 tab içeriği"
+    },
+    {
+      "name": "[320x700] 4 üç görünüm arasında geçiş",
+      "pass": true,
+      "detail": "view-arrange,view-multi,view-tab,view-multi,view-arrange"
+    },
+    {
+      "name": "[320x700] 5 AudioContext 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 7 çalarken canlı rAF 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 9 tick ilerliyor",
+      "pass": true,
+      "detail": "playhead hareket etti"
+    },
+    {
+      "name": "[320x700] 51 manuel kaydırma takibi durdurur",
+      "pass": true,
+      "detail": "600→600 · playhead ilerledi"
+    },
+    {
+      "name": "[320x700] 52 tekrar Çal takibi geri verir",
+      "pass": true,
+      "detail": "600→306"
+    },
+    {
+      "name": "[320x700] 8 çalarken üç görünüm geçişi",
+      "pass": true,
+      "detail": "context 1→1 · çalıyor true · canlı rAF 1"
+    },
+    {
+      "name": "[320x700] 10 döngü korunur",
+      "pass": true,
+      "detail": "Döngü: Bölüm 1"
+    },
+    {
+      "name": "[320x700] 50 dispose sonrası aktif ses 0",
+      "pass": true,
+      "detail": "canlı rAF 0"
+    },
+    {
+      "name": "[320x700] 6 boşta canlı rAF 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 11 bakılan bölüm korunur",
+      "pass": true,
+      "detail": "s1"
+    },
+    {
+      "name": "[320x700] 13 Çoklu tek yatay scroller",
+      "pass": true,
+      "detail": "1 bildirilen"
+    },
+    {
+      "name": "[320x700] 14 lane başına scroller 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 15 dört track aynı bar çizgisinde",
+      "pass": true,
+      "detail": "[-660,-388,-116,156]"
+    },
+    {
+      "name": "[320x700] 16 gtr şeridi",
+      "pass": true,
+      "detail": "4 bar"
+    },
+    {
+      "name": "[320x700] 17 bass şeridi",
+      "pass": true,
+      "detail": "4 bar"
+    },
+    {
+      "name": "[320x700] 18 drums şeridi",
+      "pass": true,
+      "detail": "4 bar"
+    },
+    {
+      "name": "[320x700] 22 track header dokunuşu aktif eder",
+      "pass": true,
+      "detail": "gtr→bass · kaydırma 120→120 · yazma 0"
+    },
+    {
+      "name": "[320x700] 20 sessiz track listeden düşmez",
+      "pass": true,
+      "detail": "gtr,lead,bass,drums"
+    },
+    {
+      "name": "[320x700] 43 transport bütün kontroller görünür (Çoklu)",
+      "pass": true,
+      "detail": "307.7/320px · kırpılan 0 · 6 kontrol"
+    },
+    {
+      "name": "[320x700] 43.1 transport bütün kontroller görünür (Tab)",
+      "pass": true,
+      "detail": "307.7/320px · kırpılan 0 · 6 kontrol"
+    },
+    {
+      "name": "[320x700] 43.2 transport bütün kontroller görünür (Düzen)",
+      "pass": true,
+      "detail": "307.7/320px · kırpılan 0 · 6 kontrol"
+    },
+    {
+      "name": "[320x700] 44 practice pill görünür",
+      "pass": true,
+      "detail": "51.7px · \"%100\""
+    },
+    {
+      "name": "[320x700] 45 44 px altı hedef 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 46 body taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] 47 kasıtlı yatay scroller 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 43.3 sheet açıkken transport bozulmuyor",
+      "pass": true,
+      "detail": "kırpılan 0 · <44 0 · body 0"
+    },
+    {
+      "name": "[320x700] 48 konsol/sayfa hatası 0",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 49 dış ağ isteği 0",
+      "pass": true,
+      "detail": "yok"
+    },
+    {
+      "name": "[320x700] 12 başka bölüm okunurken sahte playhead yok",
+      "pass": true,
+      "detail": "s1(0) → s2(0)"
+    },
+    {
+      "name": "[320x700] 11.b bölüm değişince eksen yeniden hizalanır",
+      "pass": true,
+      "detail": "[2,274,546,818]"
+    },
+    {
+      "name": "[320x700] 15.karışık grid bar çizgileri hizalı (karışık grid)",
+      "pass": true,
+      "detail": "4 şerit · [2,274,818,1226]"
+    },
+    {
+      "name": "[320x700] 15.3/4 bar çizgileri hizalı (3/4)",
+      "pass": true,
+      "detail": "4 şerit · [2,308,614,920]"
+    },
+    {
+      "name": "[320x700] 15.7/8 bar çizgileri hizalı (7/8)",
+      "pass": true,
+      "detail": "4 şerit · [2,240,478,716]"
+    },
+    {
+      "name": "[320x700] 19 perde şeridi",
+      "pass": true,
+      "detail": "16 nota · E3,G3,B3"
+    },
+    {
+      "name": "[320x700] 19.b perde şeridinde tel/perde uydurulmuyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 21 sekiz track dikey scroll ile erişilebilir",
+      "pass": true,
+      "detail": "8 şerit · son şerit görünür true"
+    },
+    {
+      "name": "[320x700] 21.b lane daraltma yüksekliği geri veriyor",
+      "pass": true,
+      "detail": "1801→1605px · daraltılan 1 · hedef 44x44"
+    },
+    {
+      "name": "[320x700] 24.c daraltma Song'a veya depoya girmiyor",
+      "pass": true,
+      "detail": "payload 0 · katalog 0"
+    },
+    {
+      "name": "[320x700] 21.c daraltılan lane açılabiliyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 23 pasif şeritteki nota dokunuşu önce aktif eder",
+      "pass": true,
+      "detail": "gtr→bass · yazma 0"
+    },
+    {
+      "name": "[320x700] 30 hücre ızgarası yalnız aktif şeritte",
+      "pass": true,
+      "detail": "{\"gtr\":192,\"bass\":0,\"lead\":0}"
+    },
+    {
+      "name": "[320x700] 24 edit sheet açılır",
+      "pass": true,
+      "detail": "1 fret alanı"
+    },
+    {
+      "name": "[320x700] 25 nota yazımı tek write, tek history",
+      "pass": true,
+      "detail": "payload 1 · katalog 0 · geri alınabilir true"
+    },
+    {
+      "name": "[320x700] 26 geri al / yinele",
+      "pass": true,
+      "detail": "geri 1 · yinele 1"
+    },
+    {
+      "name": "[320x700] 27 uzun basış onset seçimi açar",
+      "pass": true,
+      "detail": "6 hücre seçili"
+    },
+    {
+      "name": "[320x700] 28 akor tek onset olarak seçilir",
+      "pass": true,
+      "detail": "6 hücre · 1 slot"
+    },
+    {
+      "name": "[320x700] 31 seçim yalnız ilgili şeritte çizilir",
+      "pass": true,
+      "detail": "{\"gtr\":6,\"bass\":0,\"lead\":0,\"drums\":0}"
+    },
+    {
+      "name": "[320x700] 29 seçim çubuğu ve taşıma kontrolleri açılıyor",
+      "pass": true,
+      "detail": "4 taşıma kontrolü"
+    },
+    {
+      "name": "[320x700] 32 yatay kaydırma seçim açmaz",
+      "pass": true,
+      "detail": "0 seçili"
+    },
+    {
+      "name": "[320x700] 33 dikey kaydırma seçim açmaz",
+      "pass": true,
+      "detail": "0 seçili"
+    },
+    {
+      "name": "[320x700] 34 akor kurucu aktif fretted şeritte açılır",
+      "pass": true,
+      "detail": "1 akor sheet"
+    },
+    {
+      "name": "[320x700] 35 davulda akor kurucu sunulmuyor",
+      "pass": true,
+      "detail": "düzenle kapalı true · {\"cells\":0,\"chordDoor\":0,\"chordSheet\":0}"
+    },
+    {
+      "name": "[320x700] 36 yeni track oluşturuluyor",
+      "pass": true,
+      "detail": "5 şerit · payload 1"
+    },
+    {
+      "name": "[320x700] 37 yeni track'in ızgarası görünüyor",
+      "pass": true,
+      "detail": "track-1 · 4 bar · açık true"
+    },
+    {
+      "name": "[320x700] 38 ilk nota yazılıyor",
+      "pass": true,
+      "detail": "payload 1 · onset 6"
+    },
+    {
+      "name": "[320x700] 40 başarısız ilk nota 0 write",
+      "pass": true,
+      "detail": "payload 0 · buton kapalı false"
+    },
+    {
+      "name": "[320x700] 41 track silme",
+      "pass": true,
+      "detail": "4 şerit · payload 1"
+    },
+    {
+      "name": "[320x700] 42 track silme geri alınabiliyor",
+      "pass": true,
+      "detail": "5 şerit"
+    },
+    {
+      "name": "[320x700] 39 proje değişince şerit durumu sıfırlanır",
+      "pass": true,
+      "detail": "1 → 0 · gtr,bass,drums,keys"
+    }
+  ]
+}

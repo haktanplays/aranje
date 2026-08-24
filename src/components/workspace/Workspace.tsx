@@ -274,9 +274,8 @@ export function Workspace() {
         }}
       />
 
-      {/* Only on the tab: the arrangement already draws every section with
-          its own header, bar count and tempo. */}
-      {navigation.view === "tab" ? (
+      {/* Not on the arrangement: it draws every section already (2Q-A §6). */}
+      {navigation.view !== "arrange" ? (
         <SectionNavigator
           runs={runs}
           activeSectionId={navigation.viewedSectionId}
@@ -304,7 +303,8 @@ export function Workspace() {
 
       <SelectionActionArea session={session} onOpenTiming={timing.open} />
 
-      {navigation.view === "tab" ? (
+      {/* Both notation surfaces; the multi view needs this door too (§8). */}
+      {navigation.view !== "arrange" ? (
         <TrackControl track={track} onOpen={() => overlays.open("track")} />
       ) : null}
 

@@ -9,13 +9,13 @@
  * shares, so the two surfaces cannot drift apart about when a frame happens.
  * The playhead column is moved by transform, so a playing bar costs no render.
  *
- * Following the playhead is a convenience, and a convenience that overrides a
- * deliberate action is an annoyance: once the reader scrolls to look at bar 30
- * while bar 3 is playing, the view stays at bar 30. Pressing play again hands
- * the view back to the transport.
+ * Who owns the horizontal position while the music moves is the same question
+ * on every scrolling surface, so it is asked in one place
+ * (`use-scroll-takeover.ts`) rather than answered again here.
  */
-import { useCallback, useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 
+import { useScrollTakeover } from "@/components/workspace/use-scroll-takeover";
 import { TRACK_LABEL_WIDTH } from "@/lib/arrangement/geometry";
 import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import type { ArrangementModel } from "@/lib/arrangement/model";
@@ -37,30 +37,7 @@ export function useFollowPlayhead(options: {
     options;
 
   const lastBarKey = useRef<string | null>(null);
-  const userScrolled = useRef(false);
-  const ownScrollLeft = useRef<number | null>(null);
-
-  useEffect(() => {
-    const scroller = scrollRef.current;
-    if (!scroller) return;
-    const onScroll = () => {
-      // A scroll this hook set itself is not the reader taking over.
-      if (
-        ownScrollLeft.current !== null &&
-        Math.abs(scroller.scrollLeft - ownScrollLeft.current) < 2
-      ) {
-        return;
-      }
-      userScrolled.current = true;
-    };
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    return () => scroller.removeEventListener("scroll", onScroll);
-  }, [scrollRef]);
-
-  // Starting playback gives the view back to the transport.
-  useEffect(() => {
-    if (running) userScrolled.current = false;
-  }, [running]);
+  const takeover = useScrollTakeover({ scrollRef, running });
 
   useEffect(() => {
     const draw = () => {
@@ -85,24 +62,18 @@ export function useFollowPlayhead(options: {
         // Only on a bar change, and only if the reader has not taken over:
         // a per-frame scroll would fight the finger and trail the music.
         const scroller = scrollRef.current;
-        if (bar && scroller && !userScrolled.current) {
+        if (bar && scroller && takeover.follows()) {
           const viewLeft = scroller.scrollLeft;
           const viewRight = viewLeft + scroller.clientWidth - TRACK_LABEL_WIDTH;
           if (bar.left < viewLeft || bar.left + bar.width > viewRight) {
-            const target = Math.max(0, bar.left - scroller.clientWidth / 3);
-            ownScrollLeft.current = target;
-            scroller.scrollLeft = target;
+            takeover.scrollTo(Math.max(0, bar.left - scroller.clientWidth / 3));
           }
         }
       }
     };
 
     return runPlayheadLoop({ source: "arrangement", running, draw });
-  }, [running, model, getPosition, onActiveBarChange, scrollRef, columnRef]);
+  }, [running, model, getPosition, onActiveBarChange, scrollRef, columnRef, takeover]);
 
-  const markUserScroll = useCallback(() => {
-    userScrolled.current = true;
-  }, []);
-
-  return { markUserScroll };
+  return { markUserScroll: takeover.markUserScroll };
 }

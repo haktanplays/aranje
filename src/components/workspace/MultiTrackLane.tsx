@@ -60,7 +60,19 @@ export function MultiTrackLane({
         active ? "border-bronze bg-raised/30" : "border-transparent"
       }`}
     >
-      <div className="flex items-stretch gap-1 px-2">
+      {/*
+        The header stays at the left edge and out of the time axis.
+
+        It lives inside the one horizontal scroller — everything on this
+        surface does — and the scroll content is as wide as the music, so a
+        header that stretched with it would be a tap target a thousand pixels
+        wide. At 320px that had a measurable consequence: tapping a lane
+        scrolled the axis from 120 to 327, because the browser scrolled the
+        element it had just focused into view. Sticking it to the left at one
+        viewport's width keeps the tap where the finger was and leaves the
+        reader's horizontal position exactly where they left it (§8).
+      */}
+      <div className="sticky left-0 flex w-screen max-w-full items-stretch gap-1 px-2">
         <button
           type="button"
           data-multi-lane-header={trackId}
