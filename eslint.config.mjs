@@ -14,6 +14,7 @@ const config = [
       "eval/export/.render/**",
       "eval/chord/.render/**",
       "eval/chord-audio/.render/**",
+      "eval/expression-benchmark/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",

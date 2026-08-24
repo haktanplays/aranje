@@ -1,0 +1,222 @@
+{
+  "what": "Hangi dosya hangi aday — 2P-A §14",
+  "why": "Dosya adları kör: a01, a02… Bir dinleyici hangisinin 'düzeltilmiş' olduğunu bilerek dinlerse ölçtüğü şey kendi beklentisidir.",
+  "files": {
+    "bend": {
+      "a01.wav": {
+        "fixture": "bend-01-current-half",
+        "what": "bugünkü yarım bend, olduğu gibi",
+        "isProductionBaseline": true
+      },
+      "a02.wav": {
+        "fixture": "bend-02-current-full",
+        "what": "bugünkü tam bend, olduğu gibi",
+        "isProductionBaseline": true
+      },
+      "a03.wav": {
+        "fixture": "bend-03-plain-hold-100",
+        "what": "düz bend +100: yüksel, tut, geri dönme",
+        "isProductionBaseline": false
+      },
+      "a04.wav": {
+        "fixture": "bend-04-plain-hold-200",
+        "what": "düz bend +200: yüksel, tut, geri dönme",
+        "isProductionBaseline": false
+      },
+      "a05.wav": {
+        "fixture": "bend-05-release-100",
+        "what": "bend/release +100: yüksel, tut, in",
+        "isProductionBaseline": false
+      },
+      "a06.wav": {
+        "fixture": "bend-06-release-200",
+        "what": "bend/release +200: yüksel, tut, in",
+        "isProductionBaseline": false
+      },
+      "a07.wav": {
+        "fixture": "bend-07-prebend-200",
+        "what": "prebend +200: ilk duyulan anda hedefte",
+        "isProductionBaseline": false
+      },
+      "a08.wav": {
+        "fixture": "bend-08-prebend-release-200",
+        "what": "prebend/release +200: hedefte başla, aşağı in",
+        "isProductionBaseline": false
+      },
+      "a09.wav": {
+        "fixture": "bend-09-vibrato-200",
+        "what": "bend + vibrato: vibrato hedefe vardıktan sonra",
+        "isProductionBaseline": false
+      },
+      "a10.wav": {
+        "fixture": "bend-10-short-note",
+        "what": "kısa notada bend (tek slot)",
+        "isProductionBaseline": true
+      },
+      "a11.wav": {
+        "fixture": "bend-11-long-note",
+        "what": "uzun notada bend (iki ölçü)",
+        "isProductionBaseline": true
+      },
+      "a12.wav": {
+        "fixture": "bend-12-tie-hold",
+        "what": "tie boyunca bend tutuluyor (aday: sonda sıfırlanmıyor)",
+        "isProductionBaseline": false
+      },
+      "a13.wav": {
+        "fixture": "bend-13-tie-release-at-end",
+        "what": "tie'ın sonunda release",
+        "isProductionBaseline": false
+      },
+      "a14.wav": {
+        "fixture": "bend-14-chord-one-string",
+        "what": "akorda tek tel bend, diğerleri sabit",
+        "isProductionBaseline": true
+      },
+      "a15.wav": {
+        "fixture": "bend-15-riff-current",
+        "what": "riff içinde bugünkü bend",
+        "isProductionBaseline": true
+      },
+      "a16.wav": {
+        "fixture": "bend-16-riff-plain-hold",
+        "what": "aynı riff, düz tutulan bend adayı",
+        "isProductionBaseline": false
+      },
+      "a17.wav": {
+        "fixture": "bend-17-riff-explicit-release",
+        "what": "aynı riff, açık release adayı",
+        "isProductionBaseline": false
+      }
+    },
+    "slide": {
+      "a01.wav": {
+        "fixture": "slide-01-normal-restrike",
+        "what": "iki nota, slide yok: yeniden vuruşun kendisi",
+        "isProductionBaseline": true
+      },
+      "a02.wav": {
+        "fixture": "slide-02-current-up-4",
+        "what": "bugünkü slide, +4 yarım ton",
+        "isProductionBaseline": true
+      },
+      "a03.wav": {
+        "fixture": "slide-03-current-down-4",
+        "what": "bugünkü slide, −4 yarım ton",
+        "isProductionBaseline": true
+      },
+      "a04.wav": {
+        "fixture": "slide-04-current-up-7",
+        "what": "bugünkü slide, +7 yarım ton",
+        "isProductionBaseline": true
+      },
+      "a05.wav": {
+        "fixture": "slide-05-current-down-7",
+        "what": "bugünkü slide, −7 yarım ton",
+        "isProductionBaseline": true
+      },
+      "a06.wav": {
+        "fixture": "slide-06-legato-up-4",
+        "what": "legato slide adayı, +4 — bugünküyle aynı semantik",
+        "isProductionBaseline": false
+      },
+      "a07.wav": {
+        "fixture": "slide-07-legato-down-4",
+        "what": "legato slide adayı, −4",
+        "isProductionBaseline": false
+      },
+      "a08.wav": {
+        "fixture": "slide-08-shift-up-4-attack-035",
+        "what": "shift slide adayı, +4, hedefte 0.35 seviyeli gerçek atak",
+        "isProductionBaseline": false
+      },
+      "a09.wav": {
+        "fixture": "slide-09-shift-up-4-attack-060",
+        "what": "shift slide adayı, +4, hedefte 0.60 seviyeli gerçek atak",
+        "isProductionBaseline": false
+      },
+      "a10.wav": {
+        "fixture": "slide-09b-shift-up-4-attack-100",
+        "what": "shift slide adayı, +4, hedefte tam seviyeli atak (üst sınır)",
+        "isProductionBaseline": false
+      },
+      "a11.wav": {
+        "fixture": "slide-10-shift-down-4",
+        "what": "shift slide adayı, −4, hedefte 0.60 seviyeli atak",
+        "isProductionBaseline": false
+      },
+      "a12.wav": {
+        "fixture": "slide-11-wide-legato-7",
+        "what": "geniş legato slide, +7",
+        "isProductionBaseline": false
+      },
+      "a13.wav": {
+        "fixture": "slide-12-wide-legato-12",
+        "what": "geniş legato slide, +12 (motorun tavanı)",
+        "isProductionBaseline": false
+      },
+      "a14.wav": {
+        "fixture": "slide-13-slide-in-below",
+        "what": "aşağıdan slide-in, kesin fret uydurmadan",
+        "isProductionBaseline": false
+      },
+      "a15.wav": {
+        "fixture": "slide-14-slide-in-above",
+        "what": "yukarıdan slide-in",
+        "isProductionBaseline": false
+      },
+      "a16.wav": {
+        "fixture": "slide-15-slide-out-down",
+        "what": "aşağı slide-out, hedef nota uydurmadan",
+        "isProductionBaseline": false
+      },
+      "a17.wav": {
+        "fixture": "slide-16-slide-out-up",
+        "what": "yukarı slide-out",
+        "isProductionBaseline": false
+      },
+      "a18.wav": {
+        "fixture": "slide-17-chain-up-down",
+        "what": "yukarı sonra aşağı slide zinciri",
+        "isProductionBaseline": true
+      },
+      "a19.wav": {
+        "fixture": "slide-18-chord-one-string",
+        "what": "akor çalarken tek tel slide, diğerleri sabit",
+        "isProductionBaseline": true
+      },
+      "a20.wav": {
+        "fixture": "slide-19-riff-current",
+        "what": "riff içinde bugünkü slide",
+        "isProductionBaseline": true
+      },
+      "a21.wav": {
+        "fixture": "slide-20-riff-shift",
+        "what": "aynı riff, shift slide adayı",
+        "isProductionBaseline": false
+      }
+    },
+    "timbre": {
+      "a01.wav": {
+        "fixture": "timbre-01-single-sample-7",
+        "what": "bugünkü timbre: tek sample, playbackRate ile +7 taşınıyor",
+        "isProductionBaseline": true
+      },
+      "a02.wav": {
+        "fixture": "timbre-02-fret-noise-quiet-7",
+        "what": "aynı slide + sessiz deterministik fret gürültüsü",
+        "isProductionBaseline": false
+      },
+      "a03.wav": {
+        "fixture": "timbre-03-fret-noise-louder-7",
+        "what": "aynı slide + biraz daha duyulur fret gürültüsü",
+        "isProductionBaseline": false
+      },
+      "a04.wav": {
+        "fixture": "timbre-04-crossfade-7",
+        "what": "tek mantıksal ses altında komşu sample crossfade — iki fiziksel kaynak",
+        "isProductionBaseline": false
+      }
+    }
+  }
+}
