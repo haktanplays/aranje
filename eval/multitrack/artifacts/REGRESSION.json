@@ -1,0 +1,33 @@
+{
+  "what": "2Q-A §19 — daha önceki tarayıcı süitlerinin 2Q-A öncesi ve sonrası skorları",
+  "how": [
+    "Sonra: bu dalın HEAD'i, ./eval/chord-audio/serve.sh ile 3100'de.",
+    "Önce: 700af7d^ (4e919bc) ayrı bir git worktree'de derlendi ve 3101'de sunuldu.",
+    "Her süit iki build üzerinde de ONE_VIEWPORT=1 ile aynı komutla çalıştırıldı."
+  ],
+  "finding": "Hiçbir süitin skoru değişmedi. Kırmızı olan süitler 2Q-A'dan önce de aynı sayıyla kırmızıydı; bu checkpoint hiçbirini kırmadı ve hiçbirini düzeltmedi.",
+  "whyTheRedOnesAreRed": "lifecycle, storage, history, mixer, tab ve bar-ops harness'leri yazma sayacını ve okunan şarkıyı hâlâ eski tek-şarkı anahtarı `aranje.song` üzerinden ölçüyor. Ürün K-52'den (yerel proje kütüphanesi) beri `aranje.projects` katalogu ve `aranje.project.<id>` kaydına yazıyor, dolayısıyla sayaç 0 okuyor ve `stored()` undefined dönüyor. Bu ölçüm aletinin eskimesidir; ürün kusuru olduğu bu turda gösterilmedi. Aynı davranışı ölçen güncel harness'ler (projects 55/55, chord 80/80, chord-audio 32/32, multitrack 130/130) yeşil.",
+  "notFixedHere": "Altı harness'i yeni depo anahtarına taşımak 2Q-A'nın kapsamı değildir ve kendi checkpoint'ini hak eder; bu tur onları yeşile boyamak yerine durumu kaydeder.",
+  "suites": {
+    "arrangement": { "before": "62/66", "after": "62/66" },
+    "bar-ops": { "before": "24/29", "after": "24/29" },
+    "chord": { "before": "80/80", "after": "80/80" },
+    "chord-audio": { "before": "çalıştırılmadı", "after": "32/32" },
+    "export": { "before": "34/36", "after": "34/36" },
+    "history": { "before": "26/36", "after": "26/36" },
+    "lifecycle": { "before": "7/34", "after": "7/34" },
+    "mixer": { "before": "28/35", "after": "28/35" },
+    "project-file": { "before": "22/26", "after": "22/26" },
+    "projects": { "before": "55/55", "after": "55/55" },
+    "selection-ui": { "before": "TimeoutError (askıda)", "after": "TimeoutError (askıda)" },
+    "storage": { "before": "22/50", "after": "22/50" },
+    "tab": { "before": "39/47", "after": "39/47" },
+    "multitrack": { "before": "yok (bu checkpoint'te yazıldı)", "after": "130/130" }
+  },
+  "sealedBlindPackage": {
+    "note": "Açılmadı, yeniden üretilmedi, içeriği raporlanmadı; yalnız bütünlüğü doğrulandı.",
+    "aranje-expression-blind-review.zip": "e325ff96b6a83dce281d7144ac6996aa1e7ac455d9f3ea06c833ce84a7c0e0f6",
+    "SEALED_KEY.json": "5aad28fd8760d9c4ea8042ded5fc3aaecc1064008169ca637fe1d9ec60b52b30"
+  },
+  "expressionSources": "2Q-A boyunca src/lib/audio/expression*.ts, legato-chain.ts, expressive-voice.ts ve validator dizini hiç değişmedi (git diff boş)."
+}
