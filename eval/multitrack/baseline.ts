@@ -87,22 +87,27 @@ function defectA() {
     writeAccepted: write.ok,
     writeErrorCode: write.ok ? null : write.error.code,
     writeMessage: write.ok ? null : write.error.message,
-    // The sentence names an action, and no control anywhere performs it.
-    messageNamesAnActionTheUserCanTake: false,
-    whyNot:
-      "Cumle 'once bu bara eklenmeli' diyor. Bir track'i tek bir bara ekleyen " +
-      "kontrol ne Track sheet'inde, ne bar islemlerinde, ne de riff " +
-      "duzenleyicisinde var; komut da bunu kendisi yapmiyor.",
+    // Only a refusal has a message to judge. When the write lands there is
+    // no sentence, which is the point.
+    messageNamesAnActionTheUserCanTake: write.ok ? null : false,
+    whyNot: write.ok
+      ? null
+      : "Cumle 'once bu bara eklenmeli' diyor. Bir track'i tek bir bara ekleyen " +
+        "kontrol ne Track sheet'inde, ne bar islemlerinde, ne de riff " +
+        "duzenleyicisinde var; komut da bunu kendisi yapmiyor.",
     storageWrites: write.ok ? 1 : 0,
     historyWrites: write.ok ? 1 : 0,
     songBytesBefore: bytes(before),
     songBytesAfterCreate: bytes(song),
     songBytesAfterWriteAttempt: bytes(write.ok ? write.song : song),
-    rootCause:
-      "create_track hicbir bar'a anahtar birakmiyor. Spec 5.5'e gore eksik " +
-      "anahtar 'burada sessiz' demek; yazma yolu ayni eksikligi 'bu barda " +
-      "yazili degil' olarak okuyor. Iki dogru okuma, tek bir gosterge: yeni " +
-      "track hicbir yerde yazilabilir degil.",
+    rootCause: write.ok
+      ? "Kapatildi (2Q-A §1): create_track her bara bu track icin yazilabilir " +
+        "fakat sessiz bir serit birakiyor. Ses ayni — her slot bir sus — ama " +
+        "ifade farkli: track burada yazili ve uzerine nota yazilabilir."
+      : "create_track hicbir bar'a anahtar birakmiyor. Spec 5.5'e gore eksik " +
+        "anahtar 'burada sessiz' demek; yazma yolu ayni eksikligi 'bu barda " +
+        "yazili degil' olarak okuyor. Iki dogru okuma, tek bir gosterge: yeni " +
+        "track hicbir yerde yazilabilir degil.",
   };
 }
 
@@ -239,6 +244,15 @@ const report = {
   baselineC: baselineC(fourPart),
 };
 
-writeFileSync(`${OUT}/BASELINE.json`, `${JSON.stringify(report, null, 2)}\n`);
+/*
+ * `BASELINE.json` is the record of the *defect*, taken at `4e919bc` before a
+ * line of production code moved. This script runs against whatever the code
+ * is now, so the default output is the *after* file: re-running it on a fixed
+ * build must not quietly rewrite the evidence that there was ever a problem.
+ * `BASELINE=1` is the deliberate way to retake it.
+ */
+const file = process.env.BASELINE ? `${OUT}/BASELINE.json` : `${OUT}/ACTIVATION-AFTER.json`;
+writeFileSync(file, `${JSON.stringify(report, null, 2)}\n`);
+console.log(`wrote ${file}`);
 console.log(JSON.stringify(report.defectA, null, 2));
 console.log(JSON.stringify(report.defectAAcrossTrackKinds, null, 2));

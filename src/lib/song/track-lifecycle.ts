@@ -27,6 +27,7 @@ import { PITCH_PATTERN } from "@/lib/music/pitch";
 import { getInstrument, isCorePreset } from "@/lib/instruments/registry";
 import { guardCandidate } from "@/lib/song/lifecycle-guard";
 import { copyName, dedupeId, nextNumberedId } from "@/lib/song/lifecycle-ids";
+import { withEmptyLanes } from "@/lib/song/track-lanes";
 import { DEFAULT_TRACK_VOLUME_DB } from "@/lib/song/song-templates";
 import type { Bar, Section, Song, Track } from "@/lib/song/schema";
 import type {
@@ -189,9 +190,23 @@ export function applyTrackCommand(
         id: nextNumberedId(song.tracks.map((entry) => entry.id), "track"),
         volumeDb: DEFAULT_TRACK_VOLUME_DB,
       });
-      // No section gains a key for the new track: it is silent everywhere,
-      // and silence is a missing key (spec 5.5).
-      return guardCandidate(withTracks(song, [...song.tracks, track]));
+      /*
+       * Every bar gains an **empty lane** for the new track (2Q-A §1).
+       *
+       * This used to leave no key anywhere, on the reading that silence is a
+       * missing key (spec 5.5). That reading is right and it was not the whole
+       * truth: a missing key also says "this track is not written in this
+       * bar", which the write path refuses — so the track a reader had just
+       * asked for was silent everywhere and writable nowhere, and every cell
+       * told them to do something no control does.
+       *
+       * The lane is the accurate statement for a track somebody just stood
+       * up: written here, saying nothing. It is silent by the same rule, it
+       * breaks a carry by the same rule, and it can be written into.
+       */
+      return guardCandidate(
+        withEmptyLanes(withTracks(song, [...song.tracks, track]), track),
+      );
     }
 
     case "rename_track": {

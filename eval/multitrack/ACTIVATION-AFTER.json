@@ -1,0 +1,90 @@
+{
+  "what": "2Q-A §0 — kapatilacak uc kusurun mevcut build uzerindeki olcumu",
+  "measuredOn": "Node; B ve C'nin ekran kismi masaustu Chromium — telefon degil",
+  "head": "4e919bc",
+  "defectA": {
+    "what": "Yeni bir track eklendikten sonra ilk notanin yazilamamasi. Akis gercek create_track ve gercek yazma komutu uzerinden kosuldu.",
+    "trackInRegistry": true,
+    "trackKeyInThatBar": true,
+    "barKeysPresent": [
+      "bass",
+      "drums",
+      "gtr",
+      "track-1"
+    ],
+    "gridDrawable": true,
+    "timelineKind": "fretted",
+    "barsReportedSilent": 0,
+    "barsTotal": 8,
+    "cellSelectable": true,
+    "editSheetOpens": true,
+    "writeAccepted": true,
+    "writeErrorCode": null,
+    "writeMessage": null,
+    "messageNamesAnActionTheUserCanTake": null,
+    "whyNot": null,
+    "storageWrites": 1,
+    "historyWrites": 1,
+    "songBytesBefore": 14313,
+    "songBytesAfterCreate": 14900,
+    "songBytesAfterWriteAttempt": 14955,
+    "rootCause": "Kapatildi (2Q-A §1): create_track her bara bu track icin yazilabilir fakat sessiz bir serit birakiyor. Ses ayni — her slot bir sus — ama ifade farkli: track burada yazili ve uzerine nota yazilabilir."
+  },
+  "defectAAcrossTrackKinds": [
+    {
+      "label": "elektrik bas",
+      "drums": false,
+      "barsWithKey": 8,
+      "barsTotal": 8,
+      "writableAnywhere": true
+    },
+    {
+      "label": "celik telli akustik",
+      "drums": false,
+      "barsWithKey": 8,
+      "barsTotal": 8,
+      "writableAnywhere": true
+    },
+    {
+      "label": "davul",
+      "drums": true,
+      "barsWithKey": 8,
+      "barsTotal": 8,
+      "writableAnywhere": true
+    }
+  ],
+  "defectB": {
+    "what": "320x700'de transport kirpilmasi",
+    "measuredIn": "eval/multitrack/artifacts/BASELINE-BROWSER.json",
+    "note": "Onceki raporun 344/320 sayisi burada tekrar edilmedi; tarayici harness'i her kontrolun kutusunu yeniden olctu ve baska bir sayi buldu.",
+    "summary": {
+      "requiredWidthPx": 355.7,
+      "availableWidthPx": 320,
+      "overflowPx": 35.7,
+      "clippedControl": "Calisma hizi pill'i",
+      "clippedControlWidthPx": 59.7,
+      "clippedControlVisiblePx": 36,
+      "clippedPx": 23.7,
+      "rootOverflowX": "visible",
+      "clippingAncestor": "div.flex.h-dvh.flex-col.overflow-hidden",
+      "clippingAncestorClientWidth": 320,
+      "clippingAncestorScrollWidth": 344,
+      "bodyOverflowPx": 0,
+      "controlsBelow44px": 0,
+      "at390": "tasma 0; butun kontroller tam gorunur"
+    }
+  },
+  "baselineC": {
+    "what": "Mevcut Tab gorunumunun ayni anda kac track'i gosterebildigi.",
+    "tracksInSection": 4,
+    "melodicTracks": 3,
+    "drumTracks": 1,
+    "notationsVisibleAtOnce": 1,
+    "userActionsToReachAnotherTrack": 2,
+    "horizontalTimePositionKeptOnTrackChange": true,
+    "playbackSurvivesTrackChange": true,
+    "audioContextsAcrossTrackChange": "1 → 1",
+    "measuredInBrowser": "eval/multitrack/artifacts/BASELINE-BROWSER.json",
+    "honestNote": "Track degistirmek bugun de calmayi durdurmuyor ve yatay konumu koruyor. Eksik olan sey karsilastirma: ayni anda tek notasyon var, yani iki enstrumani yan yana gormek mumkun degil."
+  }
+}

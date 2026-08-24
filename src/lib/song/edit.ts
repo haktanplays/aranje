@@ -38,6 +38,7 @@ import {
   type Song,
   type Track,
 } from "@/lib/song/schema";
+import { withEmptyLaneInBar } from "@/lib/song/track-lanes";
 import { runValidators } from "@/lib/validators";
 import {
   errorsOnly,
@@ -264,9 +265,17 @@ function resolve(song: Song, target: EditTarget): Resolved | EditResult {
 
   const slots = bar.slots[target.trackId];
   if (slots === undefined) {
+    /*
+     * Unreachable for a writing command: `applyEdit` lays the lane into the
+     * candidate before resolving, so by the time we are here the bar either
+     * has a key or the track is one no lane can be laid for. Kept as a typed
+     * refusal rather than a throw, and no longer as an instruction — the old
+     * message told the reader to "add the track to this bar first", which no
+     * control anywhere does (`eval/multitrack/BASELINE.json`).
+     */
     return fail(
       "track_silent_here",
-      `"${track.name}" bu barda yazılı değil; önce bu bara eklenmeli.`,
+      `"${track.name}" bu barda yazılamıyor.`,
     );
   }
   if (target.slotIndex < 0 || target.slotIndex >= slots.length) {
@@ -327,7 +336,35 @@ export function settle(next: Song): EditResult {
   return { ok: true, song: parsed.data, warnings: warningsOnly(issues) };
 }
 
-export function applyEdit(song: Song, command: EditCommand): EditResult {
+/**
+ * The song this command will be applied to, with the target bar's lane laid
+ * if the track is not written there yet (2Q-A §1).
+ *
+ * One candidate, one settle. The lane and the note are the same edit: if the
+ * note is refused — out of range, a string collision, a broken chain — the
+ * candidate is thrown away whole and the reader's song keeps the missing key
+ * it had. There is no separate write, no first history step, and no way to
+ * end up with an empty lane nobody asked for.
+ *
+ * Only commands that *add* something get a lane. Clearing a string or writing
+ * a rest into a bar the track was never written in is not a thing to
+ * materialise for: there is nothing there to clear, and the refusal is the
+ * honest answer.
+ */
+function laneReady(song: Song, command: EditCommand): Song {
+  if (command.kind !== "set_note") return song;
+  const track = song.tracks.find((entry) => entry.id === command.target.trackId);
+  if (!track || !isEditableTrack(track)) return song;
+  return withEmptyLaneInBar(
+    song,
+    track,
+    command.target.sectionId,
+    command.target.barIndex,
+  );
+}
+
+export function applyEdit(input: Song, command: EditCommand): EditResult {
+  const song = laneReady(input, command);
   const resolved = resolve(song, command.target);
   if (!isResolved(resolved)) return resolved;
 

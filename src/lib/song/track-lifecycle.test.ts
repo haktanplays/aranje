@@ -4,6 +4,7 @@
 import { describe, expect, it } from "vitest";
 
 import { songLimits } from "@/lib/limits";
+import { slotCount } from "@/lib/music/timing";
 import { TUNING_PRESETS } from "@/lib/music/fretboard";
 import { sameSong } from "@/lib/song/edit-history";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
@@ -32,17 +33,49 @@ const run = (song: Song, command: TrackCommand) => {
 };
 
 describe("48. creating, renaming, reordering tracks", () => {
-  it("appends a silent track with a deterministic id", () => {
+  it("appends a writable, silent track with a deterministic id", () => {
     const result = run(SAMPLE_SONG, { kind: "create_track", setup: GUITAR_SETUP });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const created = result.song.tracks.at(-1)!;
     expect(created.id).toBe("track-1");
     expect(created.name).toBe("İkinci Gitar");
-    // Silent everywhere: no bar gained a key for it.
+    /*
+     * Every bar gains an **empty lane** (2Q-A §1).
+     *
+     * This test used to require the opposite — no key anywhere — on the
+     * reading that silence is a missing key (spec 5.5). That is true and it
+     * was not the whole truth: a missing key also says "not written in this
+     * bar", which the write path refuses, so the track a reader had just
+     * created was writable nowhere and every cell told them to do something
+     * no control does (`eval/multitrack/BASELINE.json`).
+     */
     for (const section of result.song.sections) {
       for (const bar of section.bars) {
-        expect(created.id in bar.slots).toBe(false);
+        expect(created.id in bar.slots).toBe(true);
+        const lane = bar.slots[created.id]!;
+        expect(lane).toHaveLength(slotCount(bar.timeSignature, bar.resolution));
+        // Silent, by the rule that already meant silence: every slot a rest.
+        expect(lane.every((slot) => slot === null)).toBe(true);
+      }
+    }
+  });
+
+  it("gives a drum track the drum slot shape, not the melodic one", () => {
+    const result = run(SAMPLE_SONG, {
+      kind: "create_track",
+      setup: { name: "İkinci Davul", instrumentId: "drum_kit", presetId: "rock" },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const created = result.song.tracks.at(-1)!;
+    for (const section of result.song.sections) {
+      for (const bar of section.bars) {
+        const lane = bar.slots[created.id]!;
+        // A drum rest is an empty *hit list*, not `null`. Mixing the two is a
+        // hard validator error, so the shape is asked of the registry rather
+        // than assumed.
+        expect(lane.every((slot) => Array.isArray(slot) && slot.length === 0)).toBe(true);
       }
     }
   });
