@@ -146,6 +146,21 @@
       "detail": "1 → 1"
     },
     {
+      "name": "[390x844] 40 proje geçişi oturum zeminini bırakıyor (düzenleme modu kapandı)",
+      "pass": true,
+      "detail": "önce açık → sonra kapalı"
+    },
+    {
+      "name": "[390x844] 41 geçişten sonra açık olan gerçekten B",
+      "pass": true,
+      "detail": "B Şarkısı"
+    },
+    {
+      "name": "[390x844] 27 ham diagnostic yok: anahtar, şema, istisna adı görünmüyor",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
       "name": "[390x844] 23 kayıt kapalıyken: yeni proje ve içe aktarma kapalı, 0 yazım",
       "pass": true,
       "detail": "yeni=true, import=true"
@@ -364,6 +379,21 @@
       "name": "[320x700] 38 proje geçişinde AudioContext 1 → 1",
       "pass": true,
       "detail": "1 → 1"
+    },
+    {
+      "name": "[320x700] 40 proje geçişi oturum zeminini bırakıyor (düzenleme modu kapandı)",
+      "pass": true,
+      "detail": "önce açık → sonra kapalı"
+    },
+    {
+      "name": "[320x700] 41 geçişten sonra açık olan gerçekten B",
+      "pass": true,
+      "detail": "B Şarkısı"
+    },
+    {
+      "name": "[320x700] 27 ham diagnostic yok: anahtar, şema, istisna adı görünmüyor",
+      "pass": true,
+      "detail": "temiz"
     },
     {
       "name": "[320x700] 23 kayıt kapalıyken: yeni proje ve içe aktarma kapalı, 0 yazım",

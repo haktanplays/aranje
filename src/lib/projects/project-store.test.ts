@@ -1,10 +1,11 @@
 /**
  * The open project's store: one write, one history, one tab (2O-A §23).
  *
- * Three claims, and each of them is about a *count* rather than a feeling:
- * a commit costs exactly one project-slot write, a project switch leaves no
- * undo step behind that could reach across it, and a tab whose project moved
- * under it writes nothing at all.
+ * Four claims, and each of them is about a *count* or a byte rather than a
+ * feeling: a commit costs exactly one project-slot write, a project switch
+ * leaves no undo step behind that could reach across it, a tab whose project
+ * moved under it writes nothing at all, and a project whose record went
+ * unreadable is left exactly as it is rather than finished off.
  */
 import { describe, expect, it } from "vitest";
 
@@ -241,5 +242,81 @@ describe("136. a tab whose project moved under it writes nothing", () => {
     const port = createActiveProjectPort({ storage, id: "project-1", revision: 1, now });
     data.set(projectKey("project-1")!, "{ruined");
     expect(port.isStale()).toBe(false);
+  });
+});
+
+describe("145. a project whose record went bad is not written over", () => {
+  /*
+   * The record is the only copy of that project's music. If it becomes
+   * unreadable while the tab is open — a truncated write, a device that
+   * mangled a key — the next commit must not finish the loss by putting a
+   * fresh song where the broken bytes are. Recovery has to be a decision the
+   * reader is shown, not a side effect of typing one more note.
+   */
+  const broken = '{"format":"aranje.project","version":1,"song":{"tit';
+
+  it("refuses the commit and leaves the broken bytes exactly as they are", () => {
+    const { storage, data } = library({ "project-1": legacySong() }, "project-1");
+    const port = createActiveProjectPort({ storage, id: "project-1", revision: 1, now });
+    const store = createSongStore(
+      { song: legacySong(), outcome: "stored", canPersist: true },
+      storage,
+      port,
+    );
+
+    data.set(projectKey("project-1")!, broken);
+
+    const changed = store.commit(retitle(legacySong(), "Bozuk kayıt"), {
+      kind: "lifecycle",
+      command: "update_song_info",
+    });
+
+    expect(changed).toBe(false);
+    expect(data.get(projectKey("project-1")!)).toBe(broken);
+  });
+
+  it("keeps the reader's song on screen and says the write did not land", () => {
+    const { storage, data } = library({ "project-1": legacySong() }, "project-1");
+    const port = createActiveProjectPort({ storage, id: "project-1", revision: 1, now });
+    const store = createSongStore(
+      { song: legacySong(), outcome: "stored", canPersist: true },
+      storage,
+      port,
+    );
+    data.set(projectKey("project-1")!, broken);
+    store.commit(retitle(legacySong(), "Bozuk kayıt"), {
+      kind: "lifecycle",
+      command: "update_song_info",
+    });
+
+    const snapshot = store.getSnapshot();
+    expect(snapshot.persisted).toBe(false);
+    expect(sameSong(snapshot.song, legacySong())).toBe(true);
+    /* A full-device message would be a lie, and a stack trace is not a message. */
+    expect(snapshot.recoveryMessage ?? "").not.toContain("project");
+    expect(snapshot.recoveryMessage ?? "").not.toContain("JSON");
+  });
+
+  it("does not touch any other key while refusing", () => {
+    const { storage, data, ops } = library(
+      { "project-1": legacySong(), "project-2": otherSong() },
+      "project-1",
+    );
+    const port = createActiveProjectPort({ storage, id: "project-1", revision: 1, now });
+    const store = createSongStore(
+      { song: legacySong(), outcome: "stored", canPersist: true },
+      storage,
+      port,
+    );
+    data.set(projectKey("project-1")!, broken);
+    ops.length = 0;
+
+    store.commit(retitle(legacySong(), "Bozuk kayıt"), {
+      kind: "lifecycle",
+      command: "update_song_info",
+    });
+
+    expect(ops.filter((entry) => entry.op === "set")).toEqual([]);
+    expect(ops.filter((entry) => entry.op === "remove")).toEqual([]);
   });
 });

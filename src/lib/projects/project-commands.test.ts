@@ -38,7 +38,7 @@ const NOW = 1_700_000_000_000;
 
 type Op = { readonly op: "get" | "set" | "remove"; readonly key: string };
 
-function world(
+function world_(
   songs: Record<string, Song>,
   activeId: string,
   failOn?: (op: Op) => boolean,
@@ -96,7 +96,7 @@ const names = (ops: readonly Op[]) => ops.map((entry) => `${entry.op} ${entry.ke
 describe("128. a new project never costs the reader the one they have", () => {
   it("creates each of the three templates and leaves the open project alone", () => {
     for (const template of SONG_TEMPLATES) {
-      const { env, data } = world({ "project-1": legacySong() }, "project-1");
+      const { env, data } = world_({ "project-1": legacySong() }, "project-1");
       const before = data.get(projectKey("project-1")!);
       const result = createProject(env, template.id);
 
@@ -109,7 +109,7 @@ describe("128. a new project never costs the reader the one they have", () => {
   });
 
   it("writes the payload before the catalog, so an interruption leaves an orphan", () => {
-    const { env, ops } = world({ "project-1": legacySong() }, "project-1");
+    const { env, ops } = world_({ "project-1": legacySong() }, "project-1");
     createProject(env, "empty");
     const order = names(ops);
     expect(order.indexOf("set aranje.project.project-2")).toBeLessThan(
@@ -118,7 +118,7 @@ describe("128. a new project never costs the reader the one they have", () => {
   });
 
   it("names new projects deterministically and without colliding", () => {
-    const { env, data } = world({ "project-1": legacySong() }, "project-1");
+    const { env, data } = world_({ "project-1": legacySong() }, "project-1");
     const first = createProject(env, "empty");
     expect(first.ok && first.song.title).toBe("Yeni Şarkı");
 
@@ -132,7 +132,7 @@ describe("128. a new project never costs the reader the one they have", () => {
 
   it("produces byte-equal candidates five times over", () => {
     const bytes = Array.from({ length: 5 }, () => {
-      const { env } = world({ "project-1": legacySong() }, "project-1");
+      const { env } = world_({ "project-1": legacySong() }, "project-1");
       const result = createProject(env, "rock_band");
       return result.ok ? JSON.stringify(result.song) : "failed";
     });
@@ -141,7 +141,7 @@ describe("128. a new project never costs the reader the one they have", () => {
   });
 
   it("changes nothing at all when the payload write is refused", () => {
-    const { env, data, catalog } = world({ "project-1": legacySong() }, "project-1", (op) =>
+    const { env, data, catalog } = world_({ "project-1": legacySong() }, "project-1", (op) =>
       op.op === "set" && op.key === "aranje.project.project-2",
     );
     const before = payloads(data);
@@ -159,7 +159,7 @@ describe("128. a new project never costs the reader the one they have", () => {
       const error = new Error("QuotaExceededError: full");
       return error;
     };
-    const { env, catalog, data } = world({ "project-1": legacySong() }, "project-1", (op) => {
+    const { env, catalog, data } = world_({ "project-1": legacySong() }, "project-1", (op) => {
       if (op.op === "set" && op.key === "aranje.project.project-2") throw quota();
       return false;
     });
@@ -171,7 +171,7 @@ describe("128. a new project never costs the reader the one they have", () => {
   });
 
   it("leaves the reader where they were when the catalog write fails", () => {
-    const { env, data, catalog } = world({ "project-1": legacySong() }, "project-1", (op) =>
+    const { env, data, catalog } = world_({ "project-1": legacySong() }, "project-1", (op) =>
       op.op === "set" && op.key === CATALOG_KEY,
     );
     const result = createProject(env, "empty");
@@ -185,7 +185,7 @@ describe("128. a new project never costs the reader the one they have", () => {
 
 describe("129. opening a project moves the reader and nothing else", () => {
   it("opens another project and hands back its song", () => {
-    const { env, data } = world(
+    const { env, data } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -201,7 +201,7 @@ describe("129. opening a project moves the reader and nothing else", () => {
   });
 
   it("costs exactly one catalog write and no payload write", () => {
-    const { env, ops } = world(
+    const { env, ops } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -211,7 +211,7 @@ describe("129. opening a project moves the reader and nothing else", () => {
   });
 
   it("refuses a project that is not in the library", () => {
-    const { env } = world({ "project-1": legacySong() }, "project-1");
+    const { env } = world_({ "project-1": legacySong() }, "project-1");
     const result = openProject(env, "project-9");
     expect(result.ok).toBe(false);
     if (result.ok) return;
@@ -219,7 +219,7 @@ describe("129. opening a project moves the reader and nothing else", () => {
   });
 
   it("does not move the catalog when the target cannot be read", () => {
-    const { env, data, catalog } = world(
+    const { env, data, catalog } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -232,7 +232,7 @@ describe("129. opening a project moves the reader and nothing else", () => {
   });
 
   it("leaves a future-version project closed and untouched", () => {
-    const { env, data } = world(
+    const { env, data } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -248,7 +248,7 @@ describe("129. opening a project moves the reader and nothing else", () => {
 
 describe("130. a duplicate is a new project, not a second pointer at an old one", () => {
   it("copies the music and never touches the source", () => {
-    const { env, data } = world({ "project-1": legacySong() }, "project-1");
+    const { env, data } = world_({ "project-1": legacySong() }, "project-1");
     const before = data.get(projectKey("project-1")!);
     const result = duplicateProject(env, "project-1");
 
@@ -265,7 +265,7 @@ describe("130. a duplicate is a new project, not a second pointer at an old one"
      * A duplicate that inherited `previous` would let an undo inside the copy
      * produce a song that belongs to the original's history.
      */
-    const { env } = world({ "project-1": legacySong() }, "project-1");
+    const { env } = world_({ "project-1": legacySong() }, "project-1");
     const result = duplicateProject(env, "project-1");
     expect(result.ok).toBe(true);
     const copy = readRecord(env.storage, "project-2");
@@ -283,7 +283,7 @@ describe("130. a duplicate is a new project, not a second pointer at an old one"
         bars: section.bars.map((bar) => ({ ...bar, slots: {} })),
       })),
     };
-    const { env } = world({ "project-1": sparse }, "project-1");
+    const { env } = world_({ "project-1": sparse }, "project-1");
     const result = duplicateProject(env, "project-1");
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -295,7 +295,7 @@ describe("130. a duplicate is a new project, not a second pointer at an old one"
 
 describe("131. importing a file adds a project and changes no other", () => {
   it("adds the imported song as a new project", () => {
-    const { env, data } = world({ "project-1": legacySong() }, "project-1");
+    const { env, data } = world_({ "project-1": legacySong() }, "project-1");
     const before = data.get(projectKey("project-1")!);
     const result = importProjectAsNew(env, otherSong());
 
@@ -307,7 +307,7 @@ describe("131. importing a file adds a project and changes no other", () => {
 
   it("accepts a second project with the same title", () => {
     // Titles are not identity. Ids are, and these have different ones.
-    const { env } = world({ "project-1": legacySong() }, "project-1");
+    const { env } = world_({ "project-1": legacySong() }, "project-1");
     const result = importProjectAsNew(env, legacySong());
     expect(result.ok).toBe(true);
     if (!result.ok) return;
@@ -317,7 +317,7 @@ describe("131. importing a file adds a project and changes no other", () => {
 
   it("refuses a song the validators reject, atomically", () => {
     const broken = { ...legacySong(), tracks: [] } as unknown as Song;
-    const { env, data, catalog } = world({ "project-1": legacySong() }, "project-1");
+    const { env, data, catalog } = world_({ "project-1": legacySong() }, "project-1");
     const before = payloads(data);
     const result = importProjectAsNew(env, broken);
 
@@ -331,7 +331,7 @@ describe("131. importing a file adds a project and changes no other", () => {
 
 describe("132. deleting is permanent, guarded, and never leaves an unreachable payload", () => {
   it("refuses to remove the last project", () => {
-    const { env, data } = world({ "project-1": legacySong() }, "project-1");
+    const { env, data } = world_({ "project-1": legacySong() }, "project-1");
     const before = payloads(data);
     const result = deleteProject(env, "project-1");
 
@@ -342,7 +342,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
   });
 
   it("removes an inactive project without moving the reader", () => {
-    const { env, data } = world(
+    const { env, data } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -361,7 +361,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
      * the same rule sections and tracks already use.
      */
     const three = () =>
-      world(
+      world_(
         {
           "project-1": legacySong(),
           "project-2": otherSong(),
@@ -373,7 +373,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
     const afterMiddle = deleteProject(middle.env, "project-2");
     expect(afterMiddle.ok && afterMiddle.activeProjectId).toBe("project-3");
 
-    const last = world(
+    const last = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-2",
     );
@@ -382,7 +382,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
   });
 
   it("writes the note, then the catalog, then removes the payload", () => {
-    const { env, ops } = world(
+    const { env, ops } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -400,7 +400,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
   });
 
   it("keeps both projects when the catalog write fails", () => {
-    const { env, data, catalog } = world(
+    const { env, data, catalog } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
       (op) => op.op === "set" && op.key === CATALOG_KEY,
@@ -413,7 +413,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
   });
 
   it("says the operation is incomplete when the payload cannot be removed", () => {
-    const { env, data } = world(
+    const { env, data } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
       (op) => op.op === "remove" && op.key === "aranje.project.project-2",
@@ -427,7 +427,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
   });
 
   it("refuses when the survivor cannot be opened", () => {
-    const { env, data } = world(
+    const { env, data } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-2",
     );
@@ -444,7 +444,7 @@ describe("132. deleting is permanent, guarded, and never leaves an unreachable p
 
 describe("133. one project's edits never reach another's bytes", () => {
   it("keeps A byte-equal across a full round trip through B", () => {
-    const { env, data } = world(
+    const { env, data } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
@@ -463,12 +463,48 @@ describe("133. one project's edits never reach another's bytes", () => {
   });
 
   it("touches only the new key when a project is added", () => {
-    const { env, ops } = world(
+    const { env, ops } = world_(
       { "project-1": legacySong(), "project-2": otherSong() },
       "project-1",
     );
     createProject(env, "empty");
     const written = names(ops).filter((name) => name.startsWith("set aranje.project."));
     expect(written).toEqual(["set aranje.project.project-3"]);
+  });
+});
+
+describe("144. a write is not believed until it has been read back", () => {
+  /**
+   * `setItem` returning without throwing is not evidence that the bytes are
+   * there. A storage that accepts a write and hands back something else — a
+   * quota that truncates, an extension rewriting a key, a failing cell — is
+   * the case where "it saved" and "it is gone" are both true, and only a read
+   * can tell them apart.
+   */
+  const lying = (songs: Record<string, Song>, activeId: string) => {
+    const world = world_(songs, activeId);
+    const original = world.storage.setItem;
+    world.storage.setItem = (key: string, value: string) => {
+      original(key, key.startsWith("aranje.project.") ? "{swallowed" : value);
+    };
+    return world;
+  };
+
+  it("refuses a create whose payload does not read back", () => {
+    const { env, data, catalog } = lying({ "project-1": legacySong() }, "project-1");
+    const result = createProject(env, "empty");
+
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("project_storage_write_failed");
+    // The catalog never moved, so nothing points at the swallowed payload.
+    expect(data.get(CATALOG_KEY)).toBe(serializeCatalog(catalog));
+  });
+
+  it("refuses a duplicate the same way", () => {
+    const { env, data, catalog } = lying({ "project-1": legacySong() }, "project-1");
+    const result = duplicateProject(env, "project-1");
+    expect(result.ok).toBe(false);
+    expect(data.get(CATALOG_KEY)).toBe(serializeCatalog(catalog));
   });
 });

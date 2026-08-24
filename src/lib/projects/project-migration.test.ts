@@ -383,3 +383,112 @@ describe("127. an interrupted delete resolves one way, deterministically", () =>
     expect(data.has(projectKey("project-2")!)).toBe(true);
   });
 });
+
+describe("128. a write is not believed until it has been read back", () => {
+  /**
+   * The failure mode this whole migration is shaped around.
+   *
+   * `setItem` returning without throwing is not evidence. A storage that
+   * accepts a write and then hands back something else — a quota that silently
+   * truncates, an extension rewriting a key, a device with a dying flash cell
+   * — is exactly the case where "it saved fine" and "the song is gone" are
+   * both true. Nothing above can catch it; only reading the bytes back can.
+   */
+  const lyingStorage = (seed: Record<string, string>) => {
+    const data = new Map(Object.entries(seed));
+    return {
+      data,
+      storage: {
+        get length() {
+          return data.size;
+        },
+        key: (index: number) => [...data.keys()][index] ?? null,
+        getItem: (key: string) => data.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          /* Accepts the project payload, stores something else. */
+          data.set(key, key.startsWith("aranje.project.") ? "{swallowed" : value);
+        },
+        removeItem: (key: string) => {
+          data.delete(key);
+        },
+      },
+    };
+  };
+
+  it("keeps the old key when the payload written is not the payload read", () => {
+    const legacyRaw = JSON.stringify(legacySong());
+    const { storage, data } = lyingStorage({ [SONG_KEY]: legacyRaw });
+    const outcome = settleProjects(storage, clock);
+
+    expect(outcome.notice).toBe("project_migration_failed");
+    expect(outcome.canPersist).toBe(false);
+    // The one copy of the reader's song is still exactly where it was.
+    expect(data.get(SONG_KEY)).toBe(legacyRaw);
+  });
+
+  it("refuses to migrate into a first slot holding unreadable bytes", () => {
+    /*
+     * Not ours to write over. The bytes are somebody's, however broken, and
+     * the reader's song is still under the old key — so the safe move is to
+     * do nothing and say so.
+     */
+    const legacyRaw = JSON.stringify(legacySong());
+    const occupied = "{someone else's broken record";
+    const { storage, data } = fakeStorage({
+      [SONG_KEY]: legacyRaw,
+      [projectKey(FIRST_PROJECT_ID)!]: occupied,
+    });
+    const outcome = settleProjects(storage, clock);
+
+    expect(outcome.canPersist).toBe(false);
+    expect(data.get(SONG_KEY)).toBe(legacyRaw);
+    expect(data.get(projectKey(FIRST_PROJECT_ID)!)).toBe(occupied);
+  });
+
+  it("does not migrate on top of a library that already has projects", () => {
+    /*
+     * A legacy key beside a real library happens after a cleanup that failed.
+     * Migrating again would make a second copy of an old song and, worse,
+     * could take a live project's key.
+     */
+    const { storage } = fakeStorage({
+      [SONG_KEY]: JSON.stringify(legacySong()),
+      [projectKey("project-1")!]: storedProject("project-1", otherSong()),
+    });
+    const outcome = settleProjects(storage, clock);
+    expect(outcome.catalog?.projectIds).toEqual(["project-1"]);
+    expect(sameSong(outcome.song, otherSong())).toBe(true);
+  });
+
+  it("removes no unreadable payload while rebuilding a broken catalog", () => {
+    /*
+     * The rebuild leaves out what it cannot verify — and *leaving out* is not
+     * *deleting*. A project the app cannot read today may be readable by the
+     * version that wrote it, or by a repair later; destroying it because a
+     * list about it was damaged is the loss this path exists to prevent.
+     */
+    const broken = "{unreadable but somebody's";
+    const { storage, data } = fakeStorage({
+      [CATALOG_KEY]: "{ruined",
+      [projectKey("project-1")!]: storedProject("project-1", legacySong()),
+      [projectKey("project-2")!]: broken,
+    });
+    const outcome = settleProjects(storage, clock);
+
+    expect(outcome.catalog?.projectIds).toEqual(["project-1"]);
+    expect(data.get(projectKey("project-2")!)).toBe(broken);
+  });
+
+  it("acts on no pending note it could not read", () => {
+    const { storage, data } = fakeStorage({
+      [CATALOG_KEY]: serializeCatalog(initialCatalog("project-1")),
+      [projectKey("project-1")!]: storedProject("project-1", legacySong()),
+      [projectKey("project-2")!]: storedProject("project-2", otherSong()),
+      [PENDING_KEY]: "{not a note",
+    });
+    settleProjects(storage, clock);
+    // Nothing was deleted on a guess. The note itself is left alone: it is
+    // not a delete instruction if it cannot be read as one.
+    expect(data.has(projectKey("project-2")!)).toBe(true);
+  });
+});

@@ -633,6 +633,65 @@ async function run(label, size) {
     }
   });
 
+  /* ---- 40-41: the session ground really runs on a switch */
+  await safe(`[${label}] session ground`, async () => {
+    const { context, page } = await openApp(
+      browser,
+      size,
+      libraryDevice(["A Şarkısı", "B Şarkısı"]),
+    );
+    try {
+      await page.locator('[data-testid="view-tab"]').click();
+      await page.waitForTimeout(400);
+      await page.getByRole("button", { name: "Düzenle", exact: true }).click();
+      await page.waitForTimeout(400);
+      const editingBefore =
+        (await page.getByRole("button", { name: "Düzenlemeyi bitir" }).count()) === 1;
+
+      await openLibrary(page);
+      await rowAction(page, "project-2", "open");
+      await closeLibrary(page);
+      await page.waitForTimeout(400);
+      const editingAfter =
+        (await page.getByRole("button", { name: "Düzenlemeyi bitir" }).count()) === 1;
+
+      record_(
+        `[${label}] 40 proje geçişi oturum zeminini bırakıyor (düzenleme modu kapandı)`,
+        editingBefore && !editingAfter,
+        `önce ${editingBefore ? "açık" : "kapalı"} → sonra ${editingAfter ? "açık" : "kapalı"}`,
+      );
+      record_(
+        `[${label}] 41 geçişten sonra açık olan gerçekten B`,
+        (await openTitle(page)) === "B Şarkısı",
+        await openTitle(page),
+      );
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---- 27: no raw diagnostic ever reaches the reader */
+  await safe(`[${label}] no diagnostics`, async () => {
+    const { context, page } = await openApp(browser, size, {
+      "aranje.projects": "{ruined",
+      "aranje.project.project-1": "{also ruined",
+    });
+    try {
+      await openLibrary(page);
+      const text = await page.locator('[role="dialog"]').first().innerText();
+      const banner = await page.locator("body").innerText();
+      const forbidden = /localStorage|JSON|Zod|revision|QuotaExceeded|aranje\.|stack|Error:/i;
+      record_(
+        `[${label}] 27 ham diagnostic yok: anahtar, şema, istisna adı görünmüyor`,
+        !forbidden.test(text) && !forbidden.test(banner),
+        (forbidden.exec(text) ?? forbidden.exec(banner) ?? ["temiz"])[0],
+      );
+      await closeLibrary(page);
+    } finally {
+      await context.close();
+    }
+  });
+
   /* ---- 23: a device that cannot write at all */
   await safe(`[${label}] storage unavailable`, async () => {
     /*
