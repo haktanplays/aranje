@@ -159,10 +159,10 @@
       "transport": {
         "viewportWidth": 320,
         "rowWidth": 320,
-        "rowScrollWidth": 344,
-        "requiredWidth": 355.7,
+        "rowScrollWidth": 320,
+        "requiredWidth": 307.7,
         "availableWidth": 320,
-        "overflowPx": 35.7,
+        "overflowPx": 0,
         "rootOverflowX": "visible",
         "clippingAncestors": [
           {
@@ -170,7 +170,7 @@
             "cls": "flex h-dvh flex-col overflow-hidden",
             "overflowX": "hidden",
             "clientWidth": 320,
-            "scrollWidth": 344
+            "scrollWidth": 320
           }
         ],
         "bodyOverflowX": "visible",
@@ -181,8 +181,8 @@
           {
             "label": "Başa dön",
             "text": "⏮",
-            "left": 12,
-            "right": 56,
+            "left": 8,
+            "right": 52,
             "width": 44,
             "height": 44,
             "visibleWidth": 44,
@@ -194,11 +194,11 @@
           {
             "label": "Çal",
             "text": "▶",
-            "left": 64,
-            "right": 120,
-            "width": 56,
+            "left": 56,
+            "right": 100,
+            "width": 44,
             "height": 44,
-            "visibleWidth": 56,
+            "visibleWidth": 44,
             "clippedPx": 0,
             "fullyVisible": true,
             "meetsTouchTarget": true,
@@ -207,8 +207,8 @@
           {
             "label": "Bölüm döngüsü",
             "text": "↻",
-            "left": 128,
-            "right": 172,
+            "left": 104,
+            "right": 148,
             "width": 44,
             "height": 44,
             "visibleWidth": 44,
@@ -220,8 +220,8 @@
           {
             "label": "Mikser",
             "text": "◫",
-            "left": 180,
-            "right": 224,
+            "left": 152,
+            "right": 196,
             "width": 44,
             "height": 44,
             "visibleWidth": 44,
@@ -233,8 +233,8 @@
           {
             "label": "Metronom",
             "text": "♪",
-            "left": 232,
-            "right": 276,
+            "left": 200,
+            "right": 244,
             "width": 44,
             "height": 44,
             "visibleWidth": 44,
@@ -246,13 +246,13 @@
           {
             "label": "Çalışma hızı yüzde 100. Değiştir",
             "text": "%100",
-            "left": 284,
-            "right": 343.7,
-            "width": 59.7,
+            "left": 260.3,
+            "right": 312,
+            "width": 51.7,
             "height": 44,
-            "visibleWidth": 36,
-            "clippedPx": 23.7,
-            "fullyVisible": false,
+            "visibleWidth": 51.7,
+            "clippedPx": 0,
+            "fullyVisible": true,
             "meetsTouchTarget": true,
             "fontSizePx": 14
           }
@@ -263,13 +263,13 @@
         "practicePill": {
           "label": "Çalışma hızı yüzde 100. Değiştir",
           "text": "%100",
-          "left": 284,
-          "right": 343.7,
-          "width": 59.7,
+          "left": 260.3,
+          "right": 312,
+          "width": 51.7,
           "height": 44,
-          "visibleWidth": 36,
-          "clippedPx": 23.7,
-          "fullyVisible": false,
+          "visibleWidth": 51.7,
+          "clippedPx": 0,
+          "fullyVisible": true,
           "meetsTouchTarget": true,
           "fontSizePx": 14
         },

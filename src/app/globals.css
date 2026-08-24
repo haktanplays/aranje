@@ -20,6 +20,18 @@
   /* Fret numbers and drum glyphs, so digits keep a fixed advance width. */
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
     monospace;
+
+  /*
+   * The narrow-phone breakpoint (2Q-A §3).
+   *
+   * Tailwind's smallest default is `sm` at 640px, which is not a phone
+   * distinction at all: a 320px screen and a 390px screen both fall below it
+   * and get the same layout. The transport needs 355.7px and a 320px screen
+   * has 320, so the row has to be tighter *below* 360 and unchanged above it.
+   * 22.5rem is 360px — between the two real phone widths the app is measured
+   * at, and above every 320-class device.
+   */
+  --breakpoint-xs: 22.5rem;
 }
 
 html,

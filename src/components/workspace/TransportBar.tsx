@@ -120,7 +120,26 @@ export function TransportBar({
         </p>
       ) : null}
 
-      <div className="flex items-center gap-2 px-3 py-1.5">
+      {/*
+        The control row, and the whole of it (2Q-A §3).
+
+        At 320px this row needed 355.7px and lost 23.7px off the practice
+        pill — clipped by the workspace shell's `overflow-hidden`, so the
+        control did not scroll into reach, it simply was not there
+        (`eval/multitrack/BASELINE.json`). Hiding a control behind an overflow
+        rule is not a layout; it is a control the reader does not have.
+
+        The fix is spacing, not subtraction: below 360px the gaps and the
+        padding tighten and the play button drops to the same 44px square as
+        its neighbours. Nothing is removed, nothing moves to a second row, and
+        no second horizontal scroller appears. At 360px and above — which is
+        every phone the app is measured at except the 320 class — the row is
+        byte-for-byte the layout it already was.
+      */}
+      <div
+        className="flex items-center gap-1 px-2 py-1.5 xs:gap-2 xs:px-3"
+        style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
+      >
         <IconButton label="Başa dön" onClick={onRewind} disabled={busy}>
           <span aria-hidden>&#9198;</span>
         </IconButton>
@@ -130,7 +149,13 @@ export function TransportBar({
           onClick={onPlayPause}
           disabled={busy}
           aria-label={playing ? "Duraklat" : "Çal"}
-          className="bg-bronze flex min-h-11 min-w-14 items-center justify-center rounded-lg px-4 text-base font-semibold text-[#1A1409] disabled:opacity-50"
+          /*
+           * Wider than its neighbours where the width exists, and a plain
+           * 44px square where it does not. The emphasis is worth twelve
+           * pixels on a 390px screen and is not worth a missing control on a
+           * 320px one.
+           */
+          className="bg-bronze flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 text-base font-semibold text-[#1A1409] disabled:opacity-50 xs:min-w-14 xs:px-4"
         >
           <span aria-hidden>{playing ? "⏸" : "▶"}</span>
         </button>
@@ -189,7 +214,13 @@ export function TransportBar({
           type="button"
           onClick={onOpenPracticeRate}
           aria-label={`Çalışma hızı yüzde ${state.practicePercent}. Değiştir`}
-          className={`ml-auto min-h-11 shrink-0 rounded-lg border px-3 font-mono text-sm tabular-nums ${
+          /*
+           * `min-w-11` is new and is not decoration: the pill was 59.7px wide
+           * because of its text, not because anything required it to be, so
+           * a larger system font or a three-digit percentage could have taken
+           * it under the touch minimum without anything failing.
+           */
+          className={`ml-auto min-h-11 min-w-11 shrink-0 rounded-lg border px-2 font-mono text-sm tabular-nums xs:px-3 ${
             state.practicePercent === DEFAULT_PRACTICE_PERCENT
               ? "border-line text-muted"
               : "border-bronze/60 text-bronze"

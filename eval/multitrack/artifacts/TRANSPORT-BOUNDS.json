@@ -1,0 +1,165 @@
+{
+  "what": "2Q-A §3 — transport onarimi, once/sonra sinir kutulari",
+  "measuredOn": "masaustu Chromium, gercek production build — telefon degil",
+  "howItWasFixed": "Bosluk, cikarma degil. 360 px altinda satir bosluklari ve yatay dolgu daraliyor, cal dugmesi komsulariyla ayni 44 px kareye iniyor. Hicbir kontrol kaldirilmadi, ikinci satira tasinmadi, ikinci yatay scroller acilmadi. 360 px ve uzerinde duzen bire bir eskisi.",
+  "before": {
+    "320x700": {
+      "requiredWidthPx": 355.7,
+      "availableWidthPx": 320,
+      "overflowPx": 35.7,
+      "clippedControl": "Calisma hizi pill'i",
+      "clippedControlWidthPx": 59.7,
+      "clippedControlVisiblePx": 36,
+      "clippedPx": 23.7,
+      "rootOverflowX": "visible",
+      "clippingAncestor": "div.flex.h-dvh.flex-col.overflow-hidden",
+      "clippingAncestorClientWidth": 320,
+      "clippingAncestorScrollWidth": 344,
+      "bodyOverflowPx": 0,
+      "controlsBelow44px": 0,
+      "at390": "tasma 0; butun kontroller tam gorunur"
+    }
+  },
+  "after": {
+    "390x844": {
+      "requiredWidthPx": 355.7,
+      "availableWidthPx": 390,
+      "overflowPx": 0,
+      "bodyOverflowPx": 0,
+      "intentionalHorizontalScrollers": 1,
+      "shellClientWidth": 390,
+      "shellScrollWidth": 390,
+      "controls": [
+        {
+          "label": "Başa dön",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Çal",
+          "widthPx": 56,
+          "heightPx": 44,
+          "visibleWidthPx": 56,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 16
+        },
+        {
+          "label": "Bölüm döngüsü",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Mikser",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Metronom",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Çalışma hızı yüzde 100. Değiştir",
+          "widthPx": 59.7,
+          "heightPx": 44,
+          "visibleWidthPx": 59.7,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        }
+      ],
+      "controlsBelow44px": 0,
+      "controlsClipped": 0,
+      "missingControls": [
+        "Duraklat"
+      ]
+    },
+    "320x700": {
+      "requiredWidthPx": 307.7,
+      "availableWidthPx": 320,
+      "overflowPx": 0,
+      "bodyOverflowPx": 0,
+      "intentionalHorizontalScrollers": 1,
+      "shellClientWidth": 320,
+      "shellScrollWidth": 320,
+      "controls": [
+        {
+          "label": "Başa dön",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Çal",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 16
+        },
+        {
+          "label": "Bölüm döngüsü",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Mikser",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Metronom",
+          "widthPx": 44,
+          "heightPx": 44,
+          "visibleWidthPx": 44,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        {
+          "label": "Çalışma hızı yüzde 100. Değiştir",
+          "widthPx": 51.7,
+          "heightPx": 44,
+          "visibleWidthPx": 51.7,
+          "clippedPx": 0,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        }
+      ],
+      "controlsBelow44px": 0,
+      "controlsClipped": 0,
+      "missingControls": [
+        "Duraklat"
+      ]
+    }
+  }
+}
