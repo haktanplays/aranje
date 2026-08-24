@@ -1,0 +1,110 @@
+{
+  "what": "2P-A §18 — gerçek tarayıcıda duyulur işin maliyeti",
+  "measuredOn": "masaüstü Chromium, 390×844 viewport — fiziksel telefon DEĞİL ve telefon hakkında kanıt değil",
+  "method": "etkileşimler 20 tur; ses grafiği kuran ölçümler 5 tur, çünkü soğuk bir dinleme paketi indirip çözüyor ve yirmi tur uygulamayı değil container'ın disk önbelleğini ölçerdi",
+  "noThresholds": "Bu dosyada eşik yok; sayılar ileride bir bütçenin zeminidir.",
+  "timings": [
+    {
+      "name": "ilk (soğuk) akor dinlemesi",
+      "rounds": 5,
+      "medianMs": 208,
+      "p95Ms": 234,
+      "maxMs": 234,
+      "note": "her tur taze bir context: paket indiriliyor ve çözülüyor, bu yüzden 5 tur"
+    },
+    {
+      "name": "soğuk dinleme sayaçları",
+      "rounds": 5,
+      "counts": [
+        {
+          "requests": 7,
+          "distinct": 7,
+          "decodes": 8,
+          "contexts": 1
+        },
+        {
+          "requests": 7,
+          "distinct": 7,
+          "decodes": 8,
+          "contexts": 1
+        },
+        {
+          "requests": 7,
+          "distinct": 7,
+          "decodes": 8,
+          "contexts": 1
+        },
+        {
+          "requests": 7,
+          "distinct": 7,
+          "decodes": 8,
+          "contexts": 1
+        },
+        {
+          "requests": 7,
+          "distinct": 7,
+          "decodes": 8,
+          "contexts": 1
+        }
+      ]
+    },
+    {
+      "name": "ısınmış dinleme",
+      "rounds": 20,
+      "medianMs": 77,
+      "p95Ms": 85,
+      "maxMs": 85
+    },
+    {
+      "name": "25 varyasyon değişimi (toplam)",
+      "rounds": 1,
+      "medianMs": 2082,
+      "p95Ms": 2082,
+      "maxMs": 2082,
+      "note": "0 yeni sample isteği · 7 benzersiz URL · AudioContext 1"
+    },
+    {
+      "name": "25 değişim sonrası sayaçlar",
+      "rounds": 1,
+      "counts": [
+        {
+          "requests": 7,
+          "distinct": 7,
+          "decodes": 8,
+          "contexts": 1,
+          "objectUrls": 1
+        }
+      ]
+    },
+    {
+      "name": "sheet kapatma ve dispose",
+      "rounds": 20,
+      "medianMs": 31,
+      "p95Ms": 33,
+      "maxMs": 33
+    },
+    {
+      "name": "ObjectURL etkisi",
+      "rounds": 1,
+      "medianMs": 1,
+      "p95Ms": 1,
+      "maxMs": 1,
+      "note": "1 ObjectURL"
+    },
+    {
+      "name": "varsayılan şablonun ilk sesi",
+      "rounds": 5,
+      "medianMs": 214,
+      "p95Ms": 217,
+      "maxMs": 217,
+      "note": "proje oluşturmadan ilk duyulan sese kadar; her tur taze context"
+    },
+    {
+      "name": "WAV tepe taraması (12 sn, tek kanal)",
+      "rounds": 20,
+      "medianMs": 1,
+      "p95Ms": 4.4,
+      "maxMs": 4.4
+    }
+  ]
+}

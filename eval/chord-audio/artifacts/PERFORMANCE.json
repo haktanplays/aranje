@@ -1,0 +1,116 @@
+{
+  "what": "2P-A §18 — Node tarafındaki saf işin maliyeti",
+  "measuredOn": "masaüstü container, Node v22.22.2 — telefon DEĞİL ve telefon hakkında kanıt değil",
+  "method": "5 ısınma turu, sonra 20 ölçülen tur; median / p95 / max",
+  "noThresholds": "Bu dosyada eşik yok. Ölçülmemiş bir sayı bütçe değildir; buradaki sayılar ileride bir bütçenin tartışılabileceği zemindir.",
+  "timings": [
+    {
+      "name": "availability lookup (one pair)",
+      "rounds": 20,
+      "medianMs": 0.001,
+      "p95Ms": 0.027,
+      "maxMs": 0.027
+    },
+    {
+      "name": "availability: playable core presets",
+      "rounds": 20,
+      "medianMs": 0.001,
+      "p95Ms": 0.063,
+      "maxMs": 0.063
+    },
+    {
+      "name": "availability: preset picker options",
+      "rounds": 20,
+      "medianMs": 0.003,
+      "p95Ms": 0.013,
+      "maxMs": 0.013
+    },
+    {
+      "name": "availability: silent tracks of a four-track song",
+      "rounds": 20,
+      "medianMs": 0.002,
+      "p95Ms": 0.004,
+      "maxMs": 0.004
+    },
+    {
+      "name": "template materialisation (rock band)",
+      "rounds": 20,
+      "medianMs": 0.025,
+      "p95Ms": 0.063,
+      "maxMs": 0.063
+    },
+    {
+      "name": "bank: first load orchestration",
+      "rounds": 20,
+      "medianMs": 0.003,
+      "p95Ms": 0.071,
+      "maxMs": 0.071,
+      "note": "her turda yeni bir anahtar: bu kacirma yolunun maliyeti"
+    },
+    {
+      "name": "bank: warm lookup",
+      "rounds": 20,
+      "medianMs": 0.001,
+      "p95Ms": 0.002,
+      "maxMs": 0.002
+    },
+    {
+      "name": "bank: eight concurrent handles on one key",
+      "rounds": 20,
+      "medianMs": 0.008,
+      "p95Ms": 0.042,
+      "maxMs": 0.042,
+      "note": "coalescing: sekiz talep, tek yukleme"
+    },
+    {
+      "name": "chord preview plan (audition song)",
+      "rounds": 20,
+      "medianMs": 0.007,
+      "p95Ms": 0.057,
+      "maxMs": 0.057
+    },
+    {
+      "name": "expression plan of the demo song",
+      "rounds": 20,
+      "medianMs": 1.709,
+      "p95Ms": 4.999,
+      "maxMs": 4.999
+    },
+    {
+      "name": "expression plan of a launch template",
+      "rounds": 20,
+      "medianMs": 0.07,
+      "p95Ms": 0.116,
+      "maxMs": 0.116
+    },
+    {
+      "name": "bend candidate plan",
+      "rounds": 20,
+      "medianMs": 0.014,
+      "p95Ms": 0.055,
+      "maxMs": 0.055
+    },
+    {
+      "name": "slide candidate plan",
+      "rounds": 20,
+      "medianMs": 0.003,
+      "p95Ms": 0.042,
+      "maxMs": 0.042
+    },
+    {
+      "name": "F0 analysis of one second",
+      "rounds": 20,
+      "medianMs": 357.578,
+      "p95Ms": 384.064,
+      "maxMs": 384.064,
+      "note": "44100 ornek, 60 ms pencere, 10 ms adim"
+    },
+    {
+      "name": "transient windows of one second",
+      "rounds": 20,
+      "medianMs": 0.092,
+      "p95Ms": 0.148,
+      "maxMs": 0.148
+    }
+  ]
+}
