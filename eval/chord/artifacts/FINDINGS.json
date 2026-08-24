@@ -23,7 +23,8 @@
       "notCausedBy2OB": "The chord builder plays through the existing preview path; it is silent here for the same reason every other note on that track is silent.",
       "whyItMattersHere": "The chord builder exists for a beginner starting a new project, and a new project is exactly the case where the guitar has no sound. 'Dinle' on a voicing card does nothing on the track a template just gave them.",
       "notFixedHere": "Which preset a launch template chooses is a product decision about the demo, and changing it is outside this checkpoint. Reported for the owner rather than changed unilaterally.",
-      "cheapestFix": "Either vendor a clean guitar pack, or have the template pick the first core preset that has one."
+      "cheapestFix": "Either vendor a clean guitar pack, or have the template pick the first core preset that has one.",
+      "resolvedIn": "2O-B.1 §2'de kapatildi: sablonlar artik duyulabilen ilk core preset'i seciyor (electric_guitar icin high_gain) ve eksik pack tipli bir durum uretiyor. clean registry'de anlamini koruyor."
     },
     {
       "id": "dense_chord_exceeds_full_scale_at_0db",
@@ -36,7 +37,8 @@
       },
       "notCausedBy2OB": "A hand-written five-note chord does the same. The mix path is unchanged.",
       "whyItMattersHere": "Making chords easy to write makes this much easier to reach.",
-      "notFixedHere": "Levels belong to the mixer; no limiter was added to the engine."
+      "notFixedHere": "Levels belong to the mixer; no limiter was added to the engine.",
+      "resolvedIn": "2O-B.1 §4'te olculdu: eval/chord-audio/artifacts/HEADROOM.json. Production'a limiter eklenmedi; kodlayici artik kirptigini bildiriyor ve kullaniciya guvenli bir cumle gosteriliyor. Ayrica sert pan ve iki gitarin ikilemesi varsayilan -6 dB'de de kirpabiliyor."
     },
     {
       "id": "audition_refetches_the_sample_pack",
@@ -51,7 +53,8 @@
         "medianAuditionMs": 94
       },
       "notFixedHere": "The fix belongs in the shared preview lifecycle - keeping a bank handle alive for the builder session so the refcount never reaches zero between plays - and redesigning shared playback machinery is not something this checkpoint should do on its own.",
-      "wherToFix": "src/lib/audio/buffer-bank.ts (refcount lifetime) or src/lib/workspace/use-chord-audition.ts (hold a handle while the sheet is open)"
+      "wherToFix": "src/lib/audio/buffer-bank.ts (refcount lifetime) or src/lib/workspace/use-chord-audition.ts (hold a handle while the sheet is open)",
+      "resolvedIn": "2O-B.1 §3'te kapatildi: paylasilan preview bank + retention. Ayni harness ile olculen once/sonra 175/175 -> 7/7 (eval/chord-audio/artifacts/PREVIEW-BANK.json)."
     }
   ]
 }
