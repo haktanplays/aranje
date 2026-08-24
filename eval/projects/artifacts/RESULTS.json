@@ -1,0 +1,519 @@
+{
+  "results": [
+    {
+      "name": "[390x844] 1 eski tek şarkıyla açılış: şarkı ekranda",
+      "pass": true,
+      "detail": "Eski Şarkı"
+    },
+    {
+      "name": "[390x844] 2 legacy Song migration: proje kaydı ve katalog var, eski anahtar gitti",
+      "pass": true,
+      "detail": "aranje.project.project-1, aranje.projects"
+    },
+    {
+      "name": "[390x844] 3 migration fiziksel sırası: payload, katalog, sonra eski anahtar",
+      "pass": true,
+      "detail": "set aranje.probe → remove aranje.probe → set aranje.probe → remove aranje.probe → set aranje.project.project-1 → set aranje.projects → remove aranje.song"
+    },
+    {
+      "name": "[390x844] 4 migration sonrası eski Song byte-eş",
+      "pass": true,
+      "detail": "Eski Şarkı"
+    },
+    {
+      "name": "[390x844] 3.b mevcut V1 envelope da taşınıyor",
+      "pass": true,
+      "detail": "Zarflı Şarkı"
+    },
+    {
+      "name": "[390x844] 5 yeni proje (empty): eski proje byte-eş, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 1, başlık Yeni Şarkı"
+    },
+    {
+      "name": "[390x844] 6 yeni proje (rock_band): eski proje byte-eş, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 1, başlık Yeni Şarkı 2"
+    },
+    {
+      "name": "[390x844] 7 yeni proje (acoustic): eski proje byte-eş, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 1, başlık Yeni Şarkı 3"
+    },
+    {
+      "name": "[390x844] 8 A→B geçişi: B açık, hiçbir payload yazılmadı",
+      "pass": true,
+      "detail": "B Şarkısı, payload yazımı 0, katalog 1"
+    },
+    {
+      "name": "[390x844] 9 B→A dönüşü: A byte-eş",
+      "pass": true,
+      "detail": "A Şarkısı"
+    },
+    {
+      "name": "[390x844] 11 çoğaltma: kaynak byte-eş, yeni proje açık",
+      "pass": true,
+      "detail": "A Şarkısı kopyası, payload 1, katalog 1"
+    },
+    {
+      "name": "[390x844] 13.a silme onayı adı ve kapsamı söylüyor, geri alınamaz diyor",
+      "pass": true,
+      "detail": "\"B Şarkısı\" projesi silinecek. | 1 bölüm · 1 ölçü · 1 track | Bu işlem şarkı geçmişinden g"
+    },
+    {
+      "name": "[390x844] 13 aktif olmayan proje siliniyor: not, katalog, payload remove, not remove",
+      "pass": true,
+      "detail": "set aranje.project-pending → set aranje.projects → remove aranje.project.project-2 → remove aranje.project-pending"
+    },
+    {
+      "name": "[390x844] 14 aktif proje silindi: survivor deterministik (aynı index)",
+      "pass": true,
+      "detail": "C Şarkısı"
+    },
+    {
+      "name": "[390x844] 15 son proje silinemez: buton kapalı, 0 yazım",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "[390x844] 16 silmeden önce yedekle: doğru şarkı, 0 depo yazımı, katalog metadata yok",
+      "pass": true,
+      "detail": "B Şarkısı, alanlar format+song+version, yazım 0"
+    },
+    {
+      "name": "[390x844] 16.b yedek dosyası kütüphane bilgisi taşımıyor",
+      "pass": true,
+      "detail": "format aranje.project, 551 B"
+    },
+    {
+      "name": "[390x844] 22 aynı isimli iki proje ayrı kimliklerle yaşayabiliyor",
+      "pass": true,
+      "detail": "Aynı Ad | Aynı Ad kopyası"
+    },
+    {
+      "name": "[390x844] 29 gelecek sürüm katalog: byte-eş duruyor, üzerine yazılmadı",
+      "pass": true,
+      "detail": "{\"format\":\"aranje.project-catalog\",\"vers…"
+    },
+    {
+      "name": "[390x844] 30 gelecek sürüm proje listede kalıyor ve güvenli cümle gösteriyor",
+      "pass": true,
+      "detail": "Adsız proje | Bu proje daha yeni bir Aranjé sürümüyle kaydedilmiş."
+    },
+    {
+      "name": "[390x844] 31 bozuk proje sahte 0 ölçü göstermiyor, silinmiyor",
+      "pass": true,
+      "detail": "Adsız proje | Bu projenin kaydı açılamadı."
+    },
+    {
+      "name": "[390x844] 31.b sağlam proje bundan etkilenmiyor",
+      "pass": true,
+      "detail": "A Şarkısı"
+    },
+    {
+      "name": "[390x844] 32 current bozuk / previous sağlam: önceki sürüm açıldı",
+      "pass": true,
+      "detail": "Kurtarılan"
+    },
+    {
+      "name": "[390x844] 33 20 proje listeleniyor, gövde yatay taşması 0",
+      "pass": true,
+      "detail": "20 satır, taşma 0"
+    },
+    {
+      "name": "[390x844] 34 uzun Unicode ad: taşma 0, erişilebilir ad projeyi içeriyor",
+      "pass": true,
+      "detail": "taşma 0, ad \"Şu Çok Uzun Türkçe Proje Adı — ğüşiöç ve…\""
+    },
+    {
+      "name": "[390x844] 36 proje listesini açmak çalmayı durdurmuyor",
+      "pass": true,
+      "detail": "playing → playing"
+    },
+    {
+      "name": "[390x844] 35 gerçek proje geçişi çalmayı durduruyor ve başa alıyor",
+      "pass": true,
+      "detail": "idle @0"
+    },
+    {
+      "name": "[390x844] 39 geçişten sonra döngü kapalı",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[390x844] 38 proje geçişinde AudioContext 1 → 1",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "[390x844] 23 kayıt kapalıyken: yeni proje ve içe aktarma kapalı, 0 yazım",
+      "pass": true,
+      "detail": "yeni=true, import=true"
+    },
+    {
+      "name": "[390x844] 23.b boş liste sessiz kalmıyor, güvenli cümle söylüyor",
+      "pass": true,
+      "detail": "Bu cihazda kayıtlı proje listesi açılamadı. Ekrandaki şarkıyı dinleyeb"
+    },
+    {
+      "name": "[390x844] 44 kayıt kapalıyken yedekleme çalışıyor",
+      "pass": true,
+      "detail": "Metal Demo"
+    },
+    {
+      "name": "[390x844] 24 yeni projede kota hatası: mevcut projeler değişmedi, güvenli cümle",
+      "pass": true,
+      "detail": "Cihazda bu proje için yeterli kayıt alanı açılamadı. Mevcut projelerin"
+    },
+    {
+      "name": "[390x844] 26 katalog yazımı başarısız: katalog byte-eş, yeni payload sahipsiz ama kayıp değil",
+      "pass": true,
+      "detail": "katalog aynı, payload var"
+    },
+    {
+      "name": "[390x844] 26.b sonraki açılışta sahipsiz payload sahipleniliyor",
+      "pass": true,
+      "detail": "project-1,project-2,project-3"
+    },
+    {
+      "name": "[390x844] 28 silme remove aşamasında başarısız: payload erişilebilir kalıyor",
+      "pass": true,
+      "detail": "payload var, katalog project-1,project-2"
+    },
+    {
+      "name": "[390x844] 47 gövde yatay taşması 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 48 en küçük dokunma hedefi ≥44 px",
+      "pass": true,
+      "detail": "44, 44, 73, 73"
+    },
+    {
+      "name": "[390x844] 49 sheet viewport içinde",
+      "pass": true,
+      "detail": "true"
+    },
+    {
+      "name": "[390x844] 45 dış ağ isteği 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 46 console/page error 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] 42 iki sekme: B hiçbir şey yazmadı",
+      "pass": true,
+      "detail": "B payload 0, katalog 0"
+    },
+    {
+      "name": "[390x844] 42.b A'nın projesi korundu",
+      "pass": true,
+      "detail": "A düzenledi"
+    },
+    {
+      "name": "[390x844] 43 bayat sekme yedek alabiliyor",
+      "pass": true,
+      "detail": "yedekleme açık"
+    },
+    {
+      "name": "[320x700] 1 eski tek şarkıyla açılış: şarkı ekranda",
+      "pass": true,
+      "detail": "Eski Şarkı"
+    },
+    {
+      "name": "[320x700] 2 legacy Song migration: proje kaydı ve katalog var, eski anahtar gitti",
+      "pass": true,
+      "detail": "aranje.project.project-1, aranje.projects"
+    },
+    {
+      "name": "[320x700] 3 migration fiziksel sırası: payload, katalog, sonra eski anahtar",
+      "pass": true,
+      "detail": "set aranje.probe → remove aranje.probe → set aranje.probe → remove aranje.probe → set aranje.project.project-1 → set aranje.projects → remove aranje.song"
+    },
+    {
+      "name": "[320x700] 4 migration sonrası eski Song byte-eş",
+      "pass": true,
+      "detail": "Eski Şarkı"
+    },
+    {
+      "name": "[320x700] 3.b mevcut V1 envelope da taşınıyor",
+      "pass": true,
+      "detail": "Zarflı Şarkı"
+    },
+    {
+      "name": "[320x700] 5 yeni proje (empty): eski proje byte-eş, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 1, başlık Yeni Şarkı"
+    },
+    {
+      "name": "[320x700] 6 yeni proje (rock_band): eski proje byte-eş, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 1, başlık Yeni Şarkı 2"
+    },
+    {
+      "name": "[320x700] 7 yeni proje (acoustic): eski proje byte-eş, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 1, başlık Yeni Şarkı 3"
+    },
+    {
+      "name": "[320x700] 8 A→B geçişi: B açık, hiçbir payload yazılmadı",
+      "pass": true,
+      "detail": "B Şarkısı, payload yazımı 0, katalog 1"
+    },
+    {
+      "name": "[320x700] 9 B→A dönüşü: A byte-eş",
+      "pass": true,
+      "detail": "A Şarkısı"
+    },
+    {
+      "name": "[320x700] 11 çoğaltma: kaynak byte-eş, yeni proje açık",
+      "pass": true,
+      "detail": "A Şarkısı kopyası, payload 1, katalog 1"
+    },
+    {
+      "name": "[320x700] 13.a silme onayı adı ve kapsamı söylüyor, geri alınamaz diyor",
+      "pass": true,
+      "detail": "\"B Şarkısı\" projesi silinecek. | 1 bölüm · 1 ölçü · 1 track | Bu işlem şarkı geçmişinden g"
+    },
+    {
+      "name": "[320x700] 13 aktif olmayan proje siliniyor: not, katalog, payload remove, not remove",
+      "pass": true,
+      "detail": "set aranje.project-pending → set aranje.projects → remove aranje.project.project-2 → remove aranje.project-pending"
+    },
+    {
+      "name": "[320x700] 14 aktif proje silindi: survivor deterministik (aynı index)",
+      "pass": true,
+      "detail": "C Şarkısı"
+    },
+    {
+      "name": "[320x700] 15 son proje silinemez: buton kapalı, 0 yazım",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "[320x700] 16 silmeden önce yedekle: doğru şarkı, 0 depo yazımı, katalog metadata yok",
+      "pass": true,
+      "detail": "B Şarkısı, alanlar format+song+version, yazım 0"
+    },
+    {
+      "name": "[320x700] 16.b yedek dosyası kütüphane bilgisi taşımıyor",
+      "pass": true,
+      "detail": "format aranje.project, 551 B"
+    },
+    {
+      "name": "[320x700] 22 aynı isimli iki proje ayrı kimliklerle yaşayabiliyor",
+      "pass": true,
+      "detail": "Aynı Ad | Aynı Ad kopyası"
+    },
+    {
+      "name": "[320x700] 29 gelecek sürüm katalog: byte-eş duruyor, üzerine yazılmadı",
+      "pass": true,
+      "detail": "{\"format\":\"aranje.project-catalog\",\"vers…"
+    },
+    {
+      "name": "[320x700] 30 gelecek sürüm proje listede kalıyor ve güvenli cümle gösteriyor",
+      "pass": true,
+      "detail": "Adsız proje | Bu proje daha yeni bir Aranjé sürümüyle kaydedilmiş."
+    },
+    {
+      "name": "[320x700] 31 bozuk proje sahte 0 ölçü göstermiyor, silinmiyor",
+      "pass": true,
+      "detail": "Adsız proje | Bu projenin kaydı açılamadı."
+    },
+    {
+      "name": "[320x700] 31.b sağlam proje bundan etkilenmiyor",
+      "pass": true,
+      "detail": "A Şarkısı"
+    },
+    {
+      "name": "[320x700] 32 current bozuk / previous sağlam: önceki sürüm açıldı",
+      "pass": true,
+      "detail": "Kurtarılan"
+    },
+    {
+      "name": "[320x700] 33 20 proje listeleniyor, gövde yatay taşması 0",
+      "pass": true,
+      "detail": "20 satır, taşma 0"
+    },
+    {
+      "name": "[320x700] 34 uzun Unicode ad: taşma 0, erişilebilir ad projeyi içeriyor",
+      "pass": true,
+      "detail": "taşma 0, ad \"Şu Çok Uzun Türkçe Proje Adı — ğüşiöç ve…\""
+    },
+    {
+      "name": "[320x700] 36 proje listesini açmak çalmayı durdurmuyor",
+      "pass": true,
+      "detail": "playing → playing"
+    },
+    {
+      "name": "[320x700] 35 gerçek proje geçişi çalmayı durduruyor ve başa alıyor",
+      "pass": true,
+      "detail": "idle @0"
+    },
+    {
+      "name": "[320x700] 39 geçişten sonra döngü kapalı",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[320x700] 38 proje geçişinde AudioContext 1 → 1",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "[320x700] 23 kayıt kapalıyken: yeni proje ve içe aktarma kapalı, 0 yazım",
+      "pass": true,
+      "detail": "yeni=true, import=true"
+    },
+    {
+      "name": "[320x700] 23.b boş liste sessiz kalmıyor, güvenli cümle söylüyor",
+      "pass": true,
+      "detail": "Bu cihazda kayıtlı proje listesi açılamadı. Ekrandaki şarkıyı dinleyeb"
+    },
+    {
+      "name": "[320x700] 44 kayıt kapalıyken yedekleme çalışıyor",
+      "pass": true,
+      "detail": "Metal Demo"
+    },
+    {
+      "name": "[320x700] 24 yeni projede kota hatası: mevcut projeler değişmedi, güvenli cümle",
+      "pass": true,
+      "detail": "Cihazda bu proje için yeterli kayıt alanı açılamadı. Mevcut projelerin"
+    },
+    {
+      "name": "[320x700] 26 katalog yazımı başarısız: katalog byte-eş, yeni payload sahipsiz ama kayıp değil",
+      "pass": true,
+      "detail": "katalog aynı, payload var"
+    },
+    {
+      "name": "[320x700] 26.b sonraki açılışta sahipsiz payload sahipleniliyor",
+      "pass": true,
+      "detail": "project-1,project-2,project-3"
+    },
+    {
+      "name": "[320x700] 28 silme remove aşamasında başarısız: payload erişilebilir kalıyor",
+      "pass": true,
+      "detail": "payload var, katalog project-1,project-2"
+    },
+    {
+      "name": "[320x700] 47 gövde yatay taşması 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 48 en küçük dokunma hedefi ≥44 px",
+      "pass": true,
+      "detail": "44, 44, 73, 73"
+    },
+    {
+      "name": "[320x700] 49 sheet viewport içinde",
+      "pass": true,
+      "detail": "true"
+    },
+    {
+      "name": "[320x700] 45 dış ağ isteği 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 46 console/page error 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 42 iki sekme: B hiçbir şey yazmadı",
+      "pass": true,
+      "detail": "B payload 0, katalog 0"
+    },
+    {
+      "name": "[320x700] 42.b A'nın projesi korundu",
+      "pass": true,
+      "detail": "A düzenledi"
+    },
+    {
+      "name": "[320x700] 43 bayat sekme yedek alabiliyor",
+      "pass": true,
+      "detail": "yedekleme açık"
+    }
+  ],
+  "measurements": {
+    "390x844.migration": {
+      "set:probe": 2,
+      "remove:probe": 2,
+      "get:pending": 1,
+      "get:catalog": 2,
+      "get:legacySong": 1,
+      "get:projectPayload": 5,
+      "set:projectPayload": 1,
+      "set:catalog": 1,
+      "remove:legacySong": 1,
+      "get:settings": 1
+    },
+    "390x844.afterThreeCreates": [
+      "aranje.project.project-1",
+      "aranje.project.project-2",
+      "aranje.project.project-3",
+      "aranje.project.project-4",
+      "aranje.projects"
+    ],
+    "390x844.twentyProjects": {
+      "rows": 20,
+      "domNodes": 216
+    },
+    "390x844.playback": {
+      "audioBefore": 1,
+      "audioAfter": 1,
+      "afterSwitch": {
+        "status": "idle",
+        "ticks": 0,
+        "loop": null
+      }
+    },
+    "390x844.layout": {
+      "overflow": 0,
+      "scrollers": 2
+    },
+    "320x700.migration": {
+      "set:probe": 2,
+      "remove:probe": 2,
+      "get:pending": 1,
+      "get:catalog": 2,
+      "get:legacySong": 1,
+      "get:projectPayload": 5,
+      "set:projectPayload": 1,
+      "set:catalog": 1,
+      "remove:legacySong": 1,
+      "get:settings": 1
+    },
+    "320x700.afterThreeCreates": [
+      "aranje.project.project-1",
+      "aranje.project.project-2",
+      "aranje.project.project-3",
+      "aranje.project.project-4",
+      "aranje.projects"
+    ],
+    "320x700.twentyProjects": {
+      "rows": 20,
+      "domNodes": 216
+    },
+    "320x700.playback": {
+      "audioBefore": 1,
+      "audioAfter": 1,
+      "afterSwitch": {
+        "status": "idle",
+        "ticks": 0,
+        "loop": null
+      }
+    },
+    "320x700.layout": {
+      "overflow": 0,
+      "scrollers": 5
+    }
+  },
+  "failed": 0
+}

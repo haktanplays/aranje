@@ -115,6 +115,21 @@ export function ProjectLibrarySheet({
         </div>
       ) : null}
 
+      {/*
+        A library with nothing in it is not a normal state — it means the
+        device could not be read or could not be written, and the song on
+        screen is whatever could still be recovered. Saying so is the whole
+        difference between "you have no projects" and "this phone cannot save
+        right now", and a reader looking at a blank list has no way to tell
+        those apart.
+      */}
+      {library.projects.length === 0 ? (
+        <p data-testid="project-list-empty" className="text-muted text-sm">
+          Bu cihazda kayıtlı proje listesi açılamadı. Ekrandaki şarkıyı
+          dinleyebilir ve yedekleyebilirsin.
+        </p>
+      ) : null}
+
       <ul data-testid="project-list" className="flex flex-col gap-2">
         {library.projects.map((project) => (
           <ProjectRow
