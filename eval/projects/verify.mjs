@@ -3,6 +3,12 @@
  *
  * Fifty scenarios in two phone viewports, against the real production build.
  *
+ * The numbering follows the spec's own list, so it has gaps where an item is
+ * asserted inside a neighbouring scenario as a `.b`/`.c` line rather than a
+ * separate navigation; 51-53 are the three reader flows the first pass left
+ * to unit tests alone — rename, a backup file becoming a new project, and a
+ * backup file replacing the open one.
+ *
  * The rule the whole suite works to: a claim is measured on the thing it is
  * about. "Nothing was written" is a count of physical `setItem` calls by key
  * kind, not an absence of visible change; "A is unchanged" is A's bytes before
@@ -445,6 +451,152 @@ async function run(label, size) {
         titles.join(" | "),
       );
       await closeLibrary(page);
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---- 51-53: rename, and the two things a backup file can become */
+  await safe(`[${label}] rename`, async () => {
+    const { context, page } = await openApp(
+      browser,
+      size,
+      libraryDevice(["A Şarkısı", "B Şarkısı"]),
+    );
+    try {
+      const bBefore = await raw(page, payloadKey("project-2"));
+      await takeLedger(page);
+      await page.locator("[aria-label='Ses kaynakları ve lisans']").click();
+      await page.waitForSelector("[data-info-song-info]");
+      await page.locator("[data-info-song-info]").click();
+      await page.waitForSelector("[data-song-info-title]");
+      await page.locator("[data-song-info-title]").fill("Yeni Ad");
+      await page.locator("[data-song-info-apply]").click();
+      await page.waitForTimeout(700);
+      const ledger = await takeLedger(page);
+      await closeLibrary(page);
+
+      record_(
+        `[${label}] 51 adlandırma tek proje anahtarı yazıyor, katalog yazımı 0`,
+        ledger.n("set:projectPayload") === 1 && ledger.n("set:catalog") === 0,
+        `payload ${ledger.n("set:projectPayload")}, katalog ${ledger.n("set:catalog")}`,
+      );
+
+      await openLibrary(page);
+      const titles = await rowTitles(page);
+      record_(
+        `[${label}] 51.b liste satırı şarkının başlığını izliyor`,
+        titles.some((title) => title.includes("Yeni Ad")),
+        titles.join(" | "),
+      );
+      record_(
+        `[${label}] 51.c diğer proje byte-eş`,
+        (await raw(page, payloadKey("project-2"))) === bBefore,
+        "değişmedi",
+      );
+      await closeLibrary(page);
+    } finally {
+      await context.close();
+    }
+  });
+
+  await safe(`[${label}] import as new`, async () => {
+    /*
+     * A real backup file, written the way the app writes one: the 2L-A
+     * project format and nothing else. Feeding the picker a hand-made object
+     * would test the harness rather than the file the reader actually has.
+     */
+    const file = `${OUT}/import-fixture.aranje.json`;
+    writeFileSync(
+      file,
+      JSON.stringify({ format: "aranje.project", version: 1, song: song("Dosyadan Gelen") }),
+    );
+
+    const { context, page } = await openApp(
+      browser,
+      size,
+      libraryDevice(["A Şarkısı", "B Şarkısı"]),
+    );
+    try {
+      const aBefore = await raw(page, payloadKey("project-1"));
+      await takeLedger(page);
+      await openLibrary(page);
+      await page.locator('[data-testid="project-import"]').click();
+      await page.waitForSelector("[data-project-file-input]");
+      await page.locator("[data-project-file-input]").setInputFiles(file);
+      await page.waitForTimeout(600);
+      await page.locator("[data-project-add-new]").click();
+      await page.waitForTimeout(900);
+      const ledger = await takeLedger(page);
+
+      record_(
+        `[${label}] 52 dosyadan yeni proje: açık olan o dosya, tek payload + tek katalog yazımı`,
+        (await openTitle(page)) === "Dosyadan Gelen" &&
+          ledger.n("set:projectPayload") === 1 &&
+          ledger.n("set:catalog") === 1,
+        `${await openTitle(page)}, payload ${ledger.n("set:projectPayload")}, katalog ${ledger.n("set:catalog")}`,
+      );
+
+      await openLibrary(page);
+      record_(
+        `[${label}] 52.b eski projeler duruyor ve A byte-eş`,
+        (await page.locator("[data-project-row]").count()) === 3 &&
+          (await raw(page, payloadKey("project-1"))) === aBefore,
+        (await rowTitles(page)).join(" | "),
+      );
+      await closeLibrary(page);
+    } finally {
+      await context.close();
+    }
+  });
+
+  await safe(`[${label}] replace current`, async () => {
+    const file = `${OUT}/replace-fixture.aranje.json`;
+    writeFileSync(
+      file,
+      JSON.stringify({ format: "aranje.project", version: 1, song: song("Yerine Konan") }),
+    );
+
+    const { context, page } = await openApp(
+      browser,
+      size,
+      libraryDevice(["A Şarkısı", "B Şarkısı"]),
+    );
+    try {
+      const bBefore = await raw(page, payloadKey("project-2"));
+      await takeLedger(page);
+      await page.locator("[aria-label='Ses kaynakları ve lisans']").click();
+      await page.waitForSelector("[data-info-project-open]");
+      await page.locator("[data-info-project-open]").click();
+      await page.waitForSelector("[data-project-file-input]");
+      await page.locator("[data-project-file-input]").setInputFiles(file);
+      await page.waitForTimeout(600);
+      await page.locator("[data-project-apply]").click();
+      await page.waitForTimeout(900);
+      const ledger = await takeLedger(page);
+      await closeLibrary(page);
+
+      record_(
+        `[${label}] 53 açık projenin yerine koyma: yalnız açık projenin anahtarı yazıldı`,
+        (await openTitle(page)) === "Yerine Konan" &&
+          ledger.n("set:projectPayload") === 1 &&
+          ledger.n("set:catalog") === 0,
+        `${await openTitle(page)}, payload ${ledger.n("set:projectPayload")}, katalog ${ledger.n("set:catalog")}`,
+      );
+      record_(
+        `[${label}] 53.b diğer proje byte-eş`,
+        (await raw(page, payloadKey("project-2"))) === bBefore,
+        "değişmedi",
+      );
+
+      /* One history step: undo puts the reader's own song back. */
+      await page.getByRole("button", { name: /^Geri al/ }).click();
+      await page.waitForTimeout(700);
+      record_(
+        `[${label}] 53.c tek geçmiş adımı: geri al eski şarkıyı getiriyor`,
+        (await openTitle(page)) === "A Şarkısı",
+        await openTitle(page),
+      );
     } finally {
       await context.close();
     }

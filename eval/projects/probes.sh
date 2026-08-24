@@ -430,6 +430,14 @@ probe "34 a raw storage diagnostic reaches the sheet" \
   '          localStorage aranje.projects: JSON.parse failed (Zod)' \
   "$BROWSER"
 
+# 35 — the list is built once and then trusted while songs change under it
+probe "35 the project list is memoised past an edit" \
+  src/lib/workspace/use-project-library.ts \
+  '      setOpenedAt(Date.now());
+      setRevision((value) => value + 1);' \
+  '      setOpenedAt(Date.now());' \
+  "$BROWSER"
+
 # Leave the bundle — and the artefacts every browser probe overwrote — as the
 # committed sources describe them. Without this last clean pass the JSON on
 # disk is the *last mutation's* run, which reads as a real regression, and the

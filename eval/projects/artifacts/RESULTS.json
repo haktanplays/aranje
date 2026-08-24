@@ -91,6 +91,46 @@
       "detail": "Aynı Ad | Aynı Ad kopyası"
     },
     {
+      "name": "[390x844] 51 adlandırma tek proje anahtarı yazıyor, katalog yazımı 0",
+      "pass": true,
+      "detail": "payload 1, katalog 0"
+    },
+    {
+      "name": "[390x844] 51.b liste satırı şarkının başlığını izliyor",
+      "pass": true,
+      "detail": "Yeni Ad | B Şarkısı"
+    },
+    {
+      "name": "[390x844] 51.c diğer proje byte-eş",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[390x844] 52 dosyadan yeni proje: açık olan o dosya, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "Dosyadan Gelen, payload 1, katalog 1"
+    },
+    {
+      "name": "[390x844] 52.b eski projeler duruyor ve A byte-eş",
+      "pass": true,
+      "detail": "A Şarkısı | B Şarkısı | Dosyadan Gelen"
+    },
+    {
+      "name": "[390x844] 53 açık projenin yerine koyma: yalnız açık projenin anahtarı yazıldı",
+      "pass": true,
+      "detail": "Yerine Konan, payload 1, katalog 0"
+    },
+    {
+      "name": "[390x844] 53.b diğer proje byte-eş",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[390x844] 53.c tek geçmiş adımı: geri al eski şarkıyı getiriyor",
+      "pass": true,
+      "detail": "A Şarkısı"
+    },
+    {
       "name": "[390x844] 29 gelecek sürüm katalog: byte-eş duruyor, üzerine yazılmadı",
       "pass": true,
       "detail": "{\"format\":\"aranje.project-catalog\",\"vers…"
@@ -324,6 +364,46 @@
       "name": "[320x700] 22 aynı isimli iki proje ayrı kimliklerle yaşayabiliyor",
       "pass": true,
       "detail": "Aynı Ad | Aynı Ad kopyası"
+    },
+    {
+      "name": "[320x700] 51 adlandırma tek proje anahtarı yazıyor, katalog yazımı 0",
+      "pass": true,
+      "detail": "payload 1, katalog 0"
+    },
+    {
+      "name": "[320x700] 51.b liste satırı şarkının başlığını izliyor",
+      "pass": true,
+      "detail": "Yeni Ad | B Şarkısı"
+    },
+    {
+      "name": "[320x700] 51.c diğer proje byte-eş",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[320x700] 52 dosyadan yeni proje: açık olan o dosya, tek payload + tek katalog yazımı",
+      "pass": true,
+      "detail": "Dosyadan Gelen, payload 1, katalog 1"
+    },
+    {
+      "name": "[320x700] 52.b eski projeler duruyor ve A byte-eş",
+      "pass": true,
+      "detail": "A Şarkısı | B Şarkısı | Dosyadan Gelen"
+    },
+    {
+      "name": "[320x700] 53 açık projenin yerine koyma: yalnız açık projenin anahtarı yazıldı",
+      "pass": true,
+      "detail": "Yerine Konan, payload 1, katalog 0"
+    },
+    {
+      "name": "[320x700] 53.b diğer proje byte-eş",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[320x700] 53.c tek geçmiş adımı: geri al eski şarkıyı getiriyor",
+      "pass": true,
+      "detail": "A Şarkısı"
     },
     {
       "name": "[320x700] 29 gelecek sürüm katalog: byte-eş duruyor, üzerine yazılmadı",

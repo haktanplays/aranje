@@ -82,7 +82,15 @@ export function useProjectLibrary(options: {
   const [openedAt, setOpenedAt] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-  /* Bumped after every successful command, so the summaries are re-read. */
+  /*
+   * Bumped after every successful command *and* every time the sheet opens.
+   *
+   * The command half is obvious. The open half is the one that matters: the
+   * open project's song also changes through the song store — a rename, an
+   * edit, an undo — and none of that touches the catalog or this hook. Without
+   * a bump on open, the memo below would hand back the list it built the first
+   * time and the reader would see a name their song no longer has.
+   */
   const [revision, setRevision] = useState(0);
 
   const catalog: ProjectCatalogV1 | null = session?.catalog ?? null;
@@ -94,7 +102,9 @@ export function useProjectLibrary(options: {
    *
    * Never from a cache in the catalog: a cached bar count is right until the
    * first edit, and after that it is a number the app is showing its reader
-   * that nothing in the app believes.
+   * that nothing in the app believes. `revision` is what makes "read from the
+   * projects themselves" true in time as well as in place — it changes on
+   * every open, so the list is built from what is on disk right then.
    */
   const projects = useMemo<ProjectSummary[]>(() => {
     void revision;
@@ -175,6 +185,7 @@ export function useProjectLibrary(options: {
     openedAt,
     open: () => {
       setOpenedAt(Date.now());
+      setRevision((value) => value + 1);
       setOpen(true);
     },
     close: () => {
