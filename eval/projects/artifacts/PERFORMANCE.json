@@ -1,0 +1,208 @@
+{
+  "measuredOn": "desktop Node — not a phone, and not evidence about one",
+  "node": "v22.22.2",
+  "note": "localStorage quota is a browser fact and is measured in measure-browser.mjs; nothing here is a guarantee about how much a device will accept.",
+  "realistic": {
+    "fixture": {
+      "song": "the sample song",
+      "sections": 2,
+      "bars": 8,
+      "tracks": 4,
+      "projectsInCatalog": 10
+    },
+    "project list build (10 projects, summaries from their songs)": {
+      "rounds": 30,
+      "medianMs": 8.8162,
+      "p95Ms": 10.1048,
+      "maxMs": 11.9177
+    },
+    "open a project (read, verify, catalog write)": {
+      "rounds": 30,
+      "medianMs": 1.4906,
+      "p95Ms": 3.8578,
+      "maxMs": 4.2664
+    },
+    "create a project (template, validators, payload, catalog)": {
+      "rounds": 30,
+      "medianMs": 10.0804,
+      "p95Ms": 11.3408,
+      "maxMs": 11.5535
+    },
+    "duplicate a project": {
+      "rounds": 30,
+      "medianMs": 14.7233,
+      "p95Ms": 17.3282,
+      "maxMs": 17.3982
+    },
+    "catalog serialize + parse": {
+      "rounds": 30,
+      "medianMs": 0.0084,
+      "p95Ms": 0.0357,
+      "maxMs": 0.9159
+    },
+    "project record parse + strict validation": {
+      "rounds": 30,
+      "medianMs": 0.7915,
+      "p95Ms": 1.652,
+      "maxMs": 1.8944
+    },
+    "central validator chain": {
+      "rounds": 30,
+      "medianMs": 1.8446,
+      "p95Ms": 2.498,
+      "maxMs": 2.779
+    },
+    "one song commit (record write)": {
+      "rounds": 30,
+      "medianMs": 1.0389,
+      "p95Ms": 1.3919,
+      "maxMs": 2.2166
+    },
+    "bytes": {
+      "oneProjectRecord": 14449,
+      "catalogOfTen": 236
+    }
+  },
+  "heavy": {
+    "fixture": {
+      "song": "the 2M-A worst-case playable song",
+      "sections": 4,
+      "bars": 32,
+      "tracks": 8
+    },
+    "bytes": {
+      "oneProjectRecord": 799772,
+      "mib": 0.763,
+      "duplicateCostsAnother": 799772,
+      "catalogPlusOneWorstProject": 799898
+    },
+    "project switch: parse + strict validation": {
+      "rounds": 30,
+      "medianMs": 39.1,
+      "p95Ms": 53.2906,
+      "maxMs": 53.7651
+    },
+    "duplicate, end to end": {
+      "rounds": 30,
+      "medianMs": 306.1066,
+      "p95Ms": 359.8891,
+      "maxMs": 377.6704
+    },
+    "recovery: current unreadable, previous good": {
+      "rounds": 30,
+      "medianMs": 47.0442,
+      "p95Ms": 63.5556,
+      "maxMs": 92.9982
+    }
+  },
+  "scale": {
+    "1 projects": {
+      "catalogBytes": 126,
+      "totalPayloadBytes": 14449,
+      "startup settle (finish, read, verify active)": {
+        "rounds": 30,
+        "medianMs": 0.9234,
+        "p95Ms": 2.1594,
+        "maxMs": 2.3176
+      },
+      "summary model for the whole list": {
+        "rounds": 30,
+        "medianMs": 0.8728,
+        "p95Ms": 1.1426,
+        "maxMs": 2.0508
+      }
+    },
+    "5 projects": {
+      "catalogBytes": 174,
+      "totalPayloadBytes": 72245,
+      "startup settle (finish, read, verify active)": {
+        "rounds": 30,
+        "medianMs": 1.1891,
+        "p95Ms": 1.593,
+        "maxMs": 2.6288
+      },
+      "summary model for the whole list": {
+        "rounds": 30,
+        "medianMs": 5.3245,
+        "p95Ms": 7.0437,
+        "maxMs": 7.4299
+      }
+    },
+    "20 projects": {
+      "catalogBytes": 366,
+      "totalPayloadBytes": 288991,
+      "startup settle (finish, read, verify active)": {
+        "rounds": 30,
+        "medianMs": 2.7006,
+        "p95Ms": 4.8915,
+        "maxMs": 4.9562
+      },
+      "summary model for the whole list": {
+        "rounds": 30,
+        "medianMs": 18.1072,
+        "p95Ms": 31.4277,
+        "maxMs": 31.597
+      }
+    },
+    "50 projects": {
+      "catalogBytes": 756,
+      "totalPayloadBytes": 722491,
+      "startup settle (finish, read, verify active)": {
+        "rounds": 30,
+        "medianMs": 4.1109,
+        "p95Ms": 7.1312,
+        "maxMs": 7.2585
+      },
+      "summary model for the whole list": {
+        "rounds": 30,
+        "medianMs": 45.9568,
+        "p95Ms": 66.3695,
+        "maxMs": 98.0122
+      }
+    }
+  },
+  "browser": {
+    "measuredOn": "desktop Chromium — not a phone, and not evidence about one",
+    "base": "http://127.0.0.1:3100",
+    "scale": {
+      "1 projects": {
+        "domNodesBeforeList": 83,
+        "domNodesWithList": 102,
+        "domNodesAddedByList": 19,
+        "openToRowsOnScreenMs": 23.9,
+        "rows": 1
+      },
+      "5 projects": {
+        "domNodesBeforeList": 83,
+        "domNodesWithList": 126,
+        "domNodesAddedByList": 43,
+        "openToRowsOnScreenMs": 20.5,
+        "rows": 5
+      },
+      "20 projects": {
+        "domNodesBeforeList": 83,
+        "domNodesWithList": 216,
+        "domNodesAddedByList": 133,
+        "openToRowsOnScreenMs": 27.2,
+        "rows": 20
+      },
+      "50 projects": {
+        "domNodesBeforeList": 83,
+        "domNodesWithList": 396,
+        "domNodesAddedByList": 313,
+        "openToRowsOnScreenMs": 43.7,
+        "rows": 50
+      }
+    },
+    "quota": {
+      "worstCaseProjectsAccepted": 6,
+      "blockBytes": 778240,
+      "note": "the browser refused here",
+      "navigatorEstimate": {
+        "quota": 1071046243,
+        "usage": 0
+      },
+      "warning": "an observation about this browser and profile, never a guarantee about a device"
+    }
+  }
+}
