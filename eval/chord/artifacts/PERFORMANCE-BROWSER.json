@@ -6,50 +6,50 @@
       "label": "builder açılışı (hücre → sheet)",
       "rounds": 12,
       "medianMs": 250,
-      "p95Ms": 280,
-      "maxMs": 280
+      "p95Ms": 264,
+      "maxMs": 264
     },
     {
       "label": "kök seçimi",
       "rounds": 12,
       "medianMs": 99,
-      "p95Ms": 110,
-      "maxMs": 110
+      "p95Ms": 119,
+      "maxMs": 119
     },
     {
       "label": "kalite seçimi ve şekil listesinin çizilmesi",
       "rounds": 12,
-      "medianMs": 102,
-      "p95Ms": 114,
-      "maxMs": 114
+      "medianMs": 87,
+      "p95Ms": 96,
+      "maxMs": 96
     },
     {
       "label": "25 varyasyon değişimi",
       "rounds": 25,
       "medianMs": 50,
-      "p95Ms": 82,
-      "maxMs": 85
+      "p95Ms": 73,
+      "maxMs": 82
     },
     {
       "label": "25 sesli dinleme",
       "rounds": 25,
-      "medianMs": 94,
-      "p95Ms": 112,
-      "maxMs": 166
+      "medianMs": 84,
+      "p95Ms": 98,
+      "maxMs": 155
     },
     {
       "label": "uygula → depoda akor (round trip)",
       "rounds": 6,
-      "medianMs": 393,
-      "p95Ms": 404,
-      "maxMs": 404
+      "medianMs": 385,
+      "p95Ms": 392,
+      "maxMs": 392
     },
     {
       "label": "geri al / yinele",
       "rounds": 8,
-      "medianMs": 234,
-      "p95Ms": 239,
-      "maxMs": 239
+      "medianMs": 233,
+      "p95Ms": 242,
+      "maxMs": 242
     }
   ],
   "sheet": {
