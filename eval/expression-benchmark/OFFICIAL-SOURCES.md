@@ -69,6 +69,22 @@ Her adayın *sayısal* davranışı — süre, cent, eğri, seviye — Aranjé'n
 kendi `expressionPresets` tablosundan türetildi ve `MEASUREMENTS.json`'da
 render edilmiş sesten ölçüldü. Kaynağı bu repodur.
 
+## Hangi metrikler neyle karşılaştırıldı — §13
+
+Rakip ölçümü olmadığı için `MEASUREMENTS.json`'daki **her** sayı yalnızca
+Aranjé adayları arasında karşılaştırıldı:
+
+| Metrik | Neyle karşılaştırıldı |
+| --- | --- |
+| Nota sonundaki cent | Bugünkü Aranjé bend'i ↔ Aranjé aday bend'i |
+| Hedefe varış zamanı | Aranjé adayları arasında |
+| Hedef atak oranı | Aranjé legato ↔ Aranjé shift ↔ Aranjé normal yeniden vuruş |
+| Gürültü bandı enerjisi | Aranjé tek-sample ↔ Aranjé fret-noise adayları |
+| Mantıksal / fiziksel ses sayısı | Aranjé adayları arasında |
+
+Hiçbir satırda dışarıdan bir referans yok, ve olmadığı için de "şuna daha
+yakın" türünden bir yargı üretilmedi.
+
 ## Bu kapı açık kalıyor
 
 Rakip davranışının okunması ve, mümkünse, kamuya açık arayüzden

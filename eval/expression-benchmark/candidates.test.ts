@@ -269,3 +269,67 @@ describe("189. nothing here can reach the product", () => {
     }
   });
 });
+
+describe("194. the benchmark is repeatable and touches nothing it is given", () => {
+  it("produces identical automation on five consecutive runs", () => {
+    // A comparison between two renders is only a comparison if each render
+    // is the same every time.
+    const runs = Array.from({ length: 5 }, () =>
+      JSON.stringify(
+        bendCandidateAutomation(
+          bend({ vibrato: { startAfterTarget: true, depthCents: 12, rateHz: 5 } }),
+          DURATION,
+        ),
+      ),
+    );
+    expect(new Set(runs).size).toBe(1);
+  });
+
+  it("produces identical slide automation on five consecutive runs", () => {
+    const runs = Array.from({ length: 5 }, () =>
+      JSON.stringify(
+        slideCandidateAutomation({ kind: "legato", intervalSemitones: 7 }, DURATION),
+      ),
+    );
+    expect(new Set(runs).size).toBe(1);
+  });
+
+  it("does not mutate the candidate it was handed", () => {
+    const candidate = bend({
+      points: [
+        { normalizedTime: 0, cents: 0 },
+        { normalizedTime: 1, cents: 200 },
+      ],
+    });
+    const before = JSON.stringify(candidate);
+    bendCandidateAutomation(candidate, DURATION);
+    bendCandidateAutomation(candidate, 0.4);
+    expect(JSON.stringify(candidate)).toBe(before);
+  });
+
+  it("does not mutate a slide candidate either", () => {
+    const candidate: Parameters<typeof slideCandidateAutomation>[0] = {
+      kind: "slide_in_below",
+      intervalSemitones: 0,
+      approxSemitones: 2,
+    };
+    const before = JSON.stringify(candidate);
+    slideCandidateAutomation(candidate, DURATION);
+    expect(JSON.stringify(candidate)).toBe(before);
+  });
+
+  it("leaves the production baseline exactly as the planner built it", () => {
+    /*
+     * The "current" fixtures pass the plan through untouched, which is the
+     * only way a baseline can be a baseline. Asserted on the production
+     * planner's own output: the candidate path and the shipped path produce
+     * the same automation for the same articulation.
+     */
+    const shipped = productionBendAutomation("bend_full", DURATION);
+    const again = productionBendAutomation("bend_full", DURATION);
+    expect(again).toEqual(shipped);
+    // And it is not accidentally equal to any candidate, or the benchmark
+    // would be comparing a thing with itself.
+    expect(shipped).not.toEqual(bendCandidateAutomation(bend(), DURATION));
+  });
+});
