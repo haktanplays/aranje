@@ -1,0 +1,61 @@
+{
+  "what": "2O-B.1 ve 2P-A sırasında bulunan, ölçülmüş gerçek problemler",
+  "measuredOn": "masaüstü Chromium ve Node — fiziksel telefon değil",
+  "findings": [
+    {
+      "id": "new_song_cannot_receive_its_first_note",
+      "severity": "ürün kusuru — yeni kullanıcı için tam çıkmaz",
+      "status": "launch şablonları için kapatıldı; create_track için açık",
+      "what": "Yeni oluşturulan bir şarkı hiçbir yüzeyden ilk notasını alamıyordu. Şablonun barları, şablonun az önce yarattığı track için hiçbir anahtar taşımıyordu ve yazma yolu bunu reddediyor.",
+      "howItWasFound": "§17 tarayıcı kabulü. Senaryo 1-3 yeni bir şarkı oluşturup ilk notayı yazmaya çalıştı ve chord builder hiç açılmadı.",
+      "evidence": {
+        "message": "\"Ritim Gitar\" bu barda yazılı değil; önce bu bara eklenmeli.",
+        "storedSlotsAfterAdd": "{}",
+        "why": "Eksik anahtar iki şey birden demek: 'burada sessiz' ve 'bu barda yazılı değil'. Birincisi spec 5.5, ikincisi yazma yolunun reddi. Şablon ikincisini kastetmiyordu.",
+        "whyItWasNeverSeen": "Bütün eval seed'leri slot dizilerini tam yazıyor, dolayısıyla boşluk hiç denenmemişti."
+      },
+      "fixedHere": "materializeTemplate artık kendi track'leri için boş slot dizileri yazıyor; melodik track null, davul track boş vuruş listesi. Şarkı hâlâ sessiz, ama track'ler barlarda yazılı.",
+      "stillOpen": "create_track hiçbir bara anahtar eklemiyor (song/track-lifecycle.ts, 'No section gains a key for the new track'). Yani mevcut bir şarkıya eklenen ikinci track de aynı çıkmaza düşüyor, ve track_silent_here mesajı hiçbir kontrolün gerçekleştiremeyeceği bir eylemi tarif ediyor. Bu bir ürün kararı — 'bir track bir barda yazılı olmak' ne demek — ve bu checkpoint'in kapsamında değil.",
+      "whereToDecide": "src/lib/song/track-lifecycle.ts (create_track) ve src/lib/song/edit.ts (track_silent_here)"
+    },
+    {
+      "id": "transport_row_overflows_at_320px",
+      "severity": "mobil layout kusuru",
+      "status": "ölçüldü, düzeltilmedi — bu checkpoint'in kapsamı dışında",
+      "what": "320 px genişlikte transport satırı 344 px yer istiyor. Fazlalık 24 px ve sondaki kontrol — pratik hızı düğmesi — kırpılıyor.",
+      "evidence": {
+        "footer": "344/320",
+        "children": ["⏮ 44px", "▶ 56px", "↻ 44px", "◫ 44px", "♪ 44px", "%100 60px"],
+        "childrenTotal": "292px + 5×8px boşluk + 2×12px iç kenar = 356px",
+        "documentScroll": "0 — kök overflow-x gizli olduğu için sayfa kaymıyor, içerik doğrudan kayboluyor"
+      },
+      "notCausedHere": "2O-B.1 TransportBar'a yalnız koşullu bir bildirim şeridi ekledi ve bu fixture'da o şerit render edilmiyor. Taşan öğeler kontrol satırı ve footer'ın kendisi.",
+      "whyItWasNeverSeen": "Önceki paketler yalnız document.documentElement taşmasını ölçüyordu ve o 0; iç kaplar ölçülmemişti."
+    },
+    {
+      "id": "hard_pan_and_doubling_clip_at_default_level",
+      "severity": "ölçülmüş risk",
+      "status": "ölçüldü, production gain davranışı değiştirilmedi",
+      "what": "Varsayılan −6 dB'de bile iki durum tam ölçeği aşıyor: sert sola/sağa panlanmış yoğun akor (tepe 1.2822, 18 kırpılan örnek) ve aynı akoru ikileyen ikinci bir gitar (1.6156, 322).",
+      "cause": "Equal-power pan yasası tek kanala yaklaşık 3 dB ekliyor: 0.9066 × 1.414 = 1.282.",
+      "notShipped": "Şablonun kendi mix'i (gitar+bas+davul, hepsi −6 dB) 0.9066'da ve kırpılmıyor. Kırpılan iki durum kullanıcıya verilen bir şey değil, kullanıcının kolayca ulaşabileceği bir şey.",
+      "whatWasDoneInstead": "Kodlayıcı artık tepe ve kırpılan frame sayısını bildiriyor ve export ekranı güvenli bir cümle gösteriyor. Limiter eklenmedi: bu müzikal bir karar ve insan dinlemesi bekliyor."
+    },
+    {
+      "id": "shift_slide_attack_is_quiet_against_its_own_glide",
+      "severity": "benchmark bulgusu",
+      "status": "ölçüldü, karar bekliyor",
+      "what": "Shift slide adayının hedefteki atağı, tam seviyede bile gerçek bir yeniden vuruşun çok altında kalıyor: atak oranı legato 0.98, shift 0.35 → 1.00, 0.60 → 1.04, 1.00 → 1.16; gerçek yeniden vuruş 619.",
+      "cause": "Glide sesi hedef anında hâlâ yüksek seviyede çalıyor, dolayısıyla yeni atak sönmekte olan bir sesin üstüne değil, çalan bir sesin üstüne biniyor.",
+      "meaning": "Legato ile shift arasındaki farkın kulakla ne kadar duyulacağı bu sayılardan çıkarılamaz. Dinleme paketi bunun için var."
+    },
+    {
+      "id": "official_sources_unreachable",
+      "severity": "blocker",
+      "status": "kaydedildi",
+      "what": "§7'deki beş resmî URL'nin tamamı egress proxy tarafından 403 ile reddedildi. Hiçbir sayfa okunmadı.",
+      "consequence": "Ne audio evidence var ne de semantic evidence. Hiçbir davranış, eğri veya sabit bir rakibe atfedilmedi.",
+      "where": "eval/expression-benchmark/OFFICIAL-SOURCES.md"
+    }
+  ]
+}

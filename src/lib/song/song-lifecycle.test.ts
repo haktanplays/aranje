@@ -54,8 +54,21 @@ describe("42. the three templates", () => {
       for (const bar of section.bars) {
         expect(bar.timeSignature).toEqual(TEMPLATE_DEFAULTS.timeSignature);
         expect(bar.resolution).toBe(TEMPLATE_DEFAULTS.resolution);
-        // Silence is a missing key, not an empty array (spec 5.5).
-        expect(Object.keys(bar.slots)).toEqual([]);
+        /*
+         * Every track the template stood up has a lane here, and every lane
+         * is empty (2O-B.1).
+         *
+         * This test used to require the opposite — no keys at all — on the
+         * reading that silence is a missing key (spec 5.5). That is true and
+         * it was not the whole truth: a missing key also means "this track is
+         * not written in this bar", which the write path refuses, so a
+         * brand-new song could not receive its first note. The lane is the
+         * accurate statement for a template's own tracks; it is still silent,
+         * which the next test checks.
+         */
+        expect(Object.keys(bar.slots).sort()).toEqual(
+          song.tracks.map((track) => track.id).sort(),
+        );
       }
     }
   });

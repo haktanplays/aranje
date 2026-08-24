@@ -25,6 +25,7 @@ import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import { canonicalJson } from "@/lib/copilot/fingerprint";
 import { exportProject, parseProjectText } from "@/lib/project/project-file";
 import { errorsOnly, runValidators } from "@/lib/validators";
+import { slotCount } from "@/lib/music/timing";
 import { identifiersOf, valueImportsOf } from "@/lib/dev/ast";
 
 const trackOn = (instrumentId: string, presetId: string, name = "Track"): Track => ({
@@ -260,6 +261,69 @@ describe("176. where the availability layer and the preview bank may reach", () 
     // and testable without an audio context.
     for (const specifier of valueImportsOf("src/lib/audio/buffer-bank.ts")) {
       expect(specifier.startsWith("tone")).toBe(false);
+    }
+  });
+});
+
+describe("195. a launch template hands over a song that can be written in", () => {
+  /*
+   * Found by the browser acceptance run, not by reasoning: a brand-new song
+   * could not receive its first note from any surface. Its bars carried no
+   * key for the track the template had just created, and a missing key means
+   * two things at once — "silent here" and "not written here". The write
+   * path refuses the second, and nothing anywhere adds a track to a bar.
+   */
+  it.each(SONG_TEMPLATES.map((template) => template.id))(
+    "%s writes a lane for every track it stands up",
+    (templateId) => {
+      const song = materializeTemplate(templateId)!;
+      for (const section of song.sections) {
+        for (const [index, bar] of section.bars.entries()) {
+          for (const track of song.tracks) {
+            const slots = bar.slots[track.id];
+            expect(slots, `${templateId} bar ${index} ${track.id}`).toBeDefined();
+            expect(slots!.length).toBe(
+              slotCount(bar.timeSignature, bar.resolution),
+            );
+          }
+        }
+      }
+    },
+  );
+
+  it("keeps every one of those lanes silent", () => {
+    for (const template of SONG_TEMPLATES) {
+      const song = materializeTemplate(template.id)!;
+      for (const bar of song.sections[0]!.bars) {
+        for (const track of song.tracks) {
+          const slots = bar.slots[track.id]!;
+          const struck = slots.filter((slot) =>
+            Array.isArray(slot) ? slot.length > 0 : slot !== null,
+          );
+          expect(struck, `${template.id}/${track.id}`).toEqual([]);
+        }
+      }
+    }
+  });
+
+  it("gives a drum track the drum slot shape and a melodic track the melodic one", () => {
+    const rock = materializeTemplate("rock_band")!;
+    const bar = rock.sections[0]!.bars[0]!;
+    for (const track of rock.tracks) {
+      const first = bar.slots[track.id]![0];
+      if (isDrumInstrument(track.instrumentId)) expect(Array.isArray(first)).toBe(true);
+      else expect(first).toBeNull();
+    }
+    // And the central validator agrees, which is the check that matters.
+    expect(errorsOnly(runValidators(rock))).toEqual([]);
+  });
+
+  it("is still deterministic and still schema-valid", () => {
+    for (const template of SONG_TEMPLATES) {
+      const once = materializeTemplate(template.id);
+      const twice = materializeTemplate(template.id);
+      expect(JSON.stringify(twice)).toBe(JSON.stringify(once));
+      expect(songSchema.safeParse(once).success, template.id).toBe(true);
     }
   });
 });

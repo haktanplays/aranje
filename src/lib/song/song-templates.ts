@@ -24,15 +24,40 @@
  *
  * Deterministic by construction: no timestamp, no UUID, no randomness —
  * materialising the same template five times yields byte-identical songs.
- * Content is silent the honest way: bars carry no track keys at all, because
- * a missing key *is* silence (spec 5.5) and an empty slot array is a claim
- * the track plays nothing there.
+ *
+ * ## Why the bars carry keys, and empty ones
+ *
+ * Until 2O-B.1 a template's bars carried no track keys at all, on the
+ * reasoning that a missing key *is* silence (spec 5.5) while an empty slot
+ * array is a claim the track plays nothing there. Both halves of that are
+ * true, and the conclusion was still wrong for a template.
+ *
+ * A missing key does not only mean silence. It also means *this track is not
+ * written in this bar*, and the write path refuses a note there — "«Ritim
+ * Gitar» bu barda yazılı değil; önce bu bara eklenmeli". The browser
+ * acceptance run found what that costs: a brand-new song could not receive
+ * its first note at all, from any surface, because nothing anywhere adds a
+ * track to a bar. Every seed the evaluation harnesses use writes its slot
+ * arrays out in full, so the gap had never been exercised.
+ *
+ * A template's own tracks are written in a template's own bars. The empty
+ * array is the accurate statement: this lane exists here and currently plays
+ * nothing. Drum tracks get the drum slot shape, because the two shapes are
+ * different things (spec 5.4).
  */
 import { TUNING_PRESETS } from "@/lib/music/fretboard";
 import { playableCorePresets } from "@/lib/audio/preset-availability";
 import { getInstrument, isDrumInstrument } from "@/lib/instruments/registry";
 import { nextNumberedId } from "@/lib/song/lifecycle-ids";
-import type { Bar, Song, TimeSignature, Track } from "@/lib/song/schema";
+import { slotCount } from "@/lib/music/timing";
+import type {
+  Bar,
+  DrumSlot,
+  MelodicSlot,
+  Song,
+  TimeSignature,
+  Track,
+} from "@/lib/song/schema";
 import type { Resolution } from "@/lib/music/timing";
 
 /** The defaults every template shares (spec 2L-B §4). */
@@ -151,11 +176,20 @@ export function materializeTemplate(templateId: string): Song | null {
     tracks.push(track);
   }
 
-  const bars: Bar[] = Array.from({ length: TEMPLATE_DEFAULTS.barCount }, () => ({
-    timeSignature: TEMPLATE_DEFAULTS.timeSignature,
-    resolution: TEMPLATE_DEFAULTS.resolution,
-    slots: {},
-  }));
+  const count = slotCount(TEMPLATE_DEFAULTS.timeSignature, TEMPLATE_DEFAULTS.resolution);
+  const bars: Bar[] = Array.from({ length: TEMPLATE_DEFAULTS.barCount }, () => {
+    const slots: Bar["slots"] = {};
+    for (const track of tracks) {
+      slots[track.id] = isDrumInstrument(track.instrumentId)
+        ? Array.from({ length: count }, (): DrumSlot => [])
+        : Array.from({ length: count }, (): MelodicSlot => null);
+    }
+    return {
+      timeSignature: TEMPLATE_DEFAULTS.timeSignature,
+      resolution: TEMPLATE_DEFAULTS.resolution,
+      slots,
+    };
+  });
 
   return {
     version: 2,

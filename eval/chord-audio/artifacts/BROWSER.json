@@ -1,0 +1,326 @@
+{
+  "what": "2O-B.1 §2/§3 ve 2P-A §17 — mobil tarayıcı kabulü",
+  "measuredOn": "masaüstü Chromium, 390×844 ve 320×700 — bu bir fiziksel cihaz kabulü DEĞİLDİR ve öyle sunulamaz",
+  "results": [
+    {
+      "name": "[390x844] 01 yeni bos sarki olusturuldu",
+      "pass": true,
+      "detail": "1 track · electric_guitar/high_gain"
+    },
+    {
+      "name": "[390x844] 02 ilk gitar track'i duyulabilir bir preset tasiyor",
+      "pass": true,
+      "detail": "high_gain"
+    },
+    {
+      "name": "[390x844] 03 ses gercekten var",
+      "pass": true,
+      "detail": "7 kaynak · 7 sample istegi"
+    },
+    {
+      "name": "[390x844] 04 chord builder acildi",
+      "pass": true,
+      "detail": "1 sheet"
+    },
+    {
+      "name": "[390x844] 05 Am secildi",
+      "pass": true,
+      "detail": "4 varyasyon"
+    },
+    {
+      "name": "[390x844] 06 Am7 secildi",
+      "pass": true,
+      "detail": "4 varyasyon"
+    },
+    {
+      "name": "[390x844] 07 dort varyasyon sirayla dinlendi",
+      "pass": true,
+      "detail": "15 kaynak"
+    },
+    {
+      "name": "[390x844] 08 25 kez varyasyon degistirildi",
+      "pass": true,
+      "detail": "128 kaynak"
+    },
+    {
+      "name": "[390x844] 09 fetch ve decode benzersiz sample sayisinda kaliyor",
+      "pass": true,
+      "detail": "7 istek / 8 decode / 7 URL"
+    },
+    {
+      "name": "[390x844] 10 AudioContext 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[390x844] 11 sheet kapandiktan 3 sn sonra yeni ses 0",
+      "pass": true,
+      "detail": "128 → 128 kaynak · 0 canli"
+    },
+    {
+      "name": "[390x844] 14 preview 0 yazim",
+      "pass": true,
+      "detail": "payload 0 · katalog 0"
+    },
+    {
+      "name": "[390x844] 12 uygula: 1 proje yazimi",
+      "pass": true,
+      "detail": "1 payload yazimi"
+    },
+    {
+      "name": "[390x844] 15 undo akoru tek adimda geri aldi",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[390x844] 13 vazgec: 0 yazim",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 16 ikinci proje byte-es",
+      "pass": true,
+      "detail": "esit"
+    },
+    {
+      "name": "[390x844] 17a depo yazilamazken duzenleme acilmiyor",
+      "pass": true,
+      "detail": "0 duzenle dugmesi"
+    },
+    {
+      "name": "[390x844] 17b depo yazilamazken calma yine calisiyor",
+      "pass": true,
+      "detail": "21 sample istegi · 35 kaynak"
+    },
+    {
+      "name": "[390x844] 18 eksik preset icin guvenli mesaj",
+      "pass": true,
+      "detail": "\"Sessiz Gitar\" track'i için ses bulunamadı, bu track sessiz çalınıyor. Track ayarlarından başka bir varyasyon seçebilirs"
+    },
+    {
+      "name": "[390x844] 19 unavailable preset oynatilabilir gibi sunulmuyor",
+      "pass": true,
+      "detail": "high_gain,clean(kapali)"
+    },
+    {
+      "name": "[390x844] 20 proje kaydinda akor metadata'si yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 21 kayitta preview veya bank alani yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 22 nota olaylari sadece sozlesmenin alanlarini tasiyor",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 23 mute/solo sarkiya yazilmiyor",
+      "pass": true,
+      "detail": "sarki degismedi"
+    },
+    {
+      "name": "[390x844] 24 uzun baslik tasmiyor",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] 25 govde yatay tasmasi 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[390x844] 26 tam olarak bir kasitli yatay scroller",
+      "pass": true,
+      "detail": "div.h-full 968/390"
+    },
+    {
+      "name": "[390x844] 26b viewport disina tasan kirpilmis icerik yok",
+      "pass": true,
+      "detail": "yok"
+    },
+    {
+      "name": "[390x844] 27 44 px altinda hedef 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 28 console/page error 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 29 dis ag istegi 0",
+      "pass": true,
+      "detail": "yok"
+    },
+    {
+      "name": "[390x844] 30 dispose sonrasi aktif voice 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 01 yeni bos sarki olusturuldu",
+      "pass": true,
+      "detail": "1 track · electric_guitar/high_gain"
+    },
+    {
+      "name": "[320x700] 02 ilk gitar track'i duyulabilir bir preset tasiyor",
+      "pass": true,
+      "detail": "high_gain"
+    },
+    {
+      "name": "[320x700] 03 ses gercekten var",
+      "pass": true,
+      "detail": "7 kaynak · 7 sample istegi"
+    },
+    {
+      "name": "[320x700] 04 chord builder acildi",
+      "pass": true,
+      "detail": "1 sheet"
+    },
+    {
+      "name": "[320x700] 05 Am secildi",
+      "pass": true,
+      "detail": "4 varyasyon"
+    },
+    {
+      "name": "[320x700] 06 Am7 secildi",
+      "pass": true,
+      "detail": "4 varyasyon"
+    },
+    {
+      "name": "[320x700] 07 dort varyasyon sirayla dinlendi",
+      "pass": true,
+      "detail": "15 kaynak"
+    },
+    {
+      "name": "[320x700] 08 25 kez varyasyon degistirildi",
+      "pass": true,
+      "detail": "128 kaynak"
+    },
+    {
+      "name": "[320x700] 09 fetch ve decode benzersiz sample sayisinda kaliyor",
+      "pass": true,
+      "detail": "7 istek / 8 decode / 7 URL"
+    },
+    {
+      "name": "[320x700] 10 AudioContext 1",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "[320x700] 11 sheet kapandiktan 3 sn sonra yeni ses 0",
+      "pass": true,
+      "detail": "128 → 128 kaynak · 0 canli"
+    },
+    {
+      "name": "[320x700] 14 preview 0 yazim",
+      "pass": true,
+      "detail": "payload 0 · katalog 0"
+    },
+    {
+      "name": "[320x700] 12 uygula: 1 proje yazimi",
+      "pass": true,
+      "detail": "1 payload yazimi"
+    },
+    {
+      "name": "[320x700] 15 undo akoru tek adimda geri aldi",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[320x700] 13 vazgec: 0 yazim",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 16 ikinci proje byte-es",
+      "pass": true,
+      "detail": "esit"
+    },
+    {
+      "name": "[320x700] 17a depo yazilamazken duzenleme acilmiyor",
+      "pass": true,
+      "detail": "0 duzenle dugmesi"
+    },
+    {
+      "name": "[320x700] 17b depo yazilamazken calma yine calisiyor",
+      "pass": true,
+      "detail": "21 sample istegi · 35 kaynak"
+    },
+    {
+      "name": "[320x700] 18 eksik preset icin guvenli mesaj",
+      "pass": true,
+      "detail": "\"Sessiz Gitar\" track'i için ses bulunamadı, bu track sessiz çalınıyor. Track ayarlarından başka bir varyasyon seçebilirs"
+    },
+    {
+      "name": "[320x700] 19 unavailable preset oynatilabilir gibi sunulmuyor",
+      "pass": true,
+      "detail": "high_gain,clean(kapali)"
+    },
+    {
+      "name": "[320x700] 20 proje kaydinda akor metadata'si yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 21 kayitta preview veya bank alani yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 22 nota olaylari sadece sozlesmenin alanlarini tasiyor",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 23 mute/solo sarkiya yazilmiyor",
+      "pass": true,
+      "detail": "sarki degismedi"
+    },
+    {
+      "name": "[320x700] 24 uzun baslik tasmiyor",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] 25 govde yatay tasmasi 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "name": "[320x700] 26 tam olarak bir kasitli yatay scroller",
+      "pass": true,
+      "detail": "div.h-full 898/320"
+    },
+    {
+      "name": "[320x700] 26b viewport disina tasan kirpilmis icerik yok",
+      "pass": false,
+      "detail": "div.flex 344/320 · div.border-line 326/320 · footer.border-t 344/320 · div.flex 344/320"
+    },
+    {
+      "name": "[320x700] 27 44 px altinda hedef 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 28 console/page error 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 29 dis ag istegi 0",
+      "pass": true,
+      "detail": "yok"
+    },
+    {
+      "name": "[320x700] 30 dispose sonrasi aktif voice 0",
+      "pass": true,
+      "detail": "0"
+    }
+  ]
+}
