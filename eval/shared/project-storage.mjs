@@ -43,17 +43,22 @@ export const QUARANTINE_PREFIX = "aranje.corrupt.";
  */
 export const PROJECT_LEDGER = `
   window.__ops = [];
+  window.__allOps = [];
   window.__consoleErrors = [];
   window.__audioContexts = 0;
   (() => {
     const proto = Storage.prototype;
     const get = proto.getItem, set = proto.setItem, remove = proto.removeItem;
-    proto.getItem = function (key) { window.__ops.push(["get", key, 0]); return get.call(this, key); };
+    const note = (op, key, size) => {
+      window.__ops.push([op, key, size]);
+      window.__allOps.push([op, key, size]);
+    };
+    proto.getItem = function (key) { note("get", key, 0); return get.call(this, key); };
     proto.setItem = function (key, value) {
-      window.__ops.push(["set", key, String(value).length]);
+      note("set", key, String(value).length);
       return set.call(this, key, value);
     };
-    proto.removeItem = function (key) { window.__ops.push(["remove", key, 0]); return remove.call(this, key); };
+    proto.removeItem = function (key) { note("remove", key, 0); return remove.call(this, key); };
     for (const name of ["AudioContext", "webkitAudioContext"]) {
       const Original = window[name];
       if (!Original) continue;
@@ -225,6 +230,49 @@ export async function takeStorageLedger(page) {
     legacyWrites: counts["set:legacy_song"] ?? 0,
     total: writes.length,
   };
+}
+
+/**
+ * The running total, for suites that measure a single action as a difference.
+ *
+ * `takeStorageLedger` answers "what happened just now" and resets; this
+ * answers "how much has happened since the page loaded" and does not. A
+ * before/after pair around one tap is the older style and is still the
+ * clearest way to say "this action wrote exactly once".
+ *
+ * `activeProject` is the payload of the project open *at read time*;
+ * `anyProject` counts every project payload, which is what a scenario that
+ * creates or switches projects actually means by "a song was written".
+ */
+export async function writeTally(page) {
+  const activeId = await activeProjectId(page);
+  const ops = await page.evaluate(() => window.__allOps ?? []);
+  const tally = {
+    activeProject: 0,
+    anyProject: 0,
+    catalog: 0,
+    pending: 0,
+    legacy: 0,
+    quarantine: 0,
+    other: 0,
+    total: 0,
+  };
+  for (const [op, key] of ops) {
+    if (op !== "set") continue;
+    tally.total += 1;
+    const kind = writeClassOf(key, activeId);
+    if (kind === "active_project") {
+      tally.activeProject += 1;
+      tally.anyProject += 1;
+    } else if (kind === "other_project") {
+      tally.anyProject += 1;
+    } else if (kind === "catalog") tally.catalog += 1;
+    else if (kind === "pending_delete") tally.pending += 1;
+    else if (kind === "legacy_song") tally.legacy += 1;
+    else if (kind === "quarantine") tally.quarantine += 1;
+    else tally.other += 1;
+  }
+  return tally;
 }
 
 /** A device holding one project with this song, seeded before the app boots. */

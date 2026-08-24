@@ -7,6 +7,16 @@
  * `fetch` — every "one apply, one write" and "changes nothing" claim is a
  * measured number.
  *
+ * **2Q-B §1.3.** This suite used to count writes to `aranje.song` and read
+ * the song back from that key. The product stopped using it at K-52: a song
+ * now lives in its project's record, named by the catalog. Every scenario
+ * here was therefore reading `undefined` and reporting `writes=0` for edits
+ * that had in fact been saved — a stale instrument, not a broken feature
+ * (proved by running this suite unchanged against a pre-2Q-A build:
+ * identical scores, `eval/multitrack/artifacts/REGRESSION.json`). The reads
+ * and the counter now go through `eval/shared/project-storage.mjs`, which
+ * classifies a write by *which* key moved.
+ *
  * The Copilot-target scenario uses the client-side demo, which is baked in
  * at build time:
  *
@@ -16,7 +26,14 @@
  *   ONE_VIEWPORT=1 node eval/lifecycle/verify.mjs
  */
 import { chromium } from "playwright";
-import { layoutProbe, targetEdges, unwrapStoredSong } from "../shared/harness.mjs";
+import { layoutProbe, targetEdges } from "../shared/harness.mjs";
+import {
+  PROJECT_LEDGER,
+  activeSongBytes,
+  legacySongRaw,
+  readActiveSong,
+  writeTally,
+} from "../shared/project-storage.mjs";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -59,16 +76,8 @@ async function safe(name, fn) {
   }
 }
 
-const INSTRUMENT = `
-  window.__writes = 0;
-  window.__consoleErrors = [];
-  window.__audioContexts = 0;
+const INSTRUMENT = PROJECT_LEDGER + `
   window.__providerCalls = 0;
-  const originalSet = Storage.prototype.setItem;
-  Storage.prototype.setItem = function (key, value) {
-    originalSet.call(this, key, value);
-    if (key === "aranje.song") window.__writes += 1;
-  };
   const originalFetch = window.fetch.bind(window);
   window.fetch = (input, init) => {
     const url = typeof input === "string" ? input : (input?.url ?? "");
@@ -81,16 +90,6 @@ const INSTRUMENT = `
     if (this.hasAttribute("download")) window.__lastDownloadName = this.download;
     return originalClick.call(this);
   };
-  for (const name of ["AudioContext", "webkitAudioContext"]) {
-    const Original = window[name];
-    if (!Original) continue;
-    window[name] = new Proxy(Original, {
-      construct(target, args) {
-        window.__audioContexts += 1;
-        return Reflect.construct(target, args);
-      },
-    });
-  }
 `;
 
 const REFUSE_WRITE_CHECK = `
@@ -133,20 +132,21 @@ async function openApp(browser, size, options = {}) {
 
 /* ----------------------------------------------------------- observations */
 
-const writes = (page) => page.evaluate(() => window.__writes);
+/**
+ * How many song payloads have been written since the page loaded.
+ *
+ * `anyProject` rather than `activeProject`, because half of this suite's
+ * scenarios *create* a project: the write that matters there lands on a key
+ * that only becomes the active one afterwards. Scenarios about isolation ask
+ * for the narrower number by name.
+ */
+const writes = async (page) => (await writeTally(page)).anyProject;
 const contexts = (page) => page.evaluate(() => window.__audioContexts);
 const providerCalls = (page) => page.evaluate(() => window.__providerCalls);
 const consoleErrors = (page) => page.evaluate(() => window.__consoleErrors);
-const stored = async (page) =>
-  unwrapStoredSong(await page.evaluate(() => localStorage.getItem("aranje.song")));
-/** The exact bytes of the envelope's current song, for byte-equal claims. */
-const currentBytes = (page) =>
-  page.evaluate(() => {
-    const raw = localStorage.getItem("aranje.song");
-    if (raw === null) return null;
-    const parsed = JSON.parse(raw);
-    return JSON.stringify(parsed.format === "aranje.song" ? parsed.current : parsed);
-  });
+const stored = (page) => readActiveSong(page);
+/** The exact bytes of the open project's song, for byte-equal claims. */
+const currentBytes = (page) => activeSongBytes(page);
 const debug = (page) =>
   page.evaluate(() => ({
     status: window.__aranjeDebug?.status() ?? null,
@@ -239,9 +239,21 @@ async function run(browser, size, label) {
           song?.tracks[0]?.instrumentId === "electric_guitar" &&
           song?.sections.length === 1 &&
           song?.sections[0]?.bars.length === 4 &&
-          song?.sections[0]?.bars.every(
-            (bar) => Object.keys(bar.slots).length === 0,
-          ) &&
+          /*
+           * K-54 changed what a launch template leaves behind. It used to
+           * leave no key at all, which read as "this track is not written in
+           * this bar" and made the new song's first note impossible to
+           * write. Every bar now carries one empty lane per track: written
+           * here, saying nothing.
+           */
+          song?.sections[0]?.bars.every((bar) => {
+            const lane = bar.slots[song.tracks[0].id];
+            return (
+              Object.keys(bar.slots).length === 1 &&
+              Array.isArray(lane) &&
+              lane.every((slot) => slot === null)
+            );
+          }) &&
           (await text(page, "h1")) === "Yeni Şarkı",
         `writes=${delta} tracks=${song?.tracks.length}`,
       );
@@ -306,24 +318,39 @@ async function run(browser, size, label) {
       );
     });
 
-    await safe(at("06 Yeni şarkı: apply, undo, redo byte-eş"), async () => {
-      const oldBytes = await currentBytes(page);
+    await safe(at("06 Yeni şarkı yeni proje açar, eskisine dokunmaz"), async () => {
+      /*
+       * This scenario used to press undo and expect "Geri al: Yeni şarkı
+       * oluşturma". That behaviour no longer exists and should not: K-52
+       * removed `create_song` and made "Yeni şarkı" open a *new project*.
+       * A new project starts with its own empty history, so there is nothing
+       * to undo — the control is disabled rather than offering to undo an
+       * edit in a song the reader is no longer looking at. The old song is
+       * not rolled back either; it is still there, under its own key.
+       */
+      const before = await page.evaluate(() => {
+        const catalog = JSON.parse(localStorage.getItem("aranje.projects"));
+        const id = catalog.activeProjectId;
+        return { id, ids: catalog.projectIds.length, bytes: localStorage.getItem(`aranje.project.${id}`) };
+      });
       const delta = await createFromTemplate(page, "rock_band");
-      const newBytes = await currentBytes(page);
-      const undoLabel = await page.locator("[data-undo]").getAttribute("aria-label");
-      await page.locator("[data-undo]").click();
-      await page.waitForTimeout(300);
-      const afterUndo = await currentBytes(page);
-      await page.locator("[data-redo]").click();
-      await page.waitForTimeout(300);
-      const afterRedo = await currentBytes(page);
+      const after = await page.evaluate((previousId) => {
+        const catalog = JSON.parse(localStorage.getItem("aranje.projects"));
+        return {
+          id: catalog.activeProjectId,
+          ids: catalog.projectIds.length,
+          previousBytes: localStorage.getItem(`aranje.project.${previousId}`),
+        };
+      }, before.id);
+      const canUndo = await page.locator("[data-undo]").isEnabled();
       record(
-        at("06 Yeni şarkı: apply, undo, redo byte-eş"),
+        at("06 Yeni şarkı yeni proje açar, eskisine dokunmaz"),
         delta === 1 &&
-          undoLabel === "Geri al: Yeni şarkı oluşturma" &&
-          afterUndo === oldBytes &&
-          afterRedo === newBytes,
-        `undoLabel=${undoLabel}`,
+          after.id !== before.id &&
+          after.ids === before.ids + 1 &&
+          after.previousBytes === before.bytes &&
+          canUndo === false,
+        `proje ${before.ids}→${after.ids} · eski bayt-eş ${after.previousBytes === before.bytes} · undo ${canUndo}`,
       );
     });
 
@@ -591,8 +618,17 @@ async function run(browser, size, label) {
         (await writes(page)) === before + 1 &&
           created?.name === "Yeni Kanal" &&
           created?.id === "track-1" &&
+          /*
+           * K-55: a new track is somewhere you can write. Every bar gains an
+           * empty lane for it — silent by the same rule as a missing key,
+           * and unlike a missing key, writable. The old expectation here
+           * (no key anywhere) was the defect 2Q-A closed.
+           */
           song?.sections.every((section) =>
-            section.bars.every((bar) => !(created.id in bar.slots)),
+            section.bars.every((bar) => {
+              const lane = bar.slots[created.id];
+              return Array.isArray(lane) && lane.every((slot) => slot === null);
+            }),
           ),
         `tracks=${song?.tracks.length}`,
       );
@@ -714,7 +750,21 @@ async function run(browser, size, label) {
       await openTrackManager(page);
       await page.locator("[data-track-row='gtr']").click();
       await page.locator("[data-track-action=setup]").click();
-      await page.locator("[data-track-preset]").selectOption("clean");
+      /*
+       * This used to switch the preset to `clean`, and that change is no
+       * longer offered: K-54 stopped listing a preset with no sound behind
+       * it, and the electric guitar has exactly one playable core preset.
+       *
+       * Nor is the tuning a substitute — it is the *incompatible* axis by
+       * design: every written note carries an explicit pitch and position,
+       * so re-tuning the string under it is refused atomically rather than
+       * silently re-pitching the music (that refusal is scenario 24).
+       *
+       * What remains compatible through this form is the part of the setup
+       * that no note depends on. The claim under test is unchanged: a
+       * compatible change commits once and keeps every note.
+       */
+      await page.locator("[data-track-name]").fill("Ritim Gitar");
       const before = await writes(page);
       await page.locator("[data-track-apply]").click();
       await page.waitForTimeout(300);
@@ -730,9 +780,10 @@ async function run(browser, size, label) {
       record(
         at("23 Uyumlu setup değişimi içerikle uygulanır"),
         (await writes(page)) === before + 1 &&
-          song?.tracks[0]?.presetId === "clean" &&
+          song?.tracks[0]?.name === "Ritim Gitar" &&
+          song?.tracks[0]?.fretboard?.tuning[0] === "E2" &&
           keepsContent === true,
-        `preset=${song?.tracks[0]?.presetId}`,
+        `name=${song?.tracks[0]?.name}`,
       );
     });
 
@@ -769,8 +820,20 @@ async function run(browser, size, label) {
           (await writes(page)) === before + 1 &&
           song?.tracks[0]?.instrumentId === "drum_kit" &&
           song?.tracks[0]?.fretboard === undefined &&
+          /*
+           * The content goes; the track's place in the bar does not. Under
+           * K-55 an emptied lane is an empty *drum* lane — the shape follows
+           * the new instrument — rather than a missing key, which would make
+           * the track unwritable again.
+           */
           song?.sections.every((section) =>
-            section.bars.every((bar) => !("gtr" in bar.slots)),
+            section.bars.every((bar) => {
+              const lane = bar.slots["gtr"];
+              return (
+                Array.isArray(lane) &&
+                lane.every((slot) => Array.isArray(slot) && slot.length === 0)
+              );
+            }),
           ),
         `instrument=${song?.tracks[0]?.instrumentId}`,
       );
