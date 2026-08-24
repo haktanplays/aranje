@@ -62,6 +62,7 @@ export type WorkspaceNavigation = {
   viewSection(sectionId: string): void;
   selectTrack(trackId: string): void;
   showArrange(): void;
+  showMulti(): void;
   showTab(): void;
   seekToBar(barKey: string): void;
   /** Track, transport, surface, scroll — the one tap that crosses both. */
@@ -221,6 +222,19 @@ export function useWorkspaceNavigation(options: {
     setView("arrange");
   }, []);
 
+  /*
+   * The third surface goes through the same one owner (2Q-A §4).
+   *
+   * No second `useState` for "am I in the multi view": there is one
+   * `WorkspaceView` and one setter, so two surfaces can never both believe
+   * they are on screen. Switching does not touch the section being viewed,
+   * the transport, the loop or the active track — a view change is a change
+   * of what the reader is looking at and nothing else.
+   */
+  const showMulti = useCallback(() => {
+    setView("multi");
+  }, []);
+
   const showTab = useCallback(() => {
     setView("tab");
   }, []);
@@ -261,6 +275,7 @@ export function useWorkspaceNavigation(options: {
     viewSection,
     selectTrack: setSelectedTrackId,
     showArrange,
+    showMulti,
     showTab,
     seekToBar,
     openBarInTab,

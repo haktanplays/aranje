@@ -33,10 +33,17 @@
  */
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 
-export type WorkspaceView = "arrange" | "tab";
+export type WorkspaceView = "arrange" | "multi" | "tab";
 
+/*
+ * Three surfaces, in the order a question about a song gets narrower:
+ * what shape is it, who is playing what here, what do *I* play here.
+ * "Çoklu" sits between the other two because that is where it belongs in
+ * that sequence, not because it is new.
+ */
 const VIEWS: readonly { readonly id: WorkspaceView; readonly label: string }[] = [
   { id: "arrange", label: "Düzen" },
+  { id: "multi", label: "Çoklu" },
   { id: "tab", label: "Tab" },
 ];
 
