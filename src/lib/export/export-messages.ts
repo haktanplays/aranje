@@ -33,6 +33,24 @@ export const EXPORT_STATUS_TEXT = {
   ready: "İndirmeye hazır",
 } as const;
 
+/**
+ * What a reader is told when the file came out louder than a file can be
+ * (2O-B.1 §4).
+ *
+ * The encoder has always clamped anything past full scale and has never said
+ * so, which meant an export that lost the top of every dense chord looked
+ * exactly like a clean one. The sentence names the cause and the fix and no
+ * numbers: "0.4% of samples were clamped" is true and useless.
+ */
+export function levelNotice(clampedFrames: number): string | null {
+  if (clampedFrames <= 0) return null;
+  return (
+    "Dosyanın bazı anları en yüksek ses seviyesinin üstüne çıktığı için " +
+    "kırpıldı. Karıştırıcıdan track seviyelerini biraz düşürüp yeniden dışa " +
+    "aktarabilirsiniz."
+  );
+}
+
 /** What each format is for, in the words someone choosing between them needs. */
 export const EXPORT_FORMAT_TEXT = {
   project: {

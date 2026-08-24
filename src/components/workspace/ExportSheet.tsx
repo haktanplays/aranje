@@ -143,6 +143,20 @@ export function ExportSheet({
               {ready.durationText !== null ? `${ready.durationText} · ` : ""}
               <span data-export-size>{ready.sizeText}</span>
             </p>
+            {/*
+              The file is finished and downloadable; this says something
+              about how it came out, which is why it sits inside the ready
+              card rather than in the error slot (2O-B.1 §4).
+            */}
+            {ready.levelNotice !== null ? (
+              <p
+                data-export-level-notice
+                role="status"
+                className="text-muted border-line mt-2 border-t pt-2 text-xs"
+              >
+                {ready.levelNotice}
+              </p>
+            ) : null}
             <div className="mt-2 flex gap-2">
               <a
                 data-export-download

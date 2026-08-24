@@ -35,6 +35,7 @@ import {
 import {
   EXPORT_MESSAGES,
   EXPORT_STATUS_TEXT,
+  levelNotice,
   type ExportErrorCode,
 } from "@/lib/export/export-messages";
 import {
@@ -75,6 +76,15 @@ export type ExportReady = {
   readonly seconds: number | null;
   readonly sizeText: string;
   readonly durationText: string | null;
+  /**
+   * A sentence about the file's level, or null when there is nothing to say.
+   *
+   * Audio only, and only when the encoder actually clamped something. It is
+   * not an error — the file is there and plays — so it does not go in
+   * `error`, and it is not a status either: it is a fact about the audio
+   * that the reader would otherwise only find by listening carefully.
+   */
+  readonly levelNotice: string | null;
 };
 
 export type ExportHandle = {
@@ -182,6 +192,7 @@ export function useExport(deps: Deps): ExportHandle {
       bytes: BlobPart,
       mime: string,
       seconds: number | null,
+      notice: string | null = null,
     ) => {
       revoke();
       const blob = new Blob([bytes], { type: mime });
@@ -195,6 +206,7 @@ export function useExport(deps: Deps): ExportHandle {
         seconds,
         sizeText: formatBytes(blob.size),
         durationText: seconds === null ? null : formatDuration(seconds),
+        levelNotice: notice,
       });
       setError(null);
       setStatusText(EXPORT_STATUS_TEXT.ready);
@@ -274,6 +286,9 @@ export function useExport(deps: Deps): ExportHandle {
         encoded.bytes,
         WAV_MIME,
         rendered.sampleRate > 0 ? frames / rendered.sampleRate : 0,
+        // The encoder counted what it clamped; a silent clamp is not the
+        // same thing as a file that did not clip (2O-B.1 §4).
+        levelNotice(encoded.levels.clampedFrames),
       );
     } catch {
       // Whatever Tone or the browser threw stays here: the reader gets a

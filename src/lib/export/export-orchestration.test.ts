@@ -11,6 +11,7 @@ import { describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 
 import { buildTempoMap } from "@/lib/audio/tempo";
+import { levelNotice } from "@/lib/export/export-messages";
 import { audioExportLimits } from "@/lib/limits";
 import { surfaceDigest } from "@/lib/copilot/scope";
 import { createSongStore } from "@/lib/song/song-store";
@@ -388,5 +389,27 @@ describe("76. the project backup is not behind the export door (2M-A.1 §5)", ()
     expect(inDownload).not.toContain("canPersist");
     expect(inDownload).not.toContain("entitle");
     expect(inDownload).not.toContain("quota");
+  });
+});
+
+describe("178. what the reader is told about a file's level (2O-B.1 §4)", () => {
+  it("says nothing when nothing was clamped", () => {
+    expect(levelNotice(0)).toBeNull();
+    expect(levelNotice(-1)).toBeNull();
+  });
+
+  it("names the cause and the fix, and no numbers", () => {
+    const notice = levelNotice(788);
+    expect(notice).not.toBeNull();
+    expect(notice).toContain("Karıştırıcıdan");
+    for (const leak of ["788", "dBFS", "clip", "clamp", "sample", "PCM"]) {
+      expect(notice, `notice leaks ${leak}`).not.toContain(leak);
+    }
+  });
+
+  it("is the same sentence however much was clamped", () => {
+    // The reader's next move is the same whether one frame or ten thousand
+    // went past full scale, so the sentence is too.
+    expect(levelNotice(1)).toBe(levelNotice(10496));
   });
 });

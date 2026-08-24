@@ -13,6 +13,7 @@ const config = [
       "eval/mixer/.render/**",
       "eval/export/.render/**",
       "eval/chord/.render/**",
+      "eval/chord-audio/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",

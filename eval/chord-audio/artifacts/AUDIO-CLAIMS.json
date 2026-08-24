@@ -1,0 +1,72 @@
+[
+  {
+    "name": "empty şablonunun her track'i duyuluyor",
+    "ok": true,
+    "detail": "peak 0.5600 rms 0.060878 track peaks {\"track-1\":0.56}"
+  },
+  {
+    "name": "rock_band şablonunun her track'i duyuluyor",
+    "ok": true,
+    "detail": "peak 0.6122 rms 0.063778 track peaks {\"track-1\":0.56,\"track-2\":0.2421,\"track-3\":0.1605}"
+  },
+  {
+    "name": "acoustic şablonunun her track'i duyuluyor",
+    "ok": true,
+    "detail": "peak 0.4722 rms 0.033880 track peaks {\"track-1\":0.4722}"
+  },
+  {
+    "name": "eksik pack sessiz başarı değil: motor track'i adıyla bildiriyor",
+    "ok": true,
+    "detail": "gitar peak 0 · bildirilen [\"Sessiz Gitar\"] · bas peak 0.2421"
+  },
+  {
+    "name": "her render kendi context'ini kapattı",
+    "ok": true,
+    "detail": "0"
+  },
+  {
+    "name": "şablonun kendi mix'i ve varsayılan −6 dB seviyesi kırpılmıyor",
+    "ok": true,
+    "detail": "minor-7-dense-minus-6:0.907/0 pan-centre:0.907/0 launch-template-mix:0.907/0"
+  },
+  {
+    "name": "varsayılan seviyede de kırpılabilen durumlar bulundu ve gizlenmedi",
+    "ok": true,
+    "detail": "pan-hard-left:1.282/18 pan-hard-right:1.282/18 two-guitars:1.616/322"
+  },
+  {
+    "name": "0 dB ve üstünde yoğun akor gerçekten kırpılıyor — ve bu gizlenmiyor",
+    "ok": true,
+    "detail": "minor-7-dense-0:1.809/788 minor-7-dense-plus-6:3.609/10496"
+  },
+  {
+    "name": "kodlanmış PCM'in tepe değeri kırpılan yerlerde tam ölçekte kalıyor",
+    "ok": true,
+    "detail": "power-two:0.3181 power-three:0.3908 minor-triad:0.4568 major-triad:0.4143 minor-7-four:0.4245 major-7-four:0.3901 minor-7-open:0.5600 minor-7-dense-minus-12:0.4544 minor-7-dense-minus-6:0.9066 minor-7-dense-0:1.0000 minor-7-dense-plus-6:1.0000 pan-centre:0.9066 pan-hard-left:1.0000 pan-hard-right:1.0000 two-guitars:1.0000 launch-template-mix:0.9066"
+  },
+  {
+    "name": "peak normalization sessiz bir parçayı da yükseltiyor",
+    "ok": true,
+    "detail": "power-two:-9.9→-1.0dB power-three:-8.2→-1.0dB minor-triad:-6.8→-1.0dB major-triad:-7.7→-1.0dB minor-7-four:-7.4→-1.0dB major-7-four:-8.2→-1.0dB minor-7-open:-5.0→-1.0dB minor-7-dense-minus-12:-6.9→-1.0dB minor-7-dense-minus-6:-0.9→-1.0dB minor-7-dense-0:5.1→-1.0dB minor-7-dense-plus-6:11.1→-1.0dB pan-centre:-0.9→-1.0dB pan-hard-left:2.2→-1.0dB pan-hard-right:2.2→-1.0dB two-guitars:4.2→-1.0dB launch-template-mix:-0.9→-1.0dB"
+  },
+  {
+    "name": "yumuşak limiter tam ölçeği aşan hiçbir örnek bırakmıyor",
+    "ok": true,
+    "detail": "power-two:transient×1.000 power-three:transient×1.000 minor-triad:transient×1.000 major-triad:transient×1.000 minor-7-four:transient×1.000 major-7-four:transient×1.000 minor-7-open:transient×1.000 minor-7-dense-minus-12:transient×1.000 minor-7-dense-minus-6:transient×0.998 minor-7-dense-0:transient×0.944 minor-7-dense-plus-6:transient×0.757 pan-centre:transient×0.998 pan-hard-left:transient×0.983 pan-hard-right:transient×1.000 two-guitars:transient×0.960 launch-template-mix:transient×0.998"
+  },
+  {
+    "name": "ham mix zaten kırpılmayan yerlerde limiter transient'e dokunmuyor",
+    "ok": true,
+    "detail": "power-two:1.0000 power-three:1.0000 minor-triad:1.0000 major-triad:1.0000 minor-7-four:1.0000 major-7-four:1.0000 minor-7-open:1.0000 minor-7-dense-minus-12:1.0000 minor-7-dense-minus-6:0.9983 pan-centre:0.9983 launch-template-mix:0.9983"
+  },
+  {
+    "name": "on iki dinleme dosyası yazıldı ve hepsinin sesi var",
+    "ok": true,
+    "detail": "01-new-song-default-guitar:0.560 02-rock-template-rhythm:0.560 03-power-chord-two-note:0.318 04-power-chord-three-note:0.391 05-am-open:0.507 06-am7-open:0.560 07-am7-compact:0.425 08-am7-barre:0.907 09-am7-six-voice-minus6:0.907 10-am7-six-voice-0db:1.809 11-two-guitars-panned:1.616 12-preview-after-25-switches:0.425"
+  },
+  {
+    "name": "sayfa hatası yok",
+    "ok": true,
+    "detail": "temiz"
+  }
+]

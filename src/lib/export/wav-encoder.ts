@@ -19,8 +19,33 @@ export type WavEncodeErrorCode =
   | "wav_non_finite_sample"
   | "wav_invalid_sample_rate";
 
+/**
+ * What the encoder saw on its way through (2O-B.1 §4).
+ *
+ * The clamp at ±1 has always been here and has always been silent, so an
+ * export that lost the top of every loud chord looked exactly like one that
+ * did not. Counting it costs one comparison per sample and turns "no
+ * clipping" from an assumption into something the caller can actually check.
+ *
+ * `peak` is the loudest sample the encoder was handed, **before** the clamp:
+ * a file that reads 1.0 back tells you nothing about how far past it the
+ * material went, and that distance is the whole question.
+ */
+export type WavLevels = {
+  /** Loudest input sample, unclamped. Above 1 means material was lost. */
+  readonly peak: number;
+  /** Samples the clamp acted on. */
+  readonly clampedSamples: number;
+  /** Frames where at least one channel was clamped: what a listener hears. */
+  readonly clampedFrames: number;
+};
+
 export type WavEncodeResult =
-  | { readonly ok: true; readonly bytes: Uint8Array<ArrayBuffer> }
+  | {
+      readonly ok: true;
+      readonly bytes: Uint8Array<ArrayBuffer>;
+      readonly levels: WavLevels;
+    }
   | { readonly ok: false; readonly code: WavEncodeErrorCode };
 
 const RIFF_HEADER_BYTES = 44;
@@ -126,16 +151,27 @@ export function encodeWav(input: {
   view.setUint32(40, dataBytes, true);
 
   let offset = RIFF_HEADER_BYTES;
+  let peak = 0;
+  let clampedSamples = 0;
+  let clampedFrames = 0;
   for (let frame = 0; frame < frames; frame += 1) {
+    let frameClamped = false;
     for (let channel = 0; channel < channelCount; channel += 1) {
       const sample = channels[channel]![frame]!;
       if (!Number.isFinite(sample)) {
         return { ok: false, code: "wav_non_finite_sample" };
       }
+      const magnitude = Math.abs(sample);
+      if (magnitude > peak) peak = magnitude;
+      if (magnitude >= 1) {
+        clampedSamples += 1;
+        frameClamped = true;
+      }
       view.setInt16(offset, toInt16(sample), true);
       offset += BYTES_PER_SAMPLE;
     }
+    if (frameClamped) clampedFrames += 1;
   }
 
-  return { ok: true, bytes };
+  return { ok: true, bytes, levels: { peak, clampedSamples, clampedFrames } };
 }

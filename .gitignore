@@ -14,3 +14,5 @@ eval/mixer/artifacts/
 eval/export/.render/
 eval/export/artifacts/
 eval/chord/.render/
+# 2O-B.1 launch audio + headroom render bundle
+eval/chord-audio/.render/

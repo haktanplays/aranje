@@ -1,0 +1,423 @@
+{
+  "what": "2O-B.1 §2, §5 — launch şablonlarının gerçek sesi ve dinleme paketi",
+  "measuredOn": "masaüstü Chromium",
+  "templates": {
+    "empty": {
+      "templateId": "empty",
+      "tracks": [
+        {
+          "id": "track-1",
+          "instrumentId": "electric_guitar",
+          "presetId": "high_gain"
+        }
+      ],
+      "silentTrackNames": [],
+      "peak": 0.559973955154419,
+      "rms": 0.06087763800145648,
+      "perTrackPeak": {
+        "track-1": 0.559973955154419
+      },
+      "activeAfterDispose": 0
+    },
+    "rock_band": {
+      "templateId": "rock_band",
+      "tracks": [
+        {
+          "id": "track-1",
+          "instrumentId": "electric_guitar",
+          "presetId": "high_gain"
+        },
+        {
+          "id": "track-2",
+          "instrumentId": "electric_bass",
+          "presetId": "finger"
+        },
+        {
+          "id": "track-3",
+          "instrumentId": "drum_kit",
+          "presetId": "rock"
+        }
+      ],
+      "silentTrackNames": [],
+      "peak": 0.6121626496315002,
+      "rms": 0.06377779805259538,
+      "perTrackPeak": {
+        "track-1": 0.559973955154419,
+        "track-2": 0.24211682379245758,
+        "track-3": 0.16046205163002014
+      },
+      "activeAfterDispose": 0
+    },
+    "acoustic": {
+      "templateId": "acoustic",
+      "tracks": [
+        {
+          "id": "track-1",
+          "instrumentId": "steel_acoustic",
+          "presetId": "finger"
+        }
+      ],
+      "silentTrackNames": [],
+      "peak": 0.4722274839878082,
+      "rms": 0.033880252037729146,
+      "perTrackPeak": {
+        "track-1": 0.4722274839878082
+      },
+      "activeAfterDispose": 0
+    }
+  },
+  "missingPreset": {
+    "peak": 0,
+    "silentTrackNames": [
+      "Sessiz Gitar"
+    ],
+    "activeAfterDispose": 0,
+    "otherTrackPeak": 0.24211682379245758
+  },
+  "listening": [
+    {
+      "name": "01-new-song-default-guitar",
+      "what": "yeni boş şarkının varsayılan gitarı, bir Am7 ile",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "E3",
+        "G3",
+        "C4",
+        "E4"
+      ],
+      "positions": [
+        "s2f0",
+        "s3f2",
+        "s4f0",
+        "s5f1",
+        "s6f0"
+      ],
+      "peak": 0.559973955154419,
+      "rms": 0.060877637981065005,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "02-rock-template-rhythm",
+      "what": "rock şablonunun ritim gitarı, bas ve davulla",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "E3",
+        "G3",
+        "C4",
+        "E4"
+      ],
+      "positions": [
+        "s2f0",
+        "s3f2",
+        "s4f0",
+        "s5f1",
+        "s6f0"
+      ],
+      "peak": 0.5599738955497742,
+      "rms": 0.06087763800253277,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "03-power-chord-two-note",
+      "what": "iki sesli A5",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "E3"
+      ],
+      "positions": [
+        "s2f0",
+        "s3f2"
+      ],
+      "peak": 0.3180564343929291,
+      "rms": 0.03650678900266158,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "04-power-chord-three-note",
+      "what": "üç sesli A5",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "E3",
+        "A3"
+      ],
+      "positions": [
+        "s2f0",
+        "s3f2",
+        "s4f2"
+      ],
+      "peak": 0.3907749056816101,
+      "rms": 0.043631166147698824,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "05-am-open",
+      "what": "açık Am",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "positions": [
+        "s2f0",
+        "s3f2",
+        "s4f2",
+        "s5f1",
+        "s6f0"
+      ],
+      "peak": 0.5073606967926025,
+      "rms": 0.060120301947976545,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "06-am7-open",
+      "what": "açık Am7",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "E3",
+        "G3",
+        "C4",
+        "E4"
+      ],
+      "positions": [
+        "s2f0",
+        "s3f2",
+        "s4f0",
+        "s5f1",
+        "s6f0"
+      ],
+      "peak": 0.559973955154419,
+      "rms": 0.06087763799592529,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "07-am7-compact",
+      "what": "kompakt Am7 (aramanın ikinci varyasyonu)",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A3",
+        "C4",
+        "G4"
+      ],
+      "positions": [
+        "s4f2",
+        "s5f1",
+        "s6f3"
+      ],
+      "peak": 0.4245404303073883,
+      "rms": 0.0468730110406741,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "08-am7-barre",
+      "what": "beşinci perde civarı Am7",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4"
+      ],
+      "positions": [
+        "s1f5",
+        "s2f0",
+        "s3f5",
+        "s4f5",
+        "s5f5",
+        "s6f0"
+      ],
+      "peak": 0.9066361784934998,
+      "rms": 0.09419048399656856,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "09-am7-six-voice-minus6",
+      "what": "altı sesli Am7, şablonun kendi −6 dB'si",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4"
+      ],
+      "positions": [
+        "s1f5",
+        "s2f0",
+        "s3f5",
+        "s4f5",
+        "s5f5",
+        "s6f0"
+      ],
+      "peak": 0.9066363573074341,
+      "rms": 0.09419048395030231,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "10-am7-six-voice-0db",
+      "what": "aynı altı sesli Am7, 0 dB",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4"
+      ],
+      "positions": [
+        "s1f5",
+        "s2f0",
+        "s3f5",
+        "s4f5",
+        "s5f5",
+        "s6f0"
+      ],
+      "peak": 1.8089771270751953,
+      "rms": 0.1879347336984453,
+      "clippedSamples": 1576,
+      "clippedFrames": 788,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "11-two-guitars-panned",
+      "what": "aynı anda iki gitar track'i, ikisi de −6 dB",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4",
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4"
+      ],
+      "positions": [
+        "s1f5",
+        "s2f0",
+        "s3f5",
+        "s4f5",
+        "s5f5",
+        "s6f0",
+        "s1f5",
+        "s2f0",
+        "s3f5",
+        "s4f5",
+        "s5f5",
+        "s6f0"
+      ],
+      "peak": 1.6156377792358398,
+      "rms": 0.16784866990926217,
+      "clippedSamples": 644,
+      "clippedFrames": 322,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    },
+    {
+      "name": "12-preview-after-25-switches",
+      "what": "yirmi beş varyasyon değişiminden sonraki dinleme",
+      "preset": "electric_guitar/high_gain",
+      "samplePack": "electric_guitar/high_gain",
+      "notes": [
+        "A3",
+        "C4",
+        "G4"
+      ],
+      "positions": [
+        "s4f2",
+        "s5f1",
+        "s6f3"
+      ],
+      "peak": 0.4245404601097107,
+      "rms": 0.046873011034279474,
+      "clippedSamples": 0,
+      "clippedFrames": 0,
+      "requestedBuffers": 0,
+      "decodedBuffers": 0,
+      "activeAfterDispose": 0,
+      "wavBytes": 882044
+    }
+  ],
+  "counts": {
+    "audioContexts": 43,
+    "sampleRequests": 328,
+    "distinctSampleUrls": 21
+  },
+  "consoleErrors": []
+}

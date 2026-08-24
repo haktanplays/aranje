@@ -188,3 +188,49 @@ describe("66. the encoder is pure", () => {
     }
   });
 });
+
+describe("177. the clamp is counted, not hidden (2O-B.1 §4)", () => {
+  const levels = (result: ReturnType<typeof encodeWav>) => {
+    if (!result.ok) throw new Error(`encode refused: ${result.code}`);
+    return result.levels;
+  };
+
+  it("reports the loudest input sample, before the clamp touched it", () => {
+    // 1.809 is the real measured peak of a six-note A minor 7 on a track at
+    // 0 dB. The file can only carry 1.0; how far past it the material went
+    // is the number that says how much was lost, and it is only knowable
+    // here.
+    const loud = levels(stereo([0.5, 1.809, -0.25], [0, 0, 0]));
+    expect(loud.peak).toBeCloseTo(1.809, 6);
+    expect(loud.clampedSamples).toBe(1);
+    expect(loud.clampedFrames).toBe(1);
+  });
+
+  it("says nothing happened when nothing did", () => {
+    const quiet = levels(stereo([0.5, -0.5, 0.9066], [0.1, 0.2, 0.3]));
+    expect(quiet.clampedSamples).toBe(0);
+    expect(quiet.clampedFrames).toBe(0);
+    expect(quiet.peak).toBeCloseTo(0.9066, 6);
+  });
+
+  it("counts a frame once however many channels clipped in it", () => {
+    const both = levels(stereo([2, 0.1], [-2, 0.1]));
+    expect(both.clampedSamples).toBe(2);
+    expect(both.clampedFrames).toBe(1);
+  });
+
+  it("counts full scale itself, because that is where the clamp acts", () => {
+    // A sample of exactly ±1 is not distorted — it maps to the end of the
+    // type — but it is the boundary the clamp is written at, and reporting
+    // it differently from the code would make the number a guess.
+    const edge = levels(stereo([1, -1], [0, 0]));
+    expect(edge.clampedSamples).toBe(2);
+    expect(edge.peak).toBe(1);
+  });
+
+  it("silence is level information too, not a missing answer", () => {
+    const silence = levels(stereo([0, 0, 0], [0, 0, 0]));
+    expect(silence.peak).toBe(0);
+    expect(silence.clampedFrames).toBe(0);
+  });
+});
