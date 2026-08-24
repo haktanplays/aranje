@@ -1,0 +1,104 @@
+{
+  "measuredOn": "desktop Node — not a phone, and not evidence about one",
+  "node": "v22.22.2",
+  "note": "No threshold is invented. The whole-neck sweep is the worst case a reader could reach only by pressing every root and every quality; the number a single interaction pays is the single-candidate row.",
+  "measurements": [
+    {
+      "label": "formula: twelve roots of every quality",
+      "rounds": 20,
+      "medianMs": 0.0461,
+      "p95Ms": 0.3227,
+      "maxMs": 0.3227
+    },
+    {
+      "label": "recognition: one onset",
+      "rounds": 20,
+      "medianMs": 0.076,
+      "p95Ms": 0.1561,
+      "maxMs": 0.1561
+    },
+    {
+      "label": "guitar candidates: standard tuning",
+      "rounds": 20,
+      "medianMs": 15.5174,
+      "p95Ms": 18.6186,
+      "maxMs": 18.6186
+    },
+    {
+      "label": "guitar candidates: Drop D",
+      "rounds": 20,
+      "medianMs": 11.1073,
+      "p95Ms": 15.3728,
+      "maxMs": 15.3728
+    },
+    {
+      "label": "guitar candidates: capo 2",
+      "rounds": 20,
+      "medianMs": 6.3905,
+      "p95Ms": 7.1406,
+      "maxMs": 7.1406
+    },
+    {
+      "label": "guitar candidates: DADGAD",
+      "rounds": 20,
+      "medianMs": 10.7507,
+      "p95Ms": 13.0438,
+      "maxMs": 13.0438
+    },
+    {
+      "label": "bass candidates",
+      "rounds": 20,
+      "medianMs": 1.5924,
+      "p95Ms": 2.2389,
+      "maxMs": 2.2389
+    },
+    {
+      "label": "the offered four shapes",
+      "rounds": 20,
+      "medianMs": 16.5567,
+      "p95Ms": 18.2778,
+      "maxMs": 18.2778
+    },
+    {
+      "label": "whole neck sweep: 11 qualities x 12 roots",
+      "rounds": 20,
+      "medianMs": 621.4144,
+      "p95Ms": 709.491,
+      "maxMs": 709.491
+    },
+    {
+      "label": "keyboard inversions",
+      "rounds": 20,
+      "medianMs": 0.0095,
+      "p95Ms": 0.0122,
+      "maxMs": 0.0122
+    },
+    {
+      "label": "command preview (validators included)",
+      "rounds": 20,
+      "medianMs": 0.388,
+      "p95Ms": 0.7462,
+      "maxMs": 0.7462
+    },
+    {
+      "label": "command on a keyboard track",
+      "rounds": 20,
+      "medianMs": 0.1581,
+      "p95Ms": 0.3345,
+      "maxMs": 0.3345
+    },
+    {
+      "label": "transpose a written chord",
+      "rounds": 20,
+      "medianMs": 0.3193,
+      "p95Ms": 0.5439,
+      "maxMs": 0.5439
+    }
+  ],
+  "sizes": {
+    "standard Am7 candidates": 820,
+    "capo 2 Am7 candidates": 131,
+    "bass Am7 candidates": 60,
+    "offered to the reader": 4
+  }
+}

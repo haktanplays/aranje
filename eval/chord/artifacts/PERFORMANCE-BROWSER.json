@@ -1,0 +1,66 @@
+{
+  "measuredOn": "desktop Chromium — not a phone, and not evidence about one",
+  "note": "Wall-clock through the real build, so each number includes the click, the render and the wait for what it produced. Nothing here is a promise about a phone.",
+  "measurements": [
+    {
+      "label": "builder açılışı (hücre → sheet)",
+      "rounds": 12,
+      "medianMs": 250,
+      "p95Ms": 280,
+      "maxMs": 280
+    },
+    {
+      "label": "kök seçimi",
+      "rounds": 12,
+      "medianMs": 99,
+      "p95Ms": 110,
+      "maxMs": 110
+    },
+    {
+      "label": "kalite seçimi ve şekil listesinin çizilmesi",
+      "rounds": 12,
+      "medianMs": 102,
+      "p95Ms": 114,
+      "maxMs": 114
+    },
+    {
+      "label": "25 varyasyon değişimi",
+      "rounds": 25,
+      "medianMs": 50,
+      "p95Ms": 82,
+      "maxMs": 85
+    },
+    {
+      "label": "25 sesli dinleme",
+      "rounds": 25,
+      "medianMs": 94,
+      "p95Ms": 112,
+      "maxMs": 166
+    },
+    {
+      "label": "uygula → depoda akor (round trip)",
+      "rounds": 6,
+      "medianMs": 393,
+      "p95Ms": 404,
+      "maxMs": 404
+    },
+    {
+      "label": "geri al / yinele",
+      "rounds": 8,
+      "medianMs": 234,
+      "p95Ms": 239,
+      "maxMs": 239
+    }
+  ],
+  "sheet": {
+    "nodes": 41,
+    "height": 780
+  },
+  "audio": {
+    "contextsBeforeAuditions": 0,
+    "contextsAfterAuditions": 1,
+    "sampleRequestsBefore": 0,
+    "sampleRequestsAfter": 168
+  },
+  "consoleErrors": []
+}

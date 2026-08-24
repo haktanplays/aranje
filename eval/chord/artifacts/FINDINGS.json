@@ -1,0 +1,57 @@
+{
+  "measuredOn": "desktop Node and Chromium — not a phone",
+  "findings": [
+    {
+      "id": "template_guitar_has_no_samples",
+      "severity": "pre-existing product defect, found while measuring the chord audition",
+      "what": "Every launch template hands a new reader an electric guitar on the 'clean' preset, and 'clean' has no vendored sample pack. buildTrackVoice() returns null when a preset has no pack, so that track makes no sound at all — not a quieter sound, none.",
+      "evidence": {
+        "templates": [
+          "empty      -> electric_guitar/clean  pack=NONE",
+          "rock_band  -> electric_guitar/clean  pack=NONE",
+          "rock_band  -> electric_bass/finger   pack=electric_bass/finger",
+          "acoustic   -> steel_acoustic/finger  pack=steel_acoustic/finger"
+        ],
+        "sampleSong": "electric_guitar/high_gain pack=electric_guitar/high_gain — the demo song works",
+        "cause": "song-templates.ts picks corePresets(instrumentId)[0]; for electric_guitar the core presets are [clean, high_gain] and only high_gain is vendored",
+        "vendoredPacks": [
+          "electric_guitar/high_gain",
+          "steel_acoustic/finger",
+          "electric_bass/finger"
+        ]
+      },
+      "notCausedBy2OB": "The chord builder plays through the existing preview path; it is silent here for the same reason every other note on that track is silent.",
+      "whyItMattersHere": "The chord builder exists for a beginner starting a new project, and a new project is exactly the case where the guitar has no sound. 'Dinle' on a voicing card does nothing on the track a template just gave them.",
+      "notFixedHere": "Which preset a launch template chooses is a product decision about the demo, and changing it is outside this checkpoint. Reported for the owner rather than changed unilaterally.",
+      "cheapestFix": "Either vendor a clean guitar pack, or have the template pick the first core preset that has one."
+    },
+    {
+      "id": "dense_chord_exceeds_full_scale_at_0db",
+      "severity": "measured risk, not a regression",
+      "what": "A six-note A minor 7 on a track at 0 dB renders with a peak of 1.8090; the WAV encoder clamps at +/-1, so an exported file would clip.",
+      "evidence": {
+        "at0dB": 1.809,
+        "atTemplateLevelMinus6dB": 0.9066,
+        "singleNoteAt0dB": 0.4586
+      },
+      "notCausedBy2OB": "A hand-written five-note chord does the same. The mix path is unchanged.",
+      "whyItMattersHere": "Making chords easy to write makes this much easier to reach.",
+      "notFixedHere": "Levels belong to the mixer; no limiter was added to the engine."
+    },
+    {
+      "id": "audition_refetches_the_sample_pack",
+      "severity": "measured cost introduced by this checkpoint's interaction pattern",
+      "what": "Twenty-five auditions in a row issued 168 sample requests — seven per audition, one per file in the pack. One AudioContext, one bank implementation and one scheduler throughout; what repeats is the fetch and decode.",
+      "cause": "acquireBank() refcounts per context and disposes the bank when the last handle is released. PreviewEngine.start() disposes the previous playback before building the next, so the refcount reaches zero between auditions and the next one rebuilds the bank from scratch.",
+      "notCausedBy2OB": "The machinery is the Copilot preview path, unchanged. A reader previews a candidate once; the chord builder makes rapid repeated auditions the normal interaction, which is what turns a latent cost into a real one.",
+      "measured": {
+        "auditions": 25,
+        "sampleRequests": 168,
+        "audioContexts": 1,
+        "medianAuditionMs": 94
+      },
+      "notFixedHere": "The fix belongs in the shared preview lifecycle - keeping a bank handle alive for the builder session so the refcount never reaches zero between plays - and redesigning shared playback machinery is not something this checkpoint should do on its own.",
+      "wherToFix": "src/lib/audio/buffer-bank.ts (refcount lifetime) or src/lib/workspace/use-chord-audition.ts (hold a handle while the sheet is open)"
+    }
+  ]
+}

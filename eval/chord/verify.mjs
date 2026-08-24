@@ -71,7 +71,6 @@ async function openApp(browser, size, seed) {
   });
   await page.addInitScript(
     ([script, state]) => {
-      // eslint-disable-next-line no-eval
       (0, eval)(script);
       for (const [key, value] of Object.entries(state ?? {})) {
         localStorage.setItem(key, value);
