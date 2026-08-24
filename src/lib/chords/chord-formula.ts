@@ -9,7 +9,7 @@
  * What it deliberately is not:
  *
  * - It is not a chord *object*. Nothing here is ever written into a Song — a
- *   chord in Aranjé is what it has always been, several `NoteEvent`s starting
+ *   chord in Aranje is what it has always been, several `NoteEvent`s starting
  *   on the same onset (spec 5.4). This table describes how to *choose* those
  *   pitches and is thrown away the moment they exist.
  * - It is not a judgement. There is no "common", "easy" or "suggested" flag,
