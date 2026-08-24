@@ -1,0 +1,534 @@
+{
+  "what": "2O-B.1 §3 — paylaşılan preview bank'in gerçek tarayıcıdaki maliyeti",
+  "measuredOn": "masaüstü Chromium, 390×844 viewport — fiziksel telefon değil",
+  "before": {
+    "how": "Aynı harness, use-chord-audition.ts'ten bankSession geçici olarak çıkarılarak (probe protokolü) ölçüldü, sonra geri alındı.",
+    "sameShape25": {
+      "sampleRequests": 175,
+      "sampleDecodes": 175,
+      "distinctSampleUrls": 7
+    },
+    "fourVariations25": {
+      "sampleRequests": 168,
+      "sampleDecodes": 168,
+      "distinctSampleUrls": 7
+    },
+    "twoChordsOnePreset": {
+      "sampleRequests": 14,
+      "sampleDecodes": 14,
+      "distinctSampleUrls": 7
+    },
+    "note": "2O-B'nin bildirdiği 168 rakamı doğrulandı. O ölçümde decode sayısı raporlanmamıştı; burada indirme kadar çözme de tekrarlandığı görülüyor."
+  },
+  "instrumentationCorrection": "İlk denemede AudioContext'i saymak için kurucu alt sınıflandı ve bu Tone'un standardized-audio-context tabanlı çözücüsünü bozdu: her yükleme InvalidStateError ile düştü, kayıt tahliye edildi ve düzeltme uygulanmışken bile 175 istek ölçüldü. Sayaç şeffaf bir Proxy'ye çevrildi. Ölçüm aracının kendisi ölçülen şeyi bozabiliyor; bu satır onun kaydı.",
+  "countedOn": "fetch/XHR ile /samples/ istekleri, decodeAudioData çağrıları, AudioBufferSourceNode start/ended, AudioNode.disconnect, AudioContext kurucusu",
+  "measurements": {
+    "sameShape25": {
+      "cold": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          22881,
+          23973,
+          24311,
+          22725,
+          25585,
+          25169,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 7,
+        "finished": 2,
+        "stops": 3,
+        "live": 5,
+        "disconnects": 29,
+        "errors": 0
+      },
+      "warm": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          22881,
+          23973,
+          24311,
+          22725,
+          25585,
+          25169,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 127,
+        "finished": 102,
+        "stops": 103,
+        "live": 25,
+        "disconnects": 1681,
+        "errors": 0
+      }
+    },
+    "fourVariations25": {
+      "variations": 4,
+      "sampleRequests": 7,
+      "distinctSampleUrls": 7,
+      "decodes": 8,
+      "decodeHooks": 1,
+      "sampleDecodes": 7,
+      "decodeBytes": [
+        48,
+        22881,
+        23973,
+        22725,
+        25585,
+        24311,
+        25169,
+        25455
+      ],
+      "audioContextsByKind": {
+        "AudioContext": 1,
+        "OfflineAudioContext": 0
+      },
+      "liveAudioContexts": 1,
+      "audioContexts": 2,
+      "started": 110,
+      "finished": 87,
+      "stops": 88,
+      "live": 23,
+      "disconnects": 1580,
+      "errors": 0
+    },
+    "twoChordsOnePreset": {
+      "sampleRequests": 7,
+      "distinctSampleUrls": 7,
+      "decodes": 8,
+      "decodeHooks": 1,
+      "sampleDecodes": 7,
+      "decodeBytes": [
+        48,
+        22725,
+        23973,
+        24311,
+        25585,
+        25169,
+        22881,
+        25455
+      ],
+      "audioContextsByKind": {
+        "AudioContext": 1,
+        "OfflineAudioContext": 0
+      },
+      "liveAudioContexts": 1,
+      "audioContexts": 2,
+      "started": 13,
+      "finished": 7,
+      "stops": 8,
+      "live": 6,
+      "disconnects": 104,
+      "errors": 0
+    },
+    "twoPresets": {
+      "afterGuitar": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          22725,
+          22881,
+          23973,
+          24311,
+          25585,
+          25169,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 7,
+        "finished": 2,
+        "stops": 3,
+        "live": 5,
+        "disconnects": 29,
+        "errors": 0
+      },
+      "afterBass": {
+        "sampleRequests": 13,
+        "distinctSampleUrls": 13,
+        "decodes": 14,
+        "decodeHooks": 1,
+        "sampleDecodes": 13,
+        "decodeBytes": [
+          48,
+          22725,
+          22881,
+          23973,
+          24311,
+          25585,
+          25169,
+          25455,
+          14275,
+          14951,
+          16173,
+          15783,
+          16095,
+          17083
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 9,
+        "finished": 7,
+        "stops": 8,
+        "live": 2,
+        "disconnects": 96,
+        "errors": 0
+      }
+    },
+    "concurrent": {
+      "sampleRequests": 7,
+      "distinctSampleUrls": 7,
+      "decodes": 8,
+      "decodeHooks": 1,
+      "sampleDecodes": 7,
+      "decodeBytes": [
+        48,
+        22725,
+        23973,
+        24311,
+        25585,
+        25169,
+        25455,
+        22881
+      ],
+      "audioContextsByKind": {
+        "AudioContext": 1,
+        "OfflineAudioContext": 0
+      },
+      "liveAudioContexts": 1,
+      "audioContexts": 2,
+      "started": 5,
+      "finished": 2,
+      "stops": 3,
+      "live": 3,
+      "disconnects": 61,
+      "errors": 0
+    },
+    "failureThenRetry": {
+      "blockedRequests": 7,
+      "failed": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 0,
+        "decodeHooks": 1,
+        "sampleDecodes": 0,
+        "decodeBytes": [],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 0,
+        "finished": 0,
+        "stops": 0,
+        "live": 0,
+        "disconnects": 18,
+        "errors": 7
+      },
+      "retried": {
+        "sampleRequests": 14,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          22725,
+          22881,
+          23973,
+          24311,
+          25585,
+          25169,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 7,
+        "finished": 7,
+        "stops": 8,
+        "live": 0,
+        "disconnects": 61,
+        "errors": 7
+      }
+    },
+    "sheetClose": {
+      "atClose": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          22725,
+          22881,
+          23973,
+          25169,
+          25585,
+          24311,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 15,
+        "finished": 2,
+        "stops": 3,
+        "live": 13,
+        "disconnects": 184,
+        "errors": 0
+      },
+      "afterThreeSeconds": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          22725,
+          22881,
+          23973,
+          25169,
+          25585,
+          24311,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 15,
+        "finished": 15,
+        "stops": 16,
+        "live": 0,
+        "disconnects": 246,
+        "errors": 0
+      }
+    },
+    "reopen": {
+      "sampleRequests": 7,
+      "distinctSampleUrls": 7,
+      "decodes": 8,
+      "decodeHooks": 1,
+      "sampleDecodes": 7,
+      "decodeBytes": [
+        48,
+        22725,
+        22881,
+        23973,
+        25169,
+        25585,
+        24311,
+        25455
+      ],
+      "audioContextsByKind": {
+        "AudioContext": 1,
+        "OfflineAudioContext": 0
+      },
+      "liveAudioContexts": 1,
+      "audioContexts": 2,
+      "started": 20,
+      "finished": 15,
+      "stops": 16,
+      "live": 5,
+      "disconnects": 272,
+      "errors": 0
+    },
+    "workspaceDispose": {
+      "beforeUnmount": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          24311,
+          22725,
+          22881,
+          23973,
+          25585,
+          25169,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 15,
+        "finished": 2,
+        "stops": 3,
+        "live": 13,
+        "disconnects": 167,
+        "errors": 0
+      },
+      "afterUnmount": {
+        "sampleRequests": 7,
+        "distinctSampleUrls": 7,
+        "decodes": 8,
+        "decodeHooks": 1,
+        "sampleDecodes": 7,
+        "decodeBytes": [
+          48,
+          24311,
+          22725,
+          22881,
+          23973,
+          25585,
+          25169,
+          25455
+        ],
+        "audioContextsByKind": {
+          "AudioContext": 1,
+          "OfflineAudioContext": 0
+        },
+        "liveAudioContexts": 1,
+        "audioContexts": 2,
+        "started": 15,
+        "finished": 15,
+        "stops": 16,
+        "live": 0,
+        "disconnects": 226,
+        "errors": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "name": "aynı varyasyon 25 kez: fetch benzersiz URL sayısında kalıyor",
+      "pass": true,
+      "detail": "7 istek / 7 benzersiz URL (soğuk: 7)"
+    },
+    {
+      "name": "aynı varyasyon 25 kez: decode benzersiz URL sayısında kalıyor",
+      "pass": true,
+      "detail": "7 sample decode (toplam 8 decodeAudioData)"
+    },
+    {
+      "name": "25 dinlemeden sonra canlı AudioContext hâlâ 1",
+      "pass": true,
+      "detail": "{\"AudioContext\":1,\"OfflineAudioContext\":0}"
+    },
+    {
+      "name": "dört varyasyon arasında 25 geçiş: tek bank",
+      "pass": true,
+      "detail": "4 varyasyon · 7 istek / 7 decode / 7 URL"
+    },
+    {
+      "name": "25 geçişten sonra canlı AudioContext hâlâ 1",
+      "pass": true,
+      "detail": "{\"AudioContext\":1,\"OfflineAudioContext\":0}"
+    },
+    {
+      "name": "aynı preset'te iki farklı akor: ikinci akor yeni indirme yapmıyor",
+      "pass": true,
+      "detail": "7 istek / 7 decode / 7 URL"
+    },
+    {
+      "name": "iki farklı preset iki ayrı bank alıyor, hiçbiri iki kez inmiyor",
+      "pass": true,
+      "detail": "gitar sonrası 7 URL → bas sonrası 13 URL, 13 istek / 13 decode"
+    },
+    {
+      "name": "iki preset tek canlı AudioContext",
+      "pass": true,
+      "detail": "{\"AudioContext\":1,\"OfflineAudioContext\":0}"
+    },
+    {
+      "name": "aynı anda iki dinleme talebi tek yükleme",
+      "pass": true,
+      "detail": "7 istek / 7 decode / 7 URL"
+    },
+    {
+      "name": "başarısız yükleme cache'i zehirlemiyor: sonraki deneme gerçekten yeniden indiriyor",
+      "pass": true,
+      "detail": "7 istek engellendi · 7 → 14 istek"
+    },
+    {
+      "name": "yeniden deneme gerçekten ses üretiyor",
+      "pass": true,
+      "detail": "0 → 7 source"
+    },
+    {
+      "name": "sheet kapandıktan sonraki 3 saniyede yeni ses yok",
+      "pass": true,
+      "detail": "15 → 15 source"
+    },
+    {
+      "name": "sheet kapanınca çalan hiçbir voice kalmıyor",
+      "pass": true,
+      "detail": "0 canlı"
+    },
+    {
+      "name": "sheet yeniden açılınca bank hâlâ orada",
+      "pass": true,
+      "detail": "7/7 → 7/7"
+    },
+    {
+      "name": "workspace gidince aktif voice 0",
+      "pass": true,
+      "detail": "13 → 0 canlı"
+    },
+    {
+      "name": "workspace gidince yeni ses başlamıyor",
+      "pass": true,
+      "detail": "15 → 15"
+    },
+    {
+      "name": "grafik gerçekten söküldü",
+      "pass": true,
+      "detail": "167 → 226 disconnect"
+    },
+    {
+      "name": "konsol hatası yok",
+      "pass": true,
+      "detail": "0"
+    }
+  ]
+}

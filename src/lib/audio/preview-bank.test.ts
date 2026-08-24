@@ -153,7 +153,31 @@ function auditionBench() {
     current = null;
   };
 
-  return { audition, stop, bankSession, built, context, engines: () => engines };
+  /**
+   * What pressing the *next* card before the last one finished loading does.
+   *
+   * The controller is disposed while its engine is still being built, which
+   * is the ordinary case rather than the edge one: loading a pack takes far
+   * longer than a reader takes to press the next shape.
+   */
+  const auditionAbandoned = async () => {
+    current?.dispose();
+    const controller = controllerFor();
+    const playing = controller.play();
+    controller.dispose();
+    await playing;
+    current = null;
+  };
+
+  return {
+    audition,
+    auditionAbandoned,
+    stop,
+    bankSession,
+    built,
+    context,
+    engines: () => engines,
+  };
 }
 
 describe("175. an audition does not download the pack again", () => {
@@ -187,6 +211,26 @@ describe("175. an audition does not download the pack again", () => {
     bench.bankSession.dispose();
     expect(bench.built[0]?.disposed).toBe(1);
     expect(banksHeld(bench.context)).toBe(0);
+  });
+
+  it("keeps the bank even when every audition is abandoned mid-load", async () => {
+    /*
+     * The measurement that caught this: twenty-five auditions in a real
+     * browser still issued 175 requests for seven files, because a reader
+     * presses the next shape long before a pack has finished loading, so
+     * every preview engine arrived already disposed and released its bank
+     * with nothing holding on.
+     */
+    const bench = auditionBench();
+    for (let i = 0; i < 25; i += 1) await bench.auditionAbandoned();
+
+    expect(bench.engines()).toBe(25);
+    expect(bench.built).toHaveLength(1);
+    expect(bench.built[0]?.disposed).toBe(0);
+    expect(bench.bankSession.retained()).toBe(1);
+
+    bench.bankSession.dispose();
+    expect(bench.built[0]?.disposed).toBe(1);
   });
 
   it("opens retention on the one context its engines were built on", async () => {

@@ -261,6 +261,22 @@ export class PlaybackController {
     });
     this.builds += 1;
 
+    /*
+     * Retention opens the moment there is a context to open it on — before
+     * the check below, deliberately (2O-B.1 §3).
+     *
+     * A reader pressing through chord variations disposes each controller
+     * long before its engine has finished loading, so most preview engines
+     * arrive here already abandoned. Opening retention after that check
+     * meant the abandoned ones released their banks with nothing holding on,
+     * and the next audition decoded the same seven files again — which is
+     * exactly the 168 requests this was supposed to fix, and it still
+     * measured 175 until this line moved. The session's job is to keep banks
+     * on every context its engines were built on; whether a particular
+     * engine survived is not the session's business.
+     */
+    this.bankSession?.open(engine.context);
+
     if (this.disposed) {
       engine.dispose();
       throw new Error("disposed");
@@ -272,13 +288,6 @@ export class PlaybackController {
     });
 
     this.engine = engine;
-    /*
-     * Before anything can be released: the engine has just taken its handles
-     * on the sample banks, and retention has to be open before this
-     * controller is disposed or the count reaches zero and the bank goes
-     * with it (2O-B.1 §3). Which context that is, is not known until here.
-     */
-    this.bankSession?.open(engine.context);
     this.set({ silentTrackNotice: silentTrackNotice(engine.silentTracks) });
 
     // A seek made before this existed is honoured now, not discarded.
