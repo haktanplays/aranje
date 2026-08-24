@@ -64,12 +64,16 @@ import {
 } from "@/lib/song/onset-block";
 import type { TimeSelection } from "@/lib/song/time-selection";
 
-/** Legato articulations: the ones that only sound if a note is already there. */
-export const CHAINING_ARTICULATIONS: ReadonlySet<Articulation> = new Set([
-  "slide",
-  "hammer_on",
-  "pull_off",
-]);
+/**
+ * Legato articulations: the ones that only sound if a note is already there.
+ *
+ * Stated in `articulation-roles.ts` and re-exported here, where every caller
+ * already looks for it. Which articulations are bonds is a fact about the
+ * contract; what to *do* about one is this module's decision to make, and that
+ * part has not moved.
+ */
+export { CHAINING_ARTICULATIONS } from "@/lib/song/articulation-roles";
+import { CHAINING_ARTICULATIONS } from "@/lib/song/articulation-roles";
 
 export type ChainImpactKind =
   | "no_chain_impact"
