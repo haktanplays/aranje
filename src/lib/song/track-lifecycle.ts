@@ -12,8 +12,10 @@
  *   change is refused atomically — nothing is clamped, dropped or moved to
  *   another string to force a fit.
  * - `replace_track_setup_and_clear_content` is the separate, explicitly
- *   destructive road: the track's keys disappear from every bar (missing key
- *   *is* silence, spec 5.5) and the new setup applies to an empty lane.
+ *   destructive road: every note the track had is gone and the new setup
+ *   applies to an empty lane — an **explicit** one, in the new instrument's
+ *   shape, so the track a reader just converted is still a track they can
+ *   write into (K-55, 2Q-B §1.3).
  *
  * There is deliberately no third command between them.
  *
@@ -304,14 +306,25 @@ export function applyTrackCommand(
       const refused = setupError(command.setup);
       if (refused) return { ok: false, error: { code: refused } };
       const current = song.tracks[index]!;
+      const replaced = applySetup(command.setup, current);
       const tracks = song.tracks.map((track, at) =>
-        at === index ? applySetup(command.setup, current) : track,
+        at === index ? replaced : track,
       );
-      return guardCandidate({
-        ...song,
-        tracks,
-        sections: sectionsWithoutTrackKey(song.sections, command.trackId),
-      });
+      /*
+       * The music goes; the track's place in the bar does not (2Q-B §1.3).
+       *
+       * Clearing used to drop the key from every bar, which is the shape
+       * that says both "silent here" *and* "not written here" — so a reader
+       * who converted a guitar into a kit was handed a track no cell would
+       * accept a note into. That is defect A (K-55) arriving through a
+       * second door. The keys are cleared and then laid again in the shape
+       * the **new** instrument asks for, so the track stays writable and
+       * stays silent.
+       */
+      const cleared = sectionsWithoutTrackKey(song.sections, command.trackId);
+      return guardCandidate(
+        withEmptyLanes({ ...song, tracks, sections: cleared }, replaced),
+      );
     }
   }
 }

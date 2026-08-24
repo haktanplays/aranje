@@ -349,10 +349,21 @@ describe("51. setup changes: the safe road and the destructive road", () => {
     if (!result.ok) return;
     expect(result.song.tracks[0]?.name).toBe("Tek Telli");
     expect(result.song.tracks[0]?.fretboard?.capo).toBe(2);
+    /*
+     * The music goes; the track's place in the bar stays (2Q-B §1.3).
+     *
+     * This used to drop the key from every bar, and a missing key says two
+     * things at once — "silent here" *and* "not written here" — so a reader
+     * who converted a guitar into a kit got a track they could not write
+     * into. That is the defect K-55 closed for `create_track`, arriving
+     * through a second door: the same silence has to be an explicit empty
+     * lane, in the shape the *new* instrument asks for.
+     */
     for (const section of result.song.sections) {
       for (const bar of section.bars) {
-        // Removed per missing/silence semantics — no fake empty arrays.
-        expect("gtr" in bar.slots).toBe(false);
+        const lane = bar.slots["gtr"];
+        expect(Array.isArray(lane)).toBe(true);
+        expect(lane?.every((slot) => slot === null)).toBe(true);
       }
     }
     // The input song still holds the music, whole: undo has something real
