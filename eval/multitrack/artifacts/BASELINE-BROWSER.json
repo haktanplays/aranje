@@ -1,0 +1,314 @@
+{
+  "what": "2Q-A §0 — B ve C kusurlarinin gercek build uzerindeki olcumu",
+  "viewports": {
+    "390x844": {
+      "transport": {
+        "viewportWidth": 390,
+        "rowWidth": 390,
+        "rowScrollWidth": 390,
+        "requiredWidth": 355.7,
+        "availableWidth": 390,
+        "overflowPx": 0,
+        "rootOverflowX": "visible",
+        "clippingAncestors": [
+          {
+            "tag": "div",
+            "cls": "flex h-dvh flex-col overflow-hidden",
+            "overflowX": "hidden",
+            "clientWidth": 390,
+            "scrollWidth": 390
+          }
+        ],
+        "bodyOverflowX": "visible",
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "bodyOverflowPx": 0,
+        "controls": [
+          {
+            "label": "Başa dön",
+            "text": "⏮",
+            "left": 12,
+            "right": 56,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Çal",
+            "text": "▶",
+            "left": 64,
+            "right": 120,
+            "width": 56,
+            "height": 44,
+            "visibleWidth": 56,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 16
+          },
+          {
+            "label": "Bölüm döngüsü",
+            "text": "↻",
+            "left": 128,
+            "right": 172,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Mikser",
+            "text": "◫",
+            "left": 180,
+            "right": 224,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Metronom",
+            "text": "♪",
+            "left": 232,
+            "right": 276,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Çalışma hızı yüzde 100. Değiştir",
+            "text": "%100",
+            "left": 318.3,
+            "right": 378,
+            "width": 59.7,
+            "height": 44,
+            "visibleWidth": 59.7,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          }
+        ],
+        "missing": [
+          "Duraklat"
+        ],
+        "practicePill": {
+          "label": "Çalışma hızı yüzde 100. Değiştir",
+          "text": "%100",
+          "left": 318.3,
+          "right": 378,
+          "width": 59.7,
+          "height": 44,
+          "visibleWidth": 59.7,
+          "clippedPx": 0,
+          "fullyVisible": true,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        "intentionalScrollers": 1
+      },
+      "tab": {
+        "tabContents": 1,
+        "barElements": 4,
+        "trackControlLabel": "Ritim Gitar · High gain▾",
+        "scrollLeft": 0,
+        "scrollWidth": 1512,
+        "clientWidth": 390,
+        "horizontalScrollers": 1
+      },
+      "switching": {
+        "actions": 2,
+        "steps": [
+          "track kontrolü",
+          "track satırı"
+        ],
+        "scrollBefore": 240,
+        "scrollAfter": 240,
+        "horizontalPositionKept": true,
+        "trackAfter": "Solo Gitar · High gain▾"
+      },
+      "duringPlayback": {
+        "before": {
+          "status": "playing",
+          "contexts": 1
+        },
+        "after": {
+          "status": "playing",
+          "contexts": 1,
+          "trackControlLabel": "Solo Gitar · High gain▾"
+        },
+        "playbackSurvived": true
+      },
+      "pageErrors": []
+    },
+    "320x700": {
+      "transport": {
+        "viewportWidth": 320,
+        "rowWidth": 320,
+        "rowScrollWidth": 344,
+        "requiredWidth": 355.7,
+        "availableWidth": 320,
+        "overflowPx": 35.7,
+        "rootOverflowX": "visible",
+        "clippingAncestors": [
+          {
+            "tag": "div",
+            "cls": "flex h-dvh flex-col overflow-hidden",
+            "overflowX": "hidden",
+            "clientWidth": 320,
+            "scrollWidth": 344
+          }
+        ],
+        "bodyOverflowX": "visible",
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "bodyOverflowPx": 0,
+        "controls": [
+          {
+            "label": "Başa dön",
+            "text": "⏮",
+            "left": 12,
+            "right": 56,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Çal",
+            "text": "▶",
+            "left": 64,
+            "right": 120,
+            "width": 56,
+            "height": 44,
+            "visibleWidth": 56,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 16
+          },
+          {
+            "label": "Bölüm döngüsü",
+            "text": "↻",
+            "left": 128,
+            "right": 172,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Mikser",
+            "text": "◫",
+            "left": 180,
+            "right": 224,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Metronom",
+            "text": "♪",
+            "left": 232,
+            "right": 276,
+            "width": 44,
+            "height": 44,
+            "visibleWidth": 44,
+            "clippedPx": 0,
+            "fullyVisible": true,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          },
+          {
+            "label": "Çalışma hızı yüzde 100. Değiştir",
+            "text": "%100",
+            "left": 284,
+            "right": 343.7,
+            "width": 59.7,
+            "height": 44,
+            "visibleWidth": 36,
+            "clippedPx": 23.7,
+            "fullyVisible": false,
+            "meetsTouchTarget": true,
+            "fontSizePx": 14
+          }
+        ],
+        "missing": [
+          "Duraklat"
+        ],
+        "practicePill": {
+          "label": "Çalışma hızı yüzde 100. Değiştir",
+          "text": "%100",
+          "left": 284,
+          "right": 343.7,
+          "width": 59.7,
+          "height": 44,
+          "visibleWidth": 36,
+          "clippedPx": 23.7,
+          "fullyVisible": false,
+          "meetsTouchTarget": true,
+          "fontSizePx": 14
+        },
+        "intentionalScrollers": 1
+      },
+      "tab": {
+        "tabContents": 1,
+        "barElements": 4,
+        "trackControlLabel": "Ritim Gitar · High gain▾",
+        "scrollLeft": 0,
+        "scrollWidth": 1442,
+        "clientWidth": 320,
+        "horizontalScrollers": 1
+      },
+      "switching": {
+        "actions": 2,
+        "steps": [
+          "track kontrolü",
+          "track satırı"
+        ],
+        "scrollBefore": 240,
+        "scrollAfter": 240,
+        "horizontalPositionKept": true,
+        "trackAfter": "Solo Gitar · High gain▾"
+      },
+      "duringPlayback": {
+        "before": {
+          "status": "playing",
+          "contexts": 1
+        },
+        "after": {
+          "status": "playing",
+          "contexts": 1,
+          "trackControlLabel": "Solo Gitar · High gain▾"
+        },
+        "playbackSurvived": true
+      },
+      "pageErrors": []
+    }
+  },
+  "measuredOn": "masaustu Chromium — telefon degil"
+}
