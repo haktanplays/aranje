@@ -2930,6 +2930,105 @@ sistemi, parmak numarası, barre kalıcı modeli, MIDI/audio akor tanıma, 64'l�
 grid, çoklu enstrüman stacked editor, cloud/hesap/paywall, gerçek provider,
 release hardening, fiziksel Android/iOS kabulü.
 
+### §13.23 Açılış ses bütünlüğü, paylaşılan preview bank ve ifade ölçümü (§19 K-54)
+
+Bu bölüm iki checkpoint'i birlikte kaydeder. **2O-B.1** ölçülmüş üç ürün
+sorununu kapatır; **2P-A** bir *ölçüm* ve *tasarım* turudur ve bugünkü
+bend/slide davranışını **değiştirmez**.
+
+#### 2O-B.1 — açılış sesi
+
+**§1 Kayıtta olmak ile duyulabilmek iki ayrı olgudur.** Registry hangi
+preset'lerin *var* olduğunu söyler ve kasıtlı olarak kayıtlardan haberi
+yoktur. `electric_guitar/clean` gerçek, core kapsamda, seçilebilir bir
+preset'ti ve arkasında vendor edilmiş sample pack yoktu: o preset'i taşıyan
+track hiç ses çıkarmıyordu — daha kısık değil, hiç — ve üstündeki her katman
+başarı bildiriyordu. İki launch şablonu yeni okura tam olarak bu track'i
+veriyordu (`eval/chord-audio/artifacts/BASELINE.json`).
+
+`AudioPresetAvailability` bu ikinci soruyu sahiplenir. **Song Contract'ın
+parçası değildir:** şarkı okurun seçtiğini saklar, hiçbir availability alanı
+şarkıya yazılmaz, dosyaya çıkmaz, fingerprint'e girmez ve validator zincirinde
+sorulmaz. Bugün duyulamayan, yarın vendor edilen bir preset diskteki hiçbir
+dosya hakkında hiçbir şeyi değiştirmez. `bankKey` preset adının değil
+**çözülmüş varlık kümesinin** kimliğidir.
+
+**§2 Şablon duyulabilen bir şey verir.** `materializeTrack` artık
+`playableCorePresets(...)[0]` seçer — electric guitar için `high_gain` —
+ve duyulabilir core preset'i olmayan enstrüman için track üretmek yerine
+**reddeder**. `clean` registry'de anlamını korur; kaldırılmadı.
+
+**§3 Legacy şarkı düzeltilmez, doğrusu söylenir.** `silentTracks(song)`
+şarkıyı okur ve asla yazmaz. Kullanıcıya gösterilen cümle okurun kendi track
+adlarını kullanır; preset id'si, pack id'si, URL, manifest dosya adı ve hata
+kodu ekrana çıkmaz. Preset seçici duyulamayan bir preset'i sıradan bir
+seçenek gibi sunmaz, ama track'in **zaten taşıdığı** değeri listeden düşürmez:
+düşürmek, kontrolün başka bir preset göstermesine ve formdaki ilk tuş
+vuruşunun o başka preset'i şarkıya yazmasına yol açardı.
+
+**§4 Paylaşılan preview bank.** Bir dinleme bütün bir motor kurar, tek akor
+çalar ve motoru atar. Şekil doğrudur — önizleme *çalmanın kendisidir* — ama
+çözülmüş bank motorla birlikte ölüyordu ve sonraki dinleme aynı yedi dosyayı
+yeniden indirip çözüyordu. `getOrLoad(context, bankKey, load)` tek yükleme
+kapısıdır: uçuştaki iki çağrı tek fetch/tek decode/tek promise üretir,
+başarısız yükleme **hatırlanmaz** (önbelleğe alınmış bir red, tek kötü ağ
+anını oturum boyunca çalınamayan bir preset'e çevirirdi) ve kimlik üzerinden
+korunur, böylece yerine geçmiş bir yeniden deneme eskisinin hatasıyla
+düşürülmez. **Retention** context başına açılır: son tüketici bırakınca bank
+dispose edilmek yerine retention'a geçer ve retention kapanınca ölür. Offline
+render retention açmaz; export bank'lerini context'iyle birlikte yıkar.
+
+**Kapanışta bulunan gerçek üretim hatası:** retention `this.disposed`
+kontrolünden *sonra* açılıyordu. Okur bir sonraki kartı pack yüklenmeden çok
+önce basar, yani motorların çoğu buraya zaten terk edilmiş gelir; onlar
+bank'lerini kimse tutmadan bırakıyordu ve 25 dinleme hâlâ 175 istek
+çıkarıyordu. Sıra düzeltildi ve sırayı geri alan bir birim testiyle bağlandı.
+
+**§5 Seviye ve kırpma yalnız ölçüldü.** `HEADROOM.json` dört kazanç
+yaklaşımını yalnızca eval tarafında, render edilmiş float'lar üzerinde
+karşılaştırır. **Production'a limiter veya normalizer eklenmedi.** Kodlayıcı
+±1 dışını kırpmaya devam eder, ama artık **sessizce değil**: kaç örnek ve kaç
+çerçeve kırpıldığı geri döner ve kullanıcıya karıştırıcıyı işaret eden bir
+cümle gösterilir.
+
+#### 2P-A — bend/slide ölçümü ve Expression Contract v2 tasarımı
+
+**§6 Bu turda production migration yoktur.** Song Contract'taki on bir
+artikülasyon değişmedi, `articulation` alanı tek olmaya devam ediyor, hiçbir
+enum eklenmedi ve bugünkü bend/slide varsayılanları değişmedi. Üretilen şey
+ölçüm, aday render'ları, kör adlandırılmış dinleme dosyaları ve bir **tasarım
+belgesi**dir (`EXPRESSION-CONTRACT-V2.md`).
+
+**§7 Beş hipotez varsayılmadı, tek tek sınandı.** İkisi doğrulandı: bugünkü
+bend'in sorunu %22'lik yükseliş sabiti değil, **zorunlu sıfıra dönüş**tür
+(hedefe 1,5 s'lik notanın %30'undan önce varıyor ve her zaman geri iniyor);
+bugünkü slide **yalnız legato** taşır (hedef atak oranı 0,98, gerçek yeniden
+vuruş 619) ve legato adayı bugünküyle bayt bayt aynıdır.
+
+**§8 Rakip sınırı.** Beş resmî Songsterr/Guitar Pro adresinin hepsi bu
+ortamdan 403 döndü. `referenceAudioAvailable: false` **ve**
+`sourceTextAvailable: false`. Hiçbir davranış, eğri veya DSP sabiti hiçbir
+rakibe atfedilmedi; hiçbir rakip sample'ı repoya veya artefakta kopyalanmadı;
+binary inceleme, decompile veya ağ isteğinden URL ayıklama yapılmadı;
+"reverse engineered" ifadesi hiçbir belgede aday için kullanılmadı ve testle
+bağlandı.
+
+**§9 Ölçüm aracının kendisi yanlış olabilir.** Bu turda beş **enstrüman
+hatası** bulundu ve düzeltildi: AudioContext'i subclass eden sayaç Tone'un
+decoder'ını bozup uydurma bir sonuç üretti (şeffaf `Proxy`'ye geçildi); F0
+platosu iki kez seçim yanlılığıyla okundu (+208,9 ve +206,3 yerine bölgeyi
+değerden bulup değeri bölgeden okuyunca +200,65); ölçüm penceresi sonraki
+notayı yakalıyordu; mantıksal ses ile fiziksel kaynak ayrımı yapılmadığı için
+shift adayı legato ile aynı maliyette görünüyordu; fret gürültüsü penceresi
+patlamanın dışındaydı. **Bir iddia, hakkında olduğu artefakt üzerinde
+ölçülmelidir** ve ölçen alet de kanıt ister.
+
+**Kapsam dışı (yapılmadı):** Expression Contract v2 production migration'ı,
+yeni articulation enum'ları, sweep/TechniqueSpan implementasyonu, global
+mastering, ölçmeden limiter, harici sample indirme, rakip asset çıkarma,
+64'lük grid, stem/MP3 export, fiziksel Android/iOS kabulü, insan dinlemesi
+yapılmadan "müzikal olarak daha iyi" kararı.
+
 ---
 
 ## §14 Stack, mimari ve fazlar
@@ -3093,8 +3192,8 @@ sorumluluğundadır.** Claude Code altyapıyı hazırlar, ölçümü sahip yür�
 - Sample dosyalarının lisans doğrulaması sonrası nihai onayı (§7.3).
 
 **Faz 2 sonrası kalan release kapıları (24.08.2026; ilk üçü K-51, dördüncüsü
-K-52 kapanışında kaydedildi).** **Dördü de** kod kapanışını değil public
-release'i engeller:
+K-52, beşincisi K-54 kapanışında kaydedildi).** **Beşi de** kod kapanışını
+değil public release'i engeller:
 
 - **Fiziksel Android/iOS ses ve etkileşim kabulü.** Bugüne kadarki bütün
   gecikme, frame ve ses ölçümleri masaüstü Node/Chromium'dur ve raporlarda
@@ -3114,6 +3213,18 @@ release'i engeller:
   kabul ettiği ölçülmedi ve `estimate()` bir söz olarak kullanılmamalıdır.
   Bu nedenle ürün **localStorage üzerinde "sınırsız proje" garantisi vermez**;
   public release ve **fiyatlandırma dili** bu sınırı gizleyemez.
+
+2O-B.1 ve 2P-A bu dört kapının hiçbirini kapatmaz ve beşincisini ekler:
+
+- **Kurucunun akor ve bend/slide dinleme paketlerini müzikal olarak kabulü.**
+  `eval/chord-audio/wav/` (12 dosya) ve `eval/expression-benchmark/wav/`
+  (42 dosya, kör adlandırılmış; eşleme ayrı `KEY.json`'da) ölçülmüştür,
+  **dinlenmemiştir**. "Perde hedefe varıyor" ile "bend doğal duyuluyor",
+  "akor doğru notaları çalıyor" ile "voicing müzikal", "sample geliyor" ile
+  "gitar iyi duyuluyor" bu raporda ayrı tutulmuştur ve ikincilerine dair
+  hiçbir iddia yoktur. **İnsan dinlemesi olmadan hiçbir aday kazanan ilan
+  edilemez** ve Expression Contract v2 bu kapı açılmadan production'a
+  taşınmaz (K-54).
 
 ---
 
@@ -3139,6 +3250,22 @@ release'i engeller:
   tuttuğundan emin ol" ipucu gösterilir.
 - **§17.7 Aylık bütçe** günlük tavan tam dolarsa 10 günde biter (§12.1).
   Bilinçli bir tercih olarak kayıtlıdır.
+- **§17.8 Yeni bir track eklendikten sonra ilk nota yazılamıyor (2O-B.1,
+  açık).** Bir bar'da track anahtarının olmaması spec 5.5 gereği "burada
+  sessiz" demektir; yazma yolu aynı eksikliği "bu barda yazılı değil" olarak
+  okur ve *«…» bu barda yazılı değil; önce bu bara eklenmeli* diyerek
+  reddeder — hiçbir kontrolün yapmadığı bir talimat. Launch şablonları için
+  kapatıldı (barlar track başına boş şerit taşıyor), ama `create_track` bar
+  anahtarı eklemez, yani mevcut bir şarkıya eklenen ikinci track aynı
+  çıkmaza girer. Bu, "bu barda yazılı" ifadesinin ne anlama geldiğine dair
+  bir ürün kararıdır ve tek taraflı verilmedi. Hiçbir eval seed'i bunu
+  görmemişti çünkü hepsi slot dizilerini baştan sona yazıyor.
+- **§17.9 320 px genişlikte transport satırı taşıyor (2O-B.1, açık).**
+  320×700'de satır 344 px istiyor, practice-rate düğmesi 24 px kırpılıyor ve
+  kök `overflow-x` gizli olduğu için sayfa kaydırmıyor: içerik görünmeden
+  kayboluyor. Diff üzerinden gösterildi ki nedeni bu checkpoint değil —
+  eklenen bildirim bandı o fixture'da render edilmiyor. Ölçüldü, kaydedildi,
+  düzeltilmedi.
 
 ---
 
@@ -3239,6 +3366,7 @@ maliyettir** (§11.2/7).
 | **K-51** | **Tab okunabilirliği, tek akor seçimi ve bölüm senkronizasyonu (§13.20, 2N-A).** Üç kusur önce mevcut build üzerinde, üretim koduna dokunmadan yeniden üretildi (`eval/tab/DEFECTS.json`, 5/5): uzun basış bütün legato zincirini seçiyordu, bölüm seçimi değişirken çizilen sekme aynı kalıyordu, kısa şarkıda seçilen bölümün ilk ölçüsü görünür yüzeye gelmiyordu. **Seçim onset önceliklidir:** basış bir onset grubunu alır, akor tek slottaki birden fazla `NoteEvent`'tir ve Contract'a akor nesnesi/tipi eklenmedi, bağ yeni onset değildir (`1 uzatılan nota`), seçim Song'a/dosyaya/fingerprint'e/Copilot'a girmez; **zincir kapsamı seçim anında değil, kullanıcı bir eylem seçtiğinde preflight sonucu olarak doğar.** **Zincir kararı çekirdeğin şartıdır:** `applyTransform`/`copySelection`/`commitTransform` açık `chainPolicy` olmadan zincir bölen komutu çalıştırmaz (`chain_policy_required`); beş tipli sonuç (`no_chain_impact`, `crosses_tie_boundary`, `crosses_legato_boundary`, `crosses_multiple_boundaries`, `crosses_section_boundary` = fail-closed); üç seçenek — bağlantıyla birlikte (gerçek genişletilmiş kapsam görünür, açıklama komutun kendi fiilinden merkezî command→copy tablosundan gelir), yalnız akor (deterministik atomik detach), vazgeç (0 yazma); **önizleme ile commit dört komut × iki policy'de byte-eş**. Detach: içerideki legato korunur, yalnız sınırı aşan bağ kaldırılır, `"normal"` kalıcı olarak hiç yazılmaz, öksüz bağ sus olur, öksüz `"-"` hiçbir durumda oluşmaz, yalnız bağdan başlayan seçim tipli reddedilir. **Bölüm navigasyonu tek otoritedir** ve `viewedSectionId` transport'un `activeBarKey`'inden türetilmez — bakılan bölüm ile çalan bölüm iki ayrı olgudur; playhead yalnız gerçekten çalınan bölüm görünürken çizilir; kısa şarkı `scrollLeft` ile değil ölçülen bir viewport genişliğindeki `data-tab-tail` ile çözüldü ve bu boşluk bar/seçim/seek hedefi değildir, arrangement sayısına, fingerprint'e ve export'a girmez, dokunulduğunda 0 seek / 0 seçim / 0 yazma. **Ritim dili:** teknik değer kalır, yanına sade okuma gelir ("4 ana vuruş · 16 adım"), "16 vuruş" hiçbir yerde yazmaz, 6/8 felt-beat'ten gelir, 7/8'e uydurma gruplama verilmez ("7 sekizlik · 14 adım"), hepsi tek saf formatter'dan. **1/4 grid** geriye dönük uyumlu eklendi (`4|8|12|16|24|32`), `resolution % denominator === 0` kuralına uyar, 6/8 ve 7/8'de önerilmez, şema literali `RESOLUTIONS`'tan türer, ikinci timing formülü ve yamalı liste yok, 64'lük grid yok. **Mevcut müziğin ölçü/ritim değişimi** metadata değil gerçek tick-preserving yeniden yazımdır: yalnız birebir temsil edilebiliyorsa notalanır, yuvarlama/clamp/truncate yok, tek track başarısız olursa işlem tamamen reddedilir, eksik anahtar sahte boş dizi üretmez, `bpmOverride` korunur, başarı = 1 yazma + 1 history, undo/redo byte-eş, tipli kodlar UI'a ham diagnostic sızdırmaz. **Beam rehberi perde okumaz** — fonksiyona nota girmez — bu yüzden gam iddiası yapısal olarak imkânsızdır; Contract'a alan eklemez, fingerprint/dosya/MIDI/Copilot'a girmez, dokunma hedefi veya listener üretmez, fret/glyph/seçim bandı/playhead ile çakışması ayrı ayrı 0, ekran okuyucuya "Ritim grubu" der; **tam notasyon motoru değildir** (sap yönü, polifonik dizgi, nüans, alternatif son, süsleme, sweep kapsam dışı). **Sınırlar:** yedi sorumluluk saf/tipli katmanlara ayrıldı, ölçüm import grafi ve export yüzeyi üzerinden, yeni grep testi ve yeni runtime dependency yok; wiring öncesi davranış-korumalı çıkarma ile `Workspace.tsx` 450 → **385** (bütçe gevşetilmedi), `ArrangementCanvas.tsx` 470 ve bu özelliği sahiplenmiyor. **Doğrulama:** 2.209 birim testi; 47 senaryo × 2 viewport = **94/94** gerçek production build'de; timing önizleme/vazgeç 0, uygula 1, undo 1, redo 1 yazma; MIDI meter `["4/4@0"] → ["3/4@0","4/4@576"]` ve onset'ler `[0,768,1536] → [0,576,1344]`; proje export/import 1/4'ü byte-eş taşıyor; döngü sınırı 0–2688 → 0–2496; **çalarken timing değişiminde transport duruyor** (`playing@588 → idle@1344`) ve bu gizlenmeden raporlanıyor; AudioContext 1 → 1. **29 vacuity probe kırmızı**; biri ilk turda yeşil geldi ("1/4 beam almaz") — koruma gerçekten boştu, gizlenmedi, kural `beamLevels`'ta kendi yerinde sabitlendi. Performans (Node + masaüstü Chromium, **telefon kanıtı değil**): 8 bar × 1/32 rehber ~0,042 ms (akorda ~0,049 ms, model tek başına ~0,024 ms), bölüm timing dönüşümü validatörlerle ~0,9 ms median (fixture: 1 bölüm, 8 ölçü, 1 track, 64 ses olayı — 2L-B/2M-A'nın 32 bar × 8 track worst-case validator ölçümleriyle karşılaştırılabilir değil), rehberin eklediği DOM 49 düğüm (iki viewport'ta aynı). **2N-A.1 düzeltmesi:** ilk raporda "playhead rAF 61,3 ↔ 60,5" diye verilen sayı ölçüm harness'ının kendi rAF döngüsüydü — ekranın tazeleme hızı, playhead'e ait değil. **Gerçek regresyon yok; üretim davranışı değişmedi.** Frame kuralı tek modülde toplandı (`playhead-loop.ts`) ve sayım hook seam'ine taşındı: aynı saniyede boşta global 61,3/s ↔ playhead callback 0; idle/paused/ended/unmount/dispose ve üç görünüm geçişinden sonra canlı loop 0, playing'de tam 1, timing değişimi idle'a aldıktan sonra 0 (10 ayrı ≥1 sn penceresi, 14/14 senaryo, 7 probe kırmızı). **Kapsam dışı:** yeni provider, Copilot kalitesi, ses motoru, yeni sample, gerçek kayıt senkronizasyonu, rakip özellikleri, tam notasyon editörü, fiziksel Android/iOS kabulü. **Kapanış (2N-A.1):** önceki "boşta 61,3 playhead rAF/s" iddiasının eval harness'ının global ekran yenileme döngüsünü ölçmesinden kaynaklandığı doğrulandı. Üretim yaşam döngüsü değişmedi: idle/paused/ended/unmounted/disposed durumlarında canlı playhead loop'u **0**, playing durumunda tam **1**'dir. | **Haktan onayladı 24.08.2026** |
 | **K-52** | **Yerel proje kütüphanesi v1 (§13.21, 2O-A).** Aranjé artık aynı cihazda birden fazla projeyi saklar; kabul ölçütü listede birkaç şarkı görünmesi değil, **kalıcı kayıt ve kurtarma garantilerinin proje başına doğru çalışmasıdır**. Yerel kalır: hesap, sunucu, senkronizasyon yok; proje sayısında kota/paywall/uydurma tavan yok; proje yedeği her zaman ücretsiz ve doğrudan erişilebilir (K-50). **Kimlik** `project-<n>`, katalogdaki monoton sayaçtan; zaman damgası/UUID/`Math.random`/`crypto.randomUUID`/cihaz bilgisi yok, silinen kimlik yeniden dağıtılmaz, beş koşu byte-eş; tanınmayan kimlikten anahtar üretilmez. **Üç anahtar:** `aranje.projects` (katalog: `format`, `version`, `activeProjectId`, `projectIds`, `nextProjectNumber`), `aranje.project.<id>` (kayıt: `projectId`, `revision`, `updatedAt`, `current`, `previous`), `aranje.project-pending` (yarım silme notu). Kayıt zarfı şarkı zarfının aynısıdır — `decideLoad`, `previous` rungu ve revision kuralı yeniden kullanıldı, ikinci kurtarma yolu yok. **Yazma sırası kurtarılabilirliği belirler:** oluşturma biçimli işlemler payload → katalog (kesilirse sahiplenilebilir öksüz kayıt), silme not → katalog → payload → not (kesilirse açılış kullanıcının zaten verdiği onayı yerine getirir); not olmasa yarım silme ile yarım oluşturma ayırt edilemezdi. **Migration** eski `aranje.song`'u `project-1`'e taşır ve **eski anahtarı ancak yeni kayıt geri okunup doğrulandıktan sonra** siler; on üç başlangıç durumu ölçülerek karşılandı; bozuk katalog önce taramayla yeniden kurulur, katalogun bilmediği payload silinmez, dolu birinci slotun üzerine yazılmaz. **Beş saf komut** (create/open/duplicate/import-as-new/delete) tek iskeleti korur: reddet → katı şema + merkezî validator → payload yaz **ve geri oku** → sonra katalog → katalogu da doğrula; `now` enjekte edilir, React/saat/global yok. **Tek başlık otoritesi:** liste adı `Song.title`'dan türer, katalogda ikinci ad alanı yok, özet her açılışta şarkıdan hesaplanır. **`create_song` kaldırıldı** — "yeni şarkı" artık açık projeyi byte-eş bırakıp yeni proje açar ve dispatcher bilinmeyen komutta `undefined` değil tipli red döner. **Bir commit tam olarak bir proje anahtarı yazar**; undo/redo proje sınırını geçmez (geçişte geçmiş 0/0) ve proje değişimi geri alınabilir bir Song düzenlemesi değildir; açık projenin kaydı okunamaz hâle gelirse commit reddedilir ve bozuk byte'lar korunur. **Bayat sekme kayıp kapısı** (çoklu sekme senkronizasyonu değil): her commit öncesi diskteki `revision` yeniden okunur, farklıysa yazım reddedilir; atomik CAS olmadığı açıkça yazılıdır; bayat sekme yedek alabilir ve dinleyebilir. **Katalog, aktif proje kimliği, `revision`/`updatedAt` ve kurtarma metadata'sı fingerprint'e, Copilot isteğine ve `.aranje.json`'a girmez**; dosya formatı değişmedi. Ekranda ham `localStorage`/`JSON`/`Zod`/`revision`/anahtar adı/stack trace yok; kapalı hata kodu + tek tablo (eksik cümle derleme hatası). Silme onayı adı, şekli ve geri alınamazlığı söyler; çöp kutusu/bulut kurtarma yokmuş gibi davranılır çünkü yok; **son proje V1'de silinemez**; hayatta kalan `survivorIndex` ile seçilir ve açılamıyorsa silme hiç başlamaz. **Sınırlar:** yedi saf modül, controller altındaki depoyu component görmez, ölçüm import grafi + AST + ESLint restricted-import ile (yeni grep testi ve yeni runtime dependency yok); `Workspace.tsx` 385 → **380**, `ArrangementCanvas.tsx` 470 ve değişmedi, yeni mega-hook yok. **Doğrulama:** 2.342 birim testi (kütüphane 125), 55 senaryo satırı × 2 viewport = **110/110** gerçek production build'de fiziksel storage ledger'ıyla, **35 vacuity probe kırmızı / 0 vacuous**; ilk turda sekiz probe yeşil geldi, gizlenmedi — dördü gerçek test boşluğuydu ve testle kapatıldı, dördünün mutasyonu tehlikeyi ölçmüyordu ve hedefi düzeltildi. **İki dürüst performans bulgusu:** 50 projelik özet modeli 46,0 ms median (p95 66,4 / maks 98,0) — kötüdür, gizlenmedi ve sanallaştırma ölçülmeden eklenmedi; Chromium bu profilde worst-case boyuttaki yalnızca **6 projeyi** kabul edip yazmayı reddetti (~4,5 MiB) oysa `navigator.storage.estimate()` ~1,07 GB diyordu — `estimate()` bir söz değildir. **Kapanışta bulunan ve düzeltilen kusur:** adlandırma / dosyadan yeni proje / yerine koyma akışları için tarayıcı senaryosu yazılınca liste `useMemo`'sunun katalog kimliğine bağlı olduğu ve şarkı depo üzerinden değişince yenilenmediği çıktı — "özet şarkıdan türer" yerde doğruydu, zamanda değildi; liste artık her açılışta yeniden okunuyor, senaryo 51.b ve 35. probe ile bağlandı. **Kapsam dışı:** bulut, hesap, senkronizasyon, paylaşım, klasör/etiket/arama, çöp kutusu, sürüm geçmişi tarayıcısı, akor kurucu, çoklu enstrüman görünümü, release hardening, fiziksel Android/iOS kabulü. **Onay kapsamı:** yerel proje kütüphanesi; **proje başına dayanıklı kayıt**, **kayıpsız legacy migration**, **proje izolasyonu**, güvenli **oluşturma/açma/çoğaltma/import/silme** ve **bayat sekme kayıp kapısı** ile kabul edildi. **Çoklu sekme birleştirme veya atomik CAS iddiası yoktur.** **50 proje özet maliyeti** (ölçülen: **46,0 ms median / 66,4 ms p95 / 98,0 ms maks**) ve **cihaz kotasına bağlı gerçek proje kapasitesi** (masaüstü Chromium profilinde worst-case kayıtlarla **yalnız altı proje kabul edildi**, ~**4,5 MiB** civarında yazma reddedildi; aynı anda `navigator.storage.estimate()` ~1,07 GB diyordu) **ölçülmüş açık release riskleridir**. Bu kapasite sonucu nedeniyle ürün **localStorage üzerinde "sınırsız proje" garantisi vermez**; bulgu **K-52 kod kabulünü engellemez**, fakat **public release ve fiyatlandırma dilinde açık risktir** ve §16'da dördüncü owner kapısı olarak açık durur. | **Haktan onayladı 24.08.2026** |
 | **K-53** | **Hızlı akor ve power chord kurucu v1 (§13.22, 2O-B).** Kullanıcı kök sesi, akor türünü ve çalınabilir bir şekli seçer; bütün notalar aynı vuruşa tek, geri alınabilir bir olay olarak yazılır. **Yönlendirme yoktur** — "önerilen/en kolay/en iyi/sonraki akor" ifadeleri kod tabanında bulunmaz (testle bağlı); etiketler betimleyicidir ("Açık konum · kök basta", "1. çevrim"). **Akor kalıcı bir nesne değildir:** Song Contract değişmedi, akor aynı onset'teki birden fazla `NoteEvent`'tir, `chordName`/`voicingId`/`shapeId` gibi alan eklenmedi ve `voicingId` Song'a/dosyaya/fingerprint'e/Copilot'a girmez (serialize edilen byte'larda testli). **On bir kalite tek tabloda**; aralık sayıları başka yerde tekrar edilmez, eksik kalite derleme hatasıdır; **requiredChordTones politikası tek yerde** — beşli yalnız yedililerde düşebilir, yarı eksilmiş 7 istisnadır. **Perdeli arama sözlük değil klavye taramasıdır:** akort, capo, tel sayısı ve perde sınırı track'ten okunur; mevcut `soundingMidi`/pitch/hand-position yardımcıları yeniden kullanıldı. El kuralı dört parmak + en alt perdede barre'dır ve "aynı perde iki kez = barre" varsayımı yanlış olduğu için açık D7'yi eleyen ilk kural düzeltildi. **Maksimum açıklık ölçülerek 2'ye çekildi**: beş klavyede 12 kök × 11 kalite = 660 kombinasyonun hiçbiri boşalmıyor. Am7'nin üç kanonik şekli (`x02010`, `577555`, `5x555x`) aday kümesinde ve her telin **sounding pitch**'i doğrulanarak. **Power chord kalıcı tip değildir**: formül `[0,7]`, iki ya da üç ses ve kök mutlaka basta olması shape kuralıdır; Drop D açık D5 gerçek akorttan bulunur, standard akortta bulunmaz. **Perdesiz enstrümanlarda** akor bir perde yığınıdır, `position` yazılmaz ve **sayısal enstrüman aralığı uydurulmadı** — `range.ts`'in erteleme kararı korundu. **Komut tikte çalışır** (K-34): tam oturmayan hedef/süre tipli reddedilir, yuvarlama yok, uzun akor tie ile taşınır, ya hepsi ya hiçbiri. **Dolu vuruş sessizce ezilmez**; bağlı onset ve karışık süre/velocity/ifade atomik reddedilir. **Önizleme ile commit aynı hesaptır** — ghost gerçek komutun çıktısıdır, Uygula aynı komutu tekrar koşar; önizleme ve varyasyon dolaşma 0 yazma / 0 history. **Dinleme mevcut PreviewEngine'i kullanır**; ikinci AudioContext/scheduler/bank yok, önizleme kazancı yalnız önizlemede kalır. Yazılan akor sıradan müziktir: seçim/transform/bar işlemleri/undo-redo/MIDI/WAV/proje dosyası paritesi testli. `Workspace.tsx` **379** (380 aşılmadı), `ArrangementCanvas.tsx` 470 ve değişmedi, yeni runtime dependency yok. **Üç dürüst bulgu:** (1) bütün klavye taraması 621 ms median — ürün bu yolu kullanmıyor (kök+kalite yolu 16,6 ms) ve **ölçmeden cache eklenmedi**; (2) yoğun akor 0 dB'de tepe 1,8090 ile tam ölçeği aşıyor ve encoder kırpardı, şablonların verdiği −6 dB'de 0,9066 ile içeride kalıyor, sahibi mixer'dır, limiter eklenmedi; (3) **mevcut ürün kusuru bulundu** — bütün launch şablonları `electric_guitar/clean` veriyor ve o preset'in vendor edilmiş sample pack'i yok, yani yeni kullanıcının gitarı hiç ses çıkarmıyor; 2O-B'nin sebebi değil ama "Dinle" tam da o track'te sessiz kalıyor, tek taraflı değiştirilmedi ve sahibe bırakıldı. **Bir ölü koruma kaldırıldı:** perdesiz register ceiling ölçüldüğünde 4.040 yazılabilir yığının hiçbirini kesmiyordu; ateşlenemeyen koruma koruma değildir. **İki kabul boşluğu açık:** perdesiz enstrümanlar için repoda sayısal aralık yok ve klavye düzenleme yüzeyi yok — saf çekirdek eksiksiz ve testli, UI yüzeyi bugün yalnız perdeli track'lerde var ve uydurma bir klavye editörüyle kapatılmadı. **Kapsam dışı:** akor dizisi önerisi, scale-aware öneri, voice leading, add9/6/9/11/13/altered, slash/polychord, arpeggiator, strumming motoru, sweep, parmak numarası, MIDI/audio akor tanıma, 64'lük grid, çoklu enstrüman editörü, cloud/hesap/paywall, gerçek provider, release hardening, fiziksel Android/iOS kabulü. | **Haktan onayı bekliyor** |
+| **K-54** | **Açılış ses bütünlüğü, paylaşılan preview bank ve ifade ölçümü (§13.23, 2O-B.1 + 2P-A).** **2O-B.1 üç ölçülmüş sorunu kapatır.** (1) *Kayıtta olmak duyulabilmek değildir:* `electric_guitar/clean` gerçek, core, seçilebilir bir preset'ti ve vendor edilmiş pack'i yoktu, iki launch şablonu yeni okura tam olarak o track'i veriyordu; `AudioPresetAvailability` bu ikinci soruyu sahiplenir ve **Song Contract'ın parçası değildir** — hiçbir availability alanı şarkıya yazılmaz, dosyaya çıkmaz, fingerprint'e girmez (serialize edilen byte'larda ve validator zincirinde testli). Şablon artık duyulabilir ilk core preset'i seçer (`high_gain`) ve duyulabilir preset'i olmayan enstrüman için track üretmek yerine reddeder; `clean` registry'de anlamını korur. **Legacy şarkı düzeltilmez, doğrusu söylenir:** `silentTracks` şarkıyı okur ve asla yazmaz, cümle okurun kendi track adlarını kullanır, preset/pack id'si, URL, manifest adı ve hata kodu ekrana çıkmaz; seçici duyulamayan preset'i sıradan seçenek gibi sunmaz ama track'in **zaten taşıdığı** değeri listeden düşürmez (düşürmek ilk tuş vuruşunda başka bir preset'i şarkıya yazdırırdı). (2) *Paylaşılan preview bank:* `getOrLoad(context, bankKey, load)` tek yükleme kapısıdır — uçuştaki iki çağrı tek fetch/tek decode/tek promise, başarısız yükleme hatırlanmaz ve tahliye kimlik üzerinden korunur, retention context başına açılır ve son tüketici bırakınca bank dispose yerine retention'a geçer; offline render retention açmaz. **Kapanışta gerçek bir üretim hatası bulundu:** retention `this.disposed` kontrolünden sonra açılıyordu, terk edilmiş motorlar bank'lerini kimse tutmadan bırakıyordu ve 25 dinleme hâlâ 175 istek çıkarıyordu; sıra düzeltildi ve sırayı geri alan bir birim testiyle bağlandı. Aynı harness ile önce/sonra **175/175 → 7/7**, AudioContext 1 → 1, kapanıştan sonra yeni ses 0, dispose sonrası aktif ses 0. (3) *Seviye ve kırpma yalnız ölçüldü:* `HEADROOM.json` dört kazanç yaklaşımını **yalnız eval tarafında** karşılaştırır, **production'a limiter veya normalizer eklenmedi**; kodlayıcı ±1 dışını kırpmaya devam eder ama artık sessizce değil — kaç örnek ve kaç çerçeve kırpıldığı geri döner ve kullanıcıya karıştırıcıyı işaret eden bir cümle gösterilir. Ölçülen: altı sesli Am7 track 0 dB'de tepe **1,8090** ve **788** kırpılmış çerçeve, −6 dB'de tepe **0,9066** ve **0** kırpılmış çerçeve; ayrıca sert pan (1,2822 / 18 çerçeve) ve iki gitarın ikilemesi (1,6156 / 322 çerçeve) varsayılan −6 dB'de de kırpıyor. **2P-A bir ölçüm ve tasarım turudur; production migration yoktur.** On bir artikülasyon değişmedi, tek `articulation` alanı yerinde, hiçbir enum eklenmedi, **bugünkü bend/slide varsayılanları değişmedi**; üretilen şey 42 render, kör adlandırılmış dinleme dosyaları + ayrı `KEY.json`, `MEASUREMENTS.json` ve bir **tasarım belgesi**dir (`EXPRESSION-CONTRACT-V2.md`). Beş hipotez varsayılmadı, tek tek sınandı; ikisi doğrulandı: bugünkü bend'in sorunu %22'lik yükseliş sabiti değil **zorunlu sıfıra dönüş**tür (hedefe 1,5 s'lik notanın %30'undan önce varıyor ve her zaman iniyor) ve bugünkü slide **yalnız legato** taşır (hedef atak oranı **0,98**, gerçek yeniden vuruş **619**), legato adayı bugünküyle bayt bayt aynıdır. **Rakip sınırı:** beş resmî Songsterr/Guitar Pro adresinin hepsi bu ortamdan **403** döndü — `referenceAudioAvailable: false` **ve** `sourceTextAvailable: false`; hiçbir davranış, eğri veya DSP sabiti hiçbir rakibe atfedilmedi, hiçbir rakip sample'ı kopyalanmadı, binary inceleme/decompile/ağ isteğinden URL ayıklama yapılmadı ve "reverse engineered" ifadesi hiçbir belgede aday için kullanılmadı (testle bağlı). **Ölçüm aracının kendisi yanlış olabilir:** bu turda beş enstrüman hatası bulundu ve düzeltildi — AudioContext'i subclass eden sayaç Tone'un decoder'ını bozup uydurma bir sonuç üretti (şeffaf `Proxy`'ye geçildi), F0 platosu iki kez seçim yanlılığıyla okundu (+208,9 ve +206,3 yerine bölgeyi değerden bulup değeri bölgeden okuyunca **+200,65**), ölçüm penceresi sonraki notayı yakalıyordu, mantıksal ses ile fiziksel kaynak ayrılmadığı için shift adayı legato ile aynı maliyette görünüyordu (şimdi legato 1/1, shift 1/2, crossfade 1/2), fret gürültüsü penceresi patlamanın dışındaydı. **Kapanışta bulunan ikinci ürün kusuru:** yepyeni bir şarkı hiçbir yüzeyden ilk notasını alamıyordu — şablonun barlarında, şablonun az önce kurduğu track için anahtar yoktu ve eksik anahtar hem "burada sessiz" hem "bu barda yazılı değil" demek olduğu için yazma yolu reddediyordu; **launch şablonları için kapatıldı** (barlar artık track başına boş şerit taşıyor). **Açık kalıyor:** `create_track` bar anahtarı eklemiyor, yani mevcut bir şarkıya eklenen ikinci track aynı çıkmaza giriyor; bu "bu barda yazılı" ifadesinin ne anlama geldiğine dair bir ürün kararıdır ve tek taraflı verilmedi. **İkinci açık bulgu:** 320×700'de transport satırı 344 px istiyor, practice-rate düğmesi 24 px kırpılıyor ve kök `overflow-x` gizli olduğu için sayfa kaydırmıyor — içerik görünmeden kayboluyor; 2O-B.1'in eklediği bildirim bandı o fixture'da render edilmiyor, yani nedeni bu checkpoint değil. **Doğrulama:** 2.597 birim testi / 155 dosya; 32 senaryo × 2 viewport = **63/64** (tek başarısızlık kayıtlı 320 px taşmasıdır); 42 render'da **23/23** ölçüm iddiası; preview bank 18/18; ses iddiaları 14/14; 2O-B regresyonu 160/160 ve 13/13 — **değişmedi**; **40 vacuity probe kırmızı / 0 boş**. Üçü ilk turda yeşil geldi ve gizlenmedi: açılış seviyesini hiçbir test iddia etmiyordu (HEADROOM ölçümünü geri okuyan test eklendi), tie probe'unun mutasyonu bağlı bend fixture'larının hiç uğramadığı bir kolu hedefliyordu (gerçek mekanizmaya taşındı), matrisin sözleşmeyi kapsadığını iddia eden test yoktu (eklendi). **Performans** (Node + masaüstü Chromium — **telefon kanıtı değil, eşik uydurulmadı**): availability sorgusu 0,001 ms, şablon materyalizasyonu 0,025 ms, bank sıcak arama 0,001 ms, ifade planı (demo şarkı) 1,709 ms / p95 4,999 ms, bir saniyelik F0 analizi **357,578 ms** (yalnız eval; production yolunda çağrılmıyor); tarayıcıda ilk (soğuk) akor dinlemesi 208 ms medyan, ısınmış dinleme 77 ms, 25 varyasyon değişimi toplam 2.082 ms, sheet kapatma + dispose 31 ms, varsayılan şablonun ilk sesi 214 ms. **Bir disiplin ihlali kaydedilmiştir:** `1a962b3` commit'inde `npm test | tail` çıkış kodunu kaybettiği için kırmızı bir koşunun ardından commit atıldı; o commit'te ağaç yeşildi (art arda 8 koşu, 2.571/2.571) ve tek hata yeniden üretilemedi, ama ihlal gerçekti ve sonraki commit'te kaydedildi. **Kapsam dışı:** Expression Contract v2 production migration'ı, yeni articulation enum'ları, sweep/TechniqueSpan, global mastering, ölçmeden limiter, harici sample indirme, rakip asset çıkarma, 64'lük grid, stem/MP3, cloud/hesap/paywall, gerçek provider, release hardening, fiziksel Android/iOS kabulü. **İnsan dinlemesi yapılmadığı için hiçbir aday kazanan ilan edilmemiştir.** | **Haktan onayı bekliyor** |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
@@ -3286,6 +3414,12 @@ maliyettir** (§11.2/7).
 | İki sekme | sessizce birbirinin üzerine yazabiliyordu | **Bayat sekme kayıp kapısı: `revision` uyuşmazsa yazım reddedilir (senkronizasyon değil)** (K-52) |
 | Akor yazmak | tel tel, nota nota | **Kök + tür + şekil seçimi; bütün notalar tek atomik, geri alınabilir olay** (K-53) |
 | Akor verisi | — | **Kalıcı akor nesnesi yok; akor aynı onset'teki NoteEvent'lerdir** (K-53) |
+| Yeni projenin gitarı | `electric_guitar/clean` — vendor edilmiş pack yok, hiç ses çıkmıyordu | **Şablon duyulabilir ilk core preset'i seçer (`high_gain`); duyulamayan preset tipli bir durumdur** (K-54) |
+| Duyulamayan preset | sessiz başarı; her katman "oldu" diyordu | **`AudioPresetAvailability` — Song Contract'ın parçası değil; legacy şarkı düzeltilmez, doğrusu söylenir** (K-54) |
+| Akor dinleme maliyeti | 25 dinleme = 175 sample isteği | **Paylaşılan preview bank + retention: 7 istek, 7 decode, 1 AudioContext** (K-54) |
+| WAV kırpılması | ±1 clamp sessizdi | **Kırpılan örnek/çerçeve sayısı geri döner; kullanıcıya karıştırıcıyı işaret eden cümle gösterilir (limiter eklenmedi)** (K-54) |
+| Yepyeni şarkıya ilk nota | şablonun barlarında track anahtarı yoktu; yazma reddediliyordu | **Launch şablonları track başına boş şerit taşır; `create_track` için açık** (K-54) |
+| Bend/slide | — | **Ölçüldü ve tasarlandı; production davranışı değişmedi, migration yapılmadı** (K-54) |
 | Enstrüman/akort niyeti | sabit rol tablosu | **Blueprint niyeti registry üzerinden taşınır** (K-35, K-36); sessiz fallback yok |
 
 ---
