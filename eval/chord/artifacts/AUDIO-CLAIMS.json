@@ -1,0 +1,67 @@
+[
+  {
+    "name": "every chord strikes its notes on one tick",
+    "ok": true,
+    "detail": "single-note:0 a5-two:0 a5-three:0 am-open:0 am7-open:0 am7-fifth:0 power-palm-muted:0 chord-accent:0 chord-panned-left:0 chord-panned-right:0 chord-with-bass:0 audition-chord:0 am7-fifth-at-minus-6:0 audition-velocity-unscaled:0"
+  },
+  {
+    "name": "the two-note power chord is two notes and the three-note one is three",
+    "ok": true,
+    "detail": "A2,E3 | A2,E3,A3"
+  },
+  {
+    "name": "a chord is louder than the single note it is built from",
+    "ok": true,
+    "detail": "0.058348 -> 0.119956"
+  },
+  {
+    "name": "a palm-muted power chord is quieter than the open one",
+    "ok": true,
+    "detail": "0.072841 -> 0.024655"
+  },
+  {
+    "name": "an accented chord is louder than the plain one",
+    "ok": true,
+    "detail": "1.012318 -> 1.194535"
+  },
+  {
+    "name": "panning moves the whole chord, not one string",
+    "ok": true,
+    "detail": "L 0.16964/0.00000 R 0.00000/0.16964"
+  },
+  {
+    "name": "a chord and another track sound at the same tick",
+    "ok": true,
+    "detail": "6 notes on tick 0"
+  },
+  {
+    "name": "the audition is quieter than the same chord at written velocity",
+    "ok": true,
+    "detail": "0.160625 -> 0.096375"
+  },
+  {
+    "name": "the preview scaling leaves one to three notes alone and quietens more",
+    "ok": true,
+    "detail": "{\"one\":100,\"three\":100,\"five\":60,\"six\":50}"
+  },
+  {
+    "name": "every render disposed its context",
+    "ok": true,
+    "detail": "0"
+  },
+  {
+    "name": "a six-note chord at the templates' own level stays inside full scale",
+    "ok": true,
+    "detail": "0 dB peak 1.8090 -> -6 dB peak 0.9066"
+  },
+  {
+    "name": "a single note at 0 dB does not clip either, so this is about density",
+    "ok": true,
+    "detail": "0.4586"
+  },
+  {
+    "name": "no page error",
+    "ok": true,
+    "detail": "clean"
+  }
+]

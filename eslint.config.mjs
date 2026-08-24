@@ -12,6 +12,7 @@ const config = [
       ".bakeoff-s03/**",
       "eval/mixer/.render/**",
       "eval/export/.render/**",
+      "eval/chord/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",

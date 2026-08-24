@@ -1,0 +1,326 @@
+{
+  "measuredOn": "desktop Chromium — not a phone, and not evidence about one",
+  "peaksOverFullScale": [
+    "am-open:1.0123",
+    "am7-open:1.1173",
+    "am7-fifth:1.8090",
+    "chord-accent:1.1945",
+    "chord-panned-left:1.4316",
+    "chord-panned-right:1.4316",
+    "chord-with-bass:1.0866",
+    "audition-velocity-unscaled:1.0123"
+  ],
+  "note": "These show the right notes sounding together on the right instrument through the right mix. They are not evidence that a chord sounds good; that is a human listening.",
+  "cases": {
+    "single-note": {
+      "name": "single-note",
+      "what": "one note, the baseline",
+      "peak": 0.45862463116645813,
+      "rms": 0.05834812696419627,
+      "leftRms": 0.05834812696419627,
+      "rightRms": 0.05834812696419627,
+      "seconds": 5,
+      "events": 1,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 1,
+      "pitches": [
+        "A2"
+      ],
+      "activeAfterDispose": 0
+    },
+    "a5-two": {
+      "name": "a5-two",
+      "what": "root and fifth",
+      "peak": 0.6346060633659363,
+      "rms": 0.072840624449051,
+      "leftRms": 0.072840624449051,
+      "rightRms": 0.072840624449051,
+      "seconds": 5,
+      "events": 2,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 2,
+      "pitches": [
+        "A2",
+        "E3"
+      ],
+      "activeAfterDispose": 0
+    },
+    "a5-three": {
+      "name": "a5-three",
+      "what": "root, fifth and the octave",
+      "peak": 0.7796984910964966,
+      "rms": 0.08705562654430779,
+      "leftRms": 0.08705562654430779,
+      "rightRms": 0.08705562654430779,
+      "seconds": 5,
+      "events": 3,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 3,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3"
+      ],
+      "activeAfterDispose": 0
+    },
+    "am-open": {
+      "name": "am-open",
+      "what": "A minor, open position",
+      "peak": 1.0123177766799927,
+      "rms": 0.11995577961902207,
+      "leftRms": 0.11995577961902207,
+      "rightRms": 0.11995577961902207,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "am7-open": {
+      "name": "am7-open",
+      "what": "A minor 7, open position",
+      "peak": 1.1172950267791748,
+      "rms": 0.12146686369893243,
+      "leftRms": 0.12146686369893243,
+      "rightRms": 0.12146686369893243,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "G3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "am7-fifth": {
+      "name": "am7-fifth",
+      "what": "A minor 7, around the fifth fret",
+      "peak": 1.808977484703064,
+      "rms": 0.18793473379445827,
+      "leftRms": 0.18793473379445827,
+      "rightRms": 0.18793473379445827,
+      "seconds": 5,
+      "events": 6,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 6,
+      "pitches": [
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "power-palm-muted": {
+      "name": "power-palm-muted",
+      "what": "the same power chord, palm muted",
+      "peak": 0.5003330707550049,
+      "rms": 0.024654754880711723,
+      "leftRms": 0.024654754880711723,
+      "rightRms": 0.024654754880711723,
+      "seconds": 5,
+      "events": 2,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 2,
+      "pitches": [
+        "A2",
+        "E3"
+      ],
+      "activeAfterDispose": 0
+    },
+    "chord-accent": {
+      "name": "chord-accent",
+      "what": "A minor, accented",
+      "peak": 1.1945351362228394,
+      "rms": 0.14093933149007204,
+      "leftRms": 0.14093933149007204,
+      "rightRms": 0.14093933149007204,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "chord-panned-left": {
+      "name": "chord-panned-left",
+      "what": "A minor, hard left",
+      "peak": 1.431633472442627,
+      "rms": 0.11995577960348053,
+      "leftRms": 0.16964309040028006,
+      "rightRms": 0,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "chord-panned-right": {
+      "name": "chord-panned-right",
+      "what": "A minor, hard right",
+      "peak": 1.431633472442627,
+      "rms": 0.11995577966096474,
+      "leftRms": 1.0387643388515308e-17,
+      "rightRms": 0.169643090481575,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "chord-with-bass": {
+      "name": "chord-with-bass",
+      "what": "a chord and another track at the same tick",
+      "peak": 1.0865949392318726,
+      "rms": 0.12012482569442591,
+      "leftRms": 0.12012482569442591,
+      "rightRms": 0.12012482569442591,
+      "seconds": 5,
+      "events": 6,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 6,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4",
+        "A1"
+      ],
+      "activeAfterDispose": 0
+    },
+    "audition-chord": {
+      "name": "audition-chord",
+      "what": "what the audition path plays, rendered offline",
+      "peak": 0.6073906421661377,
+      "rms": 0.09637489646259965,
+      "leftRms": 0.09637489646259965,
+      "rightRms": 0.09637489646259965,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "am7-fifth-at-minus-6": {
+      "name": "am7-fifth-at-minus-6",
+      "what": "the six-note A minor 7 at the templates' own -6 dB",
+      "peak": 0.9066363573074341,
+      "rms": 0.09419048398837784,
+      "leftRms": 0.09419048398837784,
+      "rightRms": 0.09419048398837784,
+      "seconds": 5,
+      "events": 6,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 6,
+      "pitches": [
+        "A2",
+        "A2",
+        "G3",
+        "C4",
+        "E4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    },
+    "audition-velocity-unscaled": {
+      "name": "audition-velocity-unscaled",
+      "what": "the same chord at full written velocity",
+      "peak": 1.0123177766799927,
+      "rms": 0.1606248194343231,
+      "leftRms": 0.1606248194343231,
+      "rightRms": 0.1606248194343231,
+      "seconds": 5,
+      "events": 5,
+      "onsetTicks": [
+        0
+      ],
+      "notesOnFirstOnset": 5,
+      "pitches": [
+        "A2",
+        "E3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "activeAfterDispose": 0
+    }
+  },
+  "auditionScaling": {
+    "one": 100,
+    "three": 100,
+    "five": 60,
+    "six": 50
+  },
+  "counts": {
+    "audioContexts": 16,
+    "sampleRequests": 104
+  },
+  "consoleErrors": []
+}

@@ -35,6 +35,7 @@ import {
   DEFAULT_KEYBOARD_OCTAVE,
   type ChordVoicing,
 } from "@/lib/chords/chord-voicing";
+import { DEFAULT_VELOCITY } from "@/lib/audio/schedule";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song, Track } from "@/lib/song/schema";
 
@@ -93,7 +94,16 @@ export type ChordBuilderHandle = {
   apply(): boolean;
 };
 
-const DEFAULT_VELOCITY = 90;
+/**
+ * The velocity a chord is written with unless the reader says otherwise.
+ *
+ * Taken from the engine's own default rather than chosen here: a note written
+ * by hand carries no velocity at all and is played at `DEFAULT_VELOCITY`, so
+ * anything else would make a chord from the builder quietly louder or softer
+ * than the same chord typed in one string at a time. A second default is a
+ * second answer to the same question.
+ */
+const CHORD_VELOCITY = DEFAULT_VELOCITY;
 
 export function useChordBuilder(options: {
   song: Song;
@@ -112,7 +122,7 @@ export function useChordBuilder(options: {
   const [quality, setQuality] = useState<ChordQualityId>("major");
   const [withOctave, setWithOctave] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [velocity, setVelocity] = useState(DEFAULT_VELOCITY);
+  const [velocity, setVelocity] = useState(CHORD_VELOCITY);
   const [articulation, setArticulation] = useState<ChordArticulation>("normal");
   const [slots, setSlots] = useState(1);
   const [failure, setFailure] = useState<string | null>(null);
@@ -166,7 +176,7 @@ export function useChordBuilder(options: {
     setQuality("major");
     setWithOctave(false);
     setSelectedId(null);
-    setVelocity(DEFAULT_VELOCITY);
+    setVelocity(CHORD_VELOCITY);
     setArticulation("normal");
     setSlots(1);
     setFailure(null);
