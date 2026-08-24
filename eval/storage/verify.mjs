@@ -14,10 +14,19 @@
  *   can be injected on demand.
  * - console and page errors, collected rather than sampled.
  *
+ * **2Q-B §1.3.** The seeds here are still legacy `aranje.song` values,
+ * because that is exactly what these scenarios are about: a device that has
+ * one on it. What changed is where the song *ends up*. Since K-52 the app
+ * migrates it into a project record and removes the old key, so every read
+ * and every write count in this file follows the durable record rather than
+ * the key the song arrived under. Reading the old key after load was
+ * measuring the migration's exhaust.
+ *
  * `node eval/storage/verify.mjs`
  */
 import { chromium } from "playwright";
 import { press } from "../shared/harness.mjs";
+import { CATALOG_KEY, PROJECT_PREFIX, LEGACY_SONG_KEY } from "../shared/project-storage.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -81,7 +90,9 @@ const INSTRUMENT = `
   window.__consoleErrors = [];
   window.__refuse = false;
   const refused = (key) =>
-    window.__refuse === true || (window.__refuse === "song-only" && key === "aranje.song");
+    window.__refuse === true ||
+    (window.__refuse === "song-only" &&
+      (key === "aranje.song" || key.indexOf("aranje.project.") === 0));
   const originalSet = Storage.prototype.setItem;
   const originalRemove = Storage.prototype.removeItem;
   Storage.prototype.setItem = function (key, value) {
@@ -93,7 +104,9 @@ const INSTRUMENT = `
     }
     originalSet.call(this, key, value);
     window.__ops.push({ op: "set", key, ok: true });
-    if (key === "aranje.song") window.__writes += 1;
+    if (key === "aranje.song" || key.indexOf("aranje.project.") === 0) {
+      window.__writes += 1;
+    }
   };
   Storage.prototype.removeItem = function (key) {
     originalRemove.call(this, key);
@@ -207,7 +220,34 @@ async function deleteFullBar(page, cdp, barKey = "intro:1") {
 
 const writes = (page) => page.evaluate(() => window.__writes);
 const errors = (page) => page.evaluate(() => window.__consoleErrors ?? []);
-const rawKey = (page) => page.evaluate(() => localStorage.getItem("aranje.song"));
+/**
+ * The durable record's raw text, wherever the song currently lives.
+ *
+ * Before migration that is the legacy key; after it, the active project's
+ * record. Asking for one and not the other is what made this suite report
+ * `null` for songs that were safely on disk.
+ */
+const rawKey = (page) =>
+  page.evaluate(
+    ([catalogKey, prefix, legacyKey]) => {
+      const catalogRaw = localStorage.getItem(catalogKey);
+      if (catalogRaw !== null) {
+        try {
+          const catalog = JSON.parse(catalogRaw);
+          const record = localStorage.getItem(prefix + catalog.activeProjectId);
+          if (record !== null) return record;
+        } catch {
+          /* fall through to the legacy key */
+        }
+      }
+      return localStorage.getItem(legacyKey);
+    },
+    [CATALOG_KEY, PROJECT_PREFIX, LEGACY_SONG_KEY],
+  );
+
+/** The legacy key itself, for the scenarios that are about the migration. */
+const legacyKey = (page) =>
+  page.evaluate((key) => localStorage.getItem(key), LEGACY_SONG_KEY);
 
 /** The song on disk, unwrapped the same way the app unwraps it. */
 const storedSong = async (page) => {
@@ -215,12 +255,17 @@ const storedSong = async (page) => {
   if (raw === null) return null;
   try {
     const value = JSON.parse(raw);
+    if (value?.format === "aranje.project-record") return value.current ?? null;
     return value?.format === "aranje.song" ? (value.current ?? null) : value;
   } catch {
     return null;
   }
 };
 
+/**
+ * The envelope around the song: the project record now, the song envelope
+ * before migration. Both carry `revision`, which is what the scenarios read.
+ */
 const envelope = async (page) => {
   const raw = await rawKey(page);
   if (raw === null) return null;
@@ -405,8 +450,15 @@ async function run() {
     // ------------------------------------------------------------------ 7
     await safe(at("7 closing the page writes nothing extra"), async () => {
       const { context, page, cdp } = await openApp(browser, size);
+      /*
+       * The load itself now costs one payload write: the legacy song is
+       * migrated into a project the moment the app opens (K-52). The claim
+       * under test is about the *edit*, so it is measured as a difference
+       * either side of it rather than as a total since the page loaded.
+       */
+      const atLoad = await writes(page);
       await deleteTrackBar(page, cdp, "intro:0");
-      const afterEdit = await writes(page);
+      const afterEdit = (await writes(page)) - atLoad;
 
       // Everything a browser does on the way out, short of actually leaving.
       await page.evaluate(() => {
@@ -415,9 +467,10 @@ async function run() {
         document.dispatchEvent(new Event("visibilitychange"));
       });
       await page.waitForTimeout(400);
-      const afterUnload = await writes(page);
+      const afterUnload = (await writes(page)) - atLoad;
 
       measurements[`writesPerEdit-${label}`] = afterEdit;
+      measurements[`writesAtLoad-${label}`] = atLoad;
       record(
         at("7 closing the page writes nothing extra"),
         afterEdit === 1 && afterUnload === afterEdit,
@@ -427,24 +480,41 @@ async function run() {
     });
 
     // ------------------------------------------------------------------ 8
-    await safe(at("8 a legacy song opens and becomes an envelope on first edit"), async () => {
+    await safe(at("8 a legacy song becomes a project at load, once"), async () => {
+      /*
+       * This scenario used to watch a legacy song turn into an envelope on
+       * the *first edit*. K-52 moved that moment: opening the app migrates
+       * the single song into the first project — payload, then catalog, then
+       * the old key is removed — and only then is anything editable. What is
+       * still worth measuring is that it happens exactly once, that the song
+       * survives it, and that a reload does not do it again.
+       */
       const { context, page, cdp } = await openApp(browser, size, FIXTURE);
-      const raw = await rawKey(page);
-      const openedLegacy = !raw.includes('"format"');
+      const legacyAtLoad = await legacyKey(page);
       const writesAtLoad = await writes(page);
+      const record0 = await envelope(page);
+      const titleAtLoad = (await storedSong(page))?.title;
 
       await deleteTrackBar(page, cdp, "intro:0");
-      const file = await envelope(page);
+      const afterEdit = await envelope(page);
+
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await page.waitForSelector("[data-arr-bar]");
+      // The counter lives in the document, so a reload starts it at zero:
+      // this is the whole cost of opening an already-migrated device.
+      const writesAfterReload = await writes(page);
 
       record(
-        at("8 a legacy song opens and becomes an envelope on first edit"),
-        openedLegacy &&
-          writesAtLoad === 0 &&
-          file?.format === "aranje.song" &&
-          file?.version === 1 &&
-          file?.revision === 1 &&
-          JSON.stringify(file?.previous) === JSON.stringify(FIXTURE_SONG),
-        `legacy at load=${openedLegacy}, writes at load=${writesAtLoad}, rev=${file?.revision}`,
+        at("8 a legacy song becomes a project at load, once"),
+        legacyAtLoad === null &&
+          writesAtLoad === 1 &&
+          record0?.format === "aranje.project-record" &&
+          record0?.version === 1 &&
+          record0?.revision === 1 &&
+          titleAtLoad === JSON.parse(FIXTURE).title &&
+          afterEdit?.revision === 2 &&
+          writesAfterReload === 0,
+        `legacy=${legacyAtLoad === null ? "kaldırıldı" : "duruyor"}, load=${writesAtLoad}, rev ${record0?.revision}→${afterEdit?.revision}, reload=${writesAfterReload}`,
       );
       await context.close();
     });
@@ -664,6 +734,9 @@ async function run() {
     // ----------------------------------------------------------------- 17
     await safe(at("17 the envelope keeps one rung behind every step"), async () => {
       const { context, page, cdp } = await openApp(browser, size);
+      // Revision 1 belongs to the migration itself; the rungs are counted
+      // from there rather than from an assumed zero.
+      const base = (await envelope(page))?.revision ?? 0;
       await deleteTrackBar(page, cdp, "intro:0");
       const first = await envelope(page);
       await deleteTrackBar(page, cdp, "intro:3");
@@ -679,9 +752,10 @@ async function run() {
       ];
       record(
         at("17 the envelope keeps one rung behind every step"),
-        first?.revision === 1 &&
-          second?.revision === 2 &&
-          afterUndo?.revision === 3 &&
+        base === 1 &&
+          first?.revision === base + 1 &&
+          second?.revision === base + 2 &&
+          afterUndo?.revision === base + 3 &&
           // What the undo left behind is what was on disk a moment before it.
           JSON.stringify(afterUndo?.previous) === JSON.stringify(second?.current),
         `revisions ${first?.revision}/${second?.revision}/${afterUndo?.revision}`,
@@ -870,13 +944,26 @@ async function run() {
     await safe(at("23 the malformed-JSON ledger, in order"), async () => {
       const { context, page } = await openApp(browser, size, "{not json");
       const ops = await page.evaluate(() => window.__ops);
+      /*
+       * The order is the whole claim, and it grew: the capability probe runs
+       * twice (once for the song store, once for the project library), the
+       * unreadable value is quarantined and its key removed, and then the
+       * sample song the reader ends up with is established as the first
+       * project — payload before catalog, so an interrupted migration leaves
+       * an adoptable orphan rather than a catalog pointing at nothing.
+       */
       const expected = [
         { op: "set", key: "aranje.probe", ok: true },
         { op: "remove", key: "aranje.probe", ok: true },
-        { op: "set", key: ops[2]?.key ?? "", ok: true }, // aranje.corrupt.<now>
+        { op: "set", key: "aranje.probe", ok: true },
+        { op: "remove", key: "aranje.probe", ok: true },
+        { op: "set", key: ops[4]?.key ?? "", ok: true }, // aranje.corrupt.<now>
+        { op: "remove", key: "aranje.song", ok: true },
+        { op: "set", key: "aranje.project.project-1", ok: true },
+        { op: "set", key: "aranje.projects", ok: true },
         { op: "remove", key: "aranje.song", ok: true },
       ];
-      const corruptKeyed = (ops[2]?.key ?? "").startsWith("aranje.corrupt.");
+      const corruptKeyed = (ops[4]?.key ?? "").startsWith("aranje.corrupt.");
       measurements[`ledger-malformed-${label}`] = ops;
       record(
         at("23 the malformed-JSON ledger, in order"),
@@ -895,16 +982,28 @@ async function run() {
       );
       const ops = await page.evaluate(() => window.__ops);
       const shape = ops.map((entry) => `${entry.op}:${entry.key}:${entry.ok}`);
-      const corrupt = ops[2]?.key ?? "";
+      const corrupt = ops[4]?.key ?? "";
       measurements[`ledger-rescue-${label}`] = ops;
+      /*
+       * The rescue writes the recovered song back under the *old* key first —
+       * that is the song envelope repairing itself, exactly as it did before
+       * projects existed — and the migration then carries it into the first
+       * project and clears the old key. Both halves are visible here because
+       * the order is what makes an interrupted recovery survivable.
+       */
       record(
         at("24 the rescued-previous ledger, in order"),
-        shape.length === 4 &&
+        shape.length === 9 &&
           shape[0] === "set:aranje.probe:true" &&
           shape[1] === "remove:aranje.probe:true" &&
+          shape[2] === "set:aranje.probe:true" &&
+          shape[3] === "remove:aranje.probe:true" &&
           corrupt.startsWith("aranje.corrupt.") &&
-          shape[2] === `set:${corrupt}:true` &&
-          shape[3] === "set:aranje.song:true",
+          shape[4] === `set:${corrupt}:true` &&
+          shape[5] === "set:aranje.song:true" &&
+          shape[6] === "set:aranje.project.project-1:true" &&
+          shape[7] === "set:aranje.projects:true" &&
+          shape[8] === "remove:aranje.song:true",
         JSON.stringify(shape),
       );
       await context.close();

@@ -30,7 +30,6 @@ import { layoutProbe, targetEdges } from "../shared/harness.mjs";
 import {
   PROJECT_LEDGER,
   activeSongBytes,
-  legacySongRaw,
   readActiveSong,
   writeTally,
 } from "../shared/project-storage.mjs";
