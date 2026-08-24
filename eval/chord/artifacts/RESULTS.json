@@ -1,0 +1,779 @@
+{
+  "results": [
+    {
+      "name": "[390x844] 1 boş hücrede iki kapı görünüyor",
+      "pass": true,
+      "detail": "Akor + Power chord"
+    },
+    {
+      "name": "[390x844] 2 boş hedefte başlık akoru yazmayı söylüyor",
+      "pass": true,
+      "detail": "Bar 1 · akoru yaz"
+    },
+    {
+      "name": "[390x844] 3 kök adımı açık geliyor, tür sorulmuyor tekrar",
+      "pass": true,
+      "detail": "root grid"
+    },
+    {
+      "name": "[390x844] 6 on iki kök ses erişilebilir",
+      "pass": true,
+      "detail": "12 kök"
+    },
+    {
+      "name": "[390x844] 5 tam akor türünde on kalite var, power ayrı kapıda",
+      "pass": true,
+      "detail": "10 kalite"
+    },
+    {
+      "name": "[390x844] 4 power chord kapısı iki biçim sunuyor",
+      "pass": true,
+      "detail": "Kök + beşli\nKök + beşli + oktav"
+    },
+    {
+      "name": "[390x844] 4.b iki sesli D5 yazıldı",
+      "pass": true,
+      "detail": "D3,A3"
+    },
+    {
+      "name": "[390x844] 7 majör",
+      "pass": true,
+      "detail": "C3,E3,G3,C4,E4"
+    },
+    {
+      "name": "[390x844] 8 minör",
+      "pass": true,
+      "detail": "A2,E3,A3,C4,E4"
+    },
+    {
+      "name": "[390x844] 9 Am7",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[390x844] 10 dominant 7",
+      "pass": true,
+      "detail": "D3,A3,C4,F#4"
+    },
+    {
+      "name": "[390x844] 11 maj7",
+      "pass": true,
+      "detail": "C3,E3,G3,B3,E4"
+    },
+    {
+      "name": "[390x844] 12 min7",
+      "pass": true,
+      "detail": "E2,B2,D3,G3,B3,E4"
+    },
+    {
+      "name": "[390x844] 13 sus2",
+      "pass": true,
+      "detail": "E2,B2,E3,B3,B3,F#4"
+    },
+    {
+      "name": "[390x844] 14 sus4",
+      "pass": true,
+      "detail": "E2,A2,E3,A3,B3,E4"
+    },
+    {
+      "name": "[390x844] 15 eksilmiş",
+      "pass": true,
+      "detail": "B2,D3,B3,F4"
+    },
+    {
+      "name": "[390x844] 16 artmış",
+      "pass": true,
+      "detail": "C3,E3,G#3,C4,E4"
+    },
+    {
+      "name": "[390x844] 17 yarı eksilmiş 7",
+      "pass": true,
+      "detail": "B2,D3,A3,B3,F4"
+    },
+    {
+      "name": "[390x844] 18 Am7 için birden fazla gerçek gitar şekli",
+      "pass": true,
+      "detail": "x-0-2-0-1-0 x-x-x-2-1-3 5-0-5-5-5-0 x-0-5-5-5-x"
+    },
+    {
+      "name": "[390x844] 18.b hiçbir kart 'önerilen' demiyor",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 20 varyasyonlar arasında dolaşmak 0 yazım",
+      "pass": true,
+      "detail": "payload 0"
+    },
+    {
+      "name": "[390x844] 19 varyasyon dinlenebiliyor",
+      "pass": true,
+      "detail": "4 kart"
+    },
+    {
+      "name": "[390x844] 46 tekrar dinlemek ikinci AudioContext kurmuyor",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "[390x844] 47 dinlemek depoya yazmıyor",
+      "pass": true,
+      "detail": "payload 0"
+    },
+    {
+      "name": "[390x844] 45 dinlemek transport'u başlatmıyor",
+      "pass": true,
+      "detail": "idle"
+    },
+    {
+      "name": "[390x844] 48 sheet kapanınca önizleme sesi kalmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 21 ghost önizleme sekmede gerçekten çiziliyor",
+      "pass": true,
+      "detail": "\"BÖLÜM 1\\n1\\n1/8\\n0\\n2\\n0\\n1\\n0\""
+    },
+    {
+      "name": "[390x844] 22 vazgeç 0 yazım",
+      "pass": true,
+      "detail": "payload 0"
+    },
+    {
+      "name": "[390x844] 22.b vazgeçtikten sonra sekmede nota yok",
+      "pass": true,
+      "detail": "boş"
+    },
+    {
+      "name": "[390x844] 23 uygula: tek aktif proje yazımı, 0 katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 0"
+    },
+    {
+      "name": "[390x844] 23.b beş nota tek vuruşta yazıldı",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[390x844] 21.b önizlemede çizilen ile uygulanan birebir aynı",
+      "pass": true,
+      "detail": "\"BÖLÜM 1\\n1\\n1/8\\n0\\n2\\n0\\n1\\n0\""
+    },
+    {
+      "name": "[390x844] 24 geri al akorun tamamını tek adımda kaldırıyor",
+      "pass": true,
+      "detail": "nota 0, yazım 1"
+    },
+    {
+      "name": "[390x844] 25 yinele akoru byte-eş geri getiriyor",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[390x844] 58 geçmiş etiketi akoru adlandırıyor",
+      "pass": true,
+      "detail": "Geri al: Akor ekleme"
+    },
+    {
+      "name": "[390x844] 26 dolu hedefte başlık değiştirmeyi söylüyor",
+      "pass": true,
+      "detail": "Bar 1 · bu vuruşu akorla değiştir"
+    },
+    {
+      "name": "[390x844] 26.b kaldırılacak notalar açıkça söyleniyor",
+      "pass": true,
+      "detail": "Bu vuruştaki notalar kaldırılacak ve yerine seçtiğin akor yazılacak."
+    },
+    {
+      "name": "[390x844] 27 değiştirme eski onset'in tamamını alıyor, tek yazım",
+      "pass": true,
+      "detail": "A2,E3,A3,C4,E4 | yazım 1"
+    },
+    {
+      "name": "[390x844] 28 bağlı onset güvenli cümleyle reddediliyor",
+      "pass": true,
+      "detail": "Bu vuruş başka notalara bağlı. Akoru değiştirmeden önce bağlantıyı ayırmalısın."
+    },
+    {
+      "name": "[390x844] 28.b uygula kapalı ve şarkı byte-eş",
+      "pass": true,
+      "detail": "kapalı"
+    },
+    {
+      "name": "[390x844] 29 bağ devamı akor başlangıcı sayılmıyor",
+      "pass": true,
+      "detail": "Bu vuruş, önceki notanın devamı. Akoru buraya yazmak için önce notayı burada bitirmelisin."
+    },
+    {
+      "name": "[390x844] 30 karışık ızgarada birebir oturan hedefe yazılıyor",
+      "pass": true,
+      "detail": "A2,E3,A3,C4,E4"
+    },
+    {
+      "name": "[390x844] 31 standart akort",
+      "pass": true,
+      "detail": "A2,E3"
+    },
+    {
+      "name": "[390x844] 32 Drop D açık D5",
+      "pass": true,
+      "detail": "D2,A2"
+    },
+    {
+      "name": "[390x844] 33 alternatif akort (DADGAD)",
+      "pass": true,
+      "detail": "D2,A2"
+    },
+    {
+      "name": "[390x844] 34 capo 2: duyulan ses A",
+      "pass": true,
+      "detail": "A2,E3"
+    },
+    {
+      "name": "[390x844] 34.b capo notu kartta görünüyor",
+      "pass": true,
+      "detail": "perde 3,5"
+    },
+    {
+      "name": "[390x844] 35 bas power chord",
+      "pass": true,
+      "detail": "A1,E2"
+    },
+    {
+      "name": "[390x844] 36 piyano: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[390x844] 36 piyano.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "piano"
+    },
+    {
+      "name": "[390x844] 37 synth: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[390x844] 37 synth.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "synth"
+    },
+    {
+      "name": "[390x844] 38 yaylı topluluk: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[390x844] 38 yaylı topluluk.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "strings"
+    },
+    {
+      "name": "[390x844] 39 davul: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[390x844] 39 davul.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "drum_kit"
+    },
+    {
+      "name": "[390x844] 40 A'ya akor yazmak B'yi byte-eş bırakıyor",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[390x844] 40.b katalog yazımı yok",
+      "pass": true,
+      "detail": "5 nota A'da"
+    },
+    {
+      "name": "[390x844] 41 proje geçişi akor kurucusunu temizliyor",
+      "pass": true,
+      "detail": "kapalı"
+    },
+    {
+      "name": "[390x844] 42 bayat sekme akoru yazamıyor, şarkı byte-eş",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[390x844] 43 kayıt kapalıyken ham diagnostic yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 43.b console hatası yok",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 44 çalarken kurucu açılıyor ve çalma duruyor",
+      "pass": true,
+      "detail": "idle"
+    },
+    {
+      "name": "[390x844] 49 akor tek onset grubu olarak seçilebiliyor",
+      "pass": true,
+      "detail": "6 onset"
+    },
+    {
+      "name": "[390x844] 52 yazılan akor depoda beş nota, tek vuruşta",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[390x844] 55 kayıtta akor metadata'sı yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[390x844] 56 fingerprint yalnız notalar değiştiği için değişti",
+      "pass": true,
+      "detail": "notalar kayıtta"
+    },
+    {
+      "name": "[390x844] 57 depo defteri: seçim ve önizleme 0 yazım",
+      "pass": true,
+      "detail": "payload 0, katalog 0"
+    },
+    {
+      "name": "[390x844] 59 gövde yatay taşması 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 62 sheet viewport içinde",
+      "pass": true,
+      "detail": "true"
+    },
+    {
+      "name": "[390x844] 61 en küçük dokunma hedefi >= 44 px",
+      "pass": true,
+      "detail": "44"
+    },
+    {
+      "name": "[390x844] 63 uzun Türkçe akor etiketi taşmıyor",
+      "pass": true,
+      "detail": "F#m7b5"
+    },
+    {
+      "name": "[390x844] 64 ekran okuyucu adları var",
+      "pass": true,
+      "detail": "16 aria-pressed"
+    },
+    {
+      "name": "[390x844] 65 backdrop ile kapanıyor",
+      "pass": true,
+      "detail": "kapandı"
+    },
+    {
+      "name": "[390x844] 66 console/page error 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] 67 dış ağ isteği 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] 1 boş hücrede iki kapı görünüyor",
+      "pass": true,
+      "detail": "Akor + Power chord"
+    },
+    {
+      "name": "[320x700] 2 boş hedefte başlık akoru yazmayı söylüyor",
+      "pass": true,
+      "detail": "Bar 1 · akoru yaz"
+    },
+    {
+      "name": "[320x700] 3 kök adımı açık geliyor, tür sorulmuyor tekrar",
+      "pass": true,
+      "detail": "root grid"
+    },
+    {
+      "name": "[320x700] 6 on iki kök ses erişilebilir",
+      "pass": true,
+      "detail": "12 kök"
+    },
+    {
+      "name": "[320x700] 5 tam akor türünde on kalite var, power ayrı kapıda",
+      "pass": true,
+      "detail": "10 kalite"
+    },
+    {
+      "name": "[320x700] 4 power chord kapısı iki biçim sunuyor",
+      "pass": true,
+      "detail": "Kök + beşli\nKök + beşli + oktav"
+    },
+    {
+      "name": "[320x700] 4.b iki sesli D5 yazıldı",
+      "pass": true,
+      "detail": "D3,A3"
+    },
+    {
+      "name": "[320x700] 7 majör",
+      "pass": true,
+      "detail": "C3,E3,G3,C4,E4"
+    },
+    {
+      "name": "[320x700] 8 minör",
+      "pass": true,
+      "detail": "A2,E3,A3,C4,E4"
+    },
+    {
+      "name": "[320x700] 9 Am7",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[320x700] 10 dominant 7",
+      "pass": true,
+      "detail": "D3,A3,C4,F#4"
+    },
+    {
+      "name": "[320x700] 11 maj7",
+      "pass": true,
+      "detail": "C3,E3,G3,B3,E4"
+    },
+    {
+      "name": "[320x700] 12 min7",
+      "pass": true,
+      "detail": "E2,B2,D3,G3,B3,E4"
+    },
+    {
+      "name": "[320x700] 13 sus2",
+      "pass": true,
+      "detail": "E2,B2,E3,B3,B3,F#4"
+    },
+    {
+      "name": "[320x700] 14 sus4",
+      "pass": true,
+      "detail": "E2,A2,E3,A3,B3,E4"
+    },
+    {
+      "name": "[320x700] 15 eksilmiş",
+      "pass": true,
+      "detail": "B2,D3,B3,F4"
+    },
+    {
+      "name": "[320x700] 16 artmış",
+      "pass": true,
+      "detail": "C3,E3,G#3,C4,E4"
+    },
+    {
+      "name": "[320x700] 17 yarı eksilmiş 7",
+      "pass": true,
+      "detail": "B2,D3,A3,B3,F4"
+    },
+    {
+      "name": "[320x700] 18 Am7 için birden fazla gerçek gitar şekli",
+      "pass": true,
+      "detail": "x-0-2-0-1-0 x-x-x-2-1-3 5-0-5-5-5-0 x-0-5-5-5-x"
+    },
+    {
+      "name": "[320x700] 18.b hiçbir kart 'önerilen' demiyor",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 20 varyasyonlar arasında dolaşmak 0 yazım",
+      "pass": true,
+      "detail": "payload 0"
+    },
+    {
+      "name": "[320x700] 19 varyasyon dinlenebiliyor",
+      "pass": true,
+      "detail": "4 kart"
+    },
+    {
+      "name": "[320x700] 46 tekrar dinlemek ikinci AudioContext kurmuyor",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "[320x700] 47 dinlemek depoya yazmıyor",
+      "pass": true,
+      "detail": "payload 0"
+    },
+    {
+      "name": "[320x700] 45 dinlemek transport'u başlatmıyor",
+      "pass": true,
+      "detail": "idle"
+    },
+    {
+      "name": "[320x700] 48 sheet kapanınca önizleme sesi kalmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 21 ghost önizleme sekmede gerçekten çiziliyor",
+      "pass": true,
+      "detail": "\"BÖLÜM 1\\n1\\n1/8\\n0\\n2\\n0\\n1\\n0\""
+    },
+    {
+      "name": "[320x700] 22 vazgeç 0 yazım",
+      "pass": true,
+      "detail": "payload 0"
+    },
+    {
+      "name": "[320x700] 22.b vazgeçtikten sonra sekmede nota yok",
+      "pass": true,
+      "detail": "boş"
+    },
+    {
+      "name": "[320x700] 23 uygula: tek aktif proje yazımı, 0 katalog yazımı",
+      "pass": true,
+      "detail": "payload 1, katalog 0"
+    },
+    {
+      "name": "[320x700] 23.b beş nota tek vuruşta yazıldı",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[320x700] 21.b önizlemede çizilen ile uygulanan birebir aynı",
+      "pass": true,
+      "detail": "\"BÖLÜM 1\\n1\\n1/8\\n0\\n2\\n0\\n1\\n0\""
+    },
+    {
+      "name": "[320x700] 24 geri al akorun tamamını tek adımda kaldırıyor",
+      "pass": true,
+      "detail": "nota 0, yazım 1"
+    },
+    {
+      "name": "[320x700] 25 yinele akoru byte-eş geri getiriyor",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[320x700] 58 geçmiş etiketi akoru adlandırıyor",
+      "pass": true,
+      "detail": "Geri al: Akor ekleme"
+    },
+    {
+      "name": "[320x700] 26 dolu hedefte başlık değiştirmeyi söylüyor",
+      "pass": true,
+      "detail": "Bar 1 · bu vuruşu akorla değiştir"
+    },
+    {
+      "name": "[320x700] 26.b kaldırılacak notalar açıkça söyleniyor",
+      "pass": true,
+      "detail": "Bu vuruştaki notalar kaldırılacak ve yerine seçtiğin akor yazılacak."
+    },
+    {
+      "name": "[320x700] 27 değiştirme eski onset'in tamamını alıyor, tek yazım",
+      "pass": true,
+      "detail": "A2,E3,A3,C4,E4 | yazım 1"
+    },
+    {
+      "name": "[320x700] 28 bağlı onset güvenli cümleyle reddediliyor",
+      "pass": true,
+      "detail": "Bu vuruş başka notalara bağlı. Akoru değiştirmeden önce bağlantıyı ayırmalısın."
+    },
+    {
+      "name": "[320x700] 28.b uygula kapalı ve şarkı byte-eş",
+      "pass": true,
+      "detail": "kapalı"
+    },
+    {
+      "name": "[320x700] 29 bağ devamı akor başlangıcı sayılmıyor",
+      "pass": true,
+      "detail": "Bu vuruş, önceki notanın devamı. Akoru buraya yazmak için önce notayı burada bitirmelisin."
+    },
+    {
+      "name": "[320x700] 30 karışık ızgarada birebir oturan hedefe yazılıyor",
+      "pass": true,
+      "detail": "A2,E3,A3,C4,E4"
+    },
+    {
+      "name": "[320x700] 31 standart akort",
+      "pass": true,
+      "detail": "A2,E3"
+    },
+    {
+      "name": "[320x700] 32 Drop D açık D5",
+      "pass": true,
+      "detail": "D2,A2"
+    },
+    {
+      "name": "[320x700] 33 alternatif akort (DADGAD)",
+      "pass": true,
+      "detail": "D2,A2"
+    },
+    {
+      "name": "[320x700] 34 capo 2: duyulan ses A",
+      "pass": true,
+      "detail": "A2,E3"
+    },
+    {
+      "name": "[320x700] 34.b capo notu kartta görünüyor",
+      "pass": true,
+      "detail": "perde 3,5"
+    },
+    {
+      "name": "[320x700] 35 bas power chord",
+      "pass": true,
+      "detail": "A1,E2"
+    },
+    {
+      "name": "[320x700] 36 piyano: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[320x700] 36 piyano.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "piano"
+    },
+    {
+      "name": "[320x700] 37 synth: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[320x700] 37 synth.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "synth"
+    },
+    {
+      "name": "[320x700] 38 yaylı topluluk: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[320x700] 38 yaylı topluluk.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "strings"
+    },
+    {
+      "name": "[320x700] 39 davul: uygulama çökmeden güvenli davranıyor",
+      "pass": true,
+      "detail": "0 hata"
+    },
+    {
+      "name": "[320x700] 39 davul.b teknik enstrüman kimliği ekranda yok",
+      "pass": true,
+      "detail": "drum_kit"
+    },
+    {
+      "name": "[320x700] 40 A'ya akor yazmak B'yi byte-eş bırakıyor",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[320x700] 40.b katalog yazımı yok",
+      "pass": true,
+      "detail": "5 nota A'da"
+    },
+    {
+      "name": "[320x700] 41 proje geçişi akor kurucusunu temizliyor",
+      "pass": true,
+      "detail": "kapalı"
+    },
+    {
+      "name": "[320x700] 42 bayat sekme akoru yazamıyor, şarkı byte-eş",
+      "pass": true,
+      "detail": "değişmedi"
+    },
+    {
+      "name": "[320x700] 43 kayıt kapalıyken ham diagnostic yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 43.b console hatası yok",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 44 çalarken kurucu açılıyor ve çalma duruyor",
+      "pass": true,
+      "detail": "idle"
+    },
+    {
+      "name": "[320x700] 49 akor tek onset grubu olarak seçilebiliyor",
+      "pass": true,
+      "detail": "6 onset"
+    },
+    {
+      "name": "[320x700] 52 yazılan akor depoda beş nota, tek vuruşta",
+      "pass": true,
+      "detail": "A2,E3,G3,C4,E4"
+    },
+    {
+      "name": "[320x700] 55 kayıtta akor metadata'sı yok",
+      "pass": true,
+      "detail": "temiz"
+    },
+    {
+      "name": "[320x700] 56 fingerprint yalnız notalar değiştiği için değişti",
+      "pass": true,
+      "detail": "notalar kayıtta"
+    },
+    {
+      "name": "[320x700] 57 depo defteri: seçim ve önizleme 0 yazım",
+      "pass": true,
+      "detail": "payload 0, katalog 0"
+    },
+    {
+      "name": "[320x700] 59 gövde yatay taşması 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 62 sheet viewport içinde",
+      "pass": true,
+      "detail": "true"
+    },
+    {
+      "name": "[320x700] 61 en küçük dokunma hedefi >= 44 px",
+      "pass": true,
+      "detail": "44"
+    },
+    {
+      "name": "[320x700] 63 uzun Türkçe akor etiketi taşmıyor",
+      "pass": true,
+      "detail": "F#m7b5"
+    },
+    {
+      "name": "[320x700] 64 ekran okuyucu adları var",
+      "pass": true,
+      "detail": "16 aria-pressed"
+    },
+    {
+      "name": "[320x700] 65 backdrop ile kapanıyor",
+      "pass": true,
+      "detail": "kapandı"
+    },
+    {
+      "name": "[320x700] 66 console/page error 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] 67 dış ağ isteği 0",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "measurements": {
+    "390x844.sheet": {
+      "overflow": 0,
+      "sheetInside": true,
+      "smallest": 44,
+      "nodes": 41
+    },
+    "320x700.sheet": {
+      "overflow": 0,
+      "sheetInside": true,
+      "smallest": 44,
+      "nodes": 41
+    }
+  },
+  "failed": 0
+}
