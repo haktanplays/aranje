@@ -1,0 +1,420 @@
+{
+  "what": "2Q-A §17 — çoklu görünümün saf çekirdek maliyeti",
+  "measuredOn": "desktop Node — not a phone, and not evidence about one",
+  "node": "v22.22.2",
+  "slotWidthPx": 34,
+  "note": "DOM node counts, listeners, observers, animation frames and real view switches are browser facts and are measured in measure-browser.mjs.",
+  "model": {
+    "fourPart": {
+      "tracks": 4,
+      "sections": 1,
+      "barsInSection": 4,
+      "lanes": 4,
+      "build the section's model": {
+        "rounds": 30,
+        "medianMs": 0.295,
+        "p95Ms": 0.457,
+        "maxMs": 1.713
+      },
+      "switch to another section": {
+        "rounds": 30,
+        "medianMs": 0.201,
+        "p95Ms": 0.3,
+        "maxMs": 0.954
+      },
+      "switch the active lane": {
+        "rounds": 30,
+        "medianMs": 0.163,
+        "p95Ms": 0.337,
+        "maxMs": 0.518
+      }
+    },
+    "maxTracks": {
+      "tracks": 8,
+      "sections": 1,
+      "barsInSection": 4,
+      "lanes": 8,
+      "build the section's model": {
+        "rounds": 30,
+        "medianMs": 0.287,
+        "p95Ms": 0.398,
+        "maxMs": 0.811
+      },
+      "switch to another section": {
+        "rounds": 30,
+        "medianMs": 0.223,
+        "p95Ms": 0.305,
+        "maxMs": 0.716
+      },
+      "switch the active lane": {
+        "rounds": 30,
+        "medianMs": 0.179,
+        "p95Ms": 0.473,
+        "maxMs": 2.848
+      }
+    },
+    "realistic": {
+      "tracks": 8,
+      "sections": 4,
+      "barsInSection": 8,
+      "lanes": 8,
+      "build the section's model": {
+        "rounds": 30,
+        "medianMs": 0.843,
+        "p95Ms": 1.151,
+        "maxMs": 1.25
+      },
+      "switch to another section": {
+        "rounds": 30,
+        "medianMs": 0.847,
+        "p95Ms": 1.096,
+        "maxMs": 1.191
+      },
+      "switch the active lane": {
+        "rounds": 30,
+        "medianMs": 1.065,
+        "p95Ms": 2.414,
+        "maxMs": 2.618
+      }
+    },
+    "worstCase": {
+      "tracks": 8,
+      "sections": 4,
+      "barsInSection": 8,
+      "lanes": 8,
+      "build the section's model": {
+        "rounds": 30,
+        "medianMs": 2.055,
+        "p95Ms": 2.5,
+        "maxMs": 2.691
+      },
+      "switch to another section": {
+        "rounds": 30,
+        "medianMs": 1.782,
+        "p95Ms": 2.317,
+        "maxMs": 2.484
+      },
+      "switch the active lane": {
+        "rounds": 30,
+        "medianMs": 1.593,
+        "p95Ms": 2.002,
+        "maxMs": 2.075
+      }
+    }
+  },
+  "geometry": {
+    "fourPart": {
+      "bars": 4,
+      "contentWidthPx": 1088,
+      "sectionTicks": 3072,
+      "lay out the axis": {
+        "rounds": 30,
+        "medianMs": 0,
+        "p95Ms": 0.001,
+        "maxMs": 0.001
+      },
+      "place the playhead": {
+        "rounds": 30,
+        "medianMs": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      }
+    },
+    "worstCase": {
+      "bars": 8,
+      "contentWidthPx": 8704,
+      "sectionTicks": 6144,
+      "lay out the axis": {
+        "rounds": 30,
+        "medianMs": 0.001,
+        "p95Ms": 0.001,
+        "maxMs": 0.002
+      },
+      "place the playhead": {
+        "rounds": 30,
+        "medianMs": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      }
+    },
+    "mixedGrid": {
+      "bars": 4,
+      "contentWidthPx": 1360,
+      "sectionTicks": 3072,
+      "lay out the axis": {
+        "rounds": 30,
+        "medianMs": 0,
+        "p95Ms": 0.001,
+        "maxMs": 0.001
+      },
+      "place the playhead": {
+        "rounds": 30,
+        "medianMs": 0,
+        "p95Ms": 0,
+        "maxMs": 0
+      }
+    }
+  },
+  "lifecycle": {
+    "fourPart": {
+      "tracksBefore": 4,
+      "barsInSong": 4,
+      "create a track (lanes materialised)": {
+        "rounds": 30,
+        "medianMs": 1.042,
+        "p95Ms": 2.051,
+        "maxMs": 2.315
+      },
+      "materialise empty lanes alone": {
+        "rounds": 30,
+        "medianMs": 0.003,
+        "p95Ms": 0.008,
+        "maxMs": 0.03
+      },
+      "first note on a missing-key lane": {
+        "rounds": 30,
+        "medianMs": 1.171,
+        "p95Ms": 2.072,
+        "maxMs": 2.39
+      },
+      "an ordinary note on a written lane": {
+        "rounds": 30,
+        "medianMs": 1.034,
+        "p95Ms": 1.981,
+        "maxMs": 2.034
+      }
+    },
+    "sevenOfEight": {
+      "tracksBefore": 7,
+      "barsInSong": 32,
+      "create a track (lanes materialised)": {
+        "rounds": 30,
+        "medianMs": 17.008,
+        "p95Ms": 18.221,
+        "maxMs": 18.834
+      },
+      "materialise empty lanes alone": {
+        "rounds": 30,
+        "medianMs": 0.03,
+        "p95Ms": 0.097,
+        "maxMs": 0.103
+      },
+      "first note on a missing-key lane": {
+        "rounds": 30,
+        "medianMs": 9.428,
+        "p95Ms": 11.659,
+        "maxMs": 11.881
+      },
+      "an ordinary note on a written lane": {
+        "rounds": 30,
+        "medianMs": 9.854,
+        "p95Ms": 10.929,
+        "maxMs": 11.051
+      }
+    }
+  },
+  "browser": {
+    "measuredOn": "desktop Chromium — not a phone, and not evidence about one",
+    "base": "http://127.0.0.1:3100",
+    "fixture": "realistic — 8 tracks, 4 sections, 32 bars",
+    "note": "Listener and observer counts are constructor counts, net of removals; they say what the page holds, not what a phone can afford.",
+    "viewports": {
+      "390x844": {
+        "first Çoklu open (ms)": 134.4,
+        "switch to Tab (ms, median of 5)": 81.1,
+        "switch to Çoklu (ms, median of 5)": 97.5,
+        "activate another lane (ms, median of 4)": 61,
+        "read another section (ms, median)": 87.1,
+        "horizontal wheel (ms, median of 5)": 31.6,
+        "vertical wheel (ms, median of 5)": 32.1,
+        "samples": {
+          "toTab": [
+            88.2,
+            63.4,
+            100.5,
+            80.6,
+            81.1
+          ],
+          "toMulti": [
+            113.6,
+            97.5,
+            94.6,
+            80.1,
+            97.6
+          ],
+          "activate": [
+            61.2,
+            44.7,
+            43.4,
+            61
+          ],
+          "sectionSwitch": [
+            87.1,
+            97,
+            80.5
+          ],
+          "scrollX": [
+            17.6,
+            31.5,
+            31.6,
+            31.7,
+            31.9
+          ],
+          "scrollY": [
+            32.1,
+            31.4,
+            32.1,
+            31.9,
+            32.6
+          ]
+        },
+        "dom": {
+          "Düzen only": {
+            "domNodes": 1895,
+            "laneNodes": 0,
+            "lanes": 0,
+            "listeners": 308,
+            "observers": 2,
+            "audioContexts": 0,
+            "sampleRequests": 0,
+            "liveFrames": 0,
+            "contentWidth": 0,
+            "scrollerWidth": 0,
+            "bodyOverflowPx": 0
+          },
+          "Çoklu, eight lanes": {
+            "domNodes": 3031,
+            "laneNodes": 2943,
+            "lanes": 8,
+            "listeners": 308,
+            "observers": 2,
+            "audioContexts": 0,
+            "sampleRequests": 0,
+            "liveFrames": 0,
+            "contentWidth": 2178,
+            "scrollerWidth": 390,
+            "bodyOverflowPx": 0
+          },
+          "after switching, activating, scrolling": {
+            "domNodes": 3032,
+            "laneNodes": 2943,
+            "lanes": 8,
+            "listeners": 308,
+            "observers": 7,
+            "audioContexts": 0,
+            "sampleRequests": 0,
+            "liveFrames": 0,
+            "contentWidth": 2178,
+            "scrollerWidth": 390,
+            "bodyOverflowPx": 0
+          }
+        },
+        "virtualization": {
+          "lanes": 8,
+          "nodesInLanes": 2943,
+          "nodesPerLane": 368,
+          "contentWidthPx": 2178,
+          "scrollerWidthPx": 390
+        }
+      },
+      "320x700": {
+        "first Çoklu open (ms)": 124.5,
+        "switch to Tab (ms, median of 5)": 80.5,
+        "switch to Çoklu (ms, median of 5)": 97.3,
+        "activate another lane (ms, median of 4)": 44.4,
+        "read another section (ms, median)": 88.4,
+        "horizontal wheel (ms, median of 5)": 31.5,
+        "vertical wheel (ms, median of 5)": 31.7,
+        "samples": {
+          "toTab": [
+            77.8,
+            80.8,
+            83.1,
+            80.5,
+            80.4
+          ],
+          "toMulti": [
+            97.5,
+            97.3,
+            94.8,
+            96.7,
+            97.3
+          ],
+          "activate": [
+            60.7,
+            44.3,
+            42.8,
+            44.4
+          ],
+          "sectionSwitch": [
+            88,
+            88.4,
+            88.5
+          ],
+          "scrollX": [
+            27.2,
+            32.1,
+            31.5,
+            31.9,
+            31.4
+          ],
+          "scrollY": [
+            32.3,
+            31.6,
+            31.7,
+            31.4,
+            32.1
+          ]
+        },
+        "dom": {
+          "Düzen only": {
+            "domNodes": 1895,
+            "laneNodes": 0,
+            "lanes": 0,
+            "listeners": 308,
+            "observers": 2,
+            "audioContexts": 0,
+            "sampleRequests": 0,
+            "liveFrames": 0,
+            "contentWidth": 0,
+            "scrollerWidth": 0,
+            "bodyOverflowPx": 0
+          },
+          "Çoklu, eight lanes": {
+            "domNodes": 3031,
+            "laneNodes": 2943,
+            "lanes": 8,
+            "listeners": 308,
+            "observers": 2,
+            "audioContexts": 0,
+            "sampleRequests": 0,
+            "liveFrames": 0,
+            "contentWidth": 2178,
+            "scrollerWidth": 320,
+            "bodyOverflowPx": 0
+          },
+          "after switching, activating, scrolling": {
+            "domNodes": 3032,
+            "laneNodes": 2943,
+            "lanes": 8,
+            "listeners": 308,
+            "observers": 7,
+            "audioContexts": 0,
+            "sampleRequests": 0,
+            "liveFrames": 0,
+            "contentWidth": 2178,
+            "scrollerWidth": 320,
+            "bodyOverflowPx": 0
+          }
+        },
+        "virtualization": {
+          "lanes": 8,
+          "nodesInLanes": 2943,
+          "nodesPerLane": 368,
+          "contentWidthPx": 2178,
+          "scrollerWidthPx": 320
+        }
+      }
+    }
+  }
+}
