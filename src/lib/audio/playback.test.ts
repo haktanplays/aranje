@@ -136,6 +136,9 @@ function harness(options: { practicePercent?: number; song?: Song } = {}) {
     meters: new Map(),
     plan: buildSongPlan(song),
     expression,
+    // Every real engine reports which tracks it found no sound for; a stub
+    // standing in for one says the ordinary thing: none of them.
+    silentTracks: [],
     expectedBuffers: 0,
     loadedBuffers: 0,
     dispose: () => {},

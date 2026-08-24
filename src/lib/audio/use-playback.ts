@@ -19,6 +19,7 @@ const SERVER_STATE: PlaybackState = {
   metronome: false,
   progress: null,
   error: null,
+  silentTrackNotice: null,
 };
 
 /**

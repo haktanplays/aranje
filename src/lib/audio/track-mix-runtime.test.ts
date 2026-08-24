@@ -89,6 +89,7 @@ function harness(song: Song = SAMPLE_SONG) {
       fetchedUrls: 0,
       dispose() {},
     },
+    silentTracks: [],
     expectedBuffers: 0,
     loadedBuffers: 0,
     dispose() {},

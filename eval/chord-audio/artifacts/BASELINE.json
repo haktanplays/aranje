@@ -424,17 +424,15 @@
       "id": "empty",
       "label": "Boş başlangıç",
       "materialises": true,
-      "silentTracks": [
-        "Ritim Gitar"
-      ],
+      "silentTracks": [],
       "tracks": [
         {
           "name": "Ritim Gitar",
           "instrumentId": "electric_guitar",
-          "presetId": "clean",
+          "presetId": "high_gain",
           "volumeDb": -6,
-          "packId": null,
-          "audible": false
+          "packId": "electric_guitar/high_gain",
+          "audible": true
         }
       ],
       "schemaValid": true,
@@ -444,17 +442,15 @@
       "id": "rock_band",
       "label": "Rock grubu",
       "materialises": true,
-      "silentTracks": [
-        "Ritim Gitar"
-      ],
+      "silentTracks": [],
       "tracks": [
         {
           "name": "Ritim Gitar",
           "instrumentId": "electric_guitar",
-          "presetId": "clean",
+          "presetId": "high_gain",
           "volumeDb": -6,
-          "packId": null,
-          "audible": false
+          "packId": "electric_guitar/high_gain",
+          "audible": true
         },
         {
           "name": "Bas",
@@ -554,8 +550,8 @@
       "q": "4. Loader bunu hata mı sayıyor, sessiz bank mı kuruyor?",
       "answer": "İkisi de değil: pack yoksa buildVoice() null döner ve createEngine o track'i grafiğe hiç eklemez. Boş bank kurulmaz, hata da atılmaz — track sessizce yok sayılır ve motor başarı bildirir.",
       "evidence": {
-        "buildVoiceReturnsNull": true,
-        "engineSkipsSilently": true,
+        "buildVoiceReturnsNull": false,
+        "engineSkipsSilently": false,
         "progressCountsOnlyExistingPacks": true
       },
       "measuredBy": "src/lib/audio/engine.ts — gerçek render kanıtı §2'de"
@@ -568,16 +564,12 @@
           {
             "id": "empty",
             "errors": [],
-            "silentTracks": [
-              "Ritim Gitar"
-            ]
+            "silentTracks": []
           },
           {
             "id": "rock_band",
             "errors": [],
-            "silentTracks": [
-              "Ritim Gitar"
-            ]
+            "silentTracks": []
           },
           {
             "id": "acoustic",
@@ -593,7 +585,7 @@
       "q": "6. UI bunu seçilebilir bir preset gibi gösteriyor mu?",
       "answer": "Evet. Track kurulum sayfası corePresets() listesini olduğu gibi bir <select> içine döküyor; sessiz preset ile duyulan preset arasında hiçbir görsel ayrım yok.",
       "evidence": {
-        "listsCorePresetsVerbatim": true,
+        "listsCorePresetsVerbatim": false,
         "offeredForElectricGuitar": [
           "clean",
           "high_gain"
@@ -649,9 +641,9 @@
     },
     {
       "q": "10. Hangi launch şablonları sessiz track üretiyor?",
-      "answer": "empty → Ritim Gitar | rock_band → Ritim Gitar",
+      "answer": "hiçbiri",
       "evidence": {
-        "templatePicksFirstCorePreset": true,
+        "templatePicksFirstCorePreset": false,
         "templates": [
           {
             "id": "empty",
@@ -659,15 +651,13 @@
               {
                 "name": "Ritim Gitar",
                 "instrumentId": "electric_guitar",
-                "presetId": "clean",
+                "presetId": "high_gain",
                 "volumeDb": -6,
-                "packId": null,
-                "audible": false
+                "packId": "electric_guitar/high_gain",
+                "audible": true
               }
             ],
-            "silentTracks": [
-              "Ritim Gitar"
-            ]
+            "silentTracks": []
           },
           {
             "id": "rock_band",
@@ -675,10 +665,10 @@
               {
                 "name": "Ritim Gitar",
                 "instrumentId": "electric_guitar",
-                "presetId": "clean",
+                "presetId": "high_gain",
                 "volumeDb": -6,
-                "packId": null,
-                "audible": false
+                "packId": "electric_guitar/high_gain",
+                "audible": true
               },
               {
                 "name": "Bas",
@@ -697,9 +687,7 @@
                 "audible": true
               }
             ],
-            "silentTracks": [
-              "Ritim Gitar"
-            ]
+            "silentTracks": []
           },
           {
             "id": "acoustic",

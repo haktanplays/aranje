@@ -48,6 +48,7 @@ import {
   effectiveBpm,
 } from "@/lib/audio/practice-rate";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
+import { silentTrackNotice } from "@/lib/audio/preset-availability";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
 import type { Song } from "@/lib/song/schema";
 
@@ -81,6 +82,17 @@ export type PlaybackState = {
   metronome: boolean;
   progress: LoadProgress | null;
   error: string | null;
+  /**
+   * What to tell the reader about tracks that cannot make a sound, or null
+   * when every track can (2O-B.1 §2).
+   *
+   * A sentence rather than a code, and their own track names rather than a
+   * preset id: this is the difference between a reader learning that their
+   * guitar is silent and a reader deciding the app is broken. It is not an
+   * error — the rest of the song plays — so it does not go in `error`, and
+   * it is not known until the graph has been built.
+   */
+  silentTrackNotice: string | null;
 };
 
 export type EngineFactory = (
@@ -159,6 +171,7 @@ export class PlaybackController {
       metronome: false,
       progress: null,
       error: null,
+      silentTrackNotice: null,
     };
   }
 
@@ -247,6 +260,7 @@ export class PlaybackController {
     });
 
     this.engine = engine;
+    this.set({ silentTrackNotice: silentTrackNotice(engine.silentTracks) });
 
     // A seek made before this existed is honoured now, not discarded.
     if (this.pendingSeekTicks !== null) {

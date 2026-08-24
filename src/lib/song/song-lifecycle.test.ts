@@ -75,7 +75,11 @@ describe("42. the three templates", () => {
   it("resolves preset, tuning and capo from the registry", () => {
     const rock = materializeTemplate("rock_band")!;
     const [guitar, bass, drums] = rock.tracks;
-    expect(guitar?.presetId).toBe("clean");
+    // The first core preset of an electric guitar is `clean`, which has no
+    // vendored samples; a template takes the first one that can be heard
+    // (2O-B.1 §2). Pinned as well as checked, so a change of choice is a
+    // change somebody has to read rather than one that slips through.
+    expect(guitar?.presetId).toBe("high_gain");
     expect(guitar?.fretboard?.tuning).toHaveLength(6);
     expect(guitar?.fretboard?.capo).toBe(0);
     expect(bass?.fretboard?.tuning).toHaveLength(4);

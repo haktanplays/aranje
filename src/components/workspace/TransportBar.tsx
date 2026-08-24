@@ -106,6 +106,20 @@ export function TransportBar({
         </p>
       ) : null}
 
+      {/*
+        A track with no sound is not a failure of playback — the rest of the
+        song is playing — so it is announced, not alerted (2O-B.1 §2).
+      */}
+      {state.silentTrackNotice ? (
+        <p
+          role="status"
+          data-silent-track-notice
+          className="border-line bg-raised text-muted border-b px-3 py-2 text-xs"
+        >
+          {state.silentTrackNotice}
+        </p>
+      ) : null}
+
       <div className="flex items-center gap-2 px-3 py-1.5">
         <IconButton label="Başa dön" onClick={onRewind} disabled={busy}>
           <span aria-hidden>&#9198;</span>

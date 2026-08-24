@@ -8,10 +8,19 @@
  * wants to offer templates asks for this list and shows the labels.
  *
  * Everything about an instrument is *resolved from the registry* at
- * materialisation: the preset is the instrument's first core preset, the
- * tuning (and with it the string count) is the registry's default tuning
- * preset, and the capo starts at zero. The table names instruments; the
- * registry says what they are.
+ * materialisation: the preset is the instrument's first core preset **that
+ * can actually be heard**, the tuning (and with it the string count) is the
+ * registry's default tuning preset, and the capo starts at zero. The table
+ * names instruments; the registry says what they are.
+ *
+ * The audibility filter is not a musical preference (2O-B.1 §2). Until this
+ * checkpoint the choice was simply the first core preset, which for an
+ * electric guitar is `clean` — a preset with no vendored sample pack behind
+ * it — so `empty` and `rock_band` handed a new reader a guitar that made no
+ * sound at all. A launch template exists to give somebody something to play
+ * with, and a silent first track fails at exactly that. `clean` keeps its
+ * meaning and its place in the registry; it is simply not something a
+ * template may choose while nothing is vendored for it.
  *
  * Deterministic by construction: no timestamp, no UUID, no randomness —
  * materialising the same template five times yields byte-identical songs.
@@ -20,11 +29,8 @@
  * the track plays nothing there.
  */
 import { TUNING_PRESETS } from "@/lib/music/fretboard";
-import {
-  corePresets,
-  getInstrument,
-  isDrumInstrument,
-} from "@/lib/instruments/registry";
+import { playableCorePresets } from "@/lib/audio/preset-availability";
+import { getInstrument, isDrumInstrument } from "@/lib/instruments/registry";
 import { nextNumberedId } from "@/lib/song/lifecycle-ids";
 import type { Bar, Song, TimeSignature, Track } from "@/lib/song/schema";
 import type { Resolution } from "@/lib/music/timing";
@@ -97,16 +103,17 @@ export function getSongTemplate(id: string): SongTemplate | undefined {
  * One track, entirely from the registry.
  *
  * Returns null when the registry cannot answer — an unknown instrument, an
- * instrument with no core preset, or a fretted instrument whose default
- * tuning preset is missing. A template that trips this is a broken table,
- * and the caller refuses rather than guessing.
+ * instrument with no core preset that can be heard, or a fretted instrument
+ * whose default tuning preset is missing. A template that trips this is a
+ * broken table, and the caller refuses rather than guessing: a template that
+ * cannot be made audible is not quietly materialised anyway.
  */
 function materializeTrack(
   plan: SongTemplate["trackPlans"][number],
   id: string,
 ): Track | null {
   const instrument = getInstrument(plan.instrumentId);
-  const preset = corePresets(plan.instrumentId)[0];
+  const preset = playableCorePresets(plan.instrumentId)[0];
   if (!instrument || !preset) return null;
 
   const base: Track = {

@@ -19,8 +19,11 @@ import { useState } from "react";
 
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import {
+  corePresetOptions,
+  playableCorePresets,
+} from "@/lib/audio/preset-availability";
+import {
   coreInstruments,
-  corePresets,
   instrumentLabel,
   presetLabel,
 } from "@/lib/instruments/registry";
@@ -150,7 +153,7 @@ export function TrackManagerSheet({
         instrumentLabel(first.id),
       ),
       instrumentId: first.id,
-      presetId: corePresets(first.id)[0]?.id ?? "",
+      presetId: playableCorePresets(first.id)[0]?.id ?? "",
       tuningPresetId: tuningOptionsFor(first.id)[0]?.id ?? "",
       capo: "0",
     });
@@ -164,7 +167,7 @@ export function TrackManagerSheet({
         ? {
             ...current,
             instrumentId,
-            presetId: corePresets(instrumentId)[0]?.id ?? "",
+            presetId: playableCorePresets(instrumentId)[0]?.id ?? "",
             tuningPresetId: tuningOptionsFor(instrumentId)[0]?.id ?? "",
             capo: "0",
           }
@@ -225,11 +228,20 @@ export function TrackManagerSheet({
           onChange={(event) => setDraftField({ presetId: event.target.value })}
           className={FIELD}
         >
-          {corePresets(draft.instrumentId).map((preset) => (
-            <option key={preset.id} value={preset.id}>
-              {presetLabel(draft.instrumentId, preset.id)}
-            </option>
-          ))}
+          {/*
+            A preset with no sound behind it is never offered as an ordinary
+            choice (2O-B.1 §2). It appears only when the track already
+            carries it, so the control keeps showing what the reader actually
+            chose — and it says so in words rather than in a preset id.
+          */}
+          {corePresetOptions(draft.instrumentId, draft.presetId).map(
+            ({ preset, playable }) => (
+              <option key={preset.id} value={preset.id} disabled={!playable}>
+                {presetLabel(draft.instrumentId, preset.id)}
+                {playable ? "" : " — ses yok"}
+              </option>
+            ),
+          )}
         </select>
       </label>
       {isFrettedInstrument(draft.instrumentId) ? (

@@ -16,8 +16,11 @@
  */
 import type * as Tone from "tone";
 
-import { isDrumInstrument } from "@/lib/instruments/registry";
-import { samplePackFor } from "@/lib/audio/packs";
+import {
+  audioPresetAvailability,
+  silentTracks,
+  type SilentTrack,
+} from "@/lib/audio/preset-availability";
 import { acquireBank, type BankHandle } from "@/lib/audio/buffer-bank";
 import {
   buildExpressionPlan,
@@ -132,6 +135,14 @@ export type ExpressionRuntime = {
 
 export type Engine = {
   context: AudioRuntime;
+  /**
+   * Tracks this graph has no sound for (2O-B.1 §2).
+   *
+   * Empty in every normal song. When it is not empty the engine has still
+   * built successfully — the rest of the music plays — and it is the caller's
+   * job to tell the reader which of their tracks will be silent.
+   */
+  silentTracks: readonly SilentTrack[];
   master: Tone.Gain;
   metronome: MetronomeVoice;
   voices: Map<string, TrackVoice>;
@@ -254,6 +265,12 @@ function buildDrums(
  * Drums are ready immediately; a sampled track has to wait for its bank, so it
  * hands back a `build` to run once the samples are in.
  */
+/** The branch of the availability answer that can actually build a voice. */
+type PlayablePreset = Extract<
+  ReturnType<typeof audioPresetAvailability>,
+  { status: "available" }
+>;
+
 type VoiceBuild = {
   channel: Tone.Channel;
   /** The pack this voice will play, or null for the synthesised drum kit. */
@@ -263,13 +280,21 @@ type VoiceBuild = {
   loaded: Promise<void>;
 };
 
-/** Builds the graph for one track, plus a promise for its samples. */
+/**
+ * Builds the graph for one track, plus a promise for its samples.
+ *
+ * The caller has already asked whether this preset can be heard at all, and
+ * hands the answer in. That keeps one decision in one place: this function
+ * does not get to reach a different conclusion about the same track, and a
+ * track with no sound never arrives here.
+ */
 function buildVoice(
   tone: ToneModule,
   context: AudioRuntime,
   track: Track,
   master: Tone.Gain,
-): VoiceBuild | null {
+  availability: PlayablePreset,
+): VoiceBuild {
   const channel = new tone.Channel({ context, volume: track.volumeDb });
   if (track.pan !== undefined) channel.pan.value = track.pan;
   /*
@@ -284,7 +309,7 @@ function buildVoice(
    */
   channel.connect(master);
 
-  if (isDrumInstrument(track.instrumentId)) {
+  if (availability.source === "synthesised") {
     const drums = buildDrums(tone, context, channel);
     return {
       channel,
@@ -296,11 +321,7 @@ function buildVoice(
     };
   }
 
-  const pack = samplePackFor(track.instrumentId, track.presetId);
-  if (!pack) {
-    channel.dispose();
-    return null;
-  }
+  const pack = availability.pack;
 
   /*
    * One bank, every reader.
@@ -373,8 +394,13 @@ export async function createEngine(
 
   for (const track of song.tracks) {
     if (excluded.has(track.id)) continue;
-    const built = buildVoice(tone, context, track, master);
-    if (!built) continue;
+    const availability = audioPresetAvailability(track.instrumentId, track.presetId);
+    // A preset with nothing behind it used to be skipped here without a word,
+    // and every layer above reported success (2O-B.1 §1, §2). It is now a
+    // fact the engine carries, so a caller can say so instead of the reader
+    // discovering it by hearing nothing.
+    if (availability.status === "unavailable") continue;
+    const built = buildVoice(tone, context, track, master, availability);
     builds.push({ trackId: track.id, build: built });
 
     if (options.debug) {
@@ -467,6 +493,9 @@ export async function createEngine(
 
   return {
     context,
+    // Only among the tracks this graph was asked to carry: a track left out
+    // on purpose is a choice, not a gap to warn anybody about.
+    silentTracks: silentTracks(song).filter((track) => !excluded.has(track.trackId)),
     master,
     metronome,
     voices,
