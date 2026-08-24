@@ -32,6 +32,13 @@
  */
 import { useCallback, useMemo, useState } from "react";
 
+import {
+  NO_FOLDS,
+  othersFolded,
+  settleFolds,
+  toggledFolds,
+  type Folds,
+} from "@/lib/multitrack/folds";
 import { buildMultiTrackModel, type MultiTrackModel } from "@/lib/multitrack/model";
 import type { Song } from "@/lib/song/schema";
 
@@ -45,14 +52,6 @@ export type MultiTrackSession = {
   /** Fold everything except the track being edited. */
   collapseOthers(activeTrackId: string): void;
 };
-
-/** The folds, and the project they were made in. Stored together on purpose. */
-type Folded = {
-  readonly projectId: string | null;
-  readonly ids: ReadonlySet<string>;
-};
-
-const NOTHING: Folded = { projectId: null, ids: new Set() };
 
 /** Everything the multi-track surface needs: what to draw, and what is folded. */
 export type MultiTrackView = {
@@ -68,7 +67,7 @@ export function useMultiTrackView(options: {
   readonly projectId: string | null;
 }): MultiTrackView {
   const { song, viewedSectionId, activeTrackId, projectId } = options;
-  const [stored, setStored] = useState<Folded>(NOTHING);
+  const [stored, setStored] = useState<Folds>(NO_FOLDS);
 
   const trackIds = useMemo(() => song.tracks.map((track) => track.id), [song.tracks]);
 
@@ -87,19 +86,13 @@ export function useMultiTrackView(options: {
    * on a track that no longer exists is not a fold. A new track is not in the
    * set, so it opens — which is what a track somebody just made should do.
    */
-  const collapsed = useMemo<ReadonlySet<string>>(() => {
-    if (stored.projectId !== projectId) return new Set();
-    const known = new Set(trackIds);
-    return new Set([...stored.ids].filter((id) => known.has(id)));
-  }, [projectId, stored, trackIds]);
+  const collapsed = useMemo<ReadonlySet<string>>(
+    () => settleFolds(stored, projectId, trackIds),
+    [projectId, stored, trackIds],
+  );
 
   const toggleCollapse = useCallback(
-    (trackId: string) => {
-      const next = new Set(collapsed);
-      if (next.has(trackId)) next.delete(trackId);
-      else next.add(trackId);
-      setStored({ projectId, ids: next });
-    },
+    (trackId: string) => setStored(toggledFolds(collapsed, projectId, trackId)),
     [collapsed, projectId],
   );
 
@@ -108,12 +101,8 @@ export function useMultiTrackView(options: {
   }, [projectId]);
 
   const collapseOthers = useCallback(
-    (activeTrackId: string) => {
-      setStored({
-        projectId,
-        ids: new Set(trackIds.filter((id) => id !== activeTrackId)),
-      });
-    },
+    (activeTrackId: string) =>
+      setStored(othersFolded(trackIds, projectId, activeTrackId)),
     [projectId, trackIds],
   );
 
