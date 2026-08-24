@@ -93,7 +93,7 @@
     {
       "name": "[390x844] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18662 -> 19316"
+      "detail": "18658 -> 19307"
     },
     {
       "name": "[390x844] 20 practice rate survives the switch",
@@ -152,8 +152,8 @@
     },
     {
       "name": "[390x844] 30 undo updates the arrangement",
-      "pass": false,
-      "detail": "undo not usable (visible=false)"
+      "pass": true,
+      "detail": "662 -> 665 marks (want 665)"
     },
     {
       "name": "[390x844] 35 no console or page errors",
@@ -258,7 +258,7 @@
     {
       "name": "[320x700] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18653 -> 19307"
+      "detail": "18649 -> 19294"
     },
     {
       "name": "[320x700] 20 practice rate survives the switch",
@@ -317,8 +317,8 @@
     },
     {
       "name": "[320x700] 30 undo updates the arrangement",
-      "pass": false,
-      "detail": "undo not usable (visible=false)"
+      "pass": true,
+      "detail": "662 -> 665 marks (want 665)"
     },
     {
       "name": "[320x700] 35 no console or page errors",
@@ -349,5 +349,5 @@
       "targets": 271
     }
   },
-  "failed": 2
+  "failed": 0
 }

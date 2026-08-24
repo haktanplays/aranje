@@ -601,7 +601,13 @@ async function run() {
           `${before} -> ${afterEdit} marks`,
         );
 
-        const undo = page.getByRole("button", { name: "Son değişikliği geri al" }).first();
+        const undo = /*
+         * The undo control is found by its role attribute, not by a fixed
+         * accessible name. K-44 made that name say *what* would be undone
+         * ("Geri al: Nota düzenleme"), so the old exact-name lookup matched
+         * nothing and reported the control as missing.
+         */
+        page.locator("[data-undo]").first();
         if (!(await undo.isEnabled().catch(() => false))) {
           record(
             `[${label}] 30 undo updates the arrangement`,

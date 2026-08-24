@@ -549,7 +549,13 @@ async function run() {
       record(`[${label}] song actually changed`, (await songJson(page)) !== songBeforeApply);
 
       await safe(`[${label}] 7 undo restores byte-identical song`, async () => {
-        const undoButton = page.getByRole("button", { name: "Son değişikliği geri al" }).first();
+        const undoButton = /*
+         * The undo control is found by its role attribute, not by a fixed
+         * accessible name. K-44 made that name say *what* would be undone
+         * ("Geri al: Nota düzenleme"), so the old exact-name lookup matched
+         * nothing and reported the control as missing.
+         */
+        page.locator("[data-undo]").first();
         if (!(await undoButton.isVisible().catch(() => false))) {
           record(`[${label}] 7 undo restores byte-identical song`, false, "no undo control");
           return;
@@ -916,7 +922,13 @@ async function run() {
         `${beforeWrites}->${await writes(page)}`,
       );
       record(`[${label}] 7 cut changed the song`, (await songJson(page)) !== songBefore);
-      const undo = page.getByRole("button", { name: "Son değişikliği geri al" }).first();
+      const undo = /*
+         * The undo control is found by its role attribute, not by a fixed
+         * accessible name. K-44 made that name say *what* would be undone
+         * ("Geri al: Nota düzenleme"), so the old exact-name lookup matched
+         * nothing and reported the control as missing.
+         */
+        page.locator("[data-undo]").first();
       if (!(await undo.isVisible().catch(() => false))) {
         record(`[${label}] 7 undo after cut is byte-identical`, false, "no undo control");
         return;

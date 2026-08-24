@@ -2,7 +2,7 @@
   "results": [
     {
       "name": "390x844 01 backup produces a real download",
-      "pass": false,
+      "pass": true,
       "detail": ""
     },
     {
@@ -147,5 +147,5 @@
       "nameFits": true
     }
   },
-  "failed": 1
+  "failed": 0
 }

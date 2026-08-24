@@ -14,7 +14,7 @@ import { press } from "../shared/harness.mjs";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { deviceWith } from "../shared/project-storage.mjs";
+import { activeSongBytes, deviceWith } from "../shared/project-storage.mjs";
 /*
  * 2Q-B §1.3: the seed is a project device and the song is read back out of
  * the project record. Seeding `aranje.song` sent every run through the
@@ -251,7 +251,13 @@ async function openApp(browser, size, options = {}) {
 /* ------------------------------------------------------------ observations */
 
 const writes = (page) => page.evaluate(() => window.__writes);
-const rawKey = (page) => page.evaluate(() => localStorage.getItem("aranje.song"));
+/**
+ * The bytes of the durable record, for "nothing on disk moved" claims.
+ *
+ * The song lives in its project since K-52, so comparing the old key against
+ * the seeded fixture compared two things that are no longer the same shape.
+ */
+const rawKey = (page) => activeSongBytes(page);
 const title = (page) => page.locator("h1").first().textContent();
 const debug = (page) =>
   page.evaluate(() => ({
@@ -309,6 +315,9 @@ async function run(browser, size, label) {
   let downloadPath = null;
   await safe(at("01 backup produces a real download"), async () => {
     await openInfoSheet(page);
+    // What is on disk right now, so "untouched" is a comparison with the
+    // record rather than with the fixture the harness happened to seed.
+    const rawBeforeBackup = await rawKey(page);
     const waiting = page.waitForEvent("download");
     await page.locator("[data-info-project-backup]").click();
     const download = await waiting;
@@ -323,7 +332,7 @@ async function run(browser, size, label) {
       at("01 backup produces a real download"),
       downloadPath !== null &&
         (await writes(page)) === 0 &&
-        (await rawKey(page)) === FIXTURE &&
+        (await rawKey(page)) === rawBeforeBackup &&
         (await page.locator("[data-undo]").isDisabled()),
     );
 
