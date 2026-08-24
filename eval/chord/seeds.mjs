@@ -12,11 +12,22 @@ const DROP_D = ["D2", "A2", "D3", "G3", "B3", "E4"];
 const DADGAD = ["D2", "A2", "D3", "G3", "A3", "D4"];
 const BASS = ["E1", "A1", "D2", "G2"];
 
+/**
+ * The guitar the scenarios use.
+ *
+ * `high_gain` rather than `clean`, and that is not a detail: `clean` is what
+ * every launch template hands a new reader, and it has **no vendored sample
+ * pack**, so a track on it makes no sound at all. A scenario that seeded it
+ * and then asked "did the audition sound?" would have measured silence and
+ * called it a pass. That defect is reported in FINDINGS.json and belongs to
+ * the templates; here the seed uses a preset that can actually be heard, so
+ * the audio scenarios measure the chord builder rather than the gap.
+ */
 export const guitarTrack = (overrides = {}) => ({
   id: "gtr",
   name: "Gitar",
   instrumentId: "electric_guitar",
-  presetId: "clean",
+  presetId: "high_gain",
   volumeDb: -6,
   fretboard: { tuning: [...E_STANDARD], capo: 0 },
   ...overrides,

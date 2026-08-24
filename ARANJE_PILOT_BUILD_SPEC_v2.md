@@ -2759,6 +2759,177 @@ ve mutasyonu geri koyan 35. probe ile bağlandı.
 klasörü/etiketi/arama, çöp kutusu, sürüm geçmişi tarayıcısı, akor kurucu,
 çoklu enstrüman görünümü, release hardening, fiziksel Android/iOS kabulü.
 
+### §13.22 Hızlı akor ve power chord kurucu v1 (§19 K-53)
+
+Bu checkpoint (2O-B) tek bir vaadi karşılar: **"Am7 veya bir power chord
+yazmak için notaları ve telleri tek tek girmek zorunda değilim."** Kullanıcı
+kök sesi, akor türünü ve çalınabilir bir şekli seçer; Aranje bütün notaları
+aynı vuruşa tek, geri alınabilir ve düzenlenebilir bir müzik olayı olarak
+yazar.
+
+**Yönlendirme yoktur.** Sistem olasılık sunar, seçimi kullanıcı yapar. "Sonraki
+akor", "önerilen", "en kolay", "şarkına uygun" gibi hiçbir ifade yoktur ve bu
+sözcükler kod tabanında bulunmaz (testle bağlı). Varyasyon etiketleri
+betimleyicidir: "Açık konum · kök basta", "5. perde çevresi", "1. çevrim".
+
+**§1 Akor kalıcı bir nesne değildir.** Song Contract değişmedi. Akor, aynı
+onset'te başlayan birden fazla `NoteEvent`'tir — contract'ın zaten söylediği
+şey. `chordName`, `chordId`, `voicingId`, `shapeId` gibi hiçbir alan eklenmedi;
+`voicingId` yalnızca deterministik aday kimliğidir ve Song'a, dosyaya,
+fingerprint'e veya Copilot isteğine **girmez** (serialize edilen byte'lar
+üzerinde testle bağlı).
+
+**§2 Tek armonik sözlük.** On bir kalite tek tabloda (`chord-formula.ts`):
+majör `[0,4,7]`, minör `[0,3,7]`, power `[0,7]`, sus2 `[0,2,7]`, sus4 `[0,5,7]`,
+eksilmiş `[0,3,6]`, artmış `[0,4,8]`, 7 `[0,4,7,10]`, maj7 `[0,4,7,11]`,
+min7 `[0,3,7,10]`, yarı eksilmiş 7 `[0,3,6,10]`. Bu sayılar başka hiçbir yerde
+tekrar edilmez; UI etiketi, tanıma ve iki voicing üreteci aynı tablodan okur.
+Kaliteye aralık + etiket verilmeden tabloya ekleme yapmak derleme hatasıdır.
+Add9/6/9/11/13/altered/slash/polychord V1 dışıdır ve UI destekliyormuş gibi
+göstermez.
+
+**§3 requiredChordTones politikası tek yerde.** Beşli **yalnız yedili
+akorlarda** düşebilir, çünkü kaliteyi yedili zaten sabitler. Yarı eksilmiş 7
+istisnadır: eksilmiş beşlisi düşerse geriye düz bir minör 7 kalır, o yüzden
+korunur. Kök hiçbir zaman opsiyonel değildir.
+
+**§4 Kök ve enharmonic.** Seçim 12 pitch class üzerinden yapılır; kullanıcı
+"D♯ / E♭" okur, uygulama yalnız `3` sayısını taşır. Aynı sounding pitch iki
+farklı semantik üretmez. Capo takılıyken seçilen kök **sounding pitch**'tir;
+yazılan perde capo'ya görelidir. UI'da MIDI numarası gösterilmez.
+
+**§5 Perdeli arama bir sözlük değildir.** Elle yazılmış ikinci bir akor
+veritabanı yoktur. Arama kullanıcının track'inde gerçekten ne varsa onu okur:
+akort, capo, tel sayısı, capo'nun bıraktığı perde sınırı. El genişliği kadar
+bir pencere boyunca her telde ya bir akor sesi ya sessizlik seçilir. Mevcut
+`soundingMidi` / pitch / hand-position yardımcıları yeniden kullanıldı; ikinci
+pitch matematiği yazılmadı.
+
+**Fiziksel kurallar — hiçbiri zevk değil:** aynı telde iki nota yok, perde
+clamp yok, range dışı şekil reddedilir, zorunlu ton eksikse aday kabul
+edilmez. **El kuralı:** dört parmak; yetmezse en alt perdede bir barre ve
+barre'ın örttüğü tel açık çalamaz. "Aynı perde iki kez = barre" varsayımı
+**yanlıştır** ve açık D7'yi (`x x 0 2 1 2`) elerdi; kural parmak sayısı
+üzerinedir. **Maksimum açıklık ölçülerek 2'ye çekildi:** beş klavyede
+(standard, Drop D, capo 2, DADGAD, dört telli bas) 12 kök × 11 kalite = 660
+kombinasyonun hiçbiri boşalmıyor.
+
+**§6 Sıralama ve varyasyon seçimi.** Sıra: akorun ne kadarı duyuluyor, ortada
+susturulan tel var mı, kaç tel çalıyor, el ne kadar açılıyor, parmak sayısı,
+konum, id. Aynı bölgeden ikinci kart ya **bastaki sesi** ya da en az **iki tel**
+doluluk farkını taşımalıdır; tek fazladan susturulmuş tel aynı fikri iki kez
+göstermektir. En fazla dört kart. Önceki/sonraki akora göre voice leading
+yapılmaz, tonaliteye göre aday elenmez.
+
+**Zorunlu kabul:** standard akort, capo 0'da A minör 7 adayları arasında
+`x 0 2 0 1 0`, `5 7 5 5 5 5` ve `5 x 5 5 5 x` bulunur ve testler her telin
+**sounding pitch**'ini doğrular (yanlış tel sırasıyla kazara geçmez).
+
+**§7 Power chord kalıcı bir tip değildir.** Formül tablosu `[0, 7]` der; iki
+ya da üç ses olması ve **kökün mutlaka basta** olması *shape* katmanının
+kuralıdır. Üç sesli biçimde tepe nota kökün tam bir oktav üstüdür. Drop D'de
+açık D5 (`0 0 0 x x x`) gerçek akorttan bulunur ve standard akortta
+bulunmaz.
+
+**§8 Perdesiz enstrümanlar.** Piyano/e-piyano/org/synth/yaylı için akor bir
+perde yığınıdır: kök pozisyonu ve çevrimler, **hiçbir `position` alanı
+yazılmadan**. **Aranje'de bu enstrümanlar için sayısal ses aralığı yoktur** ve
+bu checkpoint o kararı değiştirmez — `range.ts` onları bilerek erteler
+("aralık uydurulacak bir şey değil"). Denetlenen tek sınır, Song Contract'ın
+yazabildiği perde uzayıdır; dışına çıkan yığın sessizce oktav aşağı
+katlanmaz, reddedilir.
+
+**§9 Yazma komutu tikte çalışır.** Hedef, slot index değil **tik**tir (K-34).
+Tikte tam olarak başlayan slot yoksa `target_grid_incompatible` ve hiçbir
+yuvarlama yapılmaz. Süre de slot sınırına birebir oturmak zorundadır; uzun
+akor mevcut tie mekanizmasıyla taşınır, tekrar vuruşla değil. Ya bütün akor
+yazılır ya hiçbir şey; başarısızlıkta girdi Song byte-eş kalır.
+
+**§10 Dolu vuruş sessizce ezilmez.** Kullanıcı açıkça "Bu vuruşu akorla
+değiştir" demelidir; `replace_onset` bütün onset'i alır, eski tie kuyruğu susa
+döner, sonraki onset'e dokunulmaz. Bağlı onset (`slide`/`hammer_on`/`pull_off`,
+ister bu slottan çıkan ister öncekinden gelen) **atomik reddedilir** — kullanıcı
+bağlantıyı mevcut araçlarla, ne kestiğini görerek ayırır. Karışık
+süre/velocity/ifade taşıyan onset'te ortalama uydurulmaz, tipli reddedilir.
+
+**§11 Önizleme ile commit aynı hesaptır.** Ghost, gerçek komutun gerçek şarkı
+üzerinde üretip attığı sonuçtur; Uygula aynı komutu bir kez daha koşup saklar.
+İkinci bir yol yoktur, dolayısıyla önizlemenin sözünü commit'in tutmaması
+mümkün değildir. Önizleme ve varyasyon dolaşma **0 yazma / 0 history**.
+
+**§12 Sesli dinleme mevcut yolu kullanır.** Copilot adayının kullandığı
+`PreviewEngine`; ikinci AudioContext, ikinci scheduler, ikinci sample bank
+yoktur. Sheet kapanınca ve unmount'ta `stop()`. Önizleme kazancı nota sayısına
+göre ölçeklenir ve bu sayı **yalnız önizlemede** kalır — Song velocity'sine,
+mixer'a ve dışa aktarılan dosyaya girmez (ölçüldü).
+
+**§13 Yazılan akor sıradan müziktir.** Tek basışla bütün akor seçilir (bir
+onset bloğu, beş onset değil); transpoze aralıkları korur; `translate_fret_shape`
+power shape'i blok halinde taşır; move/duplicate/repeat/delete/bar kopyala
+akoru bütün olarak taşır; undo tek adımda bütün akoru kaldırır, redo byte-eş
+geri getirir. MIDI planında beş note-on ve hepsi tek tik'te. Proje dosyasında
+akor metadata'sı yoktur ve import sonrası şarkı byte-eş gelir. History
+etiketleri: "Akor ekleme" / "Akoru değiştirme".
+
+**§14 Sınırlar.** Saf çekirdekler React/Tone/Next/storage/projects/components/
+eval import etmez; `window`/`document`/`localStorage`/`AudioContext`/`fetch`
+kullanmaz; `Date`/`random`/`randomUUID`/`crypto` yoktur. Sheet'ler arama, store
+ve motor import edemez; component içinde interval tablosu ve tuning matematiği
+yoktur. `ArrangementCanvas` `/chords/` altından hiçbir şey import etmez.
+Ölçüm AST ve import grafiyle; yeni grep tabanlı mimari testi ve yeni runtime
+dependency yok. `Workspace.tsx` **379** (başlangıç 380 aşılmadı),
+`ArrangementCanvas.tsx` 470 ve değişmedi. Yeni mega-hook yok.
+
+**§15 Ölçümler (masaüstü Node + Chromium — telefon kanıtı değildir).**
+Formül 12 kök × 11 kalite 0,046 ms; tanıma 0,076 ms; klavye çevrimleri
+0,009 ms; komut önizlemesi (validatörler dahil) 0,388 ms. Gitar aday üretimi
+standard akortta **15,5 ms** median (Drop D 11,1 · capo 2 6,4 · DADGAD 10,8 ·
+bas 1,6); dört kartın üretilmesi 16,6 ms. Tarayıcıda builder açılışı 250 ms,
+kök seçimi 99 ms, kalite + liste 102 ms, 25 varyasyon değişimi 50 ms, uygula
+round-trip 393 ms, geri al/yinele 234 ms; sheet 41 düğüm.
+
+**§16 Üç dürüst bulgu — hiçbiri gizlenmedi.**
+
+1. **Bütün klavye taraması 621 ms median.** 11 kalite × 12 kök tek seferde
+   taranırsa yarım saniyeyi geçer. Ürün bunu yapmaz (kullanıcı bir kök ve bir
+   kalite seçer, o yol 16,6 ms) ama sayı kaydedildi ve **ölçmeden cache
+   eklenmedi**.
+2. **Yoğun akor 0 dB'de tam ölçeği aşıyor.** Altı sesli Am7 tepe 1,8090; WAV
+   encoder ±1'e clamp ettiği için dışa aktarılan dosyada kırpılırdı. Elle
+   yazılan beş sesli akor de aynısını yapar — mix yolu değişmedi — ama akoru
+   kolaylaştırmak bunu çok daha ulaşılabilir kılar. Şablonların verdiği
+   −6 dB'de aynı akor 0,9066 ile içeride kalır. Sahibi mixer'dır; motora
+   limiter eklenmedi.
+3. **Ölçüm sırasında mevcut bir ürün kusuru bulundu:** bütün launch
+   şablonları yeni kullanıcıya `electric_guitar/clean` verir ve **`clean`
+   preset'inin vendor edilmiş sample pack'i yoktur**, dolayısıyla o track hiç
+   ses çıkarmaz. 2O-B'nin sebep olduğu bir şey değildir (aynı track'teki her
+   nota da sessizdir) ama chord builder tam olarak "yeni proje açan yeni
+   kullanıcı" için vardır, yani "Dinle" o track'te hiçbir şey yapmaz. Şablonun
+   hangi preset'i seçtiği bir ürün kararıdır ve tek taraflı değiştirilmedi;
+   sahibe bildirildi. En ucuz çözüm: ya temiz gitar pack'i vendor edilir, ya
+   şablon pack'i olan ilk core preset'i seçer.
+
+**§17 Bir ölü koruma kaldırıldı.** Perdesiz voicing'ler için önce bir
+"register ceiling" yazılmıştı. Ölçüldüğünde 11 kalite × 12 kök × her yazılabilir
+oktavdaki **4.040 yığının hiçbirini** kesmediği görüldü. Ateşlenemeyen koruma
+koruma değildir; hem kural hem yanındaki limit kaldırıldı, register artık
+çevrim aritmetiğinin kendisiyle yapısal olarak korunuyor.
+
+**§18 İki kabul boşluğu açıkça kayıtlı.** Perdesiz enstrümanlar için (a)
+repoda sayısal ses aralığı yok ve (b) klavye düzenleme yüzeyi yok —
+`isEditableTrack()` fretboard şart koşar, tab tel satırı çizer ve track
+manager yalnız core enstrümanları sunar. Saf çekirdek eksiksiz yazıldı ve
+birim testleriyle bağlandı; **UI yüzeyi bugün yalnız perdeli track'lerde
+vardır** ve bu, uydurulmuş bir klavye editörüyle kapatılmadı.
+
+**Kapsam dışı (yapılmadı):** akor dizisi önerisi, scale-aware öneri, voice
+leading, add9/6/9/11/13/altered, slash chord kalıcı modeli, polychord,
+arpeggiator, strumming motoru, sweep/TechniqueSpan, akor diyagramı eğitim
+sistemi, parmak numarası, barre kalıcı modeli, MIDI/audio akor tanıma, 64'lük
+grid, çoklu enstrüman stacked editor, cloud/hesap/paywall, gerçek provider,
+release hardening, fiziksel Android/iOS kabulü.
+
 ---
 
 ## §14 Stack, mimari ve fazlar
@@ -3067,6 +3238,7 @@ maliyettir** (§11.2/7).
 | **K-50** | **WAV ve MIDI export (§13.19, 2M-A).** Ön kapı: legacy `muted`/`soloed` denetlendi — tek gerçek okuyucu (`buildVoice`, `muted:true` → kanal susuk) kaldırıldı, `soloed`'in okuyucusu zaten yoktu; contract migration yapılmadı, alanlar şemada kalıyor ve proje dosyası onları byte-eş taşıyor, ama artık hiçbir şeye karar vermiyorlar (bayraklı/bayraksız render RMS 0,033224 ve tepe 0,439353 ile birebir aynı). **Üç format tek görünür yüzeyde**, her biri ne *için* olduğuyla anlatılıyor; proje yolu 2L-A serializer'ı, ikinci serializer yok. **WAV:** RIFF/WAVE PCM stereo 44,1 kHz 16-bit, kanonik chunk boyutları (`data`+44 = dosya, RIFF = dosya−8), ±1 clamp (wrap değil), −1/+1 tipin uçlarına, **NaN/Infinity susturulmaz reddedilir**, beş koşuda byte-eş, girdi mutate edilmez. İki içerik seçeneği yapısal olarak ayrı: "Tüm track'ler" yolunda `setTrackAudibility` **hiç çağrılmaz**, "Şu anda duyduklarım" 2L-C'nin `audibleTrackIds`'ini açıkça geçirir; MIDI session durumunu hiç sormaz. **Render mevcut motoru/scheduler'ı/expression planner'ını/sample bank'ini kullanır** — ikinci nota veya articulation zamanlama yolu yok; şarkının %100 temposunda çalışır (practice rate dosyaya girmez, scheduler'a verilen haritanın `practicePercent`'i testle bağlı); metronom dosyaya girmez; Song/depo/history/fingerprint değişmez; online motor yeniden kurulmaz; offline context dispose edilir ve sonrasında aktif ses 0; çalma görünür biçimde duraklatılır, playhead sarmaz, kendiliğinden devam etmez. **Süre türer:** notated + expression + merkezî tail; **dürüst kayıt: expression terimi bugün her şarkı için 0** (planner her jesti kendi notasına sıkıştırıyor), son notayı tutan şey tail — sıfır olduğu testle sabitlendi. **MIDI:** format 1, conductor + track başına MTrk, PPQ merkezî tick modelinden, tempo yalnız değişen section'da, time-signature yalnız ölçünün değiştiği tick'te, davul GM kanal 10'da ve program change'siz (10. kanalda program change *kit* değiştirir), deterministik sıra (note-off aynı pitch'in yeni note-on'undan önce), kanonik VLQ, running status yok, beş koşuda byte-eş. **V1 sınırı ve nedeni:** bend/slide/vibrato/hammer/pull yazılmaz çünkü MIDI'nin kanal düzeyindeki tek aracı pitch bend'dir ve akorun diğer notalarını da büker — sessizce akort bozan dosya, "nota ve zamanlama taşır" diyenden kötüdür; dosyada hiç `0xEn` baytı olmadığı byte düzeyinde bağlı; sheet bunu kullanıcıya söyler. **Merkezî `midi-map.ts`:** 0-tabanlı program numaraları (DAW'ların 1-tabanlı gösteriminden bir eksik, tek yerde belgeli), preset değil enstrüman eşlenir, bilinmeyen enstrüman **typed red** (sessiz piano fallback'i yok), `volumeDb→CC7` ve `pan→CC10` tek saf fonksiyonda (−1/0/+1 → 0/64/127). **Tek export kapısı:** bir Object URL'i minten/revoke eden tek yer, eşzamanlı ikinci export reddedilir, başarısız export bayat dosyayı sunmaz; component'lerde indirme yolu yok (AST ile bağlı); `Workspace.tsx` 444 (≤450), `ArrangementCanvas.tsx` 470. **`canPersist:false` üç export'u da çalıştırır**, hiçbir depo yazımı yapılmaz. **Lisans:** FluidR3 atfı görünür, kopyalanabilir ve indirilebilir; MIDI ses örneği içermediği için aynı yükümlülüğü taşımadığı ayrıca yazılı. **Açık blocker:** CC BY 3.0 US legalcode bu ortamdan indirilemiyor (proxy 403), metin ezberden yazılmadı, `textVendored:false` kalıyor, release öncesi kanonik kaynaktan vendor edilmeli. Billing/kota/premium yok; sahte kota da yazılmadı. **Doğrulama:** 70 birim testi; 36 senaryo × 2 viewport = 72/72, **indirilen byte'lar okunarak** (indirme olayı sonuç sayılmaz); 18 render case'inde 14 ses iddiası; 37 probe (28 unit + 6 tarayıcı + 3 ses) kırmızı. Performans (Node + masaüstü Chromium, telefon kanıtı değil): worst-case WAV encode ~33 ms, MIDI plan ~75 ms + yazım ~11 ms, süre planı ~61 ms, proje export ~188 ms. **2M-A.1 kapanışı:** raporlanan "worst-case WAV ≈9,9 MiB" düzeltildi — o, olay-yoğun şarkının boyutuydu ve fixture'ı 138 BPM'de koşuyordu; limitlerden türeyen gerçek en uzun dosya 32 bar × 4/4 × 40 BPM = 195,000 s, 8.599.500 frame, **34.398.044 byte = 32,80 MiB** ve gerçek render/encode ile birebir aynı. Süre baskısı ile olay baskısı artık **iki ayrı fixture**: en uzun süre (tek nota, 195 s) ve en yoğun olay (8 track, 32 bar, 1/32, 4.864 olay, 1.536 expressive nota, 768 legato zinciri, sıfır fallback, 58,7 s). Gerçek offline render (masaüstü Chromium, 3 tur): sırasıyla ~2,2 s ve **~206 s** median, dispose sonrası aktif ses 0, ObjectURL sızıntısı 0. **Açık release riski:** yoğun fixture gerçek zamanın ~3,5 katında render ediliyor; sınırlar küçültülmedi, bulgu `eval/export/WORST-CASE.json`'da kayıtlı ve telefon davranışı release gate'inde açık. On-uçuş tahmini bir üst sınırdır (frame yukarı yuvarlanır; yoğun fixture'da 4 byte fazla) ve iki sayı da raporlanır. Pitch-bend kanıtı ham byte taramasından **event-aware okuyucuya** taşındı (`lib/dev/midi-reader`: chunk sınırları, VLQ, meta/SysEx uzunlukları, running status, sabit veri baytı sayısı); non-vacuity fixture'ı dosyada 9 adet `0xEn` baytı taşırken parser 0 bend buluyor, gerçek bend enjekte edilince 1 buluyor; üretim davranışı değişmedi. **Proje yedeği kararı:** Info'daki tek dokunuşluk "Projeyi yedekle" bir güvenlik yoludur, her zaman ücretsiz ve doğrudan erişilebilir kalır ve ileride bir entitlement/paywall gelirse onun arkasına konmaz; WAV/MIDI tek export controller'ından geçer; ikisi de aynı saf `exportProject` serializer'ını kullanır ve ikinci bir serializer/format yoktur (testle bağlı). Legalcode hâlâ vendor edilemedi (proxy 403); metin ezberden yazılmadı, mirror'dan alınmadı, `textVendored:false` kaldı ve yapılacak iş `public/samples/licenses/OWNER-ACTION.md`'de kayıtlı — K-50 kod kapanışını engellemez, public release gate'ini engeller. Doğrulama: 87 birim testi, 72/72 tarayıcı, 20 render case'inde 14 + 12 iddia, **47 probe** (38 unit + 6 tarayıcı + 3 ses) kırmızı. Kapsam dışı: stem, MP3, MusicXML, ZIP, paylaşım, cloud, mastering, section automation, billing/paywall, gerçek provider, release hardening. | **Haktan onayladı 23.08.2026** |
 | **K-51** | **Tab okunabilirliği, tek akor seçimi ve bölüm senkronizasyonu (§13.20, 2N-A).** Üç kusur önce mevcut build üzerinde, üretim koduna dokunmadan yeniden üretildi (`eval/tab/DEFECTS.json`, 5/5): uzun basış bütün legato zincirini seçiyordu, bölüm seçimi değişirken çizilen sekme aynı kalıyordu, kısa şarkıda seçilen bölümün ilk ölçüsü görünür yüzeye gelmiyordu. **Seçim onset önceliklidir:** basış bir onset grubunu alır, akor tek slottaki birden fazla `NoteEvent`'tir ve Contract'a akor nesnesi/tipi eklenmedi, bağ yeni onset değildir (`1 uzatılan nota`), seçim Song'a/dosyaya/fingerprint'e/Copilot'a girmez; **zincir kapsamı seçim anında değil, kullanıcı bir eylem seçtiğinde preflight sonucu olarak doğar.** **Zincir kararı çekirdeğin şartıdır:** `applyTransform`/`copySelection`/`commitTransform` açık `chainPolicy` olmadan zincir bölen komutu çalıştırmaz (`chain_policy_required`); beş tipli sonuç (`no_chain_impact`, `crosses_tie_boundary`, `crosses_legato_boundary`, `crosses_multiple_boundaries`, `crosses_section_boundary` = fail-closed); üç seçenek — bağlantıyla birlikte (gerçek genişletilmiş kapsam görünür, açıklama komutun kendi fiilinden merkezî command→copy tablosundan gelir), yalnız akor (deterministik atomik detach), vazgeç (0 yazma); **önizleme ile commit dört komut × iki policy'de byte-eş**. Detach: içerideki legato korunur, yalnız sınırı aşan bağ kaldırılır, `"normal"` kalıcı olarak hiç yazılmaz, öksüz bağ sus olur, öksüz `"-"` hiçbir durumda oluşmaz, yalnız bağdan başlayan seçim tipli reddedilir. **Bölüm navigasyonu tek otoritedir** ve `viewedSectionId` transport'un `activeBarKey`'inden türetilmez — bakılan bölüm ile çalan bölüm iki ayrı olgudur; playhead yalnız gerçekten çalınan bölüm görünürken çizilir; kısa şarkı `scrollLeft` ile değil ölçülen bir viewport genişliğindeki `data-tab-tail` ile çözüldü ve bu boşluk bar/seçim/seek hedefi değildir, arrangement sayısına, fingerprint'e ve export'a girmez, dokunulduğunda 0 seek / 0 seçim / 0 yazma. **Ritim dili:** teknik değer kalır, yanına sade okuma gelir ("4 ana vuruş · 16 adım"), "16 vuruş" hiçbir yerde yazmaz, 6/8 felt-beat'ten gelir, 7/8'e uydurma gruplama verilmez ("7 sekizlik · 14 adım"), hepsi tek saf formatter'dan. **1/4 grid** geriye dönük uyumlu eklendi (`4|8|12|16|24|32`), `resolution % denominator === 0` kuralına uyar, 6/8 ve 7/8'de önerilmez, şema literali `RESOLUTIONS`'tan türer, ikinci timing formülü ve yamalı liste yok, 64'lük grid yok. **Mevcut müziğin ölçü/ritim değişimi** metadata değil gerçek tick-preserving yeniden yazımdır: yalnız birebir temsil edilebiliyorsa notalanır, yuvarlama/clamp/truncate yok, tek track başarısız olursa işlem tamamen reddedilir, eksik anahtar sahte boş dizi üretmez, `bpmOverride` korunur, başarı = 1 yazma + 1 history, undo/redo byte-eş, tipli kodlar UI'a ham diagnostic sızdırmaz. **Beam rehberi perde okumaz** — fonksiyona nota girmez — bu yüzden gam iddiası yapısal olarak imkânsızdır; Contract'a alan eklemez, fingerprint/dosya/MIDI/Copilot'a girmez, dokunma hedefi veya listener üretmez, fret/glyph/seçim bandı/playhead ile çakışması ayrı ayrı 0, ekran okuyucuya "Ritim grubu" der; **tam notasyon motoru değildir** (sap yönü, polifonik dizgi, nüans, alternatif son, süsleme, sweep kapsam dışı). **Sınırlar:** yedi sorumluluk saf/tipli katmanlara ayrıldı, ölçüm import grafi ve export yüzeyi üzerinden, yeni grep testi ve yeni runtime dependency yok; wiring öncesi davranış-korumalı çıkarma ile `Workspace.tsx` 450 → **385** (bütçe gevşetilmedi), `ArrangementCanvas.tsx` 470 ve bu özelliği sahiplenmiyor. **Doğrulama:** 2.209 birim testi; 47 senaryo × 2 viewport = **94/94** gerçek production build'de; timing önizleme/vazgeç 0, uygula 1, undo 1, redo 1 yazma; MIDI meter `["4/4@0"] → ["3/4@0","4/4@576"]` ve onset'ler `[0,768,1536] → [0,576,1344]`; proje export/import 1/4'ü byte-eş taşıyor; döngü sınırı 0–2688 → 0–2496; **çalarken timing değişiminde transport duruyor** (`playing@588 → idle@1344`) ve bu gizlenmeden raporlanıyor; AudioContext 1 → 1. **29 vacuity probe kırmızı**; biri ilk turda yeşil geldi ("1/4 beam almaz") — koruma gerçekten boştu, gizlenmedi, kural `beamLevels`'ta kendi yerinde sabitlendi. Performans (Node + masaüstü Chromium, **telefon kanıtı değil**): 8 bar × 1/32 rehber ~0,042 ms (akorda ~0,049 ms, model tek başına ~0,024 ms), bölüm timing dönüşümü validatörlerle ~0,9 ms median (fixture: 1 bölüm, 8 ölçü, 1 track, 64 ses olayı — 2L-B/2M-A'nın 32 bar × 8 track worst-case validator ölçümleriyle karşılaştırılabilir değil), rehberin eklediği DOM 49 düğüm (iki viewport'ta aynı). **2N-A.1 düzeltmesi:** ilk raporda "playhead rAF 61,3 ↔ 60,5" diye verilen sayı ölçüm harness'ının kendi rAF döngüsüydü — ekranın tazeleme hızı, playhead'e ait değil. **Gerçek regresyon yok; üretim davranışı değişmedi.** Frame kuralı tek modülde toplandı (`playhead-loop.ts`) ve sayım hook seam'ine taşındı: aynı saniyede boşta global 61,3/s ↔ playhead callback 0; idle/paused/ended/unmount/dispose ve üç görünüm geçişinden sonra canlı loop 0, playing'de tam 1, timing değişimi idle'a aldıktan sonra 0 (10 ayrı ≥1 sn penceresi, 14/14 senaryo, 7 probe kırmızı). **Kapsam dışı:** yeni provider, Copilot kalitesi, ses motoru, yeni sample, gerçek kayıt senkronizasyonu, rakip özellikleri, tam notasyon editörü, fiziksel Android/iOS kabulü. **Kapanış (2N-A.1):** önceki "boşta 61,3 playhead rAF/s" iddiasının eval harness'ının global ekran yenileme döngüsünü ölçmesinden kaynaklandığı doğrulandı. Üretim yaşam döngüsü değişmedi: idle/paused/ended/unmounted/disposed durumlarında canlı playhead loop'u **0**, playing durumunda tam **1**'dir. | **Haktan onayladı 24.08.2026** |
 | **K-52** | **Yerel proje kütüphanesi v1 (§13.21, 2O-A).** Aranjé artık aynı cihazda birden fazla projeyi saklar; kabul ölçütü listede birkaç şarkı görünmesi değil, **kalıcı kayıt ve kurtarma garantilerinin proje başına doğru çalışmasıdır**. Yerel kalır: hesap, sunucu, senkronizasyon yok; proje sayısında kota/paywall/uydurma tavan yok; proje yedeği her zaman ücretsiz ve doğrudan erişilebilir (K-50). **Kimlik** `project-<n>`, katalogdaki monoton sayaçtan; zaman damgası/UUID/`Math.random`/`crypto.randomUUID`/cihaz bilgisi yok, silinen kimlik yeniden dağıtılmaz, beş koşu byte-eş; tanınmayan kimlikten anahtar üretilmez. **Üç anahtar:** `aranje.projects` (katalog: `format`, `version`, `activeProjectId`, `projectIds`, `nextProjectNumber`), `aranje.project.<id>` (kayıt: `projectId`, `revision`, `updatedAt`, `current`, `previous`), `aranje.project-pending` (yarım silme notu). Kayıt zarfı şarkı zarfının aynısıdır — `decideLoad`, `previous` rungu ve revision kuralı yeniden kullanıldı, ikinci kurtarma yolu yok. **Yazma sırası kurtarılabilirliği belirler:** oluşturma biçimli işlemler payload → katalog (kesilirse sahiplenilebilir öksüz kayıt), silme not → katalog → payload → not (kesilirse açılış kullanıcının zaten verdiği onayı yerine getirir); not olmasa yarım silme ile yarım oluşturma ayırt edilemezdi. **Migration** eski `aranje.song`'u `project-1`'e taşır ve **eski anahtarı ancak yeni kayıt geri okunup doğrulandıktan sonra** siler; on üç başlangıç durumu ölçülerek karşılandı; bozuk katalog önce taramayla yeniden kurulur, katalogun bilmediği payload silinmez, dolu birinci slotun üzerine yazılmaz. **Beş saf komut** (create/open/duplicate/import-as-new/delete) tek iskeleti korur: reddet → katı şema + merkezî validator → payload yaz **ve geri oku** → sonra katalog → katalogu da doğrula; `now` enjekte edilir, React/saat/global yok. **Tek başlık otoritesi:** liste adı `Song.title`'dan türer, katalogda ikinci ad alanı yok, özet her açılışta şarkıdan hesaplanır. **`create_song` kaldırıldı** — "yeni şarkı" artık açık projeyi byte-eş bırakıp yeni proje açar ve dispatcher bilinmeyen komutta `undefined` değil tipli red döner. **Bir commit tam olarak bir proje anahtarı yazar**; undo/redo proje sınırını geçmez (geçişte geçmiş 0/0) ve proje değişimi geri alınabilir bir Song düzenlemesi değildir; açık projenin kaydı okunamaz hâle gelirse commit reddedilir ve bozuk byte'lar korunur. **Bayat sekme kayıp kapısı** (çoklu sekme senkronizasyonu değil): her commit öncesi diskteki `revision` yeniden okunur, farklıysa yazım reddedilir; atomik CAS olmadığı açıkça yazılıdır; bayat sekme yedek alabilir ve dinleyebilir. **Katalog, aktif proje kimliği, `revision`/`updatedAt` ve kurtarma metadata'sı fingerprint'e, Copilot isteğine ve `.aranje.json`'a girmez**; dosya formatı değişmedi. Ekranda ham `localStorage`/`JSON`/`Zod`/`revision`/anahtar adı/stack trace yok; kapalı hata kodu + tek tablo (eksik cümle derleme hatası). Silme onayı adı, şekli ve geri alınamazlığı söyler; çöp kutusu/bulut kurtarma yokmuş gibi davranılır çünkü yok; **son proje V1'de silinemez**; hayatta kalan `survivorIndex` ile seçilir ve açılamıyorsa silme hiç başlamaz. **Sınırlar:** yedi saf modül, controller altındaki depoyu component görmez, ölçüm import grafi + AST + ESLint restricted-import ile (yeni grep testi ve yeni runtime dependency yok); `Workspace.tsx` 385 → **380**, `ArrangementCanvas.tsx` 470 ve değişmedi, yeni mega-hook yok. **Doğrulama:** 2.342 birim testi (kütüphane 125), 55 senaryo satırı × 2 viewport = **110/110** gerçek production build'de fiziksel storage ledger'ıyla, **35 vacuity probe kırmızı / 0 vacuous**; ilk turda sekiz probe yeşil geldi, gizlenmedi — dördü gerçek test boşluğuydu ve testle kapatıldı, dördünün mutasyonu tehlikeyi ölçmüyordu ve hedefi düzeltildi. **İki dürüst performans bulgusu:** 50 projelik özet modeli 46,0 ms median (p95 66,4 / maks 98,0) — kötüdür, gizlenmedi ve sanallaştırma ölçülmeden eklenmedi; Chromium bu profilde worst-case boyuttaki yalnızca **6 projeyi** kabul edip yazmayı reddetti (~4,5 MiB) oysa `navigator.storage.estimate()` ~1,07 GB diyordu — `estimate()` bir söz değildir. **Kapanışta bulunan ve düzeltilen kusur:** adlandırma / dosyadan yeni proje / yerine koyma akışları için tarayıcı senaryosu yazılınca liste `useMemo`'sunun katalog kimliğine bağlı olduğu ve şarkı depo üzerinden değişince yenilenmediği çıktı — "özet şarkıdan türer" yerde doğruydu, zamanda değildi; liste artık her açılışta yeniden okunuyor, senaryo 51.b ve 35. probe ile bağlandı. **Kapsam dışı:** bulut, hesap, senkronizasyon, paylaşım, klasör/etiket/arama, çöp kutusu, sürüm geçmişi tarayıcısı, akor kurucu, çoklu enstrüman görünümü, release hardening, fiziksel Android/iOS kabulü. **Onay kapsamı:** yerel proje kütüphanesi; **proje başına dayanıklı kayıt**, **kayıpsız legacy migration**, **proje izolasyonu**, güvenli **oluşturma/açma/çoğaltma/import/silme** ve **bayat sekme kayıp kapısı** ile kabul edildi. **Çoklu sekme birleştirme veya atomik CAS iddiası yoktur.** **50 proje özet maliyeti** (ölçülen: **46,0 ms median / 66,4 ms p95 / 98,0 ms maks**) ve **cihaz kotasına bağlı gerçek proje kapasitesi** (masaüstü Chromium profilinde worst-case kayıtlarla **yalnız altı proje kabul edildi**, ~**4,5 MiB** civarında yazma reddedildi; aynı anda `navigator.storage.estimate()` ~1,07 GB diyordu) **ölçülmüş açık release riskleridir**. Bu kapasite sonucu nedeniyle ürün **localStorage üzerinde "sınırsız proje" garantisi vermez**; bulgu **K-52 kod kabulünü engellemez**, fakat **public release ve fiyatlandırma dilinde açık risktir** ve §16'da dördüncü owner kapısı olarak açık durur. | **Haktan onayladı 24.08.2026** |
+| **K-53** | **Hızlı akor ve power chord kurucu v1 (§13.22, 2O-B).** Kullanıcı kök sesi, akor türünü ve çalınabilir bir şekli seçer; bütün notalar aynı vuruşa tek, geri alınabilir bir olay olarak yazılır. **Yönlendirme yoktur** — "önerilen/en kolay/en iyi/sonraki akor" ifadeleri kod tabanında bulunmaz (testle bağlı); etiketler betimleyicidir ("Açık konum · kök basta", "1. çevrim"). **Akor kalıcı bir nesne değildir:** Song Contract değişmedi, akor aynı onset'teki birden fazla `NoteEvent`'tir, `chordName`/`voicingId`/`shapeId` gibi alan eklenmedi ve `voicingId` Song'a/dosyaya/fingerprint'e/Copilot'a girmez (serialize edilen byte'larda testli). **On bir kalite tek tabloda**; aralık sayıları başka yerde tekrar edilmez, eksik kalite derleme hatasıdır; **requiredChordTones politikası tek yerde** — beşli yalnız yedililerde düşebilir, yarı eksilmiş 7 istisnadır. **Perdeli arama sözlük değil klavye taramasıdır:** akort, capo, tel sayısı ve perde sınırı track'ten okunur; mevcut `soundingMidi`/pitch/hand-position yardımcıları yeniden kullanıldı. El kuralı dört parmak + en alt perdede barre'dır ve "aynı perde iki kez = barre" varsayımı yanlış olduğu için açık D7'yi eleyen ilk kural düzeltildi. **Maksimum açıklık ölçülerek 2'ye çekildi**: beş klavyede 12 kök × 11 kalite = 660 kombinasyonun hiçbiri boşalmıyor. Am7'nin üç kanonik şekli (`x02010`, `577555`, `5x555x`) aday kümesinde ve her telin **sounding pitch**'i doğrulanarak. **Power chord kalıcı tip değildir**: formül `[0,7]`, iki ya da üç ses ve kök mutlaka basta olması shape kuralıdır; Drop D açık D5 gerçek akorttan bulunur, standard akortta bulunmaz. **Perdesiz enstrümanlarda** akor bir perde yığınıdır, `position` yazılmaz ve **sayısal enstrüman aralığı uydurulmadı** — `range.ts`'in erteleme kararı korundu. **Komut tikte çalışır** (K-34): tam oturmayan hedef/süre tipli reddedilir, yuvarlama yok, uzun akor tie ile taşınır, ya hepsi ya hiçbiri. **Dolu vuruş sessizce ezilmez**; bağlı onset ve karışık süre/velocity/ifade atomik reddedilir. **Önizleme ile commit aynı hesaptır** — ghost gerçek komutun çıktısıdır, Uygula aynı komutu tekrar koşar; önizleme ve varyasyon dolaşma 0 yazma / 0 history. **Dinleme mevcut PreviewEngine'i kullanır**; ikinci AudioContext/scheduler/bank yok, önizleme kazancı yalnız önizlemede kalır. Yazılan akor sıradan müziktir: seçim/transform/bar işlemleri/undo-redo/MIDI/WAV/proje dosyası paritesi testli. `Workspace.tsx` **379** (380 aşılmadı), `ArrangementCanvas.tsx` 470 ve değişmedi, yeni runtime dependency yok. **Üç dürüst bulgu:** (1) bütün klavye taraması 621 ms median — ürün bu yolu kullanmıyor (kök+kalite yolu 16,6 ms) ve **ölçmeden cache eklenmedi**; (2) yoğun akor 0 dB'de tepe 1,8090 ile tam ölçeği aşıyor ve encoder kırpardı, şablonların verdiği −6 dB'de 0,9066 ile içeride kalıyor, sahibi mixer'dır, limiter eklenmedi; (3) **mevcut ürün kusuru bulundu** — bütün launch şablonları `electric_guitar/clean` veriyor ve o preset'in vendor edilmiş sample pack'i yok, yani yeni kullanıcının gitarı hiç ses çıkarmıyor; 2O-B'nin sebebi değil ama "Dinle" tam da o track'te sessiz kalıyor, tek taraflı değiştirilmedi ve sahibe bırakıldı. **Bir ölü koruma kaldırıldı:** perdesiz register ceiling ölçüldüğünde 4.040 yazılabilir yığının hiçbirini kesmiyordu; ateşlenemeyen koruma koruma değildir. **İki kabul boşluğu açık:** perdesiz enstrümanlar için repoda sayısal aralık yok ve klavye düzenleme yüzeyi yok — saf çekirdek eksiksiz ve testli, UI yüzeyi bugün yalnız perdeli track'lerde var ve uydurma bir klavye editörüyle kapatılmadı. **Kapsam dışı:** akor dizisi önerisi, scale-aware öneri, voice leading, add9/6/9/11/13/altered, slash/polychord, arpeggiator, strumming motoru, sweep, parmak numarası, MIDI/audio akor tanıma, 64'lük grid, çoklu enstrüman editörü, cloud/hesap/paywall, gerçek provider, release hardening, fiziksel Android/iOS kabulü. | **Haktan onayı bekliyor** |
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler
 
@@ -3112,6 +3284,8 @@ maliyettir** (§11.2/7).
 | Proje sayısı | tek açık şarkı (`aranje.song`) | **Cihazda çok proje: katalog + proje başına kayıt; kota/tavan yok** (K-52) |
 | "Yeni şarkı" | açık şarkının üzerine yazıyordu | **Yeni proje açar; `create_song` komutu kaldırıldı** (K-52) |
 | İki sekme | sessizce birbirinin üzerine yazabiliyordu | **Bayat sekme kayıp kapısı: `revision` uyuşmazsa yazım reddedilir (senkronizasyon değil)** (K-52) |
+| Akor yazmak | tel tel, nota nota | **Kök + tür + şekil seçimi; bütün notalar tek atomik, geri alınabilir olay** (K-53) |
+| Akor verisi | — | **Kalıcı akor nesnesi yok; akor aynı onset'teki NoteEvent'lerdir** (K-53) |
 | Enstrüman/akort niyeti | sabit rol tablosu | **Blueprint niyeti registry üzerinden taşınır** (K-35, K-36); sessiz fallback yok |
 
 ---

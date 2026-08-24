@@ -12,6 +12,7 @@ import {
   keyboardCandidates,
   selectKeyboardVoicings,
 } from "@/lib/chords/keyboard-voicing";
+import { CHORD_QUALITY_IDS } from "@/lib/chords/chord-formula";
 import { keyboardVoicingLimits } from "@/lib/limits";
 import { pitchClass, pitchToMidi } from "@/lib/music/pitch";
 import { readChord } from "@/lib/chords/chord-recognition";
@@ -183,23 +184,37 @@ describe("156. power chords and the edges of what can be written", () => {
     }
   });
 
-  it("refuses an inversion that would leave the reader's register", () => {
+  it("keeps every inversion in the register the reader picked, by construction", () => {
     /*
-     * The window is two octaves above the note they picked. An inversion that
-     * climbs past it is dropped rather than offered somewhere else on the
-     * keyboard — they asked for a chord *here*.
+     * Not by a check — by arithmetic. An inversion lifts the lowest note by
+     * exactly an octave, so every inversion of a chord whose intervals fit
+     * inside one sits within an octave and a seventh of the note that was
+     * chosen. Asserted over the whole vocabulary rather than one example,
+     * because that is what makes it a property instead of a coincidence.
      */
-    const all = keyboardCandidates({
-      rootPitchClass: 0,
-      quality: "major_7",
-      octave: 4,
-    });
-    const lowest = all[0]!.midi[0]!;
-    for (const voicing of all) {
-      for (const midi of voicing.midi) {
-        expect(midi - lowest).toBeLessThanOrEqual(
-          keyboardVoicingLimits.registerSpanSemitones,
-        );
+    for (const quality of CHORD_QUALITY_IDS) {
+      for (let root = 0; root < 12; root += 1) {
+        const all = keyboardCandidates({ rootPitchClass: root, quality, octave: 4 });
+        if (all.length === 0) continue;
+        const chosen = all[0]!.midi[0]!;
+        for (const voicing of all) {
+          for (const midi of voicing.midi) {
+            expect(midi - chosen, `${root} ${quality} ${voicing.id}`).toBeLessThan(24);
+            expect(midi - chosen, `${root} ${quality} ${voicing.id}`).toBeGreaterThanOrEqual(0);
+          }
+        }
+      }
+    }
+  });
+
+  it("lifts a note by an octave, never by anything else", () => {
+    // The one arithmetic fact the register guarantee rests on.
+    for (const quality of ["major", "minor_7", "half_diminished_7"] as const) {
+      const all = keyboardCandidates({ rootPitchClass: 3, quality, octave: 3 });
+      for (let index = 1; index < all.length; index += 1) {
+        const before = all[index - 1]!.midi;
+        const after = all[index]!.midi;
+        expect(after[after.length - 1]! - before[0]!, `${quality} inv${index}`).toBe(12);
       }
     }
   });

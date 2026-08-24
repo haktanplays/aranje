@@ -126,9 +126,14 @@
       "detail": "idle"
     },
     {
-      "name": "[390x844] 48 sheet kapanınca önizleme sesi kalmıyor",
+      "name": "[390x844] 48 sheet kapanınca yeni ses planlanmıyor",
       "pass": true,
-      "detail": "0"
+      "detail": "24 ses çaldı · kapandıktan 3 sn sonra yeni ses 0"
+    },
+    {
+      "name": "[390x844] 48.b tek dinleme sheet kapanınca susturuluyor",
+      "pass": true,
+      "detail": "10 ses başladı · stop() 3 · disconnect() 27"
     },
     {
       "name": "[390x844] 21 ghost önizleme sekmede gerçekten çiziliyor",
@@ -313,7 +318,22 @@
     {
       "name": "[390x844] 44 çalarken kurucu açılıyor ve çalma duruyor",
       "pass": true,
-      "detail": "idle"
+      "detail": "playing → paused"
+    },
+    {
+      "name": "[390x844] 43.c kayıt kapalıyken düzenleme açılmıyor",
+      "pass": true,
+      "detail": "kapalı"
+    },
+    {
+      "name": "[390x844] 43.d akor kurucusuna hiç ulaşılamıyor",
+      "pass": true,
+      "detail": "sheet yok"
+    },
+    {
+      "name": "[390x844] 43.e kapalıyken 0 proje yazımı ve şarkı byte-eş",
+      "pass": true,
+      "detail": "payload 0"
     },
     {
       "name": "[390x844] 49 akor tek onset grubu olarak seçilebiliyor",
@@ -506,9 +526,14 @@
       "detail": "idle"
     },
     {
-      "name": "[320x700] 48 sheet kapanınca önizleme sesi kalmıyor",
+      "name": "[320x700] 48 sheet kapanınca yeni ses planlanmıyor",
       "pass": true,
-      "detail": "0"
+      "detail": "24 ses çaldı · kapandıktan 3 sn sonra yeni ses 0"
+    },
+    {
+      "name": "[320x700] 48.b tek dinleme sheet kapanınca susturuluyor",
+      "pass": true,
+      "detail": "10 ses başladı · stop() 3 · disconnect() 27"
     },
     {
       "name": "[320x700] 21 ghost önizleme sekmede gerçekten çiziliyor",
@@ -693,7 +718,22 @@
     {
       "name": "[320x700] 44 çalarken kurucu açılıyor ve çalma duruyor",
       "pass": true,
-      "detail": "idle"
+      "detail": "playing → paused"
+    },
+    {
+      "name": "[320x700] 43.c kayıt kapalıyken düzenleme açılmıyor",
+      "pass": true,
+      "detail": "kapalı"
+    },
+    {
+      "name": "[320x700] 43.d akor kurucusuna hiç ulaşılamıyor",
+      "pass": true,
+      "detail": "sheet yok"
+    },
+    {
+      "name": "[320x700] 43.e kapalıyken 0 proje yazımı ve şarkı byte-eş",
+      "pass": true,
+      "detail": "payload 0"
     },
     {
       "name": "[320x700] 49 akor tek onset grubu olarak seçilebiliyor",

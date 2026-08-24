@@ -15,12 +15,18 @@
  * overturns that.
  *
  * What is checked instead is the only bound that really exists: the pitches
- * the Song Contract can represent at all, and the register the reader chose.
- * A voicing that would climb out of the octave window the reader is working in
- * is refused rather than transposed down behind their back — not because the
- * instrument cannot play it, which this file does not claim to know, but
- * because they asked for a chord in one place and would have been given one
- * somewhere else.
+ * the Song Contract can represent at all. A stack that would need a note the
+ * contract cannot spell is refused rather than folded back down an octave
+ * behind the reader's back.
+ *
+ * The register the reader picked is kept structurally rather than by a check.
+ * An inversion lifts the lowest note by exactly an octave, so every inversion
+ * of a chord whose intervals fit inside one sits within an octave and a
+ * seventh of the note they chose. A ceiling was written here first and then
+ * removed: measured against all eleven qualities at all twelve roots in every
+ * writable octave, it cut **none** of the 4,040 stacks. A guard that cannot
+ * fire is not a guard, and the limit beside it was a number that meant
+ * nothing.
  */
 import {
   chordPitchClasses,
@@ -106,8 +112,6 @@ export function keyboardCandidates(
   const base = rootPosition(request);
   if (!base || base.length === 0) return [];
 
-  const ceiling =
-    (base[0] ?? 0) + keyboardVoicingLimits.registerSpanSemitones;
   const voicings: KeyboardVoicing[] = [];
   let stack = [...base];
 
@@ -127,7 +131,6 @@ export function keyboardCandidates(
       stack = [...stack.slice(1), lowest + 12];
     }
     if (stack.some((midi) => !isWritable(midi))) continue;
-    if (stack.some((midi) => midi > ceiling)) continue;
 
     const pitches = stack.map(midiToPitch);
     voicings.push({

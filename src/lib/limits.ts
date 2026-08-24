@@ -204,16 +204,16 @@ export const voicingLimits = {
  * anything outside that cannot be written down whatever instrument is holding
  * it.
  *
- * `registerSpanSemitones` is how far a chord may climb above the note the
- * reader picked before it stops being a chord in the place they asked for one.
- * Two octaves is wide enough for a four-note seventh and all of its
- * inversions, and narrow enough that "a chord around middle C" does not answer
- * with one three octaves up.
+ * There is deliberately **no** "register span" limit here. One was written and
+ * then removed: an inversion lifts the lowest note by exactly an octave, so
+ * every inversion of a V1 chord already sits within an octave and a seventh of
+ * the note the reader picked, and a ceiling measured against all eleven
+ * qualities at all twelve roots in every writable octave cut none of the 4,040
+ * stacks. Keeping it would have meant carrying a number that decided nothing.
  */
 export const keyboardVoicingLimits = {
   lowestMidi: 0,
   highestMidi: 127,
-  registerSpanSemitones: 24,
   maxVariations: 4,
 } as const;
 

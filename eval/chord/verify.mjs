@@ -43,7 +43,21 @@ const record_ = (name, pass, detail = "") => {
   console.log(`${pass ? "PASS" : "FAIL"}  ${name}${detail ? `  — ${detail}` : ""}`);
 };
 
+/**
+ * Run one scenario group, unless a filter excludes it.
+ *
+ * `CHORD_ONLY` names the groups to run, comma separated. A vacuity probe
+ * cares about one guard and one group; running the other seventy scenarios to
+ * find that out would make the probe suite hours long and would not make it
+ * any more truthful.
+ */
+const ONLY = (process.env.CHORD_ONLY ?? "")
+  .split(",")
+  .map((entry) => entry.trim())
+  .filter(Boolean);
+
 async function safe(label, run) {
+  if (ONLY.length > 0 && !ONLY.some((entry) => label.includes(entry))) return;
   try {
     await run();
   } catch (error) {
@@ -53,7 +67,7 @@ async function safe(label, run) {
 
 /* ------------------------------------------------------------- the harness */
 
-async function openApp(browser, size, seed) {
+async function openApp(browser, size, seed, options = {}) {
   const context = await browser.newContext({ viewport: size });
   const external = [];
   await context.route("**/*", (route) => {
@@ -70,15 +84,60 @@ async function openApp(browser, size, seed) {
     }
   });
   await page.addInitScript(
-    ([script, state]) => {
+    ([script, state, closed]) => {
       (0, eval)(script);
+      /*
+       * Live voices, counted on the thing itself. The app's debug handle
+       * reports the transport, not how many sources are sounding, and a
+       * scenario that read a field nobody publishes would pass for an app
+       * that leaked every preview it ever played.
+       */
+      window.__started = 0;
+      window.__ended = 0;
+      window.__stopCalls = 0;
+      window.__disconnects = 0;
+      const Node = window.AudioNode;
+      if (Node) {
+        const disconnect = Node.prototype.disconnect;
+        Node.prototype.disconnect = function (...args) {
+          window.__disconnects += 1;
+          return disconnect.apply(this, args);
+        };
+      }
+      window.__contexts = [];
+      const Source = window.AudioBufferSourceNode;
+      if (Source) {
+        const start = Source.prototype.start;
+        const stop = Source.prototype.stop;
+        Source.prototype.start = function (...args) {
+          window.__started += 1;
+          window.__contexts.push(this.context);
+          this.addEventListener("ended", () => {
+            window.__ended += 1;
+          });
+          return start.apply(this, args);
+        };
+        Source.prototype.stop = function (...args) {
+          window.__stopCalls += 1;
+          return stop.apply(this, args);
+        };
+      }
+      if (closed) {
+        const original = Storage.prototype.setItem;
+        Storage.prototype.setItem = function (key, value) {
+          if (String(key).startsWith("aranje.")) throw new Error("QuotaExceededError");
+          return original.call(this, key, value);
+        };
+      }
       for (const [key, value] of Object.entries(state ?? {})) {
         localStorage.setItem(key, value);
       }
     },
-    [LEDGER, seed ?? null],
+    [LEDGER, seed ?? null, options.writingClosed === true],
   );
-  await page.goto(BASE, { waitUntil: "domcontentloaded" });
+  // `?debug=1` publishes the transport handle; without it the scenarios that
+  // ask what the transport is doing would be reading `undefined` and passing.
+  await page.goto(`${BASE}/?debug=1`, { waitUntil: "domcontentloaded" });
   await page.waitForSelector("[data-open-projects]");
   await page.waitForTimeout(700);
   return { context, page, external };
@@ -87,6 +146,21 @@ async function openApp(browser, size, seed) {
 const raw = (page, key) => page.evaluate((k) => localStorage.getItem(k), key);
 const errors = (page) => page.evaluate(() => window.__consoleErrors);
 const contexts = (page) => page.evaluate(() => window.__audioContexts);
+/** The transport's own state, from the handle `?debug=1` publishes. */
+const status = (page) =>
+  page.evaluate(() => window.__aranjeDebug?.status() ?? "no-handle");
+/** Sources that were started and have not ended: what is still sounding. */
+const liveVoices = (page) =>
+  page.evaluate(() => (window.__started ?? 0) - (window.__ended ?? 0));
+/** Sources started, sources that ended, stop() calls, and context states. */
+const voiceLedger = (page) =>
+  page.evaluate(() => ({
+    started: window.__started ?? 0,
+    ended: window.__ended ?? 0,
+    stopCalls: window.__stopCalls ?? 0,
+    disconnects: window.__disconnects ?? 0,
+    states: [...new Set((window.__contexts ?? []).map((c) => c.state))],
+  }));
 
 /** The song as it is stored, parsed. */
 async function storedSong(page, id = "project-1") {
@@ -351,18 +425,86 @@ async function run(label, size) {
         ledger.n("set:projectPayload") === 0,
         `payload ${ledger.n("set:projectPayload")}`,
       );
+      const transport = await status(page);
       record_(
         at("45 dinlemek transport'u başlatmıyor"),
-        (await page.evaluate(() => window.__aranjeDebug?.status ?? "idle")) !== "playing",
-        await page.evaluate(() => window.__aranjeDebug?.status ?? "idle"),
+        transport !== "playing" && transport !== "no-handle",
+        transport,
       );
 
+      const sounding = await liveVoices(page);
       await cancel(page);
-      await page.waitForTimeout(400);
+      await page.waitForTimeout(1500);
+      const voices = await voiceLedger(page);
+      /*
+       * "Nothing outlives the sheet" is measured as every source having been
+       * told to stop — not as every `ended` event arriving, and not as the
+       * context being closed.
+       *
+       * Three measurements were tried before this one, and the first three
+       * were all wrong about something.
+       *
+       * `ended` does not fire for a source whose context is torn down, so
+       * counting those events reports a leak that is not there. The context
+       * is the *song's* — shared, and deliberately still running — so
+       * demanding a closed context would fail a healthy app. And counting
+       * `stop()` calls is too strict in the other direction: a one-shot
+       * sample that plays to its natural end is never told to stop, so a
+       * ringing release tail looks like a leak.
+       *
+       * What a real leak would do is keep *scheduling*. So the claim is that
+       * sound was genuinely produced, and that three seconds after the sheet
+       * closed not one new source has started.
+       */
+      await page.waitForTimeout(1500);
+      const settled = await voiceLedger(page);
       record_(
-        at("48 sheet kapanınca önizleme sesi kalmıyor"),
-        (await page.evaluate(() => window.__aranjeDebug?.activeVoices ?? 0)) === 0,
-        String(await page.evaluate(() => window.__aranjeDebug?.activeVoices ?? 0)),
+        at("48 sheet kapanınca yeni ses planlanmıyor"),
+        sounding > 0 && settled.started === voices.started,
+        `${voices.started} ses çaldı · kapandıktan 3 sn sonra yeni ses ` +
+          `${settled.started - voices.started}`,
+      );
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---- 48.b: the sheet closing actually silences what is ringing */
+  await safe(at("audition stop"), async () => {
+    const { context, page } = await openApp(browser, size, device(song([guitarTrack()])));
+    try {
+      await enterEdit(page);
+      await tapCell(page);
+      await openBuilder(page);
+      await chooseRoot(page, 9);
+      await chooseQuality(page, "minor");
+      const ids = await voicingIds(page);
+
+      /*
+       * One audition, closed while it is still ringing.
+       *
+       * What is measured is the graph coming down, not `stop()` calls. Tone
+       * silences a preview by disposing its nodes — three sources were told
+       * to stop and twenty-seven connections were torn out — and a source
+       * that cannot reach the destination is silent whether or not anybody
+       * called `stop` on it. Counting stops alone reported a leak that was
+       * not there.
+       *
+       * One audition, because across several the teardown could equally be
+       * `PreviewEngine.start()` disposing the previous one. With exactly one,
+       * the only thing that can take the graph down is the sheet closing.
+       */
+      await page.locator(`[data-chord-audition="${ids[0]}"]`).click();
+      await page.waitForTimeout(300);
+      const ringing = await voiceLedger(page);
+      await cancel(page);
+      await page.waitForTimeout(800);
+      const after = await voiceLedger(page);
+
+      record_(
+        at("48.b tek dinleme sheet kapanınca susturuluyor"),
+        ringing.started > 0 && after.disconnects > ringing.disconnects,
+        `${ringing.started} ses başladı · stop() ${after.stopCalls} · disconnect() ${after.disconnects - ringing.disconnects}`,
       );
     } finally {
       await context.close();
@@ -740,14 +882,58 @@ async function run(label, size) {
     const { context, page } = await openApp(browser, size, device(song([guitarTrack()])));
     try {
       await page.getByRole("button", { name: /Çal|Oynat/ }).first().click().catch(() => {});
-      await page.waitForTimeout(700);
+      await page.waitForTimeout(900);
+      const before = await status(page);
       await enterEdit(page);
       await tapCell(page);
       await openBuilder(page);
+      const after = await status(page);
       record_(
         at("44 çalarken kurucu açılıyor ve çalma duruyor"),
-        (await page.evaluate(() => window.__aranjeDebug?.status ?? "idle")) !== "playing",
-        await page.evaluate(() => window.__aranjeDebug?.status ?? "idle"),
+        after !== "playing" && after !== "no-handle",
+        `${before} → ${after}`,
+      );
+    } finally {
+      await context.close();
+    }
+  });
+
+  /* ---- 43.c-e: a device that cannot write */
+  await safe(at("writing closed"), async () => {
+    /*
+     * The premise this scenario started with was wrong, and the harness found
+     * it: with writing closed the reader never reaches the chord builder,
+     * because edit mode itself does not open (2K-B.1). So what is measured is
+     * the guard that actually stands between them and a lost edit — and that
+     * listening and backing up stay open behind it.
+     */
+    const { context, page } = await openApp(
+      browser,
+      size,
+      device(song([guitarTrack()])),
+      { writingClosed: true },
+    );
+    try {
+      const before = await raw(page, payloadKey("project-1"));
+      await page.locator('[data-testid="view-tab"]').click().catch(() => {});
+      await page.waitForTimeout(400);
+
+      const edit = page.getByRole("button", { name: "Düzenle", exact: true });
+      const closed = (await edit.count()) === 0 || (await edit.isDisabled());
+      record_(at("43.c kayıt kapalıyken düzenleme açılmıyor"), closed, "kapalı");
+
+      record_(
+        at("43.d akor kurucusuna hiç ulaşılamıyor"),
+        (await page.locator("[data-chord-sheet]").count()) === 0,
+        "sheet yok",
+      );
+
+      const ledger = await takeLedger(page);
+      record_(
+        at("43.e kapalıyken 0 proje yazımı ve şarkı byte-eş"),
+        ledger.n("set:projectPayload") === 0 &&
+          (await raw(page, payloadKey("project-1"))) === before,
+        `payload ${ledger.n("set:projectPayload")}`,
       );
     } finally {
       await context.close();

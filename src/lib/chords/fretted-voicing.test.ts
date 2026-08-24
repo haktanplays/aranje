@@ -18,6 +18,7 @@ import {
 
 import { chordPitchClasses, requiredPitchClasses } from "@/lib/chords/chord-formula";
 import {
+  compareFretted,
   frettedCandidates,
   selectFrettedVoicings,
   type FrettedVoicing,
@@ -51,6 +52,15 @@ function verifyAgainstFretboard(board: Fretboard, voicing: FrettedVoicing): stri
 
 const find = (list: readonly FrettedVoicing[], id: string) =>
   list.find((voicing) => voicing.id === id);
+
+/** The pitch class of the seventh in a seventh chord, from the one table. */
+const normalizePitchClassOf = (
+  root: number,
+  quality: "dominant_7" | "major_7" | "minor_7" | "half_diminished_7",
+) => {
+  const tones = chordPitchClasses(root, quality);
+  return tones[tones.length - 1]!;
+};
 
 describe("150. the three A minor 7 shapes a guitarist would recognise", () => {
   const candidates = frettedCandidates({
@@ -113,7 +123,13 @@ describe("150. the three A minor 7 shapes a guitarist would recognise", () => {
       quality: "minor_7",
     });
     expect(offered.length).toBeGreaterThan(0);
-    expect(offered.length).toBeLessThanOrEqual(voicingLimits.maxVariations);
+    /*
+     * Both halves, on purpose. Reading the limit and comparing the count to
+     * it is circular — raise the limit and the assertion rises with it — so
+     * the promise the product actually makes is pinned as a number too.
+     */
+    expect(voicingLimits.maxVariations).toBe(4);
+    expect(offered.length).toBeLessThanOrEqual(4);
     expect(offered[0]?.id).toBe("x-0-2-0-1-0");
   });
 
@@ -330,6 +346,101 @@ describe("152. the physical rules the search may never break", () => {
         quality: "major",
       }),
     ).toEqual([]);
+  });
+
+  it("never drops the tone that makes a seventh chord a seventh", () => {
+    /*
+     * The fifth may go when a neck cannot reach it — that exemption is in the
+     * formula table. The seventh may not: without it a minor 7 is a minor
+     * triad wearing the wrong name. Checked over the whole candidate set, at
+     * every root, on five different fretboards.
+     */
+    const sevenths = ["dominant_7", "major_7", "minor_7", "half_diminished_7"] as const;
+    const boards = [STANDARD, dropDGuitar().fretboard!, capoGuitar(2).fretboard!, bass().fretboard!];
+    for (const board of boards) {
+      for (const quality of sevenths) {
+        for (let root = 0; root < 12; root += 1) {
+          const seventh = normalizePitchClassOf(root, quality);
+          for (const voicing of frettedCandidates({
+            fretboard: board,
+            rootPitchClass: root,
+            quality,
+          })) {
+            expect(
+              voicing.soundingClasses.includes(seventh),
+              `${root} ${quality} ${voicing.id} has no seventh`,
+            ).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it("reaches the upper neck rather than stopping halfway", () => {
+    // A clamp at the twelfth fret would still satisfy every "within range"
+    // assertion while quietly halving the instrument.
+    const all = frettedCandidates({
+      fretboard: STANDARD,
+      rootPitchClass: 9,
+      quality: "minor_7",
+    });
+    const highest = Math.max(...all.flatMap((voicing) => played(voicing).map((entry) => entry.fret)));
+    expect(highest).toBeGreaterThan(12);
+    expect(highest).toBeLessThanOrEqual(maxCapoRelativeFret(0));
+  });
+
+  it("offers shapes that differ from each other, not the same one twice", () => {
+    for (const quality of ["major", "minor", "minor_7", "sus4"] as const) {
+      for (let root = 0; root < 12; root += 1) {
+        const offered = selectFrettedVoicings({
+          fretboard: STANDARD,
+          rootPitchClass: root,
+          quality,
+        });
+        const seen = new Set<string>();
+        for (const voicing of offered) {
+          // Two cards may not be the same shape, and may not be the same
+          // idea: same bass, near-identical fullness.
+          expect(seen.has(voicing.id), `${root} ${quality} repeats ${voicing.id}`).toBe(false);
+          seen.add(voicing.id);
+        }
+        /*
+         * Two cards from the same neck region have to be different things to
+         * hear or to hold: another tone underneath, or at least two strings'
+         * difference in how full the shape is. One extra muted string is the
+         * same idea shown twice.
+         */
+        for (let a = 0; a < offered.length; a += 1) {
+          for (let b = a + 1; b < offered.length; b += 1) {
+            const one = offered[a]!;
+            const other = offered[b]!;
+            const sameRegion =
+              Math.floor(one.anchor / 3) === Math.floor(other.anchor / 3);
+            if (!sameRegion) continue;
+            const differs =
+              one.bassPitchClass !== other.bassPitchClass ||
+              Math.abs(one.noteCount - other.noteCount) >= 2;
+            expect(
+              differs,
+              `${root} ${quality}: ${one.id} and ${other.id} are the same idea`,
+            ).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it("hands the candidates back in canonical order", () => {
+    // The order is part of the answer: everything downstream, including which
+    // shapes are offered, reads the front of this list.
+    const all = frettedCandidates({
+      fretboard: STANDARD,
+      rootPitchClass: 0,
+      quality: "major",
+    });
+    expect(all.length).toBeGreaterThan(1);
+    const sorted = [...all].sort(compareFretted);
+    expect(all.map((voicing) => voicing.id)).toEqual(sorted.map((voicing) => voicing.id));
   });
 
   it("answers the same bytes five runs over", () => {

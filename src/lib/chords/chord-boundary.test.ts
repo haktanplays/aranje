@@ -186,7 +186,7 @@ describe("167. one table, one set of limits, one budget", () => {
     // module cannot quietly become a list of unused constants.
     expect(voicingLimits.maxFretSpan).toBeGreaterThan(0);
     expect(voicingLimits.maxVariations).toBeGreaterThan(0);
-    expect(keyboardVoicingLimits.registerSpanSemitones).toBeGreaterThan(0);
+    expect(keyboardVoicingLimits.maxVariations).toBeGreaterThan(0);
     expect(chordPreviewLimits.referenceVoices).toBeGreaterThan(0);
 
     // Nothing outside `limits.ts` declares one of these names.
