@@ -84,6 +84,37 @@ export function WorkspaceSurface({
     !copilotOwnsScreen &&
     track !== undefined;
 
+  /**
+   * The onset-first selection for one bar of the **active** track.
+   *
+   * One reading, used by both surfaces that can edit. The group model is
+   * built against the active track and knows no other, so handing it to a
+   * lane is what makes "the selection belongs to one track" structural
+   * rather than a rule somebody has to keep (spec 13.1, 2N-A §1).
+   */
+  const onsetsForBar = (bar: { sectionId: string; barIndex: number }) => {
+    const group = noteEditing.group;
+    const onsetSlots =
+      group.onsetsOfSection.get(`${bar.sectionId}:${bar.barIndex}`) ?? EMPTY_SLOTS;
+    const selectedSlots =
+      (group.selectionView?.sectionId === bar.sectionId
+        ? group.selectionView.selected.get(bar.barIndex)
+        : undefined) ?? EMPTY_SLOTS;
+    return {
+      onsetSlots,
+      selectedSlots,
+      active: group.selection !== null,
+      onToggle: (slotIndex: number) =>
+        group.pick(bar.sectionId, { barIndex: bar.barIndex, slotIndex }, "toggle"),
+      onLongPress: (slotIndex: number) =>
+        group.pick(
+          bar.sectionId,
+          { barIndex: bar.barIndex, slotIndex },
+          group.selection?.sectionId === bar.sectionId ? "toggle" : "replace",
+        ),
+    };
+  };
+
   return (
     <main className="min-h-0 flex-1">
       {navigation.view === "arrange" ? (
@@ -117,6 +148,20 @@ export function WorkspaceSurface({
           getPosition={getPosition}
           running={running}
           activeBarKey={navigation.activeBarKey}
+          /*
+           * Edit mode, and only for the lane that is active. A session that
+           * cannot save arms nothing, exactly as on the tab, and a Copilot
+           * candidate owning the screen arms nothing either.
+           */
+          editing={
+            noteEditing.editing && canPersist && !copilotOwnsScreen && track
+              ? {
+                  cell: noteEditing.cell,
+                  onCellSelect: noteEditing.selectCell,
+                  onsetsForBar,
+                }
+              : null
+          }
           scrollRef={navigation.scrollRef}
           onActivateTrack={onSelectTrack}
           onSelectBar={navigation.seekToBar}
@@ -163,35 +208,7 @@ export function WorkspaceSurface({
           editing={noteEditing.editing}
           selectedCell={noteEditing.cell}
           onCellSelect={noteEditing.selectCell}
-          onsetsForBar={(bar) => {
-            const group = noteEditing.group;
-            const onsetSlots =
-              group.onsetsOfSection.get(`${bar.sectionId}:${bar.barIndex}`) ??
-              EMPTY_SLOTS;
-            const selectedSlots =
-              (group.selectionView?.sectionId === bar.sectionId
-                ? group.selectionView.selected.get(bar.barIndex)
-                : undefined) ?? EMPTY_SLOTS;
-            return {
-              onsetSlots,
-              selectedSlots,
-              active: group.selection !== null,
-              onToggle: (slotIndex) =>
-                group.pick(
-                  bar.sectionId,
-                  { barIndex: bar.barIndex, slotIndex },
-                  "toggle",
-                ),
-              onLongPress: (slotIndex) =>
-                group.pick(
-                  bar.sectionId,
-                  { barIndex: bar.barIndex, slotIndex },
-                  group.selection?.sectionId === bar.sectionId
-                    ? "toggle"
-                    : "replace",
-                ),
-            };
-          }}
+          onsetsForBar={onsetsForBar}
         />
       )}
     </main>

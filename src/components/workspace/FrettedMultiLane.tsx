@@ -13,9 +13,26 @@
  * comparison, and six string labels repeated down four lanes is forty pixels
  * per lane spent on something the reader already knows.
  */
-import { FrettedBarBlock } from "@/components/workspace/FrettedBarBlock";
+import {
+  FrettedBarBlock,
+  type CellSelection,
+  type OnsetSelection,
+} from "@/components/workspace/FrettedBarBlock";
 import { gridLabelFor } from "@/components/workspace/TabCanvas";
 import type { FrettedBar } from "@/lib/tab/timeline";
+
+/**
+ * The edit seam, handed to the active lane and to no other.
+ *
+ * Not a flag the lane interprets: the whole object is absent on every lane
+ * but one, so there is nothing for an inactive lane to get wrong. A
+ * selection cannot leak to a track that was never given the machinery.
+ */
+export type LaneEditing = {
+  readonly cell: (CellSelection & { barKey: string }) | null;
+  onCellSelect(cell: CellSelection & { barKey: string }): void;
+  onsetsForBar(bar: { sectionId: string; barIndex: number }): OnsetSelection;
+};
 
 export function FrettedMultiLane({
   trackId,
@@ -23,6 +40,7 @@ export function FrettedMultiLane({
   stringCount,
   activeBarKey,
   editable,
+  editing,
   onSelectBar,
 }: {
   trackId: string;
@@ -37,6 +55,8 @@ export function FrettedMultiLane({
    * never resolve against a track the reader is not editing.
    */
   editable: boolean;
+  /** Present only while this lane is the active one *and* edit mode is on. */
+  editing: LaneEditing | null;
   onSelectBar: (barKey: string) => void;
 }) {
   return (
@@ -56,6 +76,23 @@ export function FrettedMultiLane({
             gridLabel={gridLabelFor(bars, index)}
             selected={editable && bar.key === activeBarKey}
             onSelect={() => onSelectBar(bar.key)}
+            editing={editing !== null}
+            selectedCell={
+              editing && editing.cell?.barKey === bar.key ? editing.cell : null
+            }
+            onCellSelect={
+              editing
+                ? (cell) => editing.onCellSelect({ ...cell, barKey: bar.key })
+                : undefined
+            }
+            onsets={
+              editing
+                ? editing.onsetsForBar({
+                    sectionId: bar.sectionId,
+                    barIndex: bar.barIndex,
+                  })
+                : null
+            }
           />
         </div>
       ))}

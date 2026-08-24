@@ -330,7 +330,8 @@ export function Workspace() {
         redoLabel={redoLabel}
         onUndo={undoEdit}
         onRedo={redoEdit}
-        canToggleEdit={navigation.view === "tab"}
+        // Both notation surfaces; the arrangement has no staff (2Q-A §8).
+        canToggleEdit={navigation.view !== "arrange"}
       />
 
       <TransportBar

@@ -36,7 +36,10 @@
 import { useEffect, useMemo, useRef } from "react";
 
 import { DrumMultiLane } from "@/components/workspace/DrumMultiLane";
-import { FrettedMultiLane } from "@/components/workspace/FrettedMultiLane";
+import {
+  FrettedMultiLane,
+  type LaneEditing,
+} from "@/components/workspace/FrettedMultiLane";
 import {
   LANE_GAP,
   SLOT_WIDTH,
@@ -86,6 +89,7 @@ export function MultiTrackCanvas({
   getPosition,
   running,
   activeBarKey,
+  editing,
   scrollRef,
   onActivateTrack,
   onSelectBar,
@@ -98,6 +102,16 @@ export function MultiTrackCanvas({
   getPosition: () => PlayPosition;
   running: boolean;
   activeBarKey: string | null;
+  /**
+   * The edit machinery, or null when edit mode is off.
+   *
+   * It is handed to **one** lane — the active one — and to no other. Not as a
+   * flag an inactive lane is trusted to respect: the object simply is not
+   * there, so there is nothing an inactive lane could resolve a gesture
+   * against. A long press cannot start a selection on a track the reader is
+   * not editing, and a tap cannot write to one (§8).
+   */
+  editing: LaneEditing | null;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   /** A tap on a lane makes it the one being edited. It writes nothing. */
   onActivateTrack: (trackId: string) => void;
@@ -205,6 +219,7 @@ export function MultiTrackCanvas({
                   stringCount={lane.strings.length}
                   activeBarKey={activeBarKey}
                   editable={lane.active}
+                  editing={lane.active ? editing : null}
                   onSelectBar={(barKey) => {
                     // A tap on a lane that is not being edited makes it the
                     // one that is, in the same gesture (§8).
