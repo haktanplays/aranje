@@ -1,0 +1,147 @@
+{
+  "what": "2S-A §16 — niyet katmanının katman katman maliyeti",
+  "measuredOn": "node, masaüstü konteyner. Fiziksel telefon kanıtı yoktur; buradaki hiçbir sayı bir telefonda ölçülmedi.",
+  "method": "8 ısınma turu, ardından 30 zamanlanmış tur; median / p95 / max ms.",
+  "notes": [
+    "Eşik uydurulmadı. Bunlar hangi işin hangi katmanda ne kadar sürdüğünü söyleyen sayılardır.",
+    "Ölçülen her komut önce gerçekten başarılı olduğu doğrulanarak zamanlandı: reddedilen bir komut ucuzdur ve bütün tabloyu güzelleştirirdi.",
+    "«sample audio» burada yok, çünkü node'da AudioContext yok. O katman gerçek tarayıcıda ölçülüp aynı dosyaya eklenir."
+  ],
+  "songs": {
+    "render": {
+      "note": "Çizim tavanı: 8 ölçü 1/32'nin her yuvası dolu, her bağ bir slur. 256 onset.",
+      "bars": 8,
+      "resolution": 32,
+      "onsets": 256,
+      "bytes": 23043
+    },
+    "heavy": {
+      "note": "Komut tavanı: 8 ölçü 1/32, sekiz onset, tek gitar. Sıradan bir şarkı değil.",
+      "bars": 8,
+      "resolution": 32,
+      "slots": 256,
+      "onsets": 8,
+      "bytes": 2495
+    },
+    "roomy": {
+      "note": "Gündelik hâl: 2 ölçü 1/8, tek onset.",
+      "bars": 2,
+      "resolution": 8,
+      "bytes": 555
+    }
+  },
+  "glyphsPerRound": 256,
+  "arcsPerRound": 31,
+  "layers": {
+    "command: power chord pen, insert": {
+      "rounds": 30,
+      "median": 3.265,
+      "p95": 7.225,
+      "max": 7.665
+    },
+    "command: power chord pen, replace an onset": {
+      "rounds": 30,
+      "median": 1.924,
+      "p95": 2.382,
+      "max": 2.601
+    },
+    "command: legato brush, plan eight onsets": {
+      "rounds": 30,
+      "median": 0.017,
+      "p95": 0.058,
+      "max": 0.064
+    },
+    "command: legato brush, apply eight onsets": {
+      "rounds": 30,
+      "median": 0.078,
+      "p95": 0.12,
+      "max": 0.157
+    },
+    "command: continue the pattern once": {
+      "rounds": 30,
+      "median": 0.166,
+      "p95": 0.369,
+      "max": 0.729
+    },
+    "command: continue the pattern four times": {
+      "rounds": 30,
+      "median": 0.126,
+      "p95": 0.243,
+      "max": 0.32
+    },
+    "command: continue by moving the shape": {
+      "rounds": 30,
+      "median": 0.294,
+      "p95": 0.439,
+      "max": 1.495
+    },
+    "validator: parse the candidate": {
+      "rounds": 30,
+      "median": 0.077,
+      "p95": 0.106,
+      "max": 0.118
+    },
+    "validator: the whole chain": {
+      "rounds": 30,
+      "median": 0.277,
+      "p95": 0.766,
+      "max": 0.801
+    },
+    "validator: settle, the central gate": {
+      "rounds": 30,
+      "median": 0.391,
+      "p95": 0.976,
+      "max": 1.063
+    },
+    "storage: serialise the project record": {
+      "rounds": 30,
+      "median": 0.016,
+      "p95": 0.073,
+      "max": 0.082
+    },
+    "render: every fret glyph of the section": {
+      "rounds": 30,
+      "median": 0.106,
+      "p95": 0.258,
+      "max": 0.452
+    },
+    "render: the legato arcs of a bar": {
+      "rounds": 30,
+      "median": 0.07,
+      "p95": 0.26,
+      "max": 0.897
+    }
+  },
+  "browser": {
+    "measuredOn": "Masaüstü Chromium, 390×844 mobil emülasyonu, production build. Fiziksel telefon kanıtı yoktur.",
+    "method": "3 ısınma turu, ardından 12 zamanlanmış tur. Damgalar sayfanın içinden alındı: CDP gidiş-dönüşü sayılmıyor.",
+    "notes": [
+      "Her tur gerçekten yazdığı ve tam olarak bir kez yazdığı doğrulanarak zamanlandı; yazmayan bir tur ölçümü bozup hızlı gösterirdi.",
+      "«ilk boyanmış kare» iki rAF sonrasıdır: React'in commit'i ve tarayıcının layout'u dâhil, tek bir kare değil.",
+      "Örnek sesin maliyeti ilk basışta ödenir; ikinci basış aynı tamponları bulur ve bu sayı onu temsil etmez."
+    ],
+    "layers": {
+      "render: tap to the storage write": {
+        "rounds": 12,
+        "median": 3.7,
+        "p95": 4.6,
+        "max": 4.6
+      },
+      "render: tap to the first painted frame": {
+        "rounds": 12,
+        "median": 23.1,
+        "p95": 24.6,
+        "max": 24.6
+      },
+      "sample audio: play to the first buffer": {
+        "rounds": 1,
+        "firstBufferMs": 224.6,
+        "buffersStarted": 6,
+        "decodeCalls": 8,
+        "decodeTotalMs": 74.4,
+        "decodeMaxMs": 12.9
+      }
+    },
+    "pageErrors": []
+  }
+}
