@@ -1,0 +1,1739 @@
+{
+  "what": "2Q-C §3.4 — how much horizontal overscan the reading surface needs",
+  "measuredOn": "node, pure arithmetic over the production axis, window and follow model",
+  "worstCase": {
+    "grid": 32,
+    "bpm": 260,
+    "practicePercent": 150,
+    "viewportWidths": [
+      320,
+      390
+    ],
+    "frameModel": {
+      "normalMs": 16.7,
+      "longMs": 83.3,
+      "longEveryFrames": 120,
+      "source": "BASELINE.json frame distribution on denseDrums"
+    },
+    "commitFrames": [
+      1,
+      2
+    ],
+    "flingPxPerFrame": 60
+  },
+  "method": [
+    "Every frame: advance the transport, ask the production follow model where the surface should be scrolled to, and ask the production window function which bars that position wants mounted.",
+    "A window asked for on frame N is mounted on frame N + commitFrames, so what the reader sees is always a window computed for an older scroll position.",
+    "A frame is blank when any part of the viewport that overlaps the music has no mounted bar under it.",
+    "The playhead is checked separately: a frame counts against a candidate if the anchor position has no mounted bar under it.",
+    "The two smallest candidates are expected to be blank. A run where every candidate passes would not have measured anything."
+  ],
+  "chosen": {
+    "name": "half behind, one ahead (0.5 + 1)",
+    "overscan": {
+      "behind": 0.5,
+      "ahead": 1
+    },
+    "maxMountedBars": 6
+  },
+  "cleanCandidates": [
+    {
+      "name": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "maxMountedBars": 6
+    },
+    {
+      "name": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "maxMountedBars": 7
+    },
+    {
+      "name": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "maxMountedBars": 8
+    }
+  ],
+  "fixtures": [
+    {
+      "fixture": "denseDrums",
+      "bpm": 260,
+      "practicePercent": 150,
+      "effectiveBpm": 390,
+      "bars": 8,
+      "resolutions": [
+        32
+      ],
+      "widestBarPx": 1088,
+      "firstBarWidthPx": 1088,
+      "totalWidthPx": 8704,
+      "pxPerFrameAtTopSpeed": 29.53,
+      "rows": [
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 7,
+            "largestBlankPx": 28,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 7,
+            "largestBlankPx": 56,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 14,
+            "largestBlankPx": 58,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 14,
+            "largestBlankPx": 116,
+            "playheadBlankFrames": 2,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 7,
+            "largestBlankPx": 26,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 7,
+            "largestBlankPx": 58,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 14,
+            "largestBlankPx": 55,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 14,
+            "largestBlankPx": 118,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.3,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.4,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.4,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.4,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 5,
+            "largestBlankPx": 40,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.4,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.5,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.5,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.5,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 3,
+            "largestBlankPx": 22,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.5,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.6,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.7,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.6,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.7,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 2,
+            "meanMountedBars": 1.8,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 1.9,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 1.9,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.1,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 14
+          },
+          "fling": {
+            "frames": 139,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.1,
+            "windowChanges": 14
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.3,
+            "windowChanges": 13
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.3,
+            "windowChanges": 13
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 286,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.3,
+            "windowChanges": 13
+          },
+          "fling": {
+            "frames": 138,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.3,
+            "windowChanges": 13
+          }
+        }
+      ]
+    },
+    {
+      "fixture": "eightTracks",
+      "bpm": 260,
+      "practicePercent": 150,
+      "effectiveBpm": 390,
+      "bars": 32,
+      "resolutions": [
+        8,
+        12,
+        16
+      ],
+      "widestBarPx": 544,
+      "firstBarWidthPx": 272,
+      "totalWidthPx": 11458,
+      "pxPerFrameAtTopSpeed": 10.72,
+      "rows": [
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 30,
+            "largestBlankPx": 14,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 61
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 30,
+            "largestBlankPx": 58,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 1.9,
+            "windowChanges": 57
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 60,
+            "largestBlankPx": 29,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 61
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 60,
+            "largestBlankPx": 118,
+            "playheadBlankFrames": 8,
+            "maxMountedBars": 3,
+            "meanMountedBars": 1.9,
+            "windowChanges": 57
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 30,
+            "largestBlankPx": 13,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.2,
+            "windowChanges": 61
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 30,
+            "largestBlankPx": 60,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.1,
+            "windowChanges": 58
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 60,
+            "largestBlankPx": 28,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.2,
+            "windowChanges": 61
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 60,
+            "largestBlankPx": 120,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.1,
+            "windowChanges": 58
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.4,
+            "windowChanges": 56
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.3,
+            "windowChanges": 51
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.4,
+            "windowChanges": 56
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 21,
+            "largestBlankPx": 34,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.3,
+            "windowChanges": 51
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.7,
+            "windowChanges": 59
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.6,
+            "windowChanges": 52
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.7,
+            "windowChanges": 59
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 18,
+            "largestBlankPx": 22,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.6,
+            "windowChanges": 52
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.3,
+            "windowChanges": 60
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.2,
+            "windowChanges": 53
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.3,
+            "windowChanges": 60
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.2,
+            "windowChanges": 53
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.8,
+            "windowChanges": 60
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.6,
+            "windowChanges": 51
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.8,
+            "windowChanges": 60
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.6,
+            "windowChanges": 51
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.7,
+            "windowChanges": 59
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.6,
+            "windowChanges": 51
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.7,
+            "windowChanges": 59
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 3.6,
+            "windowChanges": 51
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 4.3,
+            "windowChanges": 59
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.1,
+            "windowChanges": 57
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 4.3,
+            "windowChanges": 59
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.1,
+            "windowChanges": 57
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 4.6,
+            "windowChanges": 58
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 4.4,
+            "windowChanges": 54
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 4.6,
+            "windowChanges": 58
+          },
+          "fling": {
+            "frames": 185,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 4.4,
+            "windowChanges": 54
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 8,
+            "meanMountedBars": 5.4,
+            "windowChanges": 57
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 8,
+            "meanMountedBars": 5.1,
+            "windowChanges": 56
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 1036,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 8,
+            "meanMountedBars": 5.4,
+            "windowChanges": 57
+          },
+          "fling": {
+            "frames": 184,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 8,
+            "meanMountedBars": 5.1,
+            "windowChanges": 56
+          }
+        }
+      ]
+    },
+    {
+      "fixture": "normal",
+      "bpm": 260,
+      "practicePercent": 150,
+      "effectiveBpm": 390,
+      "bars": 15,
+      "resolutions": [
+        8,
+        12,
+        16
+      ],
+      "widestBarPx": 544,
+      "firstBarWidthPx": 272,
+      "totalWidthPx": 4726,
+      "pxPerFrameAtTopSpeed": 9,
+      "rows": [
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 13,
+            "largestBlankPx": 14,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 27
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 13,
+            "largestBlankPx": 60,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 24
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 26,
+            "largestBlankPx": 37,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 27
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 26,
+            "largestBlankPx": 120,
+            "playheadBlankFrames": 4,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2,
+            "windowChanges": 24
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 13,
+            "largestBlankPx": 13,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.2,
+            "windowChanges": 27
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 13,
+            "largestBlankPx": 60,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.2,
+            "windowChanges": 26
+          }
+        },
+        {
+          "candidate": "none (0 + 0)",
+          "overscan": {
+            "behind": 0,
+            "ahead": 0
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 26,
+            "largestBlankPx": 27,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.2,
+            "windowChanges": 27
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 26,
+            "largestBlankPx": 120,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.2,
+            "windowChanges": 26
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.5,
+            "windowChanges": 27
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.5,
+            "windowChanges": 26
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.5,
+            "windowChanges": 27
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 8,
+            "largestBlankPx": 38,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 3,
+            "meanMountedBars": 2.5,
+            "windowChanges": 26
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.8,
+            "windowChanges": 26
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.8,
+            "windowChanges": 22
+          }
+        },
+        {
+          "candidate": "quarter (0.25 + 0.25)",
+          "overscan": {
+            "behind": 0.25,
+            "ahead": 0.25
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.8,
+            "windowChanges": 26
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 6,
+            "largestBlankPx": 22,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 2.8,
+            "windowChanges": 22
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 3.3,
+            "windowChanges": 26
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 3.4,
+            "windowChanges": 20
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 3.4,
+            "windowChanges": 26
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 4,
+            "meanMountedBars": 3.4,
+            "windowChanges": 20
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.8,
+            "windowChanges": 25
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.9,
+            "windowChanges": 24
+          }
+        },
+        {
+          "candidate": "half behind, one ahead (0.5 + 1)",
+          "overscan": {
+            "behind": 0.5,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.8,
+            "windowChanges": 25
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.9,
+            "windowChanges": 24
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.8,
+            "windowChanges": 25
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.8,
+            "windowChanges": 24
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.8,
+            "windowChanges": 25
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 5,
+            "meanMountedBars": 3.8,
+            "windowChanges": 24
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.3,
+            "windowChanges": 24
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.4,
+            "windowChanges": 20
+          }
+        },
+        {
+          "candidate": "one behind, one ahead (1 + 1)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 1
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.3,
+            "windowChanges": 24
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.4,
+            "windowChanges": 20
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.6,
+            "windowChanges": 24
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.6,
+            "windowChanges": 23
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 320,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.6,
+            "windowChanges": 24
+          },
+          "fling": {
+            "frames": 73,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 6,
+            "meanMountedBars": 4.7,
+            "windowChanges": 23
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 1,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 5.2,
+            "windowChanges": 23
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 5.4,
+            "windowChanges": 22
+          }
+        },
+        {
+          "candidate": "one behind, two ahead (1 + 2)",
+          "overscan": {
+            "behind": 1,
+            "ahead": 2
+          },
+          "viewportWidthPx": 390,
+          "commitFrames": 2,
+          "playback": {
+            "frames": 509,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 5.2,
+            "windowChanges": 23
+          },
+          "fling": {
+            "frames": 72,
+            "blankFrames": 0,
+            "largestBlankPx": 0,
+            "playheadBlankFrames": 0,
+            "maxMountedBars": 7,
+            "meanMountedBars": 5.4,
+            "windowChanges": 22
+          }
+        }
+      ]
+    }
+  ]
+}
