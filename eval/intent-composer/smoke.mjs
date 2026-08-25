@@ -7,7 +7,6 @@
  * written against it.
  */
 import { chromium } from "playwright";
-import { readFileSync } from "node:fs";
 
 import { device, fixture } from "./device.mjs";
 import { PROJECT_LEDGER, takeStorageLedger } from "../shared/project-storage.mjs";

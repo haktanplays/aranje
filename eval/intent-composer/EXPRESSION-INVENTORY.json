@@ -1,0 +1,119 @@
+{
+  "note": "Generated from the product's own modules. `midi` is false for every articulation by design (2M-A, K-50), not by omission.",
+  "contract": [
+    "normal",
+    "palm_mute",
+    "accent",
+    "sustain",
+    "staccato",
+    "vibrato",
+    "bend_half",
+    "bend_full",
+    "slide",
+    "hammer_on",
+    "pull_off"
+  ],
+  "drumArticulations": [
+    "normal",
+    "ghost",
+    "accent"
+  ],
+  "drumPieces": [
+    "kick",
+    "snare",
+    "closed_hat",
+    "open_hat",
+    "ride",
+    "crash",
+    "china",
+    "tom_high",
+    "tom_mid",
+    "tom_floor"
+  ],
+  "defaultVelocity": 96,
+  "holds": {
+    "normal": 0.92,
+    "palm_mute": 0.45,
+    "accent": 0.92,
+    "sustain": 1,
+    "staccato": 0.35,
+    "vibrato": 0.92,
+    "bend_half": 0.92,
+    "bend_full": 0.92,
+    "slide": 0.92,
+    "hammer_on": 0.92,
+    "pull_off": 0.92
+  },
+  "rows": [
+    {
+      "name": "sus (sustain)",
+      "articulation": "sustain",
+      "inContract": true,
+      "writable": false,
+      "drawn": false,
+      "audible": true,
+      "midi": false,
+      "instruments": "her melodik enstrüman"
+    },
+    {
+      "name": "palm mute",
+      "articulation": "palm_mute",
+      "inContract": true,
+      "writable": true,
+      "drawn": true,
+      "audible": true,
+      "midi": false,
+      "instruments": "her melodik enstrüman"
+    },
+    {
+      "name": "staccato",
+      "articulation": "staccato",
+      "inContract": true,
+      "writable": false,
+      "drawn": false,
+      "audible": true,
+      "midi": false,
+      "instruments": "her melodik enstrüman"
+    },
+    {
+      "name": "dead note (x)",
+      "articulation": null,
+      "inContract": false,
+      "writable": false,
+      "drawn": false,
+      "audible": false,
+      "midi": false,
+      "instruments": "yok"
+    },
+    {
+      "name": "ghost note (gitar)",
+      "articulation": null,
+      "inContract": false,
+      "writable": false,
+      "drawn": false,
+      "audible": false,
+      "midi": false,
+      "instruments": "yok"
+    },
+    {
+      "name": "muted strum",
+      "articulation": null,
+      "inContract": false,
+      "writable": false,
+      "drawn": false,
+      "audible": false,
+      "midi": false,
+      "instruments": "yok"
+    },
+    {
+      "name": "vuruş yönü (aşağı/yukarı)",
+      "articulation": null,
+      "inContract": false,
+      "writable": false,
+      "drawn": false,
+      "audible": false,
+      "midi": false,
+      "instruments": "yok"
+    }
+  ]
+}
