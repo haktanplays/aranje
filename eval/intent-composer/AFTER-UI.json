@@ -4,6 +4,254 @@
     "base": "http://127.0.0.1:3100"
   },
   "findings": {
+    "glyph": {
+      "glyphCount": 8,
+      "glyphs": [
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 47.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 81.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 115.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 149.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "8",
+          "width": 7.23,
+          "height": 12,
+          "left": 183.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 214.17,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 251.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 7.23,
+          "height": 12,
+          "left": 285.38,
+          "top": 291.5,
+          "background": "rgba(0, 0, 0, 0)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "0px",
+          "paddingRight": "0px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        }
+      ],
+      "stringLines": 6,
+      "cells": [],
+      "arcLayers": [
+        {
+          "count": 1,
+          "label": "8. perdeden 7. perdeye koparma",
+          "pointerEvents": "none",
+          "paths": [
+            "M 159 90 Q 170 73 181 90"
+          ],
+          "marks": [
+            "P"
+          ]
+        }
+      ],
+      "glyphNames": [
+        "7. perde",
+        "7. perde",
+        "7. perde",
+        "7. perde",
+        "8. perde",
+        "7. perde, 8. perdeden 7. perdeye koparma",
+        "7. perde",
+        "7. perde"
+      ],
+      "glyphStates": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "legato",
+        "normal",
+        "normal"
+      ],
+      "editMode": {
+        "cellCount": 96,
+        "smallestCell": {
+          "width": 34,
+          "height": 44
+        },
+        "staffHeight": null,
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390
+      },
+      "errors": []
+    },
+    "powerChord": {
+      "steps": [
+        "Düzenle",
+        "hücreye dokun",
+        "Power chord",
+        "kök: La (perde adı, tel/perde değil)",
+        "2 ses"
+      ],
+      "tapsBeforeAnyNoteIsWritten": 5,
+      "fretSheetButtons": 20,
+      "fretSheetBelowFold": [
+        "Kapat",
+        "Ekle"
+      ],
+      "builderTitle": "Bar 1 · bu vuruşu akorla değiştir",
+      "rootStep": [
+        "✓ C",
+        "C♯ / D♭",
+        "D",
+        "D♯ / E♭",
+        "E",
+        "F",
+        "F♯ / G♭",
+        "G",
+        "G♯ / A♭",
+        "A",
+        "A♯ / B♭",
+        "B"
+      ],
+      "powerForms": [
+        "Kök + beşli",
+        "Kök + beşli + oktav"
+      ],
+      "voicings": {
+        "cards": 4,
+        "labels": [
+          "✓ A5Açık konum · kök bastax 0 2 x x xDinle",
+          "A55. perde çevresi · kök basta5 7 x x x xDinle",
+          "A57. perde çevresi · kök bastax x 7 9 x xDinle",
+          "A510. perde çevresi · kök bastax x x x 10 12Dinle"
+        ]
+      },
+      "finalButtons": [
+        "Tür",
+        "Kök",
+        "Akor",
+        "✓ Şekil",
+        "✓ A5Açık konum · kök bastax 0 2 x x x",
+        "Dinle",
+        "A55. perde çevresi · kök basta5 7 x x x x",
+        "Dinle",
+        "A57. perde çevresi · kök bastax x 7 9 x x",
+        "Dinle",
+        "A510. perde çevresi · kök bastax x x x 10 12",
+        "Dinle",
+        "✓ Normal",
+        "Vurgulu",
+        "Palm mute",
+        "Uzun",
+        "Kısa",
+        "✓ 1 adım",
+        "2 adım",
+        "4 adım",
+        "Vazgeç",
+        "Uygula"
+      ],
+      "note": "The root is chosen by pitch-class name; no step asks which string and fret the finger is on.",
+      "errors": []
+    },
     "toolbar": [
       {
         "viewport": "390x844",

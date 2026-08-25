@@ -228,3 +228,62 @@ describe("112. it is a rhythm guide and says nothing else", () => {
     expect(states).toEqual(snapshot);
   });
 });
+
+/**
+ * 2S-A §4. The beam rules the tab's visual language depends on, stated as
+ * tests rather than as a paragraph: a 1/32 group needs three lines, a rest
+ * ends a group, and a group is a fact about one bar.
+ */
+describe("301. the beams a 1/32 bar needs (2S-A §4)", () => {
+  it("gives a thirty-second three lines", () => {
+    expect(beamLevels(ticksPerSlot(32), 32)).toBe(3);
+  });
+
+  it("gives a sixteenth two and an eighth one", () => {
+    expect(beamLevels(ticksPerSlot(16), 16)).toBe(2);
+    expect(beamLevels(ticksPerSlot(8), 8)).toBe(1);
+  });
+
+  it("gives a quarter none, because a quarter is not beamed", () => {
+    expect(beamLevels(ticksPerSlot(4), 4)).toBe(0);
+  });
+
+  it("breaks the group at a rest", () => {
+    const states: SlotState[] = [
+      "onset",
+      "onset",
+      "rest",
+      "onset",
+      "onset",
+      "rest",
+      "rest",
+      "rest",
+    ];
+    const guide = buildRhythmGuide(states, [4, 4], 8);
+    for (const group of guide.groups) {
+      expect(group.slots).not.toContain(2);
+      expect(group.slots).not.toContain(5);
+    }
+  });
+
+  it("never reaches past the bar it is in", () => {
+    const states: SlotState[] = Array.from({ length: 32 }, () => "onset");
+    const guide = buildRhythmGuide(states, [4, 4], 32);
+    for (const group of guide.groups) {
+      for (const slot of group.slots) {
+        expect(slot).toBeGreaterThanOrEqual(0);
+        expect(slot).toBeLessThan(32);
+      }
+    }
+  });
+
+  it("groups a full 1/32 bar by the felt beat rather than into one run", () => {
+    const states: SlotState[] = Array.from({ length: 32 }, () => "onset");
+    const guide = buildRhythmGuide(states, [4, 4], 32);
+    expect(guide.groups).toHaveLength(4);
+    for (const group of guide.groups) {
+      expect(group.slots).toHaveLength(8);
+      expect(group.levels).toBe(3);
+    }
+  });
+});

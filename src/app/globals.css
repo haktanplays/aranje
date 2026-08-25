@@ -55,3 +55,29 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * The onset the playhead is on (2S-A §4).
+ *
+ * Marked by the playhead loop rather than by a render: the loop toggles
+ * `data-playing` when the transport crosses into a new slot, so a frame still
+ * costs no React work. The caret is a shape, not only a colour, for the same
+ * reason every other glyph state is.
+ */
+[data-fret-glyph][data-playing] > [data-glyph-digit] {
+  color: var(--color-bronze);
+  font-weight: 600;
+}
+
+[data-fret-glyph][data-playing]::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 3px solid transparent;
+  border-right: 3px solid transparent;
+  border-bottom: 4px solid var(--color-bronze);
+}

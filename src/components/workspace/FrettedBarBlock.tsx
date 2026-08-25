@@ -4,10 +4,12 @@ import { useCallback, useRef } from "react";
 
 import { ArticulationGlyph } from "@/components/workspace/ArticulationGlyph";
 import { FretGlyph } from "@/components/workspace/FretGlyph";
+import { LegatoArcLayer } from "@/components/workspace/LegatoArcLayer";
 import {
   BAR_HEADER_HEIGHT,
   RHYTHM_ROW_HEIGHT,
   RHYTHM_STRIP_HEIGHT,
+  EDIT_STRING_ROW_HEIGHT,
   SLOT_WIDTH,
   STRING_ROW_HEIGHT,
   barWidth,
@@ -16,6 +18,8 @@ import {
 } from "@/components/workspace/geometry";
 import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
+import { buildLegatoArcs } from "@/lib/tab/legato-arc";
+import type { GlyphState } from "@/lib/tab/glyph-model";
 import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
@@ -122,8 +126,48 @@ export function FrettedBarBlock({
    */
   const states = frettedRhythm(bar);
   const guide = buildRhythmGuide(states, bar.timeSignature, bar.resolution);
-  const staffHeight = stringCount * STRING_ROW_HEIGHT;
+  /*
+   * Reading rows are compact; writing rows are the finger's (2S-A §4). One
+   * number, used everywhere in this block, so the strings, the sustains, the
+   * numbers, the arcs and the cells cannot end up on different grids.
+   */
+  const rowHeight = editing ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT;
+  const staffHeight = stringCount * rowHeight;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
+  /*
+   * The slur arcs. Every coordinate comes from the pure model; this component
+   * only says which staff it is drawing over.
+   */
+  const arcs = buildLegatoArcs(bar, {
+    slotWidth: SLOT_WIDTH,
+    stringRowHeight: rowHeight,
+    rowTop: (stringIndex) =>
+      rowOffset(stringCount, stringIndex, rowHeight),
+  });
+
+  /** What the reader is meant to understand about this note right now. */
+  const stateOf = (span: FrettedBar["spans"][number]): GlyphState => {
+    if (onsets?.selectedSlots.has(span.startSlot)) return "selected";
+    if (
+      selectedCell?.slotIndex === span.startSlot &&
+      selectedCell.stringIndex === span.stringIndex
+    ) {
+      return "selected";
+    }
+    if (span.articulation === "hammer_on" || span.articulation === "pull_off") {
+      return "legato";
+    }
+    return "normal";
+  };
+
+  /** The fret a slurred note came from, so its name can say the movement. */
+  const slurredFrom = (span: FrettedBar["spans"][number]): number | null => {
+    const arc = arcs.find(
+      (entry) =>
+        entry.toSlot === span.startSlot && entry.stringIndex === span.stringIndex,
+    );
+    return arc ? arc.fromFret : null;
+  };
 
   // A long press has to suppress the click that follows it, or picking a chord
   // up would also open the fret sheet behind it.
@@ -206,8 +250,8 @@ export function FrettedBarBlock({
             className="bg-line absolute right-0 left-0 h-px"
             style={{
               top:
-                rowOffset(stringCount, stringIndex, STRING_ROW_HEIGHT) +
-                STRING_ROW_HEIGHT / 2,
+                rowOffset(stringCount, stringIndex, rowHeight) +
+                rowHeight / 2,
             }}
           />
         ))}
@@ -225,9 +269,9 @@ export function FrettedBarBlock({
                       rowOffset(
                         stringCount,
                         span.stringIndex,
-                        STRING_ROW_HEIGHT,
+                        rowHeight,
                       ) +
-                      STRING_ROW_HEIGHT / 2,
+                      rowHeight / 2,
                     left: span.openStart ? 0 : slotCentre(span.startSlot) + 7,
                     width: Math.max(
                       0,
@@ -241,6 +285,11 @@ export function FrettedBarBlock({
               ) : null,
             )}
 
+            {/* Slurs, above the strings and under nothing. Drawn before the
+                numbers so a number is never covered by an arc, and the layer
+                takes no pointer events at all. */}
+            <LegatoArcLayer arcs={arcs} width={width} height={staffHeight} />
+
             {/* Fret numbers at each onset */}
             {bar.spans.map((span, index) =>
               span.openStart ? null : (
@@ -252,14 +301,20 @@ export function FrettedBarBlock({
                     top: rowOffset(
                       stringCount,
                       span.stringIndex,
-                      STRING_ROW_HEIGHT,
+                      rowHeight,
                     ),
                     width: SLOT_WIDTH,
-                    height: STRING_ROW_HEIGHT,
+                    height: rowHeight,
                   }}
                   title={span.pitch}
                 >
-                  <FretGlyph fret={span.fret} articulation={span.articulation} />
+                  <FretGlyph
+                    fret={span.fret}
+                    articulation={span.articulation}
+                    state={stateOf(span)}
+                    slurredFrom={slurredFrom(span)}
+                    slotIndex={span.startSlot}
+                  />
                   {span.articulation ? (
                     <ArticulationGlyph
                       articulation={span.articulation}
@@ -327,9 +382,9 @@ export function FrettedBarBlock({
                     }`}
                     style={{
                       left: slotIndex * SLOT_WIDTH,
-                      top: rowOffset(stringCount, stringIndex, STRING_ROW_HEIGHT),
+                      top: rowOffset(stringCount, stringIndex, rowHeight),
                       width: SLOT_WIDTH,
-                      height: STRING_ROW_HEIGHT,
+                      height: rowHeight,
                     }}
                   />
                 );

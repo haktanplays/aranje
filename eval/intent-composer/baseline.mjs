@@ -142,11 +142,56 @@ async function glyphFact(browser, song) {
         const box = node.getBoundingClientRect();
         return { width: Math.round(box.width), height: Math.round(box.height) };
       }),
+      /* 2S-A §4: the slur arcs, and the names the tab gives its numbers. */
+      arcLayers: [...document.querySelectorAll("[data-legato-arcs]")].map((node) => ({
+        count: Number(node.getAttribute("data-legato-arcs")),
+        label: node.getAttribute("aria-label"),
+        pointerEvents: getComputedStyle(node).pointerEvents,
+        paths: [...node.querySelectorAll("path")].map((path) => path.getAttribute("d")),
+        marks: [...node.querySelectorAll("text")].map((text) => text.textContent),
+      })),
+      glyphNames: [...document.querySelectorAll("[data-fret-glyph]")]
+        .slice(0, 10)
+        .map((node) => node.getAttribute("aria-label")),
+      glyphStates: [...document.querySelectorAll("[data-fret-glyph]")]
+        .slice(0, 10)
+        .map((node) => node.getAttribute("data-glyph-state")),
     };
   });
-  await page.screenshot({ path: `${OUT}/shots/${FILE === "BASELINE.json" ? "before" : "after"}-tab-390.png` });
+  await page.screenshot({
+    path: `${OUT}/shots/${FILE === "BASELINE.json" ? "before" : "after"}-tab-390.png`,
+  });
+
+  // The hit target is a different box from the digit, so it is measured in
+  // the mode it exists in rather than assumed from the reading surface.
+  await page.locator("[data-action-row] button", { hasText: "Düzenle" }).first().click();
+  await page.waitForTimeout(300);
+  const editMode = await page.evaluate(() => {
+    const cells = [...document.querySelectorAll("[data-cell]")];
+    const boxes = cells.map((node) => {
+      const box = node.getBoundingClientRect();
+      return { width: Math.round(box.width), height: Math.round(box.height) };
+    });
+    const staff = document.querySelector("[data-bar-key] > div:nth-child(2)");
+    return {
+      cellCount: cells.length,
+      smallestCell: boxes.reduce(
+        (small, box) => ({
+          width: Math.min(small.width, box.width),
+          height: Math.min(small.height, box.height),
+        }),
+        { width: Infinity, height: Infinity },
+      ),
+      staffHeight: staff ? Math.round(staff.getBoundingClientRect().height) : null,
+      bodyScrollWidth: document.body.scrollWidth,
+      bodyClientWidth: document.body.clientWidth,
+    };
+  });
+  await page.screenshot({
+    path: `${OUT}/shots/${FILE === "BASELINE.json" ? "before" : "after"}-tab-edit-390.png`,
+  });
   await context.close();
-  return { ...measured, errors };
+  return { ...measured, editMode, errors };
 }
 
 /* ------------------------------- C · what writing a power chord costs now */

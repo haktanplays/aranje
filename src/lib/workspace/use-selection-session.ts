@@ -31,6 +31,7 @@ import {
   BAR_HEADER_HEIGHT,
   DRUM_ROW_HEIGHT,
   GUTTER_WIDTH,
+  EDIT_STRING_ROW_HEIGHT,
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
 import {
@@ -121,6 +122,14 @@ export function useSelectionSession(options: {
   /** The tab's scroller, for turning a pointer into a slot. */
   scrollRef: RefObject<HTMLDivElement | null>;
   /**
+   * True while the staff is being written into (2S-A §4).
+   *
+   * The band is drawn over the staff, and a fretted row is taller in edit mode
+   * than it is while reading — so the band's height is a question about which
+   * of the two the reader is in, not a constant.
+   */
+  editing: boolean;
+  /**
    * A bar command landed. A queued tab scroll always dies with it; on a
    * *structural* command the highlighted bar key goes too, because after
    * bars shift the same key is a different bar.
@@ -129,6 +138,7 @@ export function useSelectionSession(options: {
 }): SelectionSession {
   const { song, track, timeline, commit, pause, scrollRef, onApplied } =
     options;
+  const { editing } = options;
 
   /*
    * The store adapter is memoised on the song so `apply` always reads the
@@ -187,9 +197,15 @@ export function useSelectionSession(options: {
     [selectedSection, timeline, transform.selection],
   );
 
+  /*
+   * The band covers the staff it is drawn over, and in edit mode a fretted
+   * row is the finger's height rather than the reading height (2S-A §4).
+   */
   const bandHeight =
     timeline.kind === "fretted"
-      ? BAR_HEADER_HEIGHT + timeline.strings.length * STRING_ROW_HEIGHT
+      ? BAR_HEADER_HEIGHT +
+        timeline.strings.length *
+          (editing ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT)
       : timeline.kind === "drums"
         ? BAR_HEADER_HEIGHT + timeline.lanes.length * DRUM_ROW_HEIGHT
         : 0;

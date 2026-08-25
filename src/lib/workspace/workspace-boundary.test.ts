@@ -444,6 +444,12 @@ describe("41. the seven responsibilities 2N-A separated (spec 13.20 §8)", () =>
     "timing display formatter": "src/lib/music/rhythm-language.ts",
     "bar/section timing transform": "src/lib/song/timing-change.ts",
     "rhythm guide/beam model": "src/lib/tab/rhythm-guide.ts",
+    // 2S-A §4: what a fret number *is*, and where a slur's arc goes, are
+    // both answers a component would otherwise invent twice — once for the
+    // Tab surface and once for Çoklu.
+    "fret glyph model": "src/lib/tab/glyph-model.ts",
+    "legato arc geometry": "src/lib/tab/legato-arc.ts",
+    "playing-onset mark": "src/lib/tab/playing-onset.ts",
     "section navigation transition": "src/lib/workspace/section-navigation.ts",
   };
 

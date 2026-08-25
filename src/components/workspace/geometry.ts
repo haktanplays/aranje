@@ -12,6 +12,24 @@ import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 
 export const SLOT_WIDTH = 34;
 export const STRING_ROW_HEIGHT = 26;
+
+/**
+ * How tall a string's row is while the staff is being written into (2S-A §4).
+ *
+ * Reading and writing want different rows. Six strings at 26px read as one
+ * compact tab line, which is what the reading surface is for; but in edit mode
+ * that row **is** the hit target, and 34 × 26 is under the touch minimum on
+ * both axes. The drum grid met the same wall in 2Q-B and answered it the same
+ * way: the row grows to the finger's height, and the width stays one slot —
+ * because widening a slot would pull this lane's bar lines away from every
+ * other lane's, and holding those together is the whole point of the shared
+ * axis (K-57).
+ *
+ * The remaining 10px of width is bought the only honest way left: the cell is
+ * a slot wide and the *staff* is what grew, so no two cells overlap and no tap
+ * is ambiguous. That the width is still 34 is recorded rather than hidden.
+ */
+export const EDIT_STRING_ROW_HEIGHT = MIN_TOUCH_TARGET_PX;
 export const DRUM_ROW_HEIGHT = 30;
 
 /**

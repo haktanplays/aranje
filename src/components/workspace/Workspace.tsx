@@ -103,6 +103,7 @@ export function Workspace() {
     commit,
     pause,
     scrollRef: navigation.scrollRef,
+    editing: noteEditing.editing,
     onApplied: (structural) =>
       structural ? navigation.dropBarFocus() : navigation.clearPendingScroll(),
   });

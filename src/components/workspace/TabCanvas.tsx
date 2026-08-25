@@ -37,6 +37,7 @@ import {
   GUTTER_WIDTH,
   RHYTHM_ROW_HEIGHT,
   STAFF_TOP_PADDING,
+  EDIT_STRING_ROW_HEIGHT,
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
 import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
@@ -49,7 +50,7 @@ import { useLongPress } from "@/lib/ui/use-long-press";
 import { xAtTicks } from "@/lib/tab/song-axis";
 import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
-import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
+import { useTabPlayhead } from "@/components/workspace/use-tab-playhead";
 import type { PlayPosition } from "@/lib/audio/position";
 import type { Song } from "@/lib/song/schema";
 import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
@@ -150,7 +151,6 @@ export function TabCanvas({
   onsetsForBar?: (bar: FrettedBar) => OnsetSelection | null;
 }) {
   const playheadRef = useRef<HTMLDivElement | null>(null);
-  const lastBarKey = useRef<string | null>(null);
   const contentRef = useRef<HTMLDivElement | null>(null);
 
   /*
@@ -197,46 +197,17 @@ export function TabCanvas({
     onPendingHandled();
   }, [onPendingHandled, pendingScroll, scrollToBar]);
 
-  /*
-   * The playhead is driven from the transport on an animation frame. Audio is
-   * never scheduled here, and the element is moved by transform rather than by
-   * React state, so a frame costs no render.
-   *
-   * When a frame happens is `playhead-loop.ts`'s rule, shared with the
-   * arrangement: one paint whenever the loop starts, and further frames only
-   * while the transport is running.
-   *
-   * It is no longer hidden when the reader is elsewhere. The whole song is on
-   * one surface, so the line is drawn at the place the music really is; if
-   * that place is off screen the reader simply does not see it, which is the
-   * truth rather than a rule about it.
-   */
   const { axis, follow, originPx } = surface;
-  useEffect(() => {
-    const draw = () => {
-      const position = getPosition();
-      const axisX = xAtTicks(axis, position.ticks);
-      const element = playheadRef.current;
-
-      if (element) {
-        if (axisX === null) {
-          element.style.opacity = "0";
-        } else {
-          element.style.opacity = "1";
-          element.style.transform = `translateX(${axisX + originPx}px)`;
-        }
-      }
-
-      if (position.barKey !== lastBarKey.current) {
-        lastBarKey.current = position.barKey;
-        onActiveBarChange(position.barKey);
-      }
-
-      follow(axisX);
-    };
-
-    return runPlayheadLoop({ source: "tab", running, draw });
-  }, [running, axis, follow, getPosition, onActiveBarChange, originPx]);
+  useTabPlayhead({
+    axis,
+    originPx,
+    running,
+    getPosition,
+    follow,
+    onActiveBarChange,
+    playheadRef,
+    contentRef,
+  });
 
   /*
    * The press is measured against the content, not the viewport, so the tick
@@ -283,7 +254,16 @@ export function TabCanvas({
 
   const isFretted = timeline.kind === "fretted";
   const rows = isFretted ? timeline.strings.length : timeline.lanes.length;
-  const rowHeight = isFretted ? STRING_ROW_HEIGHT : DRUM_ROW_HEIGHT;
+  /*
+   * The gutter's labels sit on the same rows the staff does, and in edit mode
+   * a fretted row is the finger's height rather than the reading height
+   * (2S-A §4). One expression, so the two can never disagree.
+   */
+  const rowHeight = isFretted
+    ? editing
+      ? EDIT_STRING_ROW_HEIGHT
+      : STRING_ROW_HEIGHT
+    : DRUM_ROW_HEIGHT;
   const bodyHeight = Math.max(rows, 1) * rowHeight;
 
   const labels = isFretted
