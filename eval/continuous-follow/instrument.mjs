@@ -134,6 +134,10 @@ export const START_RECORDING = `
         el.scrollWidth > el.clientWidth + 1
       );
     }) ?? null;
+    // Kept for the report: "a jump bigger than half a screen" needs to know
+    // how big the screen is, and asking again at the end could ask a
+    // different element.
+    probe.scrollerClientWidth = scroller ? scroller.clientWidth : null;
     let last = performance.now();
     const step = (now) => {
       if (!probe.recording) return;
@@ -171,6 +175,7 @@ export const STOP_RECORDING = `
       frames: window.__probe.frames,
       scrollSamples: window.__probe.scrollSamples,
       longTasks: window.__probe.longTasks,
+      clientWidth: window.__probe.scrollerClientWidth ?? null,
       scrollLeftWrites:
         window.__probe.scrollLeftWrites - (window.__probe.scrollLeftWritesAtStart ?? 0),
     };

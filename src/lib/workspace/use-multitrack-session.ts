@@ -61,12 +61,11 @@ export type MultiTrackView = {
 
 export function useMultiTrackView(options: {
   readonly song: Song;
-  readonly viewedSectionId: string;
   readonly activeTrackId: string;
   /** Changes when the reader opens a different project. */
   readonly projectId: string | null;
 }): MultiTrackView {
-  const { song, viewedSectionId, activeTrackId, projectId } = options;
+  const { song, activeTrackId, projectId } = options;
   const [stored, setStored] = useState<Folds>(NO_FOLDS);
 
   const trackIds = useMemo(() => song.tracks.map((track) => track.id), [song.tracks]);
@@ -75,10 +74,15 @@ export function useMultiTrackView(options: {
    * The model is memoised on exactly what it reads. Rebuilding it every
    * render would rebuild eight timelines — the placement search included —
    * for a keystroke somewhere else on the screen.
+   *
+   * The section being read is not in that list any more (2Q-C §4). It is the
+   * scroll position of one whole-song surface, and rebuilding the surface
+   * because the reader scrolled across a bar line is the thing this
+   * checkpoint exists to stop.
    */
   const model = useMemo(
-    () => buildMultiTrackModel(song, viewedSectionId, activeTrackId),
-    [song, viewedSectionId, activeTrackId],
+    () => buildMultiTrackModel(song, activeTrackId),
+    [song, activeTrackId],
   );
 
   /*

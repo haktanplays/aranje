@@ -138,7 +138,6 @@ export function Workspace() {
     copilot.state.status === "error";
 
   const skills = useMemo(() => availableSkills(song), [song]);
-  const plan = controller.getPlan();
 
   /* ------------------------------------------------- grounding the session */
 
@@ -185,10 +184,9 @@ export function Workspace() {
     pause,
   });
 
-  /* Every instrument of the viewed section, and what this sitting folded. */
+  /* Every instrument of the whole song, and what this sitting folded. */
   const multi = useMultiTrackView({
     song,
-    viewedSectionId: navigation.viewedSectionId,
     activeTrackId: track?.id ?? "",
     projectId: library.activeProjectId,
   });
@@ -282,13 +280,13 @@ export function Workspace() {
         navigation={navigation}
         session={session}
         noteEditing={noteEditing}
+        song={song}
         arrangement={arrangement}
         ghostArrangement={ghostArrangement}
         timeline={timeline}
         multi={multi}
         entry={entry}
         onSelectTrack={selectTrack}
-        plan={plan}
         getPosition={getPosition}
         running={state.status === "playing"}
         canPersist={canPersist}

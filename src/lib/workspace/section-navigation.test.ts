@@ -8,10 +8,11 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { buildSongAxis, xAtTicks } from "@/lib/tab/song-axis";
 import {
   initialSectionView,
   nextSectionView,
-  playheadBelongsHere,
   sectionNeighbours,
   type SectionView,
 } from "@/lib/workspace/section-navigation";
@@ -131,23 +132,45 @@ describe("96. the stepper's two arrows", () => {
   });
 });
 
-describe("97. the playhead is drawn only over the music it plays", () => {
-  it("is shown when the transport is in the section being read", () => {
-    const following: SectionView = { viewedSectionId: "main", followsPlayback: true };
-    expect(playheadBelongsHere(following, "main:2")).toBe(true);
+describe("97. the playhead is where the music is, whatever is being read", () => {
+  /*
+   * This describe used to assert the opposite: that a playhead outside the
+   * section being read is hidden. That rule existed because a surface drew one
+   * section, so a playhead two sections away had nowhere honest to be.
+   *
+   * Both reading surfaces now draw the whole song on one axis (2Q-C §4), so
+   * the honest place exists and the line is put there. What is asserted here
+   * is that the axis really does have a place for every tick of the song —
+   * the property the removal rests on.
+   */
+  const axis = buildSongAxis(SAMPLE_SONG, 34);
+
+  it("has a position for the first and last tick of every section", () => {
+    for (const section of axis.sections) {
+      expect(xAtTicks(axis, section.startTicks), section.sectionId).not.toBeNull();
+      expect(xAtTicks(axis, section.endTicks - 1), section.sectionId).not.toBeNull();
+    }
   });
 
-  it("is hidden while the reader is somewhere else", () => {
-    /*
-     * A line sliding across a section the transport is nowhere near is not a
-     * playhead; it is a decoration that lies about where the sound is.
-     */
+  it("puts later sections further right, so nothing has to be hidden", () => {
+    const lefts = axis.sections.map((section) => section.leftPx);
+    expect([...lefts].sort((a, b) => a - b)).toEqual(lefts);
+    expect(new Set(lefts).size).toBe(lefts.length);
+  });
+
+  it("still says nothing is playing when nothing is", () => {
+    // The one case the old rule got right, and it is arithmetic now: a tick
+    // outside the song has no x, rather than being clamped to an edge.
+    expect(xAtTicks(axis, -1)).toBeNull();
+    expect(xAtTicks(axis, axis.totalTicks + 1)).toBeNull();
+  });
+
+  it("keeps the two questions apart, which is what did survive", () => {
+    // Reading elsewhere while the transport plays on is still a state the
+    // model can be in: the view is the reader's and the bar key is the
+    // transport's, and neither overwrites the other.
     const elsewhere: SectionView = { viewedSectionId: "outro", followsPlayback: false };
-    expect(playheadBelongsHere(elsewhere, "intro:0")).toBe(false);
-  });
-
-  it("is hidden when nothing is playing", () => {
-    const anywhere: SectionView = { viewedSectionId: "intro", followsPlayback: true };
-    expect(playheadBelongsHere(anywhere, null)).toBe(false);
+    expect(nextSectionView(elsewhere, { kind: "playback_moved", barKey: "intro:0" }, SECTIONS))
+      .toEqual(elsewhere);
   });
 });

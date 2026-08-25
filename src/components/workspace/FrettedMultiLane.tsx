@@ -18,7 +18,7 @@ import {
   type CellSelection,
   type OnsetSelection,
 } from "@/components/workspace/FrettedBarBlock";
-import { gridLabelFor } from "@/components/workspace/TabCanvas";
+import { gridLabelFor } from "@/components/workspace/grid-label";
 import type { FrettedBar } from "@/lib/tab/timeline";
 
 /**

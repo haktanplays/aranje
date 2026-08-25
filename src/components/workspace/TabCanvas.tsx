@@ -1,6 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+/**
+ * One track's notation, over the whole song, on one scroller (2Q-C §4).
+ *
+ * The tab has always drawn every bar of the song in one horizontal scroller.
+ * What 2Q-C changed is who answers the questions around that: where the bars
+ * are, which of them are worth mounting, where the surface should be scrolled
+ * to and who owns the scroll are all `use-reading-surface`'s, shared with the
+ * Çoklu view. This file draws bars.
+ *
+ * Two consequences worth naming:
+ *
+ * - **No timing arithmetic here.** A tick becomes an x through the song axis
+ *   and nowhere else, so the playhead cannot land a slot away from the note
+ *   it is over.
+ * - **Only part of the song is mounted.** The scroll content keeps the axis's
+ *   full width and every mounted bar sits at its real place on it, so a
+ *   selection, a seek, a bar command and an export cannot tell the
+ *   difference — they read the Song, never the DOM.
+ */
+import { useEffect, useMemo, useRef } from "react";
 
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import { DrumStepLane } from "@/components/workspace/DrumStepLane";
@@ -21,91 +40,35 @@ import {
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
 import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
-import { followScrollLeft, playheadX } from "@/components/workspace/playhead";
+import { ReturnToPlayback } from "@/components/workspace/ReturnToPlayback";
+import { SectionMarkers } from "@/components/workspace/SectionMarkers";
+import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
+import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { useLongPress } from "@/lib/ui/use-long-press";
+import { xAtTicks } from "@/lib/tab/song-axis";
+import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import type { PlayPosition } from "@/lib/audio/position";
-import type { SongPlan } from "@/lib/audio/schedule";
-import type { SectionStatus } from "@/lib/song/schema";
+import type { Song } from "@/lib/song/schema";
 import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
-import {
-  isTripletGrid,
-  resolutionLabel,
-  type Resolution,
-} from "@/lib/music/timing";
 
 /** Bars are found by this attribute, so no child refs are needed. */
 // Re-exported from geometry so existing importers keep their path.
 export { BAR_KEY_ATTRIBUTE } from "@/components/workspace/geometry";
 
-/**
- * The grid to write on a bar's header, or nothing (spec 5.5, 13.x, K-34).
- *
- * Shown when the grid *changes* — a reader needs to know the counting just
- * changed, and marking every bar of a piece written on one grid would be
- * noise — and always on a triplet bar, because "three to the beat here" is
- * true whether or not the bar before it was the same.
- *
- * The label is a note value, never the raw number: "1/12" sitting next to
- * "1/16" reads as a straight grid, which is exactly what it is not.
- */
-export function gridLabelFor(
-  bars: readonly { resolution: Resolution }[],
-  index: number,
-): string | null {
-  const bar = bars[index];
-  if (!bar) return null;
-  const previous = index > 0 ? bars[index - 1] : undefined;
-  const changed = previous === undefined || previous.resolution !== bar.resolution;
-  if (!changed && !isTripletGrid(bar.resolution)) return null;
-  return resolutionLabel(bar.resolution);
-}
 
-const DRUM_LABEL: Record<string, string> = {
-  crash: "CR",
-  china: "CH",
-  ride: "RD",
-  open_hat: "OH",
-  closed_hat: "HH",
-  tom_high: "T1",
-  tom_mid: "T2",
-  tom_floor: "FT",
-  snare: "SN",
-  kick: "BD",
-};
 
-/** Spec 13.6: bronze marks an AI suggestion, green an accepted one; a settled
-    section stays neutral so gold does not end up on every bar. */
-function sectionAccent(status: SectionStatus): string {
-  if (status === "pending") return "bg-bronze";
-  if (status === "accepted") return "bg-accept";
-  return "bg-muted/60";
-}
-
-function sectionText(status: SectionStatus): string {
-  if (status === "pending") return "text-bronze";
-  if (status === "accepted") return "text-accept";
-  return "text-muted";
-}
-
-/** True when this track writes nothing anywhere in the section. */
-function sectionIsSilent(
-  bars: readonly (FrettedBar | DrumBar)[],
-  sectionId: string,
-): boolean {
-  const inSection = bars.filter((bar) => bar.sectionId === sectionId);
-  return inSection.length > 0 && inSection.every((bar) => bar.silent);
-}
 
 export function TabCanvas({
+  song,
   timeline,
-  plan,
   getPosition,
   running,
   activeBarKey,
-  viewedSectionId,
-  followsPlayback = true,
+  onScrolledToSection,
+  pendingBarKey,
+  onPendingHandled,
   onActiveBarChange,
   onSeekBar,
   onBarLongPress,
@@ -121,28 +84,23 @@ export function TabCanvas({
   onCellSelect,
   onsetsForBar,
 }: {
+  song: Song;
   timeline: TrackTimeline;
-  plan: SongPlan;
   getPosition: () => PlayPosition;
   running: boolean;
   activeBarKey: string | null;
   /**
-   * The section this surface answers for (spec 13.20 §3).
+   * The reader scrolled themselves into a different section (2Q-C §4).
    *
-   * The tab draws the whole song in one scroller, so "which section is on
-   * screen" used to be whatever the scroll position happened to show. It is
-   * now told, and it says so in the DOM — the drawn surface declares its own
-   * source rather than leaving it to be inferred from pixels.
+   * The tab draws the whole song in one scroller, so which section is on
+   * screen is a fact about the scroll position and nothing else. It is
+   * reported rather than received: the surface is where the answer actually
+   * lives, and it also says so in the DOM.
    */
-  viewedSectionId?: string;
-  /**
-   * False once the reader has stepped away from the playhead.
-   *
-   * Two things stop: the tab no longer chases the music horizontally, and the
-   * playhead is not drawn over music it is not playing. A line sliding across
-   * a section the transport is nowhere near is not a playhead.
-   */
-  followsPlayback?: boolean;
+  onScrolledToSection: (sectionId: string) => void;
+  /** A bar the surface has been asked to bring into view, or null. */
+  pendingBarKey: string | null;
+  onPendingHandled: () => void;
   onActiveBarChange: (barKey: string | null) => void;
   onSeekBar: (barKey: string) => void;
   /**
@@ -187,6 +145,35 @@ export function TabCanvas({
 }) {
   const playheadRef = useRef<HTMLDivElement | null>(null);
   const lastBarKey = useRef<string | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  /*
+   * Where the bars are, which of them are mounted, and who owns the scroll.
+   *
+   * All four questions have one owner (2Q-C §3–§7), shared with the Çoklu
+   * view. The origin is the sticky gutter: an axis position and a scroll
+   * position differ by exactly its width, and this is the only place that
+   * conversion happens.
+   */
+  const surface = useReadingSurface({
+    song,
+    scrollRef,
+    running,
+    originPx: GUTTER_WIDTH,
+    onScrolledToSection,
+  });
+
+  const drawn = useMemo(
+    () => new Set(surface.window.renderedBarKeys),
+    [surface.window],
+  );
+
+  const { scrollToBar } = surface;
+  useEffect(() => {
+    if (pendingBarKey === null) return;
+    scrollToBar(pendingBarKey);
+    onPendingHandled();
+  }, [onPendingHandled, pendingBarKey, scrollToBar]);
 
   /*
    * The playhead is driven from the transport on an animation frame. Audio is
@@ -196,32 +183,25 @@ export function TabCanvas({
    * When a frame happens is `playhead-loop.ts`'s rule, shared with the
    * arrangement: one paint whenever the loop starts, and further frames only
    * while the transport is running.
+   *
+   * It is no longer hidden when the reader is elsewhere. The whole song is on
+   * one surface, so the line is drawn at the place the music really is; if
+   * that place is off screen the reader simply does not see it, which is the
+   * truth rather than a rule about it.
    */
+  const { axis, follow, originPx } = surface;
   useEffect(() => {
     const draw = () => {
       const position = getPosition();
-      const x = playheadX(plan, position);
+      const axisX = xAtTicks(axis, position.ticks);
       const element = playheadRef.current;
 
-      /*
-       * The playhead belongs only over the music it is playing.
-       *
-       * While the reader is reading another section the transport carries on,
-       * and the line would be drawn far off to one side of a surface they are
-       * not looking at — or, worse, dragged into view by the follow scroll
-       * below. Both are hidden together, because they are the same rule.
-       */
-      const playingSection = position.barKey?.split(":")[0] ?? null;
-      const here =
-        viewedSectionId === undefined ||
-        (playingSection !== null && playingSection === viewedSectionId);
-
       if (element) {
-        if (x === null || !here) {
+        if (axisX === null) {
           element.style.opacity = "0";
         } else {
           element.style.opacity = "1";
-          element.style.transform = `translateX(${x}px)`;
+          element.style.transform = `translateX(${axisX + originPx}px)`;
         }
       }
 
@@ -230,58 +210,11 @@ export function TabCanvas({
         onActiveBarChange(position.barKey);
       }
 
-      const scroller = scrollRef.current;
-      if (scroller && x !== null && here && followsPlayback) {
-        const target = followScrollLeft(
-          x,
-          { scrollLeft: scroller.scrollLeft, clientWidth: scroller.clientWidth },
-          scroller.scrollWidth,
-        );
-        // Set directly: a smooth scroll every frame would trail the playhead.
-        if (target !== null) scroller.scrollLeft = target;
-      }
+      follow(axisX);
     };
 
     return runPlayheadLoop({ source: "tab", running, draw });
-  }, [
-    running,
-    plan,
-    getPosition,
-    onActiveBarChange,
-    scrollRef,
-    viewedSectionId,
-    followsPlayback,
-  ]);
-
-  const contentRef = useRef<HTMLDivElement | null>(null);
-
-  /*
-   * Room after the last bar, so every section can reach the reading position.
-   *
-   * Without it the tab can only scroll until its content runs out, and on a
-   * short song that is nowhere near far enough: the reproduction measured a
-   * requested scroll of 272 against a possible 188, so asking for the second
-   * section left the first one exactly where it was and the notes on screen
-   * never changed (spec 13.20 §3, `eval/tab/DEFECTS.json`). Scrolling is how
-   * the surface answers the reader's choice; a surface that *cannot* answer it
-   * makes the choice meaningless.
-   *
-   * One viewport's width is enough for any single bar to reach the left edge,
-   * and it is re-measured on resize because a phone that rotates is a
-   * different viewport.
-   */
-  const [tailWidth, setTailWidth] = useState(0);
-
-  useEffect(() => {
-    const scroller = scrollRef.current;
-    if (!scroller) return;
-    const measure = () => setTailWidth(scroller.clientWidth);
-    measure();
-    if (typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(measure);
-    observer.observe(scroller);
-    return () => observer.disconnect();
-  }, [scrollRef]);
+  }, [running, axis, follow, getPosition, onActiveBarChange, originPx]);
 
   /*
    * The press is measured against the content, not the viewport, so the tick
@@ -336,9 +269,23 @@ export function TabCanvas({
     : timeline.lanes.map((lane) => DRUM_LABEL[lane] ?? lane.slice(0, 2));
 
   const bars: readonly (FrettedBar | DrumBar)[] = timeline.bars;
+  /*
+   * Where the window starts in the timeline. The window is a contiguous run
+   * of bars, so one index is enough to give a mounted bar its real position —
+   * and the grid label has to know it, because "the grid changed here" is a
+   * claim about the bar before this one whether or not that bar is mounted.
+   */
+  const firstDrawn = Math.max(
+    0,
+    bars.findIndex((bar) => drawn.has(bar.key)),
+  );
 
   return (
     <div className="relative h-full">
+      <ReturnToPlayback
+        shown={surface.detached}
+        onReturn={() => surface.returnToPlayback(xAtTicks(axis, getPosition().ticks))}
+      />
       <div
         ref={scrollRef}
         className="h-full overflow-x-auto overscroll-x-contain"
@@ -346,8 +293,9 @@ export function TabCanvas({
       >
         <div
           data-tab-content
-          data-viewed-section={viewedSectionId}
-          className="relative flex min-w-max"
+          data-viewed-section={surface.viewedSectionId ?? undefined}
+          className="relative flex"
+          style={{ width: surface.contentWidthPx }}
           ref={contentRef}
           {...longPress}
           onPointerMove={(event) => {
@@ -401,12 +349,27 @@ export function TabCanvas({
               stays under the sticky gutter rather than over the string names. */}
           {selectionBand}
 
+          <SectionMarkers axis={surface.axis} sections={song.sections} />
+
+          {/* The bars before this window. Empty, never a hit target, and
+              exactly as wide as the music it stands in for — which is what
+              makes a scroll position mean the same thing whether or not the
+              bar under it happens to be mounted. */}
+          <div
+            aria-hidden
+            data-window-lead
+            className="shrink-0"
+            style={{ width: surface.window.beforePx }}
+          />
+
           {timeline.kind === "fretted"
-            ? timeline.bars.map((bar, barIndex) => (
+            ? timeline.bars
+                .filter((bar) => drawn.has(bar.key))
+                .map((bar, index) => (
                 <BarSlot key={bar.key} bar={bar} bars={bars}>
                   <FrettedBarBlock
                     bar={bar}
-                    gridLabel={gridLabelFor(timeline.bars, barIndex)}
+                    gridLabel={gridLabelFor(bars, firstDrawn + index)}
                     stringCount={timeline.strings.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}
@@ -433,11 +396,13 @@ export function TabCanvas({
                   entry={drumEntry}
                 />,
               ]
-            : timeline.bars.map((bar, barIndex) => (
+            : timeline.bars
+                .filter((bar) => drawn.has(bar.key))
+                .map((bar, index) => (
                 <BarSlot key={bar.key} bar={bar} bars={bars}>
                   <DrumBarBlock
                     bar={bar}
-                    gridLabel={gridLabelFor(timeline.bars, barIndex)}
+                    gridLabel={gridLabelFor(bars, firstDrawn + index)}
                     laneCount={timeline.lanes.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}
@@ -447,12 +412,27 @@ export function TabCanvas({
                   />
                 </BarSlot>
               ))}
-          {/* The room described above. Empty, and never a hit target. */}
+          {/*
+            The bars after this window, and then the tail.
+            
+            The tail is the room every section needs to reach the reading
+            anchor: without it the tab can only scroll until its content runs
+            out, and on a short song that is nowhere near far enough — the
+            reproduction measured a requested scroll of 272 against a possible
+            188, so asking for the second section left the first one exactly
+            where it was (spec 13.20 §3, `eval/tab/DEFECTS.json`). It carries
+            no bar, no key and no ticks: it is not on the axis, and nothing
+            that reasons about the song can see it.
+          */}
           <div
             aria-hidden
             data-tab-tail
             className="shrink-0"
-            style={{ width: tailWidth }}
+            style={{
+              width:
+                surface.window.afterPx +
+                (surface.contentWidthPx - GUTTER_WIDTH - surface.axis.totalWidthPx),
+            }}
           />
 
           <PlayheadLayer
@@ -467,45 +447,6 @@ export function TabCanvas({
         aria-hidden
         className="from-app pointer-events-none absolute inset-y-0 right-0 w-6 bg-gradient-to-l to-transparent"
       />
-    </div>
-  );
-}
-
-/** Wraps a bar with its section marker and, at a section start, its name. */
-function BarSlot({
-  bar,
-  bars,
-  children,
-}: {
-  bar: FrettedBar | DrumBar;
-  bars: readonly (FrettedBar | DrumBar)[];
-  children: React.ReactNode;
-}) {
-  return (
-    <div data-bar-key={bar.key} className="relative">
-      {bar.isSectionStart ? (
-        <>
-          <span
-            aria-hidden
-            className={`absolute top-0 bottom-0 left-0 z-10 w-0.5 ${sectionAccent(
-              bar.sectionStatus,
-            )}`}
-          />
-          <span
-            className={`absolute -top-5 left-1.5 text-[9px] font-semibold tracking-[0.12em] whitespace-nowrap uppercase ${sectionText(
-              bar.sectionStatus,
-            )}`}
-          >
-            {bar.sectionName}
-            {sectionIsSilent(bars, bar.sectionId) ? (
-              <span className="text-muted/60 ml-1.5 tracking-normal normal-case">
-                (bu track susuyor)
-              </span>
-            ) : null}
-          </span>
-        </>
-      ) : null}
-      {children}
     </div>
   );
 }

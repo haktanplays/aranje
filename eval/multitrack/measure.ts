@@ -17,7 +17,7 @@ import { performance } from "node:perf_hooks";
 import { applyEdit } from "@/lib/song/edit";
 import { applyTrackCommand } from "@/lib/song/track-lifecycle";
 import { buildMultiTrackModel } from "@/lib/multitrack/model";
-import { playheadX, timeAxis } from "@/lib/multitrack/geometry";
+import { buildSongAxis, xAtTicks } from "@/lib/tab/song-axis";
 import { withEmptyLanes } from "@/lib/song/track-lanes";
 import type { Song } from "@/lib/song/schema";
 
@@ -56,31 +56,23 @@ const firstTrack = (song: Song) => song.tracks[0]!.id;
 const model: Record<string, unknown> = {};
 for (const name of ["fourPart", "maxTracks", "realistic", "worstCase"]) {
   const song = seed(name);
-  const sectionId = firstSection(song);
   const trackId = firstTrack(song);
-  const built = buildMultiTrackModel(song, sectionId, trackId);
+  const built = buildMultiTrackModel(song, trackId);
   model[name] = {
     tracks: song.tracks.length,
     sections: song.sections.length,
-    barsInSection: built.bars.length,
+    barsInSong: built.bars.length,
     lanes: built.lanes.length,
-    "build the section's model": bench(() =>
-      buildMultiTrackModel(song, sectionId, trackId),
+    "build the whole song's model": bench(() =>
+      buildMultiTrackModel(song, trackId),
     ),
     /*
-     * Switching section and switching the active lane are the same call with
-     * a different argument, and they are measured separately because the
-     * reader experiences them as different actions.
+     * Switching section is no longer a rebuild at all — the model is the
+     * whole song — so the only argument left to change is the active lane
+     * (2Q-C §4).
      */
-    "switch to another section": bench(() =>
-      buildMultiTrackModel(
-        song,
-        song.sections.at(-1)!.id,
-        trackId,
-      ),
-    ),
     "switch the active lane": bench(() =>
-      buildMultiTrackModel(song, sectionId, song.tracks.at(-1)!.id),
+      buildMultiTrackModel(song, song.tracks.at(-1)!.id),
     ),
   };
 }
@@ -90,16 +82,13 @@ for (const name of ["fourPart", "maxTracks", "realistic", "worstCase"]) {
 const geometry: Record<string, unknown> = {};
 for (const name of ["fourPart", "worstCase", "mixedGrid"]) {
   const song = seed(name);
-  const built = buildMultiTrackModel(song, firstSection(song), firstTrack(song));
-  const axis = timeAxis(built.bars, SLOT_WIDTH);
+  const axis = buildSongAxis(song, SLOT_WIDTH);
   geometry[name] = {
     bars: axis.bars.length,
-    contentWidthPx: axis.width,
-    sectionTicks: axis.totalTicks,
-    "lay out the axis": bench(() => timeAxis(built.bars, SLOT_WIDTH)),
-    "place the playhead": bench(() =>
-      playheadX(axis, built.sectionStartTicks, built.sectionStartTicks + axis.totalTicks / 2),
-    ),
+    contentWidthPx: axis.totalWidthPx,
+    songTicks: axis.totalTicks,
+    "lay out the axis": bench(() => buildSongAxis(song, SLOT_WIDTH)),
+    "place the playhead": bench(() => xAtTicks(axis, axis.totalTicks / 2)),
   };
 }
 

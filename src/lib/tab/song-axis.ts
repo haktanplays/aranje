@@ -4,7 +4,7 @@
  * Until this module existed, "where is bar N" had two answers and neither
  * covered the song. The tab walked `SongPlan.bars` from the left edge every
  * time it was asked (`components/workspace/playhead.ts`), and the Çoklu view
- * built a fresh axis for *one section* (`lib/multitrack/geometry.ts`). Two
+ * built a fresh axis for *one section* of its own. Two
  * answers is how a playhead ends up a slot away from the note it is over; one
  * section is why the surface reset itself every time the music crossed a
  * boundary.
@@ -247,4 +247,17 @@ export function pointAtX(axis: SongAxis, x: number): AxisPoint | null {
     slotIndex,
     slotStartTicks: bar.startTicks + slotIndex * ticksPerSlot(bar.resolution),
   };
+}
+
+/**
+ * Where one slot of one bar starts, in the axis's own coordinates.
+ *
+ * The slot width is divided out of the bar rather than taken from a constant.
+ * A bar's slots share its width by definition, and a second opinion about the
+ * slot width is how a selection band ends up a pixel off the cell it is meant
+ * to sit under — the exact failure the multi-track view had before it took its
+ * widths from the bar it was drawing.
+ */
+export function slotLeftPx(bar: SongAxisBar, slotIndex: number): number {
+  return bar.leftPx + slotIndex * (bar.widthPx / Math.max(1, bar.slotCount));
 }

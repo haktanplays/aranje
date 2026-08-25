@@ -1,10 +1,25 @@
 /**
- * Every instrument of one section, on one time axis (2Q-A §5).
+ * Every instrument of the whole song, on one time axis (2Q-A §5, 2Q-C §4).
  *
  * The question this answers is the one a single-track tab cannot: *what is
  * everybody playing here*. Until now the tab was built for exactly one track
  * id, so comparing the bass against the riff meant two taps, a re-read and a
  * memory (`eval/multitrack/BASELINE.json`).
+ *
+ * ## Why the whole song, and not a section
+ *
+ * It was one section until 2Q-C, and that was the reason the Çoklu view reset
+ * itself every time the music crossed a boundary: a new section meant a new
+ * model, a new axis, a new scroll content and a scroll position that meant
+ * something else than it had a frame earlier. The baseline measured the
+ * result as a 700px jump in a single frame at the boundary.
+ *
+ * A surface that is meant to be read *while playing* cannot be rebuilt while
+ * playing. So the model is the whole song, every section in one bar list, and
+ * a section boundary becomes what it is musically — a line between two bars —
+ * rather than a change of surface. Which section the reader is looking at is
+ * still a fact, but it is a fact about the scroll position now, not about
+ * what has been built.
  *
  * ## What it is not
  *
@@ -21,9 +36,11 @@
  * Every lane is laid over **one** bar list. That is not a convention this
  * module maintains by hand: a bar's meter and resolution belong to the *bar*,
  * not to a track, so every track written in a given bar has exactly the same
- * slot count. The bar geometry is therefore computed once, from the section,
- * and each lane's bars line up with it by index — which is why no lane can
- * drift, and why there is nothing to keep in step at scroll time.
+ * slot count. Each lane's bars line up with that list by index — which is why
+ * no lane can drift, and why there is nothing to keep in step at scroll time.
+ *
+ * Turning the bar list into pixels is `lib/tab/song-axis.ts`, which the tab
+ * uses too. There is one axis in the app rather than one per surface.
  *
  * ## Pure
  *
@@ -41,20 +58,26 @@ import type {
   Articulation,
   MelodicSlot,
   Resolution,
+  SectionStatus,
   Song,
   TimeSignature,
   Track,
 } from "@/lib/song/schema";
 
 /**
- * One bar of the section, as every lane sees it.
+ * One bar of the song, as every lane sees it.
  *
- * `startTicks` is measured from the start of the *section*, not of the song:
- * the multi view draws one section at a time, and a section that begins at
- * bar 40 should not begin 40 bars along its own axis.
+ * `startTicks` is measured from the start of the **song**, which is the unit
+ * the transport reports in, so a playhead position needs no per-section
+ * arithmetic to be placed and a section boundary needs no rebasing.
  */
 export type MultiBar = {
   readonly key: string;
+  readonly sectionId: string;
+  readonly sectionName: string;
+  readonly sectionStatus: SectionStatus;
+  /** True for the first bar of its section: where the marker is drawn. */
+  readonly isSectionStart: boolean;
   /** 0-based inside the section, matching the validator issue path. */
   readonly barIndex: number;
   /** 1-based across the whole song, which is what a reader counts in. */
@@ -62,6 +85,7 @@ export type MultiBar = {
   readonly timeSignature: TimeSignature;
   readonly resolution: Resolution;
   readonly slotCount: number;
+  /** From the start of the song. */
   readonly startTicks: number;
   readonly durationTicks: number;
 };
@@ -102,7 +126,7 @@ type LaneBase = {
   /** The instrument in the reader's language. Never an id. */
   readonly instrumentFamily: string;
   readonly active: boolean;
-  /** True when this track is written in no bar of this section at all. */
+  /** True when this track is written in no bar of the song at all. */
   readonly silentThroughout: boolean;
 };
 
@@ -127,59 +151,46 @@ export type MultiTrackLane = LaneBase &
   );
 
 export type MultiTrackModel = {
-  readonly sectionId: string;
-  readonly sectionName: string;
   /** Registry order. A silent track keeps its place; it does not drop out. */
   readonly lanes: readonly MultiTrackLane[];
+  /** Every bar of the song, in order, sections one after another. */
   readonly bars: readonly MultiBar[];
-  readonly sectionStartTicks: number;
-  readonly sectionEndTicks: number;
+  readonly totalTicks: number;
 };
 
 /** How wide a pitched lane's range is allowed to get before it stops growing. */
 const PITCH_AXIS_MIN_SEMITONES = 12;
 
-/**
- * The bars of one section, with ticks counted from the song's start and from
- * the section's.
- */
-function sectionBars(song: Song, sectionId: string): {
-  bars: MultiBar[];
-  startTicks: number;
-  endTicks: number;
-} {
+/** Every bar of the song, in order, with ticks counted from its start. */
+function songBars(song: Song): { bars: MultiBar[]; totalTicks: number } {
   let songTicks = 0;
   let barNumber = 0;
-  let startTicks = 0;
-  let endTicks = 0;
   const bars: MultiBar[] = [];
 
   for (const section of song.sections) {
-    const isTarget = section.id === sectionId;
-    if (isTarget) startTicks = songTicks;
     section.bars.forEach((bar, barIndex) => {
       barNumber += 1;
       const count = slotsInBar(bar.timeSignature, bar.resolution);
       const durationTicks = count * ticksPerSlot(bar.resolution);
-      if (isTarget) {
-        bars.push({
-          key: `${section.id}:${barIndex}`,
-          barIndex,
-          barNumber,
-          timeSignature: bar.timeSignature,
-          resolution: bar.resolution,
-          slotCount: count,
-          // From the start of the section: this axis begins here.
-          startTicks: songTicks - startTicks,
-          durationTicks,
-        });
-      }
+      bars.push({
+        key: `${section.id}:${barIndex}`,
+        sectionId: section.id,
+        sectionName: section.name,
+        sectionStatus: section.status,
+        isSectionStart: barIndex === 0,
+        barIndex,
+        barNumber,
+        timeSignature: bar.timeSignature,
+        resolution: bar.resolution,
+        slotCount: count,
+        startTicks: songTicks,
+        durationTicks,
+      });
       songTicks += durationTicks;
     });
-    if (isTarget) endTicks = songTicks;
   }
 
-  return { bars, startTicks, endTicks };
+  return { bars, totalTicks: songTicks };
 }
 
 /**
@@ -246,11 +257,11 @@ function pitchedBar(
 /**
  * The vertical range a pitched lane draws over.
  *
- * Computed once from every note in the section, so the axis does not move
- * when the reader scrolls from a low bar to a high one — an axis that
- * rescales per bar makes two bars of the same melody look like two different
- * melodies. A minimum span keeps a lane holding one repeated note from
- * becoming a single line.
+ * Computed once from every note in the song, so the axis does not move when
+ * the reader scrolls from a low bar to a high one, or from one section into
+ * the next — an axis that rescales as the surface moves makes two bars of the
+ * same melody look like two different melodies. A minimum span keeps a lane
+ * holding one repeated note from becoming a single line.
  */
 function pitchAxisOf(bars: readonly PitchedBar[]): PitchAxis {
   const midis = bars
@@ -271,15 +282,14 @@ function pitchAxisOf(bars: readonly PitchedBar[]): PitchAxis {
 function pitchedLane(
   song: Song,
   track: Track,
-  sectionId: string,
   bars: readonly MultiBar[],
 ): { bars: PitchedBar[]; axis: PitchAxis } {
-  const section = song.sections.find((entry) => entry.id === sectionId);
+  const sections = new Map(song.sections.map((entry) => [entry.id, entry]));
   const out: PitchedBar[] = [];
   let carried: PitchedNote[] = [];
 
   for (const bar of bars) {
-    const slots = section?.bars[bar.barIndex]?.slots[track.id];
+    const slots = sections.get(bar.sectionId)?.bars[bar.barIndex]?.slots[track.id];
     const melodic = Array.isArray(slots) && !Array.isArray(slots[0])
       ? (slots as readonly MelodicSlot[])
       : undefined;
@@ -294,20 +304,21 @@ function pitchedLane(
 }
 
 /**
- * Every instrument of one section, ready to draw.
+ * Every instrument of the whole song, ready to draw.
  *
  * `activeTrackId` names the one lane a command may change. It is a view fact
  * and never reaches the song.
+ *
+ * There is no section argument. Which section is being read is a scroll
+ * position, and rebuilding this for it would be rebuilding the surface the
+ * reader is reading.
  */
 export function buildMultiTrackModel(
   song: Song,
-  sectionId: string,
   activeTrackId: string,
 ): MultiTrackModel {
-  const section =
-    song.sections.find((entry) => entry.id === sectionId) ?? song.sections[0];
-  const resolvedId = section?.id ?? sectionId;
-  const { bars, startTicks, endTicks } = sectionBars(song, resolvedId);
+  const { bars, totalTicks } = songBars(song);
+  const sections = new Map(song.sections.map((entry) => [entry.id, entry]));
 
   const lanes = song.tracks.map((track): MultiTrackLane => {
     const base: LaneBase = {
@@ -318,7 +329,7 @@ export function buildMultiTrackModel(
       silentThroughout: bars.every(
         (bar) =>
           !Object.prototype.hasOwnProperty.call(
-            section?.bars[bar.barIndex]?.slots ?? {},
+            sections.get(bar.sectionId)?.bars[bar.barIndex]?.slots ?? {},
             track.id,
           ),
       ),
@@ -326,21 +337,17 @@ export function buildMultiTrackModel(
 
     const kind: LaneKind = laneKindOf(track);
     if (kind === "pitched") {
-      const { bars: pitched, axis } = pitchedLane(song, track, resolvedId, bars);
+      const { bars: pitched, axis } = pitchedLane(song, track, bars);
       return { ...base, kind: "pitched", axis, bars: pitched };
     }
 
     // Fretted and drum lanes come from the timeline the tab already uses, so
     // there is one placement search, one tie reading and one drum lane order
-    // in the app rather than two that can disagree.
+    // in the app rather than two that can disagree. It is the whole song, so
+    // nothing is filtered out of it either.
     const timeline = buildTrackTimeline(song, track.id);
     if (kind === "drums" && timeline.kind === "drums") {
-      return {
-        ...base,
-        kind: "drums",
-        pieces: timeline.lanes,
-        bars: timeline.bars.filter((bar) => bar.sectionId === resolvedId),
-      };
+      return { ...base, kind: "drums", pieces: timeline.lanes, bars: timeline.bars };
     }
     if (timeline.kind === "fretted") {
       return {
@@ -348,7 +355,7 @@ export function buildMultiTrackModel(
         kind: "fretted",
         strings: timeline.strings,
         capo: timeline.capo,
-        bars: timeline.bars.filter((bar) => bar.sectionId === resolvedId),
+        bars: timeline.bars,
       };
     }
     /*
@@ -357,16 +364,9 @@ export function buildMultiTrackModel(
      * dropped, because a track the reader can see they have is better than a
      * track that silently is not there.
      */
-    const { bars: pitched, axis } = pitchedLane(song, track, resolvedId, bars);
+    const { bars: pitched, axis } = pitchedLane(song, track, bars);
     return { ...base, kind: "pitched", axis, bars: pitched };
   });
 
-  return {
-    sectionId: resolvedId,
-    sectionName: section?.name ?? "",
-    lanes,
-    bars,
-    sectionStartTicks: startTicks,
-    sectionEndTicks: endTicks,
-  };
+  return { lanes, bars, totalTicks };
 }

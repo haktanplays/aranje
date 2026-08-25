@@ -240,3 +240,22 @@ export function arithmeticIdentifiersOf(path: string): Set<string> {
   visit(source);
   return names;
 }
+
+/**
+ * Every numeric literal in the file, as written.
+ *
+ * For rules of the shape "this number lives in exactly one place". Reading it
+ * off the syntax tree rather than out of the text means a comment explaining
+ * the number, or a string that happens to contain it, does not count as a
+ * second copy — and a copy hidden inside an expression does.
+ */
+export function numericLiteralsOf(path: string): Set<number> {
+  const source = parseFile(path);
+  const values = new Set<number>();
+  const visit = (node: ts.Node): void => {
+    if (ts.isNumericLiteral(node)) values.add(Number(node.text));
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return values;
+}

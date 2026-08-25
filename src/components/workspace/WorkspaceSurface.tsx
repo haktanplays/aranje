@@ -19,7 +19,7 @@ import { TabCanvas } from "@/components/workspace/TabCanvas";
 import { TimeSelectionBand } from "@/components/workspace/TimeSelectionBand";
 import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import type { PlayPosition } from "@/lib/audio/position";
-import type { SongPlan } from "@/lib/audio/schedule";
+import type { Song } from "@/lib/song/schema";
 import type { TrackTimeline } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/instruments/registry";
 import type { EventEntry } from "@/lib/workspace/use-event-entry";
@@ -35,13 +35,13 @@ export function WorkspaceSurface({
   navigation,
   session,
   noteEditing,
+  song,
   arrangement,
   ghostArrangement,
   timeline,
   multi,
   entry,
   onSelectTrack,
-  plan,
   getPosition,
   running,
   canPersist,
@@ -50,6 +50,8 @@ export function WorkspaceSurface({
   navigation: WorkspaceNavigation;
   session: SelectionSession;
   noteEditing: NoteEditing;
+  /** The song both reading surfaces lay their one axis over (2Q-C §4). */
+  song: Song;
   arrangement: ArrangementModel;
   /** The song a staged bar command would produce, drawn half-lit. */
   ghostArrangement: ArrangementModel | null;
@@ -66,7 +68,6 @@ export function WorkspaceSurface({
    * on that surface, so there is nothing to stand down.
    */
   onSelectTrack: (trackId: string) => void;
-  plan: SongPlan;
   getPosition: () => PlayPosition;
   running: boolean;
   canPersist: boolean;
@@ -180,6 +181,7 @@ export function WorkspaceSurface({
         />
       ) : navigation.view === "multi" ? (
         <MultiTrackCanvas
+          song={song}
           model={multi.model}
           session={multi.session}
           getPosition={getPosition}
@@ -205,13 +207,14 @@ export function WorkspaceSurface({
           onActivateTrack={onSelectTrack}
           onSelectBar={navigation.seekToBar}
           onActiveBarChange={navigation.setActiveBarKey}
-          followsPlayback={navigation.followsPlayback}
-          playheadVisible={navigation.playheadVisible}
+          onScrolledToSection={navigation.scrolledToSection}
+          pendingBarKey={navigation.pendingBarKey}
+          onPendingHandled={navigation.clearPendingScroll}
         />
       ) : (
         <TabCanvas
+          song={song}
           timeline={timeline}
-          plan={plan}
           getPosition={getPosition}
           running={running}
           activeBarKey={navigation.activeBarKey}
@@ -225,8 +228,9 @@ export function WorkspaceSurface({
              */
             copilotOwnsScreen || !canPersist ? undefined : bars.selectFromTab
           }
-          viewedSectionId={navigation.viewedSectionId}
-          followsPlayback={navigation.followsPlayback}
+          onScrolledToSection={navigation.scrolledToSection}
+          pendingBarKey={navigation.pendingBarKey}
+          onPendingHandled={navigation.clearPendingScroll}
           scrollRef={navigation.scrollRef}
           onSlotLongPress={selectionEnabled ? time.onSlotLongPress : undefined}
           onHandleMove={time.onHandleMove}

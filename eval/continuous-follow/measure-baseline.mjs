@@ -20,6 +20,13 @@ import { INSTRUMENT, START_RECORDING, STOP_RECORDING } from "./instrument.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/continuous-follow";
+/*
+ * The same harness measures before and after. It has to be the same one —
+ * two harnesses producing two sets of numbers would be comparing two
+ * measurements rather than two builds — so the only thing that varies is
+ * where the answer is written and what the file says it is.
+ */
+const NAME = process.env.OUT_NAME ?? "BASELINE";
 mkdirSync(OUT, { recursive: true });
 
 /** How long each playback recording runs, in milliseconds. */
@@ -147,6 +154,19 @@ async function recordPlayback(page, ms) {
     if (!current.playheadShown) blankFrames += 1;
   }
   const moved = deltas.filter((delta) => delta > 0.5);
+  /*
+   * Pressing play hands the view back to the transport, and if the reader had
+   * scrolled away the first followed frame has to cover that distance. That
+   * one move is a re-attach, not a stutter, and lumping it in with the rest
+   * would make a build that never stutters look like one that stutters once.
+   *
+   * So the first move is reported on its own and everything after it is the
+   * steady state — which is the number a reader actually experiences, because
+   * it is the one that happens over and over.
+   */
+  const firstMoveIndex = deltas.findIndex((delta) => delta > 0.5);
+  const steady = firstMoveIndex < 0 ? [] : deltas.slice(firstMoveIndex + 1);
+  const viewportWidth = raw.clientWidth ?? 0;
 
   return {
     frames: stats(raw.frames),
@@ -161,6 +181,12 @@ async function recordPlayback(page, ms) {
     scrollMoves: moved.length,
     largestScrollJumpPx: round(Math.max(0, ...deltas)),
     medianNonZeroJumpPx: moved.length > 0 ? stats(moved).median : 0,
+    firstMovePx: firstMoveIndex < 0 ? 0 : round(deltas[firstMoveIndex]),
+    largestSteadyJumpPx: round(Math.max(0, ...steady)),
+    steadyJumpsOverHalfViewport:
+      viewportWidth > 0
+        ? steady.filter((delta) => delta > viewportWidth / 2).length
+        : null,
     sectionChanges,
     largestJumpAtSectionChangePx: round(jumpAtSectionChange),
     blankPlayheadFrames: blankFrames,
@@ -275,11 +301,14 @@ for (const viewport of VIEWPORTS) {
 await browser.close();
 
 writeFileSync(
-  `${OUT}/BASELINE.json`,
+  `${OUT}/${NAME}.json`,
   `${JSON.stringify(
     {
-      what: "2Q-C §1 — sürekli okuma yüzeyi öncesi taban ölçümü",
-      head: "d89c193",
+      what:
+        NAME === "BASELINE"
+          ? "2Q-C §1 — sürekli okuma yüzeyi öncesi taban ölçümü"
+          : "2Q-C §13 — sürekli okuma yüzeyi sonrası ölçüm, aynı harness",
+      head: process.env.HEAD_SHA ?? "d89c193",
       measuredOn:
         "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
       method: `Her playback kaydı ${RECORD_MS} ms; kare aralıkları ve scrollLeft her animasyon karesinde örneklendi.`,
@@ -297,4 +326,4 @@ writeFileSync(
     2,
   )}\n`,
 );
-console.log(`\n${OUT}/BASELINE.json yazıldı`);
+console.log(`\n${OUT}/${NAME}.json yazıldı`);

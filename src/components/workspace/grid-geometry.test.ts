@@ -8,7 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import { SLOT_WIDTH, barWidth, slotCentre, slotsPerBeat } from "@/components/workspace/geometry";
-import { gridLabelFor } from "@/components/workspace/TabCanvas";
+import { gridLabelFor } from "@/components/workspace/grid-label";
 import { RESOLUTIONS, slotCount, type Resolution } from "@/lib/music/timing";
 
 const bars = (...grids: Resolution[]) => grids.map((resolution) => ({ resolution }));

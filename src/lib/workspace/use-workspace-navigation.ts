@@ -13,22 +13,13 @@
  * selection dies with the tab, for instance). Those are composed at the root:
  * this hook only ever changes what it owns.
  */
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from "react";
+import { useCallback, useMemo, useRef, useState, type RefObject } from "react";
 
-import { BAR_KEY_ATTRIBUTE, GUTTER_WIDTH } from "@/components/workspace/geometry";
 import type { WorkspaceView } from "@/components/workspace/ViewSwitch";
 import type { Song, Track } from "@/lib/song/schema";
 import {
   initialSectionView,
   nextSectionView,
-  playheadBelongsHere,
   sectionNeighbours,
   type SectionNavEvent,
 } from "@/lib/workspace/section-navigation";
@@ -48,8 +39,15 @@ export type WorkspaceNavigation = {
   readonly playingSectionId: string | null;
   /** True while the transport may still carry the view along. */
   readonly followsPlayback: boolean;
-  /** Draw the playhead only over the music it is really playing. */
-  readonly playheadVisible: boolean;
+  /**
+   * A bar a reading surface has been asked to bring into view, or null.
+   *
+   * Named rather than scrolled to from here (2Q-C §4, §8). Navigation knows
+   * which bar the reader asked for; only the surface knows where that bar is,
+   * and under windowing the bar may not be in the DOM at all — so a
+   * `querySelector` for it would find nothing and quietly do nothing.
+   */
+  readonly pendingBarKey: string | null;
   /** The step either side, for the stepper's arrows. */
   readonly neighbourSections: { previous: string | null; next: string | null };
   /** The selected track, resolved against the current song. */
@@ -60,6 +58,8 @@ export type WorkspaceNavigation = {
   setActiveBarKey(barKey: string | null): void;
   /** The stepper, the list, the arrangement: an explicit choice of section. */
   viewSection(sectionId: string): void;
+  /** The reader scrolled the reading surface into a different section. */
+  scrolledToSection(sectionId: string): void;
   selectTrack(trackId: string): void;
   showArrange(): void;
   showMulti(): void;
@@ -131,7 +131,6 @@ export function useWorkspaceNavigation(options: {
   const viewedSectionId = sectionIds.includes(sectionView.viewedSectionId)
     ? sectionView.viewedSectionId
     : (sectionIds[0] ?? "");
-  const settledView = { viewedSectionId, followsPlayback: sectionView.followsPlayback };
 
   /**
    * Choose a section: the stepper, the list, the arrangement's header.
@@ -146,6 +145,21 @@ export function useWorkspaceNavigation(options: {
     (sectionId: string) => {
       dispatchSection({ kind: "choose_section", sectionId });
       setPendingTabBar(`${sectionId}:0`);
+    },
+    [dispatchSection],
+  );
+
+  /**
+   * The reader scrolled themselves into another section.
+   *
+   * It is a choice like any other — they moved the surface to get there — so
+   * it takes the view over from the transport. It asks for **no** scroll:
+   * they are already looking at it, and scrolling to where somebody already
+   * is would be the surface fighting the finger that moved it.
+   */
+  const scrolledToSection = useCallback(
+    (sectionId: string) => {
+      dispatchSection({ kind: "choose_section", sectionId });
     },
     [dispatchSection],
   );
@@ -198,26 +212,6 @@ export function useWorkspaceNavigation(options: {
     [seekToBar],
   );
 
-  /*
-   * The scroll a choice asks for, once the tab is really on screen.
-   *
-   * Set directly rather than smoothly. A smooth scroll is still moving while
-   * anything downstream asks where the tab is, and "still animating" is not a
-   * position: the first reproduction of this defect measured 460 against a
-   * target of 1088 for exactly that reason. The reader sees a jump to the
-   * section they asked for, which is what they asked for.
-   */
-  useEffect(() => {
-    if (view !== "tab" || pendingTabBar === null) return;
-    const scroller = scrollRef.current;
-    const target = scroller?.querySelector<HTMLElement>(
-      `[${BAR_KEY_ATTRIBUTE}="${pendingTabBar}"]`,
-    );
-    if (!scroller || !target) return;
-    scroller.scrollLeft = Math.max(0, target.offsetLeft - GUTTER_WIDTH);
-    setPendingTabBar(null);
-  }, [view, pendingTabBar]);
-
   const showArrange = useCallback(() => {
     setView("arrange");
   }, []);
@@ -266,13 +260,14 @@ export function useWorkspaceNavigation(options: {
     viewedSectionId,
     playingSectionId,
     followsPlayback: sectionView.followsPlayback,
-    playheadVisible: playheadBelongsHere(settledView, activeBarKey),
     neighbourSections: sectionNeighbours(sectionIds, viewedSectionId),
+    pendingBarKey: pendingTabBar,
     track,
     scrollRef,
     arrangeScrollRef,
     setActiveBarKey: reportPlaybackBar,
     viewSection,
+    scrolledToSection,
     selectTrack: setSelectedTrackId,
     showArrange,
     showMulti,

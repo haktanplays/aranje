@@ -27,8 +27,17 @@
  *   view back to the transport.
  *
  * That is why playback cannot produce a section change the reader did not ask
- * for, and why the playhead is not drawn over music it is not playing: those
- * are the same rule read from two ends.
+ * for.
+ *
+ * ## What 2Q-C removed
+ *
+ * There used to be a third rule here — the playhead is not drawn over music it
+ * is not playing — and a `playheadBelongsHere` to decide it. It existed
+ * because a surface drew one section, so a playhead two sections away had
+ * nowhere honest to be and was hidden. Both reading surfaces now draw the
+ * whole song on one axis, so the line is simply at the place the music is; if
+ * the reader has scrolled elsewhere they do not see it, which is the truth
+ * rather than a rule about the truth.
  *
  * Pure and total. Every event returns a complete state, and every state names
  * a section that exists in the song it was computed against — a stale id is a
@@ -112,19 +121,4 @@ export function sectionNeighbours(
     previous: sectionIds[index - 1] ?? null,
     next: sectionIds[index + 1] ?? null,
   };
-}
-
-/**
- * Whether the playhead belongs on screen.
- *
- * It is drawn only over the music it is actually playing. A line moving across
- * a section the transport is nowhere near is not a playhead; it is a decoration
- * that lies about where the sound is.
- */
-export function playheadBelongsHere(
-  view: SectionView,
-  playingBarKey: string | null,
-): boolean {
-  if (playingBarKey === null) return false;
-  return sectionOf(playingBarKey) === view.viewedSectionId;
 }

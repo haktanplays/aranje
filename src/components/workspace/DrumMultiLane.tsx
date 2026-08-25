@@ -10,7 +10,7 @@
  */
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import { DrumStepLane } from "@/components/workspace/DrumStepLane";
-import { gridLabelFor } from "@/components/workspace/TabCanvas";
+import { gridLabelFor } from "@/components/workspace/grid-label";
 import type { DrumStepModel } from "@/lib/tab/drum-step-model";
 import type { DrumPiece } from "@/lib/instruments/registry";
 import type { DrumBar } from "@/lib/tab/timeline";

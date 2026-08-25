@@ -21,6 +21,7 @@ import {
 const WORKSPACE = "src/components/workspace/Workspace.tsx";
 const CANVAS = "src/components/workspace/ArrangementCanvas.tsx";
 const MULTI_CANVAS = "src/components/workspace/MultiTrackCanvas.tsx";
+const TAB_CANVAS = "src/components/workspace/TabCanvas.tsx";
 
 const lineCount = (path: string) => {
   const text = readFileSync(path, "utf8");
@@ -74,6 +75,14 @@ describe("38. the composition root stays a composition root", () => {
     expect(lineCount(CANVAS)).toBeLessThanOrEqual(470);
     // Budgeted from the start rather than discovered later (2Q-A §14).
     expect(lineCount(MULTI_CANVAS)).toBeLessThanOrEqual(500);
+    /*
+     * The tab had no budget until 2Q-C, which is how it reached 511 lines
+     * unremarked. It is 472 now — the whole-song axis, the window and the
+     * follow model went into a shared hook, and the bar frame into
+     * `TabBarSlot` — and the ceiling is pinned just above that so the next
+     * feature has to make the same choice rather than spending it quietly.
+     */
+    expect(lineCount(TAB_CANVAS)).toBeLessThanOrEqual(480);
   });
 
   it("owns no state of its own", () => {

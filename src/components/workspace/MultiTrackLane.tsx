@@ -38,7 +38,7 @@ export function MultiTrackLane({
   instrumentFamily: string;
   active: boolean;
   collapsed: boolean;
-  /** True when the track is written in no bar of this section at all. */
+  /** True when the track is written in no bar of the song at all. */
   silentThroughout: boolean;
   onActivate: () => void;
   onToggleCollapse: () => void;
@@ -81,7 +81,7 @@ export function MultiTrackLane({
           aria-label={
             `${label}, ${instrumentFamily}` +
             (active ? ", düzenlenen track" : "") +
-            (silentThroughout ? ", bu bölümde sessiz" : "")
+            (silentThroughout ? ", hiçbir yerde yazılmamış" : "")
           }
           className="flex min-w-0 flex-1 items-center gap-2 text-left"
           style={{ minHeight: LANE_HEADER_HEIGHT }}
@@ -93,12 +93,12 @@ export function MultiTrackLane({
           </span>
           <span className="text-muted shrink-0 text-[11px]">{instrumentFamily}</span>
           {/*
-            One quiet mark for a track that says nothing here, beside the
+            One quiet mark for a track that says nothing anywhere, beside the
             name. The alternative — the word "Sessiz" printed across every
             empty bar — is a hundred labels saying one thing.
           */}
           {silentThroughout ? (
-            <span className="text-muted/70 shrink-0 text-[11px]" title="Bu bölümde sessiz">
+            <span className="text-muted/70 shrink-0 text-[11px]" title="Bu track hiçbir ölçüde yazılmamış">
               &#9679;
             </span>
           ) : null}

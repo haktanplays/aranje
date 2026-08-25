@@ -18,7 +18,6 @@ import { identifiersOf, valueImportsOf } from "@/lib/dev/ast";
 
 const PURE = [
   "src/lib/multitrack/model.ts",
-  "src/lib/multitrack/geometry.ts",
   "src/lib/multitrack/lane-kind.ts",
 ];
 

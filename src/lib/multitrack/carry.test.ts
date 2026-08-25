@@ -140,7 +140,7 @@ describe("204. the first note materialises one bar and nothing else", () => {
 
   it("keeps the arrangement's silence summary honest", () => {
     const legacy = withoutKey(SAMPLE_SONG, "gtr", 2);
-    const model = buildMultiTrackModel(legacy, SECTION, "gtr");
+    const model = buildMultiTrackModel(legacy, "gtr");
     const lane = model.lanes.find((entry) => entry.trackId === "gtr")!;
     // One bar silent, the rest written: the lane says so per bar rather than
     // collapsing the track to "silent" or "not".
