@@ -25,6 +25,8 @@
 import { chromium } from "playwright";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
+import { activeSongBytes, deviceWith } from "../shared/project-storage.mjs";
+
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 /*
  * Overridable so a probe run does not overwrite the real artefacts. A probe
@@ -112,14 +114,14 @@ async function openApp(browser, size) {
   });
   await context.addInitScript(INSTRUMENT);
   await context.addInitScript(
-    ([key, song]) => {
+    (entries) => {
       try {
-        localStorage.setItem(key, song);
+        for (const [key, value] of entries) localStorage.setItem(key, value);
       } catch {
         /* a private window is not a reason to fail the run */
       }
     },
-    ["aranje.song", FIXTURE],
+    Object.entries(deviceWith(JSON.parse(FIXTURE))),
   );
   const page = await context.newPage();
   /* Every locator fails fast. A harness that hangs on a missing control tells
@@ -131,6 +133,14 @@ async function openApp(browser, size) {
     }
   });
   await page.goto(BASE, { waitUntil: "networkidle" });
+  /*
+   * The app opens on Düzen and has since 2J. This suite is about the tab's
+   * selection, so it asks for the tab — waiting for `[data-tab-content]` on
+   * the arrangement is a wait that can only end in a timeout, and that is
+   * exactly how this suite came to hang.
+   */
+  await page.waitForSelector("[data-testid='view-tab']");
+  await page.locator("[data-testid='view-tab']").click();
   await page.waitForSelector("[data-tab-content]");
   const cdp = await context.newCDPSession(page);
 
@@ -147,11 +157,8 @@ async function openApp(browser, size) {
 }
 
 const writes = (page) => page.evaluate(() => window.__writes);
-const songJson = (page) =>
-  page.evaluate(() => {
-    const key = Object.keys(localStorage).find((entry) => entry === "aranje.song");
-    return key ? localStorage.getItem(key) : null;
-  });
+/** The open project's song, byte for byte (K-52). */
+const songJson = (page) => activeSongBytes(page);
 
 /**
  * The tab content begins with the sticky gutter, so every offset here is
@@ -190,8 +197,84 @@ async function longPress(page, cdp, offsetX, offsetY = 60) {
  */
 async function reseed(page) {
   await page.reload({ waitUntil: "networkidle" });
+  // A reload comes back on Düzen, so the tab has to be asked for again —
+  // the same reason `openApp` asks for it (2Q-B §1.3).
+  await page.waitForSelector("[data-testid='view-tab']");
+  await page.locator("[data-testid='view-tab']").click();
   await page.waitForSelector("[data-tab-content]");
   await page.waitForTimeout(250);
+}
+
+/**
+ * Make another track the one being edited (2Q-B §1.3).
+ *
+ * `getByRole("tab")` matches the **view** switch — Düzen · Çoklu · Tab all
+ * carry `role="tab"` — so the old lookup changed surface instead of track,
+ * and did so silently. The track is changed through the control that names
+ * itself the track control.
+ */
+async function pickTrack(page, index) {
+  const control = page.locator("[data-track-control]");
+  if (!(await control.isVisible().catch(() => false))) return null;
+  await control.click();
+  await page.waitForSelector("[data-track-option]");
+  const option = page.locator("[data-track-option]").nth(index);
+  if (!(await option.count())) return null;
+  const id = await option.getAttribute("data-track-option");
+  await option.click();
+  await page.waitForTimeout(300);
+  return id;
+}
+
+/**
+ * Put a song on the device and open it, for a scenario whose premise the
+ * shared fixture does not carry (2Q-B §1.3).
+ *
+ * The fixture has no articulation anywhere, so "touching a chain grows the
+ * selection" had nothing to touch — it was asserting against music that is
+ * not there. Rather than change a fixture four other suites depend on, the
+ * chain is seeded here, for this scenario only, and the claim is measured on
+ * a song that actually contains one.
+ */
+async function seedSong(page, song) {
+  /*
+   * The device is re-seeded on *every* document, so writing a song into
+   * storage and reloading would hand the fixture straight back. The seed
+   * itself is swapped instead, and put back afterwards by the caller.
+   */
+  await page.context().addInitScript(
+    ([key, value]) => {
+      localStorage.setItem(key, value);
+    },
+    [
+      "aranje.project.project-1",
+      JSON.stringify({
+        format: "aranje.project-record",
+        version: 1,
+        projectId: "project-1",
+        revision: 2,
+        updatedAt: 1_700_000_000_000,
+        current: song,
+        previous: null,
+      }),
+    ],
+  );
+  await reseed(page);
+}
+
+/**
+ * The fixture with one hammer-on.
+ *
+ * Bar 1 of the guitar already holds two onsets on the same string — G3 at
+ * slot 4 and D4 at slot 6 — so marking the second one as a hammer-on makes
+ * a real chain out of notes that are already there, rather than inventing a
+ * bar the rest of the suite does not know about.
+ */
+function withChain() {
+  const song = JSON.parse(FIXTURE);
+  const lane = song.sections[0].bars[0].slots.gtr;
+  lane[6].notes[0].articulation = "hammer_on";
+  return song;
 }
 
 async function resetScroll(page) {
@@ -339,7 +422,26 @@ async function enterEditMode(page) {
 
 async function run() {
   const browser = await chromium.launch();
+  try {
+    await runViewports(browser);
+  } finally {
+    /*
+     * The browser is closed even when the pass throws before its own
+     * try/finally is reached — which is what left a live Chromium behind and
+     * kept node's event loop alive after a failure. A harness that hangs
+     * reports nothing and takes an hour to do it.
+     */
+    await browser.close();
+  }
 
+  flush();
+
+  const failed = results.filter((entry) => !entry.pass);
+  console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
+  if (failed.length > 0) process.exitCode = 1;
+}
+
+async function runViewports(browser) {
   for (const [label, size] of [
     ["390x844", { width: 390, height: 844 }],
     ["320x700", { width: 320, height: 700 }],
@@ -571,7 +673,17 @@ async function run() {
 
     // close the sheet: cancel must write nothing
     await safe(`[${label}] cancel writes nothing`, async () => {
-      // Reopen: applying closes the sheet, so cancel needs one to close.
+      /*
+       * Applying a move commits it *and* lets the selection go, so there is
+       * nothing left to reopen the sheet from. The claim being measured is
+       * about cancel, not about whether a selection survives an apply, so
+       * the selection is made again first.
+       */
+      if (!(await page.locator("[data-testid=selection-action-move]").count())) {
+        await resetScroll(page);
+        await longPressOnset(page, cdp, 0);
+        await page.waitForTimeout(250);
+      }
       await page.locator("[data-testid=selection-action-move]").click();
       await page.waitForSelector("[data-testid=move-mode-time]");
       const beforeCancel = await writes(page);
@@ -607,18 +719,40 @@ async function run() {
 
     // ---- 22. changing track clears the selection
     await safe(`[${label}] 22 track change clears selection`, async () => {
-      const trackButton = page.getByRole("tab").nth(1);
-      const reachable = await trackButton.isVisible().catch(() => false);
-      if (!reachable) {
-        record(`[${label}] 22 track change clears selection`, false, "no second track control");
+      /*
+       * This used to click `getByRole("tab").nth(1)`, which is the **view**
+       * switch — Düzen · Çoklu · Tab all carry `role="tab"`. Before 2Q-A that
+       * happened to be "Tab" and the view stayed put; with a third view it
+       * became "Çoklu", so the scenario left the tab entirely, cleared the
+       * selection by changing surface, and passed for the wrong reason —
+       * then took every later scenario down with it, because the tab it
+       * kept measuring was no longer on screen.
+       *
+       * The track is changed through the control that changes tracks.
+       */
+      const control = page.locator("[data-track-control]");
+      if (!(await control.isVisible().catch(() => false))) {
+        record(`[${label}] 22 track change clears selection`, false, "no track control");
         return;
       }
-      await trackButton.click();
+      await control.click();
+      await page.waitForSelector("[data-track-option]");
+      const rows = page.locator("[data-track-option]");
+      const other = rows.nth(1);
+      const otherId = await other.getAttribute("data-track-option");
+      await other.click();
       await page.waitForTimeout(300);
-      record(`[${label}] 22 track change clears selection`, !(await bandVisible(page)));
-      // Back to a track the tab can edit: the drum track correctly disables
-      // editing, and leaving it selected would break every later scenario.
-      await page.getByRole("tab").first().click();
+      const stillTab = await page.locator("[data-tab-content]").isVisible().catch(() => false);
+      record(
+        `[${label}] 22 track change clears selection`,
+        stillTab && !(await bandVisible(page)),
+        `track=${otherId} tab görünür=${stillTab}`,
+      );
+      // Back to the track this suite edits: the drum track correctly refuses
+      // note editing, and leaving it active would break every later scenario.
+      await control.click();
+      await page.waitForSelector("[data-track-option]");
+      await rows.first().click();
       await page.waitForTimeout(300);
     });
 
@@ -946,7 +1080,7 @@ async function run() {
     // repeat has somewhere to go.
     await safe(`[${label}] 9 repeat by count`, async () => {
       await fresh(page);
-      if (!(await selectCell(page, cdp, "2:1"))) {
+      if (!(await selectCell(page, cdp, "0:0"))) {
         record(`[${label}] 9 repeat writes exactly once`, false, "no selection");
         return;
       }
@@ -1023,7 +1157,7 @@ async function run() {
     // that both directions are offered and that neither writes on its own.
     await safe(`[${label}] 11 one grid step each way`, async () => {
       await fresh(page);
-      if (!(await selectCell(page, cdp, "2:1"))) {
+      if (!(await selectCell(page, cdp, "0:0"))) {
         record(`[${label}] 11 one grid step each way`, false, "no selection");
         return;
       }
@@ -1052,7 +1186,7 @@ async function run() {
     // ------------------------------------------------------------------ 12
     await safe(`[${label}] 12 beat and bar moves`, async () => {
       await fresh(page);
-      if (!(await selectCell(page, cdp, "2:1"))) {
+      if (!(await selectCell(page, cdp, "0:0"))) {
         record(`[${label}] 12 a beat and a bar are offered`, false, "no selection");
         return;
       }
@@ -1123,13 +1257,10 @@ async function run() {
         [2, "capo 2"],
       ]) {
         await fresh(page);
-        const tab = page.getByRole("tab").nth(index);
-        if (!(await tab.isVisible().catch(() => false))) {
+        if ((await pickTrack(page, index)) === null) {
           record(`[${label}] 18 shape move on ${name}`, false, "track not reachable");
           continue;
         }
-        await tab.click();
-        await page.waitForTimeout(300);
         await enterEditMode(page);
         await resetScroll(page);
         if (!(await selectCell(page, cdp, "0:0"))) {
@@ -1155,29 +1286,42 @@ async function run() {
         await page.waitForTimeout(250);
       }
       // Leave the first track selected: everything after assumes it.
-      await page.getByRole("tab").first().click();
-      await page.waitForTimeout(250);
+      await pickTrack(page, 0);
     });
 
     // ------------------------------------------------------------------ 19
     // Bar 4 holds a hammer-on. The second note only sounds because of the one
     // before it, so taking one has to take both — and say so.
-    await safe(`[${label}] 19 touching a chain grows the selection`, async () => {
-      await fresh(page);
-      if (!(await selectCell(page, cdp, "7:3"))) {
-        record(`[${label}] 19 touching a chain grows the selection`, false, "no selection");
+    await safe(`[${label}] 19 a chained note is still one onset`, async () => {
+      /*
+       * This scenario used to assert that touching a chained note *grew* the
+       * selection to cover the chain. K-51 deliberately removed exactly that:
+       * a long press had been widening the selection silently, so a press now
+       * picks up one onset group and the chain is a decision the reader makes
+       * through `chainPolicy` rather than something the app does behind them.
+       *
+       * `data-cell` is `slot:string`, not `bar:slot` — the scenarios above
+       * were asking for string 6 of a six-string guitar. The chain's second
+       * note is slot 6 on string 3, and it carries the hammer-on this suite's
+       * fixture does not otherwise have.
+       */
+      await seedSong(page, withChain());
+      await enterEditMode(page);
+      await resetScroll(page);
+      if (!(await selectCell(page, cdp, "6:3"))) {
+        record(`[${label}] 19 a chained note is still one onset`, false, "no selection");
         return;
       }
       const summary = await page.locator("[data-testid=selection-summary]").innerText();
       record(
-        `[${label}] 19 touching a chain grows the selection`,
-        /zincir/.test(summary),
+        `[${label}] 19 a chained note is still one onset`,
+        /nota|akor|power chord/.test(summary) && !/zincir/.test(summary),
         summary,
       );
       const band = await page.locator("[data-testid=time-selection-band]").boundingBox();
       record(
-        `[${label}] 19 the grown selection covers both notes`,
-        band !== null && band.width >= SLOT * 2 - 2,
+        `[${label}] 19 the band covers the one onset, not the chain`,
+        band !== null && band.width <= SLOT + 2,
         `${Math.round(band?.width ?? 0)}px`,
       );
     });
@@ -1262,12 +1406,6 @@ async function run() {
     }
   }
 
-  await browser.close();
-  flush();
-
-  const failed = results.filter((entry) => !entry.pass);
-  console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
-  if (failed.length > 0) process.exitCode = 1;
 }
 
 run().catch((error) => {

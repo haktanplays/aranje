@@ -23,7 +23,7 @@
     {
       "name": "[390x844] summary is non-technical",
       "pass": true,
-      "detail": "1 power chord şekli · 1 ölçü"
+      "detail": "1 power chord · 3 nota"
     },
     {
       "name": "[390x844] band has width",
@@ -33,12 +33,12 @@
     {
       "name": "[390x844] 20 copy writes nothing",
       "pass": true,
-      "detail": "1->1"
+      "detail": "3->3"
     },
     {
       "name": "[390x844] 21a delete commits once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] reselect after delete",
@@ -48,7 +48,7 @@
     {
       "name": "[390x844] ghost preview writes nothing",
       "pass": true,
-      "detail": "5 taps, 2->2"
+      "detail": "5 taps, 4->4"
     },
     {
       "name": "[390x844] 16 ghost explains the outcome",
@@ -88,7 +88,7 @@
     {
       "name": "[390x844] 21 many nudges commit once",
       "pass": true,
-      "detail": "5 taps, writes 2->3"
+      "detail": "5 taps, writes 4->5"
     },
     {
       "name": "[390x844] song actually changed",
@@ -113,7 +113,7 @@
     {
       "name": "[390x844] 22 track change clears selection",
       "pass": true,
-      "detail": ""
+      "detail": "track=gtr-drop tab görünür=true"
     },
     {
       "name": "[390x844] 24 short tap does not select",
@@ -128,7 +128,7 @@
     {
       "name": "[390x844] 2 chord selected as a group",
       "pass": true,
-      "detail": "1 power chord şekli · 1 ölçü"
+      "detail": "1 power chord · 3 nota"
     },
     {
       "name": "[390x844] 3 shape ghost writes nothing",
@@ -143,7 +143,7 @@
     {
       "name": "[390x844] 3 shape translation commits once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] 3 shape translation changed the song",
@@ -168,7 +168,7 @@
     {
       "name": "[390x844] 8 duplicate writes at most once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] 9 repeat ghost writes nothing",
@@ -208,7 +208,7 @@
     {
       "name": "[390x844] 6 paste writes exactly once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] 6 paste changed the song",
@@ -218,7 +218,7 @@
     {
       "name": "[390x844] 7 cut writes once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] 7 cut changed the song",
@@ -231,9 +231,9 @@
       "detail": ""
     },
     {
-      "name": "[390x844] 9 selection reports a width, not just a count",
+      "name": "[390x844] 9 selection names what it holds",
       "pass": true,
-      "detail": "1 nota · 1 ölçü"
+      "detail": "1 power chord · 3 nota"
     },
     {
       "name": "[390x844] 9 repeat ghost writes nothing",
@@ -243,7 +243,7 @@
     {
       "name": "[390x844] 9 repeat writes exactly once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] 9 repeat changed the song",
@@ -258,7 +258,7 @@
     {
       "name": "[390x844] 10 fill to the section end",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[390x844] 11 one grid step each way",
@@ -278,7 +278,7 @@
     {
       "name": "[390x844] 12 beat and bar moves write nothing",
       "pass": true,
-      "detail": "Uygulanmaya hazır."
+      "detail": "Seçim hedef ölçünün ritim aralığına tam otur"
     },
     {
       "name": "[390x844] 17 incompatible target is refused",
@@ -306,14 +306,14 @@
       "detail": "Uygulanmaya hazır."
     },
     {
-      "name": "[390x844] 19 touching a chain grows the selection",
+      "name": "[390x844] 19 a chained note is still one onset",
       "pass": true,
-      "detail": "2 nota · 1 ölçü · zincir tamamlandı"
+      "detail": "1 nota"
     },
     {
-      "name": "[390x844] 19 the grown selection covers both notes",
+      "name": "[390x844] 19 the band covers the one onset, not the chain",
       "pass": true,
-      "detail": "68px"
+      "detail": "34px"
     },
     {
       "name": "[390x844] 23 selecting pauses playback",
@@ -368,7 +368,7 @@
     {
       "name": "[320x700] summary is non-technical",
       "pass": true,
-      "detail": "1 power chord şekli · 1 ölçü"
+      "detail": "1 power chord · 3 nota"
     },
     {
       "name": "[320x700] band has width",
@@ -378,12 +378,12 @@
     {
       "name": "[320x700] 20 copy writes nothing",
       "pass": true,
-      "detail": "1->1"
+      "detail": "3->3"
     },
     {
       "name": "[320x700] 21a delete commits once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] reselect after delete",
@@ -393,7 +393,7 @@
     {
       "name": "[320x700] ghost preview writes nothing",
       "pass": true,
-      "detail": "5 taps, 2->2"
+      "detail": "5 taps, 4->4"
     },
     {
       "name": "[320x700] 16 ghost explains the outcome",
@@ -433,7 +433,7 @@
     {
       "name": "[320x700] 21 many nudges commit once",
       "pass": true,
-      "detail": "5 taps, writes 2->3"
+      "detail": "5 taps, writes 4->5"
     },
     {
       "name": "[320x700] song actually changed",
@@ -458,7 +458,7 @@
     {
       "name": "[320x700] 22 track change clears selection",
       "pass": true,
-      "detail": ""
+      "detail": "track=gtr-drop tab görünür=true"
     },
     {
       "name": "[320x700] 24 short tap does not select",
@@ -473,7 +473,7 @@
     {
       "name": "[320x700] 2 chord selected as a group",
       "pass": true,
-      "detail": "1 power chord şekli · 1 ölçü"
+      "detail": "1 power chord · 3 nota"
     },
     {
       "name": "[320x700] 3 shape ghost writes nothing",
@@ -488,7 +488,7 @@
     {
       "name": "[320x700] 3 shape translation commits once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] 3 shape translation changed the song",
@@ -513,7 +513,7 @@
     {
       "name": "[320x700] 8 duplicate writes at most once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] 9 repeat ghost writes nothing",
@@ -553,7 +553,7 @@
     {
       "name": "[320x700] 6 paste writes exactly once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] 6 paste changed the song",
@@ -563,7 +563,7 @@
     {
       "name": "[320x700] 7 cut writes once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] 7 cut changed the song",
@@ -576,9 +576,9 @@
       "detail": ""
     },
     {
-      "name": "[320x700] 9 selection reports a width, not just a count",
+      "name": "[320x700] 9 selection names what it holds",
       "pass": true,
-      "detail": "1 nota · 1 ölçü"
+      "detail": "1 power chord · 3 nota"
     },
     {
       "name": "[320x700] 9 repeat ghost writes nothing",
@@ -588,7 +588,7 @@
     {
       "name": "[320x700] 9 repeat writes exactly once",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] 9 repeat changed the song",
@@ -603,7 +603,7 @@
     {
       "name": "[320x700] 10 fill to the section end",
       "pass": true,
-      "detail": "1->2"
+      "detail": "3->4"
     },
     {
       "name": "[320x700] 11 one grid step each way",
@@ -623,7 +623,7 @@
     {
       "name": "[320x700] 12 beat and bar moves write nothing",
       "pass": true,
-      "detail": "Uygulanmaya hazır."
+      "detail": "Seçim hedef ölçünün ritim aralığına tam otur"
     },
     {
       "name": "[320x700] 17 incompatible target is refused",
@@ -651,14 +651,14 @@
       "detail": "Uygulanmaya hazır."
     },
     {
-      "name": "[320x700] 19 touching a chain grows the selection",
+      "name": "[320x700] 19 a chained note is still one onset",
       "pass": true,
-      "detail": "2 nota · 1 ölçü · zincir tamamlandı"
+      "detail": "1 nota"
     },
     {
-      "name": "[320x700] 19 the grown selection covers both notes",
+      "name": "[320x700] 19 the band covers the one onset, not the chain",
       "pass": true,
-      "detail": "68px"
+      "detail": "34px"
     },
     {
       "name": "[320x700] 23 selecting pauses playback",
@@ -697,14 +697,14 @@
         "body": 0,
         "scrollers": 1
       },
-      "summary": "1 power chord şekli · 1 ölçü"
+      "summary": "1 power chord · 3 nota"
     },
     "320x700": {
       "overflow": {
         "body": 0,
         "scrollers": 1
       },
-      "summary": "1 power chord şekli · 1 ölçü"
+      "summary": "1 power chord · 3 nota"
     }
   },
   "failed": 0

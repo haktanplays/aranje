@@ -1,0 +1,47 @@
+{
+  "what": "2Q-B §1 — eski kabul harness'larının onarım öncesi ve sonrası skorları",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "beforeCommit": "62b1c77 (2Q-A kapanışı)",
+  "before": {
+    "note": "Tek viewport (ONE_VIEWPORT=1) ile ölçüldü; aynı skorlar 2Q-A öncesi build üzerinde de görüldü (eval/multitrack/artifacts/REGRESSION.json).",
+    "lifecycle": "7/34",
+    "storage": "22/50",
+    "history": "26/36",
+    "mixer": "28/35",
+    "tab": "39/47",
+    "bar-ops": "24/29",
+    "arrangement": "62/66",
+    "export": "34/36",
+    "project-file": "22/26",
+    "selection-ui": "askıda — 0 kontrol, süreç kendiliğinden kapanmıyordu"
+  },
+  "after": {
+    "note": "İki viewport, tam koşu. selection-ui exit=0 ile kendiliğinden kapanıyor.",
+    "lifecycle": "68/68",
+    "storage": "50/50",
+    "history": "36/36",
+    "mixer": "70/70",
+    "tab": "94/94",
+    "bar-ops": "29/29",
+    "arrangement": "66/66",
+    "export": "72/72",
+    "project-file": "52/52",
+    "selection-ui": "138/138",
+    "multitrack": "130/130"
+  },
+  "productDefectsFound": [
+    "replace_track_setup_and_clear_content track anahtarını her bardan siliyordu: içeriği temizlenen track yazılamaz hâle geliyordu (K-55'in A kusuru, ikinci kapıdan).",
+    "Proje katmanı kurtarma haberini yutuyordu: son kaydı okunamayan cihaz bir önceki sürümü sessizce açıyor, daha yeni sürüm dosyası cihazın suçu gibi gösteriliyordu (K-45'in bannerı hiç görünmüyordu)."
+  ],
+  "staleAssumptionsRebound": [
+    "aranje.song anahtarı → proje kaydı (K-52)",
+    "launch şablonu bar anahtarı bırakmaz → track başına boş şerit (K-54)",
+    "create_track lane açmaz → her bara boş şerit (K-55)",
+    "clean preset seçilebilir → duyulamayan preset sıradan seçenek olarak sunulmaz (K-54)",
+    "Yeni şarkı geri alınabilir bir düzenlemedir → yeni proje açar (K-52)",
+    "undo düğmesi 'Son değişikliği geri al' adını taşır → ne geri alınacağını söyler (K-44)",
+    "uzun basış zinciri büyütür → tek onset grubu, zincir kararı chainPolicy ile (K-51)",
+    "getByRole('tab') track seçer → görünüm anahtarıdır (Düzen · Çoklu · Tab)",
+    "data-cell 'bar:slot' adresidir → 'slot:string' adresidir"
+  ]
+}
