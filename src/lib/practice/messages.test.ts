@@ -102,6 +102,24 @@ describe("288. the practice loop speaks about music, in Turkish", () => {
     }
   });
 
+  it("never shows a reason its own identifier", () => {
+    /*
+     * The cheapest way to "handle" a refusal is to print the reason. It
+     * satisfies every other rule here — it is a sentence, it is distinct, it
+     * is not a claim about playing — and it is the reader reading this
+     * codebase's variable names.
+     */
+    for (const reason of REFUSALS) {
+      expect(refusalMessage(reason), reason).not.toContain(reason);
+    }
+    for (const reason of PLAN_REFUSALS) {
+      expect(planRefusalMessage(reason), reason).not.toContain(reason);
+    }
+    for (const kind of EDGES) {
+      expect(edgeMessage(kind) ?? "", kind).not.toContain(kind);
+    }
+  });
+
   it("says something for every refusal it can produce", () => {
     for (const reason of REFUSALS) {
       expect(refusalMessage(reason).length, reason).toBeGreaterThan(10);

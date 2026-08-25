@@ -7,6 +7,7 @@
  * bar and not one tick of the next one.
  */
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 
 import {
   barKeyOf,
@@ -25,6 +26,7 @@ import {
 } from "@/lib/practice/range";
 import { melodicBar, guitarTrack, restSlots, section, song } from "@/lib/song/fixtures";
 import { PPQ } from "@/lib/music/timing";
+import { songLimits } from "@/lib/limits";
 import type { Bar, Resolution, Song, TimeSignature } from "@/lib/song/schema";
 
 const bar = (meter: TimeSignature = [4, 4], resolution: Resolution = 8): Bar =>
@@ -211,3 +213,48 @@ describe("250. one conversion turns a typed loop into ticks", () => {
     ).toBeNull();
   });
 });
+
+describe("290. the range's own bounds are the contract's, not a multiple of them", () => {
+  it("refuses a run longer than a section may hold, at exactly that number", () => {
+    /*
+     * The Song Contract will not accept a section with more bars than this,
+     * so the check inside `practiceRange` can only fire on a song that got
+     * past the schema. It is still the bound the transport loops over, and a
+     * bound stated as "four times the limit" would be a bound in name only —
+     * so the number is asserted rather than the behaviour.
+     */
+    const source = readFileSync("src/lib/practice/range.ts", "utf8");
+    expect(source).toContain("> songLimits.barsPerSection");
+    expect(source).not.toMatch(/songLimits\.barsPerSection\s*[*+]/);
+    expect(songLimits.barsPerSection).toBe(8);
+  });
+
+  it("refuses to loop a range whose last bar has gone", () => {
+    /*
+     * Half a range is not a smaller range. If the end bar is deleted while
+     * the loop is set, the honest answer is "do not loop" — falling back to
+     * the end of the section, or of the song, would be the transport playing
+     * music the reader never chose.
+     */
+    const two = song(
+      [guitarTrack()],
+      [section([bar(), bar(), bar()], { id: "s1" })],
+    );
+    const made = practiceRange(two, "s1:0", "s1:2");
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    const shorter = song([guitarTrack()], [section([bar()], { id: "s1" })]);
+    expect(rangeLoopBounds(planOf(shorter), made.range)).toBeNull();
+  });
+
+  it("accepts a run exactly as long as a section may hold", () => {
+    const full = song(
+      [guitarTrack()],
+      [section(Array.from({ length: 8 }, () => bar()), { id: "s1" })],
+    );
+    const made = practiceRange(full, "s1:0", "s1:7");
+    expect(made.ok).toBe(true);
+    if (made.ok) expect(rangeBarCount(made.range)).toBe(8);
+  });
+});
+

@@ -87,7 +87,6 @@ export function Workspace() {
     song,
     controller,
     practicePercent: practiceRatePercent,
-    setPracticePercent: setPracticeRatePercent,
     viewedSectionId: navigation.viewedSectionId,
     activeBarKey: navigation.activeBarKey,
   });

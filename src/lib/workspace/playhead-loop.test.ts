@@ -210,3 +210,41 @@ describe("116. no arrangement of surfaces leaves a second loop behind", () => {
     expect(frames.run(100)).toBe(0);
   });
 });
+
+describe("292. a frame that has been drawn is no longer owed", () => {
+  it("reports one outstanding frame while running, not one per frame drawn", () => {
+    /*
+     * `window.__playheadProbe.live` is the count of frames the loop has asked
+     * for and not yet been given. A loop that only ever incremented it would
+     * still draw correctly and still stop correctly — and every "no ghost
+     * playback" claim measured through this counter, in every browser
+     * harness, would be reading a number that grows on its own.
+     */
+    const probe: Record<string, Record<string, number>> = {
+      scheduled: {},
+      drawn: {},
+      live: {},
+    };
+    /*
+     * The counter is a browser affordance: the loop reads
+     * `window.__playheadProbe` every time it bumps one. This suite runs in
+     * node, so the window it reads is supplied here — otherwise every bump is
+     * a no-op and the assertion below would be about nothing.
+     */
+    const host = globalThis as { window?: { __playheadProbe?: unknown } };
+    const had = host.window;
+    host.window = { __playheadProbe: probe };
+    const frames = fakeFrames();
+    const { stop } = start(true, frames);
+    for (let frame = 0; frame < 10; frame += 1) {
+      frames.flush();
+      expect(probe.live!.tab, `after ${frame + 1} frames`).toBe(1);
+    }
+    stop();
+    expect(probe.live!.tab).toBe(0);
+    expect(probe.drawn!.tab).toBe(10);
+    if (had === undefined) delete host.window;
+    else host.window = had;
+  });
+});
+

@@ -8,7 +8,17 @@
  * scrolls inside itself, so a long body cannot push its own controls off the
  * screen, and it carries the bottom safe-area inset so the last control is not
  * under the home indicator.
+ *
+ * ## Three ways out, one exit
+ *
+ * The backdrop, Escape and whatever the body calls its cancel button all
+ * reach `onClose`. Escape was missing until 2R-A §X, which mattered because
+ * the practice sheet's cleanup — abandoning a half-filled speed form — hangs
+ * off that one callback: a sheet dismissed by a key nobody had wired would
+ * have left a draft behind that dismissing it any other way cleared.
  */
+import { useEffect } from "react";
+
 export function Sheet({
   open,
   title,
@@ -24,6 +34,15 @@ export function Sheet({
   footer?: React.ReactNode;
   labelledBy?: string;
 }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose, open]);
+
   if (!open) return null;
 
   return (

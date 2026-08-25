@@ -261,3 +261,40 @@ describe("257. what it tells the reader is never a claim about their playing", (
     expect(notice).toBe("Hedef hıza ulaşıldı: %100.");
   });
 });
+
+describe("291. every speed it lands on is one the reader could have chosen", () => {
+  it("visits only rungs the manual control has", () => {
+    /*
+     * The manual control moves in whole steps of `practiceRateLimits`. A
+     * climb that landed between two of them would show the reader a number
+     * they cannot reproduce by hand — and one they cannot get back to after
+     * taking over, which is the moment it would matter.
+     */
+    const made = progressivePlan(52, 148, 7, 1);
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    let state = startProgressive(made.plan);
+    const visited = [state.percent];
+    for (let pass = 0; pass < 40 && state.stopped === null; pass += 1) {
+      state = afterLoop(state);
+      visited.push(state.percent);
+    }
+    for (const percent of visited) {
+      expect(percent % practiceRateLimits.stepPercent, `%${percent}`).toBe(0);
+    }
+    expect(visited.length).toBeGreaterThan(3);
+  });
+
+  it("never sits above the target, even for one pass", () => {
+    const made = progressivePlan(90, 100, 25, 1);
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    let state = startProgressive(made.plan);
+    for (let pass = 0; pass < 5; pass += 1) {
+      state = afterLoop(state);
+      expect(state.percent).toBeLessThanOrEqual(100);
+    }
+    expect(state.percent).toBe(100);
+  });
+});
+

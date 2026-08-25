@@ -19,6 +19,21 @@
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
+import { barTimeline, buildSongPlan } from "@/lib/audio/schedule";
+import { countInClicks } from "@/lib/practice/count-in";
+import { afterLoop, progressivePlan, startProgressive } from "@/lib/practice/progressive-rate";
+import {
+  practiceRange,
+  rangeLoopBounds,
+  singleBarRange,
+} from "@/lib/practice/range";
+import {
+  rangeFromBarPair,
+  rangeFromTimeSelection,
+} from "@/lib/practice/range-entry";
+import { rangeDecision, rangePreflight } from "@/lib/practice/range-preflight";
+import { drumGridAxis, drumGridWindow } from "@/lib/ui/drum-grid-window";
+import { SLOT_WIDTH } from "@/components/workspace/geometry";
 import { settle } from "@/lib/song/edit";
 import { insertDrumHit, removeDrumHit } from "@/lib/song/event-entry";
 import { buildDrumStepModel } from "@/lib/tab/drum-step-model";
@@ -26,8 +41,8 @@ import { songSchema, type Song } from "@/lib/song/schema";
 import { runValidators } from "@/lib/validators";
 
 const HERE = new URL(".", import.meta.url).pathname;
-const ROUNDS = 20;
-const WARMUP = 5;
+const ROUNDS = 30;
+const WARMUP = 8;
 
 const round = (value: number, places = 3) => {
   const factor = 10 ** places;
@@ -118,6 +133,74 @@ function indexedPerCellLookup(): number {
   return seen;
 }
 
+/* ------------------------------------------- the practice loop's own core */
+
+/*
+ * The same fixture the acceptance harness drives, so a number here and a
+ * number there are about the same music. `denseKit` is the contract ceiling
+ * and is measured above; the practice pieces are measured on both, because
+ * "is building a range expensive" has a different answer on a song with 32
+ * bars than on one with 13.
+ */
+const practiceSong = songSchema.parse(fixtures["practiceSong"]) as Song;
+const practiceSection = practiceSong.sections[0]!;
+const firstBar = `${practiceSection.id}:0`;
+const lastBar = `${practiceSection.id}:${practiceSection.bars.length - 1}`;
+const wholeSection = practiceRange(practiceSong, firstBar, lastBar);
+if (!wholeSection.ok) throw new Error("the fixture's own section is not a range");
+const practiceBars = barTimeline(practiceSong);
+const firstMarker = practiceBars.find((bar) => bar.barKey === firstBar)!;
+const wholeBarSelection = {
+  sectionId: practiceSection.id,
+  trackId: "gtr",
+  startTicks: 0,
+  endTicks: firstMarker.durationTicks,
+};
+// The transport's real plan, not a stand-in: the bounds are read off it.
+const plan = buildSongPlan(practiceSong);
+const made = progressivePlan(80, 100, 5, 2);
+if (!made.ok) throw new Error(`the fixture plan is refused: ${made.reason}`);
+const climbing = startProgressive(made.plan);
+const ceilingAxis = drumGridAxis(model, SLOT_WIDTH);
+
+const practice = {
+  "range: one bar": bench(() => singleBarRange(practiceSong, firstBar)),
+  "range: a pair, normalised": bench(() =>
+    rangeFromBarPair(practiceSong, lastBar, firstBar),
+  ),
+  "range: from a whole-bar time selection": bench(() =>
+    rangeFromTimeSelection(practiceSong, wholeBarSelection),
+  ),
+  "preflight: what the edges cut": bench(() =>
+    rangePreflight(practiceSong, wholeSection.range),
+  ),
+  "preflight: the three-outcome decision": bench(() =>
+    rangeDecision(rangePreflight(practiceSong, wholeSection.range)),
+  ),
+  "loop: the range's own tick bounds": bench(() =>
+    rangeLoopBounds(plan, wholeSection.range),
+  ),
+  "count-in: two bars of clicks": bench(() =>
+    countInClicks({
+      bars: 2,
+      firstBar: practiceSection.bars[0]!,
+      bpm: practiceSong.bpm,
+      practicePercent: 80,
+    }),
+  ),
+  "progressive: one completed pass": bench(() => afterLoop(climbing)),
+  "window: the ceiling grid's axis": bench(() => drumGridAxis(model, SLOT_WIDTH)),
+  "window: one window onto it": bench(() =>
+    drumGridWindow({
+      axis: ceilingAxis,
+      viewportLeftPx: 4_000,
+      viewportWidthPx: 390,
+      direction: "forward",
+    }),
+  ),
+  "serialize: the whole song": bench(() => JSON.stringify(candidate)),
+};
+
 const cells = model.rows.reduce((total, row) => total + row.cells.length, 0);
 const measured = {
   fixture: "denseKit",
@@ -147,6 +230,12 @@ const measured = {
     "render: the per-cell lookup as it is": bench(currentPerCellLookup),
     "render: the same lookup, indexed once": bench(indexedPerCellLookup),
   },
+  /*
+   * The practice loop's own arithmetic (§XV). Measured separately because it
+   * is a different claim: the drum layers explain a tap's cost, and these
+   * explain whether setting up a drill costs anything at all.
+   */
+  practice,
 };
 
 if (currentPerCellLookup() !== indexedPerCellLookup()) {
@@ -181,6 +270,10 @@ console.log(
     `${measured.slotsPerBar} slot = ${measured.cells} hücre`,
 );
 for (const [name, stat] of Object.entries(measured.layers)) {
+  console.log(`  ${name.padEnd(38)} ${stat.median} ms (p95 ${stat.p95})`);
+}
+console.log("\npratik döngüsü çekirdeği (practiceSong):");
+for (const [name, stat] of Object.entries(measured.practice)) {
   console.log(`  ${name.padEnd(38)} ${stat.median} ms (p95 ${stat.p95})`);
 }
 console.log(`\n${HERE}PERFORMANCE.json yazıldı`);

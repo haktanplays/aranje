@@ -204,8 +204,16 @@ export function usePracticeSession(options: {
   readonly song: Song;
   readonly controller: PlaybackController;
   /** The rate the app is at, so a hand change can be told from ours. */
+  /**
+   * The rate the reader chose, which is a stored screen setting (spec 5.6).
+   *
+   * Read, never written. A drill's climbing speed is session-only (§XI), so
+   * it is pushed straight at the transport instead: a reader who closes the
+   * app mid-drill must not come back tomorrow to a %85 they never picked.
+   * This value moving is therefore *the reader's own hand*, and that is what
+   * stops the automation.
+   */
   readonly practicePercent: number;
-  readonly setPracticePercent: (percent: number) => void;
   /** The section the reader is looking at: what the loop button loops. */
   readonly viewedSectionId: string;
   /**
@@ -217,7 +225,7 @@ export function usePracticeSession(options: {
    */
   readonly activeBarKey: string | null;
 }): PracticeSession {
-  const { song, controller, practicePercent, setPracticePercent } = options;
+  const { song, controller, practicePercent } = options;
   const { viewedSectionId, activeBarKey } = options;
 
   const [range, setRangeState] = useState<PracticeRange | null>(null);
@@ -313,12 +321,18 @@ export function usePracticeSession(options: {
 
   /* -------------------------------------------- the speed, one pass at a time */
 
-  /*
-   * The rate the app is at because *we* set it. Anything else the reader does
-   * to the rate is a hand change, and telling the two apart is what makes
-   * "manual change stops the automation" a rule rather than a guess.
+  /**
+   * Run the transport at a speed without saving it.
+   *
+   * The stored setting is the reader's answer to "how fast do I practise
+   * this"; a drill is a temporary departure from it. Writing every step of a
+   * climb into that setting would leave the app at whatever speed the drill
+   * happened to reach when the reader put the phone down (§XI).
    */
-  const ourPercent = useRef<number | null>(null);
+  const runAt = useCallback(
+    (percent: number) => controller.setPracticePercent(percent),
+    [controller],
+  );
 
   useEffect(() => {
     if (!isRunning(progressive)) return;
@@ -326,25 +340,27 @@ export function usePracticeSession(options: {
       setProgressive((current) => {
         if (current === null || !isRunning(current)) return current;
         const next = afterLoop(current);
-        ourPercent.current = next.percent;
-        setPracticePercent(next.percent);
+        runAt(next.percent);
         return next;
       });
     });
-  }, [controller, progressive, setPracticePercent]);
+  }, [controller, progressive, runAt]);
+
+  /*
+   * The stored setting, as it was last seen. It only changes when the reader
+   * moves the rate themselves — the drill no longer touches it — so a change
+   * here is unambiguously a hand on the control, and their hand wins: the
+   * automation stops at the speed they chose and does not resume (§12).
+   */
+  const readerPercent = useRef(practicePercent);
 
   useEffect(() => {
-    if (progressive === null || !isRunning(progressive)) return;
-    if (ourPercent.current === practicePercent) return;
-    /*
-     * The rate is not where we left it, so somebody else moved it. That is
-     * the reader's hand, and their hand wins — the automation stops at the
-     * speed they chose and does not resume (§12).
-     */
+    if (readerPercent.current === practicePercent) return;
+    readerPercent.current = practicePercent;
     setProgressive((current) =>
       current === null ? current : afterManualChange(current, practicePercent),
     );
-  }, [practicePercent, progressive]);
+  }, [practicePercent]);
 
   /* --------------------------------------------------------- the doors in */
 
@@ -437,17 +453,15 @@ export function usePracticeSession(options: {
       );
       if (!made.ok) return made.reason;
       const started = startProgressive(made.plan);
-      ourPercent.current = started.percent;
       setProgressive(started);
-      setPracticePercent(started.percent);
+      runAt(started.percent);
       return null;
     },
-    [setPracticePercent],
+    [runAt],
   );
 
   const stopProgressiveRate = useCallback(() => {
     setProgressive(null);
-    ourPercent.current = null;
   }, []);
 
   /* ------------------------------------------------- the speed form (§X) */
@@ -469,7 +483,6 @@ export function usePracticeSession(options: {
       setPlanRefusal(null);
       if (mode === "fixed") {
         setProgressive(null);
-        ourPercent.current = null;
         return;
       }
       // The form opens on the speed the transport is at, not on a constant.
@@ -491,11 +504,10 @@ export function usePracticeSession(options: {
     }
     setPlanRefusal(null);
     const started = startProgressive(made.plan);
-    ourPercent.current = started.percent;
     setProgressive(started);
-    setPracticePercent(started.percent);
+    runAt(started.percent);
     return null;
-  }, [setPracticePercent, speedDraft]);
+  }, [runAt, speedDraft]);
 
   const toggleSectionLoop = useCallback(() => {
     /*
