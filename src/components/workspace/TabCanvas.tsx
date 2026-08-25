@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import { DrumStepLane } from "@/components/workspace/DrumStepLane";
+import { PitchedStepLane } from "@/components/workspace/PitchedStepLane";
+import type { PitchedStepArming } from "@/components/workspace/PitchedMultiLane";
 import type { DrumStepArming } from "@/components/workspace/DrumMultiLane";
 import {
   FrettedBarBlock,
@@ -113,6 +115,7 @@ export function TabCanvas({
   onHandleMove,
   onHandleUp,
   drumEntry = null,
+  pitchedEntry = null,
   editing = false,
   selectedCell = null,
   onCellSelect,
@@ -167,6 +170,15 @@ export function TabCanvas({
    * written there are the same hit and not two implementations of one.
    */
   drumEntry?: DrumStepArming | null;
+  /**
+   * The fretless track's strip, armed, or null (2Q-B §7.3).
+   *
+   * The tab has no notation for an instrument with no fretboard and does not
+   * pretend otherwise — the sentence saying so stays. What it gains here is a
+   * way to *write*: the same strip the Çoklu view draws, from the same model,
+   * under the honest sentence rather than instead of it.
+   */
+  pitchedEntry?: PitchedStepArming | null;
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
   onCellSelect?: (cell: CellSelection & { barKey: string }) => void;
@@ -293,9 +305,23 @@ export function TabCanvas({
   );
 
   if (timeline.kind === "unsupported") {
+    if (!pitchedEntry) {
+      return (
+        <div className="text-muted flex h-full items-center justify-center px-6 text-center text-sm">
+          {timeline.reason}
+        </div>
+      );
+    }
     return (
-      <div className="text-muted flex h-full items-center justify-center px-6 text-center text-sm">
-        {timeline.reason}
+      <div className="flex h-full flex-col">
+        <p className="text-muted shrink-0 px-4 py-3 text-xs">{timeline.reason}</p>
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto overscroll-x-contain"
+          style={{ paddingTop: STAFF_TOP_PADDING }}
+        >
+          <PitchedStepLane model={pitchedEntry.model} entry={pitchedEntry} />
+        </div>
       </div>
     );
   }

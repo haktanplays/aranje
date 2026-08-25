@@ -269,7 +269,7 @@ const questions = [
       "Evet, çünkü ikisi de aynı createEngine/buildVoice yolundan geçiyor. " +
       "Ayrı bir preview kararı yok; ikisi de aynı sessizliği üretiyor.",
     evidence: {
-      previewUsesPlaybackController: source("src/lib/workspace/use-chord-audition.ts").includes(
+      previewUsesPlaybackController: source("src/lib/workspace/use-audition.ts").includes(
         "new PlaybackController(candidate)",
       ),
       playbackUsesCreateLiveEngine: source("src/lib/audio/playback.ts").includes(

@@ -362,7 +362,7 @@ probe "38 production code imports the evaluation harness" \
 import "../../../eval/expression-benchmark/candidates";'
 
 probe "39 an audition builds a second commit path" \
-  src/lib/workspace/use-chord-audition.ts "$CHORD" \
+  src/lib/workspace/use-audition.ts "$CHORD" \
   '      engine.start(' \
   '      const commit = (): void => undefined;
       commit();

@@ -25,7 +25,22 @@
  * whole section so two bars of the same melody are drawn at the same height.
  */
 import { SLOT_WIDTH } from "@/components/workspace/geometry";
+import {
+  PitchedStepLane,
+  type PitchedStepEntry,
+} from "@/components/workspace/PitchedStepLane";
+import type { PitchedStepModel } from "@/lib/tab/pitched-step-model";
 import type { PitchAxis, PitchedBar } from "@/lib/multitrack/model";
+
+/**
+ * A pitch lane armed for writing (2Q-B §7.3).
+ *
+ * One object rather than two props, so a lane either has both a model and a
+ * way to act on it or neither.
+ */
+export type PitchedStepArming = PitchedStepEntry & {
+  readonly model: PitchedStepModel;
+};
 
 /** How tall the note field is. The axis is mapped onto exactly this. */
 const FIELD_HEIGHT = 72;
@@ -37,6 +52,7 @@ export function PitchedMultiLane({
   bars,
   axis,
   slotCounts,
+  entry = null,
   height = FIELD_HEIGHT,
 }: {
   trackId: string;
@@ -44,8 +60,23 @@ export function PitchedMultiLane({
   axis: PitchAxis;
   /** The shared axis's slot count per bar, so widths match every other lane. */
   slotCounts: readonly number[];
+  /** Armed for writing, or null: the lane reads instead. */
+  entry?: PitchedStepArming | null;
   height?: number;
 }) {
+  /*
+   * Reading and writing are two drawings of the same music, and the strip
+   * replaces the pitch blocks rather than sitting over them: a tap has to
+   * mean one thing.
+   */
+  if (entry) {
+    return (
+      <div data-multi-pitched={trackId} className="flex">
+        <PitchedStepLane model={entry.model} entry={entry} />
+      </div>
+    );
+  }
+
   /** Where a midi number sits: high notes up, and the span never divides by nothing. */
   const yOf = (midi: number): number => {
     const span = Math.max(1, axis.span);

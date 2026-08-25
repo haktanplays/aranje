@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import { ArrangeSheet, type ArrangeForm } from "@/components/workspace/ArrangeSheet";
 import { FretSheet } from "@/components/workspace/FretSheet";
+import { NoteEntrySheet } from "@/components/workspace/NoteEntrySheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
 import { MixerSheet } from "@/components/workspace/MixerSheet";
 import { NewSongSheet } from "@/components/workspace/NewSongSheet";
@@ -41,6 +42,7 @@ import type { SectionRun } from "@/lib/tab/timeline";
 import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
 import type { MixerHandle } from "@/lib/workspace/use-mixer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
+import type { EventEntry } from "@/lib/workspace/use-event-entry";
 import type { ChordBuilderHandle } from "@/lib/workspace/use-chord-builder";
 import { chordTargetAt } from "@/lib/chords/chord-target";
 import { ChordBuilderSheet } from "@/components/workspace/ChordBuilderSheet";
@@ -49,12 +51,22 @@ import type { WorkspaceOverlayState } from "@/lib/workspace/use-workspace-overla
 import type { TimingChangeHandle } from "@/lib/workspace/use-timing-change";
 import { TimingSheet } from "@/components/workspace/TimingSheet";
 
+/**
+ * How loudly a previewed note is played.
+ *
+ * The contract's own default for a written note, so what the reader hears is
+ * what they are about to write and not a louder or quieter version of it.
+ */
+const NOTE_PREVIEW_VELOCITY = 100;
+
 export function WorkspaceOverlays({
   song,
   runs,
   overlays,
   navigation,
   noteEditing,
+  entry,
+  onNoteAudition,
   chords,
   onAudition,
   copilot,
@@ -89,6 +101,10 @@ export function WorkspaceOverlays({
   /** The meter-and-rhythm sheet, opened from the bar sheet or from here. */
   timing: TimingChangeHandle;
   noteEditing: NoteEditing;
+  /** Writing one event on an instrument the tab has no notation for (2Q-B §7). */
+  entry: EventEntry;
+  /** Hearing one note, offered only when the track's preset can sound. */
+  onNoteAudition: (pitch: string, velocity: number) => void;
   /** The chord builder session, and the one way to hear a shape. */
   chords: ChordBuilderHandle;
   onAudition: (voicingId: string) => void;
@@ -274,6 +290,36 @@ export function WorkspaceOverlays({
             // so the sheet opens on the root grid rather than asking again.
             chords.chooseType(power);
           }}
+        />
+      ) : null}
+
+      {/*
+        The note sheet. Keyed by the moment it is asking about, so moving to
+        another one starts the fields from that moment rather than leaving the
+        last answer behind.
+      */}
+      {entry.noteTarget && track && !previewOpen ? (
+        <NoteEntrySheet
+          key={`${entry.noteTarget.ticks}:${entry.noteTarget.pitches.join(",")}`}
+          open
+          target={entry.noteTarget}
+          error={entry.entryError}
+          onClose={entry.closeNote}
+          onWrite={(pitch, options) =>
+            entry.writePitchedNote(
+              { sectionId: navigation.viewedSectionId, trackId: track.id, ticks: entry.noteTarget!.ticks },
+              { pitch },
+              options,
+            )
+          }
+          onRemove={() =>
+            entry.erasePitchedNote({
+              sectionId: navigation.viewedSectionId,
+              trackId: track.id,
+              ticks: entry.noteTarget!.ticks,
+            })
+          }
+          onPreview={(pitch) => onNoteAudition(pitch, NOTE_PREVIEW_VELOCITY)}
         />
       ) : null}
 

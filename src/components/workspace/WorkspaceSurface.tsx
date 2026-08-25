@@ -142,6 +142,16 @@ export function WorkspaceSurface({
         }
       : null;
 
+  /*
+   * The fretless strip, armed behind the same gate. A tap here does not
+   * write: it opens the note sheet, because where a finger landed says when,
+   * and nothing on this lane says which note (§7.1).
+   */
+  const pitchedEntry =
+    noteEditing.editing && canPersist && !copilotOwnsScreen && entry.pitchedStep
+      ? { model: entry.pitchedStep, open: entry.openNote }
+      : null;
+
   return (
     <main className="min-h-0 flex-1">
       {navigation.view === "arrange" ? (
@@ -191,6 +201,7 @@ export function WorkspaceSurface({
           }
           scrollRef={navigation.scrollRef}
           drumEntry={drumEntry}
+          pitchedEntry={pitchedEntry}
           onActivateTrack={onSelectTrack}
           onSelectBar={navigation.seekToBar}
           onActiveBarChange={navigation.setActiveBarKey}
@@ -234,6 +245,7 @@ export function WorkspaceSurface({
             ) : null
           }
           drumEntry={drumEntry}
+          pitchedEntry={pitchedEntry}
           editing={noteEditing.editing}
           selectedCell={noteEditing.cell}
           onCellSelect={noteEditing.selectCell}

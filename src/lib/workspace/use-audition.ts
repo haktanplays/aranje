@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * Hearing a chord, and making sure it stops (spec 13.22 §16, 2O-B).
+ * Hearing something before writing it, and making sure it stops
+ * (spec 13.22 §16, 2O-B, 2Q-B §7.3).
  *
  * A real owner, and what it owns is two things that have the same lifetime:
  * the preview engine an audition plays through, and the session that keeps
@@ -24,12 +25,35 @@ import { useCallback, useEffect, useMemo } from "react";
 import { PlaybackController } from "@/lib/audio/playback";
 import { PreviewBankSession } from "@/lib/audio/preview-bank";
 import { PreviewEngine } from "@/lib/audio/preview-engine";
-import { auditionSong } from "@/lib/chords/chord-audition";
+import { auditionNoteSong, auditionSong } from "@/lib/chords/chord-audition";
 import type { ChordArticulation } from "@/lib/chords/chord-command";
 import type { ChordVoicing } from "@/lib/chords/chord-voicing";
 import type { Song, Track } from "@/lib/song/schema";
 
-export function useChordAudition(options: {
+export type Audition = {
+  /** Play one of the builder's candidate shapes. */
+  voicing(voicingId: string): void;
+  /**
+   * Play one note, on the reader's own track.
+   *
+   * The caller decides whether to offer this at all: a track whose preset has
+   * no sample pack cannot be heard, and a preview that quietly substituted a
+   * different instrument would be worse than no preview.
+   */
+  note(pitch: string, velocity: number): void;
+  /** Silence whatever is sounding, without discarding the decoded bank. */
+  stop(): void;
+};
+
+/**
+ * One engine, one sample bank, both surfaces.
+ *
+ * The chord builder lives in the tab and the note sheet lives in the Çoklu
+ * view, but "hear this before you write it" is the same act, and a second
+ * engine would mean a second audio context and a second copy of every
+ * decoded sample.
+ */
+export function useAudition(options: {
   song: Song;
   track: Track | undefined;
   /** True while the builder is open; false silences whatever is playing. */
@@ -39,7 +63,7 @@ export function useChordAudition(options: {
   articulation: ChordArticulation;
   /** The song's own playback stops first: two songs never sound at once. */
   pause(): void;
-}): (voicingId: string) => void {
+}): Audition {
   const { song, track, open, voicings, velocity, articulation, pause } = options;
 
   const bankSession = useMemo(() => new PreviewBankSession(), []);
@@ -51,20 +75,34 @@ export function useChordAudition(options: {
     [bankSession],
   );
 
-  const audition = useCallback(
+  const voicing = useCallback(
     (voicingId: string) => {
-      const voicing = voicings.find((entry) => entry.id === voicingId);
-      if (!voicing || !track) return;
+      const chosen = voicings.find((entry) => entry.id === voicingId);
+      if (!chosen || !track) return;
       // `start` stops the host and disposes any previous preview before it
       // builds a new one, so pressing four cards in a row leaves one voice.
       engine.start(
-        auditionSong(song, track, voicing, { velocity, articulation }),
+        auditionSong(song, track, chosen, { velocity, articulation }),
         "chord-audition",
         pause,
       );
     },
     [articulation, engine, pause, song, track, velocity, voicings],
   );
+
+  const note = useCallback(
+    (pitch: string, noteVelocity: number) => {
+      if (!track) return;
+      engine.start(
+        auditionNoteSong(song, track, pitch, noteVelocity),
+        "note-audition",
+        pause,
+      );
+    },
+    [engine, pause, song, track],
+  );
+
+  const stop = useCallback(() => engine.stop(), [engine]);
 
   // Closing the sheet silences the chord. It does not throw the recordings
   // away: the reader is very likely to open it again, and the bank is the
@@ -83,5 +121,5 @@ export function useChordAudition(options: {
     [bankSession, engine],
   );
 
-  return audition;
+  return { voicing, note, stop };
 }

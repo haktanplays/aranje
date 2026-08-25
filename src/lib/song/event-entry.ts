@@ -59,8 +59,16 @@ export type EventEntryErrorCode =
   | "target_occupied"
   | "nothing_to_remove"
   | "pitch_unreadable"
-  | "instrument_range_unavailable"
   | "validation_failed";
+
+/*
+ * There is deliberately no `instrument_range_unavailable`. An earlier draft
+ * of this union carried one, and nothing could ever return it: the registry
+ * stores no numeric range for any instrument (fretted ones derive theirs from
+ * tuning and fret count, spec 9.1), so there is no range to be outside of. A
+ * code no command can produce is a sentence no reader can ever be shown, and
+ * a table entry that makes the table look more careful than the code is.
+ */
 
 export type EventEntryResult =
   | { readonly ok: true; readonly song: Song; readonly warnings: ValidationIssue[] }

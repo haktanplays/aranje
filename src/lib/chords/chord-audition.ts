@@ -15,7 +15,7 @@ import { voicingToNotes, type ChordVoicing } from "@/lib/chords/chord-voicing";
 import { chordPreviewLimits } from "@/lib/limits";
 import { DEFAULT_RESOLUTION, DEFAULT_TIME_SIGNATURE, slotCount } from "@/lib/music/timing";
 import type { ChordArticulation } from "@/lib/chords/chord-command";
-import type { Song, Track } from "@/lib/song/schema";
+import type { NoteEvent, Song, Track } from "@/lib/song/schema";
 
 /**
  * How loudly a chord is auditioned.
@@ -33,28 +33,23 @@ export function auditionVelocity(noteCount: number, velocity: number): number {
 }
 
 /**
- * A throwaway song: one bar, one track, the chord on the first beat.
+ * A throwaway song: one bar, one track, the given notes on the first beat.
  *
  * The track is copied whole, so preset, tuning, capo, volume and pan are the
  * ones the reader is actually working with; only its content is replaced.
+ *
+ * One builder for a chord and for a single note, because "hear this before
+ * you write it" is one question and two answers to it would be two chances
+ * for a preview to sound unlike the thing it is previewing.
  */
-export function auditionSong(
+export function oneBarAudition(
   song: Song,
   track: Track,
-  voicing: ChordVoicing,
-  options: { velocity: number; articulation?: ChordArticulation },
+  notes: readonly NoteEvent[],
 ): Song {
-  const notes = voicingToNotes(voicing, {
-    velocity: auditionVelocity(
-      voicingToNotes(voicing).length,
-      options.velocity,
-    ),
-    ...(options.articulation === undefined ? {} : { articulation: options.articulation }),
-  });
-
   const count = slotCount(DEFAULT_TIME_SIGNATURE, DEFAULT_RESOLUTION);
   const slots = Array.from({ length: count }, (_, index) =>
-    index === 0 ? { notes } : index < count ? ("-" as const) : null,
+    index === 0 ? { notes: [...notes] } : index < count ? ("-" as const) : null,
   );
 
   return {
@@ -62,7 +57,7 @@ export function auditionSong(
     tracks: [track],
     sections: [
       {
-        id: "chord-audition",
+        id: "audition",
         name: "Akor",
         status: "fixed",
         bars: [
@@ -75,4 +70,34 @@ export function auditionSong(
       },
     ],
   };
+}
+
+/** One chord, at a velocity scaled for how many voices it holds. */
+export function auditionSong(
+  song: Song,
+  track: Track,
+  voicing: ChordVoicing,
+  options: { velocity: number; articulation?: ChordArticulation },
+): Song {
+  const notes = voicingToNotes(voicing, {
+    velocity: auditionVelocity(voicingToNotes(voicing).length, options.velocity),
+    ...(options.articulation === undefined ? {} : { articulation: options.articulation }),
+  });
+  return oneBarAudition(song, track, notes);
+}
+
+/**
+ * One note.
+ *
+ * No voice scaling: a single note is already the reference this preview is
+ * scaled against, so dividing it by anything would make the note quieter
+ * than the note the reader is about to write.
+ */
+export function auditionNoteSong(
+  song: Song,
+  track: Track,
+  pitch: string,
+  velocity: number,
+): Song {
+  return oneBarAudition(song, track, [{ pitch, velocity }]);
 }

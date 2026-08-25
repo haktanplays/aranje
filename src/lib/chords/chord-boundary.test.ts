@@ -224,7 +224,7 @@ describe("167. one table, one set of limits, one budget", () => {
     expect(callCount("src/lib/chords/chord-command.ts", "commit")).toBe(0);
     const callers = [
       "src/lib/workspace/use-chord-builder.ts",
-      "src/lib/workspace/use-chord-audition.ts",
+      "src/lib/workspace/use-audition.ts",
       "src/lib/workspace/use-tab-view.ts",
     ].filter((path) => callCount(path, "commit") > 0);
     expect(callers).toEqual(["src/lib/workspace/use-chord-builder.ts"]);

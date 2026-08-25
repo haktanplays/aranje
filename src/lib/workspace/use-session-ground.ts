@@ -46,6 +46,15 @@ export type SessionGround = {
   prepareForStructuralApply(): void;
   /** The one door onto a section: move the reader, leave the last one behind. */
   focusSection(sectionId: string): void;
+  /**
+   * The one door onto the Copilot.
+   *
+   * Opening it is a grounding act like every other one here: the music stops
+   * and the edit session ends, because a candidate is about to be measured
+   * against the song as it was asked for and not against a half-finished
+   * edit still open on the screen.
+   */
+  enterCopilot(): void;
 };
 
 export function useSessionGround(options: {
@@ -54,6 +63,7 @@ export function useSessionGround(options: {
   navigation: WorkspaceNavigation;
   /** Closing the Copilot disposes its preview engine as well as its sheet. */
   closeCopilot(): void;
+  openCopilot(): void;
   /** Forget who was being listened to on their own. */
   clearAudition(): void;
   pause(): void;
@@ -73,6 +83,7 @@ export function useSessionGround(options: {
     noteEditing,
     navigation,
     closeCopilot,
+    openCopilot,
     clearAudition,
     pause,
     transport,
@@ -90,6 +101,7 @@ export function useSessionGround(options: {
   const clearClipboards = session.clearClipboards;
   const resetNoteEditing = noteEditing.reset;
   const exitEditMode = noteEditing.exitEditMode;
+  const stopEditing = noteEditing.stopForTrackChange;
 
   const resetEditSurfaces = useCallback(() => {
     resetSelections();
@@ -169,7 +181,14 @@ export function useSessionGround(options: {
     [navigation, resetEditSurfaces],
   );
 
+  const enterCopilot = useCallback(() => {
+    pause();
+    stopEditing();
+    openCopilot();
+  }, [openCopilot, pause, stopEditing]);
+
   return {
+    enterCopilot,
     resetEditSurfaces,
     undoEdit,
     redoEdit,

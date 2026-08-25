@@ -46,7 +46,10 @@ import {
   STAFF_TOP_PADDING,
 } from "@/components/workspace/geometry";
 import { MultiTrackLane } from "@/components/workspace/MultiTrackLane";
-import { PitchedMultiLane } from "@/components/workspace/PitchedMultiLane";
+import {
+  PitchedMultiLane,
+  type PitchedStepArming,
+} from "@/components/workspace/PitchedMultiLane";
 import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { followScrollLeft } from "@/components/workspace/playhead";
 import { useScrollTakeover } from "@/components/workspace/use-scroll-takeover";
@@ -92,6 +95,7 @@ export function MultiTrackCanvas({
   activeBarKey,
   editing,
   drumEntry,
+  pitchedEntry,
   scrollRef,
   onActivateTrack,
   onSelectBar,
@@ -121,6 +125,8 @@ export function MultiTrackCanvas({
    * `editing` is: an inactive lane has nothing to resolve a tap against.
    */
   drumEntry: DrumStepArming | null;
+  /** The fretless track's strip, armed, or null (2Q-B §7.3). */
+  pitchedEntry: PitchedStepArming | null;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   /** A tap on a lane makes it the one being edited. It writes nothing. */
   onActivateTrack: (trackId: string) => void;
@@ -269,6 +275,7 @@ export function MultiTrackCanvas({
                   bars={lane.bars}
                   axis={lane.axis}
                   slotCounts={model.bars.map((bar) => bar.slotCount)}
+                  entry={lane.active ? pitchedEntry : null}
                 />
               )}
             </MultiTrackLane>

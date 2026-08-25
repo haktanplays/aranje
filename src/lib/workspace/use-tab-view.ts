@@ -20,7 +20,7 @@
  * Nothing here holds state of its own or makes a decision; it hands back what
  * its three parts said.
  */
-import { useChordAudition } from "@/lib/workspace/use-chord-audition";
+import { useAudition, type Audition } from "@/lib/workspace/use-audition";
 import { useTabTimeline } from "@/lib/workspace/use-tab-timeline";
 
 import {
@@ -36,7 +36,7 @@ export type TabView = {
   readonly timeline: TrackTimeline;
   readonly runs: ReturnType<typeof sectionRuns>;
   /** Play one shape briefly, through the preview path that already exists. */
-  audition(voicingId: string): void;
+  audition: Audition;
 };
 
 export function useTabView(options: {
@@ -56,7 +56,7 @@ export function useTabView(options: {
     trackId: track?.id ?? "",
   });
 
-  const audition = useChordAudition({
+  const audition = useAudition({
     song,
     track,
     open: chords.isOpen,

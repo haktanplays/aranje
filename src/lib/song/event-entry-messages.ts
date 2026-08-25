@@ -22,7 +22,5 @@ export const EVENT_ENTRY_MESSAGES: Readonly<Record<EventEntryErrorCode, string>>
   target_occupied: "Burada zaten bir ses var.",
   nothing_to_remove: "Burada silinecek bir şey yok.",
   pitch_unreadable: "Bu nota adı okunamadı.",
-  instrument_range_unavailable:
-    "Bu enstrümanın ses aralığı kayıtlı değil, o yüzden sınır kontrolü yapılamıyor.",
   validation_failed: "Bu yazım kontrollerden geçmedi ve uygulanmadı.",
 };

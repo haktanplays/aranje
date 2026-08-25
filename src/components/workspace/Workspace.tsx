@@ -20,7 +20,7 @@
  * once: undo/redo grounding, the project-apply ground, the Copilot gates,
  * and the layout.
  */
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 
 import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
@@ -152,6 +152,7 @@ export function Workspace() {
     noteEditing,
     navigation,
     closeCopilot,
+    openCopilot: copilot.open,
     clearAudition: mixer.clearAudition,
     pause,
     transport: controller,
@@ -205,12 +206,6 @@ export function Workspace() {
     clearTimeSelection: session.time.clear,
     setTrack: navigation.selectTrack,
   });
-
-  const openCopilot = useCallback(() => {
-    pause();
-    noteEditing.stopForTrackChange();
-    copilot.open();
-  }, [copilot, noteEditing, pause]);
 
   /* ------------------------------------------------------------ lifecycle */
 
@@ -321,7 +316,7 @@ export function Workspace() {
         canEdit={canEdit}
         editDisabledReason={editDisabledReason}
         onToggleEdit={noteEditing.toggleEdit}
-        onArrange={openCopilot}
+        onArrange={ground.enterCopilot}
         arrangeDisabled={skills.length === 0 || previewOpen || !canPersist}
         canUndo={canUndo}
         canRedo={canRedo}
@@ -354,8 +349,10 @@ export function Workspace() {
         overlays={overlays}
         navigation={navigation}
         noteEditing={noteEditing}
+        entry={entry}
+        onNoteAudition={tab.audition.note}
         chords={chords}
-        onAudition={tab.audition}
+        onAudition={tab.audition.voicing}
         copilot={copilot}
         copilotSkills={skills}
         previewOpen={previewOpen}

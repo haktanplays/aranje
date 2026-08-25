@@ -456,7 +456,7 @@ probe "49 a chord commit stops naming its history action" \
 # -------------------------------------------------------------- browser probes
 
 probe "50 the audition writes to storage" \
-  src/lib/workspace/use-chord-audition.ts \
+  src/lib/workspace/use-audition.ts \
   '      engine.start(
         auditionSong(song, track, voicing, { velocity, articulation }),
         "chord-audition",
@@ -471,7 +471,7 @@ probe "50 the audition writes to storage" \
   "$(browser audition)"
 
 probe "51 a preview voice outlives the sheet" \
-  src/lib/workspace/use-chord-audition.ts \
+  src/lib/workspace/use-audition.ts \
   '  useEffect(() => {
     if (!open) engine.stop();
   }, [engine, open]);' \

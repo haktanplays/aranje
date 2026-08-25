@@ -28,6 +28,13 @@ import {
   type EventEntryTarget,
 } from "@/lib/song/event-entry";
 import { buildDrumStepModel, type DrumStepModel } from "@/lib/tab/drum-step-model";
+import {
+  buildPitchedStepModel,
+  suggestedOctave,
+  type PitchedStepModel,
+} from "@/lib/tab/pitched-step-model";
+import { isPitchedTrack } from "@/lib/song/event-entry";
+import { isPlayablePreset } from "@/lib/audio/preset-availability";
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import type { Track } from "@/lib/song/schema";
 import type { DrumPiece } from "@/lib/instruments/registry";
@@ -56,6 +63,25 @@ export const HIT_LEVEL_LABELS: Readonly<Record<HitLevel, string>> = {
   accent: "Vurgulu",
 };
 
+/**
+ * The moment the note sheet is asking about.
+ *
+ * It is assembled here rather than in the sheet because every field on it is
+ * a fact about the song — which bar, what is already written, which octave
+ * the music has been sitting in, whether this instrument can be heard at all
+ * — and a sheet that worked those out itself would be a second reader of the
+ * song that could disagree with the lane under it.
+ */
+export type PitchedNoteTarget = {
+  readonly ticks: number;
+  readonly barNumber: number;
+  readonly slotIndex: number;
+  readonly pitches: readonly string[];
+  readonly octave: number;
+  /** False when this track's preset has no sound in this build. */
+  readonly audible: boolean;
+};
+
 export type EventEntry = {
   /**
    * The kit as a grid, when the track being edited is one.
@@ -65,6 +91,12 @@ export type EventEntry = {
    * this beat" — which is exactly what the toggle asks.
    */
   readonly drumStep: DrumStepModel | null;
+  /** The same, for a fretless track: one row of moments (§7.1). */
+  readonly pitchedStep: PitchedStepModel | null;
+  /** The moment the note sheet is open on, or null when it is closed. */
+  readonly noteTarget: PitchedNoteTarget | null;
+  openNote(ticks: number): void;
+  closeNote(): void;
   /** The last refusal, in the reader's words, or null. */
   readonly entryError: string | null;
   clearEntryError(): void;
@@ -94,6 +126,8 @@ export function useEventEntry(options: {
   const { song, track, sectionId, commit, pause } = options;
   const [entryError, setEntryError] = useState<string | null>(null);
 
+  const [noteTicks, setNoteTicks] = useState<number | null>(null);
+
   const drumStep = useMemo(
     () =>
       track && isDrumInstrument(track.instrumentId)
@@ -101,6 +135,41 @@ export function useEventEntry(options: {
         : null,
     [sectionId, song, track],
   );
+
+  const pitchedStep = useMemo(
+    () =>
+      track && isPitchedTrack(track)
+        ? buildPitchedStepModel(song, sectionId, track.id)
+        : null,
+    [sectionId, song, track],
+  );
+
+  /*
+   * The sheet is described from the song every render, so writing a note and
+   * then reopening the sheet on the same moment cannot show the reader what
+   * used to be there.
+   */
+  const noteTarget = useMemo((): PitchedNoteTarget | null => {
+    if (pitchedStep === null || noteTicks === null || track === null) return null;
+    const cell = pitchedStep.cells.find((entry) => entry.ticks === noteTicks);
+    if (!cell) return null;
+    const bar = pitchedStep.bars.find((entry) => entry.barIndex === cell.barIndex);
+    return {
+      ticks: cell.ticks,
+      barNumber: bar?.barNumber ?? cell.barIndex + 1,
+      slotIndex: cell.slotIndex,
+      pitches: cell.pitches,
+      octave: suggestedOctave(song, track.id),
+      audible: isPlayablePreset(track.instrumentId, track.presetId),
+    };
+  }, [noteTicks, pitchedStep, song, track]);
+
+  const openNote = useCallback((ticks: number) => {
+    setEntryError(null);
+    setNoteTicks(ticks);
+  }, []);
+
+  const closeNote = useCallback(() => setNoteTicks(null), []);
 
   /**
    * A refusal, in the reader's words. Returns false so a caller can read as
@@ -125,6 +194,7 @@ export function useEventEntry(options: {
 
   const writeDrumHit = useCallback(
     (target: EventEntryTarget, piece: DrumPiece, level: HitLevel = "normal") => {
+      pause();
       const hit: { velocity: number; articulation?: DrumHit["articulation"] } = {
         velocity: HIT_VELOCITIES[level],
         ...(level === "normal" ? {} : { articulation: level }),
@@ -132,15 +202,16 @@ export function useEventEntry(options: {
       const result = insertDrumHit(song, target, { piece, ...hit });
       if (settled(result)) commit(result.song, { kind: "drum_entry", command: "insert" });
     },
-    [commit, settled, song],
+    [commit, pause, settled, song],
   );
 
   const eraseDrumHit = useCallback(
     (target: EventEntryTarget, piece: DrumPiece) => {
+      pause();
       const result = removeDrumHit(song, target, piece);
       if (settled(result)) commit(result.song, { kind: "drum_entry", command: "remove" });
     },
-    [commit, settled, song],
+    [commit, pause, settled, song],
   );
 
   const toggleDrumHit = useCallback(
@@ -172,22 +243,31 @@ export function useEventEntry(options: {
       if (!settled(result)) return;
       if (replace) commit(result.song, { kind: "pitched_entry", command: "replace" });
       else commit(result.song, { kind: "pitched_entry", command: "insert" });
+      // A written note answers the question the sheet was asking.
+      setNoteTicks(null);
     },
     [commit, pause, settled, song],
   );
 
   const erasePitchedNote = useCallback(
     (target: EventEntryTarget) => {
+      pause();
       const result = removePitchedNote(song, target);
-      if (settled(result)) commit(result.song, { kind: "pitched_entry", command: "remove" });
+      if (!settled(result)) return;
+      commit(result.song, { kind: "pitched_entry", command: "remove" });
+      setNoteTicks(null);
     },
-    [commit, settled, song],
+    [commit, pause, settled, song],
   );
 
   const clearEntryError = useCallback(() => setEntryError(null), []);
 
   return {
     drumStep,
+    pitchedStep,
+    noteTarget,
+    openNote,
+    closeNote,
     entryError,
     clearEntryError,
     toggleDrumHit,
