@@ -193,7 +193,14 @@ function loadFixture(name: string): Song {
 function grids(fixtureName: string, trackId: string) {
   const song = loadFixture(fixtureName);
   return song.sections.map((section) => {
-    const model = buildDrumStepModel(song, trackId, section.id);
+    /*
+     * `(song, sectionId, trackId)` — the first run of this harness passed the
+     * two ids the other way round. `buildDrumStepModel` answers an unknown
+     * section with the song's *first* one, so every row silently measured
+     * section one four times over instead of four different grids, and the
+     * mistake produced plausible numbers rather than an error.
+     */
+    const model = buildDrumStepModel(song, section.id, trackId);
     const axis = drumGridAxis(model, SLOT_WIDTH);
     return {
       key: `${fixtureName}/${section.id}`,

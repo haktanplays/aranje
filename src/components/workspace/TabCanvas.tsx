@@ -46,8 +46,8 @@ import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { useLongPress } from "@/lib/ui/use-long-press";
-import { xAtSection, xAtTicks } from "@/lib/tab/song-axis";
-import { useDrumGridWindow } from "@/lib/workspace/use-drum-grid-window";
+import { xAtTicks } from "@/lib/tab/song-axis";
+import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import type { PlayPosition } from "@/lib/audio/position";
@@ -183,19 +183,12 @@ export function TabCanvas({
    * The row's three parts still add up to `contentWidthPx` exactly — the tail
    * is a remainder, not a sum — so an armed kit never widens the surface.
    */
-  const gridLeadPx = drumEntry
-    ? xAtSection(surface.axis, drumEntry.model.sectionId) ?? 0
-    : null;
-  const grid = useDrumGridWindow({
+  const { grid, leadPx, tailPx } = useArmedGridRow({
+    surface,
     model: drumEntry?.model ?? null,
     scrollRef,
-    offsetPx: GUTTER_WIDTH + (gridLeadPx ?? 0),
+    originPx: GUTTER_WIDTH,
   });
-  const leadPx = gridLeadPx ?? surface.window.beforePx;
-  const drawnPx =
-    gridLeadPx === null ? surface.window.renderedPx : grid.axis.totalWidthPx;
-  const tailPx =
-    Math.max(0, surface.contentWidthPx - GUTTER_WIDTH - leadPx - drawnPx);
 
   const { scrollToBar } = surface;
   useEffect(() => {

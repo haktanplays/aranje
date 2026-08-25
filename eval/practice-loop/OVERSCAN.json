@@ -26,7 +26,7 @@
       "behind": 0.5,
       "ahead": 1
     },
-    "maxMountedCells": 120
+    "maxMountedCells": 210
   },
   "cleanCandidates": [
     {
@@ -35,7 +35,7 @@
         "behind": 0.5,
         "ahead": 1
       },
-      "maxMountedCells": 120
+      "maxMountedCells": 210
     },
     {
       "name": "one behind, one ahead (1 + 1)",
@@ -43,7 +43,7 @@
         "behind": 1,
         "ahead": 1
       },
-      "maxMountedCells": 144
+      "maxMountedCells": 252
     },
     {
       "name": "one behind, two ahead (1 + 2)",
@@ -51,7 +51,7 @@
         "behind": 1,
         "ahead": 2
       },
-      "maxMountedCells": 188
+      "maxMountedCells": 329
     }
   ],
   "grids": [
@@ -63,7 +63,7 @@
       "bars": 8,
       "columns": 256,
       "totalWidthPx": 8704,
-      "rows": 4
+      "rows": 7
     },
     {
       "key": "denseKit/verse",
@@ -72,9 +72,9 @@
         16
       ],
       "bars": 8,
-      "columns": 256,
-      "totalWidthPx": 8704,
-      "rows": 4
+      "columns": 96,
+      "totalWidthPx": 3264,
+      "rows": 7
     },
     {
       "key": "denseKit/bridge",
@@ -82,9 +82,9 @@
         12
       ],
       "bars": 8,
-      "columns": 256,
-      "totalWidthPx": 8704,
-      "rows": 4
+      "columns": 72,
+      "totalWidthPx": 2448,
+      "rows": 7
     },
     {
       "key": "denseKit/outro",
@@ -92,9 +92,9 @@
         8
       ],
       "bars": 8,
-      "columns": 256,
-      "totalWidthPx": 8704,
-      "rows": 4
+      "columns": 64,
+      "totalWidthPx": 2176,
+      "rows": 7
     },
     {
       "key": "practiceSong/four",
@@ -113,8 +113,8 @@
         8
       ],
       "bars": 3,
-      "columns": 40,
-      "totalWidthPx": 1360,
+      "columns": 18,
+      "totalWidthPx": 612,
       "rows": 4
     },
     {
@@ -123,8 +123,8 @@
         8
       ],
       "bars": 3,
-      "columns": 40,
-      "totalWidthPx": 1360,
+      "columns": 18,
+      "totalWidthPx": 612,
       "rows": 4
     },
     {
@@ -133,8 +133,8 @@
         8
       ],
       "bars": 3,
-      "columns": 40,
-      "totalWidthPx": 1360,
+      "columns": 21,
+      "totalWidthPx": 714,
       "rows": 4
     }
   ],
@@ -142,7 +142,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -178,7 +178,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -214,7 +214,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -250,7 +250,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -286,7 +286,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -322,7 +322,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -358,7 +358,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -394,7 +394,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -430,7 +430,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -466,7 +466,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -502,7 +502,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -538,7 +538,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -574,7 +574,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -610,7 +610,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -646,7 +646,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -682,7 +682,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -718,7 +718,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -754,7 +754,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -790,7 +790,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -826,7 +826,7 @@
     {
       "grid": "denseKit/dense",
       "columns": 256,
-      "rows": 4,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -861,8 +861,8 @@
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -871,34 +871,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 49,
+        "blankFrames": 49,
         "largestBlankPx": 60,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 49,
+        "blankFrames": 49,
         "largestBlankPx": 60,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
-        "blankFrames": 246,
+        "frames": 327,
+        "blankFrames": 86,
         "largestBlankPx": 9,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 492
+        "windowChanges": 172
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -907,34 +907,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 49,
+        "blankFrames": 49,
         "largestBlankPx": 120,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 49,
+        "blankFrames": 49,
         "largestBlankPx": 120,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
-        "blankFrames": 492,
+        "frames": 327,
+        "blankFrames": 172,
         "largestBlankPx": 18,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 492
+        "windowChanges": 172
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -943,34 +943,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 47,
+        "blankFrames": 47,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 47,
+        "blankFrames": 47,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
-        "blankFrames": 244,
+        "frames": 319,
+        "blankFrames": 84,
         "largestBlankPx": 9,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 488
+        "windowChanges": 168
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -979,34 +979,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 47,
+        "blankFrames": 47,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 47,
+        "blankFrames": 47,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
-        "blankFrames": 488,
+        "frames": 319,
+        "blankFrames": 168,
         "largestBlankPx": 18,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 488
+        "windowChanges": 168
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1015,34 +1015,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
         "meanMountedColumns": 15,
-        "windowChanges": 139
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
         "meanMountedColumns": 15,
-        "windowChanges": 139
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15.1,
-        "windowChanges": 327
+        "meanMountedColumns": 15,
+        "windowChanges": 114
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1051,34 +1051,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
-        "blankFrames": 138,
+        "frames": 49,
+        "blankFrames": 48,
         "largestBlankPx": 40,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 138,
+        "frames": 49,
+        "blankFrames": 48,
         "largestBlankPx": 40,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15.1,
-        "windowChanges": 327
+        "meanMountedColumns": 15,
+        "windowChanges": 114
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1087,34 +1087,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
         "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
         "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.2,
-        "windowChanges": 429
+        "meanMountedColumns": 18.1,
+        "windowChanges": 145
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1123,34 +1123,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
-        "blankFrames": 88,
+        "frames": 47,
+        "blankFrames": 30,
         "largestBlankPx": 22,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 18,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 88,
+        "frames": 47,
+        "blankFrames": 30,
         "largestBlankPx": 22,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 18,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.2,
-        "windowChanges": 429
+        "meanMountedColumns": 18.1,
+        "windowChanges": 145
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1159,34 +1159,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.8,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.8,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 478
+        "meanMountedColumns": 23.8,
+        "windowChanges": 158
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1195,34 +1195,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.9,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.9,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 478
+        "meanMountedColumns": 23.8,
+        "windowChanges": 158
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1231,34 +1231,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 138
+        "meanMountedColumns": 28.8,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 138
+        "meanMountedColumns": 28.8,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 471
+        "meanMountedColumns": 28.6,
+        "windowChanges": 151
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1267,34 +1267,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.4,
-        "windowChanges": 138
+        "meanMountedColumns": 28.8,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.4,
-        "windowChanges": 138
+        "meanMountedColumns": 28.8,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 471
+        "meanMountedColumns": 28.6,
+        "windowChanges": 151
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -1303,34 +1303,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 28,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 28,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 424
+        "meanMountedColumns": 28.1,
+        "windowChanges": 139
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -1339,34 +1339,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 28,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 28,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 424
+        "meanMountedColumns": 28.1,
+        "windowChanges": 139
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -1375,34 +1375,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33.8,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33.8,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 465
+        "meanMountedColumns": 33.7,
+        "windowChanges": 145
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -1411,34 +1411,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33.7,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33.7,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 465
+        "meanMountedColumns": 33.7,
+        "windowChanges": 145
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -1447,34 +1447,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 36,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 36,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.7,
-        "windowChanges": 464
+        "meanMountedColumns": 35.9,
+        "windowChanges": 144
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -1483,34 +1483,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 36.1,
+        "windowChanges": 49
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 49,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 36.1,
+        "windowChanges": 49
       },
       "drag": {
-        "frames": 931,
+        "frames": 327,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.7,
-        "windowChanges": 464
+        "meanMountedColumns": 36,
+        "windowChanges": 144
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -1519,34 +1519,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 138
+        "meanMountedColumns": 43.2,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 138
+        "meanMountedColumns": 43.2,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 360
+        "meanMountedColumns": 42.8,
+        "windowChanges": 111
       }
     },
     {
       "grid": "denseKit/verse",
-      "columns": 256,
-      "rows": 4,
+      "columns": 96,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -1555,34 +1555,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.6,
-        "windowChanges": 138
+        "meanMountedColumns": 43.4,
+        "windowChanges": 47
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 47,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.6,
-        "windowChanges": 138
+        "meanMountedColumns": 43.4,
+        "windowChanges": 47
       },
       "drag": {
-        "frames": 923,
+        "frames": 319,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 360
+        "meanMountedColumns": 42.8,
+        "windowChanges": 111
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -1591,34 +1591,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 35,
+        "blankFrames": 35,
         "largestBlankPx": 60,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 35,
+        "blankFrames": 35,
         "largestBlankPx": 60,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
-        "blankFrames": 246,
+        "frames": 236,
+        "blankFrames": 62,
         "largestBlankPx": 9,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 492
+        "windowChanges": 124
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -1627,34 +1627,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 35,
+        "blankFrames": 35,
         "largestBlankPx": 120,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 35,
+        "blankFrames": 35,
         "largestBlankPx": 120,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
-        "blankFrames": 492,
+        "frames": 236,
+        "blankFrames": 124,
         "largestBlankPx": 18,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 492
+        "windowChanges": 124
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -1663,34 +1663,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 34,
+        "blankFrames": 34,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 34,
+        "blankFrames": 34,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
-        "blankFrames": 244,
+        "frames": 228,
+        "blankFrames": 60,
         "largestBlankPx": 9,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 488
+        "windowChanges": 120
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -1699,34 +1699,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 34,
+        "blankFrames": 34,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 34,
+        "blankFrames": 34,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
-        "blankFrames": 488,
+        "frames": 228,
+        "blankFrames": 120,
         "largestBlankPx": 18,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 488
+        "windowChanges": 120
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1735,34 +1735,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.9,
+        "windowChanges": 35
+      },
+      "drag": {
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
         "meanMountedColumns": 15,
-        "windowChanges": 139
-      },
-      "drag": {
-        "frames": 931,
-        "blankFrames": 0,
-        "largestBlankPx": 0,
-        "maxMountedColumns": 16,
-        "meanMountedColumns": 15.1,
-        "windowChanges": 327
+        "windowChanges": 82
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1771,34 +1771,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
-        "blankFrames": 138,
+        "frames": 35,
+        "blankFrames": 34,
         "largestBlankPx": 40,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 138,
+        "frames": 35,
+        "blankFrames": 34,
         "largestBlankPx": 40,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15.1,
-        "windowChanges": 327
+        "meanMountedColumns": 15,
+        "windowChanges": 82
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1807,34 +1807,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 18,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 18,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.2,
-        "windowChanges": 429
+        "meanMountedColumns": 18,
+        "windowChanges": 102
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -1843,34 +1843,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
-        "blankFrames": 88,
+        "frames": 34,
+        "blankFrames": 21,
         "largestBlankPx": 22,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 17.9,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 88,
+        "frames": 34,
+        "blankFrames": 21,
         "largestBlankPx": 22,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 17.9,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.2,
-        "windowChanges": 429
+        "meanMountedColumns": 18,
+        "windowChanges": 102
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1879,34 +1879,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.6,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.6,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 478
+        "meanMountedColumns": 23.5,
+        "windowChanges": 110
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1915,34 +1915,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.7,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.7,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 478
+        "meanMountedColumns": 23.5,
+        "windowChanges": 110
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1951,34 +1951,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 138
+        "meanMountedColumns": 28.3,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 138
+        "meanMountedColumns": 28.3,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 471
+        "meanMountedColumns": 28.2,
+        "windowChanges": 103
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -1987,34 +1987,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.4,
-        "windowChanges": 138
+        "meanMountedColumns": 28.4,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.4,
-        "windowChanges": 138
+        "meanMountedColumns": 28.4,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 471
+        "meanMountedColumns": 28.2,
+        "windowChanges": 103
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2023,34 +2023,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.7,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.7,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 424
+        "meanMountedColumns": 27.7,
+        "windowChanges": 96
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2059,34 +2059,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.6,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.6,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 424
+        "meanMountedColumns": 27.7,
+        "windowChanges": 96
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2095,34 +2095,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33.1,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33.1,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 465
+        "meanMountedColumns": 33,
+        "windowChanges": 97
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2131,34 +2131,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 33,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 465
+        "meanMountedColumns": 33,
+        "windowChanges": 97
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2167,34 +2167,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 35.1,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 35.1,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.7,
-        "windowChanges": 464
+        "meanMountedColumns": 34.9,
+        "windowChanges": 96
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2203,34 +2203,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 35.3,
+        "windowChanges": 35
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 35,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 35.3,
+        "windowChanges": 35
       },
       "drag": {
-        "frames": 931,
+        "frames": 236,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.7,
-        "windowChanges": 464
+        "meanMountedColumns": 34.9,
+        "windowChanges": 96
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2239,34 +2239,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 138
+        "meanMountedColumns": 41.4,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 138
+        "meanMountedColumns": 41.4,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 360
+        "meanMountedColumns": 41.2,
+        "windowChanges": 74
       }
     },
     {
       "grid": "denseKit/bridge",
-      "columns": 256,
-      "rows": 4,
+      "columns": 72,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2275,34 +2275,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.6,
-        "windowChanges": 138
+        "meanMountedColumns": 41.7,
+        "windowChanges": 34
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 34,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.6,
-        "windowChanges": 138
+        "meanMountedColumns": 41.7,
+        "windowChanges": 34
       },
       "drag": {
-        "frames": 923,
+        "frames": 228,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 360
+        "meanMountedColumns": 41.3,
+        "windowChanges": 74
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -2311,34 +2311,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 30,
+        "blankFrames": 30,
         "largestBlankPx": 60,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 30,
+        "blankFrames": 30,
         "largestBlankPx": 60,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
-        "blankFrames": 246,
+        "frames": 206,
+        "blankFrames": 54,
         "largestBlankPx": 9,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 492
+        "windowChanges": 108
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -2347,34 +2347,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 30,
+        "blankFrames": 30,
         "largestBlankPx": 120,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 139,
+        "frames": 30,
+        "blankFrames": 30,
         "largestBlankPx": 120,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 139
+        "meanMountedColumns": 10.3,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
-        "blankFrames": 492,
+        "frames": 206,
+        "blankFrames": 108,
         "largestBlankPx": 18,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 492
+        "windowChanges": 108
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -2383,34 +2383,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 29,
+        "blankFrames": 29,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 29,
+        "blankFrames": 29,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
-        "blankFrames": 244,
+        "frames": 198,
+        "blankFrames": 52,
         "largestBlankPx": 9,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 488
+        "windowChanges": 104
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "none (0 + 0)",
       "overscan": {
         "behind": 0,
@@ -2419,34 +2419,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 29,
+        "blankFrames": 29,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 138,
+        "frames": 29,
+        "blankFrames": 29,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 138
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
-        "blankFrames": 488,
+        "frames": 198,
+        "blankFrames": 104,
         "largestBlankPx": 18,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 488
+        "windowChanges": 104
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -2455,34 +2455,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.9,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15.1,
-        "windowChanges": 327
+        "meanMountedColumns": 14.9,
+        "windowChanges": 71
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -2491,34 +2491,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
-        "blankFrames": 138,
+        "frames": 30,
+        "blankFrames": 29,
         "largestBlankPx": 40,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.8,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
-        "blankFrames": 138,
+        "frames": 30,
+        "blankFrames": 29,
         "largestBlankPx": 40,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15,
-        "windowChanges": 139
+        "meanMountedColumns": 14.8,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 15.1,
-        "windowChanges": 327
+        "meanMountedColumns": 14.9,
+        "windowChanges": 71
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -2527,34 +2527,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 18,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 18,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.2,
-        "windowChanges": 429
+        "meanMountedColumns": 18,
+        "windowChanges": 88
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
         "behind": 0.25,
@@ -2563,34 +2563,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
-        "blankFrames": 88,
+        "frames": 29,
+        "blankFrames": 18,
         "largestBlankPx": 22,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 17.9,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
-        "blankFrames": 88,
+        "frames": 29,
+        "blankFrames": 18,
         "largestBlankPx": 22,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.1,
-        "windowChanges": 138
+        "meanMountedColumns": 17.9,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 18.2,
-        "windowChanges": 429
+        "meanMountedColumns": 18,
+        "windowChanges": 88
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -2599,34 +2599,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.6,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.6,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 478
+        "meanMountedColumns": 23.4,
+        "windowChanges": 94
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -2635,34 +2635,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.7,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 139
+        "meanMountedColumns": 23.7,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 25,
-        "meanMountedColumns": 24.3,
-        "windowChanges": 478
+        "meanMountedColumns": 23.4,
+        "windowChanges": 94
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -2671,34 +2671,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 138
+        "meanMountedColumns": 28.2,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 138
+        "meanMountedColumns": 28.2,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 471
+        "meanMountedColumns": 28,
+        "windowChanges": 87
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
         "behind": 0.5,
@@ -2707,34 +2707,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.4,
-        "windowChanges": 138
+        "meanMountedColumns": 28.3,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.4,
-        "windowChanges": 138
+        "meanMountedColumns": 28.3,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 29.3,
-        "windowChanges": 471
+        "meanMountedColumns": 28,
+        "windowChanges": 87
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2743,34 +2743,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.6,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.6,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 424
+        "meanMountedColumns": 27.4,
+        "windowChanges": 82
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2779,34 +2779,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.4,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 139
+        "meanMountedColumns": 27.4,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 30,
-        "meanMountedColumns": 28.8,
-        "windowChanges": 424
+        "meanMountedColumns": 27.4,
+        "windowChanges": 82
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2815,34 +2815,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 32.8,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 32.8,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 465
+        "meanMountedColumns": 32.7,
+        "windowChanges": 81
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
         "behind": 1,
@@ -2851,34 +2851,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 32.7,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 138
+        "meanMountedColumns": 32.7,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 36,
-        "meanMountedColumns": 34.8,
-        "windowChanges": 465
+        "meanMountedColumns": 32.7,
+        "windowChanges": 81
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2887,34 +2887,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 34.8,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 34.8,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.7,
-        "windowChanges": 464
+        "meanMountedColumns": 34.3,
+        "windowChanges": 80
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2923,34 +2923,34 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 35,
+        "windowChanges": 30
       },
       "flingBack": {
-        "frames": 139,
+        "frames": 30,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.8,
-        "windowChanges": 139
+        "meanMountedColumns": 35,
+        "windowChanges": 30
       },
       "drag": {
-        "frames": 931,
+        "frames": 206,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 39,
-        "meanMountedColumns": 37.7,
-        "windowChanges": 464
+        "meanMountedColumns": 34.4,
+        "windowChanges": 80
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2959,34 +2959,34 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 138
+        "meanMountedColumns": 40.9,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 138
+        "meanMountedColumns": 40.9,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 360
+        "meanMountedColumns": 40.3,
+        "windowChanges": 62
       }
     },
     {
       "grid": "denseKit/outro",
-      "columns": 256,
-      "rows": 4,
+      "columns": 64,
+      "rows": 7,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
         "behind": 1,
@@ -2995,28 +2995,28 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.6,
-        "windowChanges": 138
+        "meanMountedColumns": 41.1,
+        "windowChanges": 29
       },
       "flingBack": {
-        "frames": 138,
+        "frames": 29,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.6,
-        "windowChanges": 138
+        "meanMountedColumns": 41.1,
+        "windowChanges": 29
       },
       "drag": {
-        "frames": 923,
+        "frames": 198,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 47,
-        "meanMountedColumns": 45.5,
-        "windowChanges": 360
+        "meanMountedColumns": 40.4,
+        "windowChanges": 62
       }
     },
     {
@@ -3741,7 +3741,7 @@
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -3751,33 +3751,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 60,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 58,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 60,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 58,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
-        "blankFrames": 30,
+        "frames": 32,
+        "blankFrames": 8,
         "largestBlankPx": 9,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 60
+        "windowChanges": 16
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -3787,33 +3787,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 120,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 118,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 120,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 118,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
-        "blankFrames": 60,
+        "frames": 32,
+        "blankFrames": 16,
         "largestBlankPx": 18,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 60
+        "windowChanges": 16
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -3823,33 +3823,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 3,
+        "blankFrames": 3,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "flingBack": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 3,
+        "blankFrames": 3,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "drag": {
-        "frames": 107,
-        "blankFrames": 28,
+        "frames": 24,
+        "blankFrames": 6,
         "largestBlankPx": 9,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 56
+        "windowChanges": 12
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -3859,33 +3859,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
-        "blankFrames": 16,
-        "largestBlankPx": 120,
+        "frames": 3,
+        "blankFrames": 3,
+        "largestBlankPx": 102,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "flingBack": {
-        "frames": 16,
-        "blankFrames": 16,
-        "largestBlankPx": 120,
+        "frames": 3,
+        "blankFrames": 3,
+        "largestBlankPx": 102,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "drag": {
-        "frames": 107,
-        "blankFrames": 56,
+        "frames": 24,
+        "blankFrames": 12,
         "largestBlankPx": 18,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 56
+        "windowChanges": 12
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -3895,33 +3895,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 17
+        "meanMountedColumns": 14.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 17
+        "meanMountedColumns": 14.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 39
+        "meanMountedColumns": 14.2,
+        "windowChanges": 10
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -3931,33 +3931,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
-        "blankFrames": 16,
-        "largestBlankPx": 38,
-        "maxMountedColumns": 16,
-        "meanMountedColumns": 14.6,
-        "windowChanges": 17
+        "frames": 4,
+        "blankFrames": 3,
+        "largestBlankPx": 32,
+        "maxMountedColumns": 15,
+        "meanMountedColumns": 13.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 16,
-        "largestBlankPx": 38,
-        "maxMountedColumns": 16,
-        "meanMountedColumns": 14.6,
-        "windowChanges": 17
+        "frames": 4,
+        "blankFrames": 3,
+        "largestBlankPx": 32,
+        "maxMountedColumns": 15,
+        "meanMountedColumns": 13.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 39
+        "meanMountedColumns": 14.2,
+        "windowChanges": 10
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -3967,33 +3967,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.7,
+        "windowChanges": 3
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.7,
+        "windowChanges": 3
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 45
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.5,
+        "windowChanges": 6
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -4003,33 +4003,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
-        "blankFrames": 9,
-        "largestBlankPx": 22,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.7,
-        "windowChanges": 16
-      },
-      "flingBack": {
-        "frames": 16,
-        "blankFrames": 9,
-        "largestBlankPx": 22,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.7,
-        "windowChanges": 16
-      },
-      "drag": {
-        "frames": 107,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 45
+        "maxMountedColumns": 17,
+        "meanMountedColumns": 15.7,
+        "windowChanges": 3
+      },
+      "flingBack": {
+        "frames": 3,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 17,
+        "meanMountedColumns": 15.7,
+        "windowChanges": 3
+      },
+      "drag": {
+        "frames": 24,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.5,
+        "windowChanges": 6
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4039,33 +4039,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.7,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.7,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.5,
-        "windowChanges": 46
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 17.4,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4075,33 +4075,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.6,
-        "windowChanges": 46
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 17.5,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4111,33 +4111,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.7,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.7,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.6,
-        "windowChanges": 39
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4147,33 +4147,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.9,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.9,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.6,
-        "windowChanges": 39
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4183,33 +4183,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.1,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.1,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26,
-        "windowChanges": 40
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4219,33 +4219,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 25.9,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 25.9,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26,
-        "windowChanges": 40
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4255,33 +4255,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 33
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4291,33 +4291,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.3,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.3,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 33
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -4327,33 +4327,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.4,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.4,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 39,
-        "meanMountedColumns": 31,
-        "windowChanges": 32
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -4363,33 +4363,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 39,
-        "meanMountedColumns": 31.1,
-        "windowChanges": 32
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -4399,33 +4399,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.2,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.2,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 34.9,
-        "windowChanges": 21
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/three",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -4435,33 +4435,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.8,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.8,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35,
-        "windowChanges": 21
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -4471,33 +4471,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 60,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 58,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 60,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 58,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
-        "blankFrames": 30,
+        "frames": 32,
+        "blankFrames": 8,
         "largestBlankPx": 9,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 60
+        "windowChanges": 16
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -4507,33 +4507,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 120,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 118,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 120,
+        "frames": 4,
+        "blankFrames": 4,
+        "largestBlankPx": 118,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
-        "blankFrames": 60,
+        "frames": 32,
+        "blankFrames": 16,
         "largestBlankPx": 18,
         "maxMountedColumns": 11,
         "meanMountedColumns": 10.4,
-        "windowChanges": 60
+        "windowChanges": 16
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -4543,33 +4543,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 3,
+        "blankFrames": 3,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "flingBack": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 3,
+        "blankFrames": 3,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "drag": {
-        "frames": 107,
-        "blankFrames": 28,
+        "frames": 24,
+        "blankFrames": 6,
         "largestBlankPx": 9,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 56
+        "windowChanges": 12
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -4579,33 +4579,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
-        "blankFrames": 16,
-        "largestBlankPx": 120,
+        "frames": 3,
+        "blankFrames": 3,
+        "largestBlankPx": 102,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "flingBack": {
-        "frames": 16,
-        "blankFrames": 16,
-        "largestBlankPx": 120,
+        "frames": 3,
+        "blankFrames": 3,
+        "largestBlankPx": 102,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.3,
+        "windowChanges": 3
       },
       "drag": {
-        "frames": 107,
-        "blankFrames": 56,
+        "frames": 24,
+        "blankFrames": 12,
         "largestBlankPx": 18,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 56
+        "windowChanges": 12
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -4615,33 +4615,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 17
+        "meanMountedColumns": 14.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 17
+        "meanMountedColumns": 14.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 39
+        "meanMountedColumns": 14.2,
+        "windowChanges": 10
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -4651,33 +4651,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
-        "blankFrames": 16,
-        "largestBlankPx": 38,
-        "maxMountedColumns": 16,
-        "meanMountedColumns": 14.6,
-        "windowChanges": 17
+        "frames": 4,
+        "blankFrames": 3,
+        "largestBlankPx": 32,
+        "maxMountedColumns": 15,
+        "meanMountedColumns": 13.3,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 16,
-        "largestBlankPx": 38,
-        "maxMountedColumns": 16,
-        "meanMountedColumns": 14.6,
-        "windowChanges": 17
+        "frames": 4,
+        "blankFrames": 3,
+        "largestBlankPx": 32,
+        "maxMountedColumns": 15,
+        "meanMountedColumns": 13.3,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 39
+        "meanMountedColumns": 14.2,
+        "windowChanges": 10
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -4687,33 +4687,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.7,
+        "windowChanges": 3
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.7,
+        "windowChanges": 3
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 45
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.5,
+        "windowChanges": 6
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -4723,33 +4723,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
-        "blankFrames": 9,
-        "largestBlankPx": 22,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.7,
-        "windowChanges": 16
-      },
-      "flingBack": {
-        "frames": 16,
-        "blankFrames": 9,
-        "largestBlankPx": 22,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.7,
-        "windowChanges": 16
-      },
-      "drag": {
-        "frames": 107,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 45
+        "maxMountedColumns": 17,
+        "meanMountedColumns": 15.7,
+        "windowChanges": 3
+      },
+      "flingBack": {
+        "frames": 3,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 17,
+        "meanMountedColumns": 15.7,
+        "windowChanges": 3
+      },
+      "drag": {
+        "frames": 24,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.5,
+        "windowChanges": 6
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4759,33 +4759,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.7,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.7,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.5,
-        "windowChanges": 46
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 17.4,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4795,33 +4795,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 1
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.6,
-        "windowChanges": 46
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 17.5,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4831,33 +4831,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.7,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.7,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.6,
-        "windowChanges": 39
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -4867,33 +4867,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.9,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.9,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.6,
-        "windowChanges": 39
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4903,33 +4903,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.1,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.1,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26,
-        "windowChanges": 40
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4939,33 +4939,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 25.9,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 25.9,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26,
-        "windowChanges": 40
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -4975,33 +4975,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 33
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -5011,33 +5011,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.3,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.3,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 33
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5047,33 +5047,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.4,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.4,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 39,
-        "meanMountedColumns": 31,
-        "windowChanges": 32
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5083,33 +5083,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 4,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.8,
-        "windowChanges": 17
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 115,
+        "frames": 32,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 39,
-        "meanMountedColumns": 31.1,
-        "windowChanges": 32
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5119,33 +5119,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.2,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.2,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 34.9,
-        "windowChanges": 21
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/sixeight",
-      "columns": 40,
+      "columns": 18,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5155,33 +5155,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.8,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 3,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.8,
-        "windowChanges": 12
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 24,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35,
-        "windowChanges": 21
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 18,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -5191,33 +5191,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 60,
+        "frames": 6,
+        "blankFrames": 6,
+        "largestBlankPx": 58,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 6
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 60,
+        "frames": 6,
+        "blankFrames": 6,
+        "largestBlankPx": 58,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.3,
+        "windowChanges": 6
       },
       "drag": {
-        "frames": 115,
-        "blankFrames": 30,
+        "frames": 43,
+        "blankFrames": 11,
         "largestBlankPx": 9,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 60
+        "meanMountedColumns": 10.3,
+        "windowChanges": 22
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -5227,33 +5227,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 120,
+        "frames": 6,
+        "blankFrames": 6,
+        "largestBlankPx": 118,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.2,
+        "windowChanges": 6
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 17,
-        "largestBlankPx": 120,
+        "frames": 6,
+        "blankFrames": 6,
+        "largestBlankPx": 118,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 17
+        "meanMountedColumns": 10.2,
+        "windowChanges": 6
       },
       "drag": {
-        "frames": 115,
-        "blankFrames": 60,
+        "frames": 43,
+        "blankFrames": 22,
         "largestBlankPx": 18,
         "maxMountedColumns": 11,
-        "meanMountedColumns": 10.4,
-        "windowChanges": 60
+        "meanMountedColumns": 10.3,
+        "windowChanges": 22
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -5263,33 +5263,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 5,
+        "blankFrames": 5,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.2,
+        "windowChanges": 5
       },
       "flingBack": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 5,
+        "blankFrames": 5,
         "largestBlankPx": 60,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.2,
+        "windowChanges": 5
       },
       "drag": {
-        "frames": 107,
-        "blankFrames": 28,
+        "frames": 36,
+        "blankFrames": 9,
         "largestBlankPx": 9,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 56
+        "windowChanges": 18
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "none (0 + 0)",
       "overscan": {
@@ -5299,33 +5299,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 5,
+        "blankFrames": 5,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.2,
+        "windowChanges": 5
       },
       "flingBack": {
-        "frames": 16,
-        "blankFrames": 16,
+        "frames": 5,
+        "blankFrames": 5,
         "largestBlankPx": 120,
         "maxMountedColumns": 13,
-        "meanMountedColumns": 12.4,
-        "windowChanges": 16
+        "meanMountedColumns": 12.2,
+        "windowChanges": 5
       },
       "drag": {
-        "frames": 107,
-        "blankFrames": 56,
+        "frames": 36,
+        "blankFrames": 18,
         "largestBlankPx": 18,
         "maxMountedColumns": 13,
         "meanMountedColumns": 12.4,
-        "windowChanges": 56
+        "windowChanges": 18
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -5335,33 +5335,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 17
+        "meanMountedColumns": 14.5,
+        "windowChanges": 6
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 17
+        "meanMountedColumns": 14.5,
+        "windowChanges": 6
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 39
+        "meanMountedColumns": 14.4,
+        "windowChanges": 13
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -5371,33 +5371,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
-        "blankFrames": 16,
-        "largestBlankPx": 38,
+        "frames": 6,
+        "blankFrames": 5,
+        "largestBlankPx": 34,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.6,
-        "windowChanges": 17
+        "meanMountedColumns": 14,
+        "windowChanges": 6
       },
       "flingBack": {
-        "frames": 17,
-        "blankFrames": 16,
-        "largestBlankPx": 38,
+        "frames": 6,
+        "blankFrames": 5,
+        "largestBlankPx": 34,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.6,
-        "windowChanges": 17
+        "meanMountedColumns": 14,
+        "windowChanges": 6
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 16,
-        "meanMountedColumns": 14.8,
-        "windowChanges": 39
+        "meanMountedColumns": 14.4,
+        "windowChanges": 13
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -5407,33 +5407,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 17,
+        "windowChanges": 5
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 16
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 17,
+        "windowChanges": 5
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 45
+        "meanMountedColumns": 17,
+        "windowChanges": 12
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "quarter (0.25 + 0.25)",
       "overscan": {
@@ -5443,33 +5443,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
-        "blankFrames": 9,
-        "largestBlankPx": 22,
+        "frames": 5,
+        "blankFrames": 2,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.6,
+        "windowChanges": 5
+      },
+      "flingBack": {
+        "frames": 5,
+        "blankFrames": 2,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 18,
+        "meanMountedColumns": 16.6,
+        "windowChanges": 5
+      },
+      "drag": {
+        "frames": 36,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
         "maxMountedColumns": 19,
-        "meanMountedColumns": 17.7,
-        "windowChanges": 16
-      },
-      "flingBack": {
-        "frames": 16,
-        "blankFrames": 9,
-        "largestBlankPx": 22,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.7,
-        "windowChanges": 16
-      },
-      "drag": {
-        "frames": 107,
-        "blankFrames": 0,
-        "largestBlankPx": 0,
-        "maxMountedColumns": 19,
-        "meanMountedColumns": 17.8,
-        "windowChanges": 45
+        "meanMountedColumns": 17,
+        "windowChanges": 12
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -5479,33 +5479,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.7,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 19.7,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.7,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 19.7,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.5,
-        "windowChanges": 46
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 19.3,
+        "windowChanges": 8
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -5515,33 +5515,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.8,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20,
+        "windowChanges": 4
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.8,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20,
+        "windowChanges": 4
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 25,
-        "meanMountedColumns": 22.6,
-        "windowChanges": 46
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 19.3,
+        "windowChanges": 8
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -5551,33 +5551,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.7,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.8,
+        "windowChanges": 2
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.7,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.8,
+        "windowChanges": 2
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.6,
-        "windowChanges": 39
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.5,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "half behind, one ahead (0.5 + 1)",
       "overscan": {
@@ -5587,33 +5587,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.9,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 2
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.9,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 2
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.6,
-        "windowChanges": 39
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.6,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -5623,33 +5623,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.1,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.7,
+        "windowChanges": 2
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26.1,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.7,
+        "windowChanges": 2
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26,
-        "windowChanges": 40
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.8,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -5659,33 +5659,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 25.9,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.3,
+        "windowChanges": 2
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 25.9,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.3,
+        "windowChanges": 2
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 30,
-        "meanMountedColumns": 26,
-        "windowChanges": 40
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.8,
+        "windowChanges": 3
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -5695,33 +5695,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 33
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, one ahead (1 + 1)",
       "overscan": {
@@ -5731,33 +5731,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.3,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.3,
-        "windowChanges": 16
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 36,
-        "meanMountedColumns": 30.4,
-        "windowChanges": 33
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5767,33 +5767,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 1,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.4,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 1
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.4,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 1
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 39,
-        "meanMountedColumns": 31,
-        "windowChanges": 32
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 20.9,
+        "windowChanges": 1
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5803,33 +5803,33 @@
       "viewportWidthPx": 320,
       "commitFrames": 2,
       "fling": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.8,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 1
       },
       "flingBack": {
-        "frames": 17,
+        "frames": 6,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 38,
-        "meanMountedColumns": 31.8,
-        "windowChanges": 17
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 1
       },
       "drag": {
-        "frames": 115,
+        "frames": 43,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 39,
-        "meanMountedColumns": 31.1,
-        "windowChanges": 32
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 1
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5839,33 +5839,33 @@
       "viewportWidthPx": 390,
       "commitFrames": 1,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.2,
-        "windowChanges": 12
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.2,
-        "windowChanges": 12
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 34.9,
-        "windowChanges": 21
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       }
     },
     {
       "grid": "practiceSong/seveneight",
-      "columns": 40,
+      "columns": 21,
       "rows": 4,
       "candidate": "one behind, two ahead (1 + 2)",
       "overscan": {
@@ -5875,28 +5875,28 @@
       "viewportWidthPx": 390,
       "commitFrames": 2,
       "fling": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.8,
-        "windowChanges": 12
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "flingBack": {
-        "frames": 16,
+        "frames": 5,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35.8,
-        "windowChanges": 12
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       },
       "drag": {
-        "frames": 107,
+        "frames": 36,
         "blankFrames": 0,
         "largestBlankPx": 0,
-        "maxMountedColumns": 40,
-        "meanMountedColumns": 35,
-        "windowChanges": 21
+        "maxMountedColumns": 21,
+        "meanMountedColumns": 21,
+        "windowChanges": 0
       }
     }
   ]

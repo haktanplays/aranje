@@ -59,6 +59,10 @@ const workspaceHooks = readdirSync("src/lib/workspace")
 const COMPOSITION_HOOKS = new Set([
   "src/lib/workspace/use-workspace-files.ts",
   "src/lib/workspace/use-tab-view.ts",
+  // 2R-A §6: the armed kit's row is one decision made of a window and some
+  // arithmetic. It calls both and remembers neither, which the test below
+  // is what keeps true.
+  "src/lib/workspace/use-armed-grid-row.ts",
 ]);
 
 describe("38. the composition root stays a composition root", () => {
