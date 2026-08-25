@@ -89,6 +89,23 @@ Dikkate değer iki sayı:
    Bunu "hızlı" diye raporlamak yanlış olurdu — raporlanan, dokunuşun bir
    sonraki iki kare içinde ekrana çıktığıdır.
 
+3. **En büyük bölümde dokunuş kare sınırını aşıyor: 103,6 ms medyan, 181,3 ms
+   p95.** Contract'ın izin verdiği en yoğun bölüm (8 bar × 1/32 = 1.024 hücre)
+   masaüstü Chromium'da ölçüldü ve bu sayı artık kare sınırı değil, gerçek
+   maliyettir. Telefonda daha kötü olacaktır.
+
+   Bu bir uyarıdır ve kapatılmış bir madde değildir. Bu checkpoint'in kendi
+   kuralı "ölçmeden virtualization yok" idi; ölçüm yapıldı ve **cevabı bir
+   sonraki prompt'a bırakıyorum**, çünkü sanallaştırma kendi görsel ve
+   etkileşim kabulünü gerektirir (kaydırma sırasında hücre kimliği, playhead
+   hizası, seçim) ve onu bir checkpoint'in son saatinde eklemek ölçülmemiş bir
+   yüzey göndermek olurdu. Ne yapılmadığı burada yazılıdır.
+
+   Yan gözlem: yazma modundaki DOM, **okuma modundakinden küçüktür** (2.205'e
+   karşı 5.188 düğüm), çünkü step grid notasyonun yerine geçiyor, üstüne
+   binmiyor. Yani maliyet düğüm sayısından değil, 1.024 ayrı `<button>`un
+   olay ve düzen işinden geliyor.
+
 ## Mühürlü paket sınırı (§18)
 
 Açılmadı, yeniden üretilmedi, içeriği raporlanmadı. Yalnız SHA-256'ları

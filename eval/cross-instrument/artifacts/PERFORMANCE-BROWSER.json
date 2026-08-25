@@ -20,9 +20,9 @@
     },
     "tap": {
       "rounds": 24,
-      "medianMs": 31.9,
-      "p95Ms": 32.1,
-      "maxMs": 32.2
+      "medianMs": 31.7,
+      "p95Ms": 32,
+      "maxMs": 32.1
     },
     "warmupRounds": 6
   },
@@ -44,8 +44,8 @@
     "sheetOpen": {
       "rounds": 24,
       "medianMs": 49,
-      "p95Ms": 56,
-      "maxMs": 61
+      "p95Ms": 53,
+      "maxMs": 55
     }
   },
   "narrowViewport": {
@@ -53,5 +53,28 @@
     "drumCells": 64,
     "pitchedCells": 0,
     "buttons": 83
+  },
+  "worstCaseSection": {
+    "bars": 8,
+    "dom": {
+      "reading": {
+        "nodes": 5188,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "buttons": 51
+      },
+      "writing": {
+        "nodes": 2205,
+        "drumCells": 1024,
+        "pitchedCells": 0,
+        "buttons": 1043
+      }
+    },
+    "tap": {
+      "rounds": 24,
+      "medianMs": 103.6,
+      "p95Ms": 181.3,
+      "maxMs": 182.7
+    }
   }
 }
