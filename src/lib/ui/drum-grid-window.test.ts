@@ -79,7 +79,13 @@ function kitSong(
 }
 
 const dense = kitSong(8, 32);
-const model = buildDrumStepModel(dense, "s1", "drums");
+/** The grid, or a failure that names itself — the builder may return null. */
+const kit = (model: ReturnType<typeof buildDrumStepModel>) => {
+  if (!model) throw new Error("expected a kit grid, got none");
+  return model;
+};
+
+const model = kit(buildDrumStepModel({ song: dense, sectionId: "s1", trackId: "drums" }));
 const axis = drumGridAxis(model, SLOT);
 
 const at = (
@@ -144,7 +150,7 @@ describe("245. the grid's columns are one axis", () => {
         },
       ],
     }) as Song;
-    const built = drumGridAxis(buildDrumStepModel(mixed, "s1", "drums"), SLOT);
+    const built = drumGridAxis(kit(buildDrumStepModel({ song: mixed, sectionId: "s1", trackId: "drums" })), SLOT);
     expect(built.columns).toHaveLength(8 + 9);
     expect(built.columns.filter((column) => column.endsBar)).toHaveLength(2);
     expect(built.totalWidthPx).toBe(17 * SLOT);
@@ -282,7 +288,7 @@ describe("246. the window covers the viewport and adds up to the grid", () => {
 
   it("survives a viewport wider than the whole grid", () => {
     const small = drumGridAxis(
-      buildDrumStepModel(kitSong(1, 8), "s1", "drums"),
+      kit(buildDrumStepModel({ song: kitSong(1, 8), sectionId: "s1", trackId: "drums" })),
       SLOT,
     );
     const window = drumGridWindow({

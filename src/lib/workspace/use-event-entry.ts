@@ -133,7 +133,7 @@ export function useEventEntry(options: {
   const drumStep = useMemo(
     () =>
       track && isDrumInstrument(track.instrumentId)
-        ? buildDrumStepModel(song, sectionId, track.id)
+        ? buildDrumStepModel({ song, sectionId, trackId: track.id })
         : null,
     [sectionId, song, track],
   );

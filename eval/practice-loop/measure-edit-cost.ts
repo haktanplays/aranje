@@ -116,7 +116,8 @@ function measure(name: string) {
       b.bars.reduce((n, bar) => n + bar.resolution, 0) -
       a.bars.reduce((n, bar) => n + bar.resolution, 0),
   )[0]!;
-  const model = buildDrumStepModel(song, section.id, drums.id);
+  const model = buildDrumStepModel({ song, sectionId: section.id, trackId: drums.id });
+  if (!model) throw new Error(`${name}: no kit grid for ${section.id}`);
   const axis = drumGridAxis(model, SLOT_WIDTH);
 
   /* An empty cell to write to, and a filled one to erase. */
@@ -178,7 +179,7 @@ function measure(name: string) {
      * meaning of, and all of which are recomputed before the next paint.
      * This is the class §IV names as worth measuring before assuming.
      */
-    rebuildDrumModel: bench(() => buildDrumStepModel(candidate, section.id, drums.id)),
+    rebuildDrumModel: bench(() => buildDrumStepModel({ song: candidate, sectionId: section.id, trackId: drums.id })),
     rebuildGridAxis: bench(() => drumGridAxis(model, SLOT_WIDTH)),
     rebuildTabTimeline: bench(() => buildTrackTimeline(candidate, drums.id)),
     rebuildSectionRuns: bench(() => sectionRuns(candidate)),

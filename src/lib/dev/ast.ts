@@ -9,7 +9,7 @@
  *
  * Test-support only: product code never imports `@/lib/dev`.
  */
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import ts from "typescript";
 
 export function parseFile(path: string): ts.SourceFile {
@@ -258,4 +258,87 @@ export function numericLiteralsOf(path: string): Set<number> {
   };
   visit(source);
   return values;
+}
+
+/**
+ * Every `.ts`/`.tsx` file under a directory, in a stable order.
+ *
+ * For rules of the shape "nowhere in the repository does X happen". A test
+ * that names the files it checks can only be as complete as its own list;
+ * this one goes and looks.
+ */
+export function sourceFilesUnder(dir: string): string[] {
+  const found: string[] = [];
+  const walk = (at: string): void => {
+    for (const entry of readdirSync(at, { withFileTypes: true }).sort((a, b) =>
+      a.name < b.name ? -1 : 1,
+    )) {
+      const path = `${at}/${entry.name}`;
+      if (entry.isDirectory()) {
+        if (entry.name !== "node_modules") walk(path);
+      } else if (/\.tsx?$/.test(entry.name)) {
+        found.push(path);
+      }
+    }
+  };
+  walk(dir);
+  return found;
+}
+
+/** One call, as the syntax tree sees it. */
+export type CallSite = {
+  readonly path: string;
+  readonly line: number;
+  /** The arguments, as source text. Empty for a call with none. */
+  readonly args: readonly string[];
+  /** True when the sole argument is an object literal. */
+  readonly namedArguments: boolean;
+  /**
+   * The properties of that object literal, as `name` → initializer text.
+   * Empty when the call is not in that shape.
+   */
+  readonly properties: Readonly<Record<string, string>>;
+};
+
+/**
+ * Every *call* of an identifier in a file — never a mention of it.
+ *
+ * Comments and string literals naming the function are not call expressions,
+ * so a check built on this cannot be defeated (or falsely tripped) by prose.
+ */
+export function callSitesOf(path: string, name: string): CallSite[] {
+  const source = parseFile(path);
+  const sites: CallSite[] = [];
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ((ts.isIdentifier(node.expression) && node.expression.text === name) ||
+        (ts.isPropertyAccessExpression(node.expression) &&
+          node.expression.name.text === name))
+    ) {
+      const sole = node.arguments.length === 1 ? node.arguments[0] : undefined;
+      const object =
+        sole !== undefined && ts.isObjectLiteralExpression(sole) ? sole : null;
+      const properties: Record<string, string> = {};
+      for (const property of object?.properties ?? []) {
+        if (ts.isPropertyAssignment(property)) {
+          properties[property.name.getText(source)] =
+            property.initializer.getText(source);
+        } else if (ts.isShorthandPropertyAssignment(property)) {
+          properties[property.name.text] = property.name.text;
+        }
+      }
+      sites.push({
+        path,
+        line:
+          source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
+        args: node.arguments.map((argument) => argument.getText(source)),
+        namedArguments: object !== null,
+        properties,
+      });
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return sites;
 }

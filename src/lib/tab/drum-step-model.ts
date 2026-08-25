@@ -83,14 +83,41 @@ export function stepRowsFor(song: Song, trackId: string): DrumPiece[] {
   return DRUM_PIECES.filter((piece) => used.has(piece));
 }
 
+/**
+ * What the grid is being asked for (2R-A §2).
+ *
+ * An object, not two positional strings. `sectionId` and `trackId` are both
+ * `string`, so a caller could swap them and the compiler would agree —
+ * `eval/practice-loop/measure-overscan.ts` did exactly that, and because an
+ * unknown section used to resolve to the song's *first* one, it measured
+ * section one four times per fixture and produced plausible numbers instead
+ * of an error. Two mistakes compounding: an ambiguous call and a silent
+ * fallback. Both are closed here.
+ */
+export type DrumStepRequest = {
+  readonly song: Song;
+  readonly sectionId: string;
+  readonly trackId: string;
+};
+
+/**
+ * The kit's grid for one section, or null when it does not exist.
+ *
+ * Null rather than a fallback. A section id that names nothing is a bug or a
+ * stale piece of navigation state, and answering it with a *different*
+ * section's music is the worst possible response: it is wrong, it looks
+ * right, and nothing downstream can tell. The owner of the id settles it
+ * before asking, and a caller that gets null draws nothing.
+ */
 export function buildDrumStepModel(
-  song: Song,
-  sectionId: string,
-  trackId: string,
-): DrumStepModel {
-  const section =
-    song.sections.find((entry) => entry.id === sectionId) ?? song.sections[0];
-  const resolvedId = section?.id ?? sectionId;
+  request: DrumStepRequest,
+): DrumStepModel | null {
+  const { song, sectionId, trackId } = request;
+  const section = song.sections.find((entry) => entry.id === sectionId);
+  if (!section) return null;
+  // A track the song does not have has no kit to draw, for the same reason.
+  if (!song.tracks.some((track) => track.id === trackId)) return null;
+  const resolvedId = section.id;
 
   let barNumber = 0;
   for (const entry of song.sections) {
@@ -100,7 +127,7 @@ export function buildDrumStepModel(
 
   let startTicks = 0;
   const bars: DrumStepBar[] = [];
-  for (const [barIndex, bar] of (section?.bars ?? []).entries()) {
+  for (const [barIndex, bar] of section.bars.entries()) {
     const count = slotCount(bar.timeSignature, bar.resolution);
     bars.push({
       key: `${resolvedId}:${barIndex}`,
@@ -118,7 +145,7 @@ export function buildDrumStepModel(
   const rows = pieces.map((piece): DrumStepRow => {
     const cells: DrumStepCell[] = [];
     for (const bar of bars) {
-      const lane = section?.bars[bar.barIndex]?.slots[trackId];
+      const lane = section.bars[bar.barIndex]?.slots[trackId];
       const perSlot = ticksPerSlot(bar.resolution);
       for (let slotIndex = 0; slotIndex < bar.slotCount; slotIndex += 1) {
         const slot = Array.isArray(lane) ? lane[slotIndex] : undefined;
@@ -140,7 +167,7 @@ export function buildDrumStepModel(
     sectionId: resolvedId,
     rows,
     bars,
-    silentThroughout: (section?.bars ?? []).every(
+    silentThroughout: section.bars.every(
       (bar) => !Object.prototype.hasOwnProperty.call(bar.slots, trackId),
     ),
   };

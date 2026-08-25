@@ -194,13 +194,15 @@ function grids(fixtureName: string, trackId: string) {
   const song = loadFixture(fixtureName);
   return song.sections.map((section) => {
     /*
-     * `(song, sectionId, trackId)` — the first run of this harness passed the
-     * two ids the other way round. `buildDrumStepModel` answers an unknown
-     * section with the song's *first* one, so every row silently measured
-     * section one four times over instead of four different grids, and the
-     * mistake produced plausible numbers rather than an error.
+     * Named, not positional. The first run of this harness passed the two ids
+     * the other way round; both are `string`, so nothing objected, and an
+     * unknown section resolved to the song's first one — four grids measured
+     * as section one, four times, with plausible numbers instead of an error.
+     * 2R-A §2 closed both halves: the call is an object and an unknown
+     * section is null.
      */
-    const model = buildDrumStepModel(song, section.id, trackId);
+    const model = buildDrumStepModel({ song, sectionId: section.id, trackId });
+    if (!model) throw new Error(`no kit grid for ${section.id}/${trackId}`);
     const axis = drumGridAxis(model, SLOT_WIDTH);
     return {
       key: `${fixtureName}/${section.id}`,

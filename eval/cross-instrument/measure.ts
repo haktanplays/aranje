@@ -84,11 +84,12 @@ for (const [name, song] of Object.entries(songs)) {
     tracks: song.tracks.length,
   };
   if (drums) {
-    const built = buildDrumStepModel(song, sectionId, drums.id);
+    const built = buildDrumStepModel({ song, sectionId, trackId: drums.id });
+    if (!built) throw new Error(`no kit grid for ${sectionId}/${drums.id}`);
     entry.drumStep = {
       rows: built.rows.length,
       cells: built.rows.reduce((total, row) => total + row.cells.length, 0),
-      build: bench(() => buildDrumStepModel(song, sectionId, drums.id)),
+      build: bench(() => buildDrumStepModel({ song, sectionId, trackId: drums.id })),
       rowsScan: bench(() => stepRowsFor(song, drums.id)),
     };
   }

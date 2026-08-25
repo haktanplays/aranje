@@ -52,8 +52,14 @@ const AXIS = buildSongAxis(CEILING, SLOT_WIDTH);
 const VIEWPORT = 390;
 const CONTENT = GUTTER_WIDTH + AXIS.totalWidthPx + followTailPx(VIEWPORT);
 
+/** The grid, or a failure that names itself — the builder may return null. */
+const kit = (model: ReturnType<typeof buildDrumStepModel>) => {
+  if (!model) throw new Error("expected a kit grid, got none");
+  return model;
+};
+
 const gridOf = (sectionId: string) =>
-  drumGridAxis(buildDrumStepModel(CEILING, sectionId, "drums"), SLOT_WIDTH);
+  drumGridAxis(kit(buildDrumStepModel({ song: CEILING, sectionId: sectionId, trackId: "drums" })), SLOT_WIDTH);
 
 const reading = (beforePx: number, renderedPx: number): ReadingRowInput => ({
   contentWidthPx: CONTENT,

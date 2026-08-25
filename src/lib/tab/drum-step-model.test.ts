@@ -15,6 +15,18 @@ import type { Bar, DrumSlot, Song } from "@/lib/song/schema";
 
 const SECTION = SAMPLE_SONG.sections[0]!.id;
 
+/**
+ * The model, or a failure that names itself.
+ *
+ * `buildDrumStepModel` returns null for a section or track the song does not
+ * have (2R-A §2). Tests that expect a grid say so here, so a `null` shows up
+ * as this message rather than as a confusing property access far away.
+ */
+const built = (model: ReturnType<typeof buildDrumStepModel>) => {
+  if (!model) throw new Error("expected a kit grid, got none");
+  return model;
+};
+
 const emptied = (): Song => {
   const next = structuredClone(SAMPLE_SONG) as Song;
   for (const section of next.sections) {
@@ -52,7 +64,7 @@ describe("219. the drum step grid", () => {
   });
 
   it("carries the tick of every cell, not a slot index", () => {
-    const model = buildDrumStepModel(SAMPLE_SONG, SECTION, "drums");
+    const model = built(buildDrumStepModel({ song: SAMPLE_SONG, sectionId: SECTION, trackId: "drums" }));
     const bar0 = model.bars[0]!;
     const per = ticksPerSlot(bar0.resolution);
     const row = model.rows[0]!;
@@ -65,7 +77,7 @@ describe("219. the drum step grid", () => {
   });
 
   it("holds the hit that is there and nothing where there is none", () => {
-    const model = buildDrumStepModel(SAMPLE_SONG, SECTION, "drums");
+    const model = built(buildDrumStepModel({ song: SAMPLE_SONG, sectionId: SECTION, trackId: "drums" }));
     const kick = model.rows.find((row) => row.piece === "kick")!;
     const written = (SAMPLE_SONG.sections[0]!.bars[0]!.slots["drums"] as DrumSlot[])[0]!;
     expect(kick.cells[0]?.hit?.piece).toBe(
@@ -76,7 +88,7 @@ describe("219. the drum step grid", () => {
   });
 
   it("labels rows in the reader's language, never as an identifier", () => {
-    const model = buildDrumStepModel(SAMPLE_SONG, SECTION, "drums");
+    const model = built(buildDrumStepModel({ song: SAMPLE_SONG, sectionId: SECTION, trackId: "drums" }));
     for (const row of model.rows) {
       expect(row.label).not.toContain("_");
       expect(row.label.length).toBeGreaterThan(2);
@@ -84,7 +96,7 @@ describe("219. the drum step grid", () => {
   });
 
   it("gives every bar of the section a column run of its own slot count", () => {
-    const model = buildDrumStepModel(SAMPLE_SONG, SECTION, "drums");
+    const model = built(buildDrumStepModel({ song: SAMPLE_SONG, sectionId: SECTION, trackId: "drums" }));
     const total = model.bars.reduce((sum, bar) => sum + bar.slotCount, 0);
     for (const row of model.rows) expect(row.cells).toHaveLength(total);
   });
@@ -94,14 +106,43 @@ describe("219. the drum step grid", () => {
     for (const section of stripped.sections) {
       for (const bar of section.bars) delete bar.slots["drums"];
     }
-    expect(buildDrumStepModel(stripped, SECTION, "drums").silentThroughout).toBe(true);
-    expect(buildDrumStepModel(SAMPLE_SONG, SECTION, "drums").silentThroughout).toBe(false);
+    expect(built(buildDrumStepModel({ song: stripped, sectionId: SECTION, trackId: "drums" })).silentThroughout).toBe(true);
+    expect(built(buildDrumStepModel({ song: SAMPLE_SONG, sectionId: SECTION, trackId: "drums" })).silentThroughout).toBe(false);
   });
 
-  it("falls back to the first section rather than drawing nothing", () => {
-    const model = buildDrumStepModel(SAMPLE_SONG, "no-such-section", "drums");
-    expect(model.sectionId).toBe(SECTION);
-    expect(model.bars.length).toBeGreaterThan(0);
+  it("answers an unknown section with nothing, not with another section", () => {
+    /*
+     * It used to fall back to the song's first section. That is the worst
+     * possible answer to a bad id: wrong, plausible, and invisible to
+     * everything downstream — `eval/practice-loop/measure-overscan.ts`
+     * measured four different grids as section one for exactly this reason
+     * and reported believable numbers (2R-A §2).
+     */
+    expect(
+      buildDrumStepModel({
+        song: SAMPLE_SONG,
+        sectionId: "no-such-section",
+        trackId: "drums",
+      }),
+    ).toBeNull();
+  });
+
+  it("answers an unknown track the same way", () => {
+    expect(
+      buildDrumStepModel({ song: SAMPLE_SONG, sectionId: SECTION, trackId: "nope" }),
+    ).toBeNull();
+  });
+
+  it("cannot have its section and track swapped without saying so", () => {
+    /*
+     * The call that caused the harness defect, now expressed in the new API:
+     * the two ids are named, so a swap is a section that does not exist and
+     * a track that does not exist — and the answer is null rather than a
+     * different section's music.
+     */
+    expect(
+      buildDrumStepModel({ song: SAMPLE_SONG, sectionId: "drums", trackId: SECTION }),
+    ).toBeNull();
   });
 
   it("counts bar numbers from the start of the song, not the section", () => {
@@ -109,7 +150,7 @@ describe("219. the drum step grid", () => {
     // bars are the reader's own — restarting them in every section would
     // give two different bars the same name (2Q-B §17, probe 29).
     const second = SAMPLE_SONG.sections[1]!.id;
-    const model = buildDrumStepModel(SAMPLE_SONG, second, "drums");
+    const model = built(buildDrumStepModel({ song: SAMPLE_SONG, sectionId: second, trackId: "drums" }));
     expect(model.bars[0]?.barNumber).toBe(SAMPLE_SONG.sections[0]!.bars.length + 1);
   });
 
@@ -119,11 +160,11 @@ describe("219. the drum step grid", () => {
      * has written rests into, the other is a bar the kit has no lane in at
      * all. Collapsing them is the K-55 defect coming back (probe 30).
      */
-    expect(buildDrumStepModel(emptied(), SECTION, "drums").silentThroughout).toBe(false);
+    expect(built(buildDrumStepModel({ song: emptied(), sectionId: SECTION, trackId: "drums" })).silentThroughout).toBe(false);
     const unwritten = structuredClone(SAMPLE_SONG) as Song;
     for (const section of unwritten.sections) {
       for (const bar of section.bars) delete bar.slots["drums"];
     }
-    expect(buildDrumStepModel(unwritten, SECTION, "drums").silentThroughout).toBe(true);
+    expect(built(buildDrumStepModel({ song: unwritten, sectionId: SECTION, trackId: "drums" })).silentThroughout).toBe(true);
   });
 });

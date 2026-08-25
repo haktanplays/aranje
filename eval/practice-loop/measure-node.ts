@@ -58,7 +58,9 @@ const song = songSchema.parse(fixtures["denseKit"]) as Song;
 
 const SECTION = song.sections[0]!.id;
 const TRACK = "drums";
-const model = buildDrumStepModel(song, SECTION, TRACK);
+const built = buildDrumStepModel({ song, sectionId: SECTION, trackId: TRACK });
+if (!built) throw new Error(`no kit grid for ${SECTION}/${TRACK}`);
+const model = built;
 
 /** The moment the first empty cell of the dense section stands for. */
 const emptyCell = model.rows
@@ -140,7 +142,7 @@ const measured = {
     "validators: the whole chain": bench(() => runValidators(candidate)),
     "settle: the central gate": bench(() => settle(candidate)),
     "model: build the step grid": bench(() =>
-      buildDrumStepModel(candidate, SECTION, TRACK),
+      buildDrumStepModel({ song: candidate, sectionId: SECTION, trackId: TRACK }),
     ),
     "render: the per-cell lookup as it is": bench(currentPerCellLookup),
     "render: the same lookup, indexed once": bench(indexedPerCellLookup),
