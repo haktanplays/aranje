@@ -28,7 +28,9 @@
  */
 import { chordFail, type ChordFailure } from "@/lib/chords/chord-errors";
 import { voicingToNotes, type ChordVoicing } from "@/lib/chords/chord-voicing";
+import { isDrumInstrument } from "@/lib/instruments/registry";
 import { isChainArticulation } from "@/lib/song/articulation-roles";
+import { withEmptyLaneInBar } from "@/lib/song/track-lanes";
 import {
   findSection,
   sectionSlotStream,
@@ -161,6 +163,16 @@ export function applyChordWrite(
   const track = song.tracks.find((entry) => entry.id === command.trackId);
   if (!track) return chordFail("target_grid_incompatible");
 
+  /*
+   * A melodic track that has no lane in a bar is not written there yet, which
+   * is a place a chord can go once the lane is laid — and the lane is laid
+   * inside this command's own candidate, never as a separate write (K-55).
+   * A drum lane is a different shape and is never one of these places.
+   */
+  const melodic = !isDrumInstrument(track.instrumentId);
+  const canWrite = (entry: SlotPosition | undefined): boolean =>
+    entry !== undefined && (entry.writable || (melodic && entry.slot === undefined));
+
   const stream = sectionSlotStream(section, command.trackId);
   const startIndex = stream.findIndex(
     (entry) => entry.startTicks === command.timeTicks,
@@ -172,7 +184,7 @@ export function applyChordWrite(
   if (startIndex < 0) return chordFail("target_grid_incompatible");
 
   const start = stream[startIndex]!;
-  if (!start.writable) return chordFail("target_grid_incompatible");
+  if (!canWrite(start)) return chordFail("target_grid_incompatible");
 
   // A tie is somebody else's note still sounding; a chord cannot begin inside
   // one, whichever mode was asked for.
@@ -210,7 +222,7 @@ export function applyChordWrite(
   for (let cursor = startIndex; cursor < stream.length; cursor += 1) {
     if (covered >= command.durationTicks) break;
     const entry = stream[cursor];
-    if (!entry || !entry.writable) break;
+    if (!entry || !canWrite(entry)) break;
     span.push(cursor);
     covered += entry.durationTicks;
   }
@@ -228,7 +240,9 @@ export function applyChordWrite(
     if (replacedSpan.includes(cursor)) continue;
     const entry = stream[cursor];
     if (!entry) return chordFail("duration_not_representable");
-    if (entry.slot !== null) return chordFail("target_occupied");
+    if (entry.slot !== null && entry.slot !== undefined) {
+      return chordFail("target_occupied");
+    }
   }
 
   /* ------------------------------------------------------------- the write */
@@ -239,7 +253,17 @@ export function applyChordWrite(
   });
   if (notes.length === 0) return chordFail("no_playable_voicing");
 
-  const next = cloneSong(song);
+  /*
+   * The lanes this write needs, laid inside the candidate and nowhere else.
+   * Only the bars the chord actually reaches: a command that wrote rests
+   * across bars it never touched would be a bigger change than the reader
+   * asked for, and it would show up in the fingerprint as one.
+   */
+  let prepared = song;
+  for (const barIndex of new Set(span.map((cursor) => stream[cursor]!.barIndex))) {
+    prepared = withEmptyLaneInBar(prepared, track, command.sectionId, barIndex);
+  }
+  const next = cloneSong(prepared);
 
   // Anything the replaced onset was still sounding past the new chord becomes
   // silence: it belonged to notes that are no longer there.
@@ -261,7 +285,7 @@ export function applyChordWrite(
     );
   });
 
-  if (sameSong(next, song)) return chordFail("chord_no_change");
+  if (sameSong(next, prepared)) return chordFail("chord_no_change");
 
   const settled = settle(next);
   if (!settled.ok) return chordFail("chord_validation_failed");

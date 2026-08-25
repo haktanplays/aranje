@@ -11,6 +11,7 @@
  * tick arithmetic, which belongs to `music/timing`, and the judgement about
  * what "already has notes" means, which belongs to the slot model.
  */
+import { isDrumInstrument } from "@/lib/instruments/registry";
 import {
   findSection,
   sectionSlotStream,
@@ -25,6 +26,8 @@ export type ChordCellTarget = {
   readonly occupied: boolean;
   readonly barNumber: number;
   readonly anchorFret?: number;
+  /** Fretless instruments: the octave a stack is built in (2Q-B §8). */
+  readonly octave?: number;
 };
 
 /**
@@ -42,6 +45,8 @@ export function chordTargetAt(
     readonly barNumber: number;
     /** The fret they were working at, if any, so shapes are offered near it. */
     readonly anchorFret?: number | null;
+    /** The octave they were working in, if the instrument has no frets. */
+    readonly octave?: number | null;
   },
 ): ChordCellTarget | null {
   const section = findSection(song, input.sectionId);
@@ -52,7 +57,20 @@ export function chordTargetAt(
     (slot) =>
       slot.barIndex === input.barIndex && slot.slotIndex === input.slotIndex,
   );
-  if (!entry || !entry.writable) return null;
+  if (!entry) return null;
+
+  /*
+   * A melodic track with no lane in this bar is not written here yet, which
+   * is a place a chord *can* go: the lane is laid inside the write's own
+   * candidate (K-55, §3). A drum lane is a different shape and stays a
+   * refusal — it is not a hole, it is somebody else's instrument.
+   */
+  const track = song.tracks.find((entry) => entry.id === input.trackId);
+  if (!track) return null;
+  const unwritten = entry.slot === undefined;
+  if (!entry.writable && !(unwritten && !isDrumInstrument(track.instrumentId))) {
+    return null;
+  }
 
   return {
     sectionId: input.sectionId,
@@ -61,10 +79,13 @@ export function chordTargetAt(
     slotTicks: entry.durationTicks,
     // A tie counts as occupied: a chord cannot begin inside somebody else's
     // note, and the command says so in its own words when it is asked.
-    occupied: entry.slot !== null,
+    occupied: entry.slot !== null && entry.slot !== undefined,
     barNumber: input.barNumber,
     ...(input.anchorFret === undefined || input.anchorFret === null
       ? {}
       : { anchorFret: input.anchorFret }),
+    ...(input.octave === undefined || input.octave === null
+      ? {}
+      : { octave: input.octave }),
   };
 }

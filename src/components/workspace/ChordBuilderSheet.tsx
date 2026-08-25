@@ -12,6 +12,7 @@
  * shape cards at once, and squeezing them in would make every one of them too
  * small to press.
  */
+import { NO_SOUND_NOTICE } from "@/components/workspace/NoteEntrySheet";
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import {
   CHORD_FORMULA_LIST,
@@ -75,11 +76,20 @@ function Chip({
 export function ChordBuilderSheet({
   builder,
   capo,
+  audible,
   onAudition,
 }: {
   builder: ChordBuilderHandle;
   /** The open track's capo, for the note on a fretted card. */
   capo: number;
+  /**
+   * False when this track's preset has no sound in this build (2Q-B §8).
+   *
+   * The shapes are still offered and still writable — a chord you cannot
+   * hear yet is still a chord — but the audition button says so instead of
+   * doing nothing when pressed.
+   */
+  audible: boolean;
   /** Play one shape, briefly. The engine belongs to the caller. */
   onAudition: (voicingId: string) => void;
 }) {
@@ -227,6 +237,12 @@ export function ChordBuilderSheet({
               {capoText ? ` · ${capoText}` : ""}
             </p>
 
+            {audible ? null : (
+              <p className="text-muted text-xs" data-chord-silent>
+                {NO_SOUND_NOTICE}
+              </p>
+            )}
+
             {builder.voicings.length === 0 ? (
               <p className="text-muted text-sm" data-chord-no-voicing>
                 Bu konumda çalınabilir bir akor şekli bulunamadı. Başlangıç
@@ -267,6 +283,7 @@ export function ChordBuilderSheet({
                 </button>
                 <SheetButton
                   data-chord-audition={voicing.id}
+                  disabled={!audible}
                   onClick={() => onAudition(voicing.id)}
                 >
                   Dinle

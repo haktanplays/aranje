@@ -75,6 +75,8 @@ export const HIT_LEVEL_LABELS: Readonly<Record<HitLevel, string>> = {
 export type PitchedNoteTarget = {
   readonly ticks: number;
   readonly barNumber: number;
+  /** Where in the section's bars it sits — what the chord target asks for. */
+  readonly barIndex: number;
   readonly slotIndex: number;
   readonly pitches: readonly string[];
   readonly octave: number;
@@ -157,6 +159,7 @@ export function useEventEntry(options: {
     return {
       ticks: cell.ticks,
       barNumber: bar?.barNumber ?? cell.barIndex + 1,
+      barIndex: cell.barIndex,
       slotIndex: cell.slotIndex,
       pitches: cell.pitches,
       octave: suggestedOctave(song, track.id),

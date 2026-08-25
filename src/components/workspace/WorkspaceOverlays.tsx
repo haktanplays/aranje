@@ -43,6 +43,7 @@ import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
 import type { MixerHandle } from "@/lib/workspace/use-mixer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { EventEntry } from "@/lib/workspace/use-event-entry";
+import { isPlayablePreset } from "@/lib/audio/preset-availability";
 import type { ChordBuilderHandle } from "@/lib/workspace/use-chord-builder";
 import { chordTargetAt } from "@/lib/chords/chord-target";
 import { ChordBuilderSheet } from "@/components/workspace/ChordBuilderSheet";
@@ -320,12 +321,40 @@ export function WorkspaceOverlays({
             })
           }
           onPreview={(pitch) => onNoteAudition(pitch, NOTE_PREVIEW_VELOCITY)}
+          /*
+           * The same builder the tab opens, on the same moment. What changes
+           * is only what a shape *is* for this instrument: a stack of pitches
+           * rather than a fingering, which the voicing search already knew
+           * how to answer (2O-B) and had no door onto until now.
+           */
+          onChord={() => {
+            const moment = entry.noteTarget;
+            if (!moment) return;
+            const chordTarget = chordTargetAt(song, {
+              sectionId: navigation.viewedSectionId,
+              trackId: track.id,
+              barIndex: moment.barIndex,
+              slotIndex: moment.slotIndex,
+              barNumber: moment.barNumber,
+              octave: moment.octave,
+            });
+            if (!chordTarget) return;
+            entry.closeNote();
+            chords.open(chordTarget);
+            // A fretless instrument has no power-chord shape to offer first.
+            chords.chooseType(false);
+          }}
         />
       ) : null}
 
       <ChordBuilderSheet
         builder={chords}
         capo={fretboard?.capo ?? 0}
+        audible={
+          track === undefined
+            ? false
+            : isPlayablePreset(track.instrumentId, track.presetId)
+        }
         onAudition={onAudition}
       />
 

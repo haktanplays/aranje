@@ -175,13 +175,32 @@ describe("160. the moment is a tick, and it has to exist", () => {
     expect(!offGrid.ok && offGrid.error.code).toBe("target_grid_incompatible");
   });
 
-  it("refuses a bar the track is not written in rather than inventing slots", () => {
+  /*
+   * This test used to assert the opposite: that a bar the track is not
+   * written in was refused. That expectation predates K-55, which settled
+   * that a missing track key means "not written here" and that a surface
+   * refusing to write into it leaves the reader with a track they can see and
+   * cannot use. 2Q-B is the first checkpoint where a reader can reach the
+   * chord builder on such a bar — the old door onto it was the fret sheet,
+   * which only opens on an instrument that always had lanes — so the rule the
+   * single-note commands already follow is applied here too.
+   *
+   * "Inventing slots" was the right worry and the answer is unchanged: the
+   * lane is laid empty, inside this command's own candidate, only in the bars
+   * the chord actually reaches, and the song is never written twice.
+   */
+  it("lays the lane in a bar the track is not written in, inside its own candidate", () => {
     const song = songOf([guitar()], 2);
     delete song.sections[0]!.bars[1]!.slots.gtr;
     const result = applyChordWrite(song, base({ timeTicks: EIGHTH * 8 }));
-    expect(!result.ok && result.error.code).toBe("target_grid_incompatible");
-    // And nothing was written into the bar that has no slots for this track.
+    expect(result.ok).toBe(true);
+    // The song handed in is untouched: the lane exists only in the candidate.
     expect(song.sections[0]!.bars[1]!.slots.gtr).toBeUndefined();
+    if (!result.ok) return;
+    const lane = result.song.sections[0]!.bars[1]!.slots.gtr as MelodicSlot[];
+    expect(Array.isArray(lane)).toBe(true);
+    expect(lane[0]).not.toBeNull();
+    expect(lane.slice(1).every((slot) => slot === null || slot === "-")).toBe(true);
   });
 });
 

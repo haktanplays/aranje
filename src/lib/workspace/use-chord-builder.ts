@@ -53,6 +53,14 @@ export type ChordTarget = {
   readonly barNumber: number;
   /** Where on the neck the reader was working, for ordering the shapes. */
   readonly anchorFret?: number;
+  /**
+   * Fretless instruments: the octave the stack is built in (2Q-B §8).
+   *
+   * It comes from the moment the reader opened the builder on, which read it
+   * from the music they already have. Absent means nobody said, and the
+   * keyboard search's own default answers — not a number chosen here.
+   */
+  readonly octave?: number;
 };
 
 export type ChordBuilderStep = "type" | "root" | "quality" | "voicing";
@@ -137,7 +145,7 @@ export function useChordBuilder(options: {
       rootPitchClass,
       quality: effectiveQuality,
       ...(target.anchorFret === undefined ? {} : { anchorFret: target.anchorFret }),
-      octave: DEFAULT_KEYBOARD_OCTAVE,
+      octave: target.octave ?? DEFAULT_KEYBOARD_OCTAVE,
       withOctave,
     });
   }, [effectiveQuality, rootPitchClass, target, track, withOctave]);
