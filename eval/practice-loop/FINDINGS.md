@@ -287,3 +287,112 @@ garantisi olmadan kabul etmek olurdu. Ölçüldü, kaydedildi, dokunulmadı.
 
 Bütün sayılar masaüstü Chromium ve Node'dandır. **Fiziksel telefon kanıtı
 değildir.**
+
+# 4. Pratik döngüsü: ölçülen maliyet ve dürüst sınırlar
+
+Bütün sayılar masaüstü Chromium (141.0.7390.37) ve Node v22.22.2'dendir.
+**Fiziksel telefon kanıtı değildir.**
+
+## Pratik çekirdeği neredeyse bedava (Node, 8 ısınma + 30 tur)
+
+| işlem | medyan |
+|---|---|
+| tek ölçüden range | 0,001 ms |
+| normalize edilmiş çift | 0,034 ms |
+| tam-bar TimeSelection'dan range | 0,042 ms |
+| preflight (kenarlar) | 0,027 ms |
+| üç-sonuçlu karar | 0,026 ms |
+| range'in tick sınırları | 0,001 ms |
+| iki ölçü count-in tıklaması | 0,002 ms |
+| bir tamamlanmış tur | 0 ms |
+| tavan ızgarasının ekseni | 0,245 ms |
+| o eksene bir window | 0,001 ms |
+
+Yani pratik döngüsünün *kendisi* bir maliyet kalemi değildir; bu bölümdeki
+bütün gecikme, zaten var olan komut/şema/validator/render yolundadır.
+
+## Etkileşimler (tarayıcı, 2 ısınma + 20 tur, jestin tamamı)
+
+| etkileşim | medyan | p95 |
+|---|---|---|
+| sheet açma | 101,1 ms | 111,7 ms |
+| tek ölçü uygulama | 198,8 ms | 203,8 ms |
+| çift uygulama | 364,9 ms | 449,9 ms |
+| kademeli plan uygulama | 228,5 ms | 266,5 ms |
+
+Bunlar bir tuşun gecikmesi değil, jestin toplam süresidir: harness'ın kendi
+60 ms'lik yerleşme beklemeleri de içindedir ve çıkarılmamıştır.
+
+## Count-in ve döngü (tarayıcı, 5 tur, playhead'in ilk hareketinden)
+
+| ayar | ilk hareket |
+|---|---|
+| kapalı | 83 ms |
+| 1 ölçü | 1.900 ms |
+| 2 ölçü | 3.717 ms |
+| tek ölçülük döngünün turu | 1.867 ms |
+
+## Silahlanmış ızgara (denseKit, tam bir fling)
+
+- `1.792` hücrelik ızgaradan aynı anda **en çok `210`** hücre mount edildi.
+- DOM `443` → `277` düğüm.
+- Dinleyici `+7 / −7`.
+- Kaydırma karesi medyan **`16,7 ms`** (p95 16,8, max 16,8).
+- Düzenleme sırasında `0` AudioContext, boşta `0` rAF.
+
+## Davul dokunuşu: son temiz koşu
+
+| fixture | medyan | p95 | max |
+|---|---|---|---|
+| practiceSong @390 | **31,8 ms** | **32,1 ms** | 43,4 ms |
+| denseKit @390 | 100,3 ms | 175,2 ms | 179,8 ms |
+| denseKit @320 | 96,5 ms | 168,9 ms | 180,5 ms |
+
+## Hedefler karşısında, ayrım ayrım
+
+- **Gerçekçi medyan `≤33 ms`: geçti.** Altı 60-turluk koşuda `31,0-31,8 ms`.
+- **Gerçekçi p95 `≤50 ms`: kapanmış sayılmıyor.** Bu koşuda `32,1 ms`, fakat
+  altı koşunun en kötüsü hedefin yalnız **`0,2 ms`** altında kalmıştı ve daha
+  önceki 24 turluk bir koşuda **`57,3 ms`** ölçülmüştü. O koşuya dayanan
+  "p95 `36,2 ms` — hedef kapandı" cümlesi **geri çekildi**. Kuyruğun
+  tahsis/çöp toplama kaynaklı olduğu **yalnız bir hipotezdir**; CPU profilinde
+  çöp toplayıcı en büyük tek kalem ama bu bir korelasyon. **Kök nedeni
+  bilmiyorum.**
+- **Sözleşme tavanı: açık borç, eşik uydurulmadı.** Bu temiz koşuda medyan
+  `96,5-100,3 ms`; makinenin kabul matrisiyle yüklü olduğu daha önceki bir
+  koşuda aynı ölçüm `~131 ms` vermişti. İki sayı da aynı şeyi söylüyor:
+  gerçekçi şarkının üç katından fazla ve hedefsiz. Kalanın `~30 ms`'i merkezî
+  schema + validator kapısı, `~4,5 ms`'i playback planıdır; ikisi de
+  gevşetilmesi yasak yollardır.
+
+## Ölçümün kendisinde bulunan ve kapatılan iki kusur
+
+1. `buildDrumStepModel(song, sectionId, trackId)` iki `string`i yan yana
+   alıyordu ve bilinmeyen bir bölüm sessizce şarkının **ilk** bölümüne
+   düşüyordu. `measure-overscan.ts` ikisini birden yaptı: dört bölümü
+   section-one olarak dört kez ölçtü ve **inandırıcı** sayılar üretti.
+   Düzeltilmiş ölçüm sekiz farklı ızgara veriyor; overscan seçimi değişmedi
+   (`geriye 0,5 / ileri 1`) fakat gerçek bedel **`120` değil `210`** mount
+   edilmiş hücredir. Eski sayı geri çekilmiştir.
+2. Eski `24.507 px` "scroll genişliği" bir uzunluk değildi: formülü
+   `contentWidthPx + gridWidth − renderedPx` olduğu için kaydırma konumuna
+   göre değişiyordu (iki mount edilmiş ölçüyle `23.419 px`). **Windowing bir
+   şeyi küçültmedi**; eski ölçüm aynı spacer genişliğini ikinci kez sayan
+   bozuk bir geometri ölçümüydü. Doğru kanonik değer tarayıcıda ölçüldü:
+   `axis 3.298 + gutter 34 + reading tail 265,2 = 3.597,2 px`, altı kaydırma
+   konumunda ve 2-6 arası mount edilmiş ölçüde değişmeden.
+
+## Thunk'ın gerçek maliyeti: silinen, ertelenen, ikinci açılışta kalmayan
+
+- **Gerçekten ortadan kalkan maliyet:** yok. Görünmeyen arrangement
+  (`22,4 ms`) ve Çoklu (`5,9 ms`) modelleri artık dokunuş sırasında
+  kurulmuyor — tarayıcıda ölçüldü: hit yazıldığı anda `data-arr-track` ve
+  `data-multi-lane` sayısı **0**. Bu maliyet düzenleme yolundan çıktı.
+- **Görünüm açılışına ertelenen maliyet:** Düzen'in ilk açılışı `~409 ms`,
+  Çoklu'nunki `~395 ms` (tıklamadan ilk mount edilmiş şeride). Bu, dokunuştan
+  kalkan işin gittiği yerdir ve okur onu görünümü açtığında bir kez öder.
+- **Memoization ile ikinci açılışta kalmayan maliyet:** aynı görünümün ikinci
+  açılışı `~63 ms`. Aradaki fark modelin yeniden kurulmamasıdır; `song`
+  değişmediği sürece thunk aynı değeri veriyor.
+- Üç adımın hiçbirinde fazladan yazma yok: hit tam **1** storage write ve tam
+  **1** history adımı, görünüm açılışları **0**, ve toplam yine **1**.

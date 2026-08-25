@@ -34,81 +34,81 @@
       "stages": {
         "commandInsert": {
           "rounds": 30,
-          "median": 3.996,
-          "p95": 8.976,
-          "max": 9.119
+          "median": 3.34,
+          "p95": 8.485,
+          "max": 9.458
         },
         "commandRemove": {
           "rounds": 30,
-          "median": 2.314,
-          "p95": 3.349,
-          "max": 4.245
+          "median": 1.94,
+          "p95": 2.762,
+          "max": 2.897
         },
         "schemaParse": {
           "rounds": 30,
-          "median": 0.468,
-          "p95": 1.755,
-          "max": 2.123
+          "median": 0.381,
+          "p95": 1.348,
+          "max": 1.752
         },
         "validators": {
           "rounds": 30,
-          "median": 1.664,
-          "p95": 2.403,
-          "max": 2.915
+          "median": 1.152,
+          "p95": 1.558,
+          "max": 1.68
         },
         "validatorIssueSplit": {
           "rounds": 30,
           "median": 0.001,
-          "p95": 0.004,
-          "max": 0.005
+          "p95": 0.003,
+          "max": 0.004
         },
         "settle": {
           "rounds": 30,
-          "median": 2.542,
-          "p95": 3.48,
-          "max": 5.61
+          "median": 1.643,
+          "p95": 2.617,
+          "max": 3.095
         },
         "sameSongCheck": {
           "rounds": 30,
-          "median": 0.147,
-          "p95": 0.184,
-          "max": 0.197
+          "median": 0.111,
+          "p95": 0.176,
+          "max": 0.186
         },
         "historyRecord": {
           "rounds": 30,
-          "median": 0,
-          "p95": 0.037,
-          "max": 0.122
+          "median": 0.001,
+          "p95": 0.021,
+          "max": 0.157
         },
         "serialize": {
           "rounds": 30,
-          "median": 0.067,
-          "p95": 0.09,
-          "max": 0.107
+          "median": 0.071,
+          "p95": 0.103,
+          "max": 0.12
         },
         "physicalWrite": {
           "rounds": 30,
-          "median": 0.075,
-          "p95": 0.105,
-          "max": 0.195
+          "median": 0.07,
+          "p95": 0.093,
+          "max": 0.097
         },
         "rebuildDrumModel": {
           "rounds": 30,
-          "median": 0.059,
-          "p95": 0.102,
-          "max": 0.107
+          "median": 0.058,
+          "p95": 0.124,
+          "max": 0.134
         },
         "rebuildGridAxis": {
           "rounds": 30,
-          "median": 0.034,
-          "p95": 0.072,
-          "max": 0.233
+          "median": 0.031,
+          "p95": 0.039,
+          "max": 0.069
         },
         "rebuildTabTimeline": {
           "rounds": 30,
-          "median": 0.014,
-          "p95": 0.02,
-          "max": 0.022
+          "median": 0.008,
+          "p95": 0.012,
+          "max": 0.014
         },
         "rebuildSectionRuns": {
           "rounds": 30,
@@ -118,40 +118,40 @@
         },
         "rebuildArrangement": {
           "rounds": 30,
-          "median": 1.619,
-          "p95": 2.394,
-          "max": 2.965
+          "median": 1.201,
+          "p95": 1.734,
+          "max": 1.862
         },
         "rebuildMultiTrack": {
           "rounds": 30,
-          "median": 0.303,
-          "p95": 0.635,
-          "max": 0.688
+          "median": 0.221,
+          "p95": 0.319,
+          "max": 0.714
         },
         "rebuildSongAxis": {
           "rounds": 30,
-          "median": 0.006,
-          "p95": 0.009,
-          "max": 0.041
+          "median": 0.005,
+          "p95": 0.008,
+          "max": 0.017
         },
         "rebuildPlaybackPlan": {
           "rounds": 30,
-          "median": 0.441,
-          "p95": 0.758,
-          "max": 0.916
+          "median": 0.318,
+          "p95": 0.801,
+          "max": 0.898
         },
         "schemaParsedTwice": {
           "rounds": 30,
-          "median": 2.833,
-          "p95": 4.024,
-          "max": 4.157
+          "median": 2.233,
+          "p95": 3.355,
+          "max": 3.994
         }
       },
       "rollup": {
-        "commandToPublishMs": 4.753,
-        "centralGateMs": 2.132,
-        "duplicateSchemaMs": 0.468,
-        "derivedModelRebuildMs": 2.477
+        "commandToPublishMs": 3.974,
+        "centralGateMs": 1.533,
+        "duplicateSchemaMs": 0.381,
+        "derivedModelRebuildMs": 1.843
       }
     },
     {
@@ -174,45 +174,45 @@
       "stages": {
         "commandInsert": {
           "rounds": 30,
-          "median": 27.332,
-          "p95": 30.329,
-          "max": 31.547
+          "median": 22.381,
+          "p95": 25.722,
+          "max": 26.305
         },
         "commandRemove": {
           "rounds": 30,
-          "median": 27.099,
-          "p95": 31.999,
-          "max": 36.589
+          "median": 23.365,
+          "p95": 29.628,
+          "max": 37.125
         },
         "schemaParse": {
           "rounds": 30,
-          "median": 4.663,
-          "p95": 5.495,
-          "max": 5.557
+          "median": 4.236,
+          "p95": 13.775,
+          "max": 26.665
         },
         "validators": {
           "rounds": 30,
-          "median": 19.473,
-          "p95": 24.846,
-          "max": 24.922
+          "median": 18.757,
+          "p95": 21.829,
+          "max": 22.055
         },
         "validatorIssueSplit": {
           "rounds": 30,
-          "median": 0.004,
-          "p95": 0.005,
-          "max": 0.006
+          "median": 0.003,
+          "p95": 0.008,
+          "max": 0.009
         },
         "settle": {
           "rounds": 30,
-          "median": 26.76,
-          "p95": 34.49,
-          "max": 37.94
+          "median": 24.914,
+          "p95": 30.407,
+          "max": 36.618
         },
         "sameSongCheck": {
           "rounds": 30,
-          "median": 2.169,
-          "p95": 2.786,
-          "max": 3.64
+          "median": 2.048,
+          "p95": 2.893,
+          "max": 5.226
         },
         "historyRecord": {
           "rounds": 30,
@@ -222,33 +222,33 @@
         },
         "serialize": {
           "rounds": 30,
-          "median": 1.059,
-          "p95": 1.233,
-          "max": 1.244
+          "median": 1.095,
+          "p95": 1.621,
+          "max": 1.665
         },
         "physicalWrite": {
           "rounds": 30,
-          "median": 1.125,
-          "p95": 1.339,
-          "max": 1.354
+          "median": 0.929,
+          "p95": 1.022,
+          "max": 1.026
         },
         "rebuildDrumModel": {
           "rounds": 30,
-          "median": 0.187,
-          "p95": 0.461,
-          "max": 0.483
+          "median": 0.127,
+          "p95": 0.384,
+          "max": 0.394
         },
         "rebuildGridAxis": {
           "rounds": 30,
-          "median": 0.183,
-          "p95": 1.407,
-          "max": 1.646
+          "median": 0.231,
+          "p95": 0.305,
+          "max": 1.902
         },
         "rebuildTabTimeline": {
           "rounds": 30,
-          "median": 0.049,
-          "p95": 0.067,
-          "max": 0.107
+          "median": 0.033,
+          "p95": 0.073,
+          "max": 0.11
         },
         "rebuildSectionRuns": {
           "rounds": 30,
@@ -258,40 +258,40 @@
         },
         "rebuildArrangement": {
           "rounds": 30,
-          "median": 19.06,
-          "p95": 53.382,
-          "max": 54.686
+          "median": 16.193,
+          "p95": 19.21,
+          "max": 71.829
         },
         "rebuildMultiTrack": {
           "rounds": 30,
-          "median": 5.196,
-          "p95": 6.09,
-          "max": 6.198
+          "median": 4.383,
+          "p95": 6.12,
+          "max": 6.682
         },
         "rebuildSongAxis": {
           "rounds": 30,
-          "median": 0.013,
-          "p95": 0.019,
-          "max": 0.019
+          "median": 0.01,
+          "p95": 0.011,
+          "max": 0.049
         },
         "rebuildPlaybackPlan": {
           "rounds": 30,
-          "median": 5.127,
-          "p95": 8.45,
-          "max": 10.366
+          "median": 4.472,
+          "p95": 4.917,
+          "max": 5.001
         },
         "schemaParsedTwice": {
           "rounds": 30,
-          "median": 30.523,
-          "p95": 37.205,
-          "max": 40.916
+          "median": 30.034,
+          "p95": 34.6,
+          "max": 44.98
         }
       },
       "rollup": {
-        "commandToPublishMs": 36.348,
-        "centralGateMs": 24.136,
-        "duplicateSchemaMs": 4.663,
-        "derivedModelRebuildMs": 29.816
+        "commandToPublishMs": 30.689,
+        "centralGateMs": 22.993,
+        "duplicateSchemaMs": 4.236,
+        "derivedModelRebuildMs": 25.45
       }
     }
   ]

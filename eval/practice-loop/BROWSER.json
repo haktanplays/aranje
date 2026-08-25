@@ -60,37 +60,417 @@
   },
   "matrix": {
     "viewports": [
-      "390x844"
+      "390x844",
+      "320x700"
     ],
     "textScales": [
-      100
+      100,
+      125,
+      150
     ],
-    "distinctScenarios": 7,
-    "combinations": 1,
-    "results": 7
+    "distinctScenarios": 130,
+    "combinations": 6,
+    "results": 780
   },
-  "passed": false,
-  "failures": [
-    {
-      "combo": "390x844 @%100",
-      "name": "count-in ayarı 0 setItem",
-      "pass": false,
-      "detail": "1"
-    },
-    {
-      "combo": "390x844 @%100",
-      "name": "hız formu 0 setItem",
-      "pass": false,
-      "detail": "1"
-    },
-    {
-      "combo": "390x844 @%100",
-      "name": "practice kapatma 0 setItem",
-      "pass": false,
-      "detail": "1"
-    }
-  ],
+  "passed": true,
+  "failures": [],
   "results": [
+    {
+      "combo": "390x844 @%100",
+      "name": "tek ölçüden range",
+      "pass": true,
+      "detail": "four:0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "range özeti ölçü numarasıyla",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "range kaynağı: tek ölçü",
+      "pass": true,
+      "detail": "Tek ölçü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "range kurmak 0 write",
+      "pass": true,
+      "detail": "0 setItem"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "iki ölçü pair",
+      "pass": true,
+      "detail": "four:0 → four:2"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "pair aradaki her ölçüyü kapsar",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "ters pair aynı aralığı verir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "bütün section pair",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–4. ölçüler"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "cross-section red",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "cross-section reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "zaman seçimi başlar",
+      "pass": true,
+      "detail": "band shown"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "partial time selection teklif edilmez",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":96,\"widthPx\":34}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tam bar TimeSelection teklif edilir",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":768,\"widthPx\":272}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tam bar TimeSelection range olur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "range kaynağı: zaman seçimi",
+      "pass": true,
+      "detail": "Zaman seçiminden"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "bar çizgisini aşan seçim yuvarlanmaz",
+      "pass": true,
+      "detail": "864 tick — ölçü çizgisi 768'de"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "çoklu bar TimeSelection range olur",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":1536,\"widthPx\":544}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tie preflight kenarı anlatır",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "kenar mesajı ham bağlantı adı göstermez",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "include connection teklif edilir",
+      "pass": true,
+      "detail": "Bağlantıyı da dahil et"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "include connection range'i genişletir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–2. ölçüler"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "seam fail-closed",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "seam reddi müzikal dille anlatılır",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "loop tam bar sınırları içinde kalır",
+      "pass": true,
+      "detail": "309 örnek, 34–310 vs 34–306 (+8px çizim payı)"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "loop wrap gerçekten oluyor",
+      "pass": true,
+      "detail": "2 wrap"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "loop sonu bir sonraki ölçüye taşmıyor",
+      "pass": true,
+      "detail": "max 310, ölçü sonu 306, bir sonraki ölçü 340"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "banner aktif range'i söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "section loop practice'i kapatır",
+      "pass": true,
+      "detail": "banner gone"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "section loop kendi adını söyler",
+      "pass": true,
+      "detail": "Döngü: Dört Dörtlük"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "practice range section loop'u kapatır",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "4/4 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "267ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "4/4 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1933ms vs 267ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3733ms vs 1933ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "4/4 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "4 ölçü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "6/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "234ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "6/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1450ms vs 234ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "2867ms vs 1450ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "6/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "7/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "250ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "7/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1667ms vs 250ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3267ms vs 1667ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "7/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "count-in sırasında pause iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "iptal edilen count-in hayalet playback başlatmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "iptalden sonra tekrar çal gerçekten başlıyor",
+      "pass": true,
+      "detail": "1 rAF, çalıyor — Pratik · 1 ölçü · %100 · 2 ölçü sayım"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "count-in sırasında stop iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hızlı çift play ikinci count-in kurmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "sabit hız kontrolleri gizli",
+      "pass": true,
+      "detail": "Sabit"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hız modu yalnız renkle anlatılmıyor",
+      "pass": true,
+      "detail": "Sabit ✓"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "kademeli mod dört kontrolü açar",
+      "pass": true,
+      "detail": "%80 / %100 / %5 / 2 tur"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hız kontrolleri 44x44",
+      "pass": true,
+      "detail": "8 kontrol, en küçük 44px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "kontrol kendi sınırında disabled olur",
+      "pass": true,
+      "detail": "1 tur"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hedef başlangıcın altındaysa typed red",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hız reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Vazgeç formu sıfırlar",
+      "pass": true,
+      "detail": "Sabit'e döndü"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Uygula planı başlatır",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "bildirim çalımı değerlendirmiyor",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "banner kademeli planı söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %80→%100 · 2 turda bir +%5"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Escape sheet'i Vazgeç ile aynı yoldan kapatır",
+      "pass": true,
+      "detail": "sheet closed"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "davul editi ekranda görünür",
+      "pass": true,
+      "detail": "snare:0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "commit tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "nota editi geçerli range'i korur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "undo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "redo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "undo/redo range'i yerinde bırakır",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "bar silme invalid range'i temizler",
+      "pass": true,
+      "detail": "delete gesture unavailable"
+    },
     {
       "combo": "390x844 @%100",
       "name": "range seçmek 0 setItem",
@@ -100,20 +480,20 @@
     {
       "combo": "390x844 @%100",
       "name": "count-in ayarı 0 setItem",
-      "pass": false,
-      "detail": "1"
+      "pass": true,
+      "detail": "0"
     },
     {
       "combo": "390x844 @%100",
       "name": "hız formu 0 setItem",
-      "pass": false,
-      "detail": "1"
+      "pass": true,
+      "detail": "0"
     },
     {
       "combo": "390x844 @%100",
       "name": "practice kapatma 0 setItem",
-      "pass": false,
-      "detail": "1"
+      "pass": true,
+      "detail": "0"
     },
     {
       "combo": "390x844 @%100",
@@ -132,6 +512,4248 @@
       "name": "dış ağ isteği 0",
       "pass": true,
       "detail": "0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "idle rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tek yatay scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "playing rAF 1",
+      "pass": true,
+      "detail": "1 ({\"arrangement\":0,\"tab\":1})"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tek AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "pause sonrası rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "görünüm değişimi ikinci AudioContext kurmaz",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "toplam extent = axis + gutter + reading tail",
+      "pass": true,
+      "detail": "3597px ölçüldü, 3597.2px bekleniyor (axis 3298 + gutter 34 + tail 265.2)"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "gutter müzikal axis'e dahil değil",
+      "pass": true,
+      "detail": "axis ve tail çıkınca 33.8px kalıyor"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "reading tail müzikal değil",
+      "pass": true,
+      "detail": "0 ölçü axis'in (3332px) ötesinde"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "scroll konumu toplam genişliği değiştirmez",
+      "pass": true,
+      "detail": "3597 / 3597 / 3597 / 3597 / 3597 / 3597"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "farklı mounted bar sayılarında extent sabit",
+      "pass": true,
+      "detail": "mounted 3/3/4/6/3/2, extent 3597"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "ilk gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "son gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "seveneight:2 @ 3094px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "son ölçü axis'in sonunda biter",
+      "pass": true,
+      "detail": "3332px vs 3332px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tail no-op",
+      "pass": true,
+      "detail": "{\"section\":\"seveneight\",\"band\":false}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tail practice range üretmez",
+      "pass": true,
+      "detail": "no range"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Tab ve Çoklu ölçüleri aynı kanonik ofsette çizer",
+      "pass": true,
+      "detail": "[{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}] vs [{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}]"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "iki yüzey arasındaki tek fark müzikal olmayan gutter",
+      "pass": true,
+      "detail": "Tab 34px, Çoklu 2px, fark 32px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "playhead aynı kanonik eksende ilerler",
+      "pass": true,
+      "detail": "min 34 vs bar 34"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "davul ızgarası bölümün kendi kanonik x'inde başlar",
+      "pass": true,
+      "detail": "hücre 1394px, bölümün ilk ölçüsü 1394px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "ikinci bölümün x'i gerçekten sıfır değil",
+      "pass": true,
+      "detail": "1394px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "davul ızgarası silinmeden kurulur",
+      "pass": true,
+      "detail": "grid armed"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "silahlanmış ızgara yüzeyi genişletmiyor",
+      "pass": true,
+      "detail": "okuma 3597px, yazma 3597px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "silahlanmış extent de axis + gutter + tail",
+      "pass": true,
+      "detail": "3597px vs 3597.2px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "her hücre kendi tick'ini taşır",
+      "pass": true,
+      "detail": "22 hücre"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+      "pass": true,
+      "detail": "4 ölçü başı, 0 yanlış yerde, 1 mount edilmemiş"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hücreler kanonik x'te sıralı ve boşluksuz",
+      "pass": true,
+      "detail": "34 → 748"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "window yalnız ızgaranın bir kısmını mount eder",
+      "pass": true,
+      "detail": "lead 0 / tail 612"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "window ortasında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1056 → şarkıda 1056"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "window sınırında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:0 → şarkıda 0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "son mount edilen kolonda doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1536 → şarkıda 1536"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "scroll sırasında yanlış hücreye yazılmaz",
+      "pass": true,
+      "detail": "hücre snare:1152 → şarkıda 1152"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hit ekranda görünür",
+      "pass": true,
+      "detail": "snare:0 → true"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hit tam 1 storage write üretir",
+      "pass": true,
+      "detail": "1 write, 453ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hit tam 1 history adımı üretir",
+      "pass": true,
+      "detail": "Geri al → Geri al: Davul vuruşu ekleme"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "tap sırasında Düzen ve Çoklu kurulmaz",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"lanes\":0}"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Düzen ilk açılışta kurulur",
+      "pass": true,
+      "detail": "{\"tracks\":3,\"sections\":4} @ 59ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Düzen açmak yazma üretmez",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "ikinci açılış birinciden pahalı değil",
+      "pass": true,
+      "detail": "soğuk 59ms, sıcak 49ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Çoklu ilk açılışta kurulur",
+      "pass": true,
+      "detail": "3 lane @ 79ms"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "yeni hit doğru tick üzerinde",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "Çoklu güncel Song'u gösterir",
+      "pass": true,
+      "detail": "davul lane'i var"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "görünüm açılışları AudioContext'i çoğaltmaz",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "görünüm açılışları toplamda 1 write bırakır",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "playback state bozulmadan kalır",
+      "pass": true,
+      "detail": "durmuş, çalmaya hazır"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "sheet viewport içinde",
+      "pass": true,
+      "detail": "16–374 / 390"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "kritik hedefler 44x44",
+      "pass": true,
+      "detail": "16 hedef, 0 küçük "
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "sheet kontrolleri kaydırınca erişilebilir",
+      "pass": true,
+      "detail": "2 kontrol katlamanın altındaydı, kaydırınca 0 kaldı"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "sheet açıkken body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "root 16px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "transport kontrolleri 44x44 kalır",
+      "pass": true,
+      "detail": "7 kontrol, hepsi yeterli"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "transport kontrolleri ekran içinde",
+      "pass": true,
+      "detail": "0 kontrol kırpılmış"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "banner kırpılmıyor",
+      "pass": true,
+      "detail": "378 / 390"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "banner metni kısaltılmıyor",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "uzun bölüm adı satırı taşırmıyor",
+      "pass": true,
+      "detail": "390 / 390"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tek ölçüden range",
+      "pass": true,
+      "detail": "four:0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "range özeti ölçü numarasıyla",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "range kaynağı: tek ölçü",
+      "pass": true,
+      "detail": "Tek ölçü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "range kurmak 0 write",
+      "pass": true,
+      "detail": "0 setItem"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "iki ölçü pair",
+      "pass": true,
+      "detail": "four:0 → four:2"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "pair aradaki her ölçüyü kapsar",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "ters pair aynı aralığı verir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "bütün section pair",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–4. ölçüler"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "cross-section red",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "cross-section reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "zaman seçimi başlar",
+      "pass": true,
+      "detail": "band shown"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "partial time selection teklif edilmez",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":96,\"widthPx\":34}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tam bar TimeSelection teklif edilir",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":768,\"widthPx\":272}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tam bar TimeSelection range olur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "range kaynağı: zaman seçimi",
+      "pass": true,
+      "detail": "Zaman seçiminden"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "bar çizgisini aşan seçim yuvarlanmaz",
+      "pass": true,
+      "detail": "864 tick — ölçü çizgisi 768'de"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "çoklu bar TimeSelection range olur",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":1536,\"widthPx\":544}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tie preflight kenarı anlatır",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "kenar mesajı ham bağlantı adı göstermez",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "include connection teklif edilir",
+      "pass": true,
+      "detail": "Bağlantıyı da dahil et"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "include connection range'i genişletir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–2. ölçüler"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "seam fail-closed",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "seam reddi müzikal dille anlatılır",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "loop tam bar sınırları içinde kalır",
+      "pass": true,
+      "detail": "304 örnek, 34–308 vs 34–306 (+8px çizim payı)"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "loop wrap gerçekten oluyor",
+      "pass": true,
+      "detail": "2 wrap"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "loop sonu bir sonraki ölçüye taşmıyor",
+      "pass": true,
+      "detail": "max 308, ölçü sonu 306, bir sonraki ölçü 340"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "banner aktif range'i söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "section loop practice'i kapatır",
+      "pass": true,
+      "detail": "banner gone"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "section loop kendi adını söyler",
+      "pass": true,
+      "detail": "Döngü: Dört Dörtlük"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "practice range section loop'u kapatır",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "4/4 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "266ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "4/4 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1916ms vs 266ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3717ms vs 1916ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "4/4 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "4 ölçü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "6/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "266ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "6/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1433ms vs 266ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "2817ms vs 1433ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "6/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "7/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "300ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "7/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1683ms vs 300ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3267ms vs 1683ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "7/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "count-in sırasında pause iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "iptal edilen count-in hayalet playback başlatmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "iptalden sonra tekrar çal gerçekten başlıyor",
+      "pass": true,
+      "detail": "1 rAF, çalıyor — Pratik · 1 ölçü · %100 · 2 ölçü sayım"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "count-in sırasında stop iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hızlı çift play ikinci count-in kurmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "sabit hız kontrolleri gizli",
+      "pass": true,
+      "detail": "Sabit"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hız modu yalnız renkle anlatılmıyor",
+      "pass": true,
+      "detail": "Sabit ✓"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "kademeli mod dört kontrolü açar",
+      "pass": true,
+      "detail": "%80 / %100 / %5 / 2 tur"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hız kontrolleri 44x44",
+      "pass": true,
+      "detail": "8 kontrol, en küçük 44px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "kontrol kendi sınırında disabled olur",
+      "pass": true,
+      "detail": "1 tur"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hedef başlangıcın altındaysa typed red",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hız reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Vazgeç formu sıfırlar",
+      "pass": true,
+      "detail": "Sabit'e döndü"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Uygula planı başlatır",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "bildirim çalımı değerlendirmiyor",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "banner kademeli planı söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %80→%100 · 2 turda bir +%5"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Escape sheet'i Vazgeç ile aynı yoldan kapatır",
+      "pass": true,
+      "detail": "sheet closed"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "davul editi ekranda görünür",
+      "pass": true,
+      "detail": "snare:0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "commit tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "nota editi geçerli range'i korur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "undo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "redo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "undo/redo range'i yerinde bırakır",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "bar silme invalid range'i temizler",
+      "pass": true,
+      "detail": "delete gesture unavailable"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "range seçmek 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "count-in ayarı 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hız formu 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "practice kapatma 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "song byte-eş kalır",
+      "pass": true,
+      "detail": "identical"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "refresh practice state taşımaz",
+      "pass": true,
+      "detail": "no banner after reload"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "dış ağ isteği 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "idle rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tek yatay scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "playing rAF 1",
+      "pass": true,
+      "detail": "1 ({\"arrangement\":0,\"tab\":1})"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tek AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "pause sonrası rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "görünüm değişimi ikinci AudioContext kurmaz",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "toplam extent = axis + gutter + reading tail",
+      "pass": true,
+      "detail": "3597px ölçüldü, 3597.2px bekleniyor (axis 3298 + gutter 34 + tail 265.2)"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "gutter müzikal axis'e dahil değil",
+      "pass": true,
+      "detail": "axis ve tail çıkınca 33.8px kalıyor"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "reading tail müzikal değil",
+      "pass": true,
+      "detail": "0 ölçü axis'in (3332px) ötesinde"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "scroll konumu toplam genişliği değiştirmez",
+      "pass": true,
+      "detail": "3597 / 3597 / 3597 / 3597 / 3597 / 3597"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "farklı mounted bar sayılarında extent sabit",
+      "pass": true,
+      "detail": "mounted 3/3/4/6/3/2, extent 3597"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "ilk gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "son gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "seveneight:2 @ 3094px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "son ölçü axis'in sonunda biter",
+      "pass": true,
+      "detail": "3332px vs 3332px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tail no-op",
+      "pass": true,
+      "detail": "{\"section\":\"seveneight\",\"band\":false}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tail practice range üretmez",
+      "pass": true,
+      "detail": "no range"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Tab ve Çoklu ölçüleri aynı kanonik ofsette çizer",
+      "pass": true,
+      "detail": "[{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}] vs [{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}]"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "iki yüzey arasındaki tek fark müzikal olmayan gutter",
+      "pass": true,
+      "detail": "Tab 34px, Çoklu 2px, fark 32px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "playhead aynı kanonik eksende ilerler",
+      "pass": true,
+      "detail": "min 34 vs bar 34"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "davul ızgarası bölümün kendi kanonik x'inde başlar",
+      "pass": true,
+      "detail": "hücre 1394px, bölümün ilk ölçüsü 1394px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "ikinci bölümün x'i gerçekten sıfır değil",
+      "pass": true,
+      "detail": "1394px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "davul ızgarası silinmeden kurulur",
+      "pass": true,
+      "detail": "grid armed"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "silahlanmış ızgara yüzeyi genişletmiyor",
+      "pass": true,
+      "detail": "okuma 3597px, yazma 3597px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "silahlanmış extent de axis + gutter + tail",
+      "pass": true,
+      "detail": "3597px vs 3597.2px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "her hücre kendi tick'ini taşır",
+      "pass": true,
+      "detail": "22 hücre"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+      "pass": true,
+      "detail": "4 ölçü başı, 0 yanlış yerde, 1 mount edilmemiş"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hücreler kanonik x'te sıralı ve boşluksuz",
+      "pass": true,
+      "detail": "34 → 748"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "window yalnız ızgaranın bir kısmını mount eder",
+      "pass": true,
+      "detail": "lead 0 / tail 612"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "window ortasında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1056 → şarkıda 1056"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "window sınırında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:0 → şarkıda 0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "son mount edilen kolonda doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1536 → şarkıda 1536"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "scroll sırasında yanlış hücreye yazılmaz",
+      "pass": true,
+      "detail": "hücre snare:1152 → şarkıda 1152"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hit ekranda görünür",
+      "pass": true,
+      "detail": "snare:0 → true"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hit tam 1 storage write üretir",
+      "pass": true,
+      "detail": "1 write, 453ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "hit tam 1 history adımı üretir",
+      "pass": true,
+      "detail": "Geri al → Geri al: Davul vuruşu ekleme"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "tap sırasında Düzen ve Çoklu kurulmaz",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"lanes\":0}"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Düzen ilk açılışta kurulur",
+      "pass": true,
+      "detail": "{\"tracks\":3,\"sections\":4} @ 45ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Düzen açmak yazma üretmez",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "ikinci açılış birinciden pahalı değil",
+      "pass": true,
+      "detail": "soğuk 45ms, sıcak 46ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Çoklu ilk açılışta kurulur",
+      "pass": true,
+      "detail": "3 lane @ 58ms"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "yeni hit doğru tick üzerinde",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "Çoklu güncel Song'u gösterir",
+      "pass": true,
+      "detail": "davul lane'i var"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "görünüm açılışları AudioContext'i çoğaltmaz",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "görünüm açılışları toplamda 1 write bırakır",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "playback state bozulmadan kalır",
+      "pass": true,
+      "detail": "durmuş, çalmaya hazır"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "sheet viewport içinde",
+      "pass": true,
+      "detail": "20–370 / 390"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "kritik hedefler 44x44",
+      "pass": true,
+      "detail": "16 hedef, 0 küçük "
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "sheet kontrolleri kaydırınca erişilebilir",
+      "pass": true,
+      "detail": "8 kontrol katlamanın altındaydı, kaydırınca 0 kaldı"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "sheet açıkken body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "root 20px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "transport kontrolleri 44x44 kalır",
+      "pass": true,
+      "detail": "7 kontrol, hepsi yeterli"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "transport kontrolleri ekran içinde",
+      "pass": true,
+      "detail": "0 kontrol kırpılmış"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "banner kırpılmıyor",
+      "pass": true,
+      "detail": "375 / 390"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "banner metni kısaltılmıyor",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%125",
+      "name": "uzun bölüm adı satırı taşırmıyor",
+      "pass": true,
+      "detail": "390 / 390"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tek ölçüden range",
+      "pass": true,
+      "detail": "four:0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "range özeti ölçü numarasıyla",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "range kaynağı: tek ölçü",
+      "pass": true,
+      "detail": "Tek ölçü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "range kurmak 0 write",
+      "pass": true,
+      "detail": "0 setItem"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "iki ölçü pair",
+      "pass": true,
+      "detail": "four:0 → four:2"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "pair aradaki her ölçüyü kapsar",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "ters pair aynı aralığı verir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "bütün section pair",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–4. ölçüler"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "cross-section red",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "cross-section reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "zaman seçimi başlar",
+      "pass": true,
+      "detail": "band shown"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "partial time selection teklif edilmez",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":96,\"widthPx\":34}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tam bar TimeSelection teklif edilir",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":768,\"widthPx\":272}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tam bar TimeSelection range olur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "range kaynağı: zaman seçimi",
+      "pass": true,
+      "detail": "Zaman seçiminden"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "bar çizgisini aşan seçim yuvarlanmaz",
+      "pass": true,
+      "detail": "864 tick — ölçü çizgisi 768'de"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "çoklu bar TimeSelection range olur",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":1536,\"widthPx\":544}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tie preflight kenarı anlatır",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "kenar mesajı ham bağlantı adı göstermez",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "include connection teklif edilir",
+      "pass": true,
+      "detail": "Bağlantıyı da dahil et"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "include connection range'i genişletir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–2. ölçüler"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "seam fail-closed",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "seam reddi müzikal dille anlatılır",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "loop tam bar sınırları içinde kalır",
+      "pass": true,
+      "detail": "308 örnek, 34–310 vs 34–306 (+8px çizim payı)"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "loop wrap gerçekten oluyor",
+      "pass": true,
+      "detail": "2 wrap"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "loop sonu bir sonraki ölçüye taşmıyor",
+      "pass": true,
+      "detail": "max 310, ölçü sonu 306, bir sonraki ölçü 340"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "banner aktif range'i söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "section loop practice'i kapatır",
+      "pass": true,
+      "detail": "banner gone"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "section loop kendi adını söyler",
+      "pass": true,
+      "detail": "Döngü: Dört Dörtlük"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "practice range section loop'u kapatır",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "4/4 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "250ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "4/4 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1900ms vs 250ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3717ms vs 1900ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "4/4 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "4 ölçü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "6/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "233ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "6/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1433ms vs 233ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "2800ms vs 1433ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "6/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "7/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "233ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "7/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1650ms vs 233ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3250ms vs 1650ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "7/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "count-in sırasında pause iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "iptal edilen count-in hayalet playback başlatmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "iptalden sonra tekrar çal gerçekten başlıyor",
+      "pass": true,
+      "detail": "1 rAF, çalıyor — Pratik · 1 ölçü · %100 · 2 ölçü sayım"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "count-in sırasında stop iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hızlı çift play ikinci count-in kurmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "sabit hız kontrolleri gizli",
+      "pass": true,
+      "detail": "Sabit"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hız modu yalnız renkle anlatılmıyor",
+      "pass": true,
+      "detail": "Sabit ✓"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "kademeli mod dört kontrolü açar",
+      "pass": true,
+      "detail": "%80 / %100 / %5 / 2 tur"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hız kontrolleri 44x44",
+      "pass": true,
+      "detail": "8 kontrol, en küçük 44px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "kontrol kendi sınırında disabled olur",
+      "pass": true,
+      "detail": "1 tur"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hedef başlangıcın altındaysa typed red",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hız reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Vazgeç formu sıfırlar",
+      "pass": true,
+      "detail": "Sabit'e döndü"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Uygula planı başlatır",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "bildirim çalımı değerlendirmiyor",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "banner kademeli planı söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %80→%100 · 2 turda bir +%5"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Escape sheet'i Vazgeç ile aynı yoldan kapatır",
+      "pass": true,
+      "detail": "sheet closed"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "davul editi ekranda görünür",
+      "pass": true,
+      "detail": "snare:0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "commit tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "nota editi geçerli range'i korur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "undo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "redo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "undo/redo range'i yerinde bırakır",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "bar silme invalid range'i temizler",
+      "pass": true,
+      "detail": "delete gesture unavailable"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "range seçmek 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "count-in ayarı 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hız formu 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "practice kapatma 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "song byte-eş kalır",
+      "pass": true,
+      "detail": "identical"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "refresh practice state taşımaz",
+      "pass": true,
+      "detail": "no banner after reload"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "dış ağ isteği 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "idle rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tek yatay scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "playing rAF 1",
+      "pass": true,
+      "detail": "1 ({\"arrangement\":0,\"tab\":1})"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tek AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "pause sonrası rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "görünüm değişimi ikinci AudioContext kurmaz",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "toplam extent = axis + gutter + reading tail",
+      "pass": true,
+      "detail": "3597px ölçüldü, 3597.2px bekleniyor (axis 3298 + gutter 34 + tail 265.2)"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "gutter müzikal axis'e dahil değil",
+      "pass": true,
+      "detail": "axis ve tail çıkınca 33.8px kalıyor"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "reading tail müzikal değil",
+      "pass": true,
+      "detail": "0 ölçü axis'in (3332px) ötesinde"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "scroll konumu toplam genişliği değiştirmez",
+      "pass": true,
+      "detail": "3597 / 3597 / 3597 / 3597 / 3597 / 3597"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "farklı mounted bar sayılarında extent sabit",
+      "pass": true,
+      "detail": "mounted 3/3/4/6/3/2, extent 3597"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "ilk gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "son gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "seveneight:2 @ 3094px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "son ölçü axis'in sonunda biter",
+      "pass": true,
+      "detail": "3332px vs 3332px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tail no-op",
+      "pass": true,
+      "detail": "{\"section\":\"seveneight\",\"band\":false}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tail practice range üretmez",
+      "pass": true,
+      "detail": "no range"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Tab ve Çoklu ölçüleri aynı kanonik ofsette çizer",
+      "pass": true,
+      "detail": "[{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}] vs [{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}]"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "iki yüzey arasındaki tek fark müzikal olmayan gutter",
+      "pass": true,
+      "detail": "Tab 34px, Çoklu 2px, fark 32px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "playhead aynı kanonik eksende ilerler",
+      "pass": true,
+      "detail": "min 34 vs bar 34"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "davul ızgarası bölümün kendi kanonik x'inde başlar",
+      "pass": true,
+      "detail": "hücre 1394px, bölümün ilk ölçüsü 1394px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "ikinci bölümün x'i gerçekten sıfır değil",
+      "pass": true,
+      "detail": "1394px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "davul ızgarası silinmeden kurulur",
+      "pass": true,
+      "detail": "grid armed"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "silahlanmış ızgara yüzeyi genişletmiyor",
+      "pass": true,
+      "detail": "okuma 3597px, yazma 3597px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "silahlanmış extent de axis + gutter + tail",
+      "pass": true,
+      "detail": "3597px vs 3597.2px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "her hücre kendi tick'ini taşır",
+      "pass": true,
+      "detail": "22 hücre"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+      "pass": true,
+      "detail": "4 ölçü başı, 0 yanlış yerde, 1 mount edilmemiş"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hücreler kanonik x'te sıralı ve boşluksuz",
+      "pass": true,
+      "detail": "34 → 748"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "window yalnız ızgaranın bir kısmını mount eder",
+      "pass": true,
+      "detail": "lead 0 / tail 612"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "window ortasında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1056 → şarkıda 1056"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "window sınırında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:0 → şarkıda 0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "son mount edilen kolonda doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1536 → şarkıda 1536"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "scroll sırasında yanlış hücreye yazılmaz",
+      "pass": true,
+      "detail": "hücre snare:1152 → şarkıda 1152"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hit ekranda görünür",
+      "pass": true,
+      "detail": "snare:0 → true"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hit tam 1 storage write üretir",
+      "pass": true,
+      "detail": "1 write, 455ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "hit tam 1 history adımı üretir",
+      "pass": true,
+      "detail": "Geri al → Geri al: Davul vuruşu ekleme"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "tap sırasında Düzen ve Çoklu kurulmaz",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"lanes\":0}"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Düzen ilk açılışta kurulur",
+      "pass": true,
+      "detail": "{\"tracks\":3,\"sections\":4} @ 43ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Düzen açmak yazma üretmez",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "ikinci açılış birinciden pahalı değil",
+      "pass": true,
+      "detail": "soğuk 43ms, sıcak 44ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Çoklu ilk açılışta kurulur",
+      "pass": true,
+      "detail": "3 lane @ 55ms"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "yeni hit doğru tick üzerinde",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "Çoklu güncel Song'u gösterir",
+      "pass": true,
+      "detail": "davul lane'i var"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "görünüm açılışları AudioContext'i çoğaltmaz",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "görünüm açılışları toplamda 1 write bırakır",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "playback state bozulmadan kalır",
+      "pass": true,
+      "detail": "durmuş, çalmaya hazır"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "sheet viewport içinde",
+      "pass": true,
+      "detail": "24–366 / 390"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "kritik hedefler 44x44",
+      "pass": true,
+      "detail": "16 hedef, 0 küçük "
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "sheet kontrolleri kaydırınca erişilebilir",
+      "pass": true,
+      "detail": "10 kontrol katlamanın altındaydı, kaydırınca 0 kaldı"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "sheet açıkken body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "root 24px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "transport kontrolleri 44x44 kalır",
+      "pass": true,
+      "detail": "7 kontrol, hepsi yeterli"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "transport kontrolleri ekran içinde",
+      "pass": true,
+      "detail": "0 kontrol kırpılmış"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "banner kırpılmıyor",
+      "pass": true,
+      "detail": "372 / 390"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "banner metni kısaltılmıyor",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "390x844 @%150",
+      "name": "uzun bölüm adı satırı taşırmıyor",
+      "pass": true,
+      "detail": "390 / 390"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tek ölçüden range",
+      "pass": true,
+      "detail": "four:0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "range özeti ölçü numarasıyla",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "range kaynağı: tek ölçü",
+      "pass": true,
+      "detail": "Tek ölçü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "range kurmak 0 write",
+      "pass": true,
+      "detail": "0 setItem"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "iki ölçü pair",
+      "pass": true,
+      "detail": "four:0 → four:2"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "pair aradaki her ölçüyü kapsar",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "ters pair aynı aralığı verir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "bütün section pair",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–4. ölçüler"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "cross-section red",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "cross-section reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "zaman seçimi başlar",
+      "pass": true,
+      "detail": "band shown"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "partial time selection teklif edilmez",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":96,\"widthPx\":34}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tam bar TimeSelection teklif edilir",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":768,\"widthPx\":272}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tam bar TimeSelection range olur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "range kaynağı: zaman seçimi",
+      "pass": true,
+      "detail": "Zaman seçiminden"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "bar çizgisini aşan seçim yuvarlanmaz",
+      "pass": true,
+      "detail": "864 tick — ölçü çizgisi 768'de"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "çoklu bar TimeSelection range olur",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":1536,\"widthPx\":544}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tie preflight kenarı anlatır",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "kenar mesajı ham bağlantı adı göstermez",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "include connection teklif edilir",
+      "pass": true,
+      "detail": "Bağlantıyı da dahil et"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "include connection range'i genişletir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–2. ölçüler"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "seam fail-closed",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "seam reddi müzikal dille anlatılır",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "loop tam bar sınırları içinde kalır",
+      "pass": true,
+      "detail": "306 örnek, 34–311 vs 34–306 (+8px çizim payı)"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "loop wrap gerçekten oluyor",
+      "pass": true,
+      "detail": "2 wrap"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "loop sonu bir sonraki ölçüye taşmıyor",
+      "pass": true,
+      "detail": "max 311, ölçü sonu 306, bir sonraki ölçü 340"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "banner aktif range'i söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "section loop practice'i kapatır",
+      "pass": true,
+      "detail": "banner gone"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "section loop kendi adını söyler",
+      "pass": true,
+      "detail": "Döngü: Dört Dörtlük"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "practice range section loop'u kapatır",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "4/4 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "283ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "4/4 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1900ms vs 283ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3716ms vs 1900ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "4/4 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "4 ölçü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "6/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "250ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "6/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1450ms vs 250ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "2816ms vs 1450ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "6/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "7/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "267ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "7/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1683ms vs 267ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3250ms vs 1683ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "7/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "count-in sırasında pause iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "iptal edilen count-in hayalet playback başlatmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "iptalden sonra tekrar çal gerçekten başlıyor",
+      "pass": true,
+      "detail": "1 rAF, çalıyor — Pratik · 1 ölçü · %100 · 2 ölçü sayım"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "count-in sırasında stop iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hızlı çift play ikinci count-in kurmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "sabit hız kontrolleri gizli",
+      "pass": true,
+      "detail": "Sabit"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hız modu yalnız renkle anlatılmıyor",
+      "pass": true,
+      "detail": "Sabit ✓"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "kademeli mod dört kontrolü açar",
+      "pass": true,
+      "detail": "%80 / %100 / %5 / 2 tur"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hız kontrolleri 44x44",
+      "pass": true,
+      "detail": "8 kontrol, en küçük 44px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "kontrol kendi sınırında disabled olur",
+      "pass": true,
+      "detail": "1 tur"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hedef başlangıcın altındaysa typed red",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hız reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Vazgeç formu sıfırlar",
+      "pass": true,
+      "detail": "Sabit'e döndü"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Uygula planı başlatır",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "bildirim çalımı değerlendirmiyor",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "banner kademeli planı söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %80→%100 · 2 turda bir +%5"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Escape sheet'i Vazgeç ile aynı yoldan kapatır",
+      "pass": true,
+      "detail": "sheet closed"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "davul editi ekranda görünür",
+      "pass": true,
+      "detail": "snare:0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "commit tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "nota editi geçerli range'i korur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "undo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "redo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "undo/redo range'i yerinde bırakır",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "bar silme invalid range'i temizler",
+      "pass": true,
+      "detail": "delete gesture unavailable"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "range seçmek 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "count-in ayarı 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hız formu 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "practice kapatma 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "song byte-eş kalır",
+      "pass": true,
+      "detail": "identical"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "refresh practice state taşımaz",
+      "pass": true,
+      "detail": "no banner after reload"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "dış ağ isteği 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "idle rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tek yatay scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "playing rAF 1",
+      "pass": true,
+      "detail": "1 ({\"arrangement\":0,\"tab\":1})"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tek AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "pause sonrası rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "görünüm değişimi ikinci AudioContext kurmaz",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "toplam extent = axis + gutter + reading tail",
+      "pass": true,
+      "detail": "3550px ölçüldü, 3549.6px bekleniyor (axis 3298 + gutter 34 + tail 217.6)"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "gutter müzikal axis'e dahil değil",
+      "pass": true,
+      "detail": "axis ve tail çıkınca 34.4px kalıyor"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "reading tail müzikal değil",
+      "pass": true,
+      "detail": "0 ölçü axis'in (3332px) ötesinde"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "scroll konumu toplam genişliği değiştirmez",
+      "pass": true,
+      "detail": "3550 / 3550 / 3550 / 3550 / 3550 / 3550"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "farklı mounted bar sayılarında extent sabit",
+      "pass": true,
+      "detail": "mounted 2/3/3/5/3/2, extent 3550"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "ilk gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "son gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "seveneight:2 @ 3094px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "son ölçü axis'in sonunda biter",
+      "pass": true,
+      "detail": "3332px vs 3332px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tail no-op",
+      "pass": true,
+      "detail": "{\"section\":\"seveneight\",\"band\":false}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tail practice range üretmez",
+      "pass": true,
+      "detail": "no range"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Tab ve Çoklu ölçüleri aynı kanonik ofsette çizer",
+      "pass": true,
+      "detail": "[{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}] vs [{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}]"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "iki yüzey arasındaki tek fark müzikal olmayan gutter",
+      "pass": true,
+      "detail": "Tab 34px, Çoklu 2px, fark 32px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "playhead aynı kanonik eksende ilerler",
+      "pass": true,
+      "detail": "min 34 vs bar 34"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "davul ızgarası bölümün kendi kanonik x'inde başlar",
+      "pass": true,
+      "detail": "hücre 1394px, bölümün ilk ölçüsü 1394px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "ikinci bölümün x'i gerçekten sıfır değil",
+      "pass": true,
+      "detail": "1394px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "davul ızgarası silinmeden kurulur",
+      "pass": true,
+      "detail": "grid armed"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "silahlanmış ızgara yüzeyi genişletmiyor",
+      "pass": true,
+      "detail": "okuma 3550px, yazma 3550px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "silahlanmış extent de axis + gutter + tail",
+      "pass": true,
+      "detail": "3550px vs 3549.6px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "her hücre kendi tick'ini taşır",
+      "pass": true,
+      "detail": "18 hücre"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+      "pass": true,
+      "detail": "4 ölçü başı, 0 yanlış yerde, 1 mount edilmemiş"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hücreler kanonik x'te sıralı ve boşluksuz",
+      "pass": true,
+      "detail": "34 → 612"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "window yalnız ızgaranın bir kısmını mount eder",
+      "pass": true,
+      "detail": "lead 0 / tail 748"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "window ortasında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:864 → şarkıda 864"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "window sınırında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:0 → şarkıda 0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "son mount edilen kolonda doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1248 → şarkıda 1248"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "scroll sırasında yanlış hücreye yazılmaz",
+      "pass": true,
+      "detail": "hücre snare:1248 → şarkıda 1248"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hit ekranda görünür",
+      "pass": true,
+      "detail": "snare:0 → true"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hit tam 1 storage write üretir",
+      "pass": true,
+      "detail": "1 write, 451ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "hit tam 1 history adımı üretir",
+      "pass": true,
+      "detail": "Geri al → Geri al: Davul vuruşu ekleme"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "tap sırasında Düzen ve Çoklu kurulmaz",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"lanes\":0}"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Düzen ilk açılışta kurulur",
+      "pass": true,
+      "detail": "{\"tracks\":3,\"sections\":4} @ 53ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Düzen açmak yazma üretmez",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "ikinci açılış birinciden pahalı değil",
+      "pass": true,
+      "detail": "soğuk 53ms, sıcak 43ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Çoklu ilk açılışta kurulur",
+      "pass": true,
+      "detail": "3 lane @ 63ms"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "yeni hit doğru tick üzerinde",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "Çoklu güncel Song'u gösterir",
+      "pass": true,
+      "detail": "davul lane'i var"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "görünüm açılışları AudioContext'i çoğaltmaz",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "görünüm açılışları toplamda 1 write bırakır",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "playback state bozulmadan kalır",
+      "pass": true,
+      "detail": "durmuş, çalmaya hazır"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "sheet viewport içinde",
+      "pass": true,
+      "detail": "16–304 / 320"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "kritik hedefler 44x44",
+      "pass": true,
+      "detail": "16 hedef, 0 küçük "
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "sheet kontrolleri kaydırınca erişilebilir",
+      "pass": true,
+      "detail": "8 kontrol katlamanın altındaydı, kaydırınca 0 kaldı"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "sheet açıkken body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "root 16px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "transport kontrolleri 44x44 kalır",
+      "pass": true,
+      "detail": "7 kontrol, hepsi yeterli"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "transport kontrolleri ekran içinde",
+      "pass": true,
+      "detail": "0 kontrol kırpılmış"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "banner kırpılmıyor",
+      "pass": true,
+      "detail": "308 / 320"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "banner metni kısaltılmıyor",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%100",
+      "name": "uzun bölüm adı satırı taşırmıyor",
+      "pass": true,
+      "detail": "320 / 320"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tek ölçüden range",
+      "pass": true,
+      "detail": "four:0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "range özeti ölçü numarasıyla",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "range kaynağı: tek ölçü",
+      "pass": true,
+      "detail": "Tek ölçü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "range kurmak 0 write",
+      "pass": true,
+      "detail": "0 setItem"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "iki ölçü pair",
+      "pass": true,
+      "detail": "four:0 → four:2"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "pair aradaki her ölçüyü kapsar",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "ters pair aynı aralığı verir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "bütün section pair",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–4. ölçüler"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "cross-section red",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "cross-section reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "zaman seçimi başlar",
+      "pass": true,
+      "detail": "band shown"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "partial time selection teklif edilmez",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":96,\"widthPx\":34}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tam bar TimeSelection teklif edilir",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":768,\"widthPx\":272}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tam bar TimeSelection range olur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "range kaynağı: zaman seçimi",
+      "pass": true,
+      "detail": "Zaman seçiminden"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "bar çizgisini aşan seçim yuvarlanmaz",
+      "pass": true,
+      "detail": "864 tick — ölçü çizgisi 768'de"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "çoklu bar TimeSelection range olur",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":1536,\"widthPx\":544}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tie preflight kenarı anlatır",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "kenar mesajı ham bağlantı adı göstermez",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "include connection teklif edilir",
+      "pass": true,
+      "detail": "Bağlantıyı da dahil et"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "include connection range'i genişletir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–2. ölçüler"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "seam fail-closed",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "seam reddi müzikal dille anlatılır",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "loop tam bar sınırları içinde kalır",
+      "pass": true,
+      "detail": "311 örnek, 34–308 vs 34–306 (+8px çizim payı)"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "loop wrap gerçekten oluyor",
+      "pass": true,
+      "detail": "2 wrap"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "loop sonu bir sonraki ölçüye taşmıyor",
+      "pass": true,
+      "detail": "max 308, ölçü sonu 306, bir sonraki ölçü 340"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "banner aktif range'i söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "section loop practice'i kapatır",
+      "pass": true,
+      "detail": "banner gone"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "section loop kendi adını söyler",
+      "pass": true,
+      "detail": "Döngü: Dört Dörtlük"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "practice range section loop'u kapatır",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "4/4 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "266ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "4/4 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1900ms vs 266ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3733ms vs 1900ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "4/4 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "4 ölçü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "6/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "283ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "6/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1433ms vs 283ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "2800ms vs 1433ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "6/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "7/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "233ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "7/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1683ms vs 233ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3250ms vs 1683ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "7/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "count-in sırasında pause iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "iptal edilen count-in hayalet playback başlatmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "iptalden sonra tekrar çal gerçekten başlıyor",
+      "pass": true,
+      "detail": "1 rAF, çalıyor — Pratik · 1 ölçü · %100 · 2 ölçü sayım"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "count-in sırasında stop iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hızlı çift play ikinci count-in kurmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "sabit hız kontrolleri gizli",
+      "pass": true,
+      "detail": "Sabit"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hız modu yalnız renkle anlatılmıyor",
+      "pass": true,
+      "detail": "Sabit ✓"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "kademeli mod dört kontrolü açar",
+      "pass": true,
+      "detail": "%80 / %100 / %5 / 2 tur"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hız kontrolleri 44x44",
+      "pass": true,
+      "detail": "8 kontrol, en küçük 44px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "kontrol kendi sınırında disabled olur",
+      "pass": true,
+      "detail": "1 tur"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hedef başlangıcın altındaysa typed red",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hız reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Vazgeç formu sıfırlar",
+      "pass": true,
+      "detail": "Sabit'e döndü"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Uygula planı başlatır",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "bildirim çalımı değerlendirmiyor",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "banner kademeli planı söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %80→%100 · 2 turda bir +%5"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Escape sheet'i Vazgeç ile aynı yoldan kapatır",
+      "pass": true,
+      "detail": "sheet closed"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "davul editi ekranda görünür",
+      "pass": true,
+      "detail": "snare:0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "commit tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "nota editi geçerli range'i korur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "undo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "redo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "undo/redo range'i yerinde bırakır",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "bar silme invalid range'i temizler",
+      "pass": true,
+      "detail": "delete gesture unavailable"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "range seçmek 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "count-in ayarı 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hız formu 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "practice kapatma 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "song byte-eş kalır",
+      "pass": true,
+      "detail": "identical"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "refresh practice state taşımaz",
+      "pass": true,
+      "detail": "no banner after reload"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "dış ağ isteği 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "idle rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tek yatay scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "playing rAF 1",
+      "pass": true,
+      "detail": "1 ({\"arrangement\":0,\"tab\":1})"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tek AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "pause sonrası rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "görünüm değişimi ikinci AudioContext kurmaz",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "toplam extent = axis + gutter + reading tail",
+      "pass": true,
+      "detail": "3550px ölçüldü, 3549.6px bekleniyor (axis 3298 + gutter 34 + tail 217.6)"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "gutter müzikal axis'e dahil değil",
+      "pass": true,
+      "detail": "axis ve tail çıkınca 34.4px kalıyor"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "reading tail müzikal değil",
+      "pass": true,
+      "detail": "0 ölçü axis'in (3332px) ötesinde"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "scroll konumu toplam genişliği değiştirmez",
+      "pass": true,
+      "detail": "3550 / 3550 / 3550 / 3550 / 3550 / 3550"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "farklı mounted bar sayılarında extent sabit",
+      "pass": true,
+      "detail": "mounted 2/3/3/5/3/2, extent 3550"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "ilk gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "son gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "seveneight:2 @ 3094px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "son ölçü axis'in sonunda biter",
+      "pass": true,
+      "detail": "3332px vs 3332px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tail no-op",
+      "pass": true,
+      "detail": "{\"section\":\"seveneight\",\"band\":false}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tail practice range üretmez",
+      "pass": true,
+      "detail": "no range"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Tab ve Çoklu ölçüleri aynı kanonik ofsette çizer",
+      "pass": true,
+      "detail": "[{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}] vs [{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}]"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "iki yüzey arasındaki tek fark müzikal olmayan gutter",
+      "pass": true,
+      "detail": "Tab 34px, Çoklu 2px, fark 32px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "playhead aynı kanonik eksende ilerler",
+      "pass": true,
+      "detail": "min 34 vs bar 34"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "davul ızgarası bölümün kendi kanonik x'inde başlar",
+      "pass": true,
+      "detail": "hücre 1394px, bölümün ilk ölçüsü 1394px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "ikinci bölümün x'i gerçekten sıfır değil",
+      "pass": true,
+      "detail": "1394px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "davul ızgarası silinmeden kurulur",
+      "pass": true,
+      "detail": "grid armed"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "silahlanmış ızgara yüzeyi genişletmiyor",
+      "pass": true,
+      "detail": "okuma 3550px, yazma 3550px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "silahlanmış extent de axis + gutter + tail",
+      "pass": true,
+      "detail": "3550px vs 3549.6px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "her hücre kendi tick'ini taşır",
+      "pass": true,
+      "detail": "18 hücre"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+      "pass": true,
+      "detail": "4 ölçü başı, 0 yanlış yerde, 1 mount edilmemiş"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hücreler kanonik x'te sıralı ve boşluksuz",
+      "pass": true,
+      "detail": "34 → 612"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "window yalnız ızgaranın bir kısmını mount eder",
+      "pass": true,
+      "detail": "lead 0 / tail 748"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "window ortasında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:864 → şarkıda 864"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "window sınırında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:0 → şarkıda 0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "son mount edilen kolonda doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1248 → şarkıda 1248"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "scroll sırasında yanlış hücreye yazılmaz",
+      "pass": true,
+      "detail": "hücre snare:1248 → şarkıda 1248"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hit ekranda görünür",
+      "pass": true,
+      "detail": "snare:0 → true"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hit tam 1 storage write üretir",
+      "pass": true,
+      "detail": "1 write, 449ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "hit tam 1 history adımı üretir",
+      "pass": true,
+      "detail": "Geri al → Geri al: Davul vuruşu ekleme"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "tap sırasında Düzen ve Çoklu kurulmaz",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"lanes\":0}"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Düzen ilk açılışta kurulur",
+      "pass": true,
+      "detail": "{\"tracks\":3,\"sections\":4} @ 46ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Düzen açmak yazma üretmez",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "ikinci açılış birinciden pahalı değil",
+      "pass": true,
+      "detail": "soğuk 46ms, sıcak 45ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Çoklu ilk açılışta kurulur",
+      "pass": true,
+      "detail": "3 lane @ 54ms"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "yeni hit doğru tick üzerinde",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "Çoklu güncel Song'u gösterir",
+      "pass": true,
+      "detail": "davul lane'i var"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "görünüm açılışları AudioContext'i çoğaltmaz",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "görünüm açılışları toplamda 1 write bırakır",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "playback state bozulmadan kalır",
+      "pass": true,
+      "detail": "durmuş, çalmaya hazır"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "sheet viewport içinde",
+      "pass": true,
+      "detail": "20–300 / 320"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "kritik hedefler 44x44",
+      "pass": true,
+      "detail": "16 hedef, 0 küçük "
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "sheet kontrolleri kaydırınca erişilebilir",
+      "pass": true,
+      "detail": "10 kontrol katlamanın altındaydı, kaydırınca 0 kaldı"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "sheet açıkken body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "root 20px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "transport kontrolleri 44x44 kalır",
+      "pass": true,
+      "detail": "7 kontrol, hepsi yeterli"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "transport kontrolleri ekran içinde",
+      "pass": true,
+      "detail": "0 kontrol kırpılmış"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "banner kırpılmıyor",
+      "pass": true,
+      "detail": "305 / 320"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "banner metni kısaltılmıyor",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%125",
+      "name": "uzun bölüm adı satırı taşırmıyor",
+      "pass": true,
+      "detail": "320 / 320"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tek ölçüden range",
+      "pass": true,
+      "detail": "four:0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "range özeti ölçü numarasıyla",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "range kaynağı: tek ölçü",
+      "pass": true,
+      "detail": "Tek ölçü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "range kurmak 0 write",
+      "pass": true,
+      "detail": "0 setItem"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "iki ölçü pair",
+      "pass": true,
+      "detail": "four:0 → four:2"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "pair aradaki her ölçüyü kapsar",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "ters pair aynı aralığı verir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "bütün section pair",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–4. ölçüler"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "cross-section red",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "cross-section reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Çalışma döngüsü tek bir bölüm içinde kalır. İki ölçüyü aynı bölümden seç."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "zaman seçimi başlar",
+      "pass": true,
+      "detail": "band shown"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "partial time selection teklif edilmez",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":96,\"widthPx\":34}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tam bar TimeSelection teklif edilir",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":768,\"widthPx\":272}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tam bar TimeSelection range olur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1. ölçü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "range kaynağı: zaman seçimi",
+      "pass": true,
+      "detail": "Zaman seçiminden"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "bar çizgisini aşan seçim yuvarlanmaz",
+      "pass": true,
+      "detail": "864 tick — ölçü çizgisi 768'de"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "çoklu bar TimeSelection range olur",
+      "pass": true,
+      "detail": "ticks {\"start\":0,\"end\":1536,\"widthPx\":544}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tie preflight kenarı anlatır",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "kenar mesajı ham bağlantı adı göstermez",
+      "pass": true,
+      "detail": "Döngü, önceki ölçüde başlayan bir sesin ortasından başlıyor."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "include connection teklif edilir",
+      "pass": true,
+      "detail": "Bağlantıyı da dahil et"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "include connection range'i genişletir",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–2. ölçüler"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "seam fail-closed",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "seam reddi müzikal dille anlatılır",
+      "pass": true,
+      "detail": "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "loop tam bar sınırları içinde kalır",
+      "pass": true,
+      "detail": "309 örnek, 34–310 vs 34–306 (+8px çizim payı)"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "loop wrap gerçekten oluyor",
+      "pass": true,
+      "detail": "2 wrap"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "loop sonu bir sonraki ölçüye taşmıyor",
+      "pass": true,
+      "detail": "max 310, ölçü sonu 306, bir sonraki ölçü 340"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "banner aktif range'i söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "section loop practice'i kapatır",
+      "pass": true,
+      "detail": "banner gone"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "section loop kendi adını söyler",
+      "pass": true,
+      "detail": "Döngü: Dört Dörtlük"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "practice range section loop'u kapatır",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "4/4 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "250ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "4/4 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1900ms vs 250ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3717ms vs 1900ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "4/4 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "4 ölçü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "6/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "233ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "6/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1433ms vs 233ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "2800ms vs 1433ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "6/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "7/8 count-in kapalı hemen başlar",
+      "pass": true,
+      "detail": "233ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "7/8 bir ölçü count-in bekletir",
+      "pass": true,
+      "detail": "1683ms vs 233ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
+      "pass": true,
+      "detail": "3250ms vs 1683ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "7/8 count-in şarkıya ölçü eklemez",
+      "pass": true,
+      "detail": "3 ölçü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "count-in sırasında pause iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "iptal edilen count-in hayalet playback başlatmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "iptalden sonra tekrar çal gerçekten başlıyor",
+      "pass": true,
+      "detail": "1 rAF, çalıyor — Pratik · 1 ölçü · %100 · 2 ölçü sayım"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "count-in sırasında stop iptal eder",
+      "pass": true,
+      "detail": "stopped"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hızlı çift play ikinci count-in kurmaz",
+      "pass": true,
+      "detail": "0 rAF"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "sabit hız kontrolleri gizli",
+      "pass": true,
+      "detail": "Sabit"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hız modu yalnız renkle anlatılmıyor",
+      "pass": true,
+      "detail": "Sabit ✓"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "kademeli mod dört kontrolü açar",
+      "pass": true,
+      "detail": "%80 / %100 / %5 / 2 tur"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hız kontrolleri 44x44",
+      "pass": true,
+      "detail": "8 kontrol, en küçük 44px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "kontrol kendi sınırında disabled olur",
+      "pass": true,
+      "detail": "1 tur"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hedef başlangıcın altındaysa typed red",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hız reddi ham kod göstermez",
+      "pass": true,
+      "detail": "Hedef hız, başlangıç hızından yüksek olmalı."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Vazgeç formu sıfırlar",
+      "pass": true,
+      "detail": "Sabit'e döndü"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Uygula planı başlatır",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "bildirim çalımı değerlendirmiyor",
+      "pass": true,
+      "detail": "%80 — 0 tur tamamlandı."
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "banner kademeli planı söyler",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %80→%100 · 2 turda bir +%5"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Escape sheet'i Vazgeç ile aynı yoldan kapatır",
+      "pass": true,
+      "detail": "sheet closed"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "davul editi ekranda görünür",
+      "pass": true,
+      "detail": "snare:0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "commit tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "nota editi geçerli range'i korur",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler vs Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "undo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "redo tek write",
+      "pass": true,
+      "detail": "1 write"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "undo/redo range'i yerinde bırakır",
+      "pass": true,
+      "detail": "Dört Dörtlük, 1–3. ölçüler"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "bar silme invalid range'i temizler",
+      "pass": true,
+      "detail": "delete gesture unavailable"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "range seçmek 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "count-in ayarı 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hız formu 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "practice kapatma 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "song byte-eş kalır",
+      "pass": true,
+      "detail": "identical"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "refresh practice state taşımaz",
+      "pass": true,
+      "detail": "no banner after reload"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "dış ağ isteği 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "idle rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tek yatay scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "playing rAF 1",
+      "pass": true,
+      "detail": "1 ({\"arrangement\":0,\"tab\":1})"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tek AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "pause sonrası rAF 0",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "görünüm değişimi ikinci AudioContext kurmaz",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "console/page error 0",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "toplam extent = axis + gutter + reading tail",
+      "pass": true,
+      "detail": "3550px ölçüldü, 3549.6px bekleniyor (axis 3298 + gutter 34 + tail 217.6)"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "gutter müzikal axis'e dahil değil",
+      "pass": true,
+      "detail": "axis ve tail çıkınca 34.4px kalıyor"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "reading tail müzikal değil",
+      "pass": true,
+      "detail": "0 ölçü axis'in (3332px) ötesinde"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "scroll konumu toplam genişliği değiştirmez",
+      "pass": true,
+      "detail": "3550 / 3550 / 3550 / 3550 / 3550 / 3550"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "farklı mounted bar sayılarında extent sabit",
+      "pass": true,
+      "detail": "mounted 2/3/3/5/3/2, extent 3550"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "ilk gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "34px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "son gerçek ölçü erişilebilir",
+      "pass": true,
+      "detail": "seveneight:2 @ 3094px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "son ölçü axis'in sonunda biter",
+      "pass": true,
+      "detail": "3332px vs 3332px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tail no-op",
+      "pass": true,
+      "detail": "{\"section\":\"seveneight\",\"band\":false}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tail practice range üretmez",
+      "pass": true,
+      "detail": "no range"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Tab ve Çoklu ölçüleri aynı kanonik ofsette çizer",
+      "pass": true,
+      "detail": "[{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}] vs [{\"left\":0,\"width\":272},{\"left\":272,\"width\":272},{\"left\":544,\"width\":544}]"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "iki yüzey arasındaki tek fark müzikal olmayan gutter",
+      "pass": true,
+      "detail": "Tab 34px, Çoklu 2px, fark 32px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "playhead aynı kanonik eksende ilerler",
+      "pass": true,
+      "detail": "min 34 vs bar 34"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "davul ızgarası bölümün kendi kanonik x'inde başlar",
+      "pass": true,
+      "detail": "hücre 1394px, bölümün ilk ölçüsü 1394px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "ikinci bölümün x'i gerçekten sıfır değil",
+      "pass": true,
+      "detail": "1394px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "davul ızgarası silinmeden kurulur",
+      "pass": true,
+      "detail": "grid armed"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "silahlanmış ızgara yüzeyi genişletmiyor",
+      "pass": true,
+      "detail": "okuma 3550px, yazma 3550px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "silahlanmış extent de axis + gutter + tail",
+      "pass": true,
+      "detail": "3550px vs 3549.6px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "her hücre kendi tick'ini taşır",
+      "pass": true,
+      "detail": "18 hücre"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+      "pass": true,
+      "detail": "4 ölçü başı, 0 yanlış yerde, 1 mount edilmemiş"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hücreler kanonik x'te sıralı ve boşluksuz",
+      "pass": true,
+      "detail": "34 → 612"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "window yalnız ızgaranın bir kısmını mount eder",
+      "pass": true,
+      "detail": "lead 0 / tail 748"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "window ortasında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:864 → şarkıda 864"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "window sınırında doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:0 → şarkıda 0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "son mount edilen kolonda doğru hücreye yazar",
+      "pass": true,
+      "detail": "hücre kick:1248 → şarkıda 1248"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "scroll sırasında yanlış hücreye yazılmaz",
+      "pass": true,
+      "detail": "hücre snare:1248 → şarkıda 1248"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hit ekranda görünür",
+      "pass": true,
+      "detail": "snare:0 → true"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hit tam 1 storage write üretir",
+      "pass": true,
+      "detail": "1 write, 448ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "hit tam 1 history adımı üretir",
+      "pass": true,
+      "detail": "Geri al → Geri al: Davul vuruşu ekleme"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "tap sırasında Düzen ve Çoklu kurulmaz",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"lanes\":0}"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Düzen ilk açılışta kurulur",
+      "pass": true,
+      "detail": "{\"tracks\":3,\"sections\":4} @ 52ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Düzen açmak yazma üretmez",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "ikinci açılış birinciden pahalı değil",
+      "pass": true,
+      "detail": "soğuk 52ms, sıcak 44ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Çoklu ilk açılışta kurulur",
+      "pass": true,
+      "detail": "3 lane @ 54ms"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "yeni hit doğru tick üzerinde",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "Çoklu güncel Song'u gösterir",
+      "pass": true,
+      "detail": "davul lane'i var"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "görünüm açılışları AudioContext'i çoğaltmaz",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "görünüm açılışları toplamda 1 write bırakır",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "playback state bozulmadan kalır",
+      "pass": true,
+      "detail": "durmuş, çalmaya hazır"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "sheet viewport içinde",
+      "pass": true,
+      "detail": "24–296 / 320"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "kritik hedefler 44x44",
+      "pass": true,
+      "detail": "16 hedef, 0 küçük "
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "sheet kontrolleri kaydırınca erişilebilir",
+      "pass": true,
+      "detail": "10 kontrol katlamanın altındaydı, kaydırınca 0 kaldı"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "sheet açıkken body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "root 24px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "body yatay taşması 0",
+      "pass": true,
+      "detail": "0px"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "transport kontrolleri 44x44 kalır",
+      "pass": true,
+      "detail": "7 kontrol, hepsi yeterli"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "transport kontrolleri ekran içinde",
+      "pass": true,
+      "detail": "0 kontrol kırpılmış"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "banner kırpılmıyor",
+      "pass": true,
+      "detail": "302 / 320"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "banner metni kısaltılmıyor",
+      "pass": true,
+      "detail": "Pratik · 1 ölçü · %100"
+    },
+    {
+      "combo": "320x700 @%150",
+      "name": "uzun bölüm adı satırı taşırmıyor",
+      "pass": true,
+      "detail": "320 / 320"
     }
   ]
 }

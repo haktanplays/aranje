@@ -40,12 +40,12 @@
     {
       "name": "[390x844] 51 manuel kaydırma takibi durdurur",
       "pass": false,
-      "detail": "149→149 · playhead durdu"
+      "detail": "139→139 · playhead durdu"
     },
     {
       "name": "[390x844] 52 tekrar Çal takibi geri verir",
       "pass": false,
-      "detail": "149→432"
+      "detail": "139→425"
     },
     {
       "name": "[390x844] 8 çalarken üç görünüm geçişi",
@@ -90,7 +90,7 @@
     {
       "name": "[390x844] 15 dört track aynı bar çizgisinde",
       "pass": true,
-      "detail": "[-595,-323,-51]"
+      "detail": "[-584,-312,-40]"
     },
     {
       "name": "[390x844] 16 gtr şeridi",
@@ -365,12 +365,12 @@
     {
       "name": "[320x700] 51 manuel kaydırma takibi durdurur",
       "pass": false,
-      "detail": "172→172 · playhead durdu"
+      "detail": "174→174 · playhead durdu"
     },
     {
       "name": "[320x700] 52 tekrar Çal takibi geri verir",
       "pass": false,
-      "detail": "172→454"
+      "detail": "174→452"
     },
     {
       "name": "[320x700] 8 çalarken üç görünüm geçişi",
@@ -415,7 +415,7 @@
     {
       "name": "[320x700] 15 dört track aynı bar çizgisinde",
       "pass": true,
-      "detail": "[-345,-73]"
+      "detail": "[-342,-70]"
     },
     {
       "name": "[320x700] 16 gtr şeridi",
