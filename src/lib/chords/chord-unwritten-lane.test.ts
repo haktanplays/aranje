@@ -134,6 +134,42 @@ describe("223. the chord builder reaches an unwritten lane", () => {
     expect(target).toBeNull();
   });
 
+  it("lays a lane only in the bars the chord actually reaches", () => {
+    /*
+     * The section has two bars and the chord occupies one slot of the first.
+     * A command that laid rests across the whole section would be a bigger
+     * change than the reader asked for, and the project file and the
+     * fingerprint would both show it (2Q-B §17, probe 40).
+     */
+    const song = withUnwrittenKeys();
+    const voicing = cMajor(song)!;
+    const target = chordTargetAt(song, {
+      sectionId: SECTION,
+      trackId: KEYS.id,
+      barIndex: 0,
+      slotIndex: 0,
+      barNumber: 1,
+      octave: 4,
+    })!;
+    const result = applyChordWrite(song, {
+      sectionId: target.sectionId,
+      trackId: target.trackId,
+      timeTicks: target.timeTicks,
+      durationTicks: target.slotTicks,
+      voicing,
+      velocity: 100,
+      articulation: "normal",
+      mode: "insert",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const bars = result.song.sections[0]!.bars;
+    expect(Object.prototype.hasOwnProperty.call(bars[0]!.slots, KEYS.id)).toBe(true);
+    for (const bar of bars.slice(1)) {
+      expect(Object.prototype.hasOwnProperty.call(bar.slots, KEYS.id)).toBe(false);
+    }
+  });
+
   it("does not touch bars the chord never reaches", () => {
     const song = withUnwrittenKeys();
     const voicing = cMajor(song)!;

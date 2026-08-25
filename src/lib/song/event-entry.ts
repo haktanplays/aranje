@@ -100,7 +100,17 @@ export function landOn(song: Song, target: EventEntryTarget): Landing | EventEnt
   const track = song.tracks.find((entry) => entry.id === target.trackId);
   if (!track) return "track_not_found";
 
-  if (!Number.isInteger(target.ticks) || target.ticks < 0) return "off_grid_target";
+  /*
+   * Only the sign is checked here, and that is not laziness.
+   *
+   * A non-integer tick, a NaN and an Infinity are all refused further down
+   * by arithmetic that has to happen anyway: a fractional tick never divides
+   * exactly into a slot, and NaN/Infinity never land inside a bar. A
+   * *negative* tick is the one case that slips through both — -192 divides
+   * exactly and compares as "before the end of bar one" — so this is the
+   * check that earns its place (2Q-B §17, probes 3 and 4).
+   */
+  if (target.ticks < 0) return "off_grid_target";
 
   let start = 0;
   for (const [barIndex, bar] of section.bars.entries()) {

@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import { canonicalJson } from "@/lib/copilot/fingerprint";
 import { buildNotatedPlan } from "@/lib/audio/schedule";
 import {
+  hitAt,
   insertDrumHit,
   insertPitchedNote,
   isPitchedTrack,
@@ -82,6 +83,45 @@ describe("215. a moment names one slot, and nothing is rounded", () => {
   it("refuses a tick that does not sit on the grid", () => {
     const per = ticksPerSlot(SAMPLE_SONG.sections[0]!.bars[0]!.resolution);
     expect(landOn(SAMPLE_SONG, at("drums", per + 1))).toBe("off_grid_target");
+  });
+
+  /*
+   * A negative tick is the one case the modulo arithmetic below cannot
+   * catch: -192 divides exactly into a slot and compares as "before the end
+   * of bar one". Without a sign check it reaches a lane index of -1, which
+   * on a melodic lane sets a property nobody reads and reports success for a
+   * write that did nothing (2Q-B §17, probe 3).
+   */
+  it("refuses a negative tick even when it lands exactly on the grid", () => {
+    const per = ticksPerSlot(SAMPLE_SONG.sections[0]!.bars[0]!.resolution);
+    for (const trackId of ["drums", "gtr"]) {
+      const landing = landOn(SAMPLE_SONG, at(trackId, -per));
+      expect(landing).toBe("off_grid_target");
+    }
+    const drum = insertDrumHit(SAMPLE_SONG, at("drums", -per), { piece: "snare" });
+    expect(drum.ok).toBe(false);
+    if (!drum.ok) expect(drum.code).toBe("off_grid_target");
+
+    const song = withKeys();
+    const note = insertPitchedNote(song, at(KEYS.id, -per), { pitch: "A3" });
+    expect(note.ok).toBe(false);
+    if (!note.ok) expect(note.code).toBe("off_grid_target");
+  });
+
+  it("names a section that is not in the song, rather than using another one", () => {
+    const landing = landOn(SAMPLE_SONG, {
+      sectionId: "no-such-section",
+      trackId: "drums",
+      ticks: 0,
+    });
+    expect(landing).toBe("section_not_found");
+    const result = insertDrumHit(
+      SAMPLE_SONG,
+      { sectionId: "no-such-section", trackId: "drums", ticks: 0 },
+      { piece: "snare" },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.code).toBe("section_not_found");
   });
 
   it("refuses a tick past the end of the section", () => {
@@ -182,6 +222,67 @@ describe("216. drum hits", () => {
     }
     expect(drumsAt(song, 0, 0)).toEqual([]);
     expect(barsWrittenIn(song, "drums")).toBe(barsWrittenIn(SAMPLE_SONG, "drums"));
+  });
+
+  it("answers what is on a beat from the song, not from anything cached", () => {
+    // The toggle decides what a tap means from this, so a wrong answer here
+    // is a tap that writes when it should erase (2Q-B §17, probe 14).
+    const pieces = drumsAt(SAMPLE_SONG, 0, 0).map((entry) => entry.piece);
+    expect(pieces.length).toBeGreaterThan(0);
+    for (const piece of pieces) {
+      expect(hitAt(SAMPLE_SONG, at("drums", 0), piece)).toBe(true);
+    }
+    expect(hitAt(SAMPLE_SONG, at("drums", 0), "china")).toBe(false);
+    // A moment that is not on the grid carries nothing, and says so quietly.
+    expect(hitAt(SAMPLE_SONG, at("drums", 1), "snare")).toBe(false);
+
+    const removed = removeDrumHit(SAMPLE_SONG, at("drums", 0), pieces[0]!);
+    expect(removed.ok).toBe(true);
+    if (!removed.ok) return;
+    expect(hitAt(removed.song, at("drums", 0), pieces[0]!)).toBe(false);
+  });
+
+  it("drops the whole candidate when the validators refuse it", () => {
+    /*
+     * The velocity is outside what the contract can hold. The command builds
+     * a whole candidate and hands it to `settle`; without that gate the
+     * candidate would reach the reader's song (2Q-B §17, probe 23).
+     */
+    const result = insertDrumHit(SAMPLE_SONG, at("drums", per), {
+      piece: "china",
+      velocity: 999,
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.code).toBe("validation_failed");
+    expect(canonicalJson(SAMPLE_SONG)).toBe(frozen);
+  });
+
+  it("keeps the lane when the last hit on the whole track goes", () => {
+    /*
+     * Not just this slot: every hit on the track, so the lane is empty from
+     * end to end and the temptation to tidy the key away is at its strongest
+     * (2Q-B §17, probe 9).
+     */
+    let song: Song = SAMPLE_SONG;
+    for (const [barIndex, bar] of SAMPLE_SONG.sections[0]!.bars.entries()) {
+      const lane = bar.slots["drums"] as DrumSlot[];
+      let ticks = 0;
+      for (let index = 0; index < barIndex; index += 1) {
+        ticks += (SAMPLE_SONG.sections[0]!.bars[index]!.slots["drums"] as DrumSlot[]).length * per;
+      }
+      for (const [slotIndex, slot] of lane.entries()) {
+        for (const hit of slot) {
+          const result = removeDrumHit(song, at("drums", ticks + slotIndex * per), hit.piece);
+          expect(result.ok).toBe(true);
+          if (result.ok) song = result.song;
+        }
+      }
+    }
+    for (const bar of song.sections[0]!.bars) {
+      expect(Object.prototype.hasOwnProperty.call(bar.slots, "drums")).toBe(true);
+      expect((bar.slots["drums"] as DrumSlot[]).every((slot) => slot.length === 0)).toBe(true);
+    }
   });
 
   it("says nothing to remove when the slot is already empty", () => {

@@ -86,20 +86,43 @@ probe "2 a tick past the last bar lands in the last bar anyway" \
     ? { sectionIndex, barIndex: last, slotIndex: 0, bar, track }
     : "bar_not_found";'
 
+# 3 — the sign check goes, and a negative tick that divides exactly into a
+# slot reaches a lane index of -1.
+#
+# The first version of this probe removed `Number.isInteger` instead, and
+# stayed green: a fractional tick never divides exactly into a slot, so the
+# modulo below refuses it anyway, and NaN and Infinity never land inside a
+# bar. That was a finding about the *guard*, not about the test — the check
+# was half dead — so the redundant half was removed from the product and the
+# probe re-aimed at the half that earns its place. There was also no test for
+# a negative tick at all; one was added.
 probe "3 a negative tick is accepted" \
   src/lib/song/event-entry.ts "$ENTRY" \
-  '  if (!Number.isInteger(target.ticks) || target.ticks < 0) return "off_grid_target";' \
-  '  if (!Number.isInteger(target.ticks)) return "off_grid_target";'
+  '  if (target.ticks < 0) return "off_grid_target";' \
+  ''
 
-probe "4 a fractional tick is accepted" \
+# 4 — the refusal is reported as some other refusal.
+#
+# Not cosmetic: the sentence a reader is shown comes from this code, so a
+# command that says "this moment is not in the section" when it means "this
+# section is gone" sends them looking in the wrong place.
+probe "4 an off-grid moment is reported as a missing bar" \
   src/lib/song/event-entry.ts "$ENTRY" \
-  '  if (!Number.isInteger(target.ticks) || target.ticks < 0) return "off_grid_target";' \
-  '  if (target.ticks < 0) return "off_grid_target";'
+  '      if (inside % perSlot !== 0) return "off_grid_target";' \
+  '      if (inside % perSlot !== 0) return "bar_not_found";'
 
+# 5 — a section id nobody recognises quietly becomes the first section.
+#
+# The first version only changed the refusal code and stayed green, because
+# no test asserted which code a missing section produces. One does now, and
+# the mutation is the dangerous one: writing into a section the reader did
+# not name.
 probe "5 a missing section falls back to the first one" \
   src/lib/song/event-entry.ts "$ENTRY" \
-  '  if (!section) return "section_not_found";' \
-  '  if (!section) return "bar_not_found";'
+  '  const section = song.sections[sectionIndex];
+  if (!section) return "section_not_found";' \
+  '  const section = song.sections[sectionIndex] ?? song.sections[0];
+  if (!section) return "section_not_found";'
 
 echo "--- davul vuruşu (§4) ---"
 
@@ -119,6 +142,13 @@ probe "8 an unknown drum piece is written" \
   '  if (!DRUM_PIECES.includes(hit.piece)) return refuse("unknown_drum_piece");' \
   ''
 
+# 9 — an emptied bar tidies its lane key away, which is the K-55 defect
+# coming back: the bar becomes "not written here" and unwritable again.
+#
+# The first version only dropped the key when *every* slot in the bar was
+# empty, which the sample song's kit never is after one removal, so it was
+# inert. It now drops the key as soon as the slot it touched empties — and a
+# test that empties the whole track was added beside it.
 probe "9 removing the last hit drops the lane key with it" \
   src/lib/song/event-entry.ts "$ENTRY" \
   '  const next = [...lane];
@@ -126,8 +156,7 @@ probe "9 removing the last hit drops the lane key with it" \
   return finish(withLane(song, at, next));' \
   '  const next = [...lane];
   next[at.slotIndex] = slot.filter((hit) => hit.piece !== piece);
-  const dropped = next.every((entry) => Array.isArray(entry) && entry.length === 0);
-  if (dropped) {
+  if (next[at.slotIndex]!.length === 0) {
     const sections = [...song.sections];
     const section = sections[at.sectionIndex]!;
     const bars = [...section.bars];
@@ -161,6 +190,8 @@ probe "13 articulation is dropped on the way in" \
   '    ...(hit.articulation === undefined ? {} : { articulation: hit.articulation }),' \
   ''
 
+# 14 — `hitAt` always says no, so a tap on a filled cell writes again instead
+# of erasing. It had no unit test at all; one was added.
 probe "14 the toggle asks the last render instead of the song" \
   src/lib/song/event-entry.ts "$ENTRY" \
   '  const lane = at.bar.slots[at.track.id];
@@ -220,6 +251,12 @@ probe "22 removing from an empty moment succeeds anyway" \
 
 echo "--- tek kapı: settle (§3.2) ---"
 
+# 23 — the settle gate is skipped and the candidate goes straight through.
+#
+# The first version stayed green because every candidate the tests build is
+# valid, so schema-then-validators and no-gate-at-all produced the same
+# result. A test that builds a candidate the contract refuses (a velocity of
+# 999) was added, and the probe is dangerous against it.
 probe "23 a candidate skips the validator chain" \
   src/lib/song/event-entry.ts "$ENTRY" \
   '  const settled = settle(candidate);
@@ -255,6 +292,9 @@ probe "28 a cell carries its slot index instead of its tick" \
   '          ticks: bar.startTicks + slotIndex * perSlot,' \
   '          ticks: slotIndex,'
 
+# 29 — bar numbers restart at one in every section, so two different bars
+# are labelled the same. The drum model had no test past the first section;
+# the pitched one did. It has one now.
 probe "29 bar numbers restart at one in every section" \
   src/lib/tab/drum-step-model.ts "$DRUMMODEL" \
   '  let barNumber = 0;
@@ -264,6 +304,9 @@ probe "29 bar numbers restart at one in every section" \
   }' \
   '  const barNumber = 0;'
 
+# 30 — "written and silent" collapses into "not written here", which is the
+# distinction K-55 exists to keep. No test asserted the false case; one does
+# now.
 probe "30 a silent lane and a missing one are reported the same" \
   src/lib/tab/drum-step-model.ts "$DRUMMODEL" \
   '    silentThroughout: (section?.bars ?? []).every(
@@ -291,6 +334,10 @@ probe "33 only the first pitch of a chord is reported" \
   '            ? slot.notes.map((note) => note.pitch)' \
   '            ? slot.notes.slice(0, 1).map((note) => note.pitch)'
 
+# 34 — the per-track octave goes and the sheet falls back to the song-wide
+# scan. The first version stayed green because the test wrote A2, which the
+# sample song's guitar also sits in, so both paths gave 2. The test now
+# writes an octave nothing else in the song uses.
 probe "34 the sheet opens on an octave chosen here rather than read from the music" \
   src/lib/tab/pitched-step-model.ts "$PITCHMODEL" \
   '  const fromTrack = lastOctave(song, trackId);
@@ -327,6 +374,9 @@ probe "39 the chord command refuses a bar the track is not written in" \
   '    entry !== undefined && (entry.writable || (melodic && entry.slot === undefined));' \
   '    entry !== undefined && entry.writable;'
 
+# 40 — the chord lays rests across every bar of the section rather than the
+# ones it reaches. The first version was checked only against another
+# *section*; a test that checks the other bar of the same section was added.
 probe "40 the chord command lays lanes across the whole section" \
   src/lib/chords/chord-command.ts "$CHORD" \
   '  for (const barIndex of new Set(span.map((cursor) => stream[cursor]!.barIndex))) {' \
@@ -348,13 +398,21 @@ probe "42 creating a track leaves the reader on the one they were on" \
   '  void had;
   return null;'
 
-probe "43 a hit written by command serialises differently from one written by hand" \
+# 43 — hits are stored in tap order rather than kit order, so the same music
+# written two ways serialises two ways.
+#
+# The first version reordered the *keys* of a hit and stayed green, which is
+# a real finding about the parity claim rather than about the test: both
+# songs go through `songSchema.parse`, and zod rebuilds every object in
+# schema key order. Key order therefore cannot differ, and the probe was
+# re-aimed at something zod does not normalise — the order of hits inside a
+# slot.
+probe "43 hits reach the file in tap order rather than kit order" \
   src/lib/song/event-entry.ts "$PARITY" \
-  '  const written: DrumHit = {
-    piece: hit.piece,' \
-  '  const written: DrumHit = {
-    velocity: 100,
-    piece: hit.piece,'
+  '  return [...hits].sort(
+    (left, right) => DRUM_PIECES.indexOf(left.piece) - DRUM_PIECES.indexOf(right.piece),
+  );' \
+  '  return [...hits];'
 
 probe "44 a refused command still hands back a song" \
   src/lib/song/event-entry.ts "$HISTORY" \

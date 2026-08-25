@@ -1,0 +1,57 @@
+{
+  "what": "2Q-B §16 — yazma yüzeylerinin tarayıcıdaki maliyeti",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "method": "6 ısınma dokunuşu, sonra 24 ölçüm; medyan/p95/maks",
+  "note": "Davul dokunuşu iki animasyon karesi boyunca ölçülüyor: commit ilkinde, boyama ikincisinde. Perdesiz dokunuş yazmıyor, sayfa açıyor — ölçülen o.",
+  "drums": {
+    "dom": {
+      "reading": {
+        "nodes": 221,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "buttons": 23
+      },
+      "writing": {
+        "nodes": 234,
+        "drumCells": 64,
+        "pitchedCells": 0,
+        "buttons": 83
+      }
+    },
+    "tap": {
+      "rounds": 24,
+      "medianMs": 31.9,
+      "p95Ms": 32.1,
+      "maxMs": 32.2
+    },
+    "warmupRounds": 6
+  },
+  "pitched": {
+    "dom": {
+      "reading": {
+        "nodes": 77,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "buttons": 19
+      },
+      "writing": {
+        "nodes": 123,
+        "drumCells": 0,
+        "pitchedCells": 16,
+        "buttons": 35
+      }
+    },
+    "sheetOpen": {
+      "rounds": 24,
+      "medianMs": 49,
+      "p95Ms": 56,
+      "maxMs": 61
+    }
+  },
+  "narrowViewport": {
+    "nodes": 234,
+    "drumCells": 64,
+    "pitchedCells": 0,
+    "buttons": 83
+  }
+}

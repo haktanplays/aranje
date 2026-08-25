@@ -112,8 +112,15 @@ describe("222. where the note sheet opens", () => {
   it("opens on the octave this track last used", () => {
     const song = withKeys();
     const lane = song.sections[0]!.bars[0]!.slots[KEYS.id] as unknown[];
-    lane[0] = { notes: [{ pitch: "A2" }] };
-    expect(suggestedOctave(songSchema.parse(song), KEYS.id)).toBe(2);
+    /*
+     * An octave nothing else in the song uses. An earlier version of this
+     * test wrote A2, which the sample song's guitar also sits in — so the
+     * assertion passed whether the octave came from this track or from the
+     * song-wide fallback, and a probe that removed the per-track branch
+     * stayed green (2Q-B §17, probe 34).
+     */
+    lane[0] = { notes: [{ pitch: "A5" }] };
+    expect(suggestedOctave(songSchema.parse(song), KEYS.id)).toBe(5);
   });
 
   it("borrows an octave from the song when this track has none", () => {

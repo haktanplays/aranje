@@ -103,4 +103,27 @@ describe("219. the drum step grid", () => {
     expect(model.sectionId).toBe(SECTION);
     expect(model.bars.length).toBeGreaterThan(0);
   });
+
+  it("counts bar numbers from the start of the song, not the section", () => {
+    // The grid is built one section at a time, and the numbers beside the
+    // bars are the reader's own — restarting them in every section would
+    // give two different bars the same name (2Q-B §17, probe 29).
+    const second = SAMPLE_SONG.sections[1]!.id;
+    const model = buildDrumStepModel(SAMPLE_SONG, second, "drums");
+    expect(model.bars[0]?.barNumber).toBe(SAMPLE_SONG.sections[0]!.bars.length + 1);
+  });
+
+  it("separates a written but silent kit from one that is not written here", () => {
+    /*
+     * Both sound the same and mean different things: one is a kit the reader
+     * has written rests into, the other is a bar the kit has no lane in at
+     * all. Collapsing them is the K-55 defect coming back (probe 30).
+     */
+    expect(buildDrumStepModel(emptied(), SECTION, "drums").silentThroughout).toBe(false);
+    const unwritten = structuredClone(SAMPLE_SONG) as Song;
+    for (const section of unwritten.sections) {
+      for (const bar of section.bars) delete bar.slots["drums"];
+    }
+    expect(buildDrumStepModel(unwritten, SECTION, "drums").silentThroughout).toBe(true);
+  });
 });

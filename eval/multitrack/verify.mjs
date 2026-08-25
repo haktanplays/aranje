@@ -1092,23 +1092,35 @@ async function tourEditing(page, vp) {
     await page.locator("[data-multi-lane-header='drums']").click();
     await page.waitForTimeout(300);
     /*
-     * A kit is not editable on this screen — the same product boundary the
-     * tab has — so the edit toggle is disabled rather than opening a grid
-     * that could not be written to. That refusal is what makes the chord
-     * builder unreachable here, and it is measured rather than assumed.
+     * What this scenario owns is that a kit gets no chord builder — a kit
+     * has no pitches to voice — and it still owns exactly that.
+     *
+     * It used to *also* assert that the edit toggle was disabled on a kit,
+     * and that half is gone at 2Q-B: a kit is now written on a step grid, so
+     * a disabled toggle would be the defect rather than the guarantee. The
+     * scenario was rebound rather than deleted, and rebound to the claim in
+     * its own title: no fret cells, no fret sheet, no chord door on a kit,
+     * *while editing is open*. That is a stronger reading than the old one,
+     * because the old one was satisfied by editing being impossible.
      */
-    const toggleDisabled = await editToggle(page).isDisabled();
+    const pressed = await editToggle(page).getAttribute("aria-pressed");
+    if (pressed !== "true") {
+      await editToggle(page).click();
+      await page.waitForTimeout(250);
+    }
     const shot = await page.evaluate(() => ({
       cells: document.querySelectorAll("[data-multi-lane='drums'] [data-cell]").length,
       chordDoor: document.querySelectorAll("[data-fret-chord]").length,
       chordSheet: document.querySelectorAll("[data-chord-sheet]").length,
+      stepCells: document.querySelectorAll("[data-drum-cell]").length,
     }));
-    // No cell grid on a kit, so no fret sheet, so no chord door: structural
-    // rather than a rule somebody has to remember.
     record_(
       at("35 davulda akor kurucu sunulmuyor"),
-      toggleDisabled && shot.cells === 0 && shot.chordDoor === 0 && shot.chordSheet === 0,
-      `düzenle kapalı ${toggleDisabled} · ${JSON.stringify(shot)}`,
+      shot.cells === 0 &&
+        shot.chordDoor === 0 &&
+        shot.chordSheet === 0 &&
+        shot.stepCells > 0,
+      JSON.stringify(shot),
     );
   });
 }
