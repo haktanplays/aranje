@@ -109,7 +109,7 @@ export function MultiTrackCanvas({
   onSelectBar,
   onActiveBarChange,
   onScrolledToSection,
-  pendingBarKey,
+  pendingScroll,
   onPendingHandled,
 }: {
   song: Song;
@@ -144,8 +144,13 @@ export function MultiTrackCanvas({
   onActiveBarChange: (barKey: string | null) => void;
   /** The reader scrolled themselves into a different section (2Q-C §4). */
   onScrolledToSection: (sectionId: string) => void;
-  /** A bar the surface has been asked to bring into view, or null. */
-  pendingBarKey: string | null;
+  /**
+   * A bar the surface has been asked to bring into view, or null.
+   *
+   * `follows` distinguishes a bar tap (which seeks, so the view may go back
+   * to following the transport) from a section choice (which does not).
+   */
+  pendingScroll: { barKey: string; follows: boolean } | null;
   onPendingHandled: () => void;
 }) {
   const surface = useReadingSurface({ song, scrollRef, running, onScrolledToSection });
@@ -168,10 +173,10 @@ export function MultiTrackCanvas({
 
   const { scrollToBar } = surface;
   useEffect(() => {
-    if (pendingBarKey === null) return;
-    scrollToBar(pendingBarKey);
+    if (pendingScroll === null) return;
+    scrollToBar(pendingScroll.barKey, pendingScroll.follows);
     onPendingHandled();
-  }, [onPendingHandled, pendingBarKey, scrollToBar]);
+  }, [onPendingHandled, pendingScroll, scrollToBar]);
 
   /*
    * The one frame. It reads the transport, moves one element and asks the

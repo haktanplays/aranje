@@ -46,8 +46,15 @@ export type WorkspaceNavigation = {
    * which bar the reader asked for; only the surface knows where that bar is,
    * and under windowing the bar may not be in the DOM at all — so a
    * `querySelector` for it would find nothing and quietly do nothing.
+   *
+   * `follows` says what kind of request it is, and the two are not the same:
+   * tapping a bar moves the **transport** there, so the view may go back to
+   * following it; choosing a section moves only the **view**, so following
+   * would drag the reader straight back to wherever the music happens to be.
+   * The first browser run of this measured exactly that — a jump to the third
+   * section landed and was pulled back to bar one in the same breath.
    */
-  readonly pendingBarKey: string | null;
+  readonly pendingScroll: { readonly barKey: string; readonly follows: boolean } | null;
   /** The step either side, for the stepper's arrows. */
   readonly neighbourSections: { previous: string | null; next: string | null };
   /** The selected track, resolved against the current song. */
@@ -97,8 +104,10 @@ export function useWorkspaceNavigation(options: {
    * looking at.
    */
   const [view, setView] = useState<WorkspaceView>("arrange");
-  /** A bar the tab has to scroll to once it is actually mounted. */
-  const [pendingTabBar, setPendingTabBar] = useState<string | null>(null);
+  /** A bar a reading surface has to bring into view once it is mounted. */
+  const [pendingTabBar, setPendingTabBar] = useState<
+    { barKey: string; follows: boolean } | null
+  >(null);
 
   /*
    * The viewed section, held rather than derived (spec 13.20 §3).
@@ -144,7 +153,9 @@ export function useWorkspaceNavigation(options: {
   const viewSection = useCallback(
     (sectionId: string) => {
       dispatchSection({ kind: "choose_section", sectionId });
-      setPendingTabBar(`${sectionId}:0`);
+      // A choice of section moves the view and not the music, so the view
+      // stays the reader's afterwards.
+      setPendingTabBar({ barKey: `${sectionId}:0`, follows: false });
     },
     [dispatchSection],
   );
@@ -206,7 +217,9 @@ export function useWorkspaceNavigation(options: {
   const openBarInTab = useCallback(
     (barKey: string) => {
       seekToBar(barKey);
-      setPendingTabBar(barKey);
+      // A bar tap is a seek as well as a scroll, so the transport is where
+      // the view is going and may carry it from there.
+      setPendingTabBar({ barKey, follows: true });
       setView("tab");
     },
     [seekToBar],
@@ -261,7 +274,7 @@ export function useWorkspaceNavigation(options: {
     playingSectionId,
     followsPlayback: sectionView.followsPlayback,
     neighbourSections: sectionNeighbours(sectionIds, viewedSectionId),
-    pendingBarKey: pendingTabBar,
+    pendingScroll: pendingTabBar,
     track,
     scrollRef,
     arrangeScrollRef,

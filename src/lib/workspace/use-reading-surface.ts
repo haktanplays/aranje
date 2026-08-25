@@ -91,8 +91,15 @@ export type ReadingSurface = {
   readonly viewedSectionId: string | null;
   /** Move the surface without it counting as the reader taking over. */
   scrollTo(contentX: number): void;
-  /** The same, named by bar rather than by pixel. */
-  scrollToBar(barKey: string): void;
+  /**
+   * The same, named by bar rather than by pixel.
+   *
+   * `follows` says whether the request also hands the view back to the
+   * transport. A bar tap does — it seeks, so the music is going where the
+   * view is going. A section choice does not: the music has not moved, and
+   * following would drag the reader back to it in the next frame.
+   */
+  scrollToBar(barKey: string, follows: boolean): void;
   /**
    * One frame of following. Called from the single playhead loop with the
    * playhead's position on the axis, or null when the transport is nowhere.
@@ -292,19 +299,15 @@ export function useReadingSurface(options: {
     [scrollRef, syncWindow],
   );
 
-  /**
-   * Bring a bar into view because the reader asked for it.
-   *
-   * An explicit request, so it hands the view back to the transport: someone
-   * who taps a bar or steps to a section has said where they want to be, and
-   * leaving the surface detached after that would mean the next frame of
-   * playback moves the music and not the view.
-   */
   const scrollToBar = useCallback(
-    (barKey: string) => {
+    (barKey: string, follows: boolean) => {
       const x = xAtBarKey(axis, barKey);
       if (x === null) return;
-      setFollow((state) => nextFollowState(state, { type: "explicit_seek" }));
+      setFollow((state) =>
+        nextFollowState(state, {
+          type: follows ? "explicit_seek" : "user_scrolled_to_section",
+        }),
+      );
       scrollTo(Math.max(0, x + originPx));
     },
     [axis, originPx, scrollTo],

@@ -24,6 +24,10 @@ import {
 import { horizontalWindow, type HorizontalWindow } from "@/lib/ui/horizontal-window";
 import { desiredScrollLeft, followTailPx } from "@/lib/ui/continuous-follow";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { buildSongPlan } from "@/lib/audio/schedule";
+import { buildMidiPlan } from "@/lib/export/midi-plan";
+import { exportProject } from "@/lib/project/project-file";
+import { canonicalJson } from "@/lib/copilot/fingerprint";
 
 const SLOT = 34;
 const axis = buildSongAxis(SAMPLE_SONG, SLOT);
@@ -178,6 +182,87 @@ describe("243. the three parts of the surface add up, at every position", () => 
       const last = window.bars[window.bars.length - 1]!;
       expect(x, `${ticks}`).toBeGreaterThanOrEqual(first.leftPx);
       expect(x, `${ticks}`).toBeLessThanOrEqual(last.leftPx + last.widthPx);
+    }
+  });
+});
+
+describe("244. windowing cannot reach what a song is", () => {
+  /*
+   * The §10 claim, stated as arithmetic rather than as a promise: run the
+   * whole reading surface over a song — axis, window, follow, at every scroll
+   * position — and then ask the four consumers that turn a song into bytes
+   * whether anything changed.
+   */
+  const before = canonicalJson(SAMPLE_SONG as unknown as Record<string, unknown>);
+  const plan = canonicalJson(
+    buildSongPlan(SAMPLE_SONG) as unknown as Record<string, unknown>,
+  );
+  const midi = canonicalJson(
+    buildMidiPlan(SAMPLE_SONG) as unknown as Record<string, unknown>,
+  );
+  const file = exportProject(SAMPLE_SONG);
+
+  const readTheWholeSong = () => {
+    const built = buildSongAxis(SAMPLE_SONG, SLOT);
+    const view = { widthPx: 320, contentWidthPx: built.totalWidthPx + followTailPx(320) };
+    for (let ticks = 0; ticks <= built.totalTicks; ticks += 31) {
+      const x = xAtTicks(built, ticks);
+      if (x === null) continue;
+      const scroll = desiredScrollLeft(x, view);
+      horizontalWindow({
+        axis: built,
+        viewportLeftPx: scroll,
+        viewportWidthPx: 320,
+        direction: "forward",
+      });
+      pointAtX(built, x);
+    }
+  };
+
+  it("leaves the song byte-identical after a whole playthrough", () => {
+    readTheWholeSong();
+    expect(canonicalJson(SAMPLE_SONG as unknown as Record<string, unknown>)).toBe(
+      before,
+    );
+  });
+
+  it("leaves the playback plan byte-identical", () => {
+    readTheWholeSong();
+    expect(
+      canonicalJson(buildSongPlan(SAMPLE_SONG) as unknown as Record<string, unknown>),
+    ).toBe(plan);
+  });
+
+  it("leaves the MIDI plan byte-identical", () => {
+    readTheWholeSong();
+    expect(
+      canonicalJson(buildMidiPlan(SAMPLE_SONG) as unknown as Record<string, unknown>),
+    ).toBe(midi);
+  });
+
+  it("leaves the project file byte-identical", () => {
+    readTheWholeSong();
+    const after = exportProject(SAMPLE_SONG);
+    expect(after.ok).toBe(true);
+    expect(file.ok).toBe(true);
+    if (!after.ok || !file.ok) return;
+    expect(after.text).toBe(file.text);
+  });
+
+  it("carries no view fact into the exported bytes", () => {
+    // The words a windowed surface would have leaked if any of it were part
+    // of the song rather than part of the drawing.
+    expect(file.ok).toBe(true);
+    if (!file.ok) return;
+    for (const word of [
+      "scrollLeft",
+      "viewportWidth",
+      "overscan",
+      "followAnchor",
+      "renderedBarKeys",
+      "reduceMotion",
+    ]) {
+      expect(file.text.includes(word), word).toBe(false);
     }
   });
 });

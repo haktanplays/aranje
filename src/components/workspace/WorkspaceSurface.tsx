@@ -208,7 +208,7 @@ export function WorkspaceSurface({
           onSelectBar={navigation.seekToBar}
           onActiveBarChange={navigation.setActiveBarKey}
           onScrolledToSection={navigation.scrolledToSection}
-          pendingBarKey={navigation.pendingBarKey}
+          pendingScroll={navigation.pendingScroll}
           onPendingHandled={navigation.clearPendingScroll}
         />
       ) : (
@@ -229,7 +229,7 @@ export function WorkspaceSurface({
             copilotOwnsScreen || !canPersist ? undefined : bars.selectFromTab
           }
           onScrolledToSection={navigation.scrolledToSection}
-          pendingBarKey={navigation.pendingBarKey}
+          pendingScroll={navigation.pendingScroll}
           onPendingHandled={navigation.clearPendingScroll}
           scrollRef={navigation.scrollRef}
           onSlotLongPress={selectionEnabled ? time.onSlotLongPress : undefined}

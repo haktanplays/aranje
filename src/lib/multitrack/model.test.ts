@@ -216,6 +216,72 @@ describe("200. the model puts every instrument on one axis", () => {
     expect(canonicalJson(song)).toBe(before);
   });
 
+  it("gives every lane every section, not just the first", () => {
+    /*
+     * The claim the whole-song model rests on, asserted on a lane rather than
+     * on the bar list: a lane that quietly kept only its first section would
+     * still line up with `model.bars` by count on a one-section fixture, and
+     * every other test here would pass.
+     */
+    const song = seed("fourPartTwoSections");
+    const model = buildMultiTrackModel(song, "gtr");
+    const expected = model.bars.map((bar) => bar.key);
+    for (const lane of model.lanes) {
+      expect(lane.bars.map((bar) => bar.key), lane.trackId).toEqual(expected);
+      expect(
+        new Set(lane.bars.map((bar) => bar.key.split(":")[0])).size,
+        lane.trackId,
+      ).toBe(song.sections.length);
+    }
+  });
+
+  it("reads a pitched lane out of the bar's own section", () => {
+    /*
+     * A pitched lane looks its slots up by section id. Reading them out of
+     * `sections[0]` instead would be invisible on a one-section fixture and
+     * would draw the first section's melody over the whole song — so the
+     * fixture here has two sections whose pitched content differs.
+     */
+    const base = seed("withKeys");
+    const first = base.sections[0]!;
+    const second = songSchema.parse({
+      ...base,
+      sections: [
+        first,
+        {
+          ...first,
+          id: "s2",
+          name: "Bölüm 2",
+          bars: first.bars.map((bar) => ({
+            ...bar,
+            slots: {
+              ...bar.slots,
+              keys: bar.slots.keys?.map((slot, index) =>
+                index === 0 ? { notes: [{ pitch: "A5", velocity: 100 }] } : slot,
+              ),
+            },
+          })),
+        },
+      ],
+    } as unknown) as Song;
+
+    const model = buildMultiTrackModel(second, "keys");
+    const keys = model.lanes.find((lane) => lane.trackId === "keys")!;
+    if (keys.kind !== "pitched") throw new Error("expected a pitched lane");
+
+    const inFirst = keys.bars.filter((bar) => bar.key.startsWith("s1:"));
+    const inSecond = keys.bars.filter((bar) => bar.key.startsWith("s2:"));
+    expect(inFirst.length).toBeGreaterThan(0);
+    expect(inSecond.length).toBe(inFirst.length);
+    // The second section's own note, which the first section does not have.
+    expect(
+      inSecond.every((bar) => bar.notes.some((note) => note.pitch === "A5")),
+    ).toBe(true);
+    expect(
+      inFirst.some((bar) => bar.notes.some((note) => note.pitch === "A5")),
+    ).toBe(false);
+  });
+
   it("has no section to be wrong about", () => {
     // There is no section argument any more, so there is no stale id, no
     // fallback and no render in which the surface is showing the wrong part

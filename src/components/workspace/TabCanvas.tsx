@@ -67,7 +67,7 @@ export function TabCanvas({
   running,
   activeBarKey,
   onScrolledToSection,
-  pendingBarKey,
+  pendingScroll,
   onPendingHandled,
   onActiveBarChange,
   onSeekBar,
@@ -98,8 +98,13 @@ export function TabCanvas({
    * lives, and it also says so in the DOM.
    */
   onScrolledToSection: (sectionId: string) => void;
-  /** A bar the surface has been asked to bring into view, or null. */
-  pendingBarKey: string | null;
+  /**
+   * A bar the surface has been asked to bring into view, or null.
+   *
+   * `follows` distinguishes a bar tap (which seeks, so the view may go back
+   * to following the transport) from a section choice (which does not).
+   */
+  pendingScroll: { barKey: string; follows: boolean } | null;
   onPendingHandled: () => void;
   onActiveBarChange: (barKey: string | null) => void;
   onSeekBar: (barKey: string) => void;
@@ -170,10 +175,10 @@ export function TabCanvas({
 
   const { scrollToBar } = surface;
   useEffect(() => {
-    if (pendingBarKey === null) return;
-    scrollToBar(pendingBarKey);
+    if (pendingScroll === null) return;
+    scrollToBar(pendingScroll.barKey, pendingScroll.follows);
     onPendingHandled();
-  }, [onPendingHandled, pendingBarKey, scrollToBar]);
+  }, [onPendingHandled, pendingScroll, scrollToBar]);
 
   /*
    * The playhead is driven from the transport on an animation frame. Audio is
