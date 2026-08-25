@@ -164,8 +164,14 @@ export function TransportBar({
          * line exactly as it was, and the acceptance measures reachability —
          * nothing clipped, no body overflow — rather than line count.
          */
-        className="flex items-center gap-1 px-2 py-1.5"
-        style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
+        className="flex flex-wrap items-center py-1.5"
+        style={{
+          columnGap: 4,
+          rowGap: 4,
+          paddingLeft: 8,
+          paddingRight: 8,
+          paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))",
+        }}
       >
         <IconButton label="Başa dön" onClick={onRewind} disabled={busy}>
           <span aria-hidden>&#9198;</span>

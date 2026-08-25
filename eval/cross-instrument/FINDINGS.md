@@ -88,3 +88,15 @@ Dikkate değer iki sayı:
    iki kare 33 ms'tir: yani ölçülen şey komutun kendisi değil, kare sınırıdır.
    Bunu "hızlı" diye raporlamak yanlış olurdu — raporlanan, dokunuşun bir
    sonraki iki kare içinde ekrana çıktığıdır.
+
+## Mühürlü paket sınırı (§18)
+
+Açılmadı, yeniden üretilmedi, içeriği raporlanmadı. Yalnız SHA-256'ları
+doğrulandı ve ikisi de beklenen değerde:
+
+```
+e325ff96b6a83dce281d7144ac6996aa1e7ac455d9f3ea06c833ce84a7c0e0f6  .shadow-eval/aranje-expression-blind-review.zip
+5aad28fd8760d9c4ea8042ded5fc3aaecc1064008169ca637fe1d9ec60b52b30  .shadow-eval/founder-expression-review/SEALED_KEY.json
+```
+
+`SEALED_KEY.json` yalnız hash'lendi; içeriği okunmadı.
