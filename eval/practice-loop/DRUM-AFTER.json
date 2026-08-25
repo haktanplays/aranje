@@ -1,0 +1,161 @@
+{
+  "what": "2R-A §19 — yoğun davul ızgarası, windowing sonrası tarayıcı ölçümü",
+  "head": "73250de",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "method": "Her ölçüm 2 ısınma turundan sonra 20 tur (pahalı olanlarda 10); median / p95 / max ms.",
+  "notes": [
+    "Katman katman saf maliyet için PERFORMANCE.json'a bak; buradaki fark çizim maliyetidir.",
+    "Boş hücreye yazmak ile dolu hücreyi silmek iki ayrı komuttur, ayrı ölçüldü.",
+    "src/ altında hiçbir dosya ölçüm için değiştirilmedi."
+  ],
+  "results": [
+    {
+      "viewport": "390x844",
+      "openStepGridMs": 102,
+      "grid": {
+        "nodes": 441,
+        "buttons": 173,
+        "drumCells": 154,
+        "filledCells": 19,
+        "stepBars": 8,
+        "rows": 7,
+        "scrollers": 1,
+        "scrollWidth": 16891,
+        "clientWidth": 390,
+        "listeners": 318,
+        "observers": {
+          "resize": 2,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0,
+        "storageWrites": null
+      },
+      "revisionBefore": 1,
+      "toggleMs": {
+        "count": 20,
+        "median": 213,
+        "p95": 304,
+        "max": 304
+      },
+      "writeMs": {
+        "count": 10,
+        "median": 222,
+        "p95": 259,
+        "max": 259
+      },
+      "scrollFarMs": {
+        "count": 10,
+        "median": 64,
+        "p95": 64,
+        "max": 64
+      },
+      "atFarEnd": {
+        "nodes": 359,
+        "buttons": 132,
+        "drumCells": 112,
+        "filledCells": 20,
+        "stepBars": 8,
+        "rows": 7,
+        "scrollers": 1,
+        "scrollWidth": 16891,
+        "clientWidth": 390,
+        "listeners": 427,
+        "observers": {
+          "resize": 38,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0,
+        "storageWrites": null
+      },
+      "farCellToggleMs": {
+        "count": 10,
+        "median": 201,
+        "p95": 250,
+        "max": 250
+      },
+      "revisionAfter": 47,
+      "counts": {
+        "longTasks": 0,
+        "audioContexts": 0,
+        "externalRequests": 0
+      },
+      "consoleErrors": []
+    },
+    {
+      "viewport": "320x700",
+      "openStepGridMs": 81,
+      "grid": {
+        "nodes": 385,
+        "buttons": 145,
+        "drumCells": 126,
+        "filledCells": 17,
+        "stepBars": 8,
+        "rows": 7,
+        "scrollers": 1,
+        "scrollWidth": 16844,
+        "clientWidth": 320,
+        "listeners": 318,
+        "observers": {
+          "resize": 2,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0,
+        "storageWrites": null
+      },
+      "revisionBefore": 1,
+      "toggleMs": {
+        "count": 20,
+        "median": 207,
+        "p95": 306,
+        "max": 306
+      },
+      "writeMs": {
+        "count": 10,
+        "median": 220,
+        "p95": 244,
+        "max": 244
+      },
+      "scrollFarMs": {
+        "count": 10,
+        "median": 64,
+        "p95": 65,
+        "max": 65
+      },
+      "atFarEnd": {
+        "nodes": 317,
+        "buttons": 111,
+        "drumCells": 91,
+        "filledCells": 16,
+        "stepBars": 8,
+        "rows": 7,
+        "scrollers": 1,
+        "scrollWidth": 16844,
+        "clientWidth": 320,
+        "listeners": 427,
+        "observers": {
+          "resize": 38,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0,
+        "storageWrites": null
+      },
+      "farCellToggleMs": {
+        "count": 10,
+        "median": 220,
+        "p95": 259,
+        "max": 259
+      },
+      "revisionAfter": 47,
+      "counts": {
+        "longTasks": 0,
+        "audioContexts": 0,
+        "externalRequests": 0
+      },
+      "consoleErrors": []
+    }
+  ]
+}

@@ -107,3 +107,89 @@ karşılaştırması aynı `denseKit` fixture'ı üzerinden yapılacak.
 
 Bütün sayılar masaüstü Chromium ve Node'dandır. **Fiziksel telefon kanıtı
 değildir.**
+
+---
+
+# 2. Windowing sonrası: ikinci hipotez de ölçüldü, o da yanlış çıktı
+
+`DRUM-AFTER.json`, `TAP-PROFILE.json`, `OVERSCAN.json` (aynı `denseKit`,
+aynı harness, aynı production build).
+
+## Windowing'in gerçekten yaptığı
+
+| | önce | sonra |
+|---|---|---|
+| mount edilmiş hücre | 1.792 | 154 (390px) / 126 (320px) |
+| düğme | 1.811 | 173 / 145 |
+| DOM düğümü | 3.775 | 441 / 385 |
+| ızgarayı açma | 145 / 158 ms | 102 / 81 ms |
+| scroller genişliği | 24.507 px | 16.891 px |
+| **dokunuş (Playwright dışarıdan)** | **221 / 223 ms medyan** | **213 / 207 ms medyan** |
+
+Son satır beklenen sonuç değildi. Çizim payının ~185 ms olduğu tahmini —
+yukarıdaki "1. bölüm"de yazılı — **yanlıştı**. DOM'un %88'i gitti, dokunuş
+~10 ms kısaldı.
+
+Bir de sayaç düzeltildi: window hook'unun ilk hâli her düzenlemede scroll
+dinleyicisini ve ResizeObserver'ı yeniden kuruyordu (46 dokunuşta 72 observer
+kurulumu). Eksen artık callback'in içinden ref üzerinden okunuyor; sayaç
+38'e indi, windowing öncesi taban 35'ti.
+
+## Nerede olduğu, tahminle değil profil ve ikinci fixture'la
+
+`profile-tap.mjs` iki şey ölçtü. Birincisi dokunuşu **sayfanın içinden**
+(`click()` → iki rAF), yani Playwright'ın kendi actionability maliyeti
+dışarıda: `denseKit` üzerinde **166–182 ms medyan**. Yani dışarıdan ölçülen
+~210 ms'nin ~40 ms'i harness'ın kendisiydi; önce/sonra karşılaştırması yine
+geçerli, ama mutlak sayı bu.
+
+İkincisi belirleyici oldu: **aynı ızgara, küçük bir şarkı.** `practiceSong`
+(3 track, 13 ölçü, çoğu 1/8) ekrana 88 hücre mount ediyor — `denseKit`'in
+154'üyle karşılaştırılabilir bir çizim yükü.
+
+| fixture | mount edilen hücre | sayfa içi dokunuş |
+|---|---|---|
+| denseKit @390 | 154 | 182,0 ms medyan / 231,1 p95 |
+| denseKit @320 | 126 | 166,0 ms medyan / 222,7 p95 |
+| **practiceSong @390** | **88** | **30,8 ms medyan / 52,5 p95** |
+
+Ekranda neredeyse aynı sayıda hücre var; maliyet **beş kat** farklı. Demek ki
+dokunuşun maliyeti **mount edilen hücreye değil, şarkının büyüklüğüne**
+bağlı — komut + merkezî kapı + kalıcılık zinciri, yani her düzenlemenin
+ödediği ve §6'nın gevşetilmesini açıkça yasakladığı yol.
+
+CPU profili bunu doğruluyor: tepe self-time %5 çöp toplayıcı, sonrası %2'nin
+altında dağınık minified fonksiyonlar. Tek bir sıcak nokta yok; çok sayıda
+tahsis var — şarkının klonlanması, `songSchema` parse'ının yeni nesne üretmesi,
+validator'ların her track'i gezmesi, `setItem` için `JSON.stringify`.
+
+## §6 hedefi karşısında dürüst durum
+
+Hedef `≤33 ms median / ≤50 ms p95`.
+
+- **Gerçekçi bir şarkıda karşılanıyor**: `practiceSong` 30,8 ms medyan.
+  p95 52,5 ms hedefin 2,5 ms üstünde.
+- **Sözleşme tavanında karşılanmıyor**: `denseKit` 166–182 ms.
+- Bu bir windowing eksiği **değil**. Windowing'in ulaşabileceği pay çizimdi ve
+  o pay ölçüldüğünde ~4 ms çıktı. Kalanı merkezî kapı ve kalıcılık zinciridir;
+  onu ucuzlatmak validator atlamak, atomikliği kaldırmak veya yazmayı
+  ertelemek demek olurdu. Hiçbiri yapılmadı, sonuç da gizlenmiyor.
+- Sonraki iş için doğru hedef ızgara değil, **düzenleme zincirinin şarkı
+  büyüklüğüne bağlı maliyeti**dir. 2R-A kapsamında değildir.
+
+## Overscan: seçilen değer artık ölçülmüş
+
+`OVERSCAN.json`: beş aday × iki viewport × iki commit gecikmesi × üç hareket
+(hızlı fling ileri, fling geri, yavaş sürükleme), `denseKit`'in dört bölümü ve
+`practiceSong`'un dört bölümü üzerinde.
+
+- `0 + 0` ve `0,25 + 0,25` **boş kare üretti** (en kötüsü 120 px boş şerit).
+  Harness'ın boşluğu görebildiğinin kanıtı bu; hepsi geçseydi hiçbir şey
+  ölçülmemiş olurdu.
+- Boş kare üretmeyen en ucuz aday **`behind: 0,5 / ahead: 1`**, en fazla
+  **120 hücre** mount ederek. `1 + 1` aynı temizlikte ama 144 hücre,
+  `1 + 2` 160 hücre.
+- Kod bu değeri tek merkezî yerde tutuyor: `DRUM_GRID_OVERSCAN`.
+
+Bütün sayılar masaüstü Chromium ve Node'dandır. **Fiziksel telefon kanıtı
+değildir.**
