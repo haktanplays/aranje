@@ -178,7 +178,7 @@ const RENDER_SONG: Song = songSchema.parse(
     bars: 8,
     onsets: Array.from({ length: 32 * 8 }, (_, index) => ({
       fret: 5 + (index % 2),
-      articulation: (index % 2 === 1 ? "hammer_on" : "pull_off") as const,
+      articulation: index % 2 === 1 ? ("hammer_on" as const) : ("pull_off" as const),
     })),
   }),
 ) as Song;
