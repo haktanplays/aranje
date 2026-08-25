@@ -1,7 +1,7 @@
 {
   "what": "2R-A §5.3 — yoğun davul ızgarasının katman katman saf maliyeti",
   "measuredOn": "node, masaüstü konteyner — telefon kanıtı değil",
-  "method": "5 ısınma turu, ardından 20 zamanlanmış tur; median / p95 / max ms.",
+  "method": "8 ısınma turu, ardından 30 zamanlanmış tur; median / p95 / max ms.",
   "notes": [
     "Eşik uydurulmadı. Bunlar kök nedenin hangi katmanda olduğunu gösteren sayılardır.",
     "«render: per-cell lookup», bileşenin bugün her hücre için yaptığı row.cells.find(...) taramasıdır — DOM sayısında görünmeyen, bölüm uzunluğunda karesel bir maliyet.",
@@ -18,52 +18,120 @@
     "cells": 1792,
     "layers": {
       "command: insert a hit": {
-        "rounds": 20,
-        "median": 39.475,
-        "p95": 42.475,
-        "max": 42.475
+        "rounds": 30,
+        "median": 26.225,
+        "p95": 29.681,
+        "max": 33.917
       },
       "command: remove a hit": {
-        "rounds": 20,
-        "median": 38.228,
-        "p95": 42.47,
-        "max": 42.47
+        "rounds": 30,
+        "median": 24.083,
+        "p95": 32.182,
+        "max": 38.054
       },
       "schema: parse the candidate": {
-        "rounds": 20,
-        "median": 8.535,
-        "p95": 11.097,
-        "max": 11.097
+        "rounds": 30,
+        "median": 4.048,
+        "p95": 5.833,
+        "max": 7.398
       },
       "validators: the whole chain": {
-        "rounds": 20,
-        "median": 29.505,
-        "p95": 32.688,
-        "max": 32.688
+        "rounds": 30,
+        "median": 20.516,
+        "p95": 31.157,
+        "max": 32.37
       },
       "settle: the central gate": {
-        "rounds": 20,
-        "median": 36.641,
-        "p95": 54.572,
-        "max": 54.572
+        "rounds": 30,
+        "median": 24.741,
+        "p95": 38.612,
+        "max": 40.323
       },
       "model: build the step grid": {
-        "rounds": 20,
-        "median": 0.432,
-        "p95": 1.366,
-        "max": 1.366
+        "rounds": 30,
+        "median": 0.115,
+        "p95": 0.365,
+        "max": 0.424
       },
       "render: the per-cell lookup as it is": {
-        "rounds": 20,
-        "median": 0.559,
-        "p95": 2.295,
-        "max": 2.295
+        "rounds": 30,
+        "median": 0.323,
+        "p95": 0.422,
+        "max": 0.465
       },
       "render: the same lookup, indexed once": {
-        "rounds": 20,
-        "median": 0.438,
-        "p95": 0.609,
-        "max": 0.609
+        "rounds": 30,
+        "median": 0.205,
+        "p95": 0.433,
+        "max": 0.73
+      }
+    },
+    "practice": {
+      "range: one bar": {
+        "rounds": 30,
+        "median": 0.001,
+        "p95": 0.036,
+        "max": 0.054
+      },
+      "range: a pair, normalised": {
+        "rounds": 30,
+        "median": 0.034,
+        "p95": 0.074,
+        "max": 0.09
+      },
+      "range: from a whole-bar time selection": {
+        "rounds": 30,
+        "median": 0.042,
+        "p95": 0.1,
+        "max": 0.103
+      },
+      "preflight: what the edges cut": {
+        "rounds": 30,
+        "median": 0.027,
+        "p95": 0.038,
+        "max": 0.049
+      },
+      "preflight: the three-outcome decision": {
+        "rounds": 30,
+        "median": 0.026,
+        "p95": 0.046,
+        "max": 0.046
+      },
+      "loop: the range's own tick bounds": {
+        "rounds": 30,
+        "median": 0.001,
+        "p95": 0.022,
+        "max": 0.066
+      },
+      "count-in: two bars of clicks": {
+        "rounds": 30,
+        "median": 0.002,
+        "p95": 0.016,
+        "max": 0.062
+      },
+      "progressive: one completed pass": {
+        "rounds": 30,
+        "median": 0,
+        "p95": 0.003,
+        "max": 0.003
+      },
+      "window: the ceiling grid's axis": {
+        "rounds": 30,
+        "median": 0.245,
+        "p95": 0.381,
+        "max": 0.437
+      },
+      "window: one window onto it": {
+        "rounds": 30,
+        "median": 0.001,
+        "p95": 0.024,
+        "max": 0.093
+      },
+      "serialize: the whole song": {
+        "rounds": 30,
+        "median": 1.143,
+        "p95": 1.393,
+        "max": 1.403
       }
     }
   }

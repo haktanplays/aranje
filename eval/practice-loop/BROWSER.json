@@ -1,0 +1,137 @@
+{
+  "what": "2R-A §XIV — pratik döngüsü tarayıcı kabulü",
+  "measuredOn": {
+    "chromium": "141.0.7390.37",
+    "node": "v22.22.2",
+    "surface": "masaüstü Chromium, mobil viewport emülasyonu",
+    "physicalDevice": false,
+    "build": "production (next build + next start)"
+  },
+  "fixture": {
+    "name": "practiceSong",
+    "sections": [
+      {
+        "id": "four",
+        "bars": 4,
+        "timeSignature": [
+          4,
+          4
+        ],
+        "resolutions": [
+          8,
+          16
+        ]
+      },
+      {
+        "id": "three",
+        "bars": 3,
+        "timeSignature": [
+          3,
+          4
+        ],
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "id": "sixeight",
+        "bars": 3,
+        "timeSignature": [
+          6,
+          8
+        ],
+        "resolutions": [
+          8
+        ]
+      },
+      {
+        "id": "seveneight",
+        "bars": 3,
+        "timeSignature": [
+          7,
+          8
+        ],
+        "resolutions": [
+          8
+        ]
+      }
+    ],
+    "canonicalAxisPx": 3298
+  },
+  "matrix": {
+    "viewports": [
+      "390x844"
+    ],
+    "textScales": [
+      100
+    ],
+    "distinctScenarios": 7,
+    "combinations": 1,
+    "results": 7
+  },
+  "passed": false,
+  "failures": [
+    {
+      "combo": "390x844 @%100",
+      "name": "count-in ayarı 0 setItem",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hız formu 0 setItem",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "practice kapatma 0 setItem",
+      "pass": false,
+      "detail": "1"
+    }
+  ],
+  "results": [
+    {
+      "combo": "390x844 @%100",
+      "name": "range seçmek 0 setItem",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "count-in ayarı 0 setItem",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "hız formu 0 setItem",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "practice kapatma 0 setItem",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "song byte-eş kalır",
+      "pass": true,
+      "detail": "identical"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "refresh practice state taşımaz",
+      "pass": true,
+      "detail": "no banner after reload"
+    },
+    {
+      "combo": "390x844 @%100",
+      "name": "dış ağ isteği 0",
+      "pass": true,
+      "detail": "0"
+    }
+  ]
+}

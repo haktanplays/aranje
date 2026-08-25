@@ -296,7 +296,7 @@
     {
       "name": "[390x844] D1 transport tam sığar",
       "pass": true,
-      "detail": "1 satır · gerek 307.7 / yer 390 · kırpılan 0"
+      "detail": "1 satır · gerek 355.7 / yer 390 · kırpılan 0"
     },
     {
       "name": "[390x844] D2 her transport kontrolü 44px",
@@ -335,8 +335,8 @@
     },
     {
       "name": "[390x844] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": true,
-      "detail": "2 lane"
+      "pass": false,
+      "detail": "1 lane"
     },
     {
       "name": "[390x844] D10 nota sayfasındaki her kontrol 44px",
@@ -351,7 +351,7 @@
     {
       "name": "[390x844 @125%] D1 transport tam sığar",
       "pass": true,
-      "detail": "1 satır · gerek 316.2 / yer 390 · kırpılan 0"
+      "detail": "1 satır · gerek 364.2 / yer 390 · kırpılan 0"
     },
     {
       "name": "[390x844 @125%] D2 her transport kontrolü 44px",
@@ -390,8 +390,8 @@
     },
     {
       "name": "[390x844 @125%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": true,
-      "detail": "2 lane"
+      "pass": false,
+      "detail": "1 lane"
     },
     {
       "name": "[390x844 @125%] D10 nota sayfasındaki her kontrol 44px",
@@ -406,7 +406,7 @@
     {
       "name": "[390x844 @150%] D1 transport tam sığar",
       "pass": true,
-      "detail": "1 satır · gerek 324.6 / yer 390 · kırpılan 0"
+      "detail": "1 satır · gerek 372.6 / yer 390 · kırpılan 0"
     },
     {
       "name": "[390x844 @150%] D2 her transport kontrolü 44px",
@@ -445,8 +445,8 @@
     },
     {
       "name": "[390x844 @150%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": true,
-      "detail": "2 lane"
+      "pass": false,
+      "detail": "1 lane"
     },
     {
       "name": "[390x844 @150%] D10 nota sayfasındaki her kontrol 44px",
@@ -751,7 +751,7 @@
     {
       "name": "[320x700] D1 transport tam sığar",
       "pass": true,
-      "detail": "1 satır · gerek 307.7 / yer 320 · kırpılan 0"
+      "detail": "2 satır · gerek 355.7 / yer 320 · kırpılan 0"
     },
     {
       "name": "[320x700] D2 her transport kontrolü 44px",
@@ -790,8 +790,8 @@
     },
     {
       "name": "[320x700] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": true,
-      "detail": "2 lane"
+      "pass": false,
+      "detail": "1 lane"
     },
     {
       "name": "[320x700] D10 nota sayfasındaki her kontrol 44px",
@@ -806,7 +806,7 @@
     {
       "name": "[320x700 @125%] D1 transport tam sığar",
       "pass": true,
-      "detail": "1 satır · gerek 316.2 / yer 320 · kırpılan 0"
+      "detail": "2 satır · gerek 364.2 / yer 320 · kırpılan 0"
     },
     {
       "name": "[320x700 @125%] D2 her transport kontrolü 44px",
@@ -845,8 +845,8 @@
     },
     {
       "name": "[320x700 @125%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": true,
-      "detail": "2 lane"
+      "pass": false,
+      "detail": "1 lane"
     },
     {
       "name": "[320x700 @125%] D10 nota sayfasındaki her kontrol 44px",
@@ -861,7 +861,7 @@
     {
       "name": "[320x700 @150%] D1 transport tam sığar",
       "pass": true,
-      "detail": "2 satır · gerek 324.6 / yer 320 · kırpılan 0"
+      "detail": "2 satır · gerek 372.6 / yer 320 · kırpılan 0"
     },
     {
       "name": "[320x700 @150%] D2 her transport kontrolü 44px",
@@ -900,8 +900,8 @@
     },
     {
       "name": "[320x700 @150%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": true,
-      "detail": "2 lane"
+      "pass": false,
+      "detail": "1 lane"
     },
     {
       "name": "[320x700 @150%] D10 nota sayfasındaki her kontrol 44px",

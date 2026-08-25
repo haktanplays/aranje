@@ -67,8 +67,8 @@
     },
     {
       "name": "[390x844] 23 the tab scrolled to that bar",
-      "pass": true,
-      "detail": "x=34 of 390"
+      "pass": false,
+      "detail": "bar not in the tab"
     },
     {
       "name": "[390x844] 32 no body overflow in Tab",
@@ -93,7 +93,7 @@
     {
       "name": "[390x844] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18658 -> 19312"
+      "detail": "18640 -> 19263"
     },
     {
       "name": "[390x844] 20 practice rate survives the switch",
@@ -232,8 +232,8 @@
     },
     {
       "name": "[320x700] 23 the tab scrolled to that bar",
-      "pass": true,
-      "detail": "x=34 of 320"
+      "pass": false,
+      "detail": "bar not in the tab"
     },
     {
       "name": "[320x700] 32 no body overflow in Tab",
@@ -258,7 +258,7 @@
     {
       "name": "[320x700] 20 the transport clock keeps running",
       "pass": true,
-      "detail": "18658 -> 19325"
+      "detail": "18645 -> 19267"
     },
     {
       "name": "[320x700] 20 practice rate survives the switch",
@@ -349,5 +349,5 @@
       "targets": 271
     }
   },
-  "failed": 0
+  "failed": 2
 }

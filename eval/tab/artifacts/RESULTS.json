@@ -57,8 +57,8 @@
     },
     {
       "name": "[390x844] 10 çalarken bölüm değişimi gizli seek yapmıyor",
-      "pass": true,
-      "detail": "transport intro:1, viewed main, playhead 0"
+      "pass": false,
+      "detail": "transport intro:1, viewed intro, playhead 1"
     },
     {
       "name": "[390x844] 12 4/4 · 1/4 barı 4 hücre çiziyor",
@@ -143,7 +143,7 @@
     {
       "name": "[390x844] L2 çalarken timing değişimi: transport duruyor, playhead yeni plandaki bar başında",
       "pass": true,
-      "detail": "playing@571 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
+      "detail": "playing@588 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
     },
     {
       "name": "[390x844] L3 AudioContext 1 → 1, ikinci scheduler kurulmuyor",
@@ -167,8 +167,8 @@
     },
     {
       "name": "[390x844] 27 1/32 üç beam seviyesi gösteriyor",
-      "pass": true,
-      "detail": "3 çizgi"
+      "pass": false,
+      "detail": "undefined çizgi"
     },
     {
       "name": "[390x844] 27.b 1/4 barı hiç beam almıyor",
@@ -183,7 +183,7 @@
     {
       "name": "[390x844] 28.b beam işaretleri dokunma hedefi/listener oluşturmuyor",
       "pass": true,
-      "detail": "{\"count\":7,\"buttons\":0,\"pointerEvents\":0,\"handlers\":0}"
+      "detail": "{\"count\":6,\"buttons\":0,\"pointerEvents\":0,\"handlers\":0}"
     },
     {
       "name": "[390x844] 25 tie yeni beam onset'i oluşturmuyor",
@@ -198,7 +198,7 @@
     {
       "name": "[390x844] T1 data-tab-tail müzikal bar veya seçim hedefi değil",
       "pass": true,
-      "detail": "{\"exists\":true,\"isBar\":false,\"hasCells\":false,\"bars\":2,\"box\":{\"x\":306,\"y\":181,\"w\":390,\"h\":210}}"
+      "detail": "{\"exists\":true,\"isBar\":false,\"hasCells\":false,\"bars\":2,\"box\":{\"x\":272,\"y\":181,\"w\":265,\"h\":210}}"
     },
     {
       "name": "[390x844] T2 boş alana dokunmak 0 seek, 0 seçim, 0 yazım",
@@ -292,8 +292,8 @@
     },
     {
       "name": "[320x700] 10 çalarken bölüm değişimi gizli seek yapmıyor",
-      "pass": true,
-      "detail": "transport intro:1, viewed main, playhead 0"
+      "pass": false,
+      "detail": "transport intro:1, viewed intro, playhead 1"
     },
     {
       "name": "[320x700] 12 4/4 · 1/4 barı 4 hücre çiziyor",
@@ -378,7 +378,7 @@
     {
       "name": "[320x700] L2 çalarken timing değişimi: transport duruyor, playhead yeni plandaki bar başında",
       "pass": true,
-      "detail": "playing@574 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
+      "detail": "playing@589 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
     },
     {
       "name": "[320x700] L3 AudioContext 1 → 1, ikinci scheduler kurulmuyor",
@@ -397,13 +397,13 @@
     },
     {
       "name": "[320x700] 26 triplet \"3\" işareti görünüyor",
-      "pass": true,
-      "detail": "4 grup, 4 işaret"
+      "pass": false,
+      "detail": "0 grup, 0 işaret"
     },
     {
       "name": "[320x700] 27 1/32 üç beam seviyesi gösteriyor",
-      "pass": true,
-      "detail": "3 çizgi"
+      "pass": false,
+      "detail": "undefined çizgi"
     },
     {
       "name": "[320x700] 27.b 1/4 barı hiç beam almıyor",
@@ -418,7 +418,7 @@
     {
       "name": "[320x700] 28.b beam işaretleri dokunma hedefi/listener oluşturmuyor",
       "pass": true,
-      "detail": "{\"count\":7,\"buttons\":0,\"pointerEvents\":0,\"handlers\":0}"
+      "detail": "{\"count\":2,\"buttons\":0,\"pointerEvents\":0,\"handlers\":0}"
     },
     {
       "name": "[320x700] 25 tie yeni beam onset'i oluşturmuyor",
@@ -433,7 +433,7 @@
     {
       "name": "[320x700] T1 data-tab-tail müzikal bar veya seçim hedefi değil",
       "pass": true,
-      "detail": "{\"exists\":true,\"isBar\":false,\"hasCells\":false,\"bars\":2,\"box\":{\"x\":306,\"y\":181,\"w\":320,\"h\":210}}"
+      "detail": "{\"exists\":true,\"isBar\":false,\"hasCells\":false,\"bars\":2,\"box\":{\"x\":272,\"y\":181,\"w\":218,\"h\":210}}"
     },
     {
       "name": "[320x700] T2 boş alana dokunmak 0 seek, 0 seçim, 0 yazım",
@@ -488,8 +488,8 @@
       "stepped": {
         "status": "playing",
         "bar": "intro:1",
-        "viewed": "main",
-        "playhead": "0"
+        "viewed": "intro",
+        "playhead": "1"
       }
     },
     "390x844.shortenedBar": {
@@ -590,7 +590,7 @@
     "390x844.timingWhilePlaying": {
       "playing": {
         "status": "playing",
-        "ticks": 571
+        "ticks": 588
       },
       "after": {
         "status": "idle",
@@ -639,12 +639,6 @@
         "label": "Ritim grubu: 3 nota, 1/8 üçleme",
         "lines": 1,
         "triplets": 1
-      },
-      {
-        "bar": "grids:3",
-        "label": "Ritim grubu: 8 nota, 1/32",
-        "lines": 3,
-        "triplets": 0
       }
     ],
     "390x844.overlaps": {
@@ -673,8 +667,8 @@
       "stepped": {
         "status": "playing",
         "bar": "intro:1",
-        "viewed": "main",
-        "playhead": "0"
+        "viewed": "intro",
+        "playhead": "1"
       }
     },
     "320x700.shortenedBar": {
@@ -775,7 +769,7 @@
     "320x700.timingWhilePlaying": {
       "playing": {
         "status": "playing",
-        "ticks": 574
+        "ticks": 589
       },
       "after": {
         "status": "idle",
@@ -800,36 +794,6 @@
         "label": "Ritim grubu: 3 nota, 1/16",
         "lines": 2,
         "triplets": 0
-      },
-      {
-        "bar": "grids:2",
-        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
-        "lines": 1,
-        "triplets": 1
-      },
-      {
-        "bar": "grids:2",
-        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
-        "lines": 1,
-        "triplets": 1
-      },
-      {
-        "bar": "grids:2",
-        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
-        "lines": 1,
-        "triplets": 1
-      },
-      {
-        "bar": "grids:2",
-        "label": "Ritim grubu: 3 nota, 1/8 üçleme",
-        "lines": 1,
-        "triplets": 1
-      },
-      {
-        "bar": "grids:3",
-        "label": "Ritim grubu: 8 nota, 1/32",
-        "lines": 3,
-        "triplets": 0
       }
     ],
     "320x700.overlaps": {
@@ -843,5 +807,5 @@
       "scrollers": 1
     }
   },
-  "failed": 0
+  "failed": 5
 }

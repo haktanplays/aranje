@@ -573,7 +573,7 @@
     ],
     "390x844.twentyProjects": {
       "rows": 20,
-      "domNodes": 216
+      "domNodes": 219
     },
     "390x844.playback": {
       "audioBefore": 1,
@@ -609,7 +609,7 @@
     ],
     "320x700.twentyProjects": {
       "rows": 20,
-      "domNodes": 216
+      "domNodes": 219
     },
     "320x700.playback": {
       "audioBefore": 1,
@@ -622,7 +622,7 @@
     },
     "320x700.layout": {
       "overflow": 0,
-      "scrollers": 5
+      "scrollers": 2
     }
   },
   "failed": 0

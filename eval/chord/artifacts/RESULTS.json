@@ -386,6 +386,11 @@
       "detail": "16 aria-pressed"
     },
     {
+      "name": "[390x844] 65a Escape ile kapanıyor",
+      "pass": true,
+      "detail": "kapandı"
+    },
+    {
       "name": "[390x844] 65 backdrop ile kapanıyor",
       "pass": true,
       "detail": "kapandı"
@@ -784,6 +789,11 @@
       "name": "[320x700] 64 ekran okuyucu adları var",
       "pass": true,
       "detail": "16 aria-pressed"
+    },
+    {
+      "name": "[320x700] 65a Escape ile kapanıyor",
+      "pass": true,
+      "detail": "kapandı"
     },
     {
       "name": "[320x700] 65 backdrop ile kapanıyor",

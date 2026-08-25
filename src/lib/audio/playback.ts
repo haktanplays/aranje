@@ -494,15 +494,40 @@ export class PlaybackController {
       const transport = engine.context.transport;
       // The start was scheduled for a moment that has not arrived.
       transport.stop();
-      const click = engine.metronome.click as unknown as {
-        envelope?: { cancel?: (time?: number) => unknown };
-        noise?: { cancel?: (time?: number) => unknown };
-      };
+      const { click } = engine.metronome;
       const now = engine.context.now();
-      click.envelope?.cancel?.(now);
-      click.noise?.cancel?.(now);
+      /*
+       * Two schedules, not one. The envelope holds the shape of each click
+       * and `cancel` truncates it; the noise source holds a *state* timeline
+       * of the starts themselves, and nothing about cancelling the envelope
+       * touches it.
+       *
+       * This used to read `click.noise?.cancel?.(now)` through an untyped
+       * cast. `Noise` has no `cancel`, so the optional call was a silent
+       * no-op and every cancelled click stayed on the source's timeline —
+       * and the *next* play, scheduling its own clicks at earlier times,
+       * tripped Tone's "the time must be greater than or equal to the last
+       * scheduled time" and left the transport stopped with an audio error.
+       * The acceptance run found it by pressing play again after a
+       * cancellation, which nothing had done before.
+       */
+      click.envelope.cancel(now);
+      click.noise.stop(now);
     }
-    if (this.state.countingIn) this.set({ countingIn: false });
+    /*
+     * A cancelled count-in leaves the transport stopped, so the screen has to
+     * say so. While the clicks are running the status is already "playing" —
+     * that is what makes the button read "Duraklat" — and cancelling without
+     * putting it back left the reader looking at a transport that claimed to
+     * be playing with nothing coming out of it. Found by rewinding mid-count
+     * in the acceptance run.
+     */
+    if (this.state.countingIn) {
+      this.set({
+        countingIn: false,
+        ...(this.state.status === "playing" ? { status: "paused" as const } : {}),
+      });
+    }
   }
 
   pause(): void {

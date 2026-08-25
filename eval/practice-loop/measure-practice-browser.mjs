@@ -44,7 +44,13 @@ function describe(samples) {
     median: round(sorted[Math.floor(sorted.length / 2)] ?? 0),
     p95: round(sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * 0.95))] ?? 0),
     max: round(sorted[sorted.length - 1] ?? 0),
-    samples: sorted.map((value) => round(value)),
+    /*
+     * Every sample, up to forty. The artefact is meant to be read: a frame
+     * measurement is two hundred numbers that are all 16,6 and say nothing
+     * the median and the max do not already say.
+     */
+    samples: sorted.slice(0, 40).map((value) => round(value)),
+    sampled: sorted.length > 40 ? `ilk 40 / ${sorted.length}` : "hepsi",
   };
 }
 
@@ -158,6 +164,9 @@ const chromiumVersion = browser.version();
   await page.waitForSelector("[data-practice-sheet]");
   await page.locator("[data-practice-current]").click();
   await page.waitForTimeout(150);
+  // The sheet covers the transport; the play button is behind it.
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(250);
 
   /** Play, and report when the playhead first actually moved. */
   const startLatency = async () => {
@@ -174,10 +183,17 @@ const chromiumVersion = browser.version();
     return { latency: first === undefined ? null : first.t - started, samples };
   };
 
-  for (const bars of [0, 1, 2]) {
-    await page.locator("[data-count-in]").first().waitFor();
+  const setCountIn = async (bars) => {
+    await page.locator("[data-open-practice]").click();
+    await page.waitForSelector("[data-practice-sheet]", { timeout: 4000 });
     await page.locator(`[data-count-in='${bars}']`).click();
     await page.waitForTimeout(120);
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(250);
+  };
+
+  for (const bars of [0, 1, 2]) {
+    await setCountIn(bars);
     const taken = [];
     for (let index = 0; index < 5; index += 1) {
       const { latency } = await startLatency();
@@ -187,10 +203,7 @@ const chromiumVersion = browser.version();
   }
 
   // How long a pass of a one-bar loop takes, measured between wraps.
-  await page.locator(`[data-count-in='0']`).click();
-  await page.waitForTimeout(120);
-  await page.keyboard.press("Escape");
-  await page.waitForTimeout(200);
+  await setCountIn(0);
   const { samples } = await startLatency();
   const gaps = [];
   let previous = null;
@@ -378,6 +391,10 @@ writeFileSync(
         "Count-in gecikmeleri playhead'in gerçekten hareket ettiği ilk kareden " +
           "okunur; 'x sıfırdan farklı' ölçüsü ikinci ölçüde başlayan bir range " +
           "için her zaman doğrudur ve hiçbir şey ölçmez.",
+        "Sheet ve aralık ölçümleri bir *etkileşimin tamamıdır*: aç, tıkla, " +
+          "bekle, kapat. Harness'ın kendi 60 ms'lik yerleşme beklemeleri de " +
+          "içindedir, çıkarılmamıştır — bunlar bir tuşun gecikmesi değil, bir " +
+          "jestin toplam süresidir.",
         "Fiziksel telefon kanıtı değildir.",
       ],
       targets,

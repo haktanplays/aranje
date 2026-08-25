@@ -138,7 +138,7 @@
     {
       "name": "screenshots and measurements",
       "pass": true,
-      "detail": "{\"h\":329,\"w\":320}"
+      "detail": "{\"h\":281,\"w\":320}"
     },
     {
       "name": "console stayed quiet",
@@ -179,7 +179,7 @@
     },
     "layout-320x700": {
       "work": {
-        "h": 329,
+        "h": 281,
         "w": 320
       },
       "actionBar": {

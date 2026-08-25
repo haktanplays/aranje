@@ -596,14 +596,9 @@
       "detail": ""
     },
     {
-      "name": "[320x700] 10 fill ghost writes nothing",
-      "pass": true,
-      "detail": "Uygulanmaya hazır."
-    },
-    {
       "name": "[320x700] 10 fill to the section end",
-      "pass": true,
-      "detail": "3->4"
+      "pass": false,
+      "detail": "no selection"
     },
     {
       "name": "[320x700] 11 one grid step each way",
@@ -707,5 +702,5 @@
       "summary": "1 power chord · 3 nota"
     }
   },
-  "failed": 0
+  "failed": 1
 }

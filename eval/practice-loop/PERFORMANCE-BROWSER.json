@@ -1,0 +1,303 @@
+{
+  "what": "2R-A §XV — pratik döngüsünün tarayıcıdaki maliyeti",
+  "measuredOn": {
+    "chromium": "141.0.7390.37",
+    "node": "v22.22.2",
+    "surface": "masaüstü Chromium, mobil viewport emülasyonu (390×844)",
+    "physicalDevice": false,
+    "build": "production (next build + next start)"
+  },
+  "method": "Her etkileşim 2 ısınma turundan sonra 20 tur (count-in gibi saniyeler süren ölçümlerde 5 tur); jest → okurun beklediği şey görünene kadar, dışarıdan.",
+  "notes": [
+    "Davul dokunuşu burada yeniden ölçülmedi: TAP-PROFILE.json'daki ölçüm CPU profiliyle birlikte alınmıştır ve üçüncü bir kopya üçüncü bir cevap olurdu. Sayılar kaynağıyla birlikte taşınıyor.",
+    "Count-in gecikmeleri playhead'in gerçekten hareket ettiği ilk kareden okunur; 'x sıfırdan farklı' ölçüsü ikinci ölçüde başlayan bir range için her zaman doğrudur ve hiçbir şey ölçmez.",
+    "Sheet ve aralık ölçümleri bir *etkileşimin tamamıdır*: aç, tıkla, bekle, kapat. Harness'ın kendi 60 ms'lik yerleşme beklemeleri de içindedir, çıkarılmamıştır — bunlar bir tuşun gecikmesi değil, bir jestin toplam süresidir.",
+    "Fiziksel telefon kanıtı değildir."
+  ],
+  "targets": [
+    {
+      "what": "gerçekçi fixture, davul dokunuşu medyanı",
+      "target": "≤33 ms",
+      "measured": 31.2,
+      "source": "TAP-PROFILE.json (profile-tap.mjs, 60 tur)",
+      "passed": true
+    },
+    {
+      "what": "gerçekçi fixture, davul dokunuşu p95",
+      "target": "≤50 ms",
+      "measured": 31.7,
+      "source": "TAP-PROFILE.json (profile-tap.mjs, 60 tur)",
+      "passed": null,
+      "note": "Altı koşuda hedefin altında (32,0-49,8 ms) fakat en kötüsünde yalnız 0,2 ms pay var; 24 turluk bir koşuda 57,3 ms ölçüldü. Kapandı sayılmıyor."
+    },
+    {
+      "what": "sözleşme tavanı, davul dokunuşu medyanı",
+      "target": "yok — ölçülüyor, eşik uydurulmadı",
+      "measured": 130.1,
+      "source": "TAP-PROFILE.json (profile-tap.mjs, 60 tur)",
+      "passed": false,
+      "note": "182 → ~131 ms. Kalanın ~30 ms'i merkezî schema/validator kapısı, ~7 ms'i playback planıdır; ikisi de gevşetilmesi yasak yollardır. Açık borç."
+    }
+  ],
+  "results": {
+    "sheetOpen": {
+      "rounds": 20,
+      "warmup": 2,
+      "median": 99.9,
+      "p95": 150.4,
+      "max": 150.4,
+      "samples": [
+        91.4,
+        92.3,
+        96.6,
+        97.3,
+        97.4,
+        97.6,
+        97.7,
+        98.4,
+        99.1,
+        99.6,
+        99.9,
+        100.5,
+        100.6,
+        100.8,
+        101.6,
+        103.2,
+        104.1,
+        104.3,
+        107.5,
+        150.4
+      ],
+      "sampled": "hepsi"
+    },
+    "singleBarApply": {
+      "rounds": 20,
+      "warmup": 2,
+      "median": 184.8,
+      "p95": 241.2,
+      "max": 241.2,
+      "samples": [
+        177.1,
+        181.9,
+        182.8,
+        183.1,
+        183.1,
+        183.3,
+        183.3,
+        183.6,
+        184,
+        184.3,
+        184.8,
+        185.9,
+        187.3,
+        194.3,
+        196.4,
+        197.6,
+        198.6,
+        200.3,
+        201.2,
+        241.2
+      ],
+      "sampled": "hepsi"
+    },
+    "pairApply": {
+      "rounds": 20,
+      "warmup": 2,
+      "median": 351.2,
+      "p95": 387.5,
+      "max": 387.5,
+      "samples": [
+        334.3,
+        346.3,
+        347.5,
+        347.8,
+        348.8,
+        348.9,
+        349.2,
+        350,
+        350.3,
+        350.6,
+        351.2,
+        351.3,
+        352.4,
+        352.6,
+        356.2,
+        362.5,
+        362.9,
+        366.2,
+        379.8,
+        387.5
+      ],
+      "sampled": "hepsi"
+    },
+    "progressiveApply": {
+      "rounds": 20,
+      "warmup": 2,
+      "median": 216.3,
+      "p95": 218.5,
+      "max": 218.5,
+      "samples": [
+        197.4,
+        197.8,
+        198.5,
+        199.1,
+        199.4,
+        200,
+        201.8,
+        214.6,
+        214.8,
+        215.4,
+        216.3,
+        216.8,
+        217.1,
+        217.2,
+        217.8,
+        218,
+        218.1,
+        218.1,
+        218.4,
+        218.5
+      ],
+      "sampled": "hepsi"
+    },
+    "countInStart0Bars": {
+      "rounds": 5,
+      "warmup": 2,
+      "median": 100,
+      "p95": 284,
+      "max": 284,
+      "samples": [
+        66,
+        83,
+        100,
+        100,
+        284
+      ],
+      "sampled": "hepsi"
+    },
+    "countInStart1Bars": {
+      "rounds": 5,
+      "warmup": 2,
+      "median": 1900,
+      "p95": 1917,
+      "max": 1917,
+      "samples": [
+        1900,
+        1900,
+        1900,
+        1917,
+        1917
+      ],
+      "sampled": "hepsi"
+    },
+    "countInStart2Bars": {
+      "rounds": 5,
+      "warmup": 2,
+      "median": 3717,
+      "p95": 3734,
+      "max": 3734,
+      "samples": [
+        3716,
+        3717,
+        3717,
+        3733,
+        3734
+      ],
+      "sampled": "hepsi"
+    },
+    "loopWrapIntervalMs": {
+      "rounds": 2,
+      "warmup": 2,
+      "median": 1850,
+      "p95": 1850,
+      "max": 1850,
+      "samples": [
+        1816,
+        1850
+      ],
+      "sampled": "hepsi"
+    },
+    "armedGrid": {
+      "armed": true,
+      "fixture": "denseKit",
+      "flingSteps": 276,
+      "frameMs": {
+        "rounds": 200,
+        "warmup": 2,
+        "median": 16.7,
+        "p95": 16.7,
+        "max": 33.4,
+        "samples": [
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6,
+          16.6
+        ],
+        "sampled": "ilk 40 / 200"
+      },
+      "mountedCells": {
+        "min": 7,
+        "max": 210,
+        "grid": 1792
+      },
+      "dom": {
+        "before": 443,
+        "after": 277
+      },
+      "listeners": {
+        "added": 7,
+        "removed": 7
+      },
+      "observers": {
+        "constructed": {
+          "resize": 5,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "disconnected": {
+          "resize": 3,
+          "intersection": 0,
+          "mutation": 0
+        }
+      },
+      "audioContexts": 0,
+      "idleFrames": 0
+    }
+  }
+}

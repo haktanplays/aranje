@@ -135,7 +135,7 @@
     {
       "name": "[390x844] 26 tam olarak bir kasitli yatay scroller",
       "pass": true,
-      "detail": "div.h-full 968/390"
+      "detail": "div.h-full 843/390"
     },
     {
       "name": "[390x844] 26b viewport disina tasan kirpilmis icerik yok",
@@ -295,12 +295,12 @@
     {
       "name": "[320x700] 26 tam olarak bir kasitli yatay scroller",
       "pass": true,
-      "detail": "div.h-full 898/320"
+      "detail": "div.h-full 796/320"
     },
     {
       "name": "[320x700] 26b viewport disina tasan kirpilmis icerik yok",
       "pass": false,
-      "detail": "div.flex 344/320 · div.border-line 326/320 · footer.border-t 344/320 · div.flex 344/320"
+      "detail": "div.flex 326/320 · div.border-line 326/320"
     },
     {
       "name": "[320x700] 27 44 px altinda hedef 0",

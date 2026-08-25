@@ -66,8 +66,15 @@ function harness() {
       click: {
         triggerAttackRelease: (_d: number, time: number, velocity: number) =>
           clicks.push({ time, velocity }),
+        /*
+         * The real click is a `Tone.NoiseSynth`, and the two schedules it
+         * keeps have *different* method names: the envelope is cancelled and
+         * the noise source is stopped. The first version of this fake gave
+         * both a `cancel`, which is why the production code could call a
+         * method that does not exist on `Noise` and nothing here noticed.
+         */
         envelope: { cancel: () => cancelled.push("envelope") },
-        noise: { cancel: () => cancelled.push("noise") },
+        noise: { stop: () => cancelled.push("noise") },
       },
       filter: {},
     },
@@ -171,6 +178,15 @@ describe("274. a cancelled count-in cannot start playing later", () => {
       expect(transport.stops).toBeGreaterThan(0);
       // And the clicks already on the audio clock were cancelled.
       expect(cancelled).toContain("envelope");
+      // Both timelines, not one: the envelope's shape and the source's starts.
+      expect(cancelled).toContain("noise");
+      /*
+       * And the screen says so. While the clicks run the status is already
+       * "playing" — that is what makes the button read "Duraklat" — so a
+       * cancellation that left it there would show a transport claiming to
+       * play with nothing coming out of it.
+       */
+      expect(controller.getState().status).not.toBe("playing");
       expect(cancelled).toContain("noise");
 
       /*

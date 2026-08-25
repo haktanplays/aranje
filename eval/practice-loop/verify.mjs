@@ -848,6 +848,30 @@ async function tourCountInCancel(page) {
   );
   record_("iptal edilen count-in hayalet playback başlatmaz", afterPause.live === 0, `${afterPause.live} rAF`);
 
+  /*
+   * And the transport is still usable afterwards. A cancellation that cleared
+   * the schedule but left the count-in's own token behind would look exactly
+   * like this one — stopped, no ghost frame — right up until the next press
+   * of play silently did nothing.
+   */
+  await play(page).click();
+  await page.waitForTimeout(6500);
+  const resumed = await page.evaluate(() => ({
+    live: Object.values(window.__playheadProbe.live).reduce((a, b) => a + b, 0),
+    playing: !!document.querySelector("footer button[aria-label='Duraklat']"),
+    error: document.querySelector("footer [role=alert]")?.textContent ?? null,
+    status: document.querySelector("[data-transport-status]")?.textContent ?? null,
+  }));
+  record_(
+    "iptalden sonra tekrar çal gerçekten başlıyor",
+    resumed.playing && resumed.live === 1,
+    `${resumed.live} rAF, ${resumed.playing ? "çalıyor" : "durmuş"}` +
+      `${resumed.error ? ` — hata: ${resumed.error}` : ""}` +
+      `${resumed.status ? ` — ${resumed.status}` : ""}`,
+  );
+  if ((await pause(page).count()) > 0) await pause(page).click();
+  await page.waitForTimeout(300);
+
   // Rewind during the count is the other cancellation door.
   await play(page).click();
   await page.waitForTimeout(350);
@@ -1239,6 +1263,9 @@ async function tourExtent(page, song) {
     first !== null && Math.abs(first.scrollWidth - axis - (tail ?? 0) - GUTTER) <= 2,
     `axis ve tail çıkınca ${first === null ? "-" : Math.round((first.scrollWidth - axis - (tail ?? 0)) * 10) / 10}px kalıyor`,
   );
+  // At the end of the song, where the tail actually is.
+  await scrollTo(page, 99_000);
+  await page.waitForTimeout(250);
   const barsInTail = await page.evaluate(
     ([axisEnd]) => {
       const scroller = [...document.querySelectorAll("*")].find((node) => {
@@ -1409,19 +1436,32 @@ async function tourParity(page) {
 
   /*
    * The armed kit is the third drawing of the same axis, and it is measured
-   * last: arming replaces the bars with the step grid, so `[data-bar-key]`
-   * is gone and the tab's own measurement has to be the one taken above.
+   * on the song's *second* section: on the first one the section's own x is
+   * zero, so a grid that ignored it entirely would land in the right place
+   * by accident. Arming replaces the bars with the step grid, so the bar's
+   * own x has to be read before.
    */
+  // No scroll home here: the section's bars are only mounted where they are.
+  await gotoSection(page, "three");
+  await page.waitForTimeout(300);
+  const laterBar = await barAxisX(page, "three:0");
   const armed = await armKit(page);
-  await scrollTo(page, 0);
-  await page.waitForTimeout(250);
+  await gotoSection(page, "three");
+  await page.waitForTimeout(300);
   const kit = await kitRow(page, "kick");
   record_(
-    "davul ızgarası da aynı kanonik x'te başlar",
-    armed && kit !== null && kit.cells.length > 0 && tabFirst !== null
-      ? Math.abs(kit.cells[0].left - tabFirst.left) <= 1
+    "davul ızgarası bölümün kendi kanonik x'inde başlar",
+    armed && kit !== null && kit.cells.length > 0 && laterBar !== null
+      ? Math.abs(kit.cells[0].left - laterBar.left) <= 1
       : false,
-    kit === null ? "no grid" : `hücre ${kit.cells[0]?.left}px, Tab'ın ilk ölçüsü ${tabFirst?.left}px`,
+    kit === null
+      ? "no grid"
+      : `hücre ${kit.cells[0]?.left}px, bölümün ilk ölçüsü ${laterBar?.left}px`,
+  );
+  record_(
+    "ikinci bölümün x'i gerçekten sıfır değil",
+    laterBar !== null && laterBar.left > GUTTER,
+    `${laterBar?.left}px`,
   );
 }
 
@@ -1480,7 +1520,18 @@ const kitRow = (page, piece) =>
     };
   }, piece);
 
-async function tourGrid(page) {
+async function tourGrid(page, song) {
+  /*
+   * What the surface measures before the kit is armed. An armed grid replaces
+   * the reading window's spacers rather than sitting beside them, so the
+   * surface must be exactly as wide with it as without — the claim §III is
+   * about, and one that can only be made on a page that has both states.
+   */
+  await toView(page, "tab");
+  await scrollTo(page, 0);
+  await page.waitForTimeout(250);
+  const reading = await surface(page);
+
   const armed = await armKit(page);
   record_("davul ızgarası silinmeden kurulur", armed, armed ? "grid armed" : "no kit grid");
   if (!armed) return;
@@ -1488,12 +1539,59 @@ async function tourGrid(page) {
   await scrollTo(page, 0);
   await page.waitForTimeout(300);
   const armedSection = await page.getAttribute("[data-viewed-section]", "data-viewed-section");
+  const writing = await surface(page);
+  record_(
+    "silahlanmış ızgara yüzeyi genişletmiyor",
+    reading !== null && writing !== null && Math.abs(reading.scrollWidth - writing.scrollWidth) <= 2,
+    `okuma ${reading?.scrollWidth}px, yazma ${writing?.scrollWidth}px`,
+  );
+  const axis = axisWidthOf(song);
+  const tail = writing === null ? 0 : Math.round(writing.clientWidth * 0.68 * 10) / 10;
+  record_(
+    "silahlanmış extent de axis + gutter + tail",
+    writing !== null && Math.abs(writing.scrollWidth - (axis + GUTTER + tail)) <= 2,
+    `${writing?.scrollWidth}px vs ${Math.round((axis + GUTTER + tail) * 10) / 10}px`,
+  );
+
   const row = await kitRow(page, "kick");
   record_(
     "her hücre kendi tick'ini taşır",
     row !== null && row.cells.every((cell, index, all) => index === 0 || cell.ticks > all[index - 1].ticks),
     `${row?.cells.length} hücre`,
   );
+  /*
+   * The cell's tick and the cell's position have to agree, and both are
+   * checked against the *fixture* rather than against each other: they come
+   * out of the same model, so a model that shifted every tick by a slot would
+   * still be perfectly consistent with itself. The bar starts are computed
+   * from the song's own meters and resolutions — mixed grids included, which
+   * is why a single ticks-per-slot factor would not do.
+   */
+  const section = song.sections.find((entry) => entry.id === armedSection);
+  const barStarts = [];
+  {
+    let ticks = 0;
+    let slots = 0;
+    for (const bar of section?.bars ?? []) {
+      barStarts.push({ ticks, x: GUTTER + slots * SLOT });
+      ticks += slotsIn(bar) * (768 / bar.resolution);
+      slots += slotsIn(bar);
+    }
+  }
+  const misplaced = barStarts.filter((start) => {
+    const cell = row?.cells.find((entry) => entry.ticks === start.ticks);
+    return cell === undefined ? false : Math.abs(cell.left - start.x) > 1;
+  });
+  const missing = barStarts.filter(
+    (start) => !(row?.cells ?? []).some((entry) => entry.ticks === start.ticks),
+  );
+  record_(
+    "ölçü başlarının tick'i ve kanonik x'i fixture ile aynı",
+    row !== null && misplaced.length === 0 && missing.length < barStarts.length,
+    `${barStarts.length} ölçü başı, ${misplaced.length} yanlış yerde, ` +
+      `${missing.length} mount edilmemiş`,
+  );
+
   record_(
     "hücreler kanonik x'te sıralı ve boşluksuz",
     row !== null &&
@@ -1919,7 +2017,7 @@ for (const viewport of viewports) {
     await run("runtime", viewport, textScale, (page, cdp, errors) => tourRuntime(page, errors));
     await run("extent", viewport, textScale, (page) => tourExtent(page, SONG));
     await run("parity", viewport, textScale, (page) => tourParity(page));
-    await run("grid", viewport, textScale, (page) => tourGrid(page));
+    await run("grid", viewport, textScale, (page) => tourGrid(page, SONG));
     await run("thunk", viewport, textScale, (page) => tourThunk(page));
     await run("layout", viewport, textScale, (page) => tourLayout(page));
   }

@@ -1049,8 +1049,24 @@ async function run(label, size) {
         `${await page.locator("[data-chord-sheet] button[aria-pressed]").count()} aria-pressed`,
       );
 
-      await page.keyboard.press("Escape").catch(() => {});
-      await page.waitForTimeout(200);
+      /*
+       * Escape and the backdrop are two ways out of one sheet, and each has
+       * to be exercised on a sheet that is open. This pressed Escape and then
+       * clicked the backdrop, which was harmless while Escape did nothing —
+       * 2R-A §X wired it, and the click then waited forever for a dialog that
+       * had already gone. The sheet is reopened between them.
+       */
+      await page.keyboard.press("Escape");
+      await page.waitForTimeout(300);
+      record_(
+        at("65a Escape ile kapanıyor"),
+        (await page.locator("[data-chord-sheet]").count()) === 0,
+        "kapandı",
+      );
+
+      // The cell's own doors come back with the cell, so it is tapped again.
+      await tapCell(page);
+      await openBuilder(page);
       await page.locator('[role="dialog"] button[aria-label="Kapat"]').first().click({
         position: { x: 6, y: 6 },
       });
