@@ -79,7 +79,15 @@ export function EditToolbar({
             onClick={onToggleEdit}
             disabled={!canEdit}
             aria-pressed={editing}
-            className={`min-h-11 min-w-0 flex-1 basis-32 rounded-lg border px-3 text-sm font-medium disabled:opacity-40 ${
+            /*
+             * The touch minimum is 44 **pixels**, not 2.75rem. `min-h-11`
+             * grows with the reader's text setting, so at 150% each row of
+             * this strip was 66px tall for a reason that had nothing to do
+             * with the words in it — and on a 320px screen that is a third of
+             * the music. The same correction the transport row got in K-56.
+             */
+            style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+            className={`min-w-0 flex-1 basis-32 rounded-lg border px-3 text-sm font-medium disabled:opacity-40 ${
               editing
                 ? "border-bronze bg-bronze/15 text-bronze"
                 : "border-bronze/60 text-bronze"
@@ -98,7 +106,8 @@ export function EditToolbar({
            * button has no business being the largest promise on the surface.
            * Disabled it still says why, through `arrangeDisabled` upstream.
            */
-          className="text-muted border-line min-h-11 shrink-0 rounded-lg border px-3 text-sm disabled:opacity-40"
+          style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+          className="text-muted border-line shrink-0 rounded-lg border px-3 text-sm disabled:opacity-40"
         >
           Aranje et
         </button>
@@ -138,11 +147,12 @@ export function EditToolbar({
           {editDisabledReason}
         </p>
       ) : null}
-      {editing ? (
-        <p role="status" className="text-bronze pt-1 text-[11px]">
-          Düzenleme açık — bir tel ve slot seç.
-        </p>
-      ) : null}
+      {/*
+        The "editing is on" line is gone: the intent doors above the row are
+        the sign that it is, and they say it in controls rather than in a
+        sentence. On a 320px screen at 150% text that sentence cost two lines
+        of the music (2S-A §11).
+      */}
     </div>
   );
 }

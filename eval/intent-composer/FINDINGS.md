@@ -242,3 +242,30 @@ penceresindeki tepe yalnız kendi atağı. Çıkarma yöntemi aynı onset için
 **Ölçülmeyen.** Bu satırların hiçbiri bir insanın "daha iyi duyuluyor"
 demesi değildir. Ölçülen şey perdenin ne zaman geldiği ve ne kadar
 duyulduğudur; nasıl duyulduğuna Haktan karar verir.
+
+---
+
+## §15 sırasında bulunan harness kusuru (ürün kusuru değil)
+
+Kabul koşusunun ilk sürümünde, 320×700 %150 metinde kalemi kuşandıktan
+sonraki **ilk** hücre dokunuşu hiçbir şey yazmıyordu; aynı koordinata ikinci
+dokunuş çalışıyordu. Kök neden ölçüldü: `document.elementsFromPoint` o
+koordinatta en üstte `[data-return-to-playback]` düğmesini döndürüyor.
+
+```
+4:0 box {"x":170,"y":263.25,"width":34,"height":44}
+    @ BUTTON {data-return-to-playback aria-label=Çalmaya dön}   ← ilk dokunuş buraya gitti
+    @ BUTTON {data-cell=4:0}
+```
+
+«Çalmaya dön» pili, okuyucu playhead'den uzağa kaydırdığında okuma yüzeyinin
+sağ altında beliren gerçek bir denetimdir (2Q-C §6). Harness hücreyi görünür
+kılmak için kaydırdığı an pil beliriyor ve 320 px'te en pes telin son
+hücrelerinin üstüne oturuyor. İnsan o pili **görür** ve başka yere nişan alır;
+`page.mouse.click` ise körlemesine koordinata basar ve dokunuş pili kapatmakla
+harcanır. Bu, harness'in kusurudur.
+
+Düzeltme harness'te: `tapCell` artık dokunmadan önce o noktada gerçekten
+hedeflenen hücrenin olup olmadığını soruyor, üstte pil varsa önce onu
+kapatıyor, kutuyu yeniden çözüp öyle dokunuyor. Üründe hiçbir şey
+değiştirilmedi — çünkü değiştirilecek bir kusur bulunamadı.
