@@ -12,6 +12,21 @@
  * opens a sheet and works from either surface, and the second pair belongs to
  * the song rather than to whichever view happens to be up.
  *
+ * ## The row wraps rather than clipping
+ *
+ * Both labels grow with the reader's text setting — "Aranje et" goes from 85
+ * to 127px between 100% and 150%, "Düzenlemeyi bitir" from 117 to 168 — and a
+ * flex item cannot shrink below the width of its own words. On one fixed line
+ * that arithmetic runs off the screen: measured at 419px of content in a
+ * 284px row at 320px and 150% text, with 135px of it simply gone. Not
+ * scrolled away — gone, because the row is not a scroller.
+ *
+ * So the row wraps, which is what the transport row already does at the same
+ * setting (K-56). Nothing is removed, no target shrinks, no label is cut, and
+ * at the sizes where everything fit before it still fits on one line. The
+ * history pair wraps as a pair: undo and redo belong beside each other, and a
+ * lone redo on a second line is a worse row than two of them.
+ *
  * ## Undo and redo are two controls
  *
  * Not one that changes meaning. A single button that undoes until you shift-
@@ -57,14 +72,14 @@ export function EditToolbar({
 }) {
   return (
     <div data-action-row className="border-line flex flex-col border-t px-3 py-0.5">
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {canToggleEdit ? (
           <button
             type="button"
             onClick={onToggleEdit}
             disabled={!canEdit}
             aria-pressed={editing}
-            className={`min-h-11 flex-1 rounded-lg border px-3 text-sm font-medium disabled:opacity-40 ${
+            className={`min-h-11 min-w-0 flex-1 basis-32 rounded-lg border px-3 text-sm font-medium disabled:opacity-40 ${
               editing
                 ? "border-bronze bg-bronze/15 text-bronze"
                 : "border-bronze/60 text-bronze"
@@ -87,30 +102,32 @@ export function EditToolbar({
         >
           Aranje et
         </button>
-        <button
-          type="button"
-          data-undo
-          onClick={onUndo}
-          disabled={!canUndo}
-          aria-label={undoLabel}
-          title={undoLabel}
-          className="text-muted border-line shrink-0 rounded-lg border text-sm disabled:opacity-40"
-          style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
-        >
-          <span aria-hidden>&#8630;</span>
-        </button>
-        <button
-          type="button"
-          data-redo
-          onClick={onRedo}
-          disabled={!canRedo}
-          aria-label={redoLabel}
-          title={redoLabel}
-          className="text-muted border-line shrink-0 rounded-lg border text-sm disabled:opacity-40"
-          style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
-        >
-          <span aria-hidden>&#8631;</span>
-        </button>
+        <div data-history-pair className="flex shrink-0 items-center gap-2">
+          <button
+            type="button"
+            data-undo
+            onClick={onUndo}
+            disabled={!canUndo}
+            aria-label={undoLabel}
+            title={undoLabel}
+            className="text-muted border-line shrink-0 rounded-lg border text-sm disabled:opacity-40"
+            style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
+          >
+            <span aria-hidden>&#8630;</span>
+          </button>
+          <button
+            type="button"
+            data-redo
+            onClick={onRedo}
+            disabled={!canRedo}
+            aria-label={redoLabel}
+            title={redoLabel}
+            className="text-muted border-line shrink-0 rounded-lg border text-sm disabled:opacity-40"
+            style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
+          >
+            <span aria-hidden>&#8631;</span>
+          </button>
+        </div>
       </div>
       {/*
         Both of these are transient. They get a line when they have something

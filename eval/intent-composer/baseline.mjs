@@ -18,6 +18,8 @@ import { device, fixture, VIEWPORTS, TEXT_SCALES } from "./device.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/intent-composer";
+/** `FILE=AFTER-UI.json` writes an after-the-fix run beside the baseline. */
+const FILE = process.env.FILE ?? "BASELINE.json";
 mkdirSync(`${OUT}/shots`, { recursive: true });
 
 /**
@@ -142,7 +144,7 @@ async function glyphFact(browser, song) {
       }),
     };
   });
-  await page.screenshot({ path: `${OUT}/shots/before-tab-390.png` });
+  await page.screenshot({ path: `${OUT}/shots/${FILE === "BASELINE.json" ? "before" : "after"}-tab-390.png` });
   await context.close();
   return { ...measured, errors };
 }
@@ -360,7 +362,7 @@ async function toolbarFact(browser, song) {
           errors,
         });
         if (viewport.width === 320 && textScale === 100 && editing) {
-          await page.screenshot({ path: `${OUT}/shots/before-toolbar-320.png` });
+          await page.screenshot({ path: `${OUT}/shots/${FILE === "BASELINE.json" ? "before" : "after"}-toolbar-320.png` });
         }
         await context.close();
       }
@@ -380,7 +382,7 @@ const browser = await chromium.launch({
 
 const previous = (() => {
   try {
-    return JSON.parse(readFileSync(`${OUT}/BASELINE.json`, "utf8")).findings ?? {};
+    return JSON.parse(readFileSync(`${OUT}/${FILE}`, "utf8")).findings ?? {};
   } catch {
     return {};
   }
@@ -441,7 +443,7 @@ for (const row of findings.toolbar) {
 await browser.close();
 
 writeFileSync(
-  `${OUT}/BASELINE.json`,
+  `${OUT}/${FILE}`,
   `${JSON.stringify(
     {
       environment: {
