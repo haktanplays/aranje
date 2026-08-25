@@ -29,15 +29,23 @@
  * A control that quietly resumed on the next pass would be a tool arguing
  * with the person using it, and they would find out at the wrong moment.
  */
-import { clampPercent, stepPercent } from "@/lib/audio/practice-rate";
-import { practiceRateLimits } from "@/lib/limits";
+import { clampPercent } from "@/lib/audio/practice-rate";
+import { practiceRateLimits, progressiveRateLimits } from "@/lib/limits";
 
 /** What the reader said the loop should do to its speed. */
 export type ProgressivePlan = {
   readonly fromPercent: number;
   readonly toPercent: number;
-  /** How much faster each completed pass makes it. Always positive. */
+  /** How much faster each step makes it. Always positive. */
   readonly stepPercent: number;
+  /**
+   * How many completed passes a step waits for.
+   *
+   * One would be "faster every time round", which nobody practises to. The
+   * default is two, and it is a *count of passes* — never a judgement about
+   * them (§IX).
+   */
+  readonly repeatsPerStep: number;
 };
 
 export type ProgressiveState = {
@@ -46,6 +54,8 @@ export type ProgressiveState = {
   readonly percent: number;
   /** Completed passes since the automation started. */
   readonly completedLoops: number;
+  /** Completed passes since the last step. Resets to zero on each step. */
+  readonly loopsAtThisSpeed: number;
   /**
    * Why the automation is no longer running, or null while it is.
    *
@@ -58,7 +68,17 @@ export type ProgressiveState = {
 /** The message the reader sees when their own hand stopped it (§12). */
 export const AUTOMATION_STOPPED_MESSAGE = "Otomatik hızlandırma durdu.";
 
-export const MIN_STEP_PERCENT = practiceRateLimits.stepPercent;
+export const MIN_STEP_PERCENT = progressiveRateLimits.minIncrementPercent;
+
+/** Why a plan was refused. Named, because each says something different. */
+export type PlanRefusal =
+  | "target_not_above_start"
+  | "increment_out_of_range"
+  | "repeats_out_of_range";
+
+export type PlanResult =
+  | { readonly ok: true; readonly plan: ProgressivePlan }
+  | { readonly ok: false; readonly reason: PlanRefusal };
 
 /**
  * A plan, or null when the numbers do not describe getting faster.
@@ -71,16 +91,55 @@ export function progressivePlan(
   fromPercent: number,
   toPercent: number,
   step: number = MIN_STEP_PERCENT,
-): ProgressivePlan | null {
+  repeatsPerStep: number = progressiveRateLimits.defaultRepeatsPerStep,
+): PlanResult {
+  /*
+   * The two ends are clamped to the rates the app allows, because a rate
+   * outside them is not a thing the transport can be set to. The increment
+   * and the repeat count are **refused** rather than clamped: those are the
+   * reader's own numbers, and quietly changing one would start a loop doing
+   * something other than what the sheet says.
+   */
   const from = clampPercent(fromPercent);
   const to = clampPercent(toPercent);
-  if (to <= from) return null;
-  if (!Number.isFinite(step) || step < MIN_STEP_PERCENT) return null;
-  return { fromPercent: from, toPercent: to, stepPercent: step };
+  if (to <= from) return { ok: false, reason: "target_not_above_start" };
+  if (
+    !Number.isFinite(step) ||
+    step < progressiveRateLimits.minIncrementPercent ||
+    step > progressiveRateLimits.maxIncrementPercent
+  ) {
+    return { ok: false, reason: "increment_out_of_range" };
+  }
+  if (
+    !Number.isInteger(repeatsPerStep) ||
+    repeatsPerStep < progressiveRateLimits.minRepeatsPerStep ||
+    repeatsPerStep > progressiveRateLimits.maxRepeatsPerStep
+  ) {
+    return { ok: false, reason: "repeats_out_of_range" };
+  }
+  return { ok: true, plan: { fromPercent: from, toPercent: to, stepPercent: step, repeatsPerStep } };
+}
+
+/** A plan that holds one speed: start and target are the same (§IX). */
+export function fixedPlan(percent: number): ProgressivePlan {
+  const at = clampPercent(percent);
+  return {
+    fromPercent: at,
+    toPercent: at,
+    stepPercent: progressiveRateLimits.minIncrementPercent,
+    repeatsPerStep: progressiveRateLimits.defaultRepeatsPerStep,
+  };
 }
 
 export function startProgressive(plan: ProgressivePlan): ProgressiveState {
-  return { plan, percent: plan.fromPercent, completedLoops: 0, stopped: null };
+  return {
+    plan,
+    percent: plan.fromPercent,
+    completedLoops: 0,
+    loopsAtThisSpeed: 0,
+    // A plan that goes nowhere is already where it is going.
+    stopped: plan.toPercent <= plan.fromPercent ? "reached_target" : null,
+  };
 }
 
 /**
@@ -92,22 +151,35 @@ export function startProgressive(plan: ProgressivePlan): ProgressiveState {
 export function afterLoop(state: ProgressiveState): ProgressiveState {
   if (state.stopped !== null) return state;
   const completedLoops = state.completedLoops + 1;
+  const atThisSpeed = state.loopsAtThisSpeed + 1;
+
+  // Not enough passes yet: the speed holds and the counter moves.
+  if (atThisSpeed < state.plan.repeatsPerStep) {
+    return { ...state, completedLoops, loopsAtThisSpeed: atThisSpeed };
+  }
+
   /*
-   * Stepped through the same helper the manual control uses, so the speeds
-   * the automation lands on are speeds the reader could have chosen by hand.
-   * A rate ladder with two sets of rungs would show as a number the manual
-   * control cannot reproduce.
+   * The step, capped at the target rather than allowed past it. Rounded to
+   * the same rung the manual control moves by, so every speed the automation
+   * lands on is one the reader could also have chosen by hand — a ladder with
+   * two sets of rungs would show as a number they cannot reproduce.
    */
-  const next = Math.min(state.plan.toPercent, stepPercent(state.percent, 1));
+  const raw = state.percent + state.plan.stepPercent;
+  const rung = clampPercent(
+    Math.round(raw / practiceRateLimits.stepPercent) * practiceRateLimits.stepPercent,
+  );
+  const next = Math.min(state.plan.toPercent, Math.max(rung, state.percent));
+
   if (next >= state.plan.toPercent) {
     return {
       ...state,
       percent: state.plan.toPercent,
       completedLoops,
+      loopsAtThisSpeed: 0,
       stopped: "reached_target",
     };
   }
-  return { ...state, percent: next, completedLoops, stopped: null };
+  return { ...state, percent: next, completedLoops, loopsAtThisSpeed: 0, stopped: null };
 }
 
 /**

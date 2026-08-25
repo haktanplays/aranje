@@ -54,6 +54,7 @@ import {
   isRunning,
   progressivePlan,
   startProgressive,
+  type PlanRefusal,
   type ProgressiveState,
 } from "@/lib/practice/progressive-rate";
 import { barTimeline } from "@/lib/audio/schedule";
@@ -118,8 +119,19 @@ export type PracticeSession = {
   acceptWidened(): void;
   clear(): void;
   setCountIn(bars: CountInBars): void;
-  /** Start climbing from here to there. Refused if that is not a climb. */
-  startProgressiveRate(fromPercent: number, toPercent: number): boolean;
+  /**
+   * Start climbing from here to there, one step every `repeatsPerStep` passes.
+   *
+   * Returns why it was refused, or null when it started. Named rather than
+   * boolean: "the target is not above the start" and "that repeat count is
+   * not a whole number" are different things to tell the reader (§IX).
+   */
+  startProgressiveRate(input: {
+    fromPercent: number;
+    toPercent: number;
+    incrementPercent?: number;
+    repeatsPerStep?: number;
+  }): PlanRefusal | null;
   stopProgressiveRate(): void;
   /** The reader moved the speed by hand: automation ends (§12). */
   reportManualRate(percent: number): void;
@@ -347,14 +359,24 @@ export function usePracticeSession(options: {
   }, []);
 
   const startProgressiveRate = useCallback(
-    (fromPercent: number, toPercent: number) => {
-      const plan = progressivePlan(fromPercent, toPercent);
-      if (!plan) return false;
-      const started = startProgressive(plan);
+    (input: {
+      fromPercent: number;
+      toPercent: number;
+      incrementPercent?: number;
+      repeatsPerStep?: number;
+    }) => {
+      const made = progressivePlan(
+        input.fromPercent,
+        input.toPercent,
+        input.incrementPercent,
+        input.repeatsPerStep,
+      );
+      if (!made.ok) return made.reason;
+      const started = startProgressive(made.plan);
       ourPercent.current = started.percent;
       setProgressive(started);
       setPracticePercent(started.percent);
-      return true;
+      return null;
     },
     [setPracticePercent],
   );

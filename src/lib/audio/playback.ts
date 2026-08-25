@@ -187,6 +187,16 @@ export class PlaybackController {
   private audibleTrackIds: readonly string[] | null = null;
   /** Told once per completed pass of the loop, and nothing else (§12). */
   private loopListeners = new Set<() => void>();
+  /**
+   * The count-in that is currently sounding, if one is (2R-A §VIII).
+   *
+   * A token rather than a boolean, because "is a count-in running" and "is
+   * *this* count-in still the one that should start playback" are different
+   * questions once a reader can press play twice. Every scheduled step checks
+   * the token it was created with, so a cancelled count-in cannot start a
+   * ghost playback later.
+   */
+  private countInToken: object | null = null;
   private readonly bankSession: PreviewBankSession | undefined;
 
   constructor(
@@ -414,36 +424,49 @@ export class PlaybackController {
        * clock and a delayed transport start. No bar is added to the Song, no
        * bar number moves, and nothing about it reaches an export.
        */
+      /*
+       * A second press while a count-in is running is the same press, not a
+       * second count-in. Without this the reader gets two sets of clicks and
+       * two scheduled starts (§VIII).
+       */
+      if (this.countInToken !== null) return;
+
       const firstBar = this.countInBar();
-      const wait =
+      const input =
         firstBar === null
-          ? 0
-          : countInSeconds({
+          ? null
+          : {
               bars: this.state.countInBars,
               firstBar,
               bpm: this.state.songBpm,
               practicePercent: this.state.practicePercent,
-            });
+            };
+      const wait = input === null ? 0 : countInSeconds(input);
 
-      if (wait > 0 && firstBar !== null) {
+      if (wait > 0 && input !== null) {
+        const token = {};
+        this.countInToken = token;
         const now = engine.context.now();
         const { click } = engine.metronome;
-        for (const beat of countInClicks({
-          bars: this.state.countInBars,
-          firstBar,
-          bpm: this.state.songBpm,
-          practicePercent: this.state.practicePercent,
-        })) {
+        /*
+         * On the audio clock, so the clicks are in time — a count-in that
+         * drifts is worse than none. Cancellation is the token plus an
+         * explicit cancel of the click voice below; both are needed, because
+         * a scheduled attack does not consult anything when it fires.
+         */
+        for (const beat of countInClicks(input)) {
           click.triggerAttackRelease(
             0.02,
             now + (wait - beat.beforeSeconds),
             beat.downbeat ? 1 : 0.55,
           );
         }
-        transport.start(`+${wait}`);
+        transport.start(now + wait);
         this.set({ status: "playing", error: null, countingIn: true });
         engine.context.draw.schedule(() => {
-          if (this.state.countingIn) this.set({ countingIn: false });
+          if (this.countInToken !== token) return;
+          this.countInToken = null;
+          this.set({ countingIn: false });
         }, now + wait);
         return;
       }
@@ -455,7 +478,35 @@ export class PlaybackController {
     }
   }
 
+  /**
+   * Take back a count-in that has not finished (§VIII).
+   *
+   * Three things, because three different mechanisms are holding it: the
+   * token so nothing scheduled acts, the transport so the pending start does
+   * not happen, and the click voice so the clicks already on the audio clock
+   * do not sound. Anything less leaves a ghost.
+   */
+  private cancelCountIn(): void {
+    if (this.countInToken === null) return;
+    this.countInToken = null;
+    const engine = this.engine;
+    if (engine) {
+      const transport = engine.context.transport;
+      // The start was scheduled for a moment that has not arrived.
+      transport.stop();
+      const click = engine.metronome.click as unknown as {
+        envelope?: { cancel?: (time?: number) => unknown };
+        noise?: { cancel?: (time?: number) => unknown };
+      };
+      const now = engine.context.now();
+      click.envelope?.cancel?.(now);
+      click.noise?.cancel?.(now);
+    }
+    if (this.state.countingIn) this.set({ countingIn: false });
+  }
+
   pause(): void {
+    this.cancelCountIn();
     const transport = this.engine?.context.transport;
     if (!transport) return;
     // pause() keeps the tick position, unlike stop().
@@ -475,6 +526,7 @@ export class PlaybackController {
 
   /** Back to the top, for both the transport and the playhead. */
   rewind(): void {
+    this.cancelCountIn();
     const transport = this.engine?.context.transport;
     this.engine?.expression.stopAll();
     if (transport) {
@@ -484,6 +536,7 @@ export class PlaybackController {
   }
 
   seekToBar(barKey: string): void {
+    this.cancelCountIn();
     const start = barStartTicks(this.plan, barKey);
     if (start === null) return;
     // Jumping somewhere else leaves anything that was sounding behind.
@@ -524,6 +577,9 @@ export class PlaybackController {
    * none.
    */
   setLoop(loop: PlaybackLoop): void {
+    // A count-in counts *the loop's* first bar; changing the loop mid-count
+    // would leave the reader counted in to somewhere else.
+    this.cancelCountIn();
     this.set({ loop });
     this.applyLoop();
   }
@@ -673,6 +729,9 @@ export class PlaybackController {
   }
 
   dispose(): void {
+    // Before anything is torn down: a pending count-in holds a scheduled
+    // transport start, and a disposed controller must not produce one (§VIII).
+    this.cancelCountIn();
     this.disposed = true;
     this.engine?.expression.dispose();
     const transport = this.engine?.context.transport;

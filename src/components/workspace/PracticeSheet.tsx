@@ -34,7 +34,7 @@ import {
 } from "@/lib/practice/messages";
 import { COUNT_IN_CHOICES, countInLabel } from "@/lib/practice/count-in";
 import { progressiveNotice } from "@/lib/practice/progressive-rate";
-import { practiceRateLimits } from "@/lib/limits";
+import { practiceRateLimits, progressiveRateLimits } from "@/lib/limits";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type {
   PracticeRangeView,
@@ -185,10 +185,12 @@ export function PracticeSheet({
             <SheetButton
               data-progressive-start
               onClick={() =>
-                session.startProgressiveRate(
-                  practiceRateLimits.defaultPercent - 4 * practiceRateLimits.stepPercent,
-                  practiceRateLimits.defaultPercent,
-                )
+                session.startProgressiveRate({
+                  fromPercent:
+                    practiceRateLimits.defaultPercent - 4 * practiceRateLimits.stepPercent,
+                  toPercent: practiceRateLimits.defaultPercent,
+                  repeatsPerStep: progressiveRateLimits.defaultRepeatsPerStep,
+                })
               }
             >
               %80&apos;den %100&apos;e başlat

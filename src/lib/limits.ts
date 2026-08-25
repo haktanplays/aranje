@@ -136,6 +136,23 @@ export const practiceRateLimits = {
 } as const;
 
 /**
+ * Getting faster on purpose (2R-A §IX).
+ *
+ * Separate from `practiceRateLimits` because these bound a *plan*, not a
+ * rate: how big a step may be and how many completed passes it may wait for.
+ * The rate itself is still bounded by the table above, and a plan that would
+ * leave it is refused rather than clamped.
+ */
+export const progressiveRateLimits = {
+  /** Smallest increment. The same rung the manual control moves by. */
+  minIncrementPercent: practiceRateLimits.stepPercent,
+  maxIncrementPercent: 25,
+  minRepeatsPerStep: 1,
+  maxRepeatsPerStep: 16,
+  defaultRepeatsPerStep: 2,
+} as const;
+
+/**
  * Audio and MIDI export (spec 13.19, phase 2M-A).
  *
  * `sampleRate` and `bitDepth` are the contract of the file that leaves the
