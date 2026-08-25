@@ -46,7 +46,8 @@ import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { useLongPress } from "@/lib/ui/use-long-press";
-import { xAtTicks } from "@/lib/tab/song-axis";
+import { xAtSection, xAtTicks } from "@/lib/tab/song-axis";
+import { useDrumGridWindow } from "@/lib/workspace/use-drum-grid-window";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import type { PlayPosition } from "@/lib/audio/position";
@@ -172,6 +173,29 @@ export function TabCanvas({
     () => new Set(surface.window.renderedBarKeys),
     [surface.window],
   );
+
+  /*
+   * An armed kit draws one section as a step grid, at that section's own x on
+   * the shared axis so its bar lines still land where the reading lane's
+   * would. Only the columns near the viewport are mounted: at 1/32 a section
+   * is 256 of them and about eleven fit on a phone (2R-A §6).
+   *
+   * The row's three parts still add up to `contentWidthPx` exactly — the tail
+   * is a remainder, not a sum — so an armed kit never widens the surface.
+   */
+  const gridLeadPx = drumEntry
+    ? xAtSection(surface.axis, drumEntry.model.sectionId) ?? 0
+    : null;
+  const grid = useDrumGridWindow({
+    model: drumEntry?.model ?? null,
+    scrollRef,
+    offsetPx: GUTTER_WIDTH + (gridLeadPx ?? 0),
+  });
+  const leadPx = gridLeadPx ?? surface.window.beforePx;
+  const drawnPx =
+    gridLeadPx === null ? surface.window.renderedPx : grid.axis.totalWidthPx;
+  const tailPx =
+    Math.max(0, surface.contentWidthPx - GUTTER_WIDTH - leadPx - drawnPx);
 
   const { scrollToBar } = surface;
   useEffect(() => {
@@ -364,7 +388,7 @@ export function TabCanvas({
             aria-hidden
             data-window-lead
             className="shrink-0"
-            style={{ width: surface.window.beforePx }}
+            style={{ width: leadPx }}
           />
 
           {timeline.kind === "fretted"
@@ -398,6 +422,8 @@ export function TabCanvas({
                 <DrumStepLane
                   key="drum-step"
                   model={drumEntry.model}
+                  axis={grid.axis}
+                  window={grid.window}
                   entry={drumEntry}
                 />,
               ]
@@ -433,11 +459,7 @@ export function TabCanvas({
             aria-hidden
             data-tab-tail
             className="shrink-0"
-            style={{
-              width:
-                surface.window.afterPx +
-                (surface.contentWidthPx - GUTTER_WIDTH - surface.axis.totalWidthPx),
-            }}
+            style={{ width: tailPx }}
           />
 
           <PlayheadLayer

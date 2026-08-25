@@ -59,6 +59,7 @@ import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { ReturnToPlayback } from "@/components/workspace/ReturnToPlayback";
 import { SectionMarkers } from "@/components/workspace/SectionMarkers";
 import { xAtSection, xAtTicks } from "@/lib/tab/song-axis";
+import { useDrumGridWindow } from "@/lib/workspace/use-drum-grid-window";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { runPlayheadLoop } from "@/lib/workspace/playhead-loop";
 import { drumRhythm, frettedRhythm } from "@/lib/tab/timeline";
@@ -170,6 +171,20 @@ export function MultiTrackCanvas({
     () => new Set(surface.window.renderedBarKeys),
     [surface.window],
   );
+
+  /*
+   * The armed kit's own window, in the armed section's coordinates. It rides
+   * the same scroller as everything else: the lane is placed at the section's
+   * x below, and the grid's origin is that same x (2R-A §6).
+   */
+  const drumSectionX = drumEntry
+    ? xAtSection(surface.axis, drumEntry.model.sectionId) ?? 0
+    : 0;
+  const grid = useDrumGridWindow({
+    model: drumEntry?.model ?? null,
+    scrollRef,
+    offsetPx: drumSectionX,
+  });
 
   const { scrollToBar } = surface;
   useEffect(() => {
@@ -299,6 +314,7 @@ export function MultiTrackCanvas({
                     activeBarKey={activeBarKey}
                     editable={lane.active}
                     entry={lane.active ? drumEntry : null}
+                    grid={grid}
                     onSelectBar={(barKey) => {
                       if (!lane.active) onActivateTrack(lane.trackId);
                       onSelectBar(barKey);

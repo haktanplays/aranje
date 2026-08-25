@@ -11,6 +11,7 @@
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
 import { DrumStepLane } from "@/components/workspace/DrumStepLane";
 import { gridLabelFor } from "@/components/workspace/grid-label";
+import type { DrumGridAxis, DrumGridWindow } from "@/lib/ui/drum-grid-window";
 import type { DrumStepModel } from "@/lib/tab/drum-step-model";
 import type { DrumPiece } from "@/lib/instruments/registry";
 import type { DrumBar } from "@/lib/tab/timeline";
@@ -34,6 +35,7 @@ export function DrumMultiLane({
   activeBarKey,
   editable,
   entry,
+  grid,
   onSelectBar,
 }: {
   trackId: string;
@@ -43,6 +45,13 @@ export function DrumMultiLane({
   editable: boolean;
   /** Armed for writing, or null: the lane reads instead. */
   entry: DrumStepArming | null;
+  /**
+   * Where the armed grid's columns are and which of them to mount.
+   *
+   * Handed down rather than computed here: the window depends on the shared
+   * scroller's position, and this lane does not own that scroller (2R-A §6).
+   */
+  grid: { axis: DrumGridAxis; window: DrumGridWindow };
   onSelectBar: (barKey: string) => void;
 }) {
   /*
@@ -54,7 +63,12 @@ export function DrumMultiLane({
   if (entry) {
     return (
       <div data-multi-drums={trackId} className="flex">
-        <DrumStepLane model={entry.model} entry={entry} />
+        <DrumStepLane
+          model={entry.model}
+          axis={grid.axis}
+          window={grid.window}
+          entry={entry}
+        />
       </div>
     );
   }

@@ -1,0 +1,5903 @@
+{
+  "what": "2R-A §6.3 — davul ızgarasının kaç sütunluk overscan'e ihtiyacı var",
+  "measuredOn": "node; üretim axis/window fonksiyonları üzerinde saf aritmetik, tarayıcı yok",
+  "worstCase": {
+    "viewportWidths": [
+      320,
+      390
+    ],
+    "commitFrames": [
+      1,
+      2
+    ],
+    "flingPxPerFrame": 60,
+    "dragPxPerFrame": 9
+  },
+  "method": [
+    "Her kare: kaydırma konumunu ilerlet, üretim window fonksiyonuna hangi sütunların mount edileceğini sor.",
+    "N. karede istenen window, N + commitFrames karesinde mount edilir; okuyucunun gördüğü hep daha eski bir konum için hesaplanmış window'dur.",
+    "Görüş alanının ızgarayla kesişen kısmında altında mount edilmiş sütun bulunmayan piksel varsa o kare boştur.",
+    "Maliyet sütunla değil mount edilen hücreyle sayılır: bir sütun, kit satırı sayısı kadar hücredir.",
+    "İlk iki aday boş kare üretmek için var. Hepsinin geçtiği bir koşu hiçbir şey ölçmemiş olurdu."
+  ],
+  "chosen": {
+    "name": "half behind, one ahead (0.5 + 1)",
+    "overscan": {
+      "behind": 0.5,
+      "ahead": 1
+    },
+    "maxMountedCells": 120
+  },
+  "cleanCandidates": [
+    {
+      "name": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "maxMountedCells": 120
+    },
+    {
+      "name": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "maxMountedCells": 144
+    },
+    {
+      "name": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "maxMountedCells": 188
+    }
+  ],
+  "grids": [
+    {
+      "key": "denseKit/dense",
+      "resolutions": [
+        32
+      ],
+      "bars": 8,
+      "columns": 256,
+      "totalWidthPx": 8704,
+      "rows": 4
+    },
+    {
+      "key": "denseKit/verse",
+      "resolutions": [
+        8,
+        16
+      ],
+      "bars": 8,
+      "columns": 256,
+      "totalWidthPx": 8704,
+      "rows": 4
+    },
+    {
+      "key": "denseKit/bridge",
+      "resolutions": [
+        12
+      ],
+      "bars": 8,
+      "columns": 256,
+      "totalWidthPx": 8704,
+      "rows": 4
+    },
+    {
+      "key": "denseKit/outro",
+      "resolutions": [
+        8
+      ],
+      "bars": 8,
+      "columns": 256,
+      "totalWidthPx": 8704,
+      "rows": 4
+    },
+    {
+      "key": "practiceSong/four",
+      "resolutions": [
+        8,
+        16
+      ],
+      "bars": 4,
+      "columns": 40,
+      "totalWidthPx": 1360,
+      "rows": 4
+    },
+    {
+      "key": "practiceSong/three",
+      "resolutions": [
+        8
+      ],
+      "bars": 3,
+      "columns": 40,
+      "totalWidthPx": 1360,
+      "rows": 4
+    },
+    {
+      "key": "practiceSong/sixeight",
+      "resolutions": [
+        8
+      ],
+      "bars": 3,
+      "columns": 40,
+      "totalWidthPx": 1360,
+      "rows": 4
+    },
+    {
+      "key": "practiceSong/seveneight",
+      "resolutions": [
+        8
+      ],
+      "bars": 3,
+      "columns": 40,
+      "totalWidthPx": 1360,
+      "rows": 4
+    }
+  ],
+  "rows": [
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 246,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 492,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 244,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 488,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/dense",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 246,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 492,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 244,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 488,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/verse",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 246,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 492,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 244,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 488,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/bridge",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 246,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 139,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 492,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 492
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 244,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 138,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 488,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 488
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 138,
+        "largestBlankPx": 40,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 15.1,
+        "windowChanges": 327
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 88,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.1,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 18.2,
+        "windowChanges": 429
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 24.3,
+        "windowChanges": 478
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.4,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 29.3,
+        "windowChanges": 471
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 28.8,
+        "windowChanges": 424
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 34.8,
+        "windowChanges": 465
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "flingBack": {
+        "frames": 139,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.8,
+        "windowChanges": 139
+      },
+      "drag": {
+        "frames": 931,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 37.7,
+        "windowChanges": 464
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "denseKit/outro",
+      "columns": 256,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "flingBack": {
+        "frames": 138,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.6,
+        "windowChanges": 138
+      },
+      "drag": {
+        "frames": 923,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 47,
+        "meanMountedColumns": 45.5,
+        "windowChanges": 360
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 30,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 60,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 28,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 56,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.5,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.6,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31.1,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 34.9,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/four",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 30,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 60,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 28,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 56,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.5,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.6,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31.1,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 34.9,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/three",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 30,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 60,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 28,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 56,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.5,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.6,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31.1,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 34.9,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/sixeight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 30,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 17,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 60,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 11,
+        "meanMountedColumns": 10.4,
+        "windowChanges": 60
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 60,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 28,
+        "largestBlankPx": 9,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "none (0 + 0)",
+      "overscan": {
+        "behind": 0,
+        "ahead": 0
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 16,
+        "largestBlankPx": 120,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 56,
+        "largestBlankPx": 18,
+        "maxMountedColumns": 13,
+        "meanMountedColumns": 12.4,
+        "windowChanges": 56
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 16,
+        "largestBlankPx": 38,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.6,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 16,
+        "meanMountedColumns": 14.8,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "quarter (0.25 + 0.25)",
+      "overscan": {
+        "behind": 0.25,
+        "ahead": 0.25
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 9,
+        "largestBlankPx": 22,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 19,
+        "meanMountedColumns": 17.8,
+        "windowChanges": 45
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.7,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.5,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 25,
+        "meanMountedColumns": 22.6,
+        "windowChanges": 46
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.7,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "half behind, one ahead (0.5 + 1)",
+      "overscan": {
+        "behind": 0.5,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.9,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.6,
+        "windowChanges": 39
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26.1,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 25.9,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 30,
+        "meanMountedColumns": 26,
+        "windowChanges": 40
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, one ahead (1 + 1)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 1
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.3,
+        "windowChanges": 16
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 36,
+        "meanMountedColumns": 30.4,
+        "windowChanges": 33
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.4,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 320,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "flingBack": {
+        "frames": 17,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 38,
+        "meanMountedColumns": 31.8,
+        "windowChanges": 17
+      },
+      "drag": {
+        "frames": 115,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 39,
+        "meanMountedColumns": 31.1,
+        "windowChanges": 32
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 1,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.2,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 34.9,
+        "windowChanges": 21
+      }
+    },
+    {
+      "grid": "practiceSong/seveneight",
+      "columns": 40,
+      "rows": 4,
+      "candidate": "one behind, two ahead (1 + 2)",
+      "overscan": {
+        "behind": 1,
+        "ahead": 2
+      },
+      "viewportWidthPx": 390,
+      "commitFrames": 2,
+      "fling": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "flingBack": {
+        "frames": 16,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35.8,
+        "windowChanges": 12
+      },
+      "drag": {
+        "frames": 107,
+        "blankFrames": 0,
+        "largestBlankPx": 0,
+        "maxMountedColumns": 40,
+        "meanMountedColumns": 35,
+        "windowChanges": 21
+      }
+    }
+  ]
+}
