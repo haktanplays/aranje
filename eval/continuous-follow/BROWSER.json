@@ -1,12 +1,15 @@
 {
-  "what": "2Q-C §12 — sürekli okuma yüzeyi kabulü",
+  "what": "2Q-C §12 + 2R-A §4 — sürekli okuma yüzeyi kabulü ve kapatılan borçlar",
   "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
   "notes": [
     "Reduced motion ayrı context'te ölçüldü; tur ortasında açılmadı.",
     "Playhead transform ile taşınan katman olduğu için öyle bulundu.",
-    "«Kararlı sıçrama», çal'a basıldığındaki tek yeniden bağlanma hariç her karenin |ΔscrollLeft| değeridir."
+    "«Kararlı sıçrama», çal'a basıldığındaki tek yeniden bağlanma hariç her karenin |ΔscrollLeft| değeridir.",
+    "Büyük metin bir zoom değil: viewport CSS pikselini korur, kök yazı tipi büyür.",
+    "Sızıntı sayaçları kurulan değil *elde tutulan* miktarı sayar: kurulum eksi bırakma.",
+    "Yazma sayıları paylaşılan storage ledger'ından, fiziksel setItem çağrılarından gelir."
   ],
-  "scenarios": 196,
+  "scenarios": 298,
   "failed": 0,
   "results": [
     {
@@ -17,12 +20,12 @@
     {
       "name": "Tab 390x844/normal · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "248/249 moving frames (300 recorded)"
+      "detail": "245/245 moving frames (296 recorded)"
     },
     {
       "name": "Tab 390x844/normal · no steady jump over half a viewport",
       "pass": true,
-      "detail": "0, largest 7px"
+      "detail": "0, largest 4px"
     },
     {
       "name": "Tab 390x844/normal · the playhead is drawn on every frame",
@@ -72,7 +75,7 @@
     {
       "name": "Çoklu 390x844/normal · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "231/233 moving frames (295 recorded)"
+      "detail": "225/226 moving frames (292 recorded)"
     },
     {
       "name": "Çoklu 390x844/normal · no steady jump over half a viewport",
@@ -127,12 +130,12 @@
     {
       "name": "Tab 390x844/denseDrums · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "279/279 moving frames (299 recorded)"
+      "detail": "278/278 moving frames (299 recorded)"
     },
     {
       "name": "Tab 390x844/denseDrums · no steady jump over half a viewport",
       "pass": true,
-      "detail": "0, largest 13px"
+      "detail": "0, largest 17px"
     },
     {
       "name": "Tab 390x844/denseDrums · the playhead is drawn on every frame",
@@ -182,7 +185,7 @@
     {
       "name": "Çoklu 390x844/shortSections · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "237/237 moving frames (299 recorded)"
+      "detail": "233/233 moving frames (296 recorded)"
     },
     {
       "name": "Çoklu 390x844/shortSections · no steady jump over half a viewport",
@@ -207,7 +210,7 @@
     {
       "name": "Çoklu 390x844/shortSections · a section boundary is not a jump",
       "pass": true,
-      "detail": "1 crossings, worst 4px"
+      "detail": "1 crossings, worst 2px"
     },
     {
       "name": "Çoklu 390x844/shortSections · the page does not scroll sideways",
@@ -307,7 +310,7 @@
     {
       "name": "takeover 390x844 · pressing it brings the view back to the music",
       "pass": true,
-      "detail": "0 → 352"
+      "detail": "0 → 349"
     },
     {
       "name": "takeover 390x844 · and the chip goes away again",
@@ -322,7 +325,7 @@
     {
       "name": "takeover 390x844 · and the surface follows again",
       "pass": true,
-      "detail": "352 → 458"
+      "detail": "349 → 456"
     },
     {
       "name": "takeover 390x844 · dragging back takes it over again",
@@ -392,12 +395,12 @@
     {
       "name": "ends 390x844 · the surface holds still while the playhead crosses to the anchor",
       "pass": true,
-      "detail": "52/56 frames at 0"
+      "detail": "50/51 frames at 0"
     },
     {
       "name": "ends 390x844 · and the playhead really moved",
       "pass": true,
-      "detail": "34 → 132.8"
+      "detail": "34 → 125.4"
     },
     {
       "name": "ends 390x844 · the surface stops at the end rather than running past it",
@@ -437,7 +440,7 @@
     {
       "name": "budget 390x844 · what does grow is audio voices, not the surface",
       "pass": true,
-      "detail": "ended +130, all types +141 −61"
+      "detail": "ended +122, all types +133 −61"
     },
     {
       "name": "budget 390x844 · observers do not grow while playing",
@@ -465,6 +468,261 @@
       "detail": ""
     },
     {
+      "name": "loop wrap 390x844 · the section loop is offered",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "loop wrap 390x844 · the loop really is on",
+      "pass": true,
+      "detail": "aria-pressed=true"
+    },
+    {
+      "name": "loop wrap 390x844 · the loop actually wrapped inside the recording",
+      "pass": true,
+      "detail": "3 wraps, largest 270px of playhead travel"
+    },
+    {
+      "name": "loop wrap 390x844 · the music stays inside the looped section",
+      "pass": true,
+      "detail": "playhead reached 311px; one 4/4 bar at 1/8 is 272px"
+    },
+    {
+      "name": "loop wrap 390x844 · the playhead is never blank, wrap included",
+      "pass": true,
+      "detail": "0/356 blank"
+    },
+    {
+      "name": "loop wrap 390x844 · the wrap does not hand the view to the reader",
+      "pass": true,
+      "detail": "no «Çalmaya dön»"
+    },
+    {
+      "name": "loop wrap 390x844 · between wraps it still reads continuously",
+      "pass": true,
+      "detail": "223 forward frames, worst 4px of 390"
+    },
+    {
+      "name": "loop wrap 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "remount parity 390x844 · there is a bar to act on",
+      "pass": true,
+      "detail": "dense:0"
+    },
+    {
+      "name": "remount parity 390x844 · the bar really left the DOM",
+      "pass": true,
+      "detail": "unmounted"
+    },
+    {
+      "name": "remount parity 390x844 · the bar is there again to act on",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "remount parity 390x844 · the same tap lands in the same place",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "name": "remount parity 390x844 · and reads the same section",
+      "pass": true,
+      "detail": "dense vs dense"
+    },
+    {
+      "name": "remount parity 390x844 · a seek is not an edit, before or after remount",
+      "pass": true,
+      "detail": "revision 1 → 1"
+    },
+    {
+      "name": "remount parity 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "project replacement 390x844 · the other project really opened",
+      "pass": true,
+      "detail": "Açık proje: Normal Şarkı. Projeler → Açık proje: Kısa Bölümler. Projeler"
+    },
+    {
+      "name": "project replacement 390x844 · the surface rebuilt on the new song",
+      "pass": true,
+      "detail": "3 bars, section a"
+    },
+    {
+      "name": "project replacement 390x844 · no extra resize observer survives the swap",
+      "pass": true,
+      "detail": "held 1 → 1 (built 1 → 2)"
+    },
+    {
+      "name": "project replacement 390x844 · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "project replacement 390x844 · still one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "project replacement 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "leaks 390x844 · the cycle really exercised the surface",
+      "pass": true,
+      "detail": "listeners built 314 → 452"
+    },
+    {
+      "name": "leaks 390x844 · counter 1/4 · the surface's own subscriptions do not grow",
+      "pass": true,
+      "detail": "scroll +2, resize +0, pointerdown +0, pointermove +0, pointerup +0"
+    },
+    {
+      "name": "leaks 390x844 · what does grow is the audio engine, named rather than lumped in",
+      "pass": true,
+      "detail": "+52 net overall; largest growers: ended +118, keydown +14, change +2"
+    },
+    {
+      "name": "leaks 390x844 · counter 2/4 · observers held after the cycle",
+      "pass": true,
+      "detail": "resize +0, intersection +0, mutation +0"
+    },
+    {
+      "name": "leaks 390x844 · counter 3/4 · no animation frame outstanding",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0,\"multi\":0}"
+    },
+    {
+      "name": "leaks 390x844 · counter 4/4 · one AudioContext for the session",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "leaks 390x844 · no interval left running",
+      "pass": true,
+      "detail": "+0 (set 0, cleared 0)"
+    },
+    {
+      "name": "leaks 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "writes 390x844 · reading and scrolling write nothing",
+      "pass": true,
+      "detail": "0 project writes"
+    },
+    {
+      "name": "writes 390x844 · arming the grid writes nothing",
+      "pass": true,
+      "detail": "0 project writes, 140 cells armed"
+    },
+    {
+      "name": "writes 390x844 · a commit writes exactly one project record",
+      "pass": true,
+      "detail": "1 writes"
+    },
+    {
+      "name": "writes 390x844 · undo writes exactly one",
+      "pass": true,
+      "detail": "1 writes"
+    },
+    {
+      "name": "writes 390x844 · redo writes exactly one",
+      "pass": true,
+      "detail": "1 writes"
+    },
+    {
+      "name": "writes 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "text 125% 390x844 · the text setting really is applied",
+      "pass": true,
+      "detail": "root font 20px"
+    },
+    {
+      "name": "text 125% 390x844 · the surface still follows continuously",
+      "pass": true,
+      "detail": "250/252 moving frames"
+    },
+    {
+      "name": "text 125% 390x844 · and still without a jump",
+      "pass": true,
+      "detail": "0 steps over half a viewport, worst 4px"
+    },
+    {
+      "name": "text 125% 390x844 · the playhead is never blank",
+      "pass": true,
+      "detail": "0/301"
+    },
+    {
+      "name": "text 125% 390x844 · the playhead keeps its place in the viewport",
+      "pass": true,
+      "detail": "median anchor 0.320"
+    },
+    {
+      "name": "text 125% 390x844 · the Çoklu view still opens on the whole song",
+      "pass": true,
+      "detail": "5 lanes, 30 bars"
+    },
+    {
+      "name": "text 125% 390x844 · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0px overflow"
+    },
+    {
+      "name": "text 125% 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "text 150% 390x844 · the text setting really is applied",
+      "pass": true,
+      "detail": "root font 24px"
+    },
+    {
+      "name": "text 150% 390x844 · the surface still follows continuously",
+      "pass": true,
+      "detail": "241/242 moving frames"
+    },
+    {
+      "name": "text 150% 390x844 · and still without a jump",
+      "pass": true,
+      "detail": "0 steps over half a viewport, worst 4px"
+    },
+    {
+      "name": "text 150% 390x844 · the playhead is never blank",
+      "pass": true,
+      "detail": "0/293"
+    },
+    {
+      "name": "text 150% 390x844 · the playhead keeps its place in the viewport",
+      "pass": true,
+      "detail": "median anchor 0.320"
+    },
+    {
+      "name": "text 150% 390x844 · the Çoklu view still opens on the whole song",
+      "pass": true,
+      "detail": "5 lanes, 25 bars"
+    },
+    {
+      "name": "text 150% 390x844 · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0px overflow"
+    },
+    {
+      "name": "text 150% 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "reduced motion 390x844 · the preference really is set",
       "pass": true,
       "detail": ""
@@ -472,7 +730,7 @@
     {
       "name": "reduced motion 390x844 · the surface does not scroll every frame",
       "pass": true,
-      "detail": "2/299 frames"
+      "detail": "2/289 frames"
     },
     {
       "name": "reduced motion 390x844 · but it does keep up",
@@ -507,7 +765,7 @@
     {
       "name": "Tab 320x700/normal · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "256/257 moving frames (299 recorded)"
+      "detail": "256/257 moving frames (298 recorded)"
     },
     {
       "name": "Tab 320x700/normal · no steady jump over half a viewport",
@@ -562,7 +820,7 @@
     {
       "name": "Çoklu 320x700/normal · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "241/243 moving frames (297 recorded)"
+      "detail": "239/239 moving frames (295 recorded)"
     },
     {
       "name": "Çoklu 320x700/normal · no steady jump over half a viewport",
@@ -617,7 +875,7 @@
     {
       "name": "Tab 320x700/denseDrums · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "279/280 moving frames (297 recorded)"
+      "detail": "278/279 moving frames (298 recorded)"
     },
     {
       "name": "Tab 320x700/denseDrums · no steady jump over half a viewport",
@@ -672,7 +930,7 @@
     {
       "name": "Çoklu 320x700/shortSections · the surface moves on nearly every frame",
       "pass": true,
-      "detail": "248/248 moving frames (301 recorded)"
+      "detail": "241/241 moving frames (294 recorded)"
     },
     {
       "name": "Çoklu 320x700/shortSections · no steady jump over half a viewport",
@@ -697,7 +955,7 @@
     {
       "name": "Çoklu 320x700/shortSections · a section boundary is not a jump",
       "pass": true,
-      "detail": "1 crossings, worst 2px"
+      "detail": "1 crossings, worst 3px"
     },
     {
       "name": "Çoklu 320x700/shortSections · the page does not scroll sideways",
@@ -797,7 +1055,7 @@
     {
       "name": "takeover 320x700 · pressing it brings the view back to the music",
       "pass": true,
-      "detail": "0 → 375"
+      "detail": "0 → 361"
     },
     {
       "name": "takeover 320x700 · and the chip goes away again",
@@ -812,7 +1070,7 @@
     {
       "name": "takeover 320x700 · and the surface follows again",
       "pass": true,
-      "detail": "375 → 482"
+      "detail": "361 → 466"
     },
     {
       "name": "takeover 320x700 · dragging back takes it over again",
@@ -882,12 +1140,12 @@
     {
       "name": "ends 320x700 · the surface holds still while the playhead crosses to the anchor",
       "pass": true,
-      "detail": "40/52 frames at 0"
+      "detail": "42/50 frames at 0"
     },
     {
       "name": "ends 320x700 · and the playhead really moved",
       "pass": true,
-      "detail": "34 → 132.8"
+      "detail": "34 → 122.2"
     },
     {
       "name": "ends 320x700 · the surface stops at the end rather than running past it",
@@ -955,6 +1213,261 @@
       "detail": ""
     },
     {
+      "name": "loop wrap 320x700 · the section loop is offered",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "loop wrap 320x700 · the loop really is on",
+      "pass": true,
+      "detail": "aria-pressed=true"
+    },
+    {
+      "name": "loop wrap 320x700 · the loop actually wrapped inside the recording",
+      "pass": true,
+      "detail": "3 wraps, largest 270px of playhead travel"
+    },
+    {
+      "name": "loop wrap 320x700 · the music stays inside the looped section",
+      "pass": true,
+      "detail": "playhead reached 310px; one 4/4 bar at 1/8 is 272px"
+    },
+    {
+      "name": "loop wrap 320x700 · the playhead is never blank, wrap included",
+      "pass": true,
+      "detail": "0/351 blank"
+    },
+    {
+      "name": "loop wrap 320x700 · the wrap does not hand the view to the reader",
+      "pass": true,
+      "detail": "no «Çalmaya dön»"
+    },
+    {
+      "name": "loop wrap 320x700 · between wraps it still reads continuously",
+      "pass": true,
+      "detail": "245 forward frames, worst 6px of 320"
+    },
+    {
+      "name": "loop wrap 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "remount parity 320x700 · there is a bar to act on",
+      "pass": true,
+      "detail": "dense:0"
+    },
+    {
+      "name": "remount parity 320x700 · the bar really left the DOM",
+      "pass": true,
+      "detail": "unmounted"
+    },
+    {
+      "name": "remount parity 320x700 · the bar is there again to act on",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "remount parity 320x700 · the same tap lands in the same place",
+      "pass": true,
+      "detail": "0 vs 0"
+    },
+    {
+      "name": "remount parity 320x700 · and reads the same section",
+      "pass": true,
+      "detail": "dense vs dense"
+    },
+    {
+      "name": "remount parity 320x700 · a seek is not an edit, before or after remount",
+      "pass": true,
+      "detail": "revision 1 → 1"
+    },
+    {
+      "name": "remount parity 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "project replacement 320x700 · the other project really opened",
+      "pass": true,
+      "detail": "Açık proje: Normal Şarkı. Projeler → Açık proje: Kısa Bölümler. Projeler"
+    },
+    {
+      "name": "project replacement 320x700 · the surface rebuilt on the new song",
+      "pass": true,
+      "detail": "3 bars, section a"
+    },
+    {
+      "name": "project replacement 320x700 · no extra resize observer survives the swap",
+      "pass": true,
+      "detail": "held 1 → 1 (built 1 → 2)"
+    },
+    {
+      "name": "project replacement 320x700 · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "project replacement 320x700 · still one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "project replacement 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "leaks 320x700 · the cycle really exercised the surface",
+      "pass": true,
+      "detail": "listeners built 314 → 433"
+    },
+    {
+      "name": "leaks 320x700 · counter 1/4 · the surface's own subscriptions do not grow",
+      "pass": true,
+      "detail": "scroll +2, resize +0, pointerdown +0, pointermove +0, pointerup +0"
+    },
+    {
+      "name": "leaks 320x700 · what does grow is the audio engine, named rather than lumped in",
+      "pass": true,
+      "detail": "+52 net overall; largest growers: ended +100, keydown +13, change +2"
+    },
+    {
+      "name": "leaks 320x700 · counter 2/4 · observers held after the cycle",
+      "pass": true,
+      "detail": "resize +0, intersection +0, mutation +0"
+    },
+    {
+      "name": "leaks 320x700 · counter 3/4 · no animation frame outstanding",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0,\"multi\":0}"
+    },
+    {
+      "name": "leaks 320x700 · counter 4/4 · one AudioContext for the session",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "leaks 320x700 · no interval left running",
+      "pass": true,
+      "detail": "+0 (set 0, cleared 0)"
+    },
+    {
+      "name": "leaks 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "writes 320x700 · reading and scrolling write nothing",
+      "pass": true,
+      "detail": "0 project writes"
+    },
+    {
+      "name": "writes 320x700 · arming the grid writes nothing",
+      "pass": true,
+      "detail": "0 project writes, 116 cells armed"
+    },
+    {
+      "name": "writes 320x700 · a commit writes exactly one project record",
+      "pass": true,
+      "detail": "1 writes"
+    },
+    {
+      "name": "writes 320x700 · undo writes exactly one",
+      "pass": true,
+      "detail": "1 writes"
+    },
+    {
+      "name": "writes 320x700 · redo writes exactly one",
+      "pass": true,
+      "detail": "1 writes"
+    },
+    {
+      "name": "writes 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "text 125% 320x700 · the text setting really is applied",
+      "pass": true,
+      "detail": "root font 20px"
+    },
+    {
+      "name": "text 125% 320x700 · the surface still follows continuously",
+      "pass": true,
+      "detail": "255/255 moving frames"
+    },
+    {
+      "name": "text 125% 320x700 · and still without a jump",
+      "pass": true,
+      "detail": "0 steps over half a viewport, worst 4px"
+    },
+    {
+      "name": "text 125% 320x700 · the playhead is never blank",
+      "pass": true,
+      "detail": "0/297"
+    },
+    {
+      "name": "text 125% 320x700 · the playhead keeps its place in the viewport",
+      "pass": true,
+      "detail": "median anchor 0.320"
+    },
+    {
+      "name": "text 125% 320x700 · the Çoklu view still opens on the whole song",
+      "pass": true,
+      "detail": "5 lanes, 20 bars"
+    },
+    {
+      "name": "text 125% 320x700 · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0px overflow"
+    },
+    {
+      "name": "text 125% 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "text 150% 320x700 · the text setting really is applied",
+      "pass": true,
+      "detail": "root font 24px"
+    },
+    {
+      "name": "text 150% 320x700 · the surface still follows continuously",
+      "pass": true,
+      "detail": "249/251 moving frames"
+    },
+    {
+      "name": "text 150% 320x700 · and still without a jump",
+      "pass": true,
+      "detail": "0 steps over half a viewport, worst 5px"
+    },
+    {
+      "name": "text 150% 320x700 · the playhead is never blank",
+      "pass": true,
+      "detail": "0/295"
+    },
+    {
+      "name": "text 150% 320x700 · the playhead keeps its place in the viewport",
+      "pass": true,
+      "detail": "median anchor 0.320"
+    },
+    {
+      "name": "text 150% 320x700 · the Çoklu view still opens on the whole song",
+      "pass": true,
+      "detail": "5 lanes, 20 bars"
+    },
+    {
+      "name": "text 150% 320x700 · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0px overflow"
+    },
+    {
+      "name": "text 150% 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "name": "reduced motion 320x700 · the preference really is set",
       "pass": true,
       "detail": ""
@@ -962,7 +1475,7 @@
     {
       "name": "reduced motion 320x700 · the surface does not scroll every frame",
       "pass": true,
-      "detail": "3/295 frames"
+      "detail": "3/294 frames"
     },
     {
       "name": "reduced motion 320x700 · but it does keep up",

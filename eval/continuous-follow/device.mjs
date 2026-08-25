@@ -50,6 +50,18 @@ export const device = (body, id = "project-1") => ({
   [CATALOG_KEY]: catalog([id], id),
 });
 
+/**
+ * Two projects on one device, so replacing one can be measured (2R-A §4).
+ *
+ * Both are real records under real keys; the catalog names the first as
+ * active. Switching to the second is the product's own path, not a reload.
+ */
+export const twoProjects = (first, second) => ({
+  [payloadKey("project-1")]: record("project-1", first),
+  [payloadKey("project-2")]: record("project-2", second),
+  [CATALOG_KEY]: catalog(["project-1", "project-2"], "project-1", 3),
+});
+
 export const VIEWPORTS = [
   { name: "390x844", width: 390, height: 844 },
   { name: "320x700", width: 320, height: 700 },

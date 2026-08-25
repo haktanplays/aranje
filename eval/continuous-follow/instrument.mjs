@@ -16,6 +16,11 @@ export const INSTRUMENT = `
     listenersRemoved: 0,
     listenersByType: {},
     observers: { resize: 0, intersection: 0, mutation: 0 },
+    observersDisconnected: { resize: 0, intersection: 0, mutation: 0 },
+    timersSet: 0,
+    timersCleared: 0,
+    intervalsSet: 0,
+    intervalsCleared: 0,
     audioContexts: 0,
     scrollLeftWrites: 0,
     sampleRequests: 0,
@@ -48,9 +53,20 @@ export const INSTRUMENT = `
   })();
 
   (() => {
+    /*
+     * Both sides of an observer's life. A windowed surface constructs one per
+     * mounted scroller and disconnects it on cleanup; counting constructions
+     * alone reported 72 across 46 taps for a surface that was holding exactly
+     * one at a time.
+     */
     const wrap = (name, key) => {
       const Original = window[name];
       if (!Original) return;
+      const disconnect = Original.prototype.disconnect;
+      Original.prototype.disconnect = function () {
+        window.__probe.observersDisconnected[key] += 1;
+        return disconnect.call(this);
+      };
       window[name] = new Proxy(Original, {
         construct(target, args) {
           window.__probe.observers[key] += 1;
@@ -61,6 +77,31 @@ export const INSTRUMENT = `
     wrap("ResizeObserver", "resize");
     wrap("IntersectionObserver", "intersection");
     wrap("MutationObserver", "mutation");
+  })();
+
+  (() => {
+    // Timers, for the same reason: an interval left running after a project
+    // is replaced is a leak that no listener count would show.
+    const setTimeout_ = window.setTimeout;
+    const clearTimeout_ = window.clearTimeout;
+    const setInterval_ = window.setInterval;
+    const clearInterval_ = window.clearInterval;
+    window.setTimeout = function (...args) {
+      window.__probe.timersSet += 1;
+      return setTimeout_.apply(window, args);
+    };
+    window.clearTimeout = function (...args) {
+      window.__probe.timersCleared += 1;
+      return clearTimeout_.apply(window, args);
+    };
+    window.setInterval = function (...args) {
+      window.__probe.intervalsSet += 1;
+      return setInterval_.apply(window, args);
+    };
+    window.clearInterval = function (...args) {
+      window.__probe.intervalsCleared += 1;
+      return clearInterval_.apply(window, args);
+    };
   })();
 
   (() => {

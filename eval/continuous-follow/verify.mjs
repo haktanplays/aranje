@@ -18,7 +18,8 @@
 import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-import { device, fixture } from "./device.mjs";
+import { device, fixture, twoProjects } from "./device.mjs";
+import { PROJECT_LEDGER, writeTally } from "../shared/project-storage.mjs";
 import { INSTRUMENT, START_RECORDING, STOP_RECORDING } from "./instrument.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -45,19 +46,27 @@ async function safe(label, run) {
 }
 
 async function boot(browser, viewport, storage, extra = {}) {
+  /*
+   * `ledger` and `textScale` are the harness's own options and never reach
+   * `newContext`, which would silently ignore an unknown key and leave a run
+   * that looks like it measured a 150% screen but did not.
+   */
+  const { ledger = false, textScale = 100, ...contextOptions } = extra;
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
     deviceScaleFactor: 2,
     isMobile: true,
     hasTouch: true,
-    ...extra,
+    ...contextOptions,
   });
   await context.addInitScript(
-    ([entries, instrument]) => {
+    ([entries, instrument, storageLedger]) => {
       for (const [key, value] of entries) window.localStorage.setItem(key, value);
       (0, eval)(instrument);
+      // After the seed, so seeding is not counted as the app writing.
+      if (storageLedger) (0, eval)(storageLedger);
     },
-    [Object.entries(storage), INSTRUMENT],
+    [Object.entries(storage), INSTRUMENT, ledger ? PROJECT_LEDGER : null],
   );
   const page = await context.newPage();
   const errors = [];
@@ -67,7 +76,19 @@ async function boot(browser, viewport, storage, extra = {}) {
   });
   await page.goto(BASE, { waitUntil: "networkidle" });
   await page.waitForSelector("[data-view-switch]", { timeout: 20000 });
-  return { context, page, errors };
+  /*
+   * A phone's "larger text" is not a zoom: the viewport keeps its CSS pixels
+   * and the root font grows. Applied after the app is up so it is the same
+   * surface, resized — and the tour asserts the root font really moved, so a
+   * run where the style tag failed cannot pass by looking tidy.
+   */
+  if (textScale !== 100) {
+    await page.addStyleTag({
+      content: `html { font-size: ${Math.round(16 * (textScale / 100))}px }`,
+    });
+    await page.waitForTimeout(200);
+  }
+  return { context, page, errors, textScale };
 }
 
 /* --------------------------------------------------------------- helpers */
@@ -148,7 +169,12 @@ const shot = (page) =>
       null,
     bodyOverflow: document.body.scrollWidth - document.body.clientWidth,
     observers: { ...window.__probe.observers },
+    observersDisconnected: { ...window.__probe.observersDisconnected },
     listeners: window.__probe.listeners,
+    listenersRemoved: window.__probe.listenersRemoved,
+    listenersByType: { ...window.__probe.listenersByType },
+    intervalsSet: window.__probe.intervalsSet,
+    intervalsCleared: window.__probe.intervalsCleared,
     audioContexts: window.__probe.audioContexts,
     externalRequests: window.__probe.externalRequests.length,
     live: { ...window.__playheadProbe.live },
@@ -795,6 +821,633 @@ async function tourBudget(page, vp, errors) {
   record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
 }
 
+
+/* ------------------------------------------- 2R-A §4: the 2Q-C debts */
+
+/**
+ * Close the section loop and let it wrap (2R-A §4.1).
+ *
+ * The wrap is the one moment the surface is *supposed* to jump: the music
+ * genuinely goes back to the section's first tick and the reader has to go
+ * with it. What must not happen is the two failures 2Q-C was about — a blank
+ * playhead while the surface catches up, and the reader being left detached
+ * afterwards, staring at a "Çalmaya dön" chip they never asked for.
+ *
+ * A short-section fixture is used so a wrap actually happens inside the
+ * recording window rather than being asserted about a loop that never closed.
+ */
+async function tourLoopWrap(page, vp, errors) {
+  const id = `loop wrap ${vp}`;
+  await view(page, "tab").click();
+  await page.waitForTimeout(300);
+
+  const loopButton = page.locator("footer button[aria-label='Bölüm döngüsü']");
+  const available = (await loopButton.count()) > 0 && !(await loopButton.isDisabled());
+  record_(`${id} · the section loop is offered`, available, available ? "" : "disabled");
+  if (!available) return;
+
+  await loopButton.click();
+  await page.waitForTimeout(200);
+  /*
+   * From the control's own accessible state rather than from a debug handle:
+   * `?debug` is not the URL a reader loads, and a tour that needed it would
+   * be measuring a different page from the one it claims about.
+   */
+  const looping = await loopButton.getAttribute("aria-pressed");
+  record_(
+    `${id} · the loop really is on`,
+    looping === "true",
+    `aria-pressed=${looping}`,
+  );
+  if (looping !== "true") return;
+
+  const played = await recordPlayback(page, Math.max(RECORD_MS, 6000));
+  await page.waitForTimeout(250);
+
+  /*
+   * A wrap is read off the *playhead*, not off the scroll position.
+   *
+   * The first version of this scenario looked for a backward jump in
+   * `scrollLeft` bigger than half a viewport and found none — correctly. A
+   * one-bar section is 272px and the anchor sits 125px in, so the surface
+   * only ever scrolls 181px inside it and the wrap moves it back by exactly
+   * that. The playhead has no such ceiling: it goes where the music is, so
+   * "the music went back to the start" is a fact about the playhead.
+   */
+  const samples = played.samples.filter(
+    (sample) => sample.playheadX !== null && sample.scrollLeft !== null,
+  );
+  let wraps = 0;
+  let largestWrapPx = 0;
+  for (let i = 1; i < samples.length; i += 1) {
+    const delta = samples[i].playheadX - samples[i - 1].playheadX;
+    // Any real backward move: a following playhead only goes forward, and
+    // the tolerance is here for sub-pixel transform rounding, not for slack.
+    if (delta < -4) {
+      wraps += 1;
+      largestWrapPx = Math.max(largestWrapPx, -delta);
+    }
+  }
+  record_(
+    `${id} · the loop actually wrapped inside the recording`,
+    wraps > 0,
+    `${wraps} wraps, largest ${Math.round(largestWrapPx)}px of playhead travel`,
+  );
+  record_(
+    `${id} · the music stays inside the looped section`,
+    samples.length > 0 && Math.max(...samples.map((s) => s.playheadX)) <= 400,
+    `playhead reached ${Math.round(Math.max(0, ...samples.map((s) => s.playheadX)))}px; ` +
+      "one 4/4 bar at 1/8 is 272px",
+  );
+  record_(
+    `${id} · the playhead is never blank, wrap included`,
+    played.blankPlayheadFrames === 0,
+    `${played.blankPlayheadFrames}/${played.frames} blank`,
+  );
+  const detached = (await returnChip(page).count()) > 0;
+  record_(
+    `${id} · the wrap does not hand the view to the reader`,
+    !detached,
+    detached ? "«Çalmaya dön» shown" : "no «Çalmaya dön»",
+  );
+  /*
+   * Everything that is not a wrap still has to be continuous. Counting the
+   * forward frames separately is what stops "it wrapped" from excusing a
+   * surface that jumped its way round the section bar by bar.
+   */
+  const forwardSteps = [];
+  for (let i = 1; i < samples.length; i += 1) {
+    const delta = samples[i].scrollLeft - samples[i - 1].scrollLeft;
+    if (delta > 0.5) forwardSteps.push(delta);
+  }
+  const worstForward = Math.max(0, ...forwardSteps);
+  record_(
+    `${id} · between wraps it still reads continuously`,
+    forwardSteps.length > 0 && worstForward < played.clientWidth / 2,
+    `${forwardSteps.length} forward frames, worst ${Math.round(worstForward)}px ` +
+      `of ${played.clientWidth}`,
+  );
+  record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+}
+
+/**
+ * A command means the same thing after the bar has been unmounted (§4.3).
+ *
+ * The window is allowed to take a bar out of the DOM. It is not allowed to
+ * change what happens when the reader comes back and acts on it — and the
+ * only way to know is to do the same thing twice, once on a bar that was
+ * never unmounted and once on the same bar after a round trip, and compare
+ * the results rather than the feeling.
+ */
+async function tourRemountParity(page, vp, errors) {
+  const id = `remount parity ${vp}`;
+  await view(page, "tab").click();
+  await page.waitForTimeout(300);
+
+  const scrollTo = (fraction) =>
+    page.evaluate((f) => {
+      const el = [...document.querySelectorAll("*")].find((node) => {
+        const s = getComputedStyle(node);
+        return (
+          (s.overflowX === "auto" || s.overflowX === "scroll") &&
+          node.scrollWidth > node.clientWidth + 1
+        );
+      });
+      if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) * f;
+    }, fraction);
+
+  /** Tap the bar with this key, and say what the surface did about it. */
+  const tapBar = (key) =>
+    page.evaluate((barKey) => {
+      const el = document.querySelector(`[data-bar-key="${barKey}"]`);
+      if (!el) return { found: false };
+      el.querySelector("button")?.click();
+      return { found: true };
+    }, key);
+
+  const firstKey = await page.evaluate(
+    () => document.querySelector("[data-bar-key]")?.getAttribute("data-bar-key") ?? null,
+  );
+  record_(`${id} · there is a bar to act on`, firstKey !== null, `${firstKey}`);
+  if (firstKey === null) return;
+
+  const beforeRevision = (await storedSong(page))?.revision ?? null;
+  await tapBar(firstKey);
+  await page.waitForTimeout(350);
+  const mountedResult = {
+    scrollLeft: (await surface(page))?.scrollLeft ?? null,
+    viewedSection: (await shot(page)).viewedSection,
+  };
+
+  // Now take that bar out of the DOM and bring it back.
+  await scrollTo(1);
+  await page.waitForTimeout(400);
+  const away = await page.evaluate(
+    (barKey) => document.querySelector(`[data-bar-key="${barKey}"]`) !== null,
+    firstKey,
+  );
+  record_(
+    `${id} · the bar really left the DOM`,
+    away === false,
+    away ? "still mounted at the far end" : "unmounted",
+  );
+
+  await scrollTo(0);
+  await page.waitForTimeout(400);
+  const back = await tapBar(firstKey);
+  await page.waitForTimeout(350);
+  const remountedResult = {
+    scrollLeft: (await surface(page))?.scrollLeft ?? null,
+    viewedSection: (await shot(page)).viewedSection,
+  };
+
+  record_(`${id} · the bar is there again to act on`, back.found === true, "");
+  record_(
+    `${id} · the same tap lands in the same place`,
+    mountedResult.scrollLeft !== null &&
+      Math.abs((remountedResult.scrollLeft ?? -1) - mountedResult.scrollLeft) <= 2,
+    `${mountedResult.scrollLeft} vs ${remountedResult.scrollLeft}`,
+  );
+  record_(
+    `${id} · and reads the same section`,
+    mountedResult.viewedSection === remountedResult.viewedSection,
+    `${mountedResult.viewedSection} vs ${remountedResult.viewedSection}`,
+  );
+  const afterRevision = (await storedSong(page))?.revision ?? null;
+  record_(
+    `${id} · a seek is not an edit, before or after remount`,
+    beforeRevision === afterRevision,
+    `revision ${beforeRevision} → ${afterRevision}`,
+  );
+  record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+}
+
+/**
+ * Replacing the project takes the old surface with it (§4.4).
+ *
+ * The reading surface holds a scroll listener, a resize observer, an
+ * animation frame and a media query. Opening another project replaces the
+ * song under all four, and what must not survive is any of them: an observer
+ * still watching a scroller that is gone is the shape that turns a session
+ * into a slow one an hour later.
+ */
+async function tourProjectReplacement(page, vp, errors) {
+  const id = `project replacement ${vp}`;
+  await view(page, "tab").click();
+  await page.waitForTimeout(300);
+  await recordPlayback(page, 1500);
+  await page.waitForTimeout(300);
+
+  const before = await shot(page);
+  const beforeTitle = await page.evaluate(
+    () => document.querySelector("[data-open-projects]")?.getAttribute("aria-label") ?? null,
+  );
+
+  await page.locator("[data-open-projects]").click();
+  await page.waitForTimeout(400);
+  const row = page.locator("[data-project-open='project-2']");
+  if ((await row.count()) === 0) {
+    record_(`${id} · a second project is on the device`, false, "not seeded");
+    return;
+  }
+  await row.click();
+  await page.waitForTimeout(300);
+  await page
+    .locator("[data-project-actions='project-2'] [data-project-action='open']")
+    .click();
+  await page.waitForTimeout(1200);
+  await dismissSheets(page);
+  await view(page, "tab").click();
+  await page.waitForTimeout(500);
+
+  const after = await shot(page);
+  const afterTitle = await page.evaluate(
+    () => document.querySelector("[data-open-projects]")?.getAttribute("aria-label") ?? null,
+  );
+
+  record_(
+    `${id} · the other project really opened`,
+    beforeTitle !== null && afterTitle !== null && beforeTitle !== afterTitle,
+    `${beforeTitle} → ${afterTitle}`,
+  );
+  record_(
+    `${id} · the surface rebuilt on the new song`,
+    after.bars > 0,
+    `${after.bars} bars, section ${after.viewedSection}`,
+  );
+  /*
+   * One surface at a time. The replacement may construct a new observer, so
+   * the claim is about what is *held*, not about what was ever built:
+   * constructions minus disconnects.
+   */
+  const heldBefore = before.observers.resize - before.observersDisconnected.resize;
+  const heldAfter = after.observers.resize - after.observersDisconnected.resize;
+  record_(
+    `${id} · no extra resize observer survives the swap`,
+    heldAfter <= heldBefore,
+    `held ${heldBefore} → ${heldAfter} ` +
+      `(built ${before.observers.resize} → ${after.observers.resize})`,
+  );
+  record_(
+    `${id} · no animation frame is left running`,
+    Object.values(after.live).every((count) => count === 0),
+    JSON.stringify(after.live),
+  );
+  record_(
+    `${id} · still one AudioContext`,
+    after.audioContexts <= 1,
+    `${after.audioContexts}`,
+  );
+  record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+}
+
+/**
+ * Close whatever sheet is open, through the door the product gives it.
+ *
+ * A sheet closes through its own backdrop, which carries the accessible name
+ * "Kapat", and there is no Escape handler. The click is dispatched from
+ * inside the page rather than through Playwright's actionability checks: the
+ * backdrop covers the viewport and the panel sits on top of it, so a
+ * centre-of-element click is intercepted and retried until it times out —
+ * which at 320px is exactly how the first run of this tour failed, with a
+ * harness error that read like a product one.
+ */
+async function dismissSheets(page) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const open = await page.evaluate(
+      () => document.querySelectorAll("[role='dialog']").length,
+    );
+    if (open === 0) return;
+    const closed = await page.evaluate(() => {
+      const backdrop = document.querySelector(
+        "[role='dialog'] button[aria-label='Kapat']",
+      );
+      if (!backdrop) return false;
+      backdrop.click();
+      return true;
+    });
+    if (!closed) return;
+    await page.waitForTimeout(250);
+  }
+}
+
+/**
+ * The four leak counters, separately (§4.5).
+ *
+ * One total would hide which kind leaked, and they leak for different
+ * reasons: a windowed surface adds and removes listeners constantly, the
+ * audio engine adds one per scheduled voice, and an interval nobody cleared
+ * shows up in none of that. So each ledger is read with both its sides and
+ * reported on its own line.
+ *
+ * The tour first does everything that could leak — play, pause, switch view,
+ * scroll to the far end and back — so a counter that reads zero has been
+ * given something to count.
+ */
+async function tourLeakCounters(page, vp, errors) {
+  const id = `leaks ${vp}`;
+  await view(page, "tab").click();
+  await page.waitForTimeout(300);
+  const before = await shot(page);
+
+  await recordPlayback(page, 2000);
+  await page.waitForTimeout(250);
+  await view(page, "multi").click();
+  await page.waitForTimeout(400);
+  await page.evaluate(() => {
+    const el = [...document.querySelectorAll("*")].find((node) => {
+      const s = getComputedStyle(node);
+      return (
+        (s.overflowX === "auto" || s.overflowX === "scroll") &&
+        node.scrollWidth > node.clientWidth + 1
+      );
+    });
+    if (el) el.scrollLeft = el.scrollWidth;
+  });
+  await page.waitForTimeout(400);
+  await view(page, "tab").click();
+  await page.waitForTimeout(500);
+
+  const after = await shot(page);
+
+  record_(
+    `${id} · the cycle really exercised the surface`,
+    after.listeners > before.listeners,
+    `listeners built ${before.listeners} → ${after.listeners}`,
+  );
+
+  /*
+   * 1. Listeners, by type rather than as one total.
+   *
+   * The total is not the claim and cannot be: playing schedules a voice per
+   * note and each one attaches an `ended` handler, so a session that played
+   * for two seconds legitimately ends with dozens more listeners than it
+   * started with. 2Q-C already learned this the expensive way — a scenario
+   * that failed on "+141 −65" and was measuring the audio engine.
+   *
+   * What this checkpoint owns is the *surface's* subscriptions: the scroll
+   * listener, the resize path and the pointer handlers a mounted bar carries.
+   * Those must not grow across a cycle that mounts and unmounts hundreds of
+   * bars. Everything else is reported as observed rather than asserted.
+   */
+  const SURFACE_TYPES = ["scroll", "resize", "pointerdown", "pointermove", "pointerup"];
+  const grew = (type) =>
+    (after.listenersByType[type] ?? 0) - (before.listenersByType[type] ?? 0);
+  const surfaceDetail = SURFACE_TYPES.map((type) => `${type} +${grew(type)}`).join(", ");
+  record_(
+    `${id} · counter 1/4 · the surface's own subscriptions do not grow`,
+    SURFACE_TYPES.every((type) => grew(type) <= 4),
+    surfaceDetail,
+  );
+  const heldListeners =
+    after.listeners -
+    after.listenersRemoved -
+    (before.listeners - before.listenersRemoved);
+  const engineTypes = Object.keys(after.listenersByType)
+    .filter((type) => !SURFACE_TYPES.includes(type) && grew(type) > 0)
+    .sort((a, b) => grew(b) - grew(a))
+    .slice(0, 3)
+    .map((type) => `${type} +${grew(type)}`)
+    .join(", ");
+  record_(
+    `${id} · what does grow is the audio engine, named rather than lumped in`,
+    engineTypes.length > 0 || heldListeners <= 0,
+    `+${heldListeners} net overall; largest growers: ${engineTypes || "none"}`,
+  );
+
+  /* 2. Observers: constructions minus disconnects, per kind. */
+  const held = (kind) =>
+    after.observers[kind] -
+    after.observersDisconnected[kind] -
+    (before.observers[kind] - before.observersDisconnected[kind]);
+  const observerDetail = ["resize", "intersection", "mutation"]
+    .map((kind) => `${kind} ${held(kind) >= 0 ? "+" : ""}${held(kind)}`)
+    .join(", ");
+  record_(
+    `${id} · counter 2/4 · observers held after the cycle`,
+    ["resize", "intersection", "mutation"].every((kind) => held(kind) <= 1),
+    observerDetail,
+  );
+
+  /* 3. Animation frames still outstanding once the transport has stopped. */
+  record_(
+    `${id} · counter 3/4 · no animation frame outstanding`,
+    Object.values(after.live).every((count) => count === 0),
+    JSON.stringify(after.live),
+  );
+
+  /* 4. Audio contexts, which must be one for the whole session. */
+  record_(
+    `${id} · counter 4/4 · one AudioContext for the session`,
+    after.audioContexts <= 1,
+    `${after.audioContexts}`,
+  );
+
+  /* And the interval ledger, which none of the four above would show. */
+  const heldIntervals =
+    after.intervalsSet -
+    after.intervalsCleared -
+    (before.intervalsSet - before.intervalsCleared);
+  record_(
+    `${id} · no interval left running`,
+    heldIntervals <= 0,
+    `+${heldIntervals} (set ${after.intervalsSet}, cleared ${after.intervalsCleared})`,
+  );
+  record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+}
+
+/**
+ * What each gesture writes, counted rather than assumed (§4.6).
+ *
+ * Reading writes nothing. A ghost is a preview and writes nothing. A commit
+ * writes exactly one project record. Undo and redo write one each — they are
+ * edits to the same song, not a different kind of thing that gets to write
+ * twice.
+ *
+ * The count comes from the shared storage ledger, which records the physical
+ * `setItem` calls before the app's first line, so "wrote nothing" is a
+ * measurement rather than a revision number that happened not to move.
+ */
+async function tourWriteCounts(page, vp, errors) {
+  const id = `writes ${vp}`;
+  await view(page, "tab").click();
+  await page.waitForTimeout(400);
+
+  /** Project-record writes since this moment. */
+  const since = async (mark) => {
+    const now = await writeTally(page);
+    return now.anyProject - mark.anyProject;
+  };
+  const reading = await writeTally(page);
+
+  await page.evaluate(() => {
+    const el = [...document.querySelectorAll("*")].find((node) => {
+      const s = getComputedStyle(node);
+      return (
+        (s.overflowX === "auto" || s.overflowX === "scroll") &&
+        node.scrollWidth > node.clientWidth + 1
+      );
+    });
+    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) * 0.5;
+  });
+  await page.waitForTimeout(400);
+  record_(`${id} · reading and scrolling write nothing`, (await since(reading)) === 0,
+    `${await since(reading)} project writes`);
+
+  /*
+   * The kit has to be the active track before its grid can be armed, and the
+   * grid has to be armed before there is a cell to commit through. The first
+   * run of this scenario skipped the track control and reported "no writable
+   * cell on this surface" — a pass that had measured nothing.
+   */
+  const trackControl = page.locator("[data-track-control]");
+  if ((await trackControl.count()) > 0) {
+    await trackControl.first().click();
+    await page.waitForTimeout(250);
+    const kit = page.locator("[data-track-option]", { hasText: "Davul" }).first();
+    if ((await kit.count()) > 0) {
+      await kit.click();
+      await page.waitForTimeout(300);
+    }
+  }
+
+  const edit = page.locator("[data-action-row] button", { hasText: /^Düzenle$/ });
+  if ((await edit.count()) === 0) {
+    record_(`${id} · edit mode is reachable`, false, "no Düzenle button");
+    return;
+  }
+  await edit.first().click();
+  await page.waitForSelector("[data-drum-cell]", { timeout: 10000 }).catch(() => {});
+  await page.waitForTimeout(300);
+  const opened = await writeTally(page);
+  record_(
+    `${id} · arming the grid writes nothing`,
+    (await since(opened)) === 0,
+    `${await since(opened)} project writes, ` +
+      `${await page.locator("[data-drum-cell]").count()} cells armed`,
+  );
+
+  /*
+   * The ghost preview is not measured here. `eval/selection-ui/verify.mjs`
+   * already drives the real gesture — long press, transform sheet, nudge —
+   * and counts its writes against the same ledger. A second version of that
+   * claim here could only be a worse one, and the first attempt at it was
+   * exactly that: it reported "0 ghost elements, 0 writes" about a sheet it
+   * had never opened.
+   */
+
+  const commitMark = await writeTally(page);
+  const committed = await page.evaluate(() => {
+    const cell = document.querySelector("[data-drum-cell]");
+    if (!cell) return false;
+    cell.click();
+    return true;
+  });
+  await page.waitForTimeout(600);
+  const commitWrites = await since(commitMark);
+  record_(
+    `${id} · a commit writes exactly one project record`,
+    !committed || commitWrites === 1,
+    committed ? `${commitWrites} writes` : "no armed cell — the tour did not reach one",
+  );
+  if (!committed) {
+    record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+    return;
+  }
+
+  const undo = page.locator("[data-undo]");
+  const undoMark = await writeTally(page);
+  const canUndo = (await undo.count()) > 0 && !(await undo.first().isDisabled());
+  if (canUndo) {
+    await undo.first().click();
+    await page.waitForTimeout(600);
+  }
+  record_(
+    `${id} · undo writes exactly one`,
+    !canUndo || (await since(undoMark)) === 1,
+    canUndo ? `${await since(undoMark)} writes` : "undo unavailable",
+  );
+
+  const redo = page.locator("[data-redo]");
+  const redoMark = await writeTally(page);
+  const canRedo = (await redo.count()) > 0 && !(await redo.first().isDisabled());
+  if (canRedo) {
+    await redo.first().click();
+    await page.waitForTimeout(600);
+  }
+  record_(
+    `${id} · redo writes exactly one`,
+    !canRedo || (await since(redoMark)) === 1,
+    canRedo ? `${await since(redoMark)} writes` : "redo unavailable",
+  );
+  record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+}
+
+/**
+ * The same reading claims at a phone's larger text settings (§4.2).
+ *
+ * Not a zoom: the root font grows and the viewport keeps its CSS pixels, so
+ * the surface has the same width to work with and less of it left over. What
+ * is checked is what 2Q-C claimed — the surface follows, the playhead stays
+ * on screen, nothing overflows sideways — because a claim that only holds at
+ * 100% is a claim about a screen nobody has.
+ */
+async function tourTextScale(page, vp, errors, scale) {
+  const id = `text ${scale}% ${vp}`;
+  const rootFontPx = await page.evaluate(() =>
+    parseFloat(getComputedStyle(document.documentElement).fontSize),
+  );
+  record_(
+    `${id} · the text setting really is applied`,
+    Math.abs(rootFontPx - 16 * (scale / 100)) < 0.6,
+    `root font ${rootFontPx}px`,
+  );
+
+  await view(page, "tab").click();
+  await page.waitForTimeout(400);
+  const played = await recordPlayback(page, RECORD_MS);
+  await page.waitForTimeout(250);
+
+  record_(
+    `${id} · the surface still follows continuously`,
+    played.moves > played.movingFrames * 0.8,
+    `${played.moves}/${played.movingFrames} moving frames`,
+  );
+  record_(
+    `${id} · and still without a jump`,
+    played.overHalfViewport === 0,
+    `${played.overHalfViewport} steps over half a viewport, ` +
+      `worst ${Math.round(played.largestSteadyPx)}px`,
+  );
+  record_(
+    `${id} · the playhead is never blank`,
+    played.blankPlayheadFrames === 0,
+    `${played.blankPlayheadFrames}/${played.frames}`,
+  );
+  const anchors = anchorFractions(played);
+  const mid = median(anchors);
+  record_(
+    `${id} · the playhead keeps its place in the viewport`,
+    mid !== null && mid > 0.15 && mid < 0.55,
+    `median anchor ${mid === null ? "none" : mid.toFixed(3)}`,
+  );
+
+  await view(page, "multi").click();
+  await page.waitForTimeout(400);
+  const multi = await shot(page);
+  record_(
+    `${id} · the Çoklu view still opens on the whole song`,
+    multi.lanes > 0 && multi.bars > 0,
+    `${multi.lanes} lanes, ${multi.bars} bars`,
+  );
+  record_(
+    `${id} · the page does not scroll sideways`,
+    multi.bodyOverflow <= 0,
+    `${multi.bodyOverflow}px overflow`,
+  );
+  record_(`${id} · no page error`, errors.length === 0, errors[0] ?? "");
+}
+
 /* ------------------------------------------------------------------ run */
 
 const VIEWPORTS = process.env.ONE_VIEWPORT
@@ -803,6 +1456,14 @@ const VIEWPORTS = process.env.ONE_VIEWPORT
       { name: "390x844", width: 390, height: 844 },
       { name: "320x700", width: 320, height: 700 },
     ];
+
+/**
+ * The larger-text runs (2R-A §4.2).
+ *
+ * 100% is already covered by every other tour, so the scaled runs are the
+ * two settings a phone actually offers above it.
+ */
+const TEXT_SCALES = process.env.ONE_VIEWPORT ? [150] : [125, 150];
 
 const browser = await chromium.launch({
   args: ["--autoplay-policy=no-user-gesture-required"],
@@ -849,6 +1510,53 @@ for (const vp of VIEWPORTS) {
   await safe("budget", () => tourBudget(budget.page, vp.name, budget.errors));
   await budget.context.close();
 
+  /* ------------------------------------------- 2R-A §4: the 2Q-C debts */
+
+  const loop = await boot(browser, vp, device(fixture("shortSections")));
+  await safe("loop wrap", () => tourLoopWrap(loop.page, vp.name, loop.errors));
+  await loop.context.close();
+
+  const remount = await boot(browser, vp, device(fixture("denseDrums")));
+  await safe("remount parity", () =>
+    tourRemountParity(remount.page, vp.name, remount.errors),
+  );
+  await remount.context.close();
+
+  const swap = await boot(
+    browser,
+    vp,
+    twoProjects(fixture("normal"), fixture("shortSections")),
+  );
+  await safe("project replacement", () =>
+    tourProjectReplacement(swap.page, vp.name, swap.errors),
+  );
+  await swap.context.close();
+
+  const leaks = await boot(browser, vp, device(fixture("eightTracks")));
+  await safe("leaks", () => tourLeakCounters(leaks.page, vp.name, leaks.errors));
+  await leaks.context.close();
+
+  // The storage ledger is only installed here: it wraps `Storage.prototype`
+  // for the whole context, and a tour that is not counting writes should not
+  // be paying for it.
+  const writes = await boot(browser, vp, device(fixture("denseDrums")), {
+    ledger: true,
+  });
+  await safe("write counts", () =>
+    tourWriteCounts(writes.page, vp.name, writes.errors),
+  );
+  await writes.context.close();
+
+  for (const scale of TEXT_SCALES) {
+    const scaled = await boot(browser, vp, device(fixture("normal")), {
+      textScale: scale,
+    });
+    await safe(`text ${scale}`, () =>
+      tourTextScale(scaled.page, vp.name, scaled.errors, scale),
+    );
+    await scaled.context.close();
+  }
+
   /*
    * Reduced motion gets its own context, with the preference set before the
    * app ever runs. Flipping it mid-tour would measure a surface that had
@@ -870,7 +1578,7 @@ writeFileSync(
   `${OUT}/BROWSER.json`,
   `${JSON.stringify(
     {
-      what: "2Q-C §12 — sürekli okuma yüzeyi kabulü",
+      what: "2Q-C §12 + 2R-A §4 — sürekli okuma yüzeyi kabulü ve kapatılan borçlar",
       measuredOn:
         "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
       notes: [
@@ -878,6 +1586,9 @@ writeFileSync(
         "Playhead transform ile taşınan katman olduğu için öyle bulundu.",
         "«Kararlı sıçrama», çal'a basıldığındaki tek yeniden bağlanma hariç " +
           "her karenin |ΔscrollLeft| değeridir.",
+        "Büyük metin bir zoom değil: viewport CSS pikselini korur, kök yazı tipi büyür.",
+        "Sızıntı sayaçları kurulan değil *elde tutulan* miktarı sayar: kurulum eksi bırakma.",
+        "Yazma sayıları paylaşılan storage ledger'ından, fiziksel setItem çağrılarından gelir.",
       ],
       scenarios: results.length,
       failed: failed.length,
