@@ -116,6 +116,21 @@ export const expressionPresets = {
     },
     /** Further than this and the hand is jumping, not slurring. */
     maxIntervalSemitones: 5,
+    /**
+     * The most of a note a finger landing may take (2S-A §3).
+     *
+     * A hammer-on's or a pull-off's travel time used to be a constant, and a
+     * constant cannot be right at every tempo and every grid: at 1/32 the
+     * 28 ms of a pull-off ate more than half the note it was landing on, and
+     * at 1/32 with 260 BPM the voice stopped before the pitch had arrived, so
+     * the target's own pitch was never sounded at all (measured, and written
+     * down in `eval/intent-composer/FINDINGS.md`).
+     *
+     * The slide already asked this question — `glideFor` fits the travel into
+     * the room there is — and this is the same question asked for the other
+     * two. The rest of the note belongs to the pitch the reader wrote.
+     */
+    maxTravelFraction: 0.4,
   },
   palmMute: {
     /** At most this much of the written length, and never longer than the cap. */

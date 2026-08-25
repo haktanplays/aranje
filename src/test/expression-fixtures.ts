@@ -5,12 +5,14 @@
  * so a test can say exactly which note carries which articulation.
  */
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { slotCount } from "@/lib/music/timing";
 import {
   songSchema,
   type Articulation,
   type Bar,
   type MelodicSlot,
   type NoteEvent,
+  type Resolution,
   type Song,
 } from "@/lib/song/schema";
 
@@ -62,12 +64,37 @@ export function bar(written: readonly MelodicSlot[]): Bar {
   return { timeSignature: [4, 4], resolution: 8, slots: { gtr: [...written] } };
 }
 
+/**
+ * A bar on a denser grid, for the claims that are about how much *room* a
+ * note has (2S-A §3).
+ *
+ * A legato transition's time is measured against the note it lands on, so a
+ * fixture written at 1/8 cannot say anything about a note written at 1/32 —
+ * they are different lengths of the same articulation.
+ */
+export function denseBar(
+  written: readonly MelodicSlot[],
+  resolution: Resolution = 32,
+): Bar {
+  const count = slotCount([4, 4], resolution);
+  const filled = [
+    ...written,
+    ...Array.from({ length: Math.max(0, count - written.length) }, () => REST),
+  ];
+  if (filled.length !== count) throw new Error("prefix longer than the bar");
+  return { timeSignature: [4, 4], resolution, slots: { gtr: filled } };
+}
+
 /** A bar the guitar is not written in at all (spec 5.5). */
 export function emptyBar(): Bar {
   return { timeSignature: [4, 4], resolution: 8, slots: {} };
 }
 
-export function song(bars: readonly Bar[], second: readonly Bar[] = []): Song {
+export function song(
+  bars: readonly Bar[],
+  second: readonly Bar[] = [],
+  bpm = 120,
+): Song {
   const sections = [
     { id: "s1", name: "S1", status: "fixed" as const, bars: [...bars] },
     ...(second.length > 0
@@ -77,7 +104,7 @@ export function song(bars: readonly Bar[], second: readonly Bar[] = []): Song {
   const parsed = songSchema.safeParse({
     version: 2,
     title: "expression fixture",
-    bpm: 120,
+    bpm,
     key: "E minor",
     tracks: [GUITAR],
     sections,

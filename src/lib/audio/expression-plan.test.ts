@@ -11,7 +11,8 @@ import {
   type ExpressiveNotePlan,
 } from "@/lib/audio/expression-plan";
 import { chainIdFor, desiredGlideSeconds, glideFor } from "@/lib/audio/legato-chain";
-import { buildSongPlan } from "@/lib/audio/schedule";
+import { buildNotatedPlan, buildSongPlan } from "@/lib/audio/schedule";
+import { renderDuration } from "@/lib/export/export-plan";
 import { validateArticulationContext } from "@/lib/validators";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import {
@@ -19,6 +20,7 @@ import {
   TIE,
   TRACK_ID,
   bar,
+  denseBar,
   emptyBar,
   event,
   chord,
@@ -26,7 +28,12 @@ import {
   slots,
   song,
 } from "@/test/expression-fixtures";
-import type { Articulation, MelodicSlot, Song } from "@/lib/song/schema";
+import type {
+  Articulation,
+  MelodicSlot,
+  Resolution,
+  Song,
+} from "@/lib/song/schema";
 
 function planOf(target: Song, percent?: number): ExpressiveNotePlan[] {
   return buildExpressionPlan(
@@ -1100,5 +1107,158 @@ describe("a note can be refused and still be a chain's source (spec 8.5, K-26)",
     expect(plan.chains).toHaveLength(1);
     expect(plan.chains[0]?.sourcePitch).toBe("B3");
     expect(plan.chains[0]?.transitions[0]?.kind).toBe("hammer_on");
+  });
+});
+
+/**
+ * 2S-A §3. The measured defect: a finger landing took a fixed time and never
+ * asked how much of the note it was landing on that time was.
+ *
+ * The numbers here are the ones `eval/intent-composer/AUDIO.json` measured on
+ * the reported fixture; the arithmetic is checked rather than the audio,
+ * because the plan is what the render and the export both read.
+ */
+describe("a legato transition fits the note it lands on (2S-A §3)", () => {
+  /** The reported fixture's shape: one string, `8 → 7` as a pull-off. */
+  const pullOffAt = (resolution: Resolution, bpm: number) =>
+    buildExpressionPlan(
+      song([denseBar([note("A#3", 1, 13), note("A3", 1, 12, "pull_off")], resolution)], [], bpm),
+    );
+
+  const onlyTransition = (plan: ReturnType<typeof buildExpressionPlan>) => {
+    const transition = plan.chains[0]?.transitions[0];
+    if (!transition) throw new Error("no transition");
+    return transition;
+  };
+
+  const roomAfterArrival = (plan: ReturnType<typeof buildExpressionPlan>) => {
+    const chain = plan.chains[0]!;
+    const transition = onlyTransition(plan);
+    return chain.endSeconds - chain.startSeconds - transition.arrivesAtSeconds;
+  };
+
+  it("leaves the target's own pitch sounding on every grid", () => {
+    for (const resolution of [8, 16, 24, 32] as const) {
+      for (const bpm of [40, 132, 260]) {
+        const plan = pullOffAt(resolution, bpm);
+        expect(
+          roomAfterArrival(plan),
+          `1/${resolution} at ${bpm} BPM`,
+        ).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("gives the pitch more of the note than the travel takes", () => {
+    for (const resolution of [8, 16, 24, 32] as const) {
+      for (const bpm of [40, 132, 260]) {
+        const plan = pullOffAt(resolution, bpm);
+        const travel = onlyTransition(plan).transitionSeconds;
+        expect(
+          roomAfterArrival(plan),
+          `1/${resolution} at ${bpm} BPM`,
+        ).toBeGreaterThan(travel);
+      }
+    }
+  });
+
+  it("still takes its full preset time when the note is long enough", () => {
+    const transition = onlyTransition(pullOffAt(8, 40));
+    expect(transition.transitionSeconds).toBeCloseTo(
+      expressionPresets.legato.pullOff.transitionSeconds,
+      6,
+    );
+  });
+
+  it("shortens the travel rather than moving the onset", () => {
+    const slow = pullOffAt(32, 40);
+    const fast = pullOffAt(32, 260);
+    // The written moment is the written moment at every tempo.
+    expect(onlyTransition(slow).atSeconds).toBeGreaterThan(
+      onlyTransition(fast).atSeconds,
+    );
+    expect(onlyTransition(fast).transitionSeconds).toBeLessThan(
+      onlyTransition(slow).transitionSeconds,
+    );
+    // And the target still starts exactly where the score puts it.
+    const target = fast.notes.find((entry) => entry.chainRole === "target");
+    expect(target?.timeTicks).toBe(768 / 32);
+  });
+
+  it("does not turn a pull-off into a second attack", () => {
+    const plan = pullOffAt(32, 260);
+    const target = plan.notes.find((entry) => entry.chainRole === "target");
+    expect(target?.chainId).toBeDefined();
+    expect(plan.chains[0]?.transitions[0]?.kind).toBe("pull_off");
+    // One voice, one strike: the chain still names both notes.
+    expect(plan.chains[0]?.noteIds).toHaveLength(2);
+  });
+
+  it("keeps the pull-off's finger click inside the note it belongs to", () => {
+    const plan = pullOffAt(32, 260);
+    const auxiliary = onlyTransition(plan).auxiliary;
+    const chain = plan.chains[0]!;
+    const room =
+      chain.endSeconds - chain.startSeconds - onlyTransition(plan).arrivesAtSeconds;
+    expect(auxiliary).toBeDefined();
+    expect(auxiliary!.durationSeconds).toBeLessThanOrEqual(room + 1e-9);
+  });
+
+  it("does the same for a hammer-on", () => {
+    const plan = buildExpressionPlan(
+      song([denseBar([note("A3", 1, 12), note("A#3", 1, 13, "hammer_on")], 32)], [], 260),
+    );
+    const transition = plan.chains[0]?.transitions[0];
+    const chain = plan.chains[0]!;
+    expect(transition?.kind).toBe("hammer_on");
+    expect(
+      chain.endSeconds - chain.startSeconds - (transition?.arrivesAtSeconds ?? 0),
+    ).toBeGreaterThan(transition?.transitionSeconds ?? 0);
+  });
+
+  /*
+   * The change is audible, so it changes a WAV. That is deliberate and it is
+   * the parity the export exists to keep: the file is rendered from the same
+   * plan playback reads, so "the WAV sounds like the app" stays true rather
+   * than becoming two answers. What must *not* change is the written score
+   * and the length of the file, and both are asserted here.
+   */
+  it("changes what is heard without changing what is written or exported", () => {
+    const dense = song(
+      [denseBar([note("A#3", 1, 13), note("A3", 1, 12, "pull_off")], 32)],
+      [],
+      260,
+    );
+    const notated = buildNotatedPlan(dense).events;
+    expect(notated).toHaveLength(2);
+    // The score: same two onsets, one slot apart, each a slot long.
+    expect(notated[0]).toMatchObject({ pitch: "A#3", time: 0, durationTicks: 24 });
+    expect(notated[1]).toMatchObject({
+      pitch: "A3",
+      time: 24,
+      durationTicks: 24,
+      articulation: "pull_off",
+    });
+    // The file: the score plus the tail, with nothing added by the travel.
+    expect(renderDuration(dense).expressionSeconds).toBe(0);
+    // And the scheduler's own plan still starts both notes where they are
+    // written, at the lengths it always played them.
+    const played = buildSongPlan(dense).events.filter(
+      (event) => event.kind === "note",
+    );
+    expect(played.map((event) => event.time)).toEqual([0, 24]);
+    expect(played.map((event) => event.durationTicks)).toEqual([22, 22]);
+  });
+
+  it("leaves a slide's own arrival rule alone (K-23)", () => {
+    // A slide arrives *at* the written moment; nothing here may move that.
+    const plan = buildExpressionPlan(held(B3(), G3("slide")));
+    const transition = plan.chains[0]?.transitions[0];
+    expect(transition?.kind).toBe("slide");
+    const target = plan.notes.find((entry) => entry.chainRole === "target")!;
+    expect(transition?.arrivesAtSeconds).toBeCloseTo(
+      target.startSeconds - plan.chains[0]!.startSeconds,
+      6,
+    );
   });
 });

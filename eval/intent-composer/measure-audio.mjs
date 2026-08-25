@@ -15,6 +15,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/intent-composer";
+/** `FILE=AFTER.json` writes the after-the-fix run beside the baseline. */
+const FILE = process.env.FILE ?? "AUDIO.json";
 const ONLY = process.env.ONLY ?? null;
 mkdirSync(`${OUT}/wav`, { recursive: true });
 
@@ -61,14 +63,14 @@ await browser.close();
 
 const existing = (() => {
   try {
-    return JSON.parse(readFileSync(`${OUT}/AUDIO.json`, "utf8"));
+    return JSON.parse(readFileSync(`${OUT}/${FILE}`, "utf8"));
   } catch {
     return {};
   }
 })();
 
 writeFileSync(
-  `${OUT}/AUDIO.json`,
+  `${OUT}/${FILE}`,
   `${JSON.stringify(
     {
       ...existing,

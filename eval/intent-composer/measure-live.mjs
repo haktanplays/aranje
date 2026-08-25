@@ -10,6 +10,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/intent-composer";
+/** `FILE=AFTER.json` writes the after-the-fix run beside the baseline. */
+const FILE = process.env.FILE ?? "AUDIO.json";
 const NAMES = (process.env.NAMES ?? [
   "reported-8-132",
   "reported-16-132",
@@ -62,9 +64,9 @@ for (const name of NAMES) {
 
 await browser.close();
 
-const existing = JSON.parse(readFileSync(`${OUT}/AUDIO.json`, "utf8"));
+const existing = JSON.parse(readFileSync(`${OUT}/${FILE}`, "utf8"));
 writeFileSync(
-  `${OUT}/AUDIO.json`,
+  `${OUT}/${FILE}`,
   `${JSON.stringify(
     {
       ...existing,

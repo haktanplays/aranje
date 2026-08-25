@@ -206,3 +206,39 @@ Kök neden, ölçülen genişliklerden: satır **tek satırlık, sarmayan bir fl
 (`[data-action-row]`'un kendisi, %100 metin). Gerçek en kötü hâl `419/284`.
 
 Ekran görüntüsü: `shots/before-toolbar-320.png`.
+
+---
+
+## §3 sonrası · aynı harness, aynı fixture'lar (`AFTER.json`)
+
+Düzeltme: legato geçişinin süresi artık **indiği notanın ne kadar yer
+bıraktığını soruyor** (`expressionPresets.legato.maxTravelFraction = 0.4`).
+Slide bunu `glideFor` ile zaten soruyordu; hammer-on ve pull-off da sordu.
+Yazılan hiçbir şey değişmedi: onset da, süre de, tick de aynı.
+
+| Izgara / tempo | Yolculuk (önce → sonra) | Hedef perde ne kadar duyuluyor (önce → sonra) | %60 noktasındaki sapma (önce → sonra) |
+|---|---|---|---|
+| 1/8 · 132 | 28,0 → **28,0 ms** | 180,3 → **180,3 ms** | 6,5 → **6,5 cent** |
+| 1/16 · 132 | 28,0 → **28,0 ms** | 76,2 → **76,2 ms** | 9,4 → **9,4 cent** |
+| 1/16 · 260 | 28,0 → **21,2 ms** | 24,9 → **31,7 ms** | 15,2 → **14,9 cent** |
+| 1/24 · 132 | 28,0 → **27,5 ms** | 40,7 → **41,2 ms** | 14,3 → **14,1 cent** |
+| 1/24 · 260 | 28,0 → **13,9 ms** | 6,9 → **20,9 ms** | 25,7 → **22,6 cent** |
+| 1/32 · 132 | 28,0 → **20,8 ms** | 24,1 → **31,3 ms** | 15,5 → **15,8 cent** |
+| **1/32 · 260** | 28,0 → **10,6 ms** | **0,0 → 15,9 ms** | **49,0 → 21,1 cent** |
+
+Yeri bol olan hiçbir durum değişmedi: 1/8, 1/16 · 132 ve 1/32 · 40'ta yolculuk
+hâlâ tam preset süresi. Değişen yalnız yerin yetmediği yerler.
+
+Aynı koşuda geri kalan her şey de yeniden ölçüldü ve değişmedi: 45 fixture'ın
+her onset'i çıkarma yöntemiyle ölçülebilir katkı veriyor, canlı bağlamda
+8/8 duyuluyor, geç kalan callback **0**.
+
+**Dürüstlük notu.** `reported-32-260` fixture'ında enerji ölçütüm 6. onset'i
+hem önce hem sonra "sessiz" işaretliyor. Bu ölçütün kusurudur, ürünün değil:
+o onset zincir bittikten sonra geliyor, yani üzerine binen bir kuyruk yok ve
+penceresindeki tepe yalnız kendi atağı. Çıkarma yöntemi aynı onset için
+`0,1069` katkı ölçüyor — komşularıyla aynı. İşaret bilerek bırakıldı.
+
+**Ölçülmeyen.** Bu satırların hiçbiri bir insanın "daha iyi duyuluyor"
+demesi değildir. Ölçülen şey perdenin ne zaman geldiği ve ne kadar
+duyulduğudur; nasıl duyulduğuna Haktan karar verir.

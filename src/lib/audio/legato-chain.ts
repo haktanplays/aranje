@@ -315,16 +315,36 @@ export function transitionPoints(
   return points;
 }
 
-/** How long a transition takes, stretched with the practice speed. */
+/**
+ * How long a finger landing takes, given the room the music leaves for it
+ * (spec 8.5, K-22; 2S-A §3).
+ *
+ * `availableSeconds` is the target note's own sounding length: from its
+ * written onset to the moment the chain's voice stops, which is where the
+ * next thing begins. The travel takes at most `maxTravelFraction` of it, so
+ * what is left is the target's own pitch — which is the note the reader
+ * wrote, and the only reason the note is there.
+ *
+ * Nothing here moves an onset, changes a length or rounds a tick. The written
+ * moment of the target is the written moment at every tempo; what shortens is
+ * only how long the hand is allowed to be on its way there.
+ *
+ * Passing no room at all gives back the preset, which is what a caller that
+ * does not know the clock should get — the same shape `legatoDecision` has.
+ */
 export function transitionSeconds(
   kind: LegatoTransitionKind,
   timeScale = 1,
+  availableSeconds?: number,
 ): number {
   const preset =
     kind === "hammer_on"
       ? expressionPresets.legato.hammerOn
       : expressionPresets.legato.pullOff;
-  return preset.transitionSeconds * timeScale;
+  const wanted = preset.transitionSeconds * timeScale;
+  if (availableSeconds === undefined) return wanted;
+  const room = Math.max(0, availableSeconds);
+  return Math.min(wanted, room * expressionPresets.legato.maxTravelFraction);
 }
 
 export function chainIdFor(
@@ -454,16 +474,33 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
       arrivesAt = targetAt;
       startsAt = targetAt - glideSeconds;
     } else {
+      // The room is the target's own note: from where it is written to where
+      // the chain's voice stops, which is where the next onset begins.
+      const targetRoom = durationSeconds(tempo, onset.timeTicks, onset.durationTicks);
       startsAt = targetAt;
-      arrivesAt = targetAt + transitionSeconds(decision.transition, timeScale);
+      arrivesAt =
+        targetAt + transitionSeconds(decision.transition, timeScale, targetRoom);
     }
 
+    /*
+     * The click is a transient, so it lives inside the note it belongs to.
+     * Its length was a constant too, and a 35 ms click on a 26 ms note is a
+     * click that outlives its own note and bleeds into the next one.
+     */
+    const heldAfterArrival = Math.max(
+      0,
+      secondsAtTicks(tempo, onset.timeTicks + onset.durationTicks) -
+        chain.startSeconds -
+        arrivesAt,
+    );
     const auxiliary =
       decision.transition === "pull_off" && (input.withAuxiliary ?? true)
         ? {
             gain: expressionPresets.legato.pullOff.auxiliary.gain,
-            durationSeconds:
+            durationSeconds: Math.min(
               expressionPresets.legato.pullOff.auxiliary.maxSeconds * timeScale,
+              heldAfterArrival,
+            ),
             filterHz: expressionPresets.legato.pullOff.auxiliary.filterHz,
           }
         : undefined;
