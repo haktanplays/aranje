@@ -1,0 +1,1174 @@
+{
+  "what": "2Q-C §1 — sürekli okuma yüzeyi öncesi taban ölçümü",
+  "head": "d89c193",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "method": "Her playback kaydı 4000 ms; kare aralıkları ve scrollLeft her animasyon karesinde örneklendi.",
+  "notes": [
+    "src/ altında hiçbir dosya ölçüm için değiştirilmedi.",
+    "Playhead, transform ile taşınan katman olduğu için öyle bulundu; ölçüm uğruna eklenmiş bir data attribute yok.",
+    "largestScrollJumpPx, ardışık iki kare arasındaki en büyük |ΔscrollLeft|'tir — yani okurun gördüğü en büyük sıçrama.",
+    "blankPlayheadFrames, playhead'in çizilmediği kare sayısıdır."
+  ],
+  "results": [
+    {
+      "fixture": "normal",
+      "viewport": "390x844",
+      "openMs": 70,
+      "tab": {
+        "nodes": 916,
+        "buttons": 34,
+        "bars": 15,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 5150,
+        "clientWidth": 390,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 189,
+      "barSeekMs": 138,
+      "manualScrollMs": 81,
+      "tabPlayback": {
+        "frames": {
+          "count": 239,
+          "median": 16.7,
+          "p95": 16.7,
+          "max": 83.3
+        },
+        "framesOver25ms": 2,
+        "framesOver50ms": 1,
+        "longTasks": {
+          "count": 1,
+          "median": 87,
+          "p95": 87,
+          "max": 87
+        },
+        "scrollLeftWrites": 8,
+        "scrollLeftWritesPerSecond": 2,
+        "scrollMoves": 3,
+        "largestScrollJumpPx": 400,
+        "medianNonZeroJumpPx": 195,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 24,
+        "sampledFrames": 239
+      },
+      "multi": {
+        "nodes": 1110,
+        "buttons": 49,
+        "bars": 20,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 5,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 1090,
+        "clientWidth": 390,
+        "listeners": 470,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 242,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 16.8
+        },
+        "framesOver25ms": 0,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 27,
+        "scrollLeftWritesPerSecond": 6.75,
+        "scrollMoves": 3,
+        "largestScrollJumpPx": 700,
+        "medianNonZeroJumpPx": 193,
+        "sectionChanges": 1,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 1,
+        "sampledFrames": 242
+      },
+      "armedDrums": {
+        "nodes": 1555,
+        "buttons": 237,
+        "bars": 20,
+        "drumCells": 192,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 5,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 1634,
+        "clientWidth": 390,
+        "listeners": 584,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 79,
+        "p95": 154,
+        "max": 154
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 224,
+            "multi": 271
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 223,
+            "multi": 259
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 38,
+        "sampleRequests": 21,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "denseDrums",
+      "viewport": "390x844",
+      "openMs": 101,
+      "tab": {
+        "nodes": 1073,
+        "buttons": 27,
+        "bars": 8,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 9128,
+        "clientWidth": 390,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 6,
+      "barSeekMs": 128,
+      "manualScrollMs": 83,
+      "tabPlayback": {
+        "frames": {
+          "count": 240,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 66.6
+        },
+        "framesOver25ms": 3,
+        "framesOver50ms": 1,
+        "longTasks": {
+          "count": 1,
+          "median": 79,
+          "p95": 79,
+          "max": 79
+        },
+        "scrollLeftWrites": 16,
+        "scrollLeftWritesPerSecond": 4,
+        "scrollMoves": 11,
+        "largestScrollJumpPx": 434,
+        "medianNonZeroJumpPx": 195,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 9,
+        "sampledFrames": 240
+      },
+      "multi": {
+        "nodes": 2325,
+        "buttons": 39,
+        "bars": 16,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 2,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 8706,
+        "clientWidth": 390,
+        "listeners": 463,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 244,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 16.8
+        },
+        "framesOver25ms": 0,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 12,
+        "scrollLeftWritesPerSecond": 3,
+        "scrollMoves": 12,
+        "largestScrollJumpPx": 204,
+        "medianNonZeroJumpPx": 197,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 0,
+        "sampledFrames": 244
+      },
+      "armedDrums": {
+        "nodes": 3188,
+        "buttons": 1055,
+        "bars": 16,
+        "drumCells": 1024,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 2,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 8706,
+        "clientWidth": 390,
+        "listeners": 546,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 61,
+        "p95": 78,
+        "max": 78
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 238,
+            "multi": 270
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 237,
+            "multi": 259
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 31,
+        "sampleRequests": 7,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "eightTracks",
+      "viewport": "390x844",
+      "openMs": 101,
+      "tab": {
+        "nodes": 1960,
+        "buttons": 51,
+        "bars": 32,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 11882,
+        "clientWidth": 390,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 201,
+      "barSeekMs": 122,
+      "manualScrollMs": 83,
+      "tabPlayback": {
+        "frames": {
+          "count": 235,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 66.7
+        },
+        "framesOver25ms": 5,
+        "framesOver50ms": 2,
+        "longTasks": {
+          "count": 2,
+          "median": 84,
+          "p95": 84,
+          "max": 84
+        },
+        "scrollLeftWrites": 9,
+        "scrollLeftWritesPerSecond": 2.25,
+        "scrollMoves": 4,
+        "largestScrollJumpPx": 400,
+        "medianNonZeroJumpPx": 197,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 12,
+        "sampledFrames": 235
+      },
+      "multi": {
+        "nodes": 3659,
+        "buttons": 91,
+        "bars": 64,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 8,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 3266,
+        "clientWidth": 390,
+        "listeners": 513,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 245,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 33.3
+        },
+        "framesOver25ms": 1,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 4,
+        "scrollLeftWritesPerSecond": 1,
+        "scrollMoves": 4,
+        "largestScrollJumpPx": 198,
+        "medianNonZeroJumpPx": 195,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 0,
+        "sampledFrames": 245
+      },
+      "armedDrums": {
+        "nodes": 3933,
+        "buttons": 467,
+        "bars": 64,
+        "drumCells": 384,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 8,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 3266,
+        "clientWidth": 390,
+        "listeners": 640,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 114,
+        "p95": 180,
+        "max": 180
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 232,
+            "multi": 270
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 231,
+            "multi": 259
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 16,
+        "sampleRequests": 21,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "shortSections",
+      "viewport": "390x844",
+      "openMs": 100,
+      "tab": {
+        "nodes": 481,
+        "buttons": 26,
+        "bars": 7,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 2600,
+        "clientWidth": 390,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 174,
+      "barSeekMs": 113,
+      "manualScrollMs": 82,
+      "tabPlayback": {
+        "frames": {
+          "count": 235,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 100
+        },
+        "framesOver25ms": 4,
+        "framesOver50ms": 2,
+        "longTasks": {
+          "count": 1,
+          "median": 80,
+          "p95": 80,
+          "max": 80
+        },
+        "scrollLeftWrites": 8,
+        "scrollLeftWritesPerSecond": 2,
+        "scrollMoves": 3,
+        "largestScrollJumpPx": 434,
+        "medianNonZeroJumpPx": 195,
+        "sectionChanges": 1,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 11,
+        "sampledFrames": 235
+      },
+      "multi": {
+        "nodes": 406,
+        "buttons": 31,
+        "bars": 6,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 3,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 546,
+        "clientWidth": 390,
+        "listeners": 454,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 242,
+          "median": 16.7,
+          "p95": 16.7,
+          "max": 33.4
+        },
+        "framesOver25ms": 1,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 39,
+        "scrollLeftWritesPerSecond": 9.75,
+        "scrollMoves": 4,
+        "largestScrollJumpPx": 156,
+        "medianNonZeroJumpPx": 156,
+        "sectionChanges": 2,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 2,
+        "sampledFrames": 242
+      },
+      "armedDrums": {
+        "nodes": 449,
+        "buttons": 93,
+        "bars": 6,
+        "drumCells": 64,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 3,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 546,
+        "clientWidth": 390,
+        "listeners": 541,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 53,
+        "p95": 53,
+        "max": 53
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 235,
+            "multi": 269
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 233,
+            "multi": 258
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 49,
+        "sampleRequests": 13,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "normal",
+      "viewport": "320x700",
+      "openMs": 96,
+      "tab": {
+        "nodes": 916,
+        "buttons": 34,
+        "bars": 15,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 5080,
+        "clientWidth": 320,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 180,
+      "barSeekMs": 120,
+      "manualScrollMs": 83,
+      "tabPlayback": {
+        "frames": {
+          "count": 239,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 50.1
+        },
+        "framesOver25ms": 3,
+        "framesOver50ms": 1,
+        "longTasks": {
+          "count": 1,
+          "median": 70,
+          "p95": 70,
+          "max": 70
+        },
+        "scrollLeftWrites": 9,
+        "scrollLeftWritesPerSecond": 2.25,
+        "scrollMoves": 4,
+        "largestScrollJumpPx": 410,
+        "medianNonZeroJumpPx": 148,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 11,
+        "sampledFrames": 239
+      },
+      "multi": {
+        "nodes": 1110,
+        "buttons": 49,
+        "bars": 20,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 5,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 1090,
+        "clientWidth": 320,
+        "listeners": 489,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 241,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 49.9
+        },
+        "framesOver25ms": 2,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 24,
+        "scrollLeftWritesPerSecond": 6,
+        "scrollMoves": 4,
+        "largestScrollJumpPx": 770,
+        "medianNonZeroJumpPx": 148,
+        "sectionChanges": 1,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 2,
+        "sampledFrames": 241
+      },
+      "armedDrums": {
+        "nodes": 1555,
+        "buttons": 237,
+        "bars": 20,
+        "drumCells": 192,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 5,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 1634,
+        "clientWidth": 320,
+        "listeners": 590,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 80,
+        "p95": 270,
+        "max": 270
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 236,
+            "multi": 268
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 235,
+            "multi": 257
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 36,
+        "sampleRequests": 21,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "denseDrums",
+      "viewport": "320x700",
+      "openMs": 72,
+      "tab": {
+        "nodes": 1073,
+        "buttons": 27,
+        "bars": 8,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 9058,
+        "clientWidth": 320,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 5,
+      "barSeekMs": 129,
+      "manualScrollMs": 84,
+      "tabPlayback": {
+        "frames": {
+          "count": 242,
+          "median": 16.7,
+          "p95": 16.7,
+          "max": 66.5
+        },
+        "framesOver25ms": 1,
+        "framesOver50ms": 1,
+        "longTasks": {
+          "count": 1,
+          "median": 75,
+          "p95": 75,
+          "max": 75
+        },
+        "scrollLeftWrites": 20,
+        "scrollLeftWritesPerSecond": 5,
+        "scrollMoves": 15,
+        "largestScrollJumpPx": 434,
+        "medianNonZeroJumpPx": 150,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 10,
+        "sampledFrames": 242
+      },
+      "multi": {
+        "nodes": 2325,
+        "buttons": 39,
+        "bars": 16,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 2,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 8706,
+        "clientWidth": 320,
+        "listeners": 463,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 242,
+          "median": 16.7,
+          "p95": 16.7,
+          "max": 49.9
+        },
+        "framesOver25ms": 1,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 15,
+        "scrollLeftWritesPerSecond": 3.75,
+        "scrollMoves": 15,
+        "largestScrollJumpPx": 155,
+        "medianNonZeroJumpPx": 150,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 0,
+        "sampledFrames": 242
+      },
+      "armedDrums": {
+        "nodes": 3188,
+        "buttons": 1055,
+        "bars": 16,
+        "drumCells": 1024,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 2,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 8706,
+        "clientWidth": 320,
+        "listeners": 546,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 58,
+        "p95": 104,
+        "max": 104
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 238,
+            "multi": 268
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 237,
+            "multi": 257
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 38,
+        "sampleRequests": 7,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "eightTracks",
+      "viewport": "320x700",
+      "openMs": 120,
+      "tab": {
+        "nodes": 1960,
+        "buttons": 51,
+        "bars": 32,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 11812,
+        "clientWidth": 320,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 205,
+      "barSeekMs": 122,
+      "manualScrollMs": 83,
+      "tabPlayback": {
+        "frames": {
+          "count": 242,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 66.7
+        },
+        "framesOver25ms": 5,
+        "framesOver50ms": 1,
+        "longTasks": {
+          "count": 1,
+          "median": 70,
+          "p95": 70,
+          "max": 70
+        },
+        "scrollLeftWrites": 10,
+        "scrollLeftWritesPerSecond": 2.5,
+        "scrollMoves": 5,
+        "largestScrollJumpPx": 410,
+        "medianNonZeroJumpPx": 148,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 14,
+        "sampledFrames": 242
+      },
+      "multi": {
+        "nodes": 3659,
+        "buttons": 91,
+        "bars": 64,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 8,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 3266,
+        "clientWidth": 320,
+        "listeners": 513,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 243,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 33.3
+        },
+        "framesOver25ms": 1,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 5,
+        "scrollLeftWritesPerSecond": 1.25,
+        "scrollMoves": 5,
+        "largestScrollJumpPx": 151,
+        "medianNonZeroJumpPx": 149,
+        "sectionChanges": 0,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 0,
+        "sampledFrames": 243
+      },
+      "armedDrums": {
+        "nodes": 3933,
+        "buttons": 467,
+        "bars": 64,
+        "drumCells": 384,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 8,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 3266,
+        "clientWidth": 320,
+        "listeners": 640,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 96,
+        "p95": 138,
+        "max": 138
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 236,
+            "multi": 270
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 235,
+            "multi": 259
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 19,
+        "sampleRequests": 21,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    },
+    {
+      "fixture": "shortSections",
+      "viewport": "320x700",
+      "openMs": 96,
+      "tab": {
+        "nodes": 481,
+        "buttons": 26,
+        "bars": 7,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 0,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 2530,
+        "clientWidth": 320,
+        "listeners": 312,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 0
+      },
+      "sectionChangeMs": 167,
+      "barSeekMs": 127,
+      "manualScrollMs": 82,
+      "tabPlayback": {
+        "frames": {
+          "count": 238,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 66.7
+        },
+        "framesOver25ms": 3,
+        "framesOver50ms": 1,
+        "longTasks": {
+          "count": 1,
+          "median": 82,
+          "p95": 82,
+          "max": 82
+        },
+        "scrollLeftWrites": 9,
+        "scrollLeftWritesPerSecond": 2.25,
+        "scrollMoves": 4,
+        "largestScrollJumpPx": 434,
+        "medianNonZeroJumpPx": 148,
+        "sectionChanges": 1,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 10,
+        "sampledFrames": 238
+      },
+      "multi": {
+        "nodes": 406,
+        "buttons": 31,
+        "bars": 6,
+        "drumCells": 0,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 3,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 546,
+        "clientWidth": 320,
+        "listeners": 454,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "multiPlayback": {
+        "frames": {
+          "count": 244,
+          "median": 16.7,
+          "p95": 16.8,
+          "max": 16.8
+        },
+        "framesOver25ms": 0,
+        "framesOver50ms": 0,
+        "longTasks": {
+          "count": 0
+        },
+        "scrollLeftWrites": 41,
+        "scrollLeftWritesPerSecond": 10.25,
+        "scrollMoves": 5,
+        "largestScrollJumpPx": 226,
+        "medianNonZeroJumpPx": 146,
+        "sectionChanges": 2,
+        "largestJumpAtSectionChangePx": 0,
+        "blankPlayheadFrames": 2,
+        "sampledFrames": 244
+      },
+      "armedDrums": {
+        "nodes": 449,
+        "buttons": 93,
+        "bars": 6,
+        "drumCells": 64,
+        "pitchedCells": 0,
+        "cells": 0,
+        "lanes": 3,
+        "declaredScrollers": 1,
+        "scrollingNow": 1,
+        "scrollWidth": 546,
+        "clientWidth": 320,
+        "listeners": 541,
+        "observers": {
+          "resize": 1,
+          "intersection": 1,
+          "mutation": 1
+        },
+        "audioContexts": 1
+      },
+      "drumTapMs": {
+        "count": 8,
+        "median": 49,
+        "p95": 56,
+        "max": 56
+      },
+      "counts": {
+        "playhead": {
+          "scheduled": {
+            "arrangement": 3,
+            "tab": 239,
+            "multi": 269
+          },
+          "drawn": {
+            "arrangement": 1,
+            "tab": 237,
+            "multi": 258
+          },
+          "live": {
+            "arrangement": 0,
+            "tab": 0,
+            "multi": 0
+          }
+        },
+        "scrollLeftWrites": 53,
+        "sampleRequests": 13,
+        "externalRequests": 0,
+        "audioContexts": 1
+      },
+      "consoleErrors": []
+    }
+  ]
+}

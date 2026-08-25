@@ -1,0 +1,41 @@
+{
+  "normal": {
+    "tracks": 5,
+    "sections": 4,
+    "bars": 15,
+    "slots": 139,
+    "warnings": [
+      "fretJump",
+      "fretJump"
+    ]
+  },
+  "denseDrums": {
+    "tracks": 2,
+    "sections": 1,
+    "bars": 8,
+    "slots": 256,
+    "warnings": []
+  },
+  "eightTracks": {
+    "tracks": 8,
+    "sections": 4,
+    "bars": 32,
+    "slots": 337,
+    "warnings": [
+      "fretJump",
+      "fretJump",
+      "fretJump",
+      "fretJump",
+      "fretJump",
+      "fretJump",
+      "fretJump"
+    ]
+  },
+  "shortSections": {
+    "tracks": 3,
+    "sections": 5,
+    "bars": 7,
+    "slots": 64,
+    "warnings": []
+  }
+}
