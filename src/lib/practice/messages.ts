@@ -15,7 +15,8 @@
  * And nothing here claims anything about how the reader played. The app does
  * not listen, so "tur" is a pass of the loop and never a clean repetition.
  */
-import type { RangeRefusal } from "@/lib/practice/range";
+import type { EntryRefusal } from "@/lib/practice/range-entry";
+import type { RangeSource } from "@/lib/practice/range-entry";
 import type { RangeEdgeKind } from "@/lib/practice/range-preflight";
 
 /** What the reader is practising, said as bars rather than as keys. */
@@ -31,8 +32,8 @@ export function rangeSummary(
   return `${sectionName}, ${bars}`;
 }
 
-/** Why a pair of bars could not become a practice range (§9). */
-export function refusalMessage(reason: RangeRefusal): string {
+/** Why a gesture could not become a practice range (§V). */
+export function refusalMessage(reason: EntryRefusal): string {
   switch (reason) {
     case "different_sections":
       /*
@@ -46,8 +47,34 @@ export function refusalMessage(reason: RangeRefusal): string {
       return "Bir bölümün alabileceğinden fazla ölçü seçildi.";
     case "unknown_bar":
       return "Seçilen ölçü artık burada değil.";
+    case "requires_full_bars":
+      /*
+       * Not an error and not phrased as one: the selection is perfectly good
+       * for what selections are for. It is simply not a practice loop, and
+       * saying so is better than quietly looping bars nobody chose.
+       */
+      return "Çalışma döngüsü tam ölçülerden oluşur. Seçimi ölçü başına ve ölçü sonuna getir.";
   }
 }
+
+/** Which door this range came through, said plainly (§V). */
+export function sourceLabel(source: RangeSource): string {
+  switch (source) {
+    case "single_bar":
+      return "Tek ölçü";
+    case "bar_pair":
+      return "Seçilen iki ölçü arası";
+    case "time_selection":
+      return "Zaman seçiminden";
+  }
+}
+
+/** The half-finished pair: one end chosen, waiting for the other. */
+export const PAIR_PENDING_MESSAGE =
+  "İlk ölçü seçildi. Aynı bölümden ikinci bir ölçü seç.";
+
+/** The action a time selection offers, when it sits on bar lines. */
+export const PRACTICE_FROM_SELECTION_LABEL = "Çalışma döngüsü yap";
 
 /**
  * What the loop's edges cut, and what the reader can do about it.

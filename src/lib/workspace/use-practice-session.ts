@@ -32,12 +32,18 @@ import {
 } from "@/lib/practice/count-in";
 import {
   NO_LOOP,
-  practiceRange,
   rangeIsLive,
   type PlaybackLoop,
   type PracticeRange,
-  type RangeRefusal,
 } from "@/lib/practice/range";
+import {
+  rangeFromBar,
+  rangeFromBarPair,
+  rangeFromTimeSelection,
+  type EntryRefusal,
+  type EntryResult,
+  type RangeSource,
+} from "@/lib/practice/range-entry";
 import {
   rangePreflight,
   type RangePreflight,
@@ -52,6 +58,7 @@ import {
 } from "@/lib/practice/progressive-rate";
 import { barTimeline } from "@/lib/audio/schedule";
 import type { PlaybackController } from "@/lib/audio/playback";
+import type { TimeSelection } from "@/lib/song/time-selection";
 import type { Song } from "@/lib/song/schema";
 
 export type PracticeSession = {
@@ -60,7 +67,9 @@ export type PracticeSession = {
   /** What this range's edges cut, or null when there is no range. */
   readonly preflight: RangePreflight | null;
   /** Why the last attempt to set a range was refused, or null. */
-  readonly refusal: RangeRefusal | null;
+  readonly refusal: EntryRefusal | null;
+  /** Which of the three doors the current range came through (§V). */
+  readonly source: RangeSource | null;
   readonly countInBars: CountInBars;
   readonly progressive: ProgressiveState | null;
   /** The bar a two-tap range selection is waiting on, or null. */
@@ -90,6 +99,21 @@ export type PracticeSession = {
   extendTo(barKey: string): void;
   /** Practise the whole run between these two bars. */
   setRange(startBarKey: string, endBarKey: string): void;
+  /**
+   * Practise the bars a time selection covers, if it covers whole ones.
+   *
+   * Refused by name when it does not. Nothing is rounded and nothing is
+   * snapped: a selection that starts mid-bar is a different piece of music,
+   * and looping it would be the app choosing bars the reader did not (§V).
+   */
+  setFromTimeSelection(selection: TimeSelection): void;
+  /**
+   * Whether that would work, asked before the action is offered.
+   *
+   * The same function decides both, so an action cannot appear and then
+   * refuse.
+   */
+  offersFromSelection(selection: TimeSelection): boolean;
   /** Take the offer the preflight computed. Never happens on its own (§10). */
   acceptWidened(): void;
   clear(): void;
@@ -139,7 +163,8 @@ export function usePracticeSession(options: {
   const { viewedSectionId, activeBarKey } = options;
 
   const [range, setRangeState] = useState<PracticeRange | null>(null);
-  const [refusal, setRefusal] = useState<RangeRefusal | null>(null);
+  const [refusal, setRefusal] = useState<EntryRefusal | null>(null);
+  const [source, setSource] = useState<RangeSource | null>(null);
   const [countInBars, setCountInBars] = useState<CountInBars>(DEFAULT_COUNT_IN);
   const [progressive, setProgressive] = useState<ProgressiveState | null>(null);
   const [pendingBarKey, setPendingBarKey] = useState<string | null>(null);
@@ -155,6 +180,7 @@ export function usePracticeSession(options: {
   if (range !== null && !rangeIsLive(song, range)) {
     setRangeState(null);
     setPendingBarKey(null);
+    setSource(null);
   }
 
   const preflight = useMemo(
@@ -246,26 +272,46 @@ export function usePracticeSession(options: {
 
   /* --------------------------------------------------------- the doors in */
 
+  /**
+   * One place a result becomes state, whichever door produced it.
+   *
+   * Three entries and one landing: a range set from a pair and a range set
+   * from a selection are the same range, so they must also leave the session
+   * in the same condition.
+   */
+  const land = useCallback((result: EntryResult, from: RangeSource) => {
+    if (!result.ok) {
+      setRefusal(result.reason);
+      return;
+    }
+    setRefusal(null);
+    setRangeState(result.range);
+    setSource(from);
+    setPendingBarKey(null);
+  }, []);
+
   const apply = useCallback(
-    (a: string, b: string) => {
-      const result = practiceRange(song, a, b);
-      if (!result.ok) {
-        setRefusal(result.reason);
-        return;
-      }
-      setRefusal(null);
-      setRangeState(result.range);
-      setPendingBarKey(null);
-    },
-    [song],
+    (a: string, b: string) => land(rangeFromBarPair(song, a, b), "bar_pair"),
+    [land, song],
   );
 
   const selectBar = useCallback(
     (barKey: string) => {
       setPendingBarKey(null);
-      apply(barKey, barKey);
+      land(rangeFromBar(song, barKey), "single_bar");
     },
-    [apply],
+    [land, song],
+  );
+
+  const offersFromSelection = useCallback(
+    (selection: TimeSelection) => rangeFromTimeSelection(song, selection).ok,
+    [song],
+  );
+
+  const setFromTimeSelection = useCallback(
+    (selection: TimeSelection) =>
+      land(rangeFromTimeSelection(song, selection), "time_selection"),
+    [land, song],
   );
 
   const extendTo = useCallback(
@@ -297,6 +343,7 @@ export function usePracticeSession(options: {
     setRangeState(null);
     setPendingBarKey(null);
     setRefusal(null);
+    setSource(null);
   }, []);
 
   const startProgressiveRate = useCallback(
@@ -343,6 +390,7 @@ export function usePracticeSession(options: {
     range,
     preflight,
     refusal,
+    source,
     countInBars,
     progressive,
     pendingBarKey,
@@ -354,6 +402,8 @@ export function usePracticeSession(options: {
     selectBar,
     extendTo,
     setRange,
+    setFromTimeSelection,
+    offersFromSelection,
     acceptWidened,
     clear,
     setCountIn: setCountInBars,

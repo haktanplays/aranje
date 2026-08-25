@@ -16,18 +16,32 @@ import {
 import { ChainDecisionSheet } from "@/components/workspace/ChainDecisionSheet";
 import { SelectionActionBar } from "@/components/workspace/SelectionActionBar";
 import { TransformSheet } from "@/components/workspace/TransformSheet";
+import { PRACTICE_FROM_SELECTION_LABEL } from "@/lib/practice/messages";
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
+import type { PracticeSession } from "@/lib/workspace/use-practice-session";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { TimingTarget } from "@/lib/workspace/use-timing-change";
 
 export function SelectionActionArea({
   session,
+  practice,
   onOpenTiming,
 }: {
   session: SelectionSession;
+  /** The practice loop, so a whole-bar time selection can become one (§V.B). */
+  practice: PracticeSession;
   /** Opens the meter-and-rhythm sheet; owned by the timing controller. */
   onOpenTiming: (target: TimingTarget) => void;
 }) {
   const { time, bars } = session;
+  /*
+   * Offered only when the selection really is whole bars, and offered through
+   * the *same* function that would convert it. A looser predicate here would
+   * be an action that appears and then refuses.
+   */
+  const selection = time.handle.selection;
+  const offersPractice =
+    selection !== null && practice.offersFromSelection(selection);
 
   return (
     <>
@@ -124,6 +138,25 @@ export function SelectionActionArea({
           onCancel={bars.handle.cancel}
           onClear={bars.clear}
         />
+      ) : null}
+
+      {/*
+        The third door (§V.B). A strip of its own rather than a new entry in
+        the selection bar's action set: this does not edit anything, and
+        putting it among cut/copy/delete would say that it might.
+      */}
+      {offersPractice && selection ? (
+        <div className="border-line border-t px-3 py-2">
+          <button
+            type="button"
+            data-practice-from-selection
+            onClick={() => practice.setFromTimeSelection(selection)}
+            style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+            className="border-bronze text-bronze w-full rounded-lg border px-3 text-sm"
+          >
+            {PRACTICE_FROM_SELECTION_LABEL}
+          </button>
+        </div>
       ) : null}
 
       {time.handle.selection ? (

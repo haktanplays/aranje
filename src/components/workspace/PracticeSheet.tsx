@@ -30,6 +30,7 @@ import {
   PROGRESSIVE_LABEL,
   refusalMessage,
   rangeSummary,
+  sourceLabel,
 } from "@/lib/practice/messages";
 import { COUNT_IN_CHOICES, countInLabel } from "@/lib/practice/count-in";
 import { progressiveNotice } from "@/lib/practice/progressive-rate";
@@ -85,9 +86,16 @@ export function PracticeSheet({
               )}
             </>
           ) : (
-            <p data-practice-range className="text-text text-sm">
-              {rangeSummary(view.firstBarNumber, view.lastBarNumber, view.sectionName)}
-            </p>
+            <>
+              <p data-practice-range className="text-text text-sm">
+                {rangeSummary(view.firstBarNumber, view.lastBarNumber, view.sectionName)}
+              </p>
+              {session.source ? (
+                <p data-practice-source className="text-muted text-[11px]">
+                  {sourceLabel(session.source)}
+                </p>
+              ) : null}
+            </>
           )}
 
           {session.refusal ? (
@@ -122,7 +130,20 @@ export function PracticeSheet({
           ) : null}
 
           {view !== null ? (
-            <div className="mt-3">
+            <div className="mt-3 space-y-1.5">
+              {/*
+                The second door (§V.A). One end is already chosen, so naming
+                the other one is a range — in either order, because the reader
+                may well have moved backwards to find it.
+              */}
+              {session.currentBarKey ? (
+                <SheetButton
+                  data-practice-extend
+                  onClick={() => session.extendTo(session.currentBarKey!)}
+                >
+                  Bulunduğun ölçüye kadar uzat
+                </SheetButton>
+              ) : null}
               <SheetButton data-practice-clear onClick={session.clear}>
                 {CLEAR_RANGE_LABEL}
               </SheetButton>
