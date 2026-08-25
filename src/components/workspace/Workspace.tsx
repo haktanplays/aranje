@@ -85,7 +85,7 @@ export function Workspace() {
   const toggleLoop = useLoopToggle(
     controller,
     navigation.viewedSectionId,
-    state.loopSectionId,
+    state.loop.kind === "section" ? state.loop.sectionId : null,
   );
 
   const tab = useTabView({ song, track, canPersist, commit, pause });
@@ -270,7 +270,7 @@ export function Workspace() {
         <SectionNavigator
           runs={runs}
           activeSectionId={navigation.viewedSectionId}
-          loopSectionId={state.loopSectionId}
+          loopSectionId={state.loop.kind === "section" ? state.loop.sectionId : null}
           onJump={focusSection}
           onOpenList={() => overlays.open("section")}
         />

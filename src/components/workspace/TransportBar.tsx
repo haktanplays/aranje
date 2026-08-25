@@ -106,7 +106,9 @@ export function TransportBar({
   const busy = BUSY.includes(state.status);
   const status = statusLabel(state);
   const playing = state.status === "playing";
-  const loopRun = runs.find((run) => run.sectionId === state.loopSectionId);
+  const loopRun = runs.find(
+    (run) => state.loop.kind === "section" && run.sectionId === state.loop.sectionId,
+  );
 
   return (
     <footer className="border-t border-line">
@@ -207,7 +209,7 @@ export function TransportBar({
            */
           label="Bölüm döngüsü"
           onClick={onToggleLoop}
-          active={Boolean(state.loopSectionId)}
+          active={state.loop.kind !== "none"}
           disabled={busy || runs.length === 0}
         >
           <span aria-hidden>&#8635;</span>

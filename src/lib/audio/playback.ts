@@ -38,9 +38,9 @@ import {
   barStartTicks,
   nearestBarKey,
   positionAtTicks,
-  sectionLoopBounds,
   type PlayPosition,
 } from "@/lib/audio/position";
+import { loopBounds, NO_LOOP, type PlaybackLoop } from "@/lib/practice/range";
 import { NOWHERE } from "@/lib/audio/position";
 import {
   DEFAULT_PRACTICE_PERCENT,
@@ -79,7 +79,15 @@ export type PlaybackState = {
   activeBpm: number;
   /** True when the song asks for more than one tempo, so the UI can say so. */
   hasTempoChanges: boolean;
-  loopSectionId: string | null;
+  /**
+   * What is looping, and which kind of loop it is (2R-A §10).
+   *
+   * A typed value rather than a nullable section id. There are two kinds of
+   * loop now — a whole section, and a practice range of chosen bars — and one
+   * string could only have told them apart by convention, which is a
+   * convention every reader of it would have had to remember.
+   */
+  loop: PlaybackLoop;
   metronome: boolean;
   progress: LoadProgress | null;
   error: string | null;
@@ -179,7 +187,7 @@ export class PlaybackController {
       bpm: effectiveBpm(song.bpm, practicePercent),
       activeBpm: tempoAtTicks(this.tempoCache.map, 0),
       hasTempoChanges: hasTempoChanges(song),
-      loopSectionId: null,
+      loop: NO_LOOP,
       metronome: false,
       progress: null,
       error: null,
@@ -223,11 +231,8 @@ export class PlaybackController {
   }
 
   getLoopBounds(): { on: boolean; startTicks: number; endTicks: number } | null {
-    const sectionId = this.state.loopSectionId;
-    if (!sectionId) return null;
-    const bounds = sectionLoopBounds(this.plan, sectionId);
-    if (!bounds) return null;
-    return { on: true, ...bounds };
+    const bounds = loopBounds(this.plan, this.state.loop);
+    return bounds ? { on: true, ...bounds } : null;
   }
 
   /** Current transport position, read straight from the audio clock. */
@@ -358,10 +363,7 @@ export class PlaybackController {
     const transport = this.engine?.context.transport;
     this.engine?.expression.stopAll();
     if (transport) {
-      transport.ticks = this.state.loopSectionId
-        ? (sectionLoopBounds(this.plan, this.state.loopSectionId)?.startTicks ??
-          0)
-        : 0;
+      transport.ticks = loopBounds(this.plan, this.state.loop)?.startTicks ?? 0;
     }
     if (this.state.status === "ended") this.set({ status: "paused" });
   }
@@ -395,7 +397,19 @@ export class PlaybackController {
   }
 
   setLoopSection(sectionId: string | null): void {
-    this.set({ loopSectionId: sectionId });
+    this.setLoop(sectionId === null ? NO_LOOP : { kind: "section", sectionId });
+  }
+
+  /**
+   * Loop this, or nothing.
+   *
+   * The one way the loop changes. A range whose bars have gone resolves to no
+   * bounds and therefore to no loop — it never falls back to the section it
+   * used to be in, because a loop the reader did not ask for is worse than
+   * none.
+   */
+  setLoop(loop: PlaybackLoop): void {
+    this.set({ loop });
     this.applyLoop();
   }
 
@@ -403,19 +417,13 @@ export class PlaybackController {
     const transport = this.engine?.context.transport;
     if (!transport) return;
 
-    const sectionId = this.state.loopSectionId;
-    if (!sectionId) {
-      transport.loop = false;
-      return;
-    }
-
-    const bounds = sectionLoopBounds(this.plan, sectionId);
+    const bounds = loopBounds(this.plan, this.state.loop);
     if (!bounds) {
       transport.loop = false;
       return;
     }
 
-    // Both edges are whole bar lines by construction (see sectionLoopBounds).
+    // Both edges are whole bar lines by construction (see `lib/practice`).
     transport.loopStart = `${bounds.startTicks}i`;
     transport.loopEnd = `${bounds.endTicks}i`;
     transport.loop = true;

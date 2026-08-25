@@ -6,6 +6,7 @@ import { useSyncExternalStore } from "react";
 import { PlaybackController, type PlaybackState } from "@/lib/audio/playback";
 import { isMixOnlyChange } from "@/lib/song/track-mix";
 import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
+import { NO_LOOP, rangeIsLive } from "@/lib/practice/range";
 import type { Song } from "@/lib/song/schema";
 
 const SERVER_STATE: PlaybackState = {
@@ -15,7 +16,7 @@ const SERVER_STATE: PlaybackState = {
   bpm: 0,
   activeBpm: 0,
   hasTempoChanges: false,
-  loopSectionId: null,
+  loop: NO_LOOP,
   metronome: false,
   progress: null,
   error: null,
@@ -44,11 +45,23 @@ function carriedController(
   const at = previous.getPosition().barKey;
   if (at !== null) next.seekToNearestBar(at);
 
-  const loopSectionId = previous.getState().loopSectionId;
-  const stillThere = song.sections.some(
-    (section) => section.id === loopSectionId && section.bars.length > 0,
-  );
-  if (loopSectionId !== null && stillThere) next.setLoopSection(loopSectionId);
+  /*
+   * The loop survives a change to the song only if the music it names does.
+   * A section that lost its bars and a practice range whose bars were removed
+   * are the same failure: the loop would name a shape the new song does not
+   * have, and the transport would be looping something the reader did not
+   * choose. Both are checked against the new song, not the old one.
+   */
+  const loop = previous.getState().loop;
+  const survives =
+    loop.kind === "none"
+      ? false
+      : loop.kind === "section"
+        ? song.sections.some(
+            (section) => section.id === loop.sectionId && section.bars.length > 0,
+          )
+        : rangeIsLive(song, loop.range);
+  if (survives) next.setLoop(loop);
 
   return next;
 }
