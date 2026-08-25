@@ -328,3 +328,23 @@ export function applyTrackCommand(
     }
   }
 }
+
+/**
+ * The track a command just made, or null when it made none (2Q-B §5.3).
+ *
+ * A reader who has just chosen an instrument and pressed "Ekle" is standing
+ * on that track in their head; landing them back on the one they were on
+ * before means the next thing they do — arm edit mode, tap a beat — happens
+ * to the wrong instrument. So the controller moves them, and it works out
+ * *which* track by comparing the two songs rather than by trusting the
+ * command to have named an id it does not name.
+ *
+ * Pure, and by identity rather than by position: duplicating or reordering
+ * changes indices, so an index would find the wrong track the first time
+ * either happened.
+ */
+export function createdTrackId(before: Song, after: Song): string | null {
+  const had = new Set(before.tracks.map((track) => track.id));
+  const made = after.tracks.filter((track) => !had.has(track.id));
+  return made.length === 1 ? (made[0]?.id ?? null) : null;
+}

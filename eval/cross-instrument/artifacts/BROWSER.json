@@ -1,0 +1,187 @@
+{
+  "what": "2Q-B §15 — enstrümanlar arası nota girişi kabulü",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "howPitchedIsReached": "Perdesiz track production .aranje.json içe aktarma akışıyla açıldı; localStorage'a elle yerleştirilmedi.",
+  "results": [
+    {
+      "name": "[390x844] D1 transport tam sığar",
+      "pass": true,
+      "detail": "1 satır · gerek 307.7 / yer 390 · kırpılan 0"
+    },
+    {
+      "name": "[390x844] D2 her transport kontrolü 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844] D3 gövde yatay taşmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844] D4 metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "kök yazı 16px, beklenen 16px"
+    },
+    {
+      "name": "[390x844] D10 nota sayfasındaki her kontrol 44px",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[390x844] D11 hiç konsol hatası yok",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844 @125%] D1 transport tam sığar",
+      "pass": true,
+      "detail": "1 satır · gerek 316.2 / yer 390 · kırpılan 0"
+    },
+    {
+      "name": "[390x844 @125%] D2 her transport kontrolü 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844 @125%] D3 gövde yatay taşmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844 @125%] D4 metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "kök yazı 20px, beklenen 20px"
+    },
+    {
+      "name": "[390x844 @125%] D10 nota sayfasındaki her kontrol 44px",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[390x844 @125%] D11 hiç konsol hatası yok",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844 @150%] D1 transport tam sığar",
+      "pass": true,
+      "detail": "1 satır · gerek 324.6 / yer 390 · kırpılan 0"
+    },
+    {
+      "name": "[390x844 @150%] D2 her transport kontrolü 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[390x844 @150%] D3 gövde yatay taşmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[390x844 @150%] D4 metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "kök yazı 24px, beklenen 24px"
+    },
+    {
+      "name": "[390x844 @150%] D10 nota sayfasındaki her kontrol 44px",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[390x844 @150%] D11 hiç konsol hatası yok",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] D1 transport tam sığar",
+      "pass": true,
+      "detail": "1 satır · gerek 307.7 / yer 320 · kırpılan 0"
+    },
+    {
+      "name": "[320x700] D2 her transport kontrolü 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700] D3 gövde yatay taşmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700] D4 metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "kök yazı 16px, beklenen 16px"
+    },
+    {
+      "name": "[320x700] D10 nota sayfasındaki her kontrol 44px",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[320x700] D11 hiç konsol hatası yok",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700 @125%] D1 transport tam sığar",
+      "pass": true,
+      "detail": "1 satır · gerek 316.2 / yer 320 · kırpılan 0"
+    },
+    {
+      "name": "[320x700 @125%] D2 her transport kontrolü 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700 @125%] D3 gövde yatay taşmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700 @125%] D4 metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "kök yazı 20px, beklenen 20px"
+    },
+    {
+      "name": "[320x700 @125%] D10 nota sayfasındaki her kontrol 44px",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[320x700 @125%] D11 hiç konsol hatası yok",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700 @150%] D1 transport tam sığar",
+      "pass": true,
+      "detail": "2 satır · gerek 324.6 / yer 320 · kırpılan 0"
+    },
+    {
+      "name": "[320x700 @150%] D2 her transport kontrolü 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "[320x700 @150%] D3 gövde yatay taşmıyor",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "[320x700 @150%] D4 metin ölçeği gerçekten uygulandı",
+      "pass": true,
+      "detail": "kök yazı 24px, beklenen 24px"
+    },
+    {
+      "name": "[320x700 @150%] D10 nota sayfasındaki her kontrol 44px",
+      "pass": true,
+      "detail": "null"
+    },
+    {
+      "name": "[320x700 @150%] D11 hiç konsol hatası yok",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

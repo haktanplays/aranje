@@ -1,6 +1,7 @@
 "use client";
 
 import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type { PlaybackState } from "@/lib/audio/playback";
 import type { SectionRun } from "@/lib/tab/timeline";
 
@@ -56,7 +57,19 @@ function IconButton({
       aria-label={label}
       aria-pressed={active}
       {...rest}
-      className={`flex min-h-11 min-w-11 items-center justify-center rounded-lg border text-sm disabled:opacity-40 ${
+      /*
+       * The touch minimum is a *physical* size, so it is pinned in pixels
+       * rather than to the root font (2Q-B §10).
+       *
+       * `min-h-11` is 2.75rem, which grows with the reader's text setting:
+       * at 150% every control in this row became 66px wide and the row went
+       * from 307.7px to 460.6px on a 320px screen — two controls off the
+       * edge, measured. Neither phone platform does that; a 44pt target
+       * stays 44pt while the *text* grows, which is the point of the
+       * setting. So the glyph scales and the box does not.
+       */
+      style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
+      className={`flex items-center justify-center rounded-lg border text-sm disabled:opacity-40 ${
         active
           ? "border-bronze/60 bg-raised text-bronze"
           : "border-line text-muted"
@@ -137,8 +150,28 @@ export function TransportBar({
         byte-for-byte the layout it already was.
       */}
       <div
-        className="flex items-center gap-1 px-2 py-1.5 xs:gap-2 xs:px-3"
-        style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}
+        /*
+         * Spacing is pinned in pixels for the same reason the touch targets
+         * are: `gap-1` and `px-2` are rem, so at a 150% text setting they
+         * grew from 4/8px to 6/12px and spent 18px this row does not have
+         * (2Q-B §10). Gaps are not text.
+         *
+         * `flex-wrap` is the honest end of that road. At 150% the practice
+         * pill's own number is 21px tall and the row genuinely needs more
+         * width than a 320px screen has; the choice is a second line or a
+         * control the reader cannot reach, and K-55 already settled which of
+         * those is acceptable. At every default text size the row is one
+         * line exactly as it was, and the acceptance measures reachability —
+         * nothing clipped, no body overflow — rather than line count.
+         */
+        className="flex flex-wrap items-center py-1.5"
+        style={{
+          columnGap: 4,
+          rowGap: 4,
+          paddingLeft: 8,
+          paddingRight: 8,
+          paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))",
+        }}
       >
         <IconButton label="Başa dön" onClick={onRewind} disabled={busy}>
           <span aria-hidden>&#9198;</span>
@@ -155,7 +188,13 @@ export function TransportBar({
            * pixels on a 390px screen and is not worth a missing control on a
            * 320px one.
            */
-          className="bg-bronze flex min-h-11 min-w-11 items-center justify-center rounded-lg px-2 text-base font-semibold text-[#1A1409] disabled:opacity-50 xs:min-w-14 xs:px-4"
+          style={{
+            minHeight: MIN_TOUCH_TARGET_PX,
+            minWidth: MIN_TOUCH_TARGET_PX,
+            paddingLeft: 8,
+            paddingRight: 8,
+          }}
+          className="bg-bronze flex items-center justify-center rounded-lg text-base font-semibold text-[#1A1409] disabled:opacity-50"
         >
           <span aria-hidden>{playing ? "⏸" : "▶"}</span>
         </button>
@@ -220,7 +259,13 @@ export function TransportBar({
            * a larger system font or a three-digit percentage could have taken
            * it under the touch minimum without anything failing.
            */
-          className={`ml-auto min-h-11 min-w-11 shrink-0 rounded-lg border px-2 font-mono text-sm tabular-nums xs:px-3 ${
+          style={{
+            minHeight: MIN_TOUCH_TARGET_PX,
+            minWidth: MIN_TOUCH_TARGET_PX,
+            paddingLeft: 8,
+            paddingRight: 8,
+          }}
+          className={`ml-auto shrink-0 rounded-lg border font-mono text-sm tabular-nums ${
             state.practicePercent === DEFAULT_PRACTICE_PERCENT
               ? "border-line text-muted"
               : "border-bronze/60 text-bronze"

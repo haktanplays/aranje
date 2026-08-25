@@ -1,0 +1,430 @@
+{
+  "pitched": {
+    "version": 2,
+    "title": "Piyano Taslak",
+    "bpm": 120,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Ritim Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      },
+      {
+        "id": "keys",
+        "name": "Piyano",
+        "instrumentId": "piano",
+        "presetId": "grand",
+        "volumeDb": -6
+      }
+    ],
+    "sections": [
+      {
+        "id": "verse",
+        "name": "Verse",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "keys": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "chorus",
+        "name": "Chorus",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "keys": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "kit": {
+    "version": 2,
+    "title": "Davul Taslak",
+    "bpm": 120,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Ritim Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      },
+      {
+        "id": "drums",
+        "name": "Davul",
+        "instrumentId": "drum_kit",
+        "presetId": "rock",
+        "volumeDb": -6
+      }
+    ],
+    "sections": [
+      {
+        "id": "verse",
+        "name": "Verse",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "drums": [
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                []
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "drums": [
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                []
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "chorus",
+        "name": "Chorus",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "drums": [
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                []
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "drums": [
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                [],
+                []
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "plain": {
+    "version": 2,
+    "title": "Tek Gitar",
+    "bpm": 120,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Ritim Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      }
+    ],
+    "sections": [
+      {
+        "id": "verse",
+        "name": "Verse",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "chorus",
+        "name": "Chorus",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

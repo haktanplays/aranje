@@ -1,0 +1,239 @@
+{
+  "what": "2Q-B §16 — nota girişi çekirdeklerinin maliyeti",
+  "measuredOn": "masaüstü Node — telefon değil",
+  "method": "20 ısınma turu, sonra 30 ölçüm; medyan/p95/maks",
+  "note": "Her komut settle()'den geçiyor: yani bu sayılar şema + doğrulayıcı zincirinin tamamını içeriyor, sadece slot yazmayı değil.",
+  "models": {
+    "kit": {
+      "bars": 4,
+      "tracks": 2,
+      "drumStep": {
+        "rows": 4,
+        "cells": 64,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.021,
+          "p95Ms": 0.03,
+          "maxMs": 0.046
+        },
+        "rowsScan": {
+          "rounds": 30,
+          "medianMs": 0.005,
+          "p95Ms": 0.006,
+          "maxMs": 0.012
+        }
+      }
+    },
+    "pitched": {
+      "bars": 4,
+      "tracks": 2,
+      "pitchedStep": {
+        "cells": 16,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.005,
+          "p95Ms": 0.011,
+          "maxMs": 0.014
+        },
+        "octave": {
+          "rounds": 30,
+          "medianMs": 0.004,
+          "p95Ms": 0.01,
+          "maxMs": 0.016
+        }
+      }
+    },
+    "fourPart": {
+      "bars": 4,
+      "tracks": 4,
+      "drumStep": {
+        "rows": 4,
+        "cells": 128,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.039,
+          "p95Ms": 0.079,
+          "maxMs": 0.082
+        },
+        "rowsScan": {
+          "rounds": 30,
+          "medianMs": 0.005,
+          "p95Ms": 0.006,
+          "maxMs": 0.006
+        }
+      }
+    },
+    "maxTracks": {
+      "bars": 4,
+      "tracks": 8,
+      "drumStep": {
+        "rows": 4,
+        "cells": 128,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.039,
+          "p95Ms": 0.077,
+          "maxMs": 0.08
+        },
+        "rowsScan": {
+          "rounds": 30,
+          "medianMs": 0.011,
+          "p95Ms": 0.022,
+          "maxMs": 0.05
+        }
+      },
+      "pitchedStep": {
+        "cells": 32,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.012,
+          "p95Ms": 0.042,
+          "maxMs": 0.043
+        },
+        "octave": {
+          "rounds": 30,
+          "medianMs": 0.006,
+          "p95Ms": 0.011,
+          "maxMs": 0.036
+        }
+      }
+    },
+    "worstCase": {
+      "bars": 32,
+      "tracks": 8,
+      "drumStep": {
+        "rows": 4,
+        "cells": 1024,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.079,
+          "p95Ms": 0.2,
+          "maxMs": 0.232
+        },
+        "rowsScan": {
+          "rounds": 30,
+          "medianMs": 0.013,
+          "p95Ms": 0.014,
+          "maxMs": 0.029
+        }
+      },
+      "pitchedStep": {
+        "cells": 256,
+        "build": {
+          "rounds": 30,
+          "medianMs": 0.067,
+          "p95Ms": 0.084,
+          "maxMs": 0.108
+        },
+        "octave": {
+          "rounds": 30,
+          "medianMs": 0.054,
+          "p95Ms": 0.093,
+          "maxMs": 0.149
+        }
+      }
+    }
+  },
+  "commands": {
+    "kit": {
+      "landOn": {
+        "rounds": 30,
+        "medianMs": 0.001,
+        "p95Ms": 0.001,
+        "maxMs": 0.001
+      },
+      "insertDrumHit": {
+        "rounds": 30,
+        "medianMs": 0.477,
+        "p95Ms": 1.204,
+        "maxMs": 1.74
+      },
+      "removeDrumHit": {
+        "rounds": 30,
+        "medianMs": 0.301,
+        "p95Ms": 0.399,
+        "maxMs": 1.122
+      }
+    },
+    "pitched": {
+      "insertPitchedNote": {
+        "rounds": 30,
+        "medianMs": 0.369,
+        "p95Ms": 1.047,
+        "maxMs": 1.574
+      }
+    },
+    "fourPart": {
+      "landOn": {
+        "rounds": 30,
+        "medianMs": 0.001,
+        "p95Ms": 0.001,
+        "maxMs": 0.008
+      },
+      "insertDrumHit": {
+        "rounds": 30,
+        "medianMs": 1.752,
+        "p95Ms": 3.508,
+        "maxMs": 4.542
+      },
+      "removeDrumHit": {
+        "rounds": 30,
+        "medianMs": 0.988,
+        "p95Ms": 1.737,
+        "maxMs": 2.822
+      }
+    },
+    "maxTracks": {
+      "landOn": {
+        "rounds": 30,
+        "medianMs": 0.001,
+        "p95Ms": 0.003,
+        "maxMs": 0.006
+      },
+      "insertDrumHit": {
+        "rounds": 30,
+        "medianMs": 1.667,
+        "p95Ms": 2.598,
+        "maxMs": 2.713
+      },
+      "removeDrumHit": {
+        "rounds": 30,
+        "medianMs": 1.547,
+        "p95Ms": 2.472,
+        "maxMs": 2.485
+      },
+      "insertPitchedNote": {
+        "rounds": 30,
+        "medianMs": 1.604,
+        "p95Ms": 2.554,
+        "maxMs": 2.852
+      }
+    },
+    "worstCase": {
+      "landOn": {
+        "rounds": 30,
+        "medianMs": 0.001,
+        "p95Ms": 0.001,
+        "maxMs": 0.002
+      },
+      "insertDrumHit": {
+        "rounds": 30,
+        "medianMs": 16.695,
+        "p95Ms": 19.021,
+        "maxMs": 19.824
+      },
+      "removeDrumHit": {
+        "rounds": 30,
+        "medianMs": 16.852,
+        "p95Ms": 18.434,
+        "maxMs": 19.564
+      },
+      "insertPitchedNote": {
+        "rounds": 30,
+        "medianMs": 16.225,
+        "p95Ms": 18.271,
+        "maxMs": 23.72
+      }
+    }
+  }
+}

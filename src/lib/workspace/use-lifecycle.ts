@@ -41,6 +41,7 @@ import {
 } from "@/lib/song/section-lifecycle";
 import {
   applyTrackCommand,
+  createdTrackId,
   type TrackCommand,
 } from "@/lib/song/track-lifecycle";
 import type {
@@ -190,6 +191,18 @@ export function useLifecycle(options: {
         command.kind,
         STRUCTURAL_TRACK.has(command.kind) ? onBeforeStructural : null,
         (next) => {
+          /*
+           * A track that was just made is the one the reader is standing on.
+           * Without this the next thing they do — arm edit mode, tap a beat
+           * — happens to whichever track they were on before, which is the
+           * wrong instrument and, on a kit, a surface that is not even the
+           * same shape (2Q-B §5.3).
+           */
+          const made = createdTrackId(song, next);
+          if (made !== null) {
+            selectTrack(made);
+            return;
+          }
           if (deletedIndex < 0 || selectedTrackId !== deletedId) return;
           const survivor =
             next.tracks[survivorIndex(deletedIndex, next.tracks.length)];

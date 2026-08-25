@@ -10,6 +10,7 @@ import { sameSong } from "@/lib/song/edit-history";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import {
   applyTrackCommand,
+  createdTrackId,
   isFrettedInstrument,
   tuningOptionsFor,
   type TrackCommand,
@@ -369,5 +370,71 @@ describe("51. setup changes: the safe road and the destructive road", () => {
     // The input song still holds the music, whole: undo has something real
     // to return to, byte for byte.
     expect(JSON.stringify(SAMPLE_SONG)).toBe(frozenSample);
+  });
+});
+
+describe("228. landing on the track you just made (2Q-B §5.3)", () => {
+  /*
+   * Written red: `create_track` left the reader on the track they were on
+   * before, so the chain "add a kit → tap a beat" wrote nothing, or worse,
+   * wrote onto the guitar. Nothing about the create command was wrong; the
+   * controller simply never moved.
+   */
+  const base = SAMPLE_SONG;
+
+  it("names the track a create command added", () => {
+    const result = applyTrackCommand(base, {
+      kind: "create_track",
+      setup: { name: "Davul 2", instrumentId: "drum_kit", presetId: "rock" },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const made = createdTrackId(base, result.song);
+    expect(made).not.toBeNull();
+    expect(result.song.tracks.some((track) => track.id === made)).toBe(true);
+    expect(base.tracks.some((track) => track.id === made)).toBe(false);
+  });
+
+  it("names the copy a duplicate command added", () => {
+    const result = applyTrackCommand(base, {
+      kind: "duplicate_track",
+      trackId: base.tracks[0]!.id,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(createdTrackId(base, result.song)).not.toBeNull();
+  });
+
+  it("names nothing when a command added no track", () => {
+    const result = applyTrackCommand(base, {
+      kind: "rename_track",
+      trackId: base.tracks[0]!.id,
+      name: "Başka",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(createdTrackId(base, result.song)).toBeNull();
+  });
+
+  it("names nothing when a track was removed", () => {
+    const result = applyTrackCommand(base, {
+      kind: "delete_track",
+      trackId: base.tracks[0]!.id,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(createdTrackId(base, result.song)).toBeNull();
+  });
+
+  it("finds the new track by identity, not by position", () => {
+    const result = applyTrackCommand(base, {
+      kind: "create_track",
+      setup: { name: "Davul 2", instrumentId: "drum_kit", presetId: "rock" },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // Reorder the result: the answer must not change.
+    const shuffled = { ...result.song, tracks: [...result.song.tracks].reverse() };
+    expect(createdTrackId(base, shuffled)).toBe(createdTrackId(base, result.song));
   });
 });

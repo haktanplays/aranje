@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # 2Q-A vacuity probes that need the real browser (§18).
 #
-# Six mutations against guarantees no unit test can hold, because they are
-# facts about layout and gestures rather than about data: the whole transport
-# fitting at 320 px, a lane header that does not move the reader's view, the
-# follow etiquette, and the single horizontal scroller as the DOM actually
-# reports it. Each breaks a guarantee, rebuilds, and asserts that the named
-# acceptance scenarios go red.
+# Four mutations against guarantees no unit test can hold, because they are
+# facts about layout and gestures rather than about data: a lane header that
+# does not move the reader's view, the follow etiquette, and the single
+# horizontal scroller as the DOM actually reports it. Each breaks a
+# guarantee, rebuilds, and asserts that the named acceptance scenarios go red.
+#
+# The two transport probes moved to eval/cross-instrument at 2Q-B; see below.
 #
 # The unit-suite probes live in probes.sh.
 #
@@ -57,26 +58,13 @@ PY
   mv "$file.probebak" "$file"
 }
 
-echo "--- 320 px transport (§3) ---"
-
-# 32 — the responsive step goes away and the row is spaced for a wide phone
-probe "32 the transport row is padded as if every phone were 390 px" \
-  src/components/workspace/TransportBar.tsx "43 ,45 ,46 " "" \
-  'className="flex items-center gap-1 px-2 py-1.5 xs:gap-2 xs:px-3"' \
-  'className="flex items-center gap-2 px-3 py-1.5"'
-
-# 33 — the row is made to fit by scrolling instead of by fitting
-#
-# The first version of this probe widened only the play button and stayed
-# green: the row needs 307.7px of 320 and that mutation costs 12.0px, so it
-# still fit — by 0.3px. That is a finding about the headroom rather than about
-# the test, and it is written down in the report. What the scenarios do own is
-# the rule this checkpoint actually settled: a control that has to be scrolled
-# to is not a control the reader has.
-probe "33 the transport row hides its overflow behind a scroller" \
-  src/components/workspace/TransportBar.tsx "43 ,47 " "" \
-  'className="flex items-center gap-1 px-2 py-1.5 xs:gap-2 xs:px-3"' \
-  'className="flex items-center gap-2 px-3 py-1.5 overflow-x-auto"'
+# The two 320px transport probes that used to live here moved to
+# `eval/cross-instrument/browser-probes.sh` at 2Q-B (§10). The rule they
+# protect is unchanged — the whole transport has to be reachable on a narrow
+# phone — but the surface it is measured on grew: the row now also has to
+# survive the reader's 125% and 150% text settings, and those runs only exist
+# in the 2Q-B harness. Leaving stale copies here would have meant two probes
+# anchored on markup that no longer exists, silently skipping.
 
 echo "--- şerit dokunuşu ve takip (§6, §8) ---"
 
