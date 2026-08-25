@@ -29,6 +29,8 @@
  * word the code uses for a row of data — a musician has a shorter and better
  * word for what is in that list, and it is the instruments.
  */
+import type { DrumPiece } from "@/lib/instruments/registry";
+
 export const INSTRUMENT_LIST_TITLE = "Enstrümanlar";
 
 /** Reader-facing instrument names, keyed by the registry's id. */
@@ -81,4 +83,28 @@ export function instrumentName(instrumentId: string): string | null {
 
 export function presetName(instrumentId: string, presetId: string): string | null {
   return PRESET_NAMES[`${instrumentId}.${presetId}`] ?? null;
+}
+
+/**
+ * The kit's pieces in the reader's language (2Q-B §5.1).
+ *
+ * A step row is labelled for somebody who plays, not for somebody who reads
+ * enum names: nobody has ever called it `closed_hat`. `Record` over the
+ * piece union makes adding a piece without naming it a type error.
+ */
+export const DRUM_PIECE_NAMES: Readonly<Record<DrumPiece, string>> = {
+  kick: "Kick",
+  snare: "Trampet",
+  closed_hat: "Kapalı hi-hat",
+  open_hat: "Açık hi-hat",
+  ride: "Ride",
+  crash: "Crash",
+  china: "China",
+  tom_high: "Tiz tom",
+  tom_mid: "Orta tom",
+  tom_floor: "Yer tom",
+};
+
+export function drumPieceName(piece: DrumPiece): string {
+  return DRUM_PIECE_NAMES[piece];
 }
