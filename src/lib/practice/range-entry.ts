@@ -35,13 +35,21 @@ import {
   type PracticeRange,
   type RangeRefusal,
 } from "@/lib/practice/range";
+import { rangeDecision, rangePreflight } from "@/lib/practice/range-preflight";
 
 /**
  * Why a gesture did not become a practice range.
  *
  * The three from `range.ts` plus the one only a time selection can hit.
  */
-export type EntryRefusal = RangeRefusal | "requires_full_bars";
+export type EntryRefusal =
+  | RangeRefusal
+  | "requires_full_bars"
+  /**
+   * A connection at the range's edge continues past the end of the section
+   * (§VI). No range in this section can contain it, so none is made.
+   */
+  | "chain_crosses_section";
 
 export type EntryResult =
   | { readonly ok: true; readonly range: PracticeRange }
@@ -50,10 +58,26 @@ export type EntryResult =
 /** Which door a range came through, for the sheet to say so. */
 export type RangeSource = "single_bar" | "bar_pair" | "time_selection";
 
+/**
+ * The one gate every door goes through before a range exists (§VI).
+ *
+ * Fail-closed at the section seam and nowhere else. A chain that could be
+ * contained is an *offer* the reader may take or leave; a chain that leaves
+ * the section cannot be contained by anything here, so no range is made.
+ */
+function gated(song: Song, result: EntryResult): EntryResult {
+  if (!result.ok) return result;
+  const decision = rangeDecision(rangePreflight(song, result.range));
+  if (decision.kind === "blocked") {
+    return { ok: false, reason: "chain_crosses_section" };
+  }
+  return result;
+}
+
 /* ------------------------------------------------------------ 1. one bar */
 
 export function rangeFromBar(song: Song, barKey: string): EntryResult {
-  return singleBarRange(song, barKey);
+  return gated(song, singleBarRange(song, barKey));
 }
 
 /* ----------------------------------------------------------- 2. two bars */
@@ -66,7 +90,7 @@ export function rangeFromBar(song: Song, barKey: string): EntryResult {
  * used, and everything between them is included.
  */
 export function rangeFromBarPair(song: Song, a: string, b: string): EntryResult {
-  return practiceRange(song, a, b);
+  return gated(song, practiceRange(song, a, b));
 }
 
 /**
@@ -81,10 +105,13 @@ export function rangeFromBarSelection(
   song: Song,
   selection: BarSelection,
 ): EntryResult {
-  return practiceRange(
+  return gated(
     song,
-    barKeyOf(selection.sectionId, selection.startBarIndex),
-    barKeyOf(selection.sectionId, selection.endBarIndex),
+    practiceRange(
+      song,
+      barKeyOf(selection.sectionId, selection.startBarIndex),
+      barKeyOf(selection.sectionId, selection.endBarIndex),
+    ),
   );
 }
 
@@ -137,11 +164,14 @@ export function rangeFromTimeSelection(
     return { ok: false, reason: "requires_full_bars" };
   }
 
-  return practiceRange(
+  return gated(
     song,
-    barKeyOf(selection.sectionId, startIndex),
-    // Exclusive end: the selection stops *at* the line after its last bar.
-    barKeyOf(selection.sectionId, endIndex - 1),
+    practiceRange(
+      song,
+      barKeyOf(selection.sectionId, startIndex),
+      // Exclusive end: the selection stops *at* the line after its last bar.
+      barKeyOf(selection.sectionId, endIndex - 1),
+    ),
   );
 }
 

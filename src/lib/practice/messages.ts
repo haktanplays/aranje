@@ -47,6 +47,8 @@ export function refusalMessage(reason: EntryRefusal): string {
       return "Bir bölümün alabileceğinden fazla ölçü seçildi.";
     case "unknown_bar":
       return "Seçilen ölçü artık burada değil.";
+    case "chain_crosses_section":
+      return "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor.";
     case "requires_full_bars":
       /*
        * Not an error and not phrased as one: the selection is perfectly good
@@ -93,9 +95,9 @@ export function edgeMessage(kind: RangeEdgeKind): string | null {
     case "end_cuts_sustain":
       return "Döngünün sonunda hâlâ süren bir ses var; her turda kesilecek.";
     case "legato_boundary":
-      return "Bir bağlı geçiş döngünün dışına taşıyor; bağlandığı ses döngüde yok.";
+      return "Bağlantılı notalar çalışma alanının dışında kalıyor.";
     case "crosses_section":
-      return "Bağlantı bu bölümün dışına uzanıyor; döngü onu içine alamaz.";
+      return "Bu bağlantı bölüm sınırını aştığı için çalışma alanı oluşturulamıyor.";
   }
 }
 

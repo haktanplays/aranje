@@ -251,6 +251,75 @@ describe("270. a time selection is taken exactly or refused by name", () => {
   });
 });
 
+describe("272. a chain that leaves the section fails closed", () => {
+  /*
+   * A section whose first bar opens on a tie: the strike that made that sound
+   * is in the section before, which no range here can reach. §VI's answer is
+   * that there is no range at all, not a range with a caveat.
+   */
+  const CHAINED: Song = song(
+    [guitarTrack()],
+    [
+      section(
+        [
+          {
+            timeSignature: [4, 4],
+            resolution: 8,
+            slots: { gtr: ["-", "-", { notes: [{ pitch: "E2" }] }, null, null, null, null, null] },
+          },
+          {
+            timeSignature: [4, 4],
+            resolution: 8,
+            slots: { gtr: Array.from({ length: 8 }, () => null) },
+          },
+        ],
+        { id: "tail", name: "Kuyruk" },
+      ),
+    ],
+  );
+
+  it("refuses the single-bar door", () => {
+    expect(rangeFromBar(CHAINED, "tail:0")).toEqual({
+      ok: false,
+      reason: "chain_crosses_section",
+    });
+  });
+
+  it("refuses the pair door", () => {
+    expect(rangeFromBarPair(CHAINED, "tail:0", "tail:1")).toEqual({
+      ok: false,
+      reason: "chain_crosses_section",
+    });
+  });
+
+  it("refuses the time-selection door", () => {
+    const ticks = slotCount([4, 4], 8) * ticksPerSlot(8);
+    expect(
+      rangeFromTimeSelection(CHAINED, {
+        sectionId: "tail",
+        trackId: "gtr",
+        startTicks: 0,
+        endTicks: ticks,
+      }),
+    ).toEqual({ ok: false, reason: "chain_crosses_section" });
+  });
+
+  it("allows a range that starts after the chain has ended", () => {
+    expect(rangeFromBar(CHAINED, "tail:1").ok).toBe(true);
+  });
+
+  it("does not block a chain that could simply be included", () => {
+    /*
+     * The difference §VI turns on. A tie *inside* the section is an offer:
+     * the reader can take the connection or leave it, and either way there is
+     * a range. Only the seam is fail-closed.
+     */
+    const marks = boundaries("one");
+    expect(rangeFromBarPair(SONG, "one:1", "one:2").ok).toBe(true);
+    expect(rangeFromTimeSelection(SONG, time("one", marks[1]!, marks[3]!)).ok).toBe(true);
+  });
+});
+
 describe("271. the offer and the conversion are the same rule", () => {
   it("offers exactly the selections it would accept", () => {
     const marks = boundaries("one");

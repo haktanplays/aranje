@@ -63,6 +63,25 @@ export type RangeEdgeFinding = {
   readonly reachesBarKey: string | null;
 };
 
+/**
+ * What the reader is actually being asked, reduced to the three answers
+ * there are (2R-A §VI).
+ *
+ * The findings above say what was *found* — a tie here, a bond there — and
+ * that is what the message is built from. This is what can be *done*, and
+ * there are only three things: nothing, take the connection too, or the range
+ * cannot exist. Several boundaries of several kinds still make one decision;
+ * a reader asked twice about one loop has been asked about bookkeeping.
+ */
+export type RangeDecision =
+  | { readonly kind: "no_chain_impact" }
+  | {
+      readonly kind: "include_connection";
+      /** The range that would contain every chain. Offered, never applied. */
+      readonly widened: PracticeRange;
+    }
+  | { readonly kind: "blocked"; readonly reason: "crosses_section" };
+
 export type RangePreflight = {
   /**
    * The single worst thing found, for a reader who wants one sentence.
@@ -83,6 +102,28 @@ export type RangePreflight = {
 };
 
 const SAFE: RangePreflight = { kind: "safe", findings: [], widened: null };
+
+/**
+ * The decision, from the reading.
+ *
+ * Fail-closed at the section seam: a chain that continues into the next
+ * section cannot be contained by any range in this one, and offering a range
+ * that "mostly" contains it would be the silent widening this module refuses.
+ * So there is no range, and the reader is told why.
+ *
+ * A chain that *could* be contained but has not been is not blocked — the
+ * reader may perfectly well mean to loop into the middle of a held note. It
+ * is an offer, and the range they set stands until they take it.
+ */
+export function rangeDecision(preflight: RangePreflight): RangeDecision {
+  if (preflight.kind === "crosses_section") {
+    return { kind: "blocked", reason: "crosses_section" };
+  }
+  if (preflight.widened !== null) {
+    return { kind: "include_connection", widened: preflight.widened };
+  }
+  return { kind: "no_chain_impact" };
+}
 
 /** Worst first: the order the summary picks from. */
 const SEVERITY: readonly RangeEdgeKind[] = [
