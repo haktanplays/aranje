@@ -15,6 +15,9 @@ export type ChordErrorCode =
   | "unsupported_chord_quality"
   /* what the fretboard can reach */
   | "no_playable_voicing"
+  /* 2S-A §7: the pen writes shapes, and a shape needs a fretboard. */
+  | "power_chord_needs_fretboard"
+  | "power_chord_root_unreachable"
   | "voicing_out_of_range"
   | "voicing_string_collision"
   | "voicing_missing_required_tone"
@@ -40,6 +43,12 @@ export const CHORD_MESSAGES: Readonly<Record<ChordErrorCode, string>> = {
     "perdeli olmayan armonik track'lerde çalışır.",
   invalid_chord_root: "Bu kök ses tanınmadı.",
   unsupported_chord_quality: "Bu akor türü bu sürümde yazılamıyor.",
+  power_chord_needs_fretboard:
+    "Power chord kalemi bir tel ve perde ister; bu enstrümanın perdesi yok. " +
+    "Akor kurucusuyla yazabilirsin.",
+  power_chord_root_unreachable:
+    "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. " +
+    "Başka bir tele ya da perdeye dokun.",
   no_playable_voicing:
     "Bu konumda çalınabilir bir akor şekli bulunamadı. Başlangıç perdesini " +
     "veya varyasyonu değiştir.",
