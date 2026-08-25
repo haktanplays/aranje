@@ -88,6 +88,7 @@ export function TransportBar({
   onToggleLoop,
   onToggleMetronome,
   onOpenMixer,
+  onOpenPractice,
   auditioning,
   onOpenPracticeRate,
 }: {
@@ -99,6 +100,8 @@ export function TransportBar({
   onToggleMetronome: () => void;
   /** Opens the mixer sheet (spec 13.18). */
   onOpenMixer: () => void;
+  /** Opens the practice-loop sheet (2R-A §14). */
+  onOpenPractice: () => void;
   /** Any track silenced or soloed this session, so the control says so. */
   auditioning: boolean;
   onOpenPracticeRate: () => void;
@@ -213,6 +216,23 @@ export function TransportBar({
           disabled={busy || runs.length === 0}
         >
           <span aria-hidden>&#8635;</span>
+        </IconButton>
+
+        {/*
+          The practice loop's own door, beside the loop it is a kind of.
+          A long press on the same button was the alternative and was not
+          taken: the two do different things, and a control whose meaning
+          depends on how long you hold it is one a reader discovers by
+          accident or never.
+        */}
+        <IconButton
+          label="Çalışma döngüsü"
+          onClick={onOpenPractice}
+          active={state.loop.kind === "practice_range"}
+          disabled={busy || runs.length === 0}
+          data-open-practice
+        >
+          <span aria-hidden>&#9838;</span>
         </IconButton>
 
         <IconButton

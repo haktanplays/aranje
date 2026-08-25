@@ -7,6 +7,7 @@ import { PlaybackController, type PlaybackState } from "@/lib/audio/playback";
 import { isMixOnlyChange } from "@/lib/song/track-mix";
 import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 import { NO_LOOP, rangeIsLive } from "@/lib/practice/range";
+import { DEFAULT_COUNT_IN } from "@/lib/practice/count-in";
 import type { Song } from "@/lib/song/schema";
 
 const SERVER_STATE: PlaybackState = {
@@ -17,6 +18,8 @@ const SERVER_STATE: PlaybackState = {
   activeBpm: 0,
   hasTempoChanges: false,
   loop: NO_LOOP,
+  countInBars: DEFAULT_COUNT_IN,
+  countingIn: false,
   metronome: false,
   progress: null,
   error: null,

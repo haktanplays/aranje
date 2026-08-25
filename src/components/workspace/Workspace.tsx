@@ -46,7 +46,8 @@ import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { mixerAudioOf } from "@/lib/workspace/mixer-audio";
 import { useEventEntry } from "@/lib/workspace/use-event-entry";
-import { useLoopToggle, useTransportHandles } from "@/lib/workspace/use-transport-handles";
+import { useTransportHandles } from "@/lib/workspace/use-transport-handles";
+import { usePracticeSession } from "@/lib/workspace/use-practice-session";
 import { useMultiTrackView } from "@/lib/workspace/use-multitrack-session";
 import { useSelectTrack } from "@/lib/workspace/use-select-track";
 import { useMixer } from "@/lib/workspace/use-mixer";
@@ -82,11 +83,14 @@ export function Workspace() {
 
   const navigation = useWorkspaceNavigation({ song, seek });
   const track = navigation.track;
-  const toggleLoop = useLoopToggle(
+  const practice = usePracticeSession({
+    song,
     controller,
-    navigation.viewedSectionId,
-    state.loop.kind === "section" ? state.loop.sectionId : null,
-  );
+    practicePercent: practiceRatePercent,
+    setPracticePercent: setPracticeRatePercent,
+    viewedSectionId: navigation.viewedSectionId,
+    activeBarKey: navigation.activeBarKey,
+  });
 
   const tab = useTabView({ song, track, canPersist, commit, pause });
   const { chords, timeline, runs } = tab;
@@ -331,7 +335,8 @@ export function Workspace() {
         runs={runs}
         onPlayPause={() => controller.toggle()}
         onRewind={() => controller.rewind()}
-        onToggleLoop={toggleLoop}
+        onToggleLoop={practice.toggleSectionLoop}
+        onOpenPractice={practice.openSheet}
         onToggleMetronome={() => controller.setMetronome(!state.metronome)}
         onOpenMixer={() => {
           mixer.begin();
@@ -358,6 +363,7 @@ export function Workspace() {
         project={project}
         lifecycle={lifecycle}
         mixer={mixer}
+        practice={practice}
         exporter={exporter}
         library={library}
         canPersist={canPersist}

@@ -42,23 +42,3 @@ export function useTransportHandles(
 
   return { pause, seek, getPosition };
 }
-
-/**
- * The loop belongs to the section being *read*, not to wherever the transport
- * happens to be. That id is always a real section, so there is no fallback to
- * write here.
- *
- * It is a second hook rather than a fourth handle because the section being
- * read is decided by navigation, and navigation is steered by `seek` from the
- * hook above — one call cannot both produce `seek` and consume what `seek`
- * produces.
- */
-export function useLoopToggle(
-  controller: PlaybackController,
-  viewedSectionId: string,
-  loopSectionId: string | null,
-): () => void {
-  return useCallback(() => {
-    controller.setLoopSection(loopSectionId ? null : viewedSectionId);
-  }, [controller, loopSectionId, viewedSectionId]);
-}

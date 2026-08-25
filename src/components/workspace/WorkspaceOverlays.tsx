@@ -17,6 +17,7 @@ import { FretSheet } from "@/components/workspace/FretSheet";
 import { NoteEntrySheet } from "@/components/workspace/NoteEntrySheet";
 import { InfoSheet } from "@/components/workspace/InfoSheet";
 import { MixerSheet } from "@/components/workspace/MixerSheet";
+import { PracticeSheet } from "@/components/workspace/PracticeSheet";
 import { NewSongSheet } from "@/components/workspace/NewSongSheet";
 import { PracticeRateControl } from "@/components/workspace/PracticeRateControl";
 import { PreviewSheet } from "@/components/workspace/PreviewSheet";
@@ -41,6 +42,7 @@ import type { Song } from "@/lib/song/schema";
 import type { SectionRun } from "@/lib/tab/timeline";
 import type { LifecycleHandle } from "@/lib/workspace/use-lifecycle";
 import type { MixerHandle } from "@/lib/workspace/use-mixer";
+import type { PracticeSession } from "@/lib/workspace/use-practice-session";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { EventEntry } from "@/lib/workspace/use-event-entry";
 import { isPlayablePreset } from "@/lib/audio/preset-availability";
@@ -79,6 +81,7 @@ export function WorkspaceOverlays({
   library,
   lifecycle,
   mixer,
+  practice,
   canPersist,
   songBpm,
   practicePercent,
@@ -119,6 +122,8 @@ export function WorkspaceOverlays({
   library: ProjectLibraryHandle;
   lifecycle: LifecycleHandle;
   mixer: MixerHandle;
+  /** The practice loop's session state and its sheet (2R-A §14). */
+  practice: PracticeSession;
   canPersist: boolean;
   songBpm: number;
   practicePercent: number;
@@ -146,6 +151,18 @@ export function WorkspaceOverlays({
         The practice-rate controls, on demand. Practice rate is a thing you
         set and then work at, not a thing you adjust continuously.
       */}
+      {/*
+        The practice loop's own sheet. Beside the practice-rate one because
+        they are the two things a reader adjusts while drilling, and apart
+        from it because one is a speed and the other is a place.
+      */}
+      <PracticeSheet
+        open={practice.sheetOpen}
+        onClose={practice.closeSheet}
+        session={practice}
+        view={practice.view}
+      />
+
       <Sheet
         open={overlays.isOpen("practice")}
         title="Çalışma hızı"

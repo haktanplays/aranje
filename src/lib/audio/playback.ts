@@ -40,7 +40,18 @@ import {
   positionAtTicks,
   type PlayPosition,
 } from "@/lib/audio/position";
-import { loopBounds, NO_LOOP, type PlaybackLoop } from "@/lib/practice/range";
+import {
+  barKeyParts,
+  loopBounds,
+  NO_LOOP,
+  type PlaybackLoop,
+} from "@/lib/practice/range";
+import {
+  countInClicks,
+  countInSeconds,
+  DEFAULT_COUNT_IN,
+  type CountInBars,
+} from "@/lib/practice/count-in";
 import { NOWHERE } from "@/lib/audio/position";
 import {
   DEFAULT_PRACTICE_PERCENT,
@@ -51,7 +62,7 @@ import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { silentTrackNotice } from "@/lib/audio/preset-availability";
 import type { PreviewBankSession } from "@/lib/audio/preview-bank";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
-import type { Song } from "@/lib/song/schema";
+import type { Bar, Song } from "@/lib/song/schema";
 
 export type PlaybackStatus =
   | "idle"
@@ -88,6 +99,16 @@ export type PlaybackState = {
    * convention every reader of it would have had to remember.
    */
   loop: PlaybackLoop;
+  /** How many bars are counted in before playing. Off, one, or two (§11). */
+  countInBars: CountInBars;
+  /**
+   * True while the clicks are sounding and the music has not started.
+   *
+   * Its own flag rather than a status, because the transport really is about
+   * to play and every other part of the app that asks "is it playing" should
+   * keep saying yes. What changes is only what the reader is told.
+   */
+  countingIn: boolean;
   metronome: boolean;
   progress: LoadProgress | null;
   error: string | null;
@@ -164,6 +185,8 @@ export class PlaybackController {
    */
   private mixOverrides = new Map<string, { volumeDb: number; pan: number }>();
   private audibleTrackIds: readonly string[] | null = null;
+  /** Told once per completed pass of the loop, and nothing else (§12). */
+  private loopListeners = new Set<() => void>();
   private readonly bankSession: PreviewBankSession | undefined;
 
   constructor(
@@ -188,6 +211,8 @@ export class PlaybackController {
       activeBpm: tempoAtTicks(this.tempoCache.map, 0),
       hasTempoChanges: hasTempoChanges(song),
       loop: NO_LOOP,
+      countInBars: DEFAULT_COUNT_IN,
+      countingIn: false,
       metronome: false,
       progress: null,
       error: null,
@@ -313,8 +338,57 @@ export class PlaybackController {
 
     // A loop wrap starts the section again, so nothing from the previous pass
     // may still be ringing over the top of it (spec 8.5).
-    engine.context.transport.on("loop", () => engine.expression.stopAll());
+    engine.context.transport.on("loop", () => {
+      engine.expression.stopAll();
+      /*
+       * And the pass is announced. This is the *only* signal the progressive
+       * rate is allowed to act on (§12): the transport came round, which the
+       * app knows, rather than anything about how the pass was played, which
+       * it does not.
+       */
+      for (const listener of this.loopListeners) listener();
+    });
     return engine;
+  }
+
+  /**
+   * Be told when the loop comes round.
+   *
+   * Returns the way to stop being told, so a component that unmounts mid-loop
+   * does not leave a listener behind holding its closure.
+   */
+  onLoopPass(listener: () => void): () => void {
+    this.loopListeners.add(listener);
+    return () => {
+      this.loopListeners.delete(listener);
+    };
+  }
+
+  setCountIn(bars: CountInBars): void {
+    this.set({ countInBars: bars });
+  }
+
+  /**
+   * The bar the count-in should count, or null when there is nothing to count.
+   *
+   * The *loop's first bar*, not the song's first and not the one on screen:
+   * a count-in in 4/4 in front of a 7/8 loop would put the reader in the
+   * wrong place before a note had sounded.
+   */
+  private countInBar(): Bar | null {
+    const bounds = loopBounds(this.plan, this.state.loop);
+    const at = bounds ? bounds.startTicks : this.getTransportTicks();
+    const marker =
+      this.plan.bars.find((bar) => bar.time === at) ??
+      this.plan.bars.find(
+        (bar) => at >= bar.time && at < bar.time + bar.durationTicks,
+      );
+    if (!marker) return null;
+    const parts = barKeyParts(marker.barKey);
+    const section = this.song.sections.find(
+      (entry) => entry.id === parts?.sectionId,
+    );
+    return section?.bars[parts?.localBarIndex ?? -1] ?? null;
   }
 
   private handleEnded() {
@@ -335,8 +409,47 @@ export class PlaybackController {
       // Playing again after the end starts from the top.
       if (this.state.status === "ended") transport.ticks = 0;
 
+      /*
+       * The count-in lives here and nowhere else: it is clicks on the audio
+       * clock and a delayed transport start. No bar is added to the Song, no
+       * bar number moves, and nothing about it reaches an export.
+       */
+      const firstBar = this.countInBar();
+      const wait =
+        firstBar === null
+          ? 0
+          : countInSeconds({
+              bars: this.state.countInBars,
+              firstBar,
+              bpm: this.state.songBpm,
+              practicePercent: this.state.practicePercent,
+            });
+
+      if (wait > 0 && firstBar !== null) {
+        const now = engine.context.now();
+        const { click } = engine.metronome;
+        for (const beat of countInClicks({
+          bars: this.state.countInBars,
+          firstBar,
+          bpm: this.state.songBpm,
+          practicePercent: this.state.practicePercent,
+        })) {
+          click.triggerAttackRelease(
+            0.02,
+            now + (wait - beat.beforeSeconds),
+            beat.downbeat ? 1 : 0.55,
+          );
+        }
+        transport.start(`+${wait}`);
+        this.set({ status: "playing", error: null, countingIn: true });
+        engine.context.draw.schedule(() => {
+          if (this.state.countingIn) this.set({ countingIn: false });
+        }, now + wait);
+        return;
+      }
+
       transport.start();
-      this.set({ status: "playing", error: null });
+      this.set({ status: "playing", error: null, countingIn: false });
     } catch (error) {
       this.fail(error);
     }
@@ -350,7 +463,9 @@ export class PlaybackController {
     // A per-note voice is not on the transport's clock once it has started, so
     // pausing has to end it explicitly (spec 8.5).
     this.engine?.expression.stopAll();
-    if (this.state.status === "playing") this.set({ status: "paused" });
+    if (this.state.status === "playing") {
+      this.set({ status: "paused", countingIn: false });
+    }
   }
 
   toggle(): void {
