@@ -13,6 +13,7 @@
  * nothing, and stops nothing.
  */
 import type { ArrangementModel } from "@/lib/arrangement/model";
+import type { Lazy } from "@/lib/ui/lazy-value";
 import { ArrangementCanvas } from "@/components/workspace/ArrangementCanvas";
 import { MultiTrackCanvas } from "@/components/workspace/MultiTrackCanvas";
 import { TabCanvas } from "@/components/workspace/TabCanvas";
@@ -52,9 +53,9 @@ export function WorkspaceSurface({
   noteEditing: NoteEditing;
   /** The song both reading surfaces lay their one axis over (2Q-C §4). */
   song: Song;
-  arrangement: ArrangementModel;
+  arrangement: Lazy<ArrangementModel>;
   /** The song a staged bar command would produce, drawn half-lit. */
-  ghostArrangement: ArrangementModel | null;
+  ghostArrangement: Lazy<ArrangementModel> | null;
   timeline: TrackTimeline;
   multi: MultiTrackView;
   /** Writing a hit or a note on an instrument the tab cannot draw (2Q-B). */
@@ -157,7 +158,9 @@ export function WorkspaceSurface({
     <main className="min-h-0 flex-1">
       {navigation.view === "arrange" ? (
         <ArrangementCanvas
-          model={ghostArrangement ?? arrangement}
+          /* Called here and nowhere else: this branch is the only reader,
+             which is what makes deferring the build worth anything (§IV). */
+          model={(ghostArrangement ?? arrangement)()}
           ghost={ghostArrangement !== null}
           scrollRef={navigation.arrangeScrollRef}
           activeBarKey={navigation.activeBarKey}
@@ -182,7 +185,7 @@ export function WorkspaceSurface({
       ) : navigation.view === "multi" ? (
         <MultiTrackCanvas
           song={song}
-          model={multi.model}
+          model={multi.model()}
           session={multi.session}
           getPosition={getPosition}
           running={running}

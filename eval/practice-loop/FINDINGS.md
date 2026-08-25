@@ -193,3 +193,78 @@ Hedef `≤33 ms median / ≤50 ms p95`.
 
 Bütün sayılar masaüstü Chromium ve Node'dandır. **Fiziksel telefon kanıtı
 değildir.**
+
+---
+
+# 3. Aşama aşama teşhis ve davranış-korumalı kazanç
+
+`EDIT-COST-BREAKDOWN.json` (Node, 8 ısınma + 30 tur) bir davul dokunuşunun
+gerçekten geçtiği yolu üretim kodundan okuyup her adımı ayrı ölçtü.
+
+## Sözleşme tavanında bir dokunuş (denseKit, 218 KB, 1.792 hücre)
+
+| aşama | medyan |
+|---|---|
+| komut (`insertDrumHit`, `settle` dahil) | 31,6 ms |
+| — strict schema | 5,1 ms |
+| — merkezî validator zinciri | 24,1 ms |
+| store'un **ikinci** schema parse'ı | 5,1 ms |
+| aynı-müzik kontrolü | 2,4 ms |
+| history adımı | 0,001 ms |
+| serialize | 1,1 ms |
+| fiziksel yazma | 1,1 ms |
+| **arrangement modeli** | **22,4 ms** |
+| **playback planı** | **6,7 ms** |
+| **multi-track modeli** | **5,9 ms** |
+| davul grid modeli + ekseni | 0,34 ms |
+
+Gerçekçi şarkıda (practiceSong, 17 KB) aynı sıra: komut 4,4 · gate 2,1 ·
+arrangement 1,5 · plan 0,4 · multi 0,29 ms.
+
+## Bulunan gerçek tekrar
+
+Dokunuş tab yüzeyindeyken **arrangement modeli ve multi-track modeli yeniden
+kuruluyordu**. İkisi de ekranda değildi. Sebep basit: her ikisi de `song`
+üzerine memoize edilmiş, commit yeni bir `song` üretiyor, `useMemo` bağımlılık
+değişince *okunmasa da* hesaplıyor.
+
+Bu, §IV'ün adını koyduğu "ilgisiz arrangement/tab modelinin davul dokunuşunda
+yeniden hesaplanması" sınıfının tam kendisi.
+
+Düzeltme davranış-korumalı: memo artık değeri değil **thunk'ı** tutuyor
+(`lib/ui/lazy-value.ts`). Aynı `song` ile aynı fonksiyon çağrılıyor, aynı model
+dönüyor; değişen tek şey *ne zaman* kurulduğu — çizen dal render edildiğinde,
+en fazla bir kez. Gevşetilen kapı yok: schema, validator, atomiklik, history ve
+yazma yolunun hiçbirine dokunulmadı.
+
+## Sonuç, sayfa içinden ölçülmüş (click → iki rAF)
+
+| fixture | önce | sonra |
+|---|---|---|
+| denseKit @390 | 182,0 / 231,1 ms | **131,5 / 201,4 ms** |
+| denseKit @320 | 166,0 / 222,7 ms | **130,8 / 203,4 ms** |
+| practiceSong @390 | 30,8 / 52,5 ms | **31,4 / 36,2 ms** |
+
+Playwright'ın dışarıdan ölçtüğü sayı da aynı yönde: 213/207 → 179/174 ms
+medyan.
+
+## §IV hedefleri karşısında
+
+- Gerçekçi medyan hedefi `≤33 ms`: **31,4 ms — geçti.**
+- Gerçekçi p95 hedefi `≤50 ms`: **36,2 ms — geçti.** Ara raporda 2,5 ms ile
+  kaçan p95 bu değişiklikle kapandı.
+- Sözleşme tavanı: **131 ms — kapanmadı.** Kalanının ~30 ms'i merkezî kapı
+  (5,1 + 24,1) ve ~7 ms'i playback planıdır; üçü de gevşetilmesi yasak
+  yollardır. Geri kalanı React reconciliation, DOM ve paint'tir.
+- Keyfî yeni tavan eşiği uydurulmadı.
+
+## Bakılıp reddedilen ikinci aday
+
+`settle()` bir `songSchema.safeParse` çalıştırıyor, `songStore.commit()` aynı
+nesne üzerinde bir tane daha: tavanda 5,1 ms. Kaldırılmadı. Store'un parse'ı
+`settle`'dan geçmeyen çağıranlar için gerçek bir kapıdır ve nesne kimliğine
+dayalı bir önbellek, doğrulamadan sonra mutasyon olmadığı varsayımını runtime
+garantisi olmadan kabul etmek olurdu. Ölçüldü, kaydedildi, dokunulmadı.
+
+Bütün sayılar masaüstü Chromium ve Node'dandır. **Fiziksel telefon kanıtı
+değildir.**

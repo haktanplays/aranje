@@ -17,12 +17,21 @@ import { useMemo } from "react";
 
 import { buildArrangementModel, type ArrangementModel } from "@/lib/arrangement/model";
 import { formatTimeSignature } from "@/lib/music/timing";
+import { lazily, type Lazy } from "@/lib/ui/lazy-value";
 import type { Song } from "@/lib/song/schema";
 
 export type ArrangementModels = {
-  readonly arrangement: ArrangementModel;
+  /**
+   * The arrangement, built when the surface that draws it asks for it.
+   *
+   * Deferred rather than eager because a commit replaces the Song and every
+   * memo keyed on it recomputes — and on the contract's ceiling that was
+   * 22,4 ms of arrangement rebuilt on a drum tap, for a surface that was not
+   * on screen (2R-A §IV, `EDIT-COST-BREAKDOWN.json`).
+   */
+  readonly arrangement: Lazy<ArrangementModel>;
   /** Null unless a bar command is staged. */
-  readonly ghostArrangement: ArrangementModel | null;
+  readonly ghostArrangement: Lazy<ArrangementModel> | null;
   /** The song's opening metre, ready to print. */
   readonly meter: string;
 };
@@ -33,9 +42,9 @@ export function useArrangementModels(input: {
 }): ArrangementModels {
   const { song, previewSong } = input;
 
-  const arrangement = useMemo(() => buildArrangementModel(song), [song]);
+  const arrangement = useMemo(() => lazily(() => buildArrangementModel(song)), [song]);
   const ghostArrangement = useMemo(
-    () => (previewSong ? buildArrangementModel(previewSong) : null),
+    () => (previewSong ? lazily(() => buildArrangementModel(previewSong)) : null),
     [previewSong],
   );
 

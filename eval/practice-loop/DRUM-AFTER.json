@@ -11,10 +11,10 @@
   "results": [
     {
       "viewport": "390x844",
-      "openStepGridMs": 102,
+      "openStepGridMs": 79,
       "grid": {
-        "nodes": 441,
-        "buttons": 173,
+        "nodes": 443,
+        "buttons": 174,
         "drumCells": 154,
         "filledCells": 19,
         "stepBars": 8,
@@ -34,25 +34,25 @@
       "revisionBefore": 1,
       "toggleMs": {
         "count": 20,
-        "median": 213,
-        "p95": 304,
-        "max": 304
+        "median": 179,
+        "p95": 229,
+        "max": 229
       },
       "writeMs": {
         "count": 10,
-        "median": 222,
-        "p95": 259,
-        "max": 259
+        "median": 178,
+        "p95": 342,
+        "max": 342
       },
       "scrollFarMs": {
         "count": 10,
-        "median": 64,
-        "p95": 64,
-        "max": 64
+        "median": 63,
+        "p95": 65,
+        "max": 65
       },
       "atFarEnd": {
-        "nodes": 359,
-        "buttons": 132,
+        "nodes": 361,
+        "buttons": 133,
         "drumCells": 112,
         "filledCells": 20,
         "stepBars": 8,
@@ -71,9 +71,9 @@
       },
       "farCellToggleMs": {
         "count": 10,
-        "median": 201,
-        "p95": 250,
-        "max": 250
+        "median": 168,
+        "p95": 220,
+        "max": 220
       },
       "revisionAfter": 47,
       "counts": {
@@ -85,10 +85,10 @@
     },
     {
       "viewport": "320x700",
-      "openStepGridMs": 81,
+      "openStepGridMs": 77,
       "grid": {
-        "nodes": 385,
-        "buttons": 145,
+        "nodes": 387,
+        "buttons": 146,
         "drumCells": 126,
         "filledCells": 17,
         "stepBars": 8,
@@ -108,25 +108,25 @@
       "revisionBefore": 1,
       "toggleMs": {
         "count": 20,
-        "median": 207,
-        "p95": 306,
-        "max": 306
+        "median": 174,
+        "p95": 219,
+        "max": 219
       },
       "writeMs": {
         "count": 10,
-        "median": 220,
-        "p95": 244,
-        "max": 244
+        "median": 183,
+        "p95": 193,
+        "max": 193
       },
       "scrollFarMs": {
         "count": 10,
         "median": 64,
-        "p95": 65,
-        "max": 65
+        "p95": 100,
+        "max": 100
       },
       "atFarEnd": {
-        "nodes": 317,
-        "buttons": 111,
+        "nodes": 319,
+        "buttons": 112,
         "drumCells": 91,
         "filledCells": 16,
         "stepBars": 8,
@@ -145,9 +145,9 @@
       },
       "farCellToggleMs": {
         "count": 10,
-        "median": 220,
-        "p95": 259,
-        "max": 259
+        "median": 179,
+        "p95": 200,
+        "max": 200
       },
       "revisionAfter": 47,
       "counts": {

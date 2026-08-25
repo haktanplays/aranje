@@ -1,0 +1,298 @@
+{
+  "what": "2R-A §IV — bir davul dokunuşunun aşama aşama maliyeti",
+  "measuredOn": {
+    "runtime": "node v22.22.2",
+    "platform": "linux x64",
+    "note": "Masaüstü Node. Fiziksel telefon kanıtı değildir."
+  },
+  "method": {
+    "warmup": 8,
+    "rounds": 30,
+    "statistic": "median / p95 / max, ms",
+    "stagesNotMeasuredHere": "1 (pointer hedefi), 12–14 (React render, ilk paint, input-to-visible) tarayıcı harness'ındadır.",
+    "gate": "Hiçbir aşama atlanmadı, gevşetilmedi veya sırası değiştirildi."
+  },
+  "results": [
+    {
+      "fixture": "practiceSong",
+      "shape": {
+        "tracks": 3,
+        "bars": 13,
+        "sections": 4,
+        "measuredSection": "four",
+        "sectionBars": 4,
+        "sectionResolutions": [
+          8,
+          16
+        ],
+        "gridColumns": 40,
+        "kitRows": 4,
+        "gridCells": 160,
+        "songBytes": 17431,
+        "ticksPerSlotAtSection": 96
+      },
+      "stages": {
+        "commandInsert": {
+          "rounds": 30,
+          "median": 3.996,
+          "p95": 8.976,
+          "max": 9.119
+        },
+        "commandRemove": {
+          "rounds": 30,
+          "median": 2.314,
+          "p95": 3.349,
+          "max": 4.245
+        },
+        "schemaParse": {
+          "rounds": 30,
+          "median": 0.468,
+          "p95": 1.755,
+          "max": 2.123
+        },
+        "validators": {
+          "rounds": 30,
+          "median": 1.664,
+          "p95": 2.403,
+          "max": 2.915
+        },
+        "validatorIssueSplit": {
+          "rounds": 30,
+          "median": 0.001,
+          "p95": 0.004,
+          "max": 0.005
+        },
+        "settle": {
+          "rounds": 30,
+          "median": 2.542,
+          "p95": 3.48,
+          "max": 5.61
+        },
+        "sameSongCheck": {
+          "rounds": 30,
+          "median": 0.147,
+          "p95": 0.184,
+          "max": 0.197
+        },
+        "historyRecord": {
+          "rounds": 30,
+          "median": 0,
+          "p95": 0.037,
+          "max": 0.122
+        },
+        "serialize": {
+          "rounds": 30,
+          "median": 0.067,
+          "p95": 0.09,
+          "max": 0.107
+        },
+        "physicalWrite": {
+          "rounds": 30,
+          "median": 0.075,
+          "p95": 0.105,
+          "max": 0.195
+        },
+        "rebuildDrumModel": {
+          "rounds": 30,
+          "median": 0.059,
+          "p95": 0.102,
+          "max": 0.107
+        },
+        "rebuildGridAxis": {
+          "rounds": 30,
+          "median": 0.034,
+          "p95": 0.072,
+          "max": 0.233
+        },
+        "rebuildTabTimeline": {
+          "rounds": 30,
+          "median": 0.014,
+          "p95": 0.02,
+          "max": 0.022
+        },
+        "rebuildSectionRuns": {
+          "rounds": 30,
+          "median": 0.001,
+          "p95": 0.002,
+          "max": 0.004
+        },
+        "rebuildArrangement": {
+          "rounds": 30,
+          "median": 1.619,
+          "p95": 2.394,
+          "max": 2.965
+        },
+        "rebuildMultiTrack": {
+          "rounds": 30,
+          "median": 0.303,
+          "p95": 0.635,
+          "max": 0.688
+        },
+        "rebuildSongAxis": {
+          "rounds": 30,
+          "median": 0.006,
+          "p95": 0.009,
+          "max": 0.041
+        },
+        "rebuildPlaybackPlan": {
+          "rounds": 30,
+          "median": 0.441,
+          "p95": 0.758,
+          "max": 0.916
+        },
+        "schemaParsedTwice": {
+          "rounds": 30,
+          "median": 2.833,
+          "p95": 4.024,
+          "max": 4.157
+        }
+      },
+      "rollup": {
+        "commandToPublishMs": 4.753,
+        "centralGateMs": 2.132,
+        "duplicateSchemaMs": 0.468,
+        "derivedModelRebuildMs": 2.477
+      }
+    },
+    {
+      "fixture": "denseKit",
+      "shape": {
+        "tracks": 8,
+        "bars": 32,
+        "sections": 4,
+        "measuredSection": "dense",
+        "sectionBars": 8,
+        "sectionResolutions": [
+          32
+        ],
+        "gridColumns": 256,
+        "kitRows": 7,
+        "gridCells": 1792,
+        "songBytes": 218353,
+        "ticksPerSlotAtSection": 24
+      },
+      "stages": {
+        "commandInsert": {
+          "rounds": 30,
+          "median": 27.332,
+          "p95": 30.329,
+          "max": 31.547
+        },
+        "commandRemove": {
+          "rounds": 30,
+          "median": 27.099,
+          "p95": 31.999,
+          "max": 36.589
+        },
+        "schemaParse": {
+          "rounds": 30,
+          "median": 4.663,
+          "p95": 5.495,
+          "max": 5.557
+        },
+        "validators": {
+          "rounds": 30,
+          "median": 19.473,
+          "p95": 24.846,
+          "max": 24.922
+        },
+        "validatorIssueSplit": {
+          "rounds": 30,
+          "median": 0.004,
+          "p95": 0.005,
+          "max": 0.006
+        },
+        "settle": {
+          "rounds": 30,
+          "median": 26.76,
+          "p95": 34.49,
+          "max": 37.94
+        },
+        "sameSongCheck": {
+          "rounds": 30,
+          "median": 2.169,
+          "p95": 2.786,
+          "max": 3.64
+        },
+        "historyRecord": {
+          "rounds": 30,
+          "median": 0,
+          "p95": 0.001,
+          "max": 0.001
+        },
+        "serialize": {
+          "rounds": 30,
+          "median": 1.059,
+          "p95": 1.233,
+          "max": 1.244
+        },
+        "physicalWrite": {
+          "rounds": 30,
+          "median": 1.125,
+          "p95": 1.339,
+          "max": 1.354
+        },
+        "rebuildDrumModel": {
+          "rounds": 30,
+          "median": 0.187,
+          "p95": 0.461,
+          "max": 0.483
+        },
+        "rebuildGridAxis": {
+          "rounds": 30,
+          "median": 0.183,
+          "p95": 1.407,
+          "max": 1.646
+        },
+        "rebuildTabTimeline": {
+          "rounds": 30,
+          "median": 0.049,
+          "p95": 0.067,
+          "max": 0.107
+        },
+        "rebuildSectionRuns": {
+          "rounds": 30,
+          "median": 0.001,
+          "p95": 0.001,
+          "max": 0.001
+        },
+        "rebuildArrangement": {
+          "rounds": 30,
+          "median": 19.06,
+          "p95": 53.382,
+          "max": 54.686
+        },
+        "rebuildMultiTrack": {
+          "rounds": 30,
+          "median": 5.196,
+          "p95": 6.09,
+          "max": 6.198
+        },
+        "rebuildSongAxis": {
+          "rounds": 30,
+          "median": 0.013,
+          "p95": 0.019,
+          "max": 0.019
+        },
+        "rebuildPlaybackPlan": {
+          "rounds": 30,
+          "median": 5.127,
+          "p95": 8.45,
+          "max": 10.366
+        },
+        "schemaParsedTwice": {
+          "rounds": 30,
+          "median": 30.523,
+          "p95": 37.205,
+          "max": 40.916
+        }
+      },
+      "rollup": {
+        "commandToPublishMs": 36.348,
+        "centralGateMs": 24.136,
+        "duplicateSchemaMs": 4.663,
+        "derivedModelRebuildMs": 29.816
+      }
+    }
+  ]
+}

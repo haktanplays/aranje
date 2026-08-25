@@ -32,6 +32,8 @@
  */
 import { useCallback, useMemo, useState } from "react";
 
+import { lazily, type Lazy } from "@/lib/ui/lazy-value";
+
 import {
   NO_FOLDS,
   othersFolded,
@@ -55,7 +57,8 @@ export type MultiTrackSession = {
 
 /** Everything the multi-track surface needs: what to draw, and what is folded. */
 export type MultiTrackView = {
-  readonly model: MultiTrackModel;
+  /** Built when the Çoklu surface asks for it, not on every commit (§IV). */
+  readonly model: Lazy<MultiTrackModel>;
   readonly session: MultiTrackSession;
 };
 
@@ -79,9 +82,14 @@ export function useMultiTrackView(options: {
    * scroll position of one whole-song surface, and rebuilding the surface
    * because the reader scrolled across a bar line is the thing this
    * checkpoint exists to stop.
+   *
+   * And since 2R-A the memo holds a thunk rather than the model: a commit
+   * makes a new Song whatever surface is on screen, and rebuilding eight
+   * timelines for a view nobody is looking at cost 5,9 ms of every kit tap on
+   * the contract's ceiling (§IV).
    */
   const model = useMemo(
-    () => buildMultiTrackModel(song, activeTrackId),
+    () => lazily(() => buildMultiTrackModel(song, activeTrackId)),
     [song, activeTrackId],
   );
 
