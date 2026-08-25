@@ -138,12 +138,21 @@ describe("27. every mutation path goes through the one gate", () => {
     const store = read("src/lib/song/song-store.ts");
     expect(store).toContain("recordEdit");
 
+    /*
+     * The store, the history itself, and the tests whose subject *is* the
+     * history. Listed one by one rather than by a pattern, so exempting a
+     * file stays a decision somebody made and can be seen in a diff — the
+     * rule this protects is about product modules, and a product module has
+     * no way onto this list.
+     */
     const owners = [
       "src/lib/song/song-store.ts",
       "src/lib/song/edit-history.ts",
       "src/lib/song/edit-history.test.ts",
       "src/lib/song/history-store.test.ts",
       "src/lib/song/history-boundary.test.ts",
+      // 2Q-B §12: what one tap writes to, asserted at the pure level.
+      "src/lib/song/event-entry-history.test.ts",
     ];
     const others = readdirSync("src/lib/song")
       .filter((name) => name.endsWith(".ts"))
