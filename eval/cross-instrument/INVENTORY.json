@@ -1,0 +1,245 @@
+{
+  "what": "2Q-B §2 — enstrüman ve olay envanteri, koddan okundu",
+  "drumPieces": {
+    "all": [
+      "kick",
+      "snare",
+      "closed_hat",
+      "open_hat",
+      "ride",
+      "crash",
+      "china",
+      "tom_high",
+      "tom_mid",
+      "tom_floor"
+    ],
+    "coreKit": [
+      "kick",
+      "snare",
+      "closed_hat",
+      "crash"
+    ]
+  },
+  "instruments": [
+    {
+      "id": "electric_guitar",
+      "displayName": "Electric guitar",
+      "kind": "melodic",
+      "scope": "core",
+      "laneKind": "fretted",
+      "hasFretboard": true,
+      "corePresets": [
+        "clean",
+        "crunch",
+        "high_gain"
+      ],
+      "playableCorePresets": [
+        "high_gain"
+      ],
+      "audible": true,
+      "directNoteEditingBefore2QB": true,
+      "canCarryChord": true,
+      "creatableByReader": true,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "steel_acoustic",
+      "displayName": "Steel string acoustic",
+      "kind": "melodic",
+      "scope": "core",
+      "laneKind": "fretted",
+      "hasFretboard": true,
+      "corePresets": [
+        "finger",
+        "pick"
+      ],
+      "playableCorePresets": [
+        "finger"
+      ],
+      "audible": true,
+      "directNoteEditingBefore2QB": true,
+      "canCarryChord": true,
+      "creatableByReader": true,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "electric_bass",
+      "displayName": "Electric bass",
+      "kind": "melodic",
+      "scope": "core",
+      "laneKind": "fretted",
+      "hasFretboard": true,
+      "corePresets": [
+        "finger",
+        "pick",
+        "driven"
+      ],
+      "playableCorePresets": [
+        "finger"
+      ],
+      "audible": true,
+      "directNoteEditingBefore2QB": true,
+      "canCarryChord": true,
+      "creatableByReader": true,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "drum_kit",
+      "displayName": "Drum kit",
+      "kind": "drums",
+      "scope": "core",
+      "laneKind": "drums",
+      "hasFretboard": false,
+      "corePresets": [
+        "rock",
+        "metal",
+        "electronic"
+      ],
+      "playableCorePresets": [
+        "rock"
+      ],
+      "audible": true,
+      "directNoteEditingBefore2QB": false,
+      "canCarryChord": false,
+      "creatableByReader": true,
+      "eventRepresentation": "DrumSlot: DrumHit[] — { piece, velocity?, articulation?: normal|ghost|accent }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "nylon_guitar",
+      "displayName": "Nylon guitar",
+      "kind": "melodic",
+      "scope": "phase_2_5",
+      "laneKind": "fretted",
+      "hasFretboard": true,
+      "corePresets": [
+        "warm",
+        "bright"
+      ],
+      "playableCorePresets": [],
+      "audible": false,
+      "directNoteEditingBefore2QB": true,
+      "canCarryChord": true,
+      "creatableByReader": false,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "piano",
+      "displayName": "Piano",
+      "kind": "melodic",
+      "scope": "phase_2_5",
+      "laneKind": "pitched",
+      "hasFretboard": false,
+      "corePresets": [
+        "grand",
+        "upright"
+      ],
+      "playableCorePresets": [],
+      "audible": false,
+      "directNoteEditingBefore2QB": false,
+      "canCarryChord": true,
+      "creatableByReader": false,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "electric_piano",
+      "displayName": "Electric piano",
+      "kind": "melodic",
+      "scope": "phase_2_5",
+      "laneKind": "pitched",
+      "hasFretboard": false,
+      "corePresets": [
+        "soft",
+        "bright"
+      ],
+      "playableCorePresets": [],
+      "audible": false,
+      "directNoteEditingBefore2QB": false,
+      "canCarryChord": true,
+      "creatableByReader": false,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "organ",
+      "displayName": "Organ",
+      "kind": "melodic",
+      "scope": "phase_2_5",
+      "laneKind": "pitched",
+      "hasFretboard": false,
+      "corePresets": [
+        "rock",
+        "church"
+      ],
+      "playableCorePresets": [],
+      "audible": false,
+      "directNoteEditingBefore2QB": false,
+      "canCarryChord": true,
+      "creatableByReader": false,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "strings",
+      "displayName": "Strings ensemble",
+      "kind": "melodic",
+      "scope": "phase_2_5",
+      "laneKind": "pitched",
+      "hasFretboard": false,
+      "corePresets": [
+        "sustain",
+        "staccato"
+      ],
+      "playableCorePresets": [],
+      "audible": false,
+      "directNoteEditingBefore2QB": false,
+      "canCarryChord": true,
+      "creatableByReader": false,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    },
+    {
+      "id": "synth",
+      "displayName": "Synth",
+      "kind": "melodic",
+      "scope": "phase_2_5",
+      "laneKind": "pitched",
+      "hasFretboard": false,
+      "corePresets": [
+        "lead",
+        "warm_pad",
+        "dark_pad"
+      ],
+      "playableCorePresets": [],
+      "audible": false,
+      "directNoteEditingBefore2QB": false,
+      "canCarryChord": true,
+      "creatableByReader": false,
+      "eventRepresentation": "MelodicSlot: null | \"-\" | { notes: NoteEvent[] }",
+      "numericRangeInRegistry": "no"
+    }
+  ],
+  "answers": {
+    "1. Can a drum event carry velocity today?": "Yes — `velocity?` is in the contract, and it reaches the sounding gain through NotatedDrum → DrumEventPlan.gain.",
+    "2. Can different pieces share one tick?": "Yes — a slot is an array of hits, so kick and snare coexist at one tick.",
+    "3. Can the same piece be written twice at one tick?": "The schema permits it (an array with no uniqueness rule). Nothing musical is gained and the second hit is inaudible under the first, so the entry command refuses it as `target_occupied` rather than writing a duplicate.",
+    "4. Does a pitched track need an explicit fret/string position?": "No — and it must not have one. A fretless instrument has no string to name; `keyboard-voicing.ts` already writes pitch alone.",
+    "5. Which instruments can the keyboard voicing generator serve?": "Every harmonic track without a fretboard: piano, electric_piano, organ, strings, synth",
+    "6. Is there a numeric range for pitched instruments in the registry?": "No. `keyboard-voicing.ts` records the decision and its reason: an invented low note is worse than an honest gap, so the only bound checked is what the Song Contract can spell (/^([A-G])(#|b)?(-1|[0-9])$/).",
+    "7. Does the existing chord command accept a fretless track?": "Yes — `isHarmonicTrack` asks only that the track is not a kit, and `chordVoicings` branches to the keyboard stack when there is no fretboard.",
+    "8. How does preview behave against preset availability?": "A preset with no vendored pack is not offered as an ordinary choice (K-54) and cannot be previewed. Every pitched instrument is in this position today: piano, electric_piano, organ, strings, synth — so a pitched note sheet must write without offering Dinle.",
+    "9. Is the drum kit a sampler or synthesis?": "A sampler: the kit's pieces resolve to sample files through the shared bank, the same path every other instrument uses.",
+    "10. Why does the tab editor refuse drums and pitched tracks?": "`isEditableTrack` is `!isDrumInstrument && fretboard !== undefined`. It is a fret-cell editor: a kit has no strings and a piano has no fretboard, so the refusal is honest — what is missing is a *different* surface for each, which is this checkpoint."
+  },
+  "consequencesForThisCheckpoint": [
+    "Davul girişi bugünkü Contract ile tamamen yazılabilir: parça, velocity ve normal/ghost/accent zaten var.",
+    "Pitched girişi de yazılabilir — nota pitch'ten ibarettir ve position yazılmaz.",
+    "Ama okur bugün pitched track *oluşturamaz*: bütün fretsiz enstrümanlar phase_2_5 kapsamında ve create_track core dışını reddediyor. Pitched giriş yalnız dosyadan gelen bir track için ulaşılabilir.",
+    "Hiçbir pitched enstrümanın vendor edilmiş sample'ı yok, yani pitched nota yazılabilir ama duyulamaz; Dinle kapalı olmalı ve bu söylenmelidir."
+  ]
+}
