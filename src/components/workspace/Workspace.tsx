@@ -335,8 +335,7 @@ export function Workspace() {
         runs={runs}
         onPlayPause={() => controller.toggle()}
         onRewind={() => controller.rewind()}
-        onToggleLoop={practice.toggleSectionLoop}
-        onOpenPractice={practice.openSheet}
+        practice={practice}
         onToggleMetronome={() => controller.setMetronome(!state.metronome)}
         onOpenMixer={() => {
           mixer.begin();

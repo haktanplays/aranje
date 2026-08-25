@@ -20,21 +20,32 @@
  */
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import {
+  APPLY_SPEED_LABEL,
+  CANCEL_SPEED_LABEL,
   CLEAR_RANGE_LABEL,
   COUNT_IN_LABEL,
+  DRAFT_FIELD_LABELS,
+  draftFieldValue,
   edgeMessage,
   INCLUDE_CHAIN_LABEL,
   includeChainDetail,
+  planRefusalMessage,
   PRACTICE_SHEET_TITLE,
   PROGRESSIVE_EXPLAINER,
-  PROGRESSIVE_LABEL,
   refusalMessage,
   rangeSummary,
   sourceLabel,
+  SPEED_LABEL,
+  SPEED_MODE_LABELS,
 } from "@/lib/practice/messages";
 import { COUNT_IN_CHOICES, countInLabel } from "@/lib/practice/count-in";
 import { progressiveNotice } from "@/lib/practice/progressive-rate";
-import { practiceRateLimits, progressiveRateLimits } from "@/lib/limits";
+import {
+  canStep,
+  type DraftField,
+  type SpeedDraft,
+  type SpeedMode,
+} from "@/lib/practice/speed-draft";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type {
   PracticeRangeView,
@@ -42,6 +53,48 @@ import type {
 } from "@/lib/workspace/use-practice-session";
 
 const TARGET = { minHeight: MIN_TOUCH_TARGET_PX };
+const SQUARE = { minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX };
+
+const SPEED_MODES: readonly SpeedMode[] = ["fixed", "progressive"];
+const DRAFT_FIELDS: readonly DraftField[] = [
+  "fromPercent",
+  "toPercent",
+  "incrementPercent",
+  "repeatsPerStep",
+];
+
+/**
+ * One end of one field's control.
+ *
+ * Disabled at the field's own limit rather than silently refusing to move:
+ * the reader can see where the range ends before pressing into it (§X).
+ */
+function Nudge({
+  field,
+  direction,
+  draft,
+  onPress,
+}: {
+  field: DraftField;
+  direction: 1 | -1;
+  draft: SpeedDraft;
+  onPress: (field: DraftField, direction: 1 | -1) => void;
+}) {
+  const word = direction === 1 ? "artır" : "azalt";
+  return (
+    <button
+      type="button"
+      data-speed-step={`${field}:${direction}`}
+      aria-label={`${DRAFT_FIELD_LABELS[field]} ${word}`}
+      disabled={!canStep(draft, field, direction)}
+      onClick={() => onPress(field, direction)}
+      style={SQUARE}
+      className="border-line text-text rounded-lg border text-base disabled:opacity-40"
+    >
+      <span aria-hidden>{direction === 1 ? "+" : "−"}</span>
+    </button>
+  );
+}
 
 export function PracticeSheet({
   open,
@@ -177,36 +230,103 @@ export function PracticeSheet({
 
         {/* --------------------------------------------- getting faster */}
         <section>
-          <p className="text-muted mb-1.5 text-xs">{PROGRESSIVE_LABEL}</p>
-          <p data-progressive-explainer className="text-muted mb-2 text-[11px]">
-            {PROGRESSIVE_EXPLAINER}
-          </p>
-          {session.progressive === null ? (
-            <SheetButton
-              data-progressive-start
-              onClick={() =>
-                session.startProgressiveRate({
-                  fromPercent:
-                    practiceRateLimits.defaultPercent - 4 * practiceRateLimits.stepPercent,
-                  toPercent: practiceRateLimits.defaultPercent,
-                  repeatsPerStep: progressiveRateLimits.defaultRepeatsPerStep,
-                })
-              }
-            >
-              %80&apos;den %100&apos;e başlat
-            </SheetButton>
-          ) : (
-            <div className="space-y-1.5">
+          <p className="text-muted mb-1.5 text-xs">{SPEED_LABEL}</p>
+          {/*
+            Two modes, said in words rather than by whether a panel happens to
+            be showing. `aria-pressed` carries the same fact to a screen
+            reader, and the chosen one is marked by its label *and* its
+            border — a state told only in colour is a state some readers do
+            not have (§X).
+          */}
+          <div role="group" aria-label={SPEED_LABEL} className="flex gap-1.5">
+            {SPEED_MODES.map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                data-speed-mode={mode}
+                aria-pressed={session.speedMode === mode}
+                onClick={() => session.setSpeedMode(mode)}
+                style={TARGET}
+                className={`flex-1 rounded-lg border px-2 text-sm ${
+                  session.speedMode === mode
+                    ? "border-bronze text-bronze"
+                    : "border-line text-muted"
+                }`}
+              >
+                {SPEED_MODE_LABELS[mode]}
+                {session.speedMode === mode ? " ✓" : ""}
+              </button>
+            ))}
+          </div>
+
+          {session.speedMode === "progressive" ? (
+            <div className="mt-3 space-y-2">
+              <p data-progressive-explainer className="text-muted text-[11px]">
+                {PROGRESSIVE_EXPLAINER}
+              </p>
+
+              {/*
+                The four numbers. Only here: in "Sabit" they are not dimmed,
+                they are absent, because a control that is visible and does
+                nothing is a promise the screen is not keeping.
+              */}
+              {DRAFT_FIELDS.map((field) => (
+                <div key={field} className="flex items-center gap-2">
+                  <span className="text-muted flex-1 text-xs">
+                    {DRAFT_FIELD_LABELS[field]}
+                  </span>
+                  <Nudge
+                    field={field}
+                    direction={-1}
+                    draft={session.speedDraft}
+                    onPress={session.nudgeSpeed}
+                  />
+                  <span
+                    data-speed-value={field}
+                    aria-live="polite"
+                    className="text-text w-20 text-center font-mono text-sm tabular-nums"
+                  >
+                    {draftFieldValue(field, session.speedDraft[field])}
+                  </span>
+                  <Nudge
+                    field={field}
+                    direction={1}
+                    draft={session.speedDraft}
+                    onPress={session.nudgeSpeed}
+                  />
+                </div>
+              ))}
+
+              {session.planRefusal ? (
+                <p data-speed-refusal role="alert" className="text-reject text-xs">
+                  {planRefusalMessage(session.planRefusal)}
+                </p>
+              ) : null}
+
               {notice ? (
                 <p data-progressive-notice role="status" className="text-text text-sm">
                   {notice}
                 </p>
               ) : null}
-              <SheetButton data-progressive-stop onClick={session.stopProgressiveRate}>
-                Kademeli hızlanmayı bırak
-              </SheetButton>
+
+              <div className="flex gap-1.5">
+                <div className="flex-1">
+                  <SheetButton
+                    data-progressive-start
+                    tone="primary"
+                    onClick={() => session.applySpeed()}
+                  >
+                    {APPLY_SPEED_LABEL}
+                  </SheetButton>
+                </div>
+                <div className="flex-1">
+                  <SheetButton data-speed-cancel onClick={session.cancelSpeedDraft}>
+                    {CANCEL_SPEED_LABEL}
+                  </SheetButton>
+                </div>
+              </div>
             </div>
-          )}
+          ) : null}
         </section>
       </div>
     </Sheet>

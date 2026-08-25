@@ -15,6 +15,12 @@
  * And nothing here claims anything about how the reader played. The app does
  * not listen, so "tur" is a pass of the loop and never a clean repetition.
  */
+import { progressiveRateLimits } from "@/lib/limits";
+import type {
+  PlanRefusal,
+  ProgressiveState,
+} from "@/lib/practice/progressive-rate";
+import type { DraftField, SpeedMode } from "@/lib/practice/speed-draft";
 import type { EntryRefusal } from "@/lib/practice/range-entry";
 import type { RangeSource } from "@/lib/practice/range-entry";
 import type { RangeEdgeKind } from "@/lib/practice/range-preflight";
@@ -128,3 +134,71 @@ export const PROGRESSIVE_EXPLAINER =
   "Her tamamlanan turda bir kademe hızlanır. Uygulama çalımını dinlemez.";
 
 export const CLEAR_RANGE_LABEL = "Döngüyü kaldır";
+
+/* ------------------------------------------------------- the speed form */
+
+export const SPEED_LABEL = "Hız";
+export const SPEED_MODE_LABELS: Readonly<Record<SpeedMode, string>> = {
+  fixed: "Sabit",
+  progressive: "Kademeli",
+};
+
+/** The four numbers, in the order the sheet asks for them (§X.5–8). */
+export const DRAFT_FIELD_LABELS: Readonly<Record<DraftField, string>> = {
+  fromPercent: "Başlangıç",
+  toPercent: "Hedef",
+  incrementPercent: "Artış",
+  repeatsPerStep: "Kaç turda bir",
+};
+
+/** A field's value as the reader reads it — a speed or a count of passes. */
+export function draftFieldValue(field: DraftField, value: number): string {
+  return field === "repeatsPerStep" ? `${value} tur` : `%${value}`;
+}
+
+export const APPLY_SPEED_LABEL = "Uygula";
+export const CANCEL_SPEED_LABEL = "Vazgeç";
+
+/**
+ * Why the four numbers do not describe getting faster (§IX).
+ *
+ * Each field is inside its own range — the controls see to that — so a
+ * refusal here is always about the combination, and says which one.
+ */
+export function planRefusalMessage(reason: PlanRefusal): string {
+  switch (reason) {
+    case "target_not_above_start":
+      return "Hedef hız, başlangıç hızından yüksek olmalı.";
+    case "increment_out_of_range":
+      return `Artış %${progressiveRateLimits.minIncrementPercent} ile %${progressiveRateLimits.maxIncrementPercent} arasında olmalı.`;
+    case "repeats_out_of_range":
+      return `Kaç turda bir hızlanacağı ${progressiveRateLimits.minRepeatsPerStep} ile ${progressiveRateLimits.maxRepeatsPerStep} tur arasında olmalı.`;
+  }
+}
+
+/**
+ * The one line the transport says about an active drill (§X).
+ *
+ * Short, and every part of it a fact: how many bars are looping, what speed
+ * they are looping at, where that speed is going, and whether anything is
+ * counted in. It is allowed to take two lines on a narrow screen — a
+ * truncated sentence about what the app is doing is worse than a second row.
+ */
+export function practiceBanner(input: {
+  readonly barCount: number;
+  readonly percent: number;
+  readonly progressive: ProgressiveState | null;
+  readonly countInBars: number;
+}): string | null {
+  if (input.barCount <= 0) return null;
+  const parts = ["Pratik", `${input.barCount} ölçü`];
+  const plan = input.progressive?.stopped === null ? input.progressive.plan : null;
+  if (plan) {
+    parts.push(`%${input.progressive?.percent}→%${plan.toPercent}`);
+    parts.push(`${plan.repeatsPerStep} turda bir +%${plan.stepPercent}`);
+  } else {
+    parts.push(`%${input.percent}`);
+  }
+  if (input.countInBars > 0) parts.push(`${input.countInBars} ölçü sayım`);
+  return parts.join(" · ");
+}

@@ -3,6 +3,7 @@
 import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type { PlaybackState } from "@/lib/audio/playback";
+import type { PracticeSession } from "@/lib/workspace/use-practice-session";
 import type { SectionRun } from "@/lib/tab/timeline";
 
 const BUSY: PlaybackState["status"][] = ["loading"];
@@ -85,10 +86,9 @@ export function TransportBar({
   runs,
   onPlayPause,
   onRewind,
-  onToggleLoop,
   onToggleMetronome,
   onOpenMixer,
-  onOpenPractice,
+  practice,
   auditioning,
   onOpenPracticeRate,
 }: {
@@ -96,12 +96,18 @@ export function TransportBar({
   runs: readonly SectionRun[];
   onPlayPause: () => void;
   onRewind: () => void;
-  onToggleLoop: () => void;
   onToggleMetronome: () => void;
   /** Opens the mixer sheet (spec 13.18). */
   onOpenMixer: () => void;
-  /** Opens the practice-loop sheet (2R-A §14). */
-  onOpenPractice: () => void;
+  /**
+   * The practice session: its door, its section-loop button and its banner.
+   *
+   * One object rather than three props, because all three answer the same
+   * question — what is looping — and a row that took them separately could
+   * be wired to a loop button belonging to one session and a banner
+   * belonging to another (2R-A §X).
+   */
+  practice: PracticeSession;
   /** Any track silenced or soloed this session, so the control says so. */
   auditioning: boolean;
   onOpenPracticeRate: () => void;
@@ -211,7 +217,7 @@ export function TransportBar({
            * "Metronom" is the app changing language mid-sentence.
            */
           label="Bölüm döngüsü"
-          onClick={onToggleLoop}
+          onClick={practice.toggleSectionLoop}
           active={state.loop.kind !== "none"}
           disabled={busy || runs.length === 0}
         >
@@ -227,7 +233,7 @@ export function TransportBar({
         */}
         <IconButton
           label="Çalışma döngüsü"
-          onClick={onOpenPractice}
+          onClick={practice.openSheet}
           active={state.loop.kind === "practice_range"}
           disabled={busy || runs.length === 0}
           data-open-practice
@@ -298,8 +304,20 @@ export function TransportBar({
       </div>
 
       {/* A line only when there is something to say that the buttons cannot. */}
-      {status || loopRun ? (
+      {status || loopRun || practice.banner ? (
         <p data-transport-status className="text-muted/80 px-3 pb-1.5 text-[11px]">
+          {/*
+            The drill, in its own element and allowed to wrap. At 150% text on
+            a 320px screen this sentence is wider than the screen, and the two
+            ways out are a second line or an ellipsis — an ellipsis in the
+            middle of "%70→%100" would leave the reader guessing what the app
+            is doing to their tempo (§X).
+          */}
+          {practice.banner ? (
+            <span data-practice-banner className="text-bronze block">
+              {practice.banner}
+            </span>
+          ) : null}
           {[status, loopRun ? `Döngü: ${loopRun.name}` : null]
             .filter(Boolean)
             .join(" · ")}

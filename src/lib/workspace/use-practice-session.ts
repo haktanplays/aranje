@@ -49,6 +49,14 @@ import {
   type RangePreflight,
 } from "@/lib/practice/range-preflight";
 import {
+  draftPlan,
+  openingDraft,
+  stepDraft,
+  type DraftField,
+  type SpeedDraft,
+  type SpeedMode,
+} from "@/lib/practice/speed-draft";
+import {
   afterLoop,
   afterManualChange,
   isRunning,
@@ -57,6 +65,7 @@ import {
   type PlanRefusal,
   type ProgressiveState,
 } from "@/lib/practice/progressive-rate";
+import { practiceBanner } from "@/lib/practice/messages";
 import { barTimeline } from "@/lib/audio/schedule";
 import type { PlaybackController } from "@/lib/audio/playback";
 import type { TimeSelection } from "@/lib/song/time-selection";
@@ -84,6 +93,14 @@ export type PracticeSession = {
    * and what the loop actually covers cannot come apart.
    */
   readonly view: PracticeRangeView | null;
+  /**
+   * The one line the transport says about an active drill, or null (§X).
+   *
+   * Built here for the same reason `view` is: the bar count, the speed and
+   * the count-in are facts this hook holds, and a transport that assembled
+   * its own sentence could say something the sheet contradicts.
+   */
+  readonly banner: string | null;
   openSheet(): void;
   closeSheet(): void;
 
@@ -133,6 +150,35 @@ export type PracticeSession = {
     repeatsPerStep?: number;
   }): PlanRefusal | null;
   stopProgressiveRate(): void;
+
+  /* ------------------------------------------------ the speed form (§X) */
+
+  /** Which of the two things the speed is doing: holding, or climbing. */
+  readonly speedMode: SpeedMode;
+  /**
+   * Choosing one.
+   *
+   * "Sabit" is not merely a label the form wears — it is the reader saying
+   * the speed should stop moving, so it ends any automation that is running.
+   */
+  setSpeedMode(mode: SpeedMode): void;
+  /** The four numbers as they currently stand, applied or not. */
+  readonly speedDraft: SpeedDraft;
+  /** One press of one control. A press at a field's end does nothing. */
+  nudgeSpeed(field: DraftField, direction: 1 | -1): void;
+  /** Start what the form describes, or the named reason it cannot (§IX). */
+  applySpeed(): PlanRefusal | null;
+  /**
+   * Put the form back as it opened.
+   *
+   * The one cleanup path: the Vazgeç button, the backdrop and Escape all
+   * take it, so leaving the sheet three ways cannot leave three different
+   * drafts behind. It abandons the *form*, not a drill already running —
+   * stopping that is what "Sabit" means.
+   */
+  cancelSpeedDraft(): void;
+  /** Why the last Uygula was refused, or null. */
+  readonly planRefusal: PlanRefusal | null;
   /** The reader moved the speed by hand: automation ends (§12). */
   reportManualRate(percent: number): void;
   /**
@@ -181,6 +227,11 @@ export function usePracticeSession(options: {
   const [progressive, setProgressive] = useState<ProgressiveState | null>(null);
   const [pendingBarKey, setPendingBarKey] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [speedMode, setSpeedModeState] = useState<SpeedMode>("fixed");
+  const [speedDraft, setSpeedDraft] = useState<SpeedDraft>(() =>
+    openingDraft(practicePercent),
+  );
+  const [planRefusal, setPlanRefusal] = useState<PlanRefusal | null>(null);
 
   /*
    * A range whose bars have gone stops being a range. Checked here rather
@@ -222,6 +273,19 @@ export function usePracticeSession(options: {
           : { firstBarNumber: offerFirst, lastBarNumber: offerLast },
     };
   }, [preflight, range, song]);
+
+  const banner = useMemo(
+    () =>
+      view === null
+        ? null
+        : practiceBanner({
+            barCount: view.lastBarNumber - view.firstBarNumber + 1,
+            percent: practicePercent,
+            progressive,
+            countInBars,
+          }),
+    [countInBars, practicePercent, progressive, view],
+  );
 
   /* ---------------------------------------------------- the loop itself */
 
@@ -386,6 +450,53 @@ export function usePracticeSession(options: {
     ourPercent.current = null;
   }, []);
 
+  /* ------------------------------------------------- the speed form (§X) */
+
+  const cancelSpeedDraft = useCallback(() => {
+    setSpeedDraft(openingDraft(practicePercent));
+    setPlanRefusal(null);
+    /*
+     * A drill that is already running keeps running: abandoning the form is
+     * not the same gesture as stopping the loop, and a Vazgeç that silently
+     * did both would take away something the reader did not offer up.
+     */
+    if (!isRunning(progressive)) setSpeedModeState("fixed");
+  }, [practicePercent, progressive]);
+
+  const setSpeedMode = useCallback(
+    (mode: SpeedMode) => {
+      setSpeedModeState(mode);
+      setPlanRefusal(null);
+      if (mode === "fixed") {
+        setProgressive(null);
+        ourPercent.current = null;
+        return;
+      }
+      // The form opens on the speed the transport is at, not on a constant.
+      setSpeedDraft(openingDraft(practicePercent));
+    },
+    [practicePercent],
+  );
+
+  const nudgeSpeed = useCallback((field: DraftField, direction: 1 | -1) => {
+    setPlanRefusal(null);
+    setSpeedDraft((current) => stepDraft(current, field, direction) ?? current);
+  }, []);
+
+  const applySpeed = useCallback(() => {
+    const made = draftPlan(speedDraft);
+    if (!made.ok) {
+      setPlanRefusal(made.reason);
+      return made.reason;
+    }
+    setPlanRefusal(null);
+    const started = startProgressive(made.plan);
+    ourPercent.current = started.percent;
+    setProgressive(started);
+    setPracticePercent(started.percent);
+    return null;
+  }, [setPracticePercent, speedDraft]);
+
   const toggleSectionLoop = useCallback(() => {
     /*
      * A practice range is the other kind of loop, and pressing the section
@@ -415,12 +526,21 @@ export function usePracticeSession(options: {
     source,
     countInBars,
     progressive,
+    banner,
     pendingBarKey,
     currentBarKey: activeBarKey,
     sheetOpen,
     view,
     openSheet: useCallback(() => setSheetOpen(true), []),
-    closeSheet: useCallback(() => setSheetOpen(false), []),
+    /*
+     * Closing is the same cleanup as Vazgeç, deliberately: Escape, the
+     * backdrop and the button are three ways out of one screen, and three
+     * cleanups is how they come to disagree about what was left behind (§X).
+     */
+    closeSheet: useCallback(() => {
+      setSheetOpen(false);
+      cancelSpeedDraft();
+    }, [cancelSpeedDraft]),
     selectBar,
     extendTo,
     setRange,
@@ -431,6 +551,13 @@ export function usePracticeSession(options: {
     setCountIn: setCountInBars,
     startProgressiveRate,
     stopProgressiveRate,
+    speedMode,
+    setSpeedMode,
+    speedDraft,
+    nudgeSpeed,
+    applySpeed,
+    cancelSpeedDraft,
+    planRefusal,
     reportManualRate,
     toggleSectionLoop,
   };
