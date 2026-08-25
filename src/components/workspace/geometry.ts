@@ -8,9 +8,22 @@
 /** The bar-header attribute both surfaces and the scroll targets share. */
 export const BAR_KEY_ATTRIBUTE = "data-bar-key";
 
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
+
 export const SLOT_WIDTH = 34;
 export const STRING_ROW_HEIGHT = 26;
 export const DRUM_ROW_HEIGHT = 30;
+
+/**
+ * How tall a row is while the kit is being written into (2Q-B §5.2).
+ *
+ * Taller than a reading row on purpose: this row *is* the hit target, and a
+ * finger needs the full touch height. It is the one dimension that can be
+ * given honestly — the width stays one slot, because widening a cell would
+ * pull this lane's bar lines away from every other lane's, which is the one
+ * thing the Çoklu view exists to hold together.
+ */
+export const DRUM_STEP_ROW_HEIGHT = MIN_TOUCH_TARGET_PX;
 /**
  * The strip under the staff.
  *

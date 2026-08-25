@@ -141,6 +141,25 @@ function laneFor(song: Song, at: Landing): { song: Song; lane: readonly unknown[
   return { song: ready, lane: (bar.slots[at.track.id] ?? []) as readonly unknown[] };
 }
 
+/**
+ * Whether this beat already carries this piece.
+ *
+ * The toggle asks *this*, not the last render: a tap decides what it means
+ * from the song, so a fast second tap cannot write a hit that is already
+ * there or erase one that is not.
+ */
+export function hitAt(
+  song: Song,
+  target: EventEntryTarget,
+  piece: DrumPiece,
+): boolean {
+  const at = landOn(song, target);
+  if (!landed(at)) return false;
+  const lane = at.bar.slots[at.track.id];
+  const slot = Array.isArray(lane) ? lane[at.slotIndex] : undefined;
+  return Array.isArray(slot) && (slot as DrumSlot).some((hit) => hit.piece === piece);
+}
+
 /* ------------------------------------------------------------------ drums */
 
 export type DrumHitInput = {

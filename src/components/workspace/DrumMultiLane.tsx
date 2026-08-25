@@ -9,8 +9,23 @@
  * which is what makes the two comparable at all.
  */
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
+import { DrumStepLane } from "@/components/workspace/DrumStepLane";
 import { gridLabelFor } from "@/components/workspace/TabCanvas";
+import type { DrumStepModel } from "@/lib/tab/drum-step-model";
+import type { DrumPiece } from "@/lib/instruments/registry";
 import type { DrumBar } from "@/lib/tab/timeline";
+
+/**
+ * What it takes to write into a kit: the grid, and what a tap on it means.
+ *
+ * One object rather than two props, so a lane either has both or neither —
+ * a model with no way to act on it would be a grid that silently does
+ * nothing when tapped.
+ */
+export type DrumStepArming = {
+  readonly model: DrumStepModel;
+  toggle(ticks: number, piece: DrumPiece): void;
+};
 
 export function DrumMultiLane({
   trackId,
@@ -18,6 +33,7 @@ export function DrumMultiLane({
   laneCount,
   activeBarKey,
   editable,
+  entry,
   onSelectBar,
 }: {
   trackId: string;
@@ -25,8 +41,24 @@ export function DrumMultiLane({
   laneCount: number;
   activeBarKey: string | null;
   editable: boolean;
+  /** Armed for writing, or null: the lane reads instead. */
+  entry: DrumStepArming | null;
   onSelectBar: (barKey: string) => void;
 }) {
+  /*
+   * Reading and writing are two different drawings of the same music, and
+   * the step grid replaces the notation rather than sitting on top of it: a
+   * tap has to mean one thing, and two overlapping surfaces is how it comes
+   * to mean two.
+   */
+  if (entry) {
+    return (
+      <div data-multi-drums={trackId} className="flex">
+        <DrumStepLane model={entry.model} entry={entry} />
+      </div>
+    );
+  }
+
   return (
     <div data-multi-drums={trackId} className="flex">
       {bars.map((bar, index) => (

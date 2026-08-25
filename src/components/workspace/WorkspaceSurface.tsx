@@ -21,6 +21,8 @@ import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import type { PlayPosition } from "@/lib/audio/position";
 import type { SongPlan } from "@/lib/audio/schedule";
 import type { TrackTimeline } from "@/lib/tab/timeline";
+import type { DrumPiece } from "@/lib/instruments/registry";
+import type { EventEntry } from "@/lib/workspace/use-event-entry";
 import type { MultiTrackView } from "@/lib/workspace/use-multitrack-session";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
@@ -37,6 +39,7 @@ export function WorkspaceSurface({
   ghostArrangement,
   timeline,
   multi,
+  entry,
   onSelectTrack,
   plan,
   getPosition,
@@ -52,6 +55,8 @@ export function WorkspaceSurface({
   ghostArrangement: ArrangementModel | null;
   timeline: TrackTimeline;
   multi: MultiTrackView;
+  /** Writing a hit or a note on an instrument the tab cannot draw (2Q-B). */
+  entry: EventEntry;
   /**
    * The composed track change, not the navigation's raw setter.
    *
@@ -115,6 +120,28 @@ export function WorkspaceSurface({
     };
   };
 
+  /*
+   * The kit, armed. Same gate as every other edit gesture: edit mode, a
+   * session that can save, and no Copilot candidate on the screen. The
+   * target's section is the one being read, so a tap in the Çoklu view and a
+   * tap on the Tab name the same moment.
+   */
+  const drumEntry =
+    noteEditing.editing && canPersist && !copilotOwnsScreen && entry.drumStep
+      ? {
+          model: entry.drumStep,
+          toggle: (ticks: number, piece: DrumPiece) =>
+            entry.toggleDrumHit(
+              {
+                sectionId: navigation.viewedSectionId,
+                trackId: entry.drumStep!.trackId,
+                ticks,
+              },
+              piece,
+            ),
+        }
+      : null;
+
   return (
     <main className="min-h-0 flex-1">
       {navigation.view === "arrange" ? (
@@ -163,6 +190,7 @@ export function WorkspaceSurface({
               : null
           }
           scrollRef={navigation.scrollRef}
+          drumEntry={drumEntry}
           onActivateTrack={onSelectTrack}
           onSelectBar={navigation.seekToBar}
           onActiveBarChange={navigation.setActiveBarKey}
@@ -205,6 +233,7 @@ export function WorkspaceSurface({
               />
             ) : null
           }
+          drumEntry={drumEntry}
           editing={noteEditing.editing}
           selectedCell={noteEditing.cell}
           onCellSelect={noteEditing.selectCell}

@@ -20,7 +20,7 @@
  * once: undo/redo grounding, the project-apply ground, the Copilot gates,
  * and the layout.
  */
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
@@ -45,6 +45,8 @@ import { editGate } from "@/lib/workspace/edit-gate";
 import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { mixerAudioOf } from "@/lib/workspace/mixer-audio";
+import { useEventEntry } from "@/lib/workspace/use-event-entry";
+import { useLoopToggle, useTransportHandles } from "@/lib/workspace/use-transport-handles";
 import { useMultiTrackView } from "@/lib/workspace/use-multitrack-session";
 import { useSelectTrack } from "@/lib/workspace/use-select-track";
 import { useMixer } from "@/lib/workspace/use-mixer";
@@ -74,24 +76,17 @@ export function Workspace() {
   const { controller, state } = usePlayback(song, practiceRatePercent);
   useDebugHandle(controller);
 
-  // The setting is the source of truth; the controller is the audio system it
-  // is applied to. Retuning a running transport is not a re-render, and it
-  // never rebuilds the engine or reschedules an event (spec 13.8).
-  useEffect(() => {
-    controller.setPracticePercent(practiceRatePercent);
-  }, [controller, practiceRatePercent]);
-
-  const pause = useCallback(() => controller.pause(), [controller]);
-  const seek = useCallback(
-    (barKey: string) => controller.seekToBar(barKey),
-    [controller],
-  );
-  const getPosition = useCallback(() => controller.getPosition(), [controller]);
+  const { pause, seek, getPosition } = useTransportHandles(controller, practiceRatePercent);
 
   /* ------------------------------------------------------ the controllers */
 
   const navigation = useWorkspaceNavigation({ song, seek });
   const track = navigation.track;
+  const toggleLoop = useLoopToggle(
+    controller,
+    navigation.viewedSectionId,
+    state.loopSectionId,
+  );
 
   const tab = useTabView({ song, track, canPersist, commit, pause });
   const { chords, timeline, runs } = tab;
@@ -180,6 +175,15 @@ export function Workspace() {
     onApplied: overlays.close,
   });
 
+  /* Writing a hit or a note on an instrument the tab cannot draw (2Q-B). */
+  const entry = useEventEntry({
+    song,
+    track: track ?? null,
+    sectionId: navigation.viewedSectionId,
+    commit,
+    pause,
+  });
+
   /* Every instrument of the viewed section, and what this sitting folded. */
   const multi = useMultiTrackView({
     song,
@@ -189,12 +193,6 @@ export function Workspace() {
   });
 
   /* ----------------------------------------------------------- the gates */
-
-  const toggleLoop = useCallback(() => {
-    // The loop belongs to the section being *read*, not to wherever the
-    // transport is. That id is always a real section, so there is no fallback.
-    controller.setLoopSection(state.loopSectionId ? null : navigation.viewedSectionId);
-  }, [controller, navigation.viewedSectionId, state.loopSectionId]);
 
   const { canEdit, editDisabledReason } = editGate({
     track,
@@ -293,6 +291,7 @@ export function Workspace() {
         ghostArrangement={ghostArrangement}
         timeline={timeline}
         multi={multi}
+        entry={entry}
         onSelectTrack={selectTrack}
         plan={plan}
         getPosition={getPosition}

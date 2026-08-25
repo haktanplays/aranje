@@ -35,7 +35,7 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 
-import { DrumMultiLane } from "@/components/workspace/DrumMultiLane";
+import { DrumMultiLane, type DrumStepArming } from "@/components/workspace/DrumMultiLane";
 import {
   FrettedMultiLane,
   type LaneEditing,
@@ -91,6 +91,7 @@ export function MultiTrackCanvas({
   running,
   activeBarKey,
   editing,
+  drumEntry,
   scrollRef,
   onActivateTrack,
   onSelectBar,
@@ -113,6 +114,13 @@ export function MultiTrackCanvas({
    * not editing, and a tap cannot write to one (§8).
    */
   editing: LaneEditing | null;
+  /**
+   * The kit's step grid, armed, or null.
+   *
+   * Handed to the active drum lane and to no other, for the same reason
+   * `editing` is: an inactive lane has nothing to resolve a tap against.
+   */
+  drumEntry: DrumStepArming | null;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   /** A tap on a lane makes it the one being edited. It writes nothing. */
   onActivateTrack: (trackId: string) => void;
@@ -249,6 +257,7 @@ export function MultiTrackCanvas({
                   laneCount={lane.pieces.length}
                   activeBarKey={activeBarKey}
                   editable={lane.active}
+                  entry={lane.active ? drumEntry : null}
                   onSelectBar={(barKey) => {
                     if (!lane.active) onActivateTrack(lane.trackId);
                     onSelectBar(barKey);

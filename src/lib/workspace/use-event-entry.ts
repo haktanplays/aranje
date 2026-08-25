@@ -15,10 +15,11 @@
  * command, same candidate, same single step of history. Two controllers would
  * be two chances for them to disagree about what a tap means.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { EVENT_ENTRY_MESSAGES } from "@/lib/song/event-entry-messages";
 import {
+  hitAt,
   insertDrumHit,
   insertPitchedNote,
   removeDrumHit,
@@ -26,6 +27,9 @@ import {
   type EventEntryResult,
   type EventEntryTarget,
 } from "@/lib/song/event-entry";
+import { buildDrumStepModel, type DrumStepModel } from "@/lib/tab/drum-step-model";
+import { isDrumInstrument } from "@/lib/instruments/registry";
+import type { Track } from "@/lib/song/schema";
 import type { DrumPiece } from "@/lib/instruments/registry";
 import type { DrumHit, Song } from "@/lib/song/schema";
 import type { HistoryAction } from "@/lib/song/edit-history";
@@ -53,6 +57,14 @@ export const HIT_LEVEL_LABELS: Readonly<Record<HitLevel, string>> = {
 };
 
 export type EventEntry = {
+  /**
+   * The kit as a grid, when the track being edited is one.
+   *
+   * Built here rather than in a component: it is a model of the music, and a
+   * component that built its own would be a second answer to "what is on
+   * this beat" — which is exactly what the toggle asks.
+   */
+  readonly drumStep: DrumStepModel | null;
   /** The last refusal, in the reader's words, or null. */
   readonly entryError: string | null;
   clearEntryError(): void;
@@ -71,14 +83,24 @@ export type EventEntry = {
 
 export function useEventEntry(options: {
   readonly song: Song;
-  /** Whether this beat already carries this piece, asked of the model. */
-  hasHit(target: EventEntryTarget, piece: DrumPiece): boolean;
+  /** The track being edited, or null when there is none. */
+  readonly track: Track | null;
+  /** The section on screen — the grid is built for one section at a time. */
+  readonly sectionId: string;
   commit(next: Song, action: HistoryAction): boolean;
   /** Editing and playback do not share the screen (spec 13.1). */
   pause(): void;
 }): EventEntry {
-  const { song, hasHit, commit, pause } = options;
+  const { song, track, sectionId, commit, pause } = options;
   const [entryError, setEntryError] = useState<string | null>(null);
+
+  const drumStep = useMemo(
+    () =>
+      track && isDrumInstrument(track.instrumentId)
+        ? buildDrumStepModel(song, sectionId, track.id)
+        : null,
+    [sectionId, song, track],
+  );
 
   /**
    * A refusal, in the reader's words. Returns false so a caller can read as
@@ -128,10 +150,10 @@ export function useEventEntry(options: {
        * already there, asked of the model the cell was drawn from rather
        * than guessed from the last render.
        */
-      if (hasHit(target, piece)) eraseDrumHit(target, piece);
+      if (hitAt(song, target, piece)) eraseDrumHit(target, piece);
       else writeDrumHit(target, piece, level);
     },
-    [eraseDrumHit, hasHit, writeDrumHit],
+    [eraseDrumHit, song, writeDrumHit],
   );
 
   const writePitchedNote = useCallback(
@@ -165,6 +187,7 @@ export function useEventEntry(options: {
   const clearEntryError = useCallback(() => setEntryError(null), []);
 
   return {
+    drumStep,
     entryError,
     clearEntryError,
     toggleDrumHit,

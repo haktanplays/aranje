@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 
 import { DrumBarBlock } from "@/components/workspace/DrumBarBlock";
+import { DrumStepLane } from "@/components/workspace/DrumStepLane";
+import type { DrumStepArming } from "@/components/workspace/DrumMultiLane";
 import {
   FrettedBarBlock,
   type CellSelection,
@@ -110,6 +112,7 @@ export function TabCanvas({
   onSlotLongPress,
   onHandleMove,
   onHandleUp,
+  drumEntry = null,
   editing = false,
   selectedCell = null,
   onCellSelect,
@@ -156,6 +159,14 @@ export function TabCanvas({
   onHandleMove?: (event: React.PointerEvent) => void;
   onHandleUp?: () => void;
   /** Edit mode turns each bar into a grid of cells (spec 13.1). */
+  /**
+   * The kit's step grid, armed, or null (2Q-B §5.3).
+   *
+   * The tab draws a fretboard; a kit is drawn by the same component the
+   * Çoklu view uses, from the same model, so a hit written here and a hit
+   * written there are the same hit and not two implementations of one.
+   */
+  drumEntry?: DrumStepArming | null;
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
   onCellSelect?: (cell: CellSelection & { barKey: string }) => void;
@@ -388,6 +399,14 @@ export function TabCanvas({
                   />
                 </BarSlot>
               ))
+            : drumEntry
+            ? [
+                <DrumStepLane
+                  key="drum-step"
+                  model={drumEntry.model}
+                  entry={drumEntry}
+                />,
+              ]
             : timeline.bars.map((bar, barIndex) => (
                 <BarSlot key={bar.key} bar={bar} bars={bars}>
                   <DrumBarBlock
