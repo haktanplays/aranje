@@ -1,0 +1,70 @@
+{
+  "what": "2R-A §5.3 — yoğun davul ızgarasının katman katman saf maliyeti",
+  "measuredOn": "node, masaüstü konteyner — telefon kanıtı değil",
+  "method": "5 ısınma turu, ardından 20 zamanlanmış tur; median / p95 / max ms.",
+  "notes": [
+    "Eşik uydurulmadı. Bunlar kök nedenin hangi katmanda olduğunu gösteren sayılardır.",
+    "«render: per-cell lookup», bileşenin bugün her hücre için yaptığı row.cells.find(...) taramasıdır — DOM sayısında görünmeyen, bölüm uzunluğunda karesel bir maliyet.",
+    "Aynı cevabı bir kez kurulan indeksle vermek ikinci satırdır; ikisi aynı hücre sayısını bulduğu doğrulanır."
+  ],
+  "measured": {
+    "fixture": "denseKit",
+    "section": "dense",
+    "tracks": 8,
+    "bars": 32,
+    "denseSectionBars": 8,
+    "rows": 7,
+    "slotsPerBar": 32,
+    "cells": 1792,
+    "layers": {
+      "command: insert a hit": {
+        "rounds": 20,
+        "median": 39.475,
+        "p95": 42.475,
+        "max": 42.475
+      },
+      "command: remove a hit": {
+        "rounds": 20,
+        "median": 38.228,
+        "p95": 42.47,
+        "max": 42.47
+      },
+      "schema: parse the candidate": {
+        "rounds": 20,
+        "median": 8.535,
+        "p95": 11.097,
+        "max": 11.097
+      },
+      "validators: the whole chain": {
+        "rounds": 20,
+        "median": 29.505,
+        "p95": 32.688,
+        "max": 32.688
+      },
+      "settle: the central gate": {
+        "rounds": 20,
+        "median": 36.641,
+        "p95": 54.572,
+        "max": 54.572
+      },
+      "model: build the step grid": {
+        "rounds": 20,
+        "median": 0.432,
+        "p95": 1.366,
+        "max": 1.366
+      },
+      "render: the per-cell lookup as it is": {
+        "rounds": 20,
+        "median": 0.559,
+        "p95": 2.295,
+        "max": 2.295
+      },
+      "render: the same lookup, indexed once": {
+        "rounds": 20,
+        "median": 0.438,
+        "p95": 0.609,
+        "max": 0.609
+      }
+    }
+  }
+}
