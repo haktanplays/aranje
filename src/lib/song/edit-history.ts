@@ -78,6 +78,24 @@ export type HistoryAction =
    */
   | { readonly kind: "bar_timing_change"; readonly scope: "bar" | "section" }
   /**
+   * One drum hit written or taken away (2Q-B §4).
+   *
+   * One hit, one action: a kick and a snare on the same beat are two taps and
+   * two steps of history, because that is how the reader made them and how
+   * they will expect to take them back.
+   */
+  | { readonly kind: "drum_entry"; readonly command: "insert" | "remove" }
+  /**
+   * One pitched note written, replaced or taken away (2Q-B §6).
+   *
+   * Replacing is its own word rather than a flavour of writing: the reader
+   * had to say so explicitly, and undo should offer the same sentence back.
+   */
+  | {
+      readonly kind: "pitched_entry";
+      readonly command: "insert" | "replace" | "remove";
+    }
+  /**
    * One chord written or replaced (spec 13.22, 2O-B).
    *
    * One action, however many notes the chord has: the reader chose a chord

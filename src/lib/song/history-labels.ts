@@ -116,6 +116,19 @@ export function historyActionLabel(action: HistoryAction): string {
       return action.scope === "section"
         ? "Bölümün ölçü ve ritmini değiştirme"
         : "Ölçü ve ritmi değiştirme";
+    case "drum_entry":
+      return action.command === "insert"
+        ? "Davul vuruşu ekleme"
+        : "Davul vuruşu kaldırma";
+    case "pitched_entry":
+      switch (action.command) {
+        case "insert":
+          return "Nota ekleme";
+        case "replace":
+          return "Notayı değiştirme";
+        case "remove":
+          return "Notayı kaldırma";
+      }
     case "chord":
       return action.mode === "chord_replace" ? "Akoru değiştirme" : "Akor ekleme";
   }
