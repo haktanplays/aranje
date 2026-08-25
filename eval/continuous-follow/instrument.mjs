@@ -2,7 +2,8 @@
  * Counters installed before the app's first line (2Q-C §1.2).
  *
  * Everything here answers a question the DOM cannot be asked afterwards:
- * how many listeners were *added*, how many observers were *constructed*, how
+ * how many listeners were *added* and *removed*, how many observers were
+ * *constructed*, how
  * many times `scrollLeft` was *written*. A count taken at the end would miss
  * every one that was removed, and removal is not the thing being measured.
  *
@@ -12,6 +13,7 @@
 export const INSTRUMENT = `
   window.__probe = {
     listeners: 0,
+    listenersRemoved: 0,
     listenersByType: {},
     observers: { resize: 0, intersection: 0, mutation: 0 },
     audioContexts: 0,
@@ -32,6 +34,16 @@ export const INSTRUMENT = `
       const by = window.__probe.listenersByType;
       by[type] = (by[type] || 0) + 1;
       return addEventListener.call(this, type, listener, options);
+    };
+    /*
+     * The other side of the ledger. A windowed surface attaches a handler for
+     * every bar it mounts and detaches it when the bar leaves; counting only
+     * the additions would call that a leak.
+     */
+    const removeEventListener = EventTarget.prototype.removeEventListener;
+    EventTarget.prototype.removeEventListener = function (type, listener, options) {
+      window.__probe.listenersRemoved += 1;
+      return removeEventListener.call(this, type, listener, options);
     };
   })();
 
@@ -138,6 +150,13 @@ export const START_RECORDING = `
     // how big the screen is, and asking again at the end could ask a
     // different element.
     probe.scrollerClientWidth = scroller ? scroller.clientWidth : null;
+    // Additions and removals, so "listeners grew" can mean the net figure
+    // rather than the number of times React ever attached one — a windowed
+    // surface attaches a handler for every bar it mounts and detaches it
+    // again, and counting only one side calls that a leak.
+    probe.listenersAtStart = probe.listeners;
+    probe.removedAtStart = probe.listenersRemoved;
+    probe.byTypeAtStart = { ...probe.listenersByType };
     let last = performance.now();
     const step = (now) => {
       if (!probe.recording) return;
@@ -152,7 +171,16 @@ export const START_RECORDING = `
        */
       const playhead = document.querySelector('div[aria-hidden][style*="will-change"]');
       const transform = playhead ? playhead.style.transform : "";
-      const match = /translateX\(([-0-9.]+)px\)/.exec(transform);
+      /*
+       * Escaped twice on purpose. This whole block is a template literal that
+       * is eval'd in the page, and a single backslash before a parenthesis
+       * inside a template literal is just the parenthesis — which turned the
+       * two literal parentheses into capture groups and made the pattern
+       * match nothing at all. Every playheadX this harness had ever recorded
+       * was null because of it; no reported number used the field, but none
+       * could have.
+       */
+      const match = /translateX\\(([-0-9.]+)px\\)/.exec(transform);
       probe.scrollSamples.push({
         t: Math.round(now),
         scrollLeft: scroller ? Math.round(scroller.scrollLeft * 10) / 10 : null,
@@ -176,6 +204,17 @@ export const STOP_RECORDING = `
       scrollSamples: window.__probe.scrollSamples,
       longTasks: window.__probe.longTasks,
       clientWidth: window.__probe.scrollerClientWidth ?? null,
+      listenersAdded: window.__probe.listeners - (window.__probe.listenersAtStart ?? 0),
+      listenersByTypeAdded: Object.fromEntries(
+        Object.entries(window.__probe.listenersByType)
+          .map(([type, count]) => [
+            type,
+            count - ((window.__probe.byTypeAtStart ?? {})[type] ?? 0),
+          ])
+          .filter(([, count]) => count !== 0),
+      ),
+      listenersRemoved:
+        window.__probe.listenersRemoved - (window.__probe.removedAtStart ?? 0),
       scrollLeftWrites:
         window.__probe.scrollLeftWrites - (window.__probe.scrollLeftWritesAtStart ?? 0),
     };

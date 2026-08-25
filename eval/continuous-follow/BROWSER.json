@@ -1,0 +1,993 @@
+{
+  "what": "2Q-C §12 — sürekli okuma yüzeyi kabulü",
+  "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
+  "notes": [
+    "Reduced motion ayrı context'te ölçüldü; tur ortasında açılmadı.",
+    "Playhead transform ile taşınan katman olduğu için öyle bulundu.",
+    "«Kararlı sıçrama», çal'a basıldığındaki tek yeniden bağlanma hariç her karenin |ΔscrollLeft| değeridir."
+  ],
+  "scenarios": 196,
+  "failed": 0,
+  "results": [
+    {
+      "name": "Tab 390x844/normal · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 390x844/normal · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "248/249 moving frames (300 recorded)"
+    },
+    {
+      "name": "Tab 390x844/normal · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 7px"
+    },
+    {
+      "name": "Tab 390x844/normal · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 390x844/normal · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Tab 390x844/normal · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Tab 390x844/normal · a section boundary is not a jump",
+      "pass": true,
+      "detail": "0 crossings, worst 0px"
+    },
+    {
+      "name": "Tab 390x844/normal · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 390x844/normal · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 390x844/normal · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "Tab 390x844/normal · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Çoklu 390x844/normal · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 390x844/normal · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "231/233 moving frames (295 recorded)"
+    },
+    {
+      "name": "Çoklu 390x844/normal · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 4px"
+    },
+    {
+      "name": "Çoklu 390x844/normal · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 390x844/normal · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Çoklu 390x844/normal · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Çoklu 390x844/normal · a section boundary is not a jump",
+      "pass": true,
+      "detail": "0 crossings, worst 0px"
+    },
+    {
+      "name": "Çoklu 390x844/normal · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 390x844/normal · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 390x844/normal · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"multi\":0}"
+    },
+    {
+      "name": "Çoklu 390x844/normal · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Tab 390x844/denseDrums · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "279/279 moving frames (299 recorded)"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 13px"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · a section boundary is not a jump",
+      "pass": true,
+      "detail": "0 crossings, worst 0px"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "Tab 390x844/denseDrums · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "237/237 moving frames (299 recorded)"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 5px"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · a section boundary is not a jump",
+      "pass": true,
+      "detail": "1 crossings, worst 4px"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"multi\":0}"
+    },
+    {
+      "name": "Çoklu 390x844/shortSections · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "windowing 390x844 · only part of the song is mounted",
+      "pass": true,
+      "detail": "1 bars"
+    },
+    {
+      "name": "windowing 390x844 · the scroll content is the whole song",
+      "pass": true,
+      "detail": "9003px over 390px"
+    },
+    {
+      "name": "windowing 390x844 · no bar is mounted twice",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "windowing 390x844 · the mounted count stays bounded across the song",
+      "pass": true,
+      "detail": "1, 2, 2, 2, 1"
+    },
+    {
+      "name": "windowing 390x844 · the DOM does not grow as the reader travels",
+      "pass": true,
+      "detail": "222, 343, 343, 343, 221"
+    },
+    {
+      "name": "windowing 390x844 · the last bar is reachable and mounted",
+      "pass": true,
+      "detail": "1 bars at the end"
+    },
+    {
+      "name": "windowing 390x844 · no page error while travelling",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "lanes 390x844 · every lane's bar lines land at the same x",
+      "pass": true,
+      "detail": "worst spread 0px over 2 bars"
+    },
+    {
+      "name": "lanes 390x844 · one ResizeObserver for the surface, not one per lane",
+      "pass": true,
+      "detail": "1 for 8 lanes"
+    },
+    {
+      "name": "lanes 390x844 · eight lanes stay inside the node budget",
+      "pass": true,
+      "detail": "1036 nodes, 8 lanes"
+    },
+    {
+      "name": "lanes 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 390x844 · nothing offers a way back while nothing is lost",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 390x844 · a finger dragging the surface takes the view over",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 390x844 · the surface stays where the reader left it",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "name": "takeover 390x844 · the way back is a full touch target",
+      "pass": true,
+      "detail": "118×44"
+    },
+    {
+      "name": "takeover 390x844 · pressing it brings the view back to the music",
+      "pass": true,
+      "detail": "0 → 352"
+    },
+    {
+      "name": "takeover 390x844 · and the chip goes away again",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 390x844 · pressing it changed no music",
+      "pass": true,
+      "detail": "the transport is untouched by a view control"
+    },
+    {
+      "name": "takeover 390x844 · and the surface follows again",
+      "pass": true,
+      "detail": "352 → 458"
+    },
+    {
+      "name": "takeover 390x844 · dragging back takes it over again",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 390x844 · pressing play hands the view back",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "parity 390x844 · far-away bars mount when the reader arrives",
+      "pass": true,
+      "detail": "5 bars, section bridge"
+    },
+    {
+      "name": "parity 390x844 · a bar far from the start can still be tapped",
+      "pass": true,
+      "detail": "bridge:0"
+    },
+    {
+      "name": "parity 390x844 · the section step really moves the surface",
+      "pass": true,
+      "detail": "3245 → 3672"
+    },
+    {
+      "name": "parity 390x844 · the surface says which section is being read",
+      "pass": true,
+      "detail": "outro"
+    },
+    {
+      "name": "parity 390x844 · the Çoklu view opens on the whole song",
+      "pass": true,
+      "detail": "5 lanes, 15 bars"
+    },
+    {
+      "name": "parity 390x844 · reading and scrolling wrote nothing",
+      "pass": true,
+      "detail": "revision 1 → 1"
+    },
+    {
+      "name": "parity 390x844 · no external request",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "parity 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "ends 390x844 · the surface starts at the left edge",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "ends 390x844 · there is room after the last bar to read the end",
+      "pass": true,
+      "detail": "5025 over 390"
+    },
+    {
+      "name": "ends 390x844 · the surface holds still while the playhead crosses to the anchor",
+      "pass": true,
+      "detail": "52/56 frames at 0"
+    },
+    {
+      "name": "ends 390x844 · and the playhead really moved",
+      "pass": true,
+      "detail": "34 → 132.8"
+    },
+    {
+      "name": "ends 390x844 · the surface stops at the end rather than running past it",
+      "pass": true,
+      "detail": "4635 of 4635"
+    },
+    {
+      "name": "ends 390x844 · the last bar is mounted there",
+      "pass": true,
+      "detail": "2 bars"
+    },
+    {
+      "name": "ends 390x844 · a section jump passes through no intermediate position",
+      "pass": true,
+      "detail": "2 distinct positions: 4635, 2754"
+    },
+    {
+      "name": "ends 390x844 · and it really went somewhere",
+      "pass": true,
+      "detail": "4635 → 2754"
+    },
+    {
+      "name": "ends 390x844 · the other surface opens on the same whole song",
+      "pass": true,
+      "detail": "5025 vs 4991"
+    },
+    {
+      "name": "ends 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "budget 390x844 · the surface does not resubscribe as the window slides",
+      "pass": true,
+      "detail": "scroll +0"
+    },
+    {
+      "name": "budget 390x844 · what does grow is audio voices, not the surface",
+      "pass": true,
+      "detail": "ended +130, all types +141 −61"
+    },
+    {
+      "name": "budget 390x844 · observers do not grow while playing",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "budget 390x844 · one AudioContext for the session",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "budget 390x844 · the transport row is not clipped",
+      "pass": true,
+      "detail": "0 clipped"
+    },
+    {
+      "name": "budget 390x844 · the page still does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "budget 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reduced motion 390x844 · the preference really is set",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reduced motion 390x844 · the surface does not scroll every frame",
+      "pass": true,
+      "detail": "2/299 frames"
+    },
+    {
+      "name": "reduced motion 390x844 · but it does keep up",
+      "pass": true,
+      "detail": "2 moves, 1/s"
+    },
+    {
+      "name": "reduced motion 390x844 · the playhead never leaves the screen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reduced motion 390x844 · the playhead is still drawn every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "reduced motion 390x844 · no second animation frame",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "reduced motion 390x844 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Tab 320x700/normal · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 320x700/normal · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "256/257 moving frames (299 recorded)"
+    },
+    {
+      "name": "Tab 320x700/normal · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 4px"
+    },
+    {
+      "name": "Tab 320x700/normal · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 320x700/normal · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Tab 320x700/normal · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Tab 320x700/normal · a section boundary is not a jump",
+      "pass": true,
+      "detail": "0 crossings, worst 0px"
+    },
+    {
+      "name": "Tab 320x700/normal · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 320x700/normal · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 320x700/normal · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "Tab 320x700/normal · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Çoklu 320x700/normal · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 320x700/normal · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "241/243 moving frames (297 recorded)"
+    },
+    {
+      "name": "Çoklu 320x700/normal · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 4px"
+    },
+    {
+      "name": "Çoklu 320x700/normal · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 320x700/normal · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Çoklu 320x700/normal · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Çoklu 320x700/normal · a section boundary is not a jump",
+      "pass": true,
+      "detail": "0 crossings, worst 0px"
+    },
+    {
+      "name": "Çoklu 320x700/normal · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 320x700/normal · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 320x700/normal · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"multi\":0}"
+    },
+    {
+      "name": "Çoklu 320x700/normal · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Tab 320x700/denseDrums · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "279/280 moving frames (297 recorded)"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 13px"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · a section boundary is not a jump",
+      "pass": true,
+      "detail": "0 crossings, worst 0px"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "Tab 320x700/denseDrums · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · one horizontal scroller",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · the surface moves on nearly every frame",
+      "pass": true,
+      "detail": "248/248 moving frames (301 recorded)"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · no steady jump over half a viewport",
+      "pass": true,
+      "detail": "0, largest 4px"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · the playhead is drawn on every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · the playhead holds the reading anchor",
+      "pass": true,
+      "detail": "median 0.320"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · about two thirds of the screen is ahead of it",
+      "pass": true,
+      "detail": "0.680"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · a section boundary is not a jump",
+      "pass": true,
+      "detail": "1 crossings, worst 2px"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · the page does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · one AudioContext",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · no animation frame is left running",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"multi\":0}"
+    },
+    {
+      "name": "Çoklu 320x700/shortSections · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "windowing 320x700 · only part of the song is mounted",
+      "pass": true,
+      "detail": "1 bars"
+    },
+    {
+      "name": "windowing 320x700 · the scroll content is the whole song",
+      "pass": true,
+      "detail": "8956px over 320px"
+    },
+    {
+      "name": "windowing 320x700 · no bar is mounted twice",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "windowing 320x700 · the mounted count stays bounded across the song",
+      "pass": true,
+      "detail": "1, 2, 2, 2, 1"
+    },
+    {
+      "name": "windowing 320x700 · the DOM does not grow as the reader travels",
+      "pass": true,
+      "detail": "222, 343, 343, 343, 221"
+    },
+    {
+      "name": "windowing 320x700 · the last bar is reachable and mounted",
+      "pass": true,
+      "detail": "1 bars at the end"
+    },
+    {
+      "name": "windowing 320x700 · no page error while travelling",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "lanes 320x700 · every lane's bar lines land at the same x",
+      "pass": true,
+      "detail": "worst spread 0px over 2 bars"
+    },
+    {
+      "name": "lanes 320x700 · one ResizeObserver for the surface, not one per lane",
+      "pass": true,
+      "detail": "1 for 8 lanes"
+    },
+    {
+      "name": "lanes 320x700 · eight lanes stay inside the node budget",
+      "pass": true,
+      "detail": "1036 nodes, 8 lanes"
+    },
+    {
+      "name": "lanes 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 320x700 · nothing offers a way back while nothing is lost",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 320x700 · a finger dragging the surface takes the view over",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 320x700 · the surface stays where the reader left it",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "name": "takeover 320x700 · the way back is a full touch target",
+      "pass": true,
+      "detail": "118×44"
+    },
+    {
+      "name": "takeover 320x700 · pressing it brings the view back to the music",
+      "pass": true,
+      "detail": "0 → 375"
+    },
+    {
+      "name": "takeover 320x700 · and the chip goes away again",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 320x700 · pressing it changed no music",
+      "pass": true,
+      "detail": "the transport is untouched by a view control"
+    },
+    {
+      "name": "takeover 320x700 · and the surface follows again",
+      "pass": true,
+      "detail": "375 → 482"
+    },
+    {
+      "name": "takeover 320x700 · dragging back takes it over again",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 320x700 · pressing play hands the view back",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "takeover 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "parity 320x700 · far-away bars mount when the reader arrives",
+      "pass": true,
+      "detail": "3 bars, section bridge"
+    },
+    {
+      "name": "parity 320x700 · a bar far from the start can still be tapped",
+      "pass": true,
+      "detail": "bridge:1"
+    },
+    {
+      "name": "parity 320x700 · the section step really moves the surface",
+      "pass": true,
+      "detail": "3261 → 3672"
+    },
+    {
+      "name": "parity 320x700 · the surface says which section is being read",
+      "pass": true,
+      "detail": "outro"
+    },
+    {
+      "name": "parity 320x700 · the Çoklu view opens on the whole song",
+      "pass": true,
+      "detail": "5 lanes, 15 bars"
+    },
+    {
+      "name": "parity 320x700 · reading and scrolling wrote nothing",
+      "pass": true,
+      "detail": "revision 1 → 1"
+    },
+    {
+      "name": "parity 320x700 · no external request",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "parity 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "ends 320x700 · the surface starts at the left edge",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "ends 320x700 · there is room after the last bar to read the end",
+      "pass": true,
+      "detail": "4978 over 320"
+    },
+    {
+      "name": "ends 320x700 · the surface holds still while the playhead crosses to the anchor",
+      "pass": true,
+      "detail": "40/52 frames at 0"
+    },
+    {
+      "name": "ends 320x700 · and the playhead really moved",
+      "pass": true,
+      "detail": "34 → 132.8"
+    },
+    {
+      "name": "ends 320x700 · the surface stops at the end rather than running past it",
+      "pass": true,
+      "detail": "4658 of 4658"
+    },
+    {
+      "name": "ends 320x700 · the last bar is mounted there",
+      "pass": true,
+      "detail": "1 bars"
+    },
+    {
+      "name": "ends 320x700 · a section jump passes through no intermediate position",
+      "pass": true,
+      "detail": "2 distinct positions: 4658, 2754"
+    },
+    {
+      "name": "ends 320x700 · and it really went somewhere",
+      "pass": true,
+      "detail": "4658 → 2754"
+    },
+    {
+      "name": "ends 320x700 · the other surface opens on the same whole song",
+      "pass": true,
+      "detail": "4978 vs 4944"
+    },
+    {
+      "name": "ends 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "budget 320x700 · the surface does not resubscribe as the window slides",
+      "pass": true,
+      "detail": "scroll +0"
+    },
+    {
+      "name": "budget 320x700 · what does grow is audio voices, not the surface",
+      "pass": true,
+      "detail": "ended +122, all types +133 −61"
+    },
+    {
+      "name": "budget 320x700 · observers do not grow while playing",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "budget 320x700 · one AudioContext for the session",
+      "pass": true,
+      "detail": "1"
+    },
+    {
+      "name": "budget 320x700 · the transport row is not clipped",
+      "pass": true,
+      "detail": "0 clipped"
+    },
+    {
+      "name": "budget 320x700 · the page still does not scroll sideways",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "budget 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reduced motion 320x700 · the preference really is set",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reduced motion 320x700 · the surface does not scroll every frame",
+      "pass": true,
+      "detail": "3/295 frames"
+    },
+    {
+      "name": "reduced motion 320x700 · but it does keep up",
+      "pass": true,
+      "detail": "3 moves, 2/s"
+    },
+    {
+      "name": "reduced motion 320x700 · the playhead never leaves the screen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "reduced motion 320x700 · the playhead is still drawn every frame",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "reduced motion 320x700 · no second animation frame",
+      "pass": true,
+      "detail": "{\"arrangement\":0,\"tab\":0}"
+    },
+    {
+      "name": "reduced motion 320x700 · no page error",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

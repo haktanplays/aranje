@@ -1,0 +1,133 @@
+{
+  "what": "2Q-C §13 — sürekli okuma yüzeyinin saf iş maliyeti",
+  "measuredOn": "node, masaüstü konteyner — telefon kanıtı değil",
+  "method": "5 ısınma turu, ardından 20 zamanlanmış tur; median / p95 / max ms.",
+  "notes": [
+    "Eşik uydurulmadı. Bunlar bir bütçenin tartışılabileceği sayılardır.",
+    "«Bir kare», yüzeyin gerçekten kare başına yaptığı iştir: konum, kaydırma hedefi, pencere ve öncekiyle karşılaştırma.",
+    "Pencere yalnız cevap değiştiğinde React'e ulaşır; karşılaştırma o yüzden ölçümün içindedir."
+  ],
+  "measured": {
+    "normal": {
+      "tracks": 5,
+      "sections": 4,
+      "bars": 15,
+      "resolutions": [
+        8,
+        12,
+        16
+      ],
+      "contentWidthPx": 4726,
+      "build the axis": {
+        "rounds": 20,
+        "median": 0.009,
+        "p95": 0.048,
+        "max": 0.048
+      },
+      "build the whole-song multitrack model": {
+        "rounds": 20,
+        "median": 1.278,
+        "p95": 2.269,
+        "max": 2.269
+      },
+      "one frame: position, follow target, window, compare": {
+        "rounds": 20,
+        "median": 0.002,
+        "p95": 0.015,
+        "max": 0.015
+      },
+      "resolve a tap to a bar and slot": {
+        "rounds": 20,
+        "median": 0.001,
+        "p95": 0.057,
+        "max": 0.057
+      },
+      "a thousand frames": {
+        "rounds": 20,
+        "median": 0.186,
+        "p95": 3.829,
+        "max": 3.829
+      }
+    },
+    "denseDrums": {
+      "tracks": 2,
+      "sections": 1,
+      "bars": 8,
+      "resolutions": [
+        32
+      ],
+      "contentWidthPx": 8704,
+      "build the axis": {
+        "rounds": 20,
+        "median": 0.005,
+        "p95": 0.005,
+        "max": 0.005
+      },
+      "build the whole-song multitrack model": {
+        "rounds": 20,
+        "median": 0.182,
+        "p95": 0.402,
+        "max": 0.402
+      },
+      "one frame: position, follow target, window, compare": {
+        "rounds": 20,
+        "median": 0.001,
+        "p95": 0.001,
+        "max": 0.001
+      },
+      "resolve a tap to a bar and slot": {
+        "rounds": 20,
+        "median": 0,
+        "p95": 0.006,
+        "max": 0.006
+      },
+      "a thousand frames": {
+        "rounds": 20,
+        "median": 0.309,
+        "p95": 0.772,
+        "max": 0.772
+      }
+    },
+    "eightTracks": {
+      "tracks": 8,
+      "sections": 4,
+      "bars": 32,
+      "resolutions": [
+        8,
+        12,
+        16
+      ],
+      "contentWidthPx": 11458,
+      "build the axis": {
+        "rounds": 20,
+        "median": 0.01,
+        "p95": 0.048,
+        "max": 0.048
+      },
+      "build the whole-song multitrack model": {
+        "rounds": 20,
+        "median": 1.843,
+        "p95": 4.692,
+        "max": 4.692
+      },
+      "one frame: position, follow target, window, compare": {
+        "rounds": 20,
+        "median": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "resolve a tap to a bar and slot": {
+        "rounds": 20,
+        "median": 0,
+        "p95": 0.001,
+        "max": 0.001
+      },
+      "a thousand frames": {
+        "rounds": 20,
+        "median": 0.127,
+        "p95": 0.442,
+        "max": 0.442
+      }
+    }
+  }
+}
