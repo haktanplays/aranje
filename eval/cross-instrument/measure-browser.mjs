@@ -15,7 +15,18 @@
 import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
+import { readFileSync } from "node:fs";
+
 import { device, fixture } from "./device.mjs";
+
+/*
+ * The heavy song comes from 2Q-A's generated seeds rather than being written
+ * again here. Its sections are the longest the contract allows, which is
+ * where a grid drawn cell by cell would show up if it were going to.
+ */
+const BIG = JSON.parse(
+  readFileSync(new URL("../multitrack/seeds.json", import.meta.url), "utf8"),
+);
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/cross-instrument/artifacts";
@@ -157,6 +168,22 @@ const report = { drums: {}, pitched: {} };
   await pickTrack(page, "Davul");
   await arm(page);
   report.narrowViewport = await domShot(page);
+  await context.close();
+}
+
+/* -------------------------- the biggest section the contract allows ------ */
+{
+  const { context, page } = await boot(browser, device(BIG.worstCase));
+  await pickTrack(page, "Davul");
+  const reading = await domShot(page);
+  await arm(page);
+  const writing = await domShot(page);
+  const samples = await tapCost(page, "[data-drum-cell]", ROUNDS);
+  report.worstCaseSection = {
+    bars: BIG.worstCase.sections[0].bars.length,
+    dom: { reading, writing },
+    tap: stats(samples),
+  };
   await context.close();
 }
 

@@ -63,17 +63,27 @@ PY
 
 echo "--- transport, büyük yazı dahil (§10) ---"
 
-# T1 — the touch targets go back to scaling with the reader's text setting
+# T1 — the row goes back to rem spacing and cannot wrap.
 #
-# This is the mutation that was actually shipped and measured: `min-h-11` is
-# 2.75rem, so at 150% every control became 66px and two of them left the
-# screen. It is dangerous only in the large-text runs, which is why this probe
-# lives here and not in the 2Q-A file.
-probe "T1 touch targets scale with the text setting again" \
-  src/components/workspace/TransportBar.tsx "D1,D2,D3" "" \
-  '      style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
-      className={`flex items-center justify-center rounded-lg border text-sm disabled:opacity-40 ${' \
-  '      className={`flex min-h-11 min-w-11 items-center justify-center rounded-lg border text-sm disabled:opacity-40 ${'
+# The first version of this probe put back *only* the rem touch targets and
+# stayed green. That is a real finding rather than a weak test: with wrapping
+# in place, rem targets no longer cost the reader a control, they cost a
+# second line — which the acceptance reports rather than refuses. So the
+# probe was re-aimed at the mutation that actually reproduces the shipped
+# defect: rem spacing *and* no wrap, which is exactly the row as it stood
+# before this checkpoint. Measured, that row clips at 320px and 150%.
+probe "T1 the row goes back to rem spacing and cannot wrap" \
+  src/components/workspace/TransportBar.tsx "D1,D3" "" \
+  '        className="flex flex-wrap items-center py-1.5"
+        style={{
+          columnGap: 4,
+          rowGap: 4,
+          paddingLeft: 8,
+          paddingRight: 8,
+          paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))",
+        }}' \
+  '        className="flex items-center gap-1 px-2 py-1.5"
+        style={{ paddingBottom: "max(0.375rem, env(safe-area-inset-bottom))" }}'
 
 # T2 — the row is made to fit by scrolling instead of by fitting
 probe "T2 the transport row hides its overflow behind a scroller" \

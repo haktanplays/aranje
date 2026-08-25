@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Vacuity probes for cross-instrument note entry (2Q-B §17).
 #
-# Forty-two mutations, each of which puts back a way this checkpoint's
+# Forty-five mutations, each of which puts back a way this checkpoint's
 # guarantees could be quietly untrue — a hit that rounds onto the grid, a
 # lane that is dropped when its last hit goes, an octave invented for an
 # instrument, an enharmonic silently re-spelled, a chord written as metadata,
