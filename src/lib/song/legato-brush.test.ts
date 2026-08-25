@@ -125,6 +125,22 @@ describe("309. auto reads the sounding pitch, not the fret number", () => {
     expect(plan).toEqual({ kind: "refused", reason: "same_pitch" });
   });
 
+  it("follows the sounding pitch when the written fret disagrees with it", () => {
+    /*
+     * The contract carries a pitch and a placement, and nothing forces them to
+     * agree — an imported song, or one written by a tool that got the tuning
+     * wrong, can say `A3` on the 5th fret and `G3` on the 7th. §8 says the
+     * direction comes from the **sounding pitch**, so the brush hears a fall
+     * here even though the fret numbers climb.
+     */
+    const disagreeing = songOf([note("A3", 5), note("G3", 7)]);
+    const plan = planBrush(request(disagreeing));
+    expect(plan.kind).toBe("ready");
+    expect(plan.kind === "ready" ? plan.links.map((link) => link.kind) : []).toEqual([
+      "pull_off",
+    ]);
+  });
+
   it("reads the pitch even where the fret number points the other way", () => {
     // Same fret, different strings: the pitch is what decides. The brush only
     // works on one string, so this is refused for that reason rather than

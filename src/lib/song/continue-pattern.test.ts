@@ -18,6 +18,12 @@ import { bar, note, readBar, slots, song, TRACK_ID } from "@/test/move-fixtures"
 const STEP = ticksPerSlot(8);
 const BAR = STEP * 8;
 
+/** Every note's placement in one bar, in slot order. */
+const placements = (song: Song, barIndex: number) =>
+  (song.sections[0]!.bars[barIndex]!.slots[TRACK_ID] ?? [])
+    .flatMap((slot) => (slot && slot !== "-" && !Array.isArray(slot) ? slot.notes : []))
+    .flatMap((note) => (note.position ? [note.position] : []));
+
 const A3 = () => note("A3", 1, 12);
 const C4 = () => note("C4", 1, 15);
 
@@ -87,6 +93,39 @@ describe("314. moving the shape and moving the pitch are different things", () =
     });
     if (!result.ok) throw new Error(result.error.code);
     expect(readBar(result.song, 1)).not.toEqual(readBar(result.song, 0));
+
+    /*
+     * Moving the hand is not the same as moving the melody. Every note keeps
+     * the string it was on and takes exactly the fret it was on plus two —
+     * which a transposition by two semitones would not do, because it is free
+     * to re-place a note wherever the pitch fits.
+     */
+    const before = placements(result.song, 0);
+    const after = placements(result.song, 1);
+    expect(after.map((spot) => spot.string)).toEqual(before.map((spot) => spot.string));
+    expect(after.map((spot) => spot.fret)).toEqual(before.map((spot) => spot.fret + 2));
+  });
+
+  it("moves the hand across the strings even when the fret does not change", () => {
+    /*
+     * A shape move is a move of the *hand*: string and fret together, either
+     * of them on its own. Sliding one string over with the same fret is a
+     * different sound and a real gesture, and it is the case a transposition
+     * cannot stand in for — transposing by nought semitones moves nothing.
+     */
+    const result = continuePattern({
+      song: pattern(),
+      selection: select(0, BAR),
+      mode: { kind: "shape", stringDelta: 1, fretDelta: 0 },
+      repeats: 1,
+    });
+    if (!result.ok) throw new Error(result.error.code);
+    const before = placements(result.song, 0);
+    const after = placements(result.song, 1);
+    expect(after.map((spot) => spot.string)).toEqual(
+      before.map((spot) => spot.string + 1),
+    );
+    expect(after.map((spot) => spot.fret)).toEqual(before.map((spot) => spot.fret));
   });
 
   it("moves the melody by semitones without touching the shape's own rule", () => {
@@ -179,6 +218,10 @@ describe("315. one plan, one result", () => {
       repeats: 0,
     });
     expect(result.ok).toBe(false);
+    // Refused for the reason it was refused for, and said in words. "There is
+    // no room" would be a lie about a song with three empty bars in it.
+    expect(result.ok === false ? result.error.code : null).toBe("selection_empty");
+    expect(result.ok === false ? result.error.message : "").toContain("Kaç kez");
   });
 
   it("gives the same bytes five times running", () => {

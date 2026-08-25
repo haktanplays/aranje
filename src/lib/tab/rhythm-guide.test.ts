@@ -277,6 +277,36 @@ describe("301. the beams a 1/32 bar needs (2S-A §4)", () => {
     }
   });
 
+  it("says a thirty-second group is a thirty-second group", () => {
+    /*
+     * The label the reader hears has to name the value it actually beams. Two
+     * lines for a group of three is what a sighted reader would call a
+     * misprint; saying "1/16" for a 1/32 run is the same misprint, read out.
+     */
+    const states: SlotState[] = Array.from({ length: 32 }, () => "onset");
+    const guide = buildRhythmGuide(states, [4, 4], 32);
+    expect(rhythmGroupLabel(guide.groups[0]!)).toContain("1/32");
+    expect(rhythmGroupLabel(guide.groups[0]!)).not.toContain("1/16");
+  });
+
+  it("beams a mixed group at the shallowest note in it, not the deepest", () => {
+    /*
+     * A run of a sixteenth followed by two thirty-seconds gets *two* lines,
+     * because the beam has to be true of every note under it. Taking the
+     * deepest would draw a third line over a note that has no third line.
+     */
+    const states: SlotState[] = Array.from({ length: 32 }, () => "empty");
+    states[0] = "onset";
+    // Slot 1 sustains, so the first onset lasts two slots: a sixteenth.
+    states[1] = "sustain";
+    states[2] = "onset";
+    states[3] = "onset";
+    const guide = buildRhythmGuide(states, [4, 4], 32);
+    const group = guide.groups.find((entry) => entry.slots.includes(0));
+    expect(group?.slots).toEqual([0, 2, 3]);
+    expect(group?.levels).toBe(2);
+  });
+
   it("groups a full 1/32 bar by the felt beat rather than into one run", () => {
     const states: SlotState[] = Array.from({ length: 32 }, () => "onset");
     const guide = buildRhythmGuide(states, [4, 4], 32);

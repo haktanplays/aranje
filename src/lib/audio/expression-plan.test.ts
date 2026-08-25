@@ -10,7 +10,12 @@ import {
   buildExpressionPlan,
   type ExpressiveNotePlan,
 } from "@/lib/audio/expression-plan";
-import { chainIdFor, desiredGlideSeconds, glideFor } from "@/lib/audio/legato-chain";
+import {
+  chainIdFor,
+  desiredGlideSeconds,
+  glideFor,
+  transitionSeconds,
+} from "@/lib/audio/legato-chain";
 import { buildNotatedPlan, buildSongPlan } from "@/lib/audio/schedule";
 import { renderDuration } from "@/lib/export/export-plan";
 import { validateArticulationContext } from "@/lib/validators";
@@ -1160,6 +1165,55 @@ describe("a legato transition fits the note it lands on (2S-A §3)", () => {
         ).toBeGreaterThan(travel);
       }
     }
+  });
+
+  it("takes the travel from the note it lands on, not from the one it leaves", () => {
+    /*
+     * The two are the same number only when the target sits one slot after the
+     * start of the bar — which is exactly the shape of the reported fixture,
+     * and exactly why that fixture alone cannot tell them apart. So the target
+     * is put further in: four slots of silence, then the pair. The travel is
+     * still measured against the target's own slot.
+     */
+    const REST = null;
+    const late = song(
+      [
+        denseBar(
+          [REST, REST, REST, REST, note("A#3", 1, 13), note("A3", 1, 12, "pull_off")],
+          32,
+        ),
+      ],
+      [],
+      260,
+    );
+    const plan = buildExpressionPlan(late);
+    const transition = onlyTransition(plan);
+    const target = plan.notes.find((entry) => entry.chainRole === "target");
+    if (!target) throw new Error("no target");
+
+    // The room is the target's own sounding length, in seconds at this tempo.
+    const secondsPerTick = 60 / 260 / 192;
+    const room = target.durationTicks * secondsPerTick;
+    expect(transition.transitionSeconds).toBeCloseTo(
+      Math.min(
+        expressionPresets.legato.pullOff.transitionSeconds,
+        room * expressionPresets.legato.maxTravelFraction,
+      ),
+      6,
+    );
+    // And that room is the target's, not the four rests before it.
+    expect(target.timeTicks).toBe((768 / 32) * 5);
+  });
+
+  it("treats a note with no room left as no room at all", () => {
+    /*
+     * `availableSeconds` is arithmetic, and arithmetic can go negative when a
+     * chain's voice has already stopped. A negative "room" multiplied by the
+     * fraction is a negative travel, which would put the arrival *before* the
+     * onset — the note landing before the finger.
+     */
+    expect(transitionSeconds("pull_off", 1, -0.05)).toBe(0);
+    expect(transitionSeconds("hammer_on", 1, 0)).toBe(0);
   });
 
   it("still takes its full preset time when the note is long enough", () => {

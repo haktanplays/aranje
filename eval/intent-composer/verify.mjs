@@ -744,6 +744,31 @@ async function glyphTour(browser, viewport, textScale) {
     `${cells.minWidth} vs ${boxes[0]?.width}`,
   );
 
+  /*
+   * The digit is not painted into the hit target. Six strings sit 44px apart
+   * in edit mode, so a glyph that filled its own 44px square would overlap the
+   * two glyphs above and below it — the exact thing §4 forbids when it says
+   * the hit target and the visual box are different things.
+   */
+  const glyphOwnBoxes = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll("[data-fret-glyph]")].map((node) => {
+      const box = node.getBoundingClientRect();
+      return { height: Math.round(box.height), width: Math.round(box.width) };
+    });
+    return {
+      count: rows.length,
+      maxHeight: rows.reduce((most, row) => Math.max(most, row.height), 0),
+      maxWidth: rows.reduce((most, row) => Math.max(most, row.width), 0),
+    };
+  });
+  record_(
+    "62. the glyph's own box is smaller than the finger's",
+    glyphOwnBoxes.count > 0 &&
+      glyphOwnBoxes.maxHeight < MIN_TOUCH &&
+      glyphOwnBoxes.maxWidth < MIN_TOUCH,
+    JSON.stringify(glyphOwnBoxes),
+  );
+
   record_("61. the glyph tour raised no page error", errors.length === 0, errors[0] ?? "");
   await context.close();
 }

@@ -47,6 +47,88 @@ const bar = (spans: readonly TabSpan[], silent = false): FrettedBar => ({
 });
 
 describe("297. an arc is drawn only where a slur really is", () => {
+  it("believes the sounding pitch over the fret number", () => {
+    /*
+     * A span carries both, and nothing in the contract forces them to agree.
+     * The arc is a claim about what is *heard* — a hammer-on goes up — so a
+     * pair whose frets climb but whose pitches fall gets no hammer-on arc,
+     * however the numbers on screen read.
+     */
+    const arcs = buildLegatoArcs(
+      bar([span(0, 1, 5, "B3"), span(1, 1, 7, "A3", "hammer_on")]),
+      LAYOUT,
+    );
+    expect(arcs).toEqual([]);
+  });
+
+  it("draws nothing across a bar line", () => {
+    /*
+     * A span whose sound started in the previous bar carries `openStart`. An
+     * arc from the last note of one bar to the first of the next would claim a
+     * grouping the reader's eye does not make — the bar is the grouping — and
+     * on a scrolling surface the two ends can be a screen apart.
+     */
+    const arcs = buildLegatoArcs(
+      bar([
+        span(0, 1, 5, "A3"),
+        { ...span(1, 1, 7, "B3", "hammer_on"), openStart: true },
+      ]),
+      LAYOUT,
+    );
+    expect(arcs).toEqual([]);
+  });
+
+  it("draws nothing in a bar that has no sound in it", () => {
+    const arcs = buildLegatoArcs(
+      bar([span(0, 1, 5, "A3"), span(1, 1, 7, "B3", "hammer_on")], true),
+      LAYOUT,
+    );
+    expect(arcs).toEqual([]);
+  });
+
+  it("starts the next run's rise over again after a link that is not drawn", () => {
+    /*
+     * The alternating rise is what keeps consecutive arcs readable as separate
+     * gestures. A link that was refused — here, a "hammer-on" that falls —
+     * ends the run, so the arc after it starts low again rather than carrying
+     * on from a depth nothing on screen accounts for.
+     */
+    const arcs = buildLegatoArcs(
+      bar([
+        span(0, 1, 5, "A3"),
+        span(1, 1, 7, "B3", "hammer_on"),
+        span(2, 1, 5, "A3", "hammer_on"),
+        span(3, 1, 7, "B3", "hammer_on"),
+      ]),
+      LAYOUT,
+    );
+    expect(arcs.map((arc) => arc.fromSlot)).toEqual([0, 2]);
+    // Both are first-in-run, so both take the base rise.
+    expect(arcs[0]?.rise).toBe(arcs[1]?.rise);
+  });
+
+  it("peaks at the rise it reports, not at half of it", () => {
+    /*
+     * A quadratic curve reaches half its control point's offset. Reporting a
+     * rise the curve never gets to would put the H or the P above empty space
+     * — and, on a tight staff, the mark and the arc on different rows.
+     */
+    const [arc] = buildLegatoArcs(
+      bar([span(0, 1, 5, "A3"), span(1, 1, 7, "B3", "hammer_on")]),
+      LAYOUT,
+    );
+    if (!arc) throw new Error("no arc");
+    // "M x y Q cx cy x2 y2": the sixth field is the control point's y.
+    const controlY = Number(arc.path.split(" ")[5]);
+    const stringY = LAYOUT.rowTop(1) + LAYOUT.stringRowHeight / 2;
+
+    // The mark sits at the height the curve is claimed to reach...
+    expect(arc.markY).toBe(stringY - arc.rise);
+    // ...and the control point is twice that, because a quadratic only gets
+    // halfway to its control point.
+    expect(controlY).toBe(stringY - arc.rise * 2);
+  });
+
   it("draws one arc for a rising hammer-on on the same string", () => {
     const arcs = buildLegatoArcs(
       bar([span(0, 1, 5, "A3"), span(1, 1, 7, "B3", "hammer_on")]),

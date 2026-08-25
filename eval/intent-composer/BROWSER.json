@@ -4,9 +4,9 @@
     "base": "http://127.0.0.1:3100"
   },
   "combinations": 6,
-  "uniqueScenarios": 70,
-  "results": 420,
-  "passed": 420,
+  "uniqueScenarios": 71,
+  "results": 426,
+  "passed": 426,
   "failed": 0,
   "entries": [
     {
@@ -386,6 +386,12 @@
       "name": "60. and it is a separate box from the digit",
       "pass": true,
       "detail": "34 vs 7.23"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
     },
     {
       "combo": "390x844 @100%",
@@ -809,6 +815,12 @@
     },
     {
       "combo": "390x844 @125%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "390x844 @125%",
       "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
@@ -1226,6 +1238,12 @@
       "name": "60. and it is a separate box from the digit",
       "pass": true,
       "detail": "34 vs 7.23"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
     },
     {
       "combo": "390x844 @150%",
@@ -1649,6 +1667,12 @@
     },
     {
       "combo": "320x700 @100%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "320x700 @100%",
       "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
@@ -2069,6 +2093,12 @@
     },
     {
       "combo": "320x700 @125%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "320x700 @125%",
       "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
@@ -2486,6 +2516,12 @@
       "name": "60. and it is a separate box from the digit",
       "pass": true,
       "detail": "34 vs 7.23"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
     },
     {
       "combo": "320x700 @150%",

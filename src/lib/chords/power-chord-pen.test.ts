@@ -205,6 +205,44 @@ describe("306. the fretboard the track actually has", () => {
     const track = trackOf();
     const result = write(songOf(track), track, { stringIndex: 5, fret: 20 });
     expect(result.ok).toBe(false);
+    // By name, not merely "no". "Bir şey olmadı" is not a refusal a reader
+    // can act on, and the code is what the message table is keyed by.
+    expect(result.ok === false ? result.error.code : null).toBe(
+      "power_chord_root_unreachable",
+    );
+  });
+
+  it("puts nothing under the finger, whichever string it lands on", () => {
+    /*
+     * The root is the lowest sounding note, which is why the search filters on
+     * pitch rather than on string index. Asked on every string the shape can
+     * be rooted on, no candidate may sound anything below the note the finger
+     * is actually holding — a chord that does is a different chord, however
+     * right its pitch classes are.
+     */
+    const track = trackOf();
+    const board = track.fretboard!;
+    let checked = 0;
+    for (const stringIndex of [0, 1, 2, 3]) {
+      for (const voices of [2, 3] as const) {
+        // Not every string can carry every size — the octave of a shape rooted
+        // near the top has nowhere to go — so an empty answer is a legitimate
+        // one. What is checked is every shape that *is* offered.
+        const shapes = shapesRootedAt(board, stringIndex, 5, voices);
+        checked += shapes.length;
+        for (const shape of shapes) {
+          const root = shape.strings[stringIndex];
+          if (!root || root.kind !== "played") throw new Error("root not played");
+          for (const entry of shape.strings) {
+            if (entry.kind !== "played") continue;
+            expect(entry.midi, `${shape.id} sounds below the finger`).toBeGreaterThanOrEqual(
+              root.midi,
+            );
+          }
+        }
+      }
+    }
+    expect(checked).toBeGreaterThan(0);
   });
 });
 
