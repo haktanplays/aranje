@@ -17,6 +17,8 @@ eval/chord/.render/
 # 2O-B.1 launch audio + headroom render bundle
 eval/chord-audio/.render/
 eval/expression-benchmark/.render/
+# 2S-A intent-composer render bundle
+eval/intent-composer/.render/
 
 # Probe protokolünün geçici yedeği (2Q-B §17). Asla commit edilmez.
 *.probebak

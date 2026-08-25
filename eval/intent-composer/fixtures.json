@@ -1,0 +1,499 @@
+{
+  "dense32": {
+    "version": 2,
+    "title": "2S-A reported-1-32",
+    "bpm": 132,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      }
+    ],
+    "sections": [
+      {
+        "id": "s1",
+        "name": "Bölüm 1",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 32,
+            "slots": {
+              "gtr": [
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A#3",
+                      "position": {
+                        "string": 2,
+                        "fret": 8
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      },
+                      "articulation": "pull_off"
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "dense16": {
+    "version": 2,
+    "title": "2S-A dense16",
+    "bpm": 132,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      }
+    ],
+    "sections": [
+      {
+        "id": "s1",
+        "name": "Bölüm 1",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 16,
+            "slots": {
+              "gtr": [
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A#3",
+                      "position": {
+                        "string": 2,
+                        "fret": 8
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      },
+                      "articulation": "pull_off"
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "legatoRun": {
+    "version": 2,
+    "title": "2S-A legatoRun",
+    "bpm": 132,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      }
+    ],
+    "sections": [
+      {
+        "id": "s1",
+        "name": "Bölüm 1",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 16,
+            "slots": {
+              "gtr": [
+                {
+                  "notes": [
+                    {
+                      "pitch": "G3",
+                      "position": {
+                        "string": 2,
+                        "fret": 5
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A#3",
+                      "position": {
+                        "string": 2,
+                        "fret": 8
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "A3",
+                      "position": {
+                        "string": 2,
+                        "fret": 7
+                      }
+                    }
+                  ]
+                },
+                {
+                  "notes": [
+                    {
+                      "pitch": "G3",
+                      "position": {
+                        "string": 2,
+                        "fret": 5
+                      }
+                    }
+                  ]
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "roomy": {
+    "version": 2,
+    "title": "2S-A roomy",
+    "bpm": 132,
+    "key": "E minor",
+    "tracks": [
+      {
+        "id": "gtr",
+        "name": "Gitar",
+        "instrumentId": "electric_guitar",
+        "presetId": "high_gain",
+        "volumeDb": -6,
+        "fretboard": {
+          "tuning": [
+            "E2",
+            "A2",
+            "D3",
+            "G3",
+            "B3",
+            "E4"
+          ],
+          "capo": 0
+        }
+      }
+    ],
+    "sections": [
+      {
+        "id": "s1",
+        "name": "Bölüm 1",
+        "status": "fixed",
+        "bars": [
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                {
+                  "notes": [
+                    {
+                      "pitch": "G3",
+                      "position": {
+                        "string": 2,
+                        "fret": 5
+                      }
+                    }
+                  ]
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          },
+          {
+            "timeSignature": [
+              4,
+              4
+            ],
+            "resolution": 8,
+            "slots": {
+              "gtr": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

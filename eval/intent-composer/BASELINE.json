@@ -1,0 +1,928 @@
+{
+  "environment": {
+    "note": "Production build, desktop Chromium, mobile emulation. No physical device evidence.",
+    "base": "http://127.0.0.1:3100"
+  },
+  "findings": {
+    "playback": {
+      "dense32": {
+        "starts": 13,
+        "detail": [
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": 0,
+            "offset": 1,
+            "duration": null
+          },
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": 0.1928798185941043,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.24969800041228604,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.30651618223046784,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.3633343640486496,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.504970727685013,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.42015254586683126,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.5337889095031948,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.5906070913213768,
+            "offset": 0,
+            "duration": null
+          }
+        ],
+        "mountedBars": 1,
+        "errors": []
+      },
+      "dense16": {
+        "starts": 13,
+        "detail": [
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": 0,
+            "offset": 1,
+            "duration": null
+          },
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": null,
+            "offset": null,
+            "duration": null
+          },
+          {
+            "when": 0.1928798185941043,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.30651618223046784,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.42015254586683126,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.5337889095031949,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.7890616367759213,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.6474252731395577,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.8746980004122852,
+            "offset": 0,
+            "duration": null
+          },
+          {
+            "when": 0.9883343640486479,
+            "offset": 0,
+            "duration": null
+          }
+        ],
+        "mountedBars": 1,
+        "errors": []
+      },
+      "expectedBufferStarts": 8,
+      "note": "dense32 and dense16 carry the same eight onsets; only the grid differs."
+    },
+    "glyph": {
+      "glyphCount": 8,
+      "glyphs": [
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 44.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 78.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 112.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 146.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "8",
+          "width": 13.23,
+          "height": 12,
+          "left": 180.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 211.17,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 248.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        },
+        {
+          "text": "7",
+          "width": 13.23,
+          "height": 12,
+          "left": 282.38,
+          "top": 291.5,
+          "background": "rgb(16, 17, 20)",
+          "border": "0px",
+          "radius": "0px",
+          "shadow": "none",
+          "paddingLeft": "3px",
+          "paddingRight": "3px",
+          "fontSize": "12px",
+          "fontVariantNumeric": "tabular-nums",
+          "fontFamily": "ui-monospace"
+        }
+      ],
+      "stringLines": 6,
+      "cells": [],
+      "errors": []
+    },
+    "powerChord": {
+      "steps": [
+        "Düzenle",
+        "hücreye dokun",
+        "Power chord",
+        "kök: La (perde adı, tel/perde değil)",
+        "2 ses"
+      ],
+      "tapsBeforeAnyNoteIsWritten": 5,
+      "fretSheetButtons": 20,
+      "fretSheetBelowFold": [
+        "Kapat",
+        "Ekle"
+      ],
+      "builderTitle": "Bar 1 · bu vuruşu akorla değiştir",
+      "rootStep": [
+        "✓ C",
+        "C♯ / D♭",
+        "D",
+        "D♯ / E♭",
+        "E",
+        "F",
+        "F♯ / G♭",
+        "G",
+        "G♯ / A♭",
+        "A",
+        "A♯ / B♭",
+        "B"
+      ],
+      "powerForms": [
+        "Kök + beşli",
+        "Kök + beşli + oktav"
+      ],
+      "voicings": {
+        "cards": 4,
+        "labels": [
+          "✓ A5Açık konum · kök bastax 0 2 x x xDinle",
+          "A55. perde çevresi · kök basta5 7 x x x xDinle",
+          "A57. perde çevresi · kök bastax x 7 9 x xDinle",
+          "A510. perde çevresi · kök bastax x x x 10 12Dinle"
+        ]
+      },
+      "finalButtons": [
+        "Tür",
+        "Kök",
+        "Akor",
+        "✓ Şekil",
+        "✓ A5Açık konum · kök bastax 0 2 x x x",
+        "Dinle",
+        "A55. perde çevresi · kök basta5 7 x x x x",
+        "Dinle",
+        "A57. perde çevresi · kök bastax x 7 9 x x",
+        "Dinle",
+        "A510. perde çevresi · kök bastax x x x 10 12",
+        "Dinle",
+        "✓ Normal",
+        "Vurgulu",
+        "Palm mute",
+        "Uzun",
+        "Kısa",
+        "✓ 1 adım",
+        "2 adım",
+        "4 adım",
+        "Vazgeç",
+        "Uygula"
+      ],
+      "note": "The root is chosen by pitch-class name; no step asks which string and fret the finger is on.",
+      "errors": []
+    },
+    "legato": {
+      "perNote": [
+        {
+          "slot": 1,
+          "wanted": "Hammer-on",
+          "taps": [
+            "hücreye dokun",
+            "Hammer-on",
+            "Güncelle",
+            "Kapat"
+          ],
+          "sheetButtons": 20,
+          "belowFold": [
+            "Kapat",
+            "Güncelle"
+          ],
+          "sheetScroll": {
+            "scrollHeight": 409,
+            "clientHeight": 409
+          },
+          "scrollTopBefore": 0
+        },
+        {
+          "slot": 2,
+          "wanted": "Hammer-on",
+          "taps": [
+            "hücreye dokun",
+            "Hammer-on",
+            "Güncelle",
+            "Kapat"
+          ],
+          "sheetButtons": 20,
+          "belowFold": [
+            "Kapat",
+            "Güncelle"
+          ],
+          "sheetScroll": {
+            "scrollHeight": 409,
+            "clientHeight": 409
+          },
+          "scrollTopBefore": 0
+        },
+        {
+          "slot": 3,
+          "wanted": "Pull-off",
+          "taps": [
+            "hücreye dokun",
+            "Pull-off",
+            "Güncelle",
+            "Kapat"
+          ],
+          "sheetButtons": 20,
+          "belowFold": [
+            "Kapat",
+            "Güncelle"
+          ],
+          "sheetScroll": {
+            "scrollHeight": 409,
+            "clientHeight": 409
+          },
+          "scrollTopBefore": 0
+        },
+        {
+          "slot": 4,
+          "wanted": "Pull-off",
+          "taps": [
+            "hücreye dokun",
+            "Pull-off",
+            "Güncelle",
+            "Kapat"
+          ],
+          "sheetButtons": 20,
+          "belowFold": [
+            "Kapat",
+            "Güncelle"
+          ],
+          "sheetScroll": {
+            "scrollHeight": 409,
+            "clientHeight": 409
+          },
+          "scrollTopBefore": 0
+        }
+      ],
+      "totalTaps": 17,
+      "written": [
+        {
+          "index": 0,
+          "articulation": null
+        },
+        {
+          "index": 1,
+          "articulation": null
+        },
+        {
+          "index": 2,
+          "articulation": null
+        },
+        {
+          "index": 3,
+          "articulation": null
+        },
+        {
+          "index": 4,
+          "articulation": null
+        }
+      ],
+      "note": "One errand per link: nothing lets the reader say 'join these five'.",
+      "errors": []
+    },
+    "toolbar": [
+      {
+        "viewport": "390x844",
+        "textScale": 100,
+        "editing": false,
+        "rowWidth": 366,
+        "scrollWidth": 366,
+        "clientWidth": 366,
+        "children": [
+          {
+            "label": "Düzenle",
+            "width": 169,
+            "height": 44,
+            "right": 181
+          },
+          {
+            "label": "Aranje et",
+            "width": 85,
+            "height": 44,
+            "right": 274
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 326
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 378
+          }
+        ],
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "clipped": 0,
+        "errors": []
+      },
+      {
+        "viewport": "390x844",
+        "textScale": 100,
+        "editing": true,
+        "rowWidth": 366,
+        "scrollWidth": 366,
+        "clientWidth": 366,
+        "children": [
+          {
+            "label": "Düzenlemeyi bitir",
+            "width": 169,
+            "height": 44,
+            "right": 181
+          },
+          {
+            "label": "Aranje et",
+            "width": 85,
+            "height": 44,
+            "right": 274
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 326
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 378
+          }
+        ],
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "clipped": 0,
+        "errors": []
+      },
+      {
+        "viewport": "390x844",
+        "textScale": 125,
+        "editing": false,
+        "rowWidth": 360,
+        "scrollWidth": 360,
+        "clientWidth": 360,
+        "children": [
+          {
+            "label": "Düzenle",
+            "width": 136,
+            "height": 55,
+            "right": 151
+          },
+          {
+            "label": "Aranje et",
+            "width": 106,
+            "height": 55,
+            "right": 267
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 321
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 375
+          }
+        ],
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "clipped": 0,
+        "errors": []
+      },
+      {
+        "viewport": "390x844",
+        "textScale": 125,
+        "editing": true,
+        "rowWidth": 360,
+        "scrollWidth": 362,
+        "clientWidth": 360,
+        "children": [
+          {
+            "label": "Düzenlemeyi bitir",
+            "width": 138,
+            "height": 55,
+            "right": 153
+          },
+          {
+            "label": "Aranje et",
+            "width": 106,
+            "height": 55,
+            "right": 269
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 323
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 377
+          }
+        ],
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "clipped": 2,
+        "errors": []
+      },
+      {
+        "viewport": "390x844",
+        "textScale": 150,
+        "editing": false,
+        "rowWidth": 354,
+        "scrollWidth": 371,
+        "clientWidth": 354,
+        "children": [
+          {
+            "label": "Düzenle",
+            "width": 120,
+            "height": 66,
+            "right": 138
+          },
+          {
+            "label": "Aranje et",
+            "width": 127,
+            "height": 66,
+            "right": 277
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 333
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 389
+          }
+        ],
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "clipped": 17,
+        "errors": []
+      },
+      {
+        "viewport": "390x844",
+        "textScale": 150,
+        "editing": true,
+        "rowWidth": 354,
+        "scrollWidth": 419,
+        "clientWidth": 354,
+        "children": [
+          {
+            "label": "Düzenlemeyi bitir",
+            "width": 168,
+            "height": 66,
+            "right": 186
+          },
+          {
+            "label": "Aranje et",
+            "width": 127,
+            "height": 66,
+            "right": 325
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 381
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 437
+          }
+        ],
+        "bodyScrollWidth": 390,
+        "bodyClientWidth": 390,
+        "clipped": 65,
+        "errors": []
+      },
+      {
+        "viewport": "320x700",
+        "textScale": 100,
+        "editing": false,
+        "rowWidth": 296,
+        "scrollWidth": 296,
+        "clientWidth": 296,
+        "children": [
+          {
+            "label": "Düzenle",
+            "width": 99,
+            "height": 44,
+            "right": 111
+          },
+          {
+            "label": "Aranje et",
+            "width": 85,
+            "height": 44,
+            "right": 204
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 256
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 308
+          }
+        ],
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "clipped": 0,
+        "errors": []
+      },
+      {
+        "viewport": "320x700",
+        "textScale": 100,
+        "editing": true,
+        "rowWidth": 296,
+        "scrollWidth": 314,
+        "clientWidth": 296,
+        "children": [
+          {
+            "label": "Düzenlemeyi bitir",
+            "width": 117,
+            "height": 44,
+            "right": 129
+          },
+          {
+            "label": "Aranje et",
+            "width": 85,
+            "height": 44,
+            "right": 222
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 274
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 326
+          }
+        ],
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "clipped": 18,
+        "errors": []
+      },
+      {
+        "viewport": "320x700",
+        "textScale": 125,
+        "editing": false,
+        "rowWidth": 290,
+        "scrollWidth": 323,
+        "clientWidth": 290,
+        "children": [
+          {
+            "label": "Düzenle",
+            "width": 99,
+            "height": 55,
+            "right": 114
+          },
+          {
+            "label": "Aranje et",
+            "width": 106,
+            "height": 55,
+            "right": 230
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 284
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 338
+          }
+        ],
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "clipped": 33,
+        "errors": []
+      },
+      {
+        "viewport": "320x700",
+        "textScale": 125,
+        "editing": true,
+        "rowWidth": 290,
+        "scrollWidth": 362,
+        "clientWidth": 290,
+        "children": [
+          {
+            "label": "Düzenlemeyi bitir",
+            "width": 138,
+            "height": 55,
+            "right": 153
+          },
+          {
+            "label": "Aranje et",
+            "width": 106,
+            "height": 55,
+            "right": 269
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 323
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 377
+          }
+        ],
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "clipped": 72,
+        "errors": []
+      },
+      {
+        "viewport": "320x700",
+        "textScale": 150,
+        "editing": false,
+        "rowWidth": 284,
+        "scrollWidth": 371,
+        "clientWidth": 284,
+        "children": [
+          {
+            "label": "Düzenle",
+            "width": 120,
+            "height": 66,
+            "right": 138
+          },
+          {
+            "label": "Aranje et",
+            "width": 127,
+            "height": 66,
+            "right": 277
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 333
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 389
+          }
+        ],
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "clipped": 87,
+        "errors": []
+      },
+      {
+        "viewport": "320x700",
+        "textScale": 150,
+        "editing": true,
+        "rowWidth": 284,
+        "scrollWidth": 419,
+        "clientWidth": 284,
+        "children": [
+          {
+            "label": "Düzenlemeyi bitir",
+            "width": 168,
+            "height": 66,
+            "right": 186
+          },
+          {
+            "label": "Aranje et",
+            "width": 127,
+            "height": 66,
+            "right": 325
+          },
+          {
+            "label": "Geri al",
+            "width": 44,
+            "height": 44,
+            "right": 381
+          },
+          {
+            "label": "Yinele",
+            "width": 44,
+            "height": 44,
+            "right": 437
+          }
+        ],
+        "bodyScrollWidth": 320,
+        "bodyClientWidth": 320,
+        "clipped": 135,
+        "errors": []
+      }
+    ]
+  }
+}

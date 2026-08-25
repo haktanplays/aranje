@@ -1,0 +1,22 @@
+{
+  "dense32": {
+    "bars": 1,
+    "tracks": 1,
+    "warnings": []
+  },
+  "dense16": {
+    "bars": 1,
+    "tracks": 1,
+    "warnings": []
+  },
+  "legatoRun": {
+    "bars": 1,
+    "tracks": 1,
+    "warnings": []
+  },
+  "roomy": {
+    "bars": 2,
+    "tracks": 1,
+    "warnings": []
+  }
+}
