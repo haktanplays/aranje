@@ -1,7 +1,7 @@
 {
   "what": "2R-A §5/§6 — bir dokunuşun maliyetinin sayfa içinden ölçümü ve dağılımı",
   "measuredOn": "masaüstü Chromium, gerçek production build — fiziksel telefon değil",
-  "method": "2 ısınma turundan sonra 24 tur sayfa içi ölçüm (click → iki rAF), ardından aynı sayıda tur için 100 µs örnekleme ile CPU profili.",
+  "method": "2 ısınma turundan sonra 60 tur sayfa içi ölçüm (click → iki rAF), ardından aynı sayıda tur için 100 µs örnekleme ile CPU profili.",
   "notes": [
     "Playwright'ın click() maliyeti bu ölçümün dışında; DRUM-BASELINE/DRUM-AFTER içindeki sayı onu da içerir.",
     "shareOfSamples, profilin toplam örneği içindeki paydır — mutlak süre değil.",
@@ -17,153 +17,153 @@
         "nodes": 443
       },
       "inPageTapMs": {
-        "count": 24,
-        "median": 139.8,
-        "p95": 195.9,
-        "max": 204.5
+        "count": 60,
+        "median": 130.1,
+        "p95": 187.2,
+        "max": 214.9
       },
       "profile": {
-        "totalSamples": 19983,
+        "totalSamples": 51056,
         "top": [
-          {
-            "name": "(garbage collector)",
-            "url": "",
-            "line": -1,
-            "samples": 905,
-            "shareOfSamples": 0.0453
-          },
           {
             "name": "(program)",
             "url": "",
             "line": -1,
-            "samples": 815,
-            "shareOfSamples": 0.0408
+            "samples": 2090,
+            "shareOfSamples": 0.0409
+          },
+          {
+            "name": "(garbage collector)",
+            "url": "",
+            "line": -1,
+            "samples": 1977,
+            "shareOfSamples": 0.0387
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 565,
-            "shareOfSamples": 0.0283
+            "samples": 1689,
+            "shareOfSamples": 0.0331
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 489,
-            "shareOfSamples": 0.0245
-          },
-          {
-            "name": "hc",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 487,
-            "shareOfSamples": 0.0244
+            "samples": 1483,
+            "shareOfSamples": 0.029
           },
           {
             "name": "setItem",
             "url": "",
             "line": -1,
-            "samples": 399,
-            "shareOfSamples": 0.02
+            "samples": 1106,
+            "shareOfSamples": 0.0217
           },
           {
             "name": "cZ",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 375,
-            "shareOfSamples": 0.0188
+            "samples": 1029,
+            "shareOfSamples": 0.0202
+          },
+          {
+            "name": "gl",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 949,
+            "shareOfSamples": 0.0186
+          },
+          {
+            "name": "gl",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 947,
+            "shareOfSamples": 0.0185
+          },
+          {
+            "name": "(anonymous)",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 906,
+            "shareOfSamples": 0.0177
           },
           {
             "name": "cx",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 312,
-            "shareOfSamples": 0.0156
+            "samples": 785,
+            "shareOfSamples": 0.0154
           },
           {
-            "name": "gl",
+            "name": "g8",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 303,
+            "samples": 774,
             "shareOfSamples": 0.0152
           },
           {
-            "name": "gl",
+            "name": "cx",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 295,
+            "line": 61,
+            "samples": 755,
             "shareOfSamples": 0.0148
           },
           {
             "name": "cx",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 293,
+            "samples": 749,
             "shareOfSamples": 0.0147
-          },
-          {
-            "name": "cx",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 286,
-            "shareOfSamples": 0.0143
-          },
-          {
-            "name": "g8",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 269,
-            "shareOfSamples": 0.0135
-          },
-          {
-            "name": "hc",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 246,
-            "shareOfSamples": 0.0123
           },
           {
             "name": "cZ",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 192,
-            "shareOfSamples": 0.0096
+            "samples": 533,
+            "shareOfSamples": 0.0104
           },
           {
-            "name": "(anonymous)",
+            "name": "cZ",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 179,
-            "shareOfSamples": 0.009
+            "samples": 485,
+            "shareOfSamples": 0.0095
           },
           {
             "name": "(idle)",
             "url": "",
             "line": -1,
-            "samples": 176,
+            "samples": 452,
+            "shareOfSamples": 0.0089
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 59,
+            "samples": 451,
             "shareOfSamples": 0.0088
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 59,
+            "samples": 445,
+            "shareOfSamples": 0.0087
           },
           {
             "name": "(anonymous)",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 173,
-            "shareOfSamples": 0.0087
-          },
-          {
-            "name": "cx",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 172,
+            "line": 65,
+            "samples": 439,
             "shareOfSamples": 0.0086
           },
           {
-            "name": "xi",
+            "name": "e._zod.parse",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 66,
-            "samples": 170,
-            "shareOfSamples": 0.0085
+            "line": 0,
+            "samples": 401,
+            "shareOfSamples": 0.0079
           }
         ]
       },
@@ -177,153 +177,153 @@
         "nodes": 387
       },
       "inPageTapMs": {
-        "count": 24,
-        "median": 145.4,
-        "p95": 227.8,
-        "max": 228
+        "count": 60,
+        "median": 128.8,
+        "p95": 182.9,
+        "max": 203.4
       },
       "profile": {
-        "totalSamples": 20344,
+        "totalSamples": 49717,
         "top": [
-          {
-            "name": "(garbage collector)",
-            "url": "",
-            "line": -1,
-            "samples": 863,
-            "shareOfSamples": 0.0424
-          },
           {
             "name": "(program)",
             "url": "",
             "line": -1,
-            "samples": 802,
-            "shareOfSamples": 0.0394
+            "samples": 2054,
+            "shareOfSamples": 0.0413
           },
           {
-            "name": "hc",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 615,
-            "shareOfSamples": 0.0302
-          },
-          {
-            "name": "g9",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 451,
-            "shareOfSamples": 0.0222
+            "name": "(garbage collector)",
+            "url": "",
+            "line": -1,
+            "samples": 1977,
+            "shareOfSamples": 0.0398
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 443,
-            "shareOfSamples": 0.0218
+            "samples": 1641,
+            "shareOfSamples": 0.033
           },
           {
-            "name": "cZ",
+            "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 396,
-            "shareOfSamples": 0.0195
+            "line": 65,
+            "samples": 1510,
+            "shareOfSamples": 0.0304
           },
           {
             "name": "setItem",
             "url": "",
             "line": -1,
-            "samples": 357,
-            "shareOfSamples": 0.0175
+            "samples": 1132,
+            "shareOfSamples": 0.0228
           },
           {
-            "name": "hc",
+            "name": "gl",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 334,
-            "shareOfSamples": 0.0164
+            "samples": 984,
+            "shareOfSamples": 0.0198
           },
           {
-            "name": "cx",
+            "name": "gl",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 936,
+            "shareOfSamples": 0.0188
+          },
+          {
+            "name": "cZ",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 306,
+            "samples": 830,
+            "shareOfSamples": 0.0167
+          },
+          {
+            "name": "g8",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 779,
+            "shareOfSamples": 0.0157
+          },
+          {
+            "name": "(anonymous)",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 745,
             "shareOfSamples": 0.015
           },
           {
             "name": "cx",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 303,
-            "shareOfSamples": 0.0149
-          },
-          {
-            "name": "cx",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 294,
-            "shareOfSamples": 0.0145
-          },
-          {
-            "name": "gl",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 277,
-            "shareOfSamples": 0.0136
-          },
-          {
-            "name": "gl",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 244,
-            "shareOfSamples": 0.012
-          },
-          {
-            "name": "g9",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 238,
-            "shareOfSamples": 0.0117
-          },
-          {
-            "name": "g8",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 236,
-            "shareOfSamples": 0.0116
-          },
-          {
-            "name": "g9",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 233,
+            "samples": 570,
             "shareOfSamples": 0.0115
           },
           {
-            "name": "cZ",
+            "name": "cx",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 204,
-            "shareOfSamples": 0.01
+            "samples": 569,
+            "shareOfSamples": 0.0114
           },
           {
             "name": "cx",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 169,
-            "shareOfSamples": 0.0083
-          },
-          {
-            "name": "cx",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 166,
-            "shareOfSamples": 0.0082
+            "samples": 541,
+            "shareOfSamples": 0.0109
           },
           {
             "name": "(idle)",
             "url": "",
             "line": -1,
-            "samples": 162,
-            "shareOfSamples": 0.008
+            "samples": 453,
+            "shareOfSamples": 0.0091
+          },
+          {
+            "name": "cZ",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 61,
+            "samples": 433,
+            "shareOfSamples": 0.0087
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 59,
+            "samples": 414,
+            "shareOfSamples": 0.0083
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 59,
+            "samples": 413,
+            "shareOfSamples": 0.0083
+          },
+          {
+            "name": "cZ",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 61,
+            "samples": 402,
+            "shareOfSamples": 0.0081
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 0,
+            "samples": 381,
+            "shareOfSamples": 0.0077
+          },
+          {
+            "name": "(anonymous)",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 381,
+            "shareOfSamples": 0.0077
           }
         ]
       },
@@ -337,153 +337,153 @@
         "nodes": 294
       },
       "inPageTapMs": {
-        "count": 24,
-        "median": 31.4,
-        "p95": 57.3,
-        "max": 65.8
+        "count": 60,
+        "median": 31.2,
+        "p95": 31.7,
+        "max": 47.5
       },
       "profile": {
-        "totalSamples": 4045,
+        "totalSamples": 10230,
         "top": [
           {
             "name": "(idle)",
             "url": "",
             "line": -1,
-            "samples": 1177,
-            "shareOfSamples": 0.291
+            "samples": 3880,
+            "shareOfSamples": 0.3793
           },
           {
             "name": "(program)",
             "url": "",
             "line": -1,
-            "samples": 226,
-            "shareOfSamples": 0.0559
+            "samples": 551,
+            "shareOfSamples": 0.0539
           },
           {
             "name": "(garbage collector)",
             "url": "",
             "line": -1,
-            "samples": 163,
-            "shareOfSamples": 0.0403
+            "samples": 215,
+            "shareOfSamples": 0.021
           },
           {
             "name": "t",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 54,
-            "shareOfSamples": 0.0133
+            "samples": 140,
+            "shareOfSamples": 0.0137
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 39,
-            "shareOfSamples": 0.0096
+            "samples": 95,
+            "shareOfSamples": 0.0093
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 38,
-            "shareOfSamples": 0.0094
+            "samples": 84,
+            "shareOfSamples": 0.0082
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 24,
-            "shareOfSamples": 0.0059
-          },
-          {
-            "name": "setItem",
-            "url": "",
-            "line": -1,
-            "samples": 24,
-            "shareOfSamples": 0.0059
-          },
-          {
-            "name": "gl",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 23,
-            "shareOfSamples": 0.0057
-          },
-          {
-            "name": "gl",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 20,
-            "shareOfSamples": 0.0049
-          },
-          {
-            "name": "g8",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 65,
-            "samples": 20,
-            "shareOfSamples": 0.0049
+            "samples": 66,
+            "shareOfSamples": 0.0065
           },
           {
             "name": "g9",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 19,
-            "shareOfSamples": 0.0047
+            "samples": 64,
+            "shareOfSamples": 0.0063
+          },
+          {
+            "name": "(anonymous)",
+            "url": "/_next/static/chunks/3e4keds9ktjdu.js",
+            "line": 0,
+            "samples": 62,
+            "shareOfSamples": 0.0061
           },
           {
             "name": "cZ",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 61,
-            "samples": 19,
-            "shareOfSamples": 0.0047
-          },
-          {
-            "name": "co",
-            "url": "/_next/static/chunks/3e4keds9ktjdu.js",
-            "line": 0,
-            "samples": 19,
-            "shareOfSamples": 0.0047
-          },
-          {
-            "name": "(anonymous)",
-            "url": "/_next/static/chunks/3e4keds9ktjdu.js",
-            "line": 0,
-            "samples": 18,
-            "shareOfSamples": 0.0044
-          },
-          {
-            "name": "cx",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 18,
-            "shareOfSamples": 0.0044
-          },
-          {
-            "name": "cx",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 61,
-            "samples": 17,
-            "shareOfSamples": 0.0042
-          },
-          {
-            "name": "e._zod.parse",
-            "url": "/_next/static/chunks/32fu50qlubp9g.js",
-            "line": 0,
-            "samples": 17,
-            "shareOfSamples": 0.0042
+            "samples": 61,
+            "shareOfSamples": 0.006
           },
           {
             "name": "gl",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 16,
+            "samples": 60,
+            "shareOfSamples": 0.0059
+          },
+          {
+            "name": "gl",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 54,
+            "shareOfSamples": 0.0053
+          },
+          {
+            "name": "setItem",
+            "url": "",
+            "line": -1,
+            "samples": 50,
+            "shareOfSamples": 0.0049
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 59,
+            "samples": 49,
+            "shareOfSamples": 0.0048
+          },
+          {
+            "name": "e._zod.parse",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 59,
+            "samples": 47,
+            "shareOfSamples": 0.0046
+          },
+          {
+            "name": "gl",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 43,
+            "shareOfSamples": 0.0042
+          },
+          {
+            "name": "cx",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 61,
+            "samples": 42,
+            "shareOfSamples": 0.0041
+          },
+          {
+            "name": "g8",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 41,
             "shareOfSamples": 0.004
           },
           {
             "name": "(anonymous)",
             "url": "/_next/static/chunks/32fu50qlubp9g.js",
             "line": 65,
-            "samples": 16,
+            "samples": 41,
             "shareOfSamples": 0.004
+          },
+          {
+            "name": "g8",
+            "url": "/_next/static/chunks/32fu50qlubp9g.js",
+            "line": 65,
+            "samples": 40,
+            "shareOfSamples": 0.0039
           }
         ]
       },

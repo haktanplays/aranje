@@ -239,20 +239,39 @@ yazma yolunun hiçbirine dokunulmadı.
 
 ## Sonuç, sayfa içinden ölçülmüş (click → iki rAF)
 
-| fixture | önce | sonra |
+| fixture | önce (medyan) | sonra (medyan) |
 |---|---|---|
-| denseKit @390 | 182,0 / 231,1 ms | **131,5 / 201,4 ms** |
-| denseKit @320 | 166,0 / 222,7 ms | **130,8 / 203,4 ms** |
-| practiceSong @390 | 30,8 / 52,5 ms | **31,4 / 36,2 ms** |
+| denseKit @390 | 182,0 ms | **132,6–139,8 ms** |
+| denseKit @320 | 166,0 ms | **130,8–145,4 ms** |
+| practiceSong @390 | 30,8 ms | **31,0–31,5 ms** |
 
 Playwright'ın dışarıdan ölçtüğü sayı da aynı yönde: 213/207 → 179/174 ms
 medyan.
 
+## p95 dürüstlüğü: tek bir sayı vermek yanlış olurdu
+
+İlk yazımda `practiceSong` p95'i **36,2 ms** olarak kaydedildi ve "hedef
+kapandı" denildi. Aynı harness'ın bir sonraki koşusu **57,3 ms** verdi. Bu
+nedenle o cümle geri alındı.
+
+Sebep istatistiğin kendisiydi: 24 turluk bir koşuda p95, 22–23. örnektir ve tek
+bir çöp toplama duraklaması onu belirler — CPU profilinde zaten en büyük tek
+kalem çöp toplayıcıydı. Tur sayısı 60'a çıkarıldı ve altı koşu tekrarlandı:
+
+| koşu | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|
+| medyan | 31,0 | 31,3 | 31,5 | 31,5 | 31,1 | 31,0 |
+| p95 | 49,8 | 33,1 | 32,0 | 33,6 | 35,0 | 37,4 |
+
 ## §IV hedefleri karşısında
 
-- Gerçekçi medyan hedefi `≤33 ms`: **31,4 ms — geçti.**
-- Gerçekçi p95 hedefi `≤50 ms`: **36,2 ms — geçti.** Ara raporda 2,5 ms ile
-  kaçan p95 bu değişiklikle kapandı.
+- Gerçekçi medyan hedefi `≤33 ms`: **31,0–31,5 ms, altı koşunun altısında da
+  geçti.** Medyan kararlı.
+- Gerçekçi p95 hedefi `≤50 ms`: 60 turluk altı koşunun **altısında da altında**
+  (32,0–49,8), ama en kötüsü hedefin yalnız 0,2 ms altında ve 24 turluk bir
+  koşuda 57,3 ölçüldü. Bu yüzden **"p95 kapandı" denmiyor**: kuyruğun kök
+  nedeni tahsis/çöp toplama olarak görünüyor ama kesin olarak bilinmiyor ve
+  bilinmiyor diye yazılıyor. Marjsız geçen bir eşik geçmiş sayılmaz.
 - Sözleşme tavanı: **131 ms — kapanmadı.** Kalanının ~30 ms'i merkezî kapı
   (5,1 + 24,1) ve ~7 ms'i playback planıdır; üçü de gevşetilmesi yasak
   yollardır. Geri kalanı React reconciliation, DOM ve paint'tir.

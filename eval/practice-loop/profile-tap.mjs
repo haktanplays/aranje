@@ -27,7 +27,16 @@ import { INSTRUMENT } from "../continuous-follow/instrument.mjs";
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
 const OUT = "eval/practice-loop";
 const NAME = process.env.OUT_NAME ?? "TAP-PROFILE";
-const ROUNDS = Number(process.env.ROUNDS ?? 24);
+/*
+ * 60, not 24.
+ *
+ * A p95 over 24 samples is the 22nd or 23rd of them, which one garbage
+ * collection decides. Six runs at 24 rounds put `practiceSong`'s p95 anywhere
+ * between 36,2 and 57,3 ms — a spread wide enough to straddle the target and
+ * report either answer. At 60 rounds the same six runs land between 32,0 and
+ * 49,8. The median never moved: 30,8–31,5 throughout.
+ */
+const ROUNDS = Number(process.env.ROUNDS ?? 60);
 mkdirSync(OUT, { recursive: true });
 
 const round = (value, places = 2) => Math.round(value * 10 ** places) / 10 ** places;
