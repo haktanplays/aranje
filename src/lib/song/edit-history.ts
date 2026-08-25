@@ -106,7 +106,32 @@ export type HistoryAction =
   | {
       readonly kind: "chord";
       readonly mode: "chord_insert" | "chord_replace";
-    };
+    }
+  /**
+   * One power chord written with the pen (2S-A §7).
+   *
+   * Its own word rather than a flavour of `chord`, because the history line
+   * has to say what the reader did: they held a pen and touched a fret, they
+   * did not walk through the chord builder.
+   */
+  | {
+      readonly kind: "power_chord";
+      readonly mode: "insert" | "replace";
+    }
+  /**
+   * One run of notes joined with the brush (2S-A §8).
+   *
+   * One action however many links it wrote: the reader made one gesture and
+   * answered one question, so undo takes the whole run back once.
+   */
+  | { readonly kind: "legato_brush" }
+  /**
+   * One pattern continued (2S-A §9).
+   *
+   * One action however many copies: the reader asked for four, so undo gives
+   * back the song before the four rather than one of them at a time.
+   */
+  | { readonly kind: "continue_pattern" };
 
 export type HistorySnapshot = {
   readonly song: Song;

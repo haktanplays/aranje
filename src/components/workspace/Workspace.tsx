@@ -22,16 +22,13 @@
  */
 import { useMemo } from "react";
 
-import { EditToolbar } from "@/components/workspace/EditToolbar";
-import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
-import { SectionNavigator } from "@/components/workspace/SectionNavigator";
+
+import { EditArea } from "@/components/workspace/EditArea";
 import { SelectionActionArea } from "@/components/workspace/SelectionActionArea";
-import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { TrackControl } from "@/components/workspace/TrackControl";
 import { TransportBar } from "@/components/workspace/TransportBar";
-import { ViewSwitch } from "@/components/workspace/ViewSwitch";
-import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
 import { WorkspaceOverlays } from "@/components/workspace/WorkspaceOverlays";
+import { WorkspaceChrome } from "@/components/workspace/WorkspaceChrome";
 import { WorkspaceSurface } from "@/components/workspace/WorkspaceSurface";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
@@ -51,6 +48,8 @@ import { usePracticeSession } from "@/lib/workspace/use-practice-session";
 import { useMultiTrackView } from "@/lib/workspace/use-multitrack-session";
 import { useSelectTrack } from "@/lib/workspace/use-select-track";
 import { useMixer } from "@/lib/workspace/use-mixer";
+import { useComposerDoors } from "@/lib/workspace/use-composer-doors";
+import { useIntentComposer, withPen } from "@/lib/workspace/use-intent-composer";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
 import { useWorkspaceFiles } from "@/lib/workspace/use-workspace-files";
 import { useSelectionSession } from "@/lib/workspace/use-selection-session";
@@ -96,6 +95,19 @@ export function Workspace() {
 
   const noteEditing = useNoteEditing({ song, track, timeline, commit, pause });
 
+  /*
+   * The intent layer (2S-A §6). It holds one tool, and the surface asks it
+   * what a touch means before falling back to what a touch has always meant.
+   */
+  const composer = useIntentComposer({
+    song,
+    track,
+    sectionId: navigation.viewedSectionId,
+    commit,
+  });
+
+  const editingSurface = withPen(noteEditing, composer);
+
   const session = useSelectionSession({
     song,
     track,
@@ -115,6 +127,15 @@ export function Workspace() {
   const timing = useTimingChange({ getSnapshot: () => ({ song }), commit }, song);
 
   /* ---------------------------------------------------------------- mixer */
+
+  const doors = useComposerDoors({
+    song,
+    track,
+    noteEditing,
+    chords,
+    timing,
+    viewedSectionId: navigation.viewedSectionId,
+  });
 
   const mixerAudio = useMemo(() => mixerAudioOf(controller), [controller]);
   const mixer = useMixer({ song, canPersist, commit, audio: mixerAudio });
@@ -231,59 +252,26 @@ export function Workspace() {
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
-      <WorkspaceHeader
-        title={song.title}
-        songKey={song.key}
-        bpm={song.bpm}
+      <WorkspaceChrome
+        song={song}
         meter={meter}
-        activeBpm={state.activeBpm}
-        hasTempoChanges={state.hasTempoChanges}
+        state={state}
+        navigation={navigation}
+        session={session}
+        runs={runs}
+        recovery={recovery}
+        recoveryMessage={recoveryMessage}
+        onDismissRecovery={dismissRecovery}
         onInfo={() => overlays.open("info")}
         onProjects={library.open}
+        onOpenSectionList={() => overlays.open("section")}
+        onJumpSection={focusSection}
       />
-
-      {/* One strip, and the recovery state owns it: four states, four
-          sentences, and no path from a diagnostic to a musician. */}
-      {recovery && recoveryMessage ? (
-        <RecoveryBanner
-          state={recovery}
-          message={recoveryMessage}
-          onDismiss={dismissRecovery}
-        />
-      ) : null}
-
-      <ViewSwitch
-        view={navigation.view}
-        onChange={(next) => {
-          /*
-           * A time selection belongs to the tab: it is a span of time on one
-           * track, drawn on a staff that is about to be unmounted. Leaving
-           * for either of the other two surfaces drops it — without
-           * committing whatever it had staged. The clipboards and the history
-           * stay; they belong to the song.
-           */
-          if (next !== "tab") session.time.clear();
-          if (next === "arrange") navigation.showArrange();
-          else if (next === "multi") navigation.showMulti();
-          else navigation.showTab();
-        }}
-      />
-
-      {/* Not on the arrangement: it draws every section already (2Q-A §6). */}
-      {navigation.view !== "arrange" ? (
-        <SectionNavigator
-          runs={runs}
-          activeSectionId={navigation.viewedSectionId}
-          loopSectionId={state.loop.kind === "section" ? state.loop.sectionId : null}
-          onJump={focusSection}
-          onOpenList={() => overlays.open("section")}
-        />
-      ) : null}
 
       <WorkspaceSurface
         navigation={navigation}
         session={session}
-        noteEditing={noteEditing}
+        noteEditing={editingSurface}
         song={song}
         arrangement={arrangement}
         ghostArrangement={ghostArrangement}
@@ -304,30 +292,30 @@ export function Workspace() {
         <TrackControl track={track} onOpen={() => overlays.open("track")} />
       ) : null}
 
-      {noteEditing.editing ? (
-        <SelectionBar
-          count={noteEditing.group.selection?.refs.length ?? 0}
-          error={noteEditing.group.moveError}
-          onMove={noteEditing.group.move}
-          onClear={noteEditing.group.clear}
-        />
-      ) : null}
-
-      <EditToolbar
-        editing={noteEditing.editing}
-        canEdit={canEdit}
-        editDisabledReason={editDisabledReason}
-        onToggleEdit={noteEditing.toggleEdit}
-        onArrange={ground.enterCopilot}
-        arrangeDisabled={skills.length === 0 || previewOpen || !canPersist}
-        canUndo={canUndo}
-        canRedo={canRedo}
-        undoLabel={undoLabel}
-        redoLabel={redoLabel}
-        onUndo={undoEdit}
-        onRedo={redoEdit}
-        // Both notation surfaces; the arrangement has no staff (2Q-A §8).
-        canToggleEdit={navigation.view !== "arrange"}
+      <EditArea
+        composer={composer}
+        noteEditing={noteEditing}
+        song={song}
+        track={track}
+        selection={session.time.handle.selection}
+        onOpenChordBuilder={doors.catalogue}
+        onOpenRhythm={doors.rhythm}
+        toolbar={{
+          editing: noteEditing.editing,
+          canEdit,
+          editDisabledReason,
+          onToggleEdit: noteEditing.toggleEdit,
+          onArrange: ground.enterCopilot,
+          arrangeDisabled: skills.length === 0 || previewOpen || !canPersist,
+          canUndo,
+          canRedo,
+          undoLabel,
+          redoLabel,
+          onUndo: undoEdit,
+          onRedo: redoEdit,
+          // Both notation surfaces; the arrangement has no staff (2Q-A §8).
+          canToggleEdit: navigation.view !== "arrange",
+        }}
       />
 
       <TransportBar
@@ -350,7 +338,7 @@ export function Workspace() {
         runs={runs}
         overlays={overlays}
         navigation={navigation}
-        noteEditing={noteEditing}
+        noteEditing={editingSurface}
         entry={entry}
         onNoteAudition={tab.audition.note}
         chords={chords}

@@ -20,8 +20,8 @@ import {
 
 const EVERY_TOOL: readonly ComposerTool[] = [
   { kind: "note" },
-  { kind: "power_chord", voices: 2 },
-  { kind: "power_chord", voices: 3 },
+  { kind: "power_chord", voices: 2, fret: 5 },
+  { kind: "power_chord", voices: 3, fret: 5 },
   { kind: "connect", connection: "auto" },
   { kind: "connect", connection: "hammer_on" },
   { kind: "connect", connection: "pull_off" },
@@ -50,9 +50,16 @@ describe("302. exactly one tool is held", () => {
     }
   });
 
+  it("tells two frets of the same pen apart", () => {
+    const fifth: ComposerTool = { kind: "power_chord", voices: 2, fret: 5 };
+    const seventh: ComposerTool = { kind: "power_chord", voices: 2, fret: 7 };
+    expect(sameTool(fifth, seventh)).toBe(false);
+    expect(activate(fifth, seventh)).toEqual(seventh);
+  });
+
   it("tells two settings of the same tool apart", () => {
-    const two: ComposerTool = { kind: "power_chord", voices: 2 };
-    const three: ComposerTool = { kind: "power_chord", voices: 3 };
+    const two: ComposerTool = { kind: "power_chord", voices: 2, fret: 5 };
+    const three: ComposerTool = { kind: "power_chord", voices: 3, fret: 5 };
     expect(sameTool(two, three)).toBe(false);
     expect(activate(two, three)).toEqual(three);
   });
@@ -111,7 +118,7 @@ describe("304. what a tool says to somebody who does not read notation", () => {
     expect(toolHint({ kind: "connect", connection: "hammer_on" })).toBe(
       "Sağ elinle tekrar vurmadan daha yüksek notaya geç.",
     );
-    expect(toolHint({ kind: "power_chord", voices: 2 })).toBe(
+    expect(toolHint({ kind: "power_chord", voices: 2, fret: 5 })).toBe(
       "Bastığın perde kök olur, üstüne beşlisi eklenir.",
     );
   });

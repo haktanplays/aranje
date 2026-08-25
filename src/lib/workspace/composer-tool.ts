@@ -34,8 +34,16 @@ export type ComposerTool =
   | { readonly kind: "none" }
   /** The plain note entry that has always been there. */
   | { readonly kind: "note" }
-  /** The power chord pen: touch a string and a fret, get root and fifth. */
-  | { readonly kind: "power_chord"; readonly voices: 2 | 3 }
+  /**
+   * The power chord pen: touch a string, get root and fifth at this fret.
+   *
+   * The fret is part of the tool rather than part of the touch, because a pen
+   * is a thing you set up once and then use: the staff's cells are strings and
+   * slots, so a tap says *where in time* and *which string* and cannot also
+   * say which fret. Set it beside the voice count, tap as many places as you
+   * like, and the pen stays what it was.
+   */
+  | { readonly kind: "power_chord"; readonly voices: 2 | 3; readonly fret: number }
   /** The legato brush: cover a run of onsets and join them. */
   | { readonly kind: "connect"; readonly connection: ConnectionChoice }
   /** Continue the selected pattern, exactly or moved. */
@@ -69,7 +77,7 @@ export function isArmed(tool: ComposerTool): boolean {
 export function sameTool(a: ComposerTool, b: ComposerTool): boolean {
   if (a.kind !== b.kind) return false;
   if (a.kind === "power_chord" && b.kind === "power_chord") {
-    return a.voices === b.voices;
+    return a.voices === b.voices && a.fret === b.fret;
   }
   if (a.kind === "connect" && b.kind === "connect") {
     return a.connection === b.connection;
@@ -153,7 +161,9 @@ export function toolLabel(tool: ComposerTool): string {
     case "note":
       return "Nota";
     case "power_chord":
-      return `Power chord · ${VOICE_LABELS[tool.voices]}`;
+      return `Power chord · ${VOICE_LABELS[tool.voices]} · ${
+        tool.fret === 0 ? "boş tel" : `${tool.fret}. perde`
+      }`;
     case "connect":
       return CONNECTION_LABELS[tool.connection];
     case "continue_pattern":

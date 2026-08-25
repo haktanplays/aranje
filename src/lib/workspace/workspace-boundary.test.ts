@@ -450,6 +450,13 @@ describe("41. the seven responsibilities 2N-A separated (spec 13.20 §8)", () =>
     "fret glyph model": "src/lib/tab/glyph-model.ts",
     "legato arc geometry": "src/lib/tab/legato-arc.ts",
     "playing-onset mark": "src/lib/tab/playing-onset.ts",
+    // 2S-A §6-§9: what the reader is holding, and what each tool would write.
+    // A component that owned any of these would make it unreachable from a
+    // test and impossible to share between the two notation surfaces.
+    "composer tool model": "src/lib/workspace/composer-tool.ts",
+    "power chord pen": "src/lib/chords/power-chord-pen.ts",
+    "legato brush": "src/lib/song/legato-brush.ts",
+    "pattern continuation": "src/lib/song/continue-pattern.ts",
     "section navigation transition": "src/lib/workspace/section-navigation.ts",
   };
 

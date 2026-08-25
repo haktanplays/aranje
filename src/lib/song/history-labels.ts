@@ -131,6 +131,14 @@ export function historyActionLabel(action: HistoryAction): string {
       }
     case "chord":
       return action.mode === "chord_replace" ? "Akoru değiştirme" : "Akor ekleme";
+    case "power_chord":
+      return action.mode === "replace"
+        ? "Vuruşu power chord ile değiştirme"
+        : "Power chord ekleme";
+    case "legato_brush":
+      return "Notaları bağlama";
+    case "continue_pattern":
+      return "Deseni devam ettirme";
   }
 }
 
