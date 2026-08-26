@@ -31,7 +31,7 @@ import { settle } from "@/lib/song/edit";
 import { songSchema, type Song, type Track } from "@/lib/song/schema";
 import { runValidators } from "@/lib/validators";
 import { buildFretGlyph } from "@/lib/tab/glyph-model";
-import { buildLegatoArcs } from "@/lib/tab/legato-arc";
+import { buildTechniquePrimitives } from "@/lib/tab/technique-geometry";
 import { sectionSlotStream } from "@/lib/song/onset-block";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 import { SLOT_WIDTH } from "@/components/workspace/geometry";
@@ -205,10 +205,11 @@ function everyGlyph(): number {
   return built;
 }
 
-const arcLayout = {
+const techniqueLayout = {
   slotWidth: SLOT_WIDTH,
   stringRowHeight: 44,
-  rowTop: (stringIndex: number) => stringIndex * 44,
+  stringCount: 6,
+  rowTop: (stringIndex: number) => (6 - 1 - stringIndex) * 44,
 };
 
 /* ------------------------------------------------------------- the layers */
@@ -251,7 +252,9 @@ const layers = {
     }),
   ),
   "render: every fret glyph of the section": bench(everyGlyph),
-  "render: the legato arcs of a bar": bench(() => buildLegatoArcs(firstBar, arcLayout)),
+  "render: the technique marks of a bar": bench(() =>
+    buildTechniquePrimitives(firstBar, techniqueLayout),
+  ),
 } as const;
 
 const artefact = {
@@ -288,11 +291,13 @@ const artefact = {
     },
   },
   glyphsPerRound: everyGlyph(),
-  arcsPerRound: buildLegatoArcs(firstBar, arcLayout).length,
+  marksPerRound: buildTechniquePrimitives(firstBar, techniqueLayout).count,
   layers,
 };
 
 mkdirSync(OUT, { recursive: true });
 writeFileSync(`${OUT}/PERFORMANCE.json`, `${JSON.stringify(artefact, null, 2)}\n`);
 console.log(JSON.stringify(artefact.layers, null, 2));
-console.log(`glyphs/round ${artefact.glyphsPerRound} · arcs/round ${artefact.arcsPerRound}`);
+console.log(
+  `glyphs/round ${artefact.glyphsPerRound} · marks/round ${artefact.marksPerRound}`,
+);

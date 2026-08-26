@@ -448,7 +448,7 @@ describe("41. the seven responsibilities 2N-A separated (spec 13.20 §8)", () =>
     // both answers a component would otherwise invent twice — once for the
     // Tab surface and once for Çoklu.
     "fret glyph model": "src/lib/tab/glyph-model.ts",
-    "legato arc geometry": "src/lib/tab/legato-arc.ts",
+    "technique mark geometry": "src/lib/tab/technique-geometry.ts",
     "playing-onset mark": "src/lib/tab/playing-onset.ts",
     // 2S-A §6-§9: what the reader is holding, and what each tool would write.
     // A component that owned any of these would make it unreachable from a

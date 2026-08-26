@@ -4,7 +4,7 @@ import { useCallback, useRef } from "react";
 
 import { ArticulationGlyph } from "@/components/workspace/ArticulationGlyph";
 import { FretGlyph } from "@/components/workspace/FretGlyph";
-import { LegatoArcLayer } from "@/components/workspace/LegatoArcLayer";
+import { TechniqueLayer } from "@/components/workspace/TechniqueLayer";
 import {
   BAR_HEADER_HEIGHT,
   RHYTHM_ROW_HEIGHT,
@@ -18,7 +18,10 @@ import {
 } from "@/components/workspace/geometry";
 import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
-import { buildLegatoArcs } from "@/lib/tab/legato-arc";
+import {
+  buildTechniquePrimitives,
+  techniqueNoteKey,
+} from "@/lib/tab/technique-geometry";
 import type { GlyphState } from "@/lib/tab/glyph-model";
 import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
 import { rowOffset } from "@/components/workspace/staff";
@@ -141,12 +144,14 @@ export function FrettedBarBlock({
   const staffHeight = stringCount * rowHeight;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
   /*
-   * The slur arcs. Every coordinate comes from the pure model; this component
+   * Every technique mark. Which notes are one gesture, how much room a mark
+   * owns and where its curve goes are all the pure model's; this component
    * only says which staff it is drawing over.
    */
-  const arcs = buildLegatoArcs(bar, {
+  const techniques = buildTechniquePrimitives(bar, {
     slotWidth: SLOT_WIDTH,
     stringRowHeight: rowHeight,
+    stringCount,
     rowTop: (stringIndex) =>
       rowOffset(stringCount, stringIndex, rowHeight),
   });
@@ -168,11 +173,12 @@ export function FrettedBarBlock({
 
   /** The fret a slurred note came from, so its name can say the movement. */
   const slurredFrom = (span: FrettedBar["spans"][number]): number | null => {
-    const arc = arcs.find(
-      (entry) =>
-        entry.toSlot === span.startSlot && entry.stringIndex === span.stringIndex,
-    );
-    return arc ? arc.fromFret : null;
+    for (const phrase of techniques.legato) {
+      if (phrase.stringIndex !== span.stringIndex) continue;
+      const mark = phrase.marks.find((entry) => entry.toSlot === span.startSlot);
+      if (mark) return mark.fromFret;
+    }
+    return null;
   };
 
   // A long press has to suppress the click that follows it, or picking a chord
@@ -291,10 +297,15 @@ export function FrettedBarBlock({
               ) : null,
             )}
 
-            {/* Slurs, above the strings and under nothing. Drawn before the
-                numbers so a number is never covered by an arc, and the layer
-                takes no pointer events at all. */}
-            <LegatoArcLayer arcs={arcs} width={width} height={staffHeight} />
+            {/* Technique marks, above the strings and under nothing. Drawn
+                before the numbers so a number is never covered by one, and the
+                layer takes no pointer events at all. */}
+            <TechniqueLayer
+              primitives={techniques}
+              width={width}
+              height={staffHeight}
+              {...(onsets ? { previewSlots: onsets.selectedSlots } : {})}
+            />
 
             {/* Fret numbers at each onset */}
             {bar.spans.map((span, index) =>
@@ -321,7 +332,13 @@ export function FrettedBarBlock({
                     slurredFrom={slurredFrom(span)}
                     slotIndex={span.startSlot}
                   />
-                  {span.articulation ? (
+                  {/* The character mark is the fallback, not the notation: it
+                      appears only where the geometry layer drew nothing, so an
+                      articulation the tab cannot honour is still visible. */}
+                  {span.articulation &&
+                  !techniques.annotated.has(
+                    techniqueNoteKey(span.stringIndex, span.startSlot),
+                  ) ? (
                     <ArticulationGlyph
                       articulation={span.articulation}
                       rising={risingAt(bar, span)}

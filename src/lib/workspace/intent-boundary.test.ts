@@ -27,7 +27,7 @@ const PURE = [
   "src/lib/song/legato-brush.ts",
   "src/lib/song/continue-pattern.ts",
   "src/lib/tab/glyph-model.ts",
-  "src/lib/tab/legato-arc.ts",
+  "src/lib/tab/technique-geometry.ts",
 ];
 
 /** The components the intent layer added, and the one it rewrote. */
@@ -37,7 +37,7 @@ const VIEWS = [
   "src/components/workspace/ComposerSheet.tsx",
   "src/components/workspace/ContinuePatternSheet.tsx",
   "src/components/workspace/LegatoDecisionSheet.tsx",
-  "src/components/workspace/LegatoArcLayer.tsx",
+  "src/components/workspace/TechniqueLayer.tsx",
   "src/components/workspace/FretGlyph.tsx",
   "src/components/workspace/EditArea.tsx",
 ];
@@ -101,7 +101,7 @@ describe("39. the intent layer has one home per thing it knows", () => {
      * an element and start being a render, which is exactly the design 2Q-C
      * paid for.
      */
-    for (const path of ["src/components/workspace/FretGlyph.tsx", "src/components/workspace/LegatoArcLayer.tsx"]) {
+    for (const path of ["src/components/workspace/FretGlyph.tsx", "src/components/workspace/TechniqueLayer.tsx"]) {
       for (const specifier of valueImportsOf(path)) {
         expect(specifier.startsWith("@/lib/audio/"), `${path} → ${specifier}`).toBe(false);
       }
@@ -156,7 +156,7 @@ describe("40. both notation surfaces read the same tab", () => {
     expect(valueImportsOf(TAB)).toContain("@/components/workspace/FrettedBarBlock");
     expect(valueImportsOf(MULTI)).toContain("@/components/workspace/FrettedBarBlock");
     expect(valueImportsOf(BAR_BLOCK)).toContain("@/components/workspace/FretGlyph");
-    expect(valueImportsOf(BAR_BLOCK)).toContain("@/lib/tab/legato-arc");
+    expect(valueImportsOf(BAR_BLOCK)).toContain("@/lib/tab/technique-geometry");
   });
 
   it("gives neither canvas a command core of its own", () => {
