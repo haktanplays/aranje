@@ -27,6 +27,7 @@ import {
 
 import type { BarSelectEdge, BarSelectRequest } from "@/components/workspace/ArrangementCanvas";
 import type { TransformSheetKind } from "@/components/workspace/TransformSheet";
+import { useNarrowViewport } from "@/lib/ui/narrow-viewport";
 import {
   BAR_HEADER_HEIGHT,
   DRUM_ROW_HEIGHT,
@@ -139,6 +140,12 @@ export function useSelectionSession(options: {
   const { song, track, timeline, commit, pause, scrollRef, onApplied } =
     options;
   const { editing } = options;
+  /*
+   * The same question the staff asks, asked once here too: below
+   * `--breakpoint-xs` the writing row keeps the reading height, so the band
+   * that covers it has to as well (see `lib/ui/narrow-viewport.ts`).
+   */
+  const narrow = useNarrowViewport();
 
   /*
    * The store adapter is memoised on the song so `apply` always reads the
@@ -205,7 +212,7 @@ export function useSelectionSession(options: {
     timeline.kind === "fretted"
       ? BAR_HEADER_HEIGHT +
         timeline.strings.length *
-          (editing ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT)
+          (editing && !narrow ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT)
       : timeline.kind === "drums"
         ? BAR_HEADER_HEIGHT + timeline.lanes.length * DRUM_ROW_HEIGHT
         : 0;

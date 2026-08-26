@@ -733,9 +733,27 @@ async function glyphTour(browser, viewport, textScale) {
       minWidth: Math.min(...boxes.map((b) => b.width)),
     };
   });
+  /*
+   * The honest form of this claim (2S-A §18).
+   *
+   * §4 asks for a finger-tall edit cell and §11 asks the work area to stay
+   * usable at 320x700. Six rows at 44px plus the bar header is 286px, and the
+   * reading surface at 320x700 measures 219-249px — so both cannot hold, and
+   * the first attempt put the whole staff off the surface: the cell laid out
+   * at y=423 with the surface ending at y=402, unpressable, which broke the
+   * time selection and the practice loop's own way in.
+   *
+   * Above `--breakpoint-xs` the cell is the finger's height. Below it the
+   * cell keeps the reading height — worse to aim at, but on the screen. The
+   * scenario asserts what is actually true of each, rather than a number that
+   * would be green on one of them and a lie about the other.
+   */
+  const finger = viewport.width >= 360;
   record_(
-    "59. an edit cell is at least a finger tall",
-    cells.minHeight >= MIN_TOUCH,
+    finger
+      ? "59. an edit cell is at least a finger tall"
+      : "59. a narrow screen keeps the reading row, and the cell stays on the surface",
+    finger ? cells.minHeight >= MIN_TOUCH : cells.minHeight === 26,
     JSON.stringify(cells),
   );
   record_(
@@ -767,6 +785,42 @@ async function glyphTour(browser, viewport, textScale) {
       glyphOwnBoxes.maxHeight < MIN_TOUCH &&
       glyphOwnBoxes.maxWidth < MIN_TOUCH,
     JSON.stringify(glyphOwnBoxes),
+  );
+
+  /*
+   * The defect §18 found, bound red (2S-A §18).
+   *
+   * A cell that is laid out below the reading surface is not a cell anybody
+   * can press: measured at `y=423` with the surface ending at `y=402`, the
+   * press landed on the track-control row instead. That is what broke the
+   * time selection at 320x700 — nineteen practice-loop scenarios and one
+   * selection-ui scenario — so it is asserted here on every combination
+   * rather than inferred from a row height.
+   */
+  const onSurface = await page.evaluate(() => {
+    const main = document.querySelector("main");
+    if (!main) return null;
+    const surface = main.getBoundingClientRect();
+    const cells = [...document.querySelectorAll("[data-cell]")].map((node) =>
+      node.getBoundingClientRect(),
+    );
+    if (cells.length === 0) return null;
+    const below = cells.filter((box) => box.bottom > surface.bottom + 1).length;
+    const above = cells.filter((box) => box.top < surface.top - 1).length;
+    return {
+      cells: cells.length,
+      below,
+      above,
+      surface: Math.round(surface.height),
+      staff: Math.round(
+        Math.max(...cells.map((b) => b.bottom)) - Math.min(...cells.map((b) => b.top)),
+      ),
+    };
+  });
+  record_(
+    "63. every edit cell is inside the surface the reader is looking at",
+    onSurface !== null && onSurface.below === 0 && onSurface.above === 0,
+    JSON.stringify(onSurface),
   );
 
   record_("61. the glyph tour raised no page error", errors.length === 0, errors[0] ?? "");

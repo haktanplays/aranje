@@ -16,6 +16,7 @@ import {
   slotCentre,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
+import { useNarrowViewport } from "@/lib/ui/narrow-viewport";
 import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { buildLegatoArcs } from "@/lib/tab/legato-arc";
@@ -130,8 +131,16 @@ export function FrettedBarBlock({
    * Reading rows are compact; writing rows are the finger's (2S-A §4). One
    * number, used everywhere in this block, so the strings, the sustains, the
    * numbers, the arcs and the cells cannot end up on different grids.
+   *
+   * Below `--breakpoint-xs` the finger's height does not fit: six of them
+   * plus the bar header is `286px` and the reading surface at `320×700` is
+   * `219–249px`, which put the whole staff off the surface. The narrow screen
+   * keeps the reading height — worse to aim at, but present — and the gap is
+   * recorded rather than hidden (see `narrow-viewport.ts`).
    */
-  const rowHeight = editing ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT;
+  const narrow = useNarrowViewport();
+  const rowHeight =
+    editing && !narrow ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT;
   const staffHeight = stringCount * rowHeight;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
   /*

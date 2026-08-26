@@ -272,50 +272,63 @@ değiştirilmedi — çünkü değiştirilecek bir kusur bulunamadı.
 
 ---
 
-## §18 regresyonunda bulunan gerçek kusur: seçim tutamağı 320 px'te ulaşılamıyor
+## §18 regresyonunda bulunan gerçek kusur: 320 px'te düzenleme ızgarası ekranın dışına çıkıyordu
 
-Regresyon koşusu `selection-ui`'de **yeni bir kırmızı** verdi. Başlangıç
-SHA'sı (`217e7cb`) aynı makinede, aynı harness ile ölçüldü: orada bu senaryo
-**geçiyor**. Yani bu, eskimiş bir harness beklentisi değil; bu fazın açtığı
-bir kusurdur ve öyle raporlanıyor.
+Regresyon koşusu üç pakette **yeni kırmızı** verdi. Başlangıç SHA'sı
+(`217e7cb`) aynı makinede, aynı harness'lerle ölçüldü:
 
-**Senaryo.** `selection-ui` 4 — "handle extends the selection", yalnız
-`320×700`'de. `390×844`'te geçiyor.
+| Paket | Bu build (ilk hâli) | `217e7cb` | Sonuç |
+|---|---|---|---|
+| `practice-loop` | 19 kaldı | **0 kaldı** | 19'u da yeni |
+| `selection-ui` | 2 kaldı | 1 kaldı | 1'i yeni |
+| `multitrack` | 26 kaldı | 22 kaldı | 4'ü yeni |
 
-**Ölçüm.** Aynı anda, aynı sayfada:
+Bunlar eskimiş harness beklentileri değil; bu fazın açtığı bir kusurdur.
 
-| | `390×844` | `320×700` |
-|---|---|---|
-| `main` (okuma yüzeyi) yüksekliği | `332 px` | **`88 px`** |
-| Düzenleme modunda porte (bar block) | `314 px` | `314 px` |
-| Seçim bandı | `286 px` | `286 px` |
-| Bandın üst kenarının ekrandaki yeri | `181 px` (main'in içinde) | **`88 px`** (main `153`'te başlıyor) |
-| Tutamağın merkezindeki en üst eleman | tutamağın kendi tutamacı | **bölüm çipi** |
+**Kök neden, ölçülerek.** `320×700`'de düzenleme modunda ilk onset hücresi
+`y=423`'te duruyor, okuma yüzeyi ise `y=402`'de bitiyor. Hücre yüzeyin
+**dışında**; o noktaya yapılan dokunuş track kontrol satırına gidiyor
+(`"Aktif track: Ritim Gitar · High gain"`). `390×844`'te aynı hücre `y=423`,
+yüzey `y=646`'da bitiyor — sorun yok.
 
-**Mekanizma.** §4 düzenleme hücresini `44 px`'e çıkardı (okuma satırı `26 px`).
-Altı telde bu, porteyi `~206 px`'ten `314 px`'e taşıyor. `320×700`'de seçim
-eylem çubuğu açıkken okuma yüzeyi `88 px`'e iniyor; `scrollIntoViewIfNeeded`
-bandı görünür kılmak için yukarı kaydırıyor ve **bandın üstü yüzeyin
-üstünde** kalıyor. Tutamak bandın üstüne çapalıdır — bu, daha önceki bir
-fazın bilinçli kararıdır ve bileşendeki yorumda «bandın üstü, band
-göründüğü sürece ekranda olan tek parçadır» diye yazılıdır. `314 px`'lik bir
-porte ile bu cümle artık doğru değil.
+```
+320×700  cell {"x":34,"y":423,"h":44}  main {"top":153,"bottom":402}
+390×844  cell {"x":34,"y":423,"h":44}  main {"top":153,"bottom":646}
+```
 
-**Bu, §4 ile §11 arasındaki bir gerilimdir.** §4 «düzenleme hücresi en az
-`44×44` olacak» diyor; §11 «`320×700`'de çalışma alanı seçici+eylemden büyük
-kalacak» diyor. Altı tel × `44 px` + başlık = `286 px`, ve `320×700`'de seçim
-çubuğu açıkken okuma yüzeyi `88 px`. İkisi aynı ekranda aynı anda
-sağlanamıyor. §4 yazıldığı gibi uygulandı; bedel seçim tutamağına düştü.
+Bu, zaman seçimini bütünüyle kırıyordu: uzun basış hiç band açmıyor
+(`"no band"`), dolayısıyla pratik döngüsünün kendi giriş kapısı da
+çalışmıyordu.
 
-**Neden bu fazda düzeltilmedi.** Akla gelen üç düzeltmenin üçü de başka bir
-fazın etkileşim modelini değiştiriyor ve hiçbiri ölçülmeden güvenli değil:
-tutamağı bandın bütün yüksekliğine yaymak (altındaki hücrelerin dokunuşlarını
-yutabilir), bandı yapışkan yapmak (yüzeyin taşma modeli buna uygun değil), ya
-da düzenleme satırını kısaltmak (§4'ün açık gereğini geri almak). Fazın
-sonunda, ölçülmemiş bir etkileşim değişikliğini sessizce göndermektense
-kusuru mekanizmasıyla birlikte yazmak doğru olan.
+**Aritmetik: §4 ile §11 bu ekranda birlikte sağlanamıyor.** §4 düzenleme
+hücresinin en az `44×44` olmasını istiyor; §11 `320×700`'de çalışma alanının
+kullanılır kalmasını istiyor. Altı tel × `44 px` + ölçü başlığı = `286 px`.
+`320×700`'de okuma yüzeyi %100 metinde `249 px`, %125'te `226 px`, %150'de
+`219 px`. `286 > 249`. İkisi aynı anda doğru olamaz.
 
-**Açık kusur olarak K-59'a bağlıdır.**
+**Karar ve gerekçesi.** `44 px`'lik satır **sığdığı yerde** korunuyor,
+sığmadığı yerde okuma satırı (`26 px`) geri geliyor. Eşik, K-55'in transport
+için zaten kullandığı `--breakpoint-xs` (`360 px`). Tek soru, tek yerde
+sorulur: `lib/ui/narrow-viewport.ts`.
+
+Nişan alması `26 px`'lik bir hücre `44 px`'likten kötüdür. Ekranda **hiç
+olmayan** bir hücre ikisinden de kötüdür. Seçilen, kötü olanın en azıdır ve
+gizlenmiyor: **`360 px`'in altında §4'ün `44 px` gereği karşılanmıyor.**
+Bu, K-59'un açık maddesidir ve kararı Haktan'ındır — genişletilecek olan
+düzenleme ızgarası mı, yoksa okuma yüzeyine yer açacak olan çevre mi.
+
+**Kabul senaryosu artık her iki ekranda da doğruyu söylüyor.** 59, geniş
+ekranda `≥44 px` arıyor, dar ekranda `26 px` bekliyor. Ayrıca **63** eklendi
+ve kusuru doğrudan bağlıyor: *her* düzenleme hücresinin okuyucunun baktığı
+yüzeyin içinde olduğu, altı kombinasyonun hepsinde ölçülüyor.
+
+| | yüzey | porte | yüzeyin dışındaki hücre |
+|---|---|---|---|
+| `390×844` %100 / %125 / %150 | `493` / `426` / `411 px` | `264 px` | `0` |
+| `320×700` %100 / %125 / %150 | `249` / `226` / `219 px` | `156 px` | `0` |
+
+**Düzeltmeden sonra** `selection-ui` ve `multitrack` başlangıç SHA'sıyla
+**birebir aynı** (`1` ve `22`, aynı senaryolar).
 
 ---
 
