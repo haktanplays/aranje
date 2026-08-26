@@ -337,8 +337,33 @@ async function pressCell(page, cdp, barKey, cell) {
   const target = page.locator(`[data-bar-key="${barKey}"] [data-cell="${cell}"]`).first();
   await target.scrollIntoViewIfNeeded();
   await page.waitForTimeout(150);
-  const box = await target.boundingBox();
+  let box = await target.boundingBox();
   if (!box) throw new Error(`no box for ${barKey} ${cell}`);
+  /*
+   * A press at raw coordinates does not see what a reader sees. Once the view
+   * has scrolled away from the playhead the "Çalmaya dön" pill appears over
+   * the bottom-right of the reading surface (2Q-C §6), and at 320px it sits on
+   * the lowest string's last cells. A person reads that pill and aims
+   * elsewhere; a CDP touch aims through it and the press is spent dismissing
+   * it. Found in 2S-A's regression run — see `eval/intent-composer/FINDINGS.md`
+   * for the measurement and for the product question it leaves open.
+   */
+  const occluded = await page.evaluate(
+    ([x, y, key]) => {
+      const top = document.elementFromPoint(x, y);
+      if (!top || top.closest(`[data-cell="${key}"]`)) return false;
+      return top.closest("[data-return-to-playback]") !== null;
+    },
+    [box.x + box.width / 2, box.y + box.height / 2, cell],
+  );
+  if (occluded) {
+    await page.locator("[data-return-to-playback]").click();
+    await page.waitForTimeout(250);
+    await target.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(150);
+    box = await target.boundingBox();
+    if (!box) throw new Error(`no box for ${barKey} ${cell}`);
+  }
   await touch(page, cdp, box.x + box.width / 2, box.y + box.height / 2, 700);
 }
 

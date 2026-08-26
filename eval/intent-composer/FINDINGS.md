@@ -269,3 +269,69 @@ Düzeltme harness'te: `tapCell` artık dokunmadan önce o noktada gerçekten
 hedeflenen hücrenin olup olmadığını soruyor, üstte pil varsa önce onu
 kapatıyor, kutuyu yeniden çözüp öyle dokunuyor. Üründe hiçbir şey
 değiştirilmedi — çünkü değiştirilecek bir kusur bulunamadı.
+
+---
+
+## §18 regresyonunda bulunan gerçek kusur: seçim tutamağı 320 px'te ulaşılamıyor
+
+Regresyon koşusu `selection-ui`'de **yeni bir kırmızı** verdi. Başlangıç
+SHA'sı (`217e7cb`) aynı makinede, aynı harness ile ölçüldü: orada bu senaryo
+**geçiyor**. Yani bu, eskimiş bir harness beklentisi değil; bu fazın açtığı
+bir kusurdur ve öyle raporlanıyor.
+
+**Senaryo.** `selection-ui` 4 — "handle extends the selection", yalnız
+`320×700`'de. `390×844`'te geçiyor.
+
+**Ölçüm.** Aynı anda, aynı sayfada:
+
+| | `390×844` | `320×700` |
+|---|---|---|
+| `main` (okuma yüzeyi) yüksekliği | `332 px` | **`88 px`** |
+| Düzenleme modunda porte (bar block) | `314 px` | `314 px` |
+| Seçim bandı | `286 px` | `286 px` |
+| Bandın üst kenarının ekrandaki yeri | `181 px` (main'in içinde) | **`88 px`** (main `153`'te başlıyor) |
+| Tutamağın merkezindeki en üst eleman | tutamağın kendi tutamacı | **bölüm çipi** |
+
+**Mekanizma.** §4 düzenleme hücresini `44 px`'e çıkardı (okuma satırı `26 px`).
+Altı telde bu, porteyi `~206 px`'ten `314 px`'e taşıyor. `320×700`'de seçim
+eylem çubuğu açıkken okuma yüzeyi `88 px`'e iniyor; `scrollIntoViewIfNeeded`
+bandı görünür kılmak için yukarı kaydırıyor ve **bandın üstü yüzeyin
+üstünde** kalıyor. Tutamak bandın üstüne çapalıdır — bu, daha önceki bir
+fazın bilinçli kararıdır ve bileşendeki yorumda «bandın üstü, band
+göründüğü sürece ekranda olan tek parçadır» diye yazılıdır. `314 px`'lik bir
+porte ile bu cümle artık doğru değil.
+
+**Bu, §4 ile §11 arasındaki bir gerilimdir.** §4 «düzenleme hücresi en az
+`44×44` olacak» diyor; §11 «`320×700`'de çalışma alanı seçici+eylemden büyük
+kalacak» diyor. Altı tel × `44 px` + başlık = `286 px`, ve `320×700`'de seçim
+çubuğu açıkken okuma yüzeyi `88 px`. İkisi aynı ekranda aynı anda
+sağlanamıyor. §4 yazıldığı gibi uygulandı; bedel seçim tutamağına düştü.
+
+**Neden bu fazda düzeltilmedi.** Akla gelen üç düzeltmenin üçü de başka bir
+fazın etkileşim modelini değiştiriyor ve hiçbiri ölçülmeden güvenli değil:
+tutamağı bandın bütün yüksekliğine yaymak (altındaki hücrelerin dokunuşlarını
+yutabilir), bandı yapışkan yapmak (yüzeyin taşma modeli buna uygun değil), ya
+da düzenleme satırını kısaltmak (§4'ün açık gereğini geri almak). Fazın
+sonunda, ölçülmemiş bir etkileşim değişikliğini sessizce göndermektense
+kusuru mekanizmasıyla birlikte yazmak doğru olan.
+
+**Açık kusur olarak K-59'a bağlıdır.**
+
+---
+
+## §18'de bulunan ikinci kusur, bu sefer harness'in: `eval/tab` de körlemesine dokunuyordu
+
+`eval/tab` senaryo 3 (`320×700`) bu build'de kırmızıya döndü ve arkasındaki
+tur `TimeoutError` ile düştü — 4 senaryo hiç koşmadı. Kök neden ölçüldü:
+
+```
+pressCell intro:0 5:0 top: Çalmaya dön
+```
+
+§15'te kendi harness'imde bulduğum kusurun aynısı: `pressCell` ham koordinata
+basıyor ve okuma yüzeyi playhead'den uzağa kaydırıldığında beliren «Çalmaya
+dön» pili (2Q-C §6) dokunuşu yutuyor. Düzenleme satırı `44 px` olunca en pes
+telin son hücreleri pilin altına giriyor, bu yüzden aynı zayıflık burada
+ısırıyor. `pressCell` artık dokunmadan önce o noktada gerçekten hedef
+hücrenin olup olmadığını soruyor. Düzeltmeden sonra `eval/tab` başlangıç
+SHA'sıyla **birebir aynı**: `89 geçti / 5 kaldı`, aynı beş senaryo.
