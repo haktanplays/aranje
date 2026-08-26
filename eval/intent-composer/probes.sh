@@ -65,6 +65,8 @@ CONT="$V src/lib/song/continue-pattern.test.ts"
 HIST="$V src/lib/song/intent-history.test.ts"
 BOUND="$V src/lib/workspace/intent-boundary.test.ts"
 GEOM="$V src/components/workspace/edit-geometry.test.ts"
+ART="$V src/lib/song/note-update-articulation.test.ts"
+RACE="$V src/lib/copilot/budget-race.test.ts"
 WS="$V src/lib/workspace/workspace-boundary.test.ts"
 PLAN="$V src/lib/audio/expression-plan.test.ts"
 GUIDE="$V src/lib/tab/rhythm-guide.test.ts"
@@ -529,6 +531,69 @@ probe "74 the doors go back to hiding while a run is selected" \
   '      {selection === null ? (
         <ComposerDoorRow tool={tool} onOpen={setDoor} onRelease={composer.release} />
       ) : null}'
+
+echo "--- a fret change keeps the music (kapanış §2) ---"
+
+probe "75 a pitch update drops the articulation again" \
+  src/lib/song/edit.ts "$ART" \
+  '          : previous?.articulation;' \
+  '          : undefined;'
+
+probe "76 an invalid link is cleared quietly instead of refused" \
+  src/lib/song/edit.ts "$ART" \
+  '      if (brokeALink(song, settled.warnings, target.trackId)) {' \
+  '      if (false) {'
+
+probe "77 keep and clear stop being different words" \
+  src/lib/song/edit.ts "$ART" \
+  '      const patch: ArticulationPatch = command.articulation ?? { kind: "keep" };' \
+  '      const patch: ArticulationPatch = command.articulation ?? { kind: "clear" };'
+
+probe "78 velocity goes back to being rebuilt from nothing" \
+  src/lib/song/edit.ts "$ART" \
+  '      const velocity = command.velocity ?? previous?.velocity;' \
+  '      const velocity = command.velocity;'
+
+echo "--- one budget, one provider call (kapanış §3) ---"
+
+probe "79 the check and the write stop being one atomic step" \
+  src/lib/budget/memory-kv.ts "$RACE" \
+  '    transact<T>(keys: readonly string[], body: KvTransaction<T>): Promise<T> {
+      const next = queue.then(
+        () => run(keys, body),
+        () => run(keys, body),
+      );
+      // Keep the chain alive even when a caller lets a rejection through.
+      queue = next.catch(() => undefined);
+      return next;
+    },' \
+  '    async transact<T>(keys: readonly string[], body: KvTransaction<T>): Promise<T> {
+      if (!available) throw new KvUnavailableError();
+      transactions += 1;
+      const current = new Map<string, string | null>();
+      for (const key of keys) current.set(key, live(key));
+      await Promise.resolve();
+      const { writes, result } = body(current);
+      for (const write of writes) {
+        if ("delete" in write) {
+          store.delete(write.key);
+          continue;
+        }
+        store.set(write.key, {
+          value: write.value,
+          expiresAtMs:
+            write.ttlSeconds === undefined ? null : clock.now() + write.ttlSeconds * 1000,
+        });
+      }
+      return result;
+    },'
+
+probe "80 the budget check and the reserve stop sharing one critical section" \
+  src/lib/budget/reservation.ts "$RACE" \
+  '  return kv.transact(
+    [dayKey, monthKey, subjectQuotaKey, subjectLockKey, recordKey],' \
+  '  return kv.transact(
+    [recordKey],'
 
 echo
 echo "$pass red, $fail vacuous, $skipped skipped"

@@ -1,14 +1,14 @@
 # 2S-A vacuity probes (§17)
 
-Ninety-six mutations, each one a way a guarantee this checkpoint claims could be
+A hundred and two mutations, each one a way a guarantee this checkpoint claims could be
 quietly untrue, run against the tests that are supposed to hold it.
 
 | Kind | Script | Probes | Red | Vacuous |
 |---|---|---:|---:|---:|
-| unit / AST | `probes.sh` | 74 | 72 | 2 |
+| unit / AST | `probes.sh` | 80 | 78 | 2 |
 | browser | `browser-probes.sh` | 16 | 16 | 0 |
 | real audio / render | `audio-probes.sh` | 6 | 6 | 0 |
-| **total** | | **96** | **94** | **2** |
+| **total** | | **102** | **100** | **2** |
 
 Every mutation is the *dangerous behaviour*, never a syntax error. Three of the
 first drafts only broke compilation or added dead code — they were rewritten
@@ -121,3 +121,28 @@ boyayabileceği iki yol da bağlı.
 yeniden `selection`'a bağlar. Hedefi `intent-boundary.test.ts`. Bu, §18'de
 kendi yaptığım hatanın probe'u: Legato Fırçası seçili bir koşu üzerinde
 kullanılır, dolayısıyla "Bağla" kapısı tam o anda erişilebilir olmalı.
+
+## Kapanış turunda eklenen altı probe
+
+`75-78` perde güncellemesini bağlıyor: articulation'ı düşürmek, geçersiz
+bağlantıyı sessizce temizlemek, «koru» ile «kaldır»ı aynı şey saymak, ve
+velocity'yi yeniden sıfırdan kurmak. Dördü de
+`note-update-articulation.test.ts`'i kırmızıya çeviriyor.
+
+`79-80` bütçe rezervasyonunu bağlıyor: kontrolün ve yazmanın tek atomik adım
+olmaktan çıkması, ve rezervasyonun beş anahtarlık kritik bölgesinin
+daraltılması.
+
+**79 ilk turda yeşil geldi ve bu bir şey öğretti.** İlk mutasyon memory
+store'un kuyruğunu kaldırıyordu; `run()` senkron olduğu için araya girecek bir
+an yoktu, mutasyon davranışı değiştirmiyordu. İkinci mutasyon okuma ile yazma
+arasına gerçek bir `await` koydu — o da yeşil kaldı, çünkü bariyer
+**adapter'da** duruyordu ve bu pipeline'da birinci çağıranın rezervasyonu
+ikincisi sormadan bitiyor. Yani test, atomikliği değil gözlenen sırayı
+kanıtlıyordu.
+
+Bariyer iddianın olduğu yere taşındı: ilk rezervasyon, ikincisi gelene kadar
+tutuluyor ve ancak ondan sonra ikisi birden bırakılıyor. Gerçekten serileşen
+bir store'da ikinci çağıran birincinin yazdığını görüyor ve reddediliyor;
+yazmadan önce anlık görüntü alan bir store'da ikisi de boş bir gün görüp
+sağlayıcıya ulaşırdı. Probe artık kırmızı.

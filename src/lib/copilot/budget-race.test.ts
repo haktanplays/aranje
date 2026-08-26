@@ -26,7 +26,8 @@ import { createFakeAdapter, type FakeScenario } from "@/lib/ai/fake-adapter";
 import { arrangeAnswer } from "@/lib/ai/fake-skills";
 import { createFakeClock } from "@/lib/budget/clock";
 import { worstCaseReservationMicros } from "@/lib/budget/cost";
-import { createMemoryKv } from "@/lib/budget/memory-kv";
+import type { KvStore, KvTransaction } from "@/lib/budget/kv";
+import { createMemoryKv, type MemoryKv } from "@/lib/budget/memory-kv";
 import type { ArrangeSkill } from "@/lib/copilot/contract";
 import { runCopilot, type PipelineDeps } from "@/lib/copilot/pipeline";
 import { createMemoryMeter } from "@/lib/metering/events";
@@ -90,6 +91,42 @@ function goodRound(skill: ArrangeSkill): FakeScenario {
   };
 }
 
+
+/**
+ * A store that makes two reservations genuinely overlap.
+ *
+ * Holding the *adapter* open proves what happens after the budget is decided;
+ * it cannot prove the deciding itself is one step, because in this pipeline
+ * the first caller's reservation has already finished by the time the second
+ * asks. A vacuity probe said so: breaking the memory store's transaction into
+ * a read, an await and a write left every assertion green.
+ *
+ * So the barrier moves to where the claim is. The first reservation is held
+ * until a second one arrives, and only then are both let through. Against a
+ * store that really serialises, the second still sees the first's write and is
+ * refused. Against one that snapshots before it writes, both would see an
+ * empty day and both would reach the provider — which is the failure this is
+ * here to catch.
+ */
+function overlappingKv(inner: MemoryKv, shape: number): KvStore {
+  let waiting = 0;
+  let release = (): void => undefined;
+  const bothHere = new Promise<void>((resolve) => {
+    release = () => resolve();
+  });
+  return {
+    ...inner,
+    async transact<T>(keys: readonly string[], body: KvTransaction<T>): Promise<T> {
+      if (keys.length === shape) {
+        waiting += 1;
+        if (waiting >= 2) release();
+        else await bothHere;
+      }
+      return inner.transact(keys, body);
+    },
+  };
+}
+
 /** A promise the test resolves by hand, which is the whole barrier. */
 function gate(): { wait: Promise<void>; open: () => void } {
   let open = (): void => undefined;
@@ -134,6 +171,30 @@ function oneBudget(scenarios: readonly FakeScenario[], held?: () => Promise<void
 const rounds = (count: number) => Array.from({ length: count }, () => goodRound("drums"));
 
 describe("one budget finances exactly one provider call", () => {
+  it("decides two overlapping reservations as one step", async () => {
+    const clock = createFakeClock(FIXED_NOW);
+    const kv = overlappingKv(createMemoryKv(clock), 5);
+    const adapter = createFakeAdapter(rounds(4));
+    const meter = createMemoryMeter();
+    let requestCounter = 0;
+    let patchCounter = 0;
+    const deps: PipelineDeps = {
+      config: testConfig({ dailyBudgetUsd: WORST_CASE / 1_000_000 }),
+      kv,
+      clock,
+      adapter,
+      meter,
+      newRequestId: () => `req-${(requestCounter += 1)}`,
+      newPatchId: () => `patch-${(patchCounter += 1)}`,
+    };
+
+    const [a, b] = await Promise.all(pair(deps));
+    expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1);
+    expect(adapter.calls).toHaveLength(1);
+    const refused = a.ok ? b : a;
+    if (!refused.ok) expect(refused.body.code).toBe("budget_exhausted");
+  });
+
   it("holds the first call open and refuses the second before it is made", async () => {
     const barrier = gate();
     const { deps, adapter } = oneBudget(rounds(2), () => barrier.wait);
