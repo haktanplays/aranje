@@ -217,7 +217,7 @@
       "combo": "390x844 @%100",
       "name": "loop tam bar sınırları içinde kalır",
       "pass": true,
-      "detail": "310 örnek, 34–310 vs 34–306 (+8px çizim payı)"
+      "detail": "309 örnek, 34–310 vs 34–306 (+8px çizim payı)"
     },
     {
       "combo": "390x844 @%100",
@@ -259,19 +259,19 @@
       "combo": "390x844 @%100",
       "name": "4/4 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "283ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "4/4 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1883ms vs 250ms"
+      "detail": "1899ms vs 283ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3733ms vs 1883ms"
+      "detail": "3734ms vs 1899ms"
     },
     {
       "combo": "390x844 @%100",
@@ -283,19 +283,19 @@
       "combo": "390x844 @%100",
       "name": "6/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "266ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "6/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1450ms vs 250ms"
+      "detail": "1450ms vs 266ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "2817ms vs 1450ms"
+      "detail": "2833ms vs 1450ms"
     },
     {
       "combo": "390x844 @%100",
@@ -307,19 +307,19 @@
       "combo": "390x844 @%100",
       "name": "7/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "300ms"
+      "detail": "283ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "7/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1667ms vs 300ms"
+      "detail": "1666ms vs 283ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3300ms vs 1667ms"
+      "detail": "3266ms vs 1666ms"
     },
     {
       "combo": "390x844 @%100",
@@ -721,7 +721,7 @@
       "combo": "390x844 @%100",
       "name": "hit tam 1 storage write üretir",
       "pass": true,
-      "detail": "1 write, 471ms"
+      "detail": "1 write, 460ms"
     },
     {
       "combo": "390x844 @%100",
@@ -739,7 +739,7 @@
       "combo": "390x844 @%100",
       "name": "Düzen ilk açılışta kurulur",
       "pass": true,
-      "detail": "{\"tracks\":3,\"sections\":4} @ 43ms"
+      "detail": "{\"tracks\":3,\"sections\":4} @ 56ms"
     },
     {
       "combo": "390x844 @%100",
@@ -751,13 +751,13 @@
       "combo": "390x844 @%100",
       "name": "ikinci açılış birinciden pahalı değil",
       "pass": true,
-      "detail": "soğuk 43ms, sıcak 45ms"
+      "detail": "soğuk 56ms, sıcak 40ms"
     },
     {
       "combo": "390x844 @%100",
       "name": "Çoklu ilk açılışta kurulur",
       "pass": true,
-      "detail": "3 lane @ 67ms"
+      "detail": "3 lane @ 59ms"
     },
     {
       "combo": "390x844 @%100",
@@ -997,7 +997,7 @@
       "combo": "390x844 @%125",
       "name": "loop tam bar sınırları içinde kalır",
       "pass": true,
-      "detail": "311 örnek, 34–310 vs 34–306 (+8px çizim payı)"
+      "detail": "307 örnek, 34–306 vs 34–306 (+8px çizim payı)"
     },
     {
       "combo": "390x844 @%125",
@@ -1009,7 +1009,7 @@
       "combo": "390x844 @%125",
       "name": "loop sonu bir sonraki ölçüye taşmıyor",
       "pass": true,
-      "detail": "max 310, ölçü sonu 306, bir sonraki ölçü 340"
+      "detail": "max 306, ölçü sonu 306, bir sonraki ölçü 340"
     },
     {
       "combo": "390x844 @%125",
@@ -1039,19 +1039,19 @@
       "combo": "390x844 @%125",
       "name": "4/4 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "267ms"
+      "detail": "284ms"
     },
     {
       "combo": "390x844 @%125",
       "name": "4/4 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1883ms vs 267ms"
+      "detail": "1916ms vs 284ms"
     },
     {
       "combo": "390x844 @%125",
       "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3733ms vs 1883ms"
+      "detail": "3800ms vs 1916ms"
     },
     {
       "combo": "390x844 @%125",
@@ -1063,19 +1063,19 @@
       "combo": "390x844 @%125",
       "name": "6/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "267ms"
+      "detail": "284ms"
     },
     {
       "combo": "390x844 @%125",
       "name": "6/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1450ms vs 267ms"
+      "detail": "1417ms vs 284ms"
     },
     {
       "combo": "390x844 @%125",
       "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "2800ms vs 1450ms"
+      "detail": "2817ms vs 1417ms"
     },
     {
       "combo": "390x844 @%125",
@@ -1093,13 +1093,13 @@
       "combo": "390x844 @%125",
       "name": "7/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1650ms vs 250ms"
+      "detail": "1700ms vs 250ms"
     },
     {
       "combo": "390x844 @%125",
       "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3267ms vs 1650ms"
+      "detail": "3283ms vs 1700ms"
     },
     {
       "combo": "390x844 @%125",
@@ -1501,7 +1501,7 @@
       "combo": "390x844 @%125",
       "name": "hit tam 1 storage write üretir",
       "pass": true,
-      "detail": "1 write, 453ms"
+      "detail": "1 write, 475ms"
     },
     {
       "combo": "390x844 @%125",
@@ -1519,7 +1519,7 @@
       "combo": "390x844 @%125",
       "name": "Düzen ilk açılışta kurulur",
       "pass": true,
-      "detail": "{\"tracks\":3,\"sections\":4} @ 44ms"
+      "detail": "{\"tracks\":3,\"sections\":4} @ 46ms"
     },
     {
       "combo": "390x844 @%125",
@@ -1531,13 +1531,13 @@
       "combo": "390x844 @%125",
       "name": "ikinci açılış birinciden pahalı değil",
       "pass": true,
-      "detail": "soğuk 44ms, sıcak 43ms"
+      "detail": "soğuk 46ms, sıcak 37ms"
     },
     {
       "combo": "390x844 @%125",
       "name": "Çoklu ilk açılışta kurulur",
       "pass": true,
-      "detail": "3 lane @ 70ms"
+      "detail": "3 lane @ 88ms"
     },
     {
       "combo": "390x844 @%125",
@@ -1777,7 +1777,7 @@
       "combo": "390x844 @%150",
       "name": "loop tam bar sınırları içinde kalır",
       "pass": true,
-      "detail": "311 örnek, 34–307 vs 34–306 (+8px çizim payı)"
+      "detail": "310 örnek, 34–309 vs 34–306 (+8px çizim payı)"
     },
     {
       "combo": "390x844 @%150",
@@ -1789,7 +1789,7 @@
       "combo": "390x844 @%150",
       "name": "loop sonu bir sonraki ölçüye taşmıyor",
       "pass": true,
-      "detail": "max 307, ölçü sonu 306, bir sonraki ölçü 340"
+      "detail": "max 309, ölçü sonu 306, bir sonraki ölçü 340"
     },
     {
       "combo": "390x844 @%150",
@@ -1819,19 +1819,19 @@
       "combo": "390x844 @%150",
       "name": "4/4 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "283ms"
+      "detail": "266ms"
     },
     {
       "combo": "390x844 @%150",
       "name": "4/4 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1900ms vs 283ms"
+      "detail": "1916ms vs 266ms"
     },
     {
       "combo": "390x844 @%150",
       "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3716ms vs 1900ms"
+      "detail": "3766ms vs 1916ms"
     },
     {
       "combo": "390x844 @%150",
@@ -1849,13 +1849,13 @@
       "combo": "390x844 @%150",
       "name": "6/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1433ms vs 267ms"
+      "detail": "1466ms vs 267ms"
     },
     {
       "combo": "390x844 @%150",
       "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "2850ms vs 1433ms"
+      "detail": "2800ms vs 1466ms"
     },
     {
       "combo": "390x844 @%150",
@@ -1873,13 +1873,13 @@
       "combo": "390x844 @%150",
       "name": "7/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1684ms vs 250ms"
+      "detail": "1650ms vs 250ms"
     },
     {
       "combo": "390x844 @%150",
       "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3250ms vs 1684ms"
+      "detail": "3250ms vs 1650ms"
     },
     {
       "combo": "390x844 @%150",
@@ -2281,7 +2281,7 @@
       "combo": "390x844 @%150",
       "name": "hit tam 1 storage write üretir",
       "pass": true,
-      "detail": "1 write, 448ms"
+      "detail": "1 write, 467ms"
     },
     {
       "combo": "390x844 @%150",
@@ -2299,7 +2299,7 @@
       "combo": "390x844 @%150",
       "name": "Düzen ilk açılışta kurulur",
       "pass": true,
-      "detail": "{\"tracks\":3,\"sections\":4} @ 44ms"
+      "detail": "{\"tracks\":3,\"sections\":4} @ 45ms"
     },
     {
       "combo": "390x844 @%150",
@@ -2311,13 +2311,13 @@
       "combo": "390x844 @%150",
       "name": "ikinci açılış birinciden pahalı değil",
       "pass": true,
-      "detail": "soğuk 44ms, sıcak 45ms"
+      "detail": "soğuk 45ms, sıcak 44ms"
     },
     {
       "combo": "390x844 @%150",
       "name": "Çoklu ilk açılışta kurulur",
       "pass": true,
-      "detail": "3 lane @ 52ms"
+      "detail": "3 lane @ 83ms"
     },
     {
       "combo": "390x844 @%150",
@@ -2557,7 +2557,7 @@
       "combo": "320x700 @%100",
       "name": "loop tam bar sınırları içinde kalır",
       "pass": true,
-      "detail": "312 örnek, 34–310 vs 34–306 (+8px çizim payı)"
+      "detail": "311 örnek, 34–308 vs 34–306 (+8px çizim payı)"
     },
     {
       "combo": "320x700 @%100",
@@ -2569,7 +2569,7 @@
       "combo": "320x700 @%100",
       "name": "loop sonu bir sonraki ölçüye taşmıyor",
       "pass": true,
-      "detail": "max 310, ölçü sonu 306, bir sonraki ölçü 340"
+      "detail": "max 308, ölçü sonu 306, bir sonraki ölçü 340"
     },
     {
       "combo": "320x700 @%100",
@@ -2599,19 +2599,19 @@
       "combo": "320x700 @%100",
       "name": "4/4 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "283ms"
+      "detail": "284ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "4/4 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1900ms vs 283ms"
+      "detail": "1933ms vs 284ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3700ms vs 1900ms"
+      "detail": "3750ms vs 1933ms"
     },
     {
       "combo": "320x700 @%100",
@@ -2623,19 +2623,19 @@
       "combo": "320x700 @%100",
       "name": "6/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "283ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "6/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1450ms vs 250ms"
+      "detail": "1450ms vs 283ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "2816ms vs 1450ms"
+      "detail": "2800ms vs 1450ms"
     },
     {
       "combo": "320x700 @%100",
@@ -2647,19 +2647,19 @@
       "combo": "320x700 @%100",
       "name": "7/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "283ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "7/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1667ms vs 250ms"
+      "detail": "1667ms vs 283ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3300ms vs 1667ms"
+      "detail": "3266ms vs 1667ms"
     },
     {
       "combo": "320x700 @%100",
@@ -3061,7 +3061,7 @@
       "combo": "320x700 @%100",
       "name": "hit tam 1 storage write üretir",
       "pass": true,
-      "detail": "1 write, 456ms"
+      "detail": "1 write, 474ms"
     },
     {
       "combo": "320x700 @%100",
@@ -3079,7 +3079,7 @@
       "combo": "320x700 @%100",
       "name": "Düzen ilk açılışta kurulur",
       "pass": true,
-      "detail": "{\"tracks\":3,\"sections\":4} @ 53ms"
+      "detail": "{\"tracks\":3,\"sections\":4} @ 45ms"
     },
     {
       "combo": "320x700 @%100",
@@ -3091,13 +3091,13 @@
       "combo": "320x700 @%100",
       "name": "ikinci açılış birinciden pahalı değil",
       "pass": true,
-      "detail": "soğuk 53ms, sıcak 40ms"
+      "detail": "soğuk 45ms, sıcak 44ms"
     },
     {
       "combo": "320x700 @%100",
       "name": "Çoklu ilk açılışta kurulur",
       "pass": true,
-      "detail": "3 lane @ 55ms"
+      "detail": "3 lane @ 50ms"
     },
     {
       "combo": "320x700 @%100",
@@ -3337,7 +3337,7 @@
       "combo": "320x700 @%125",
       "name": "loop tam bar sınırları içinde kalır",
       "pass": true,
-      "detail": "310 örnek, 34–308 vs 34–306 (+8px çizim payı)"
+      "detail": "309 örnek, 34–310 vs 34–306 (+8px çizim payı)"
     },
     {
       "combo": "320x700 @%125",
@@ -3349,7 +3349,7 @@
       "combo": "320x700 @%125",
       "name": "loop sonu bir sonraki ölçüye taşmıyor",
       "pass": true,
-      "detail": "max 308, ölçü sonu 306, bir sonraki ölçü 340"
+      "detail": "max 310, ölçü sonu 306, bir sonraki ölçü 340"
     },
     {
       "combo": "320x700 @%125",
@@ -3385,13 +3385,13 @@
       "combo": "320x700 @%125",
       "name": "4/4 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1883ms vs 266ms"
+      "detail": "1900ms vs 266ms"
     },
     {
       "combo": "320x700 @%125",
       "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3733ms vs 1883ms"
+      "detail": "3717ms vs 1900ms"
     },
     {
       "combo": "320x700 @%125",
@@ -3409,13 +3409,13 @@
       "combo": "320x700 @%125",
       "name": "6/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1433ms vs 250ms"
+      "detail": "1450ms vs 250ms"
     },
     {
       "combo": "320x700 @%125",
       "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "2800ms vs 1433ms"
+      "detail": "2817ms vs 1450ms"
     },
     {
       "combo": "320x700 @%125",
@@ -3427,19 +3427,19 @@
       "combo": "320x700 @%125",
       "name": "7/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "266ms"
     },
     {
       "combo": "320x700 @%125",
       "name": "7/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1667ms vs 250ms"
+      "detail": "1684ms vs 266ms"
     },
     {
       "combo": "320x700 @%125",
       "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3284ms vs 1667ms"
+      "detail": "3250ms vs 1684ms"
     },
     {
       "combo": "320x700 @%125",
@@ -3841,7 +3841,7 @@
       "combo": "320x700 @%125",
       "name": "hit tam 1 storage write üretir",
       "pass": true,
-      "detail": "1 write, 455ms"
+      "detail": "1 write, 472ms"
     },
     {
       "combo": "320x700 @%125",
@@ -3859,7 +3859,7 @@
       "combo": "320x700 @%125",
       "name": "Düzen ilk açılışta kurulur",
       "pass": true,
-      "detail": "{\"tracks\":3,\"sections\":4} @ 43ms"
+      "detail": "{\"tracks\":3,\"sections\":4} @ 47ms"
     },
     {
       "combo": "320x700 @%125",
@@ -3871,13 +3871,13 @@
       "combo": "320x700 @%125",
       "name": "ikinci açılış birinciden pahalı değil",
       "pass": true,
-      "detail": "soğuk 43ms, sıcak 42ms"
+      "detail": "soğuk 47ms, sıcak 44ms"
     },
     {
       "combo": "320x700 @%125",
       "name": "Çoklu ilk açılışta kurulur",
       "pass": true,
-      "detail": "3 lane @ 54ms"
+      "detail": "3 lane @ 74ms"
     },
     {
       "combo": "320x700 @%125",
@@ -4117,7 +4117,7 @@
       "combo": "320x700 @%150",
       "name": "loop tam bar sınırları içinde kalır",
       "pass": true,
-      "detail": "309 örnek, 34–311 vs 34–306 (+8px çizim payı)"
+      "detail": "308 örnek, 34–309 vs 34–306 (+8px çizim payı)"
     },
     {
       "combo": "320x700 @%150",
@@ -4129,7 +4129,7 @@
       "combo": "320x700 @%150",
       "name": "loop sonu bir sonraki ölçüye taşmıyor",
       "pass": true,
-      "detail": "max 311, ölçü sonu 306, bir sonraki ölçü 340"
+      "detail": "max 309, ölçü sonu 306, bir sonraki ölçü 340"
     },
     {
       "combo": "320x700 @%150",
@@ -4159,19 +4159,19 @@
       "combo": "320x700 @%150",
       "name": "4/4 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "267ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "4/4 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1883ms vs 250ms"
+      "detail": "1900ms vs 267ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "4/4 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3767ms vs 1883ms"
+      "detail": "3733ms vs 1900ms"
     },
     {
       "combo": "320x700 @%150",
@@ -4183,19 +4183,19 @@
       "combo": "320x700 @%150",
       "name": "6/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "267ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "6/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1450ms vs 250ms"
+      "detail": "1433ms vs 267ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "6/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "2816ms vs 1450ms"
+      "detail": "2817ms vs 1433ms"
     },
     {
       "combo": "320x700 @%150",
@@ -4207,19 +4207,19 @@
       "combo": "320x700 @%150",
       "name": "7/8 count-in kapalı hemen başlar",
       "pass": true,
-      "detail": "250ms"
+      "detail": "267ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "7/8 bir ölçü count-in bekletir",
       "pass": true,
-      "detail": "1683ms vs 250ms"
+      "detail": "1684ms vs 267ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "7/8 iki ölçü count-in bir ölçüden uzun bekletir",
       "pass": true,
-      "detail": "3266ms vs 1683ms"
+      "detail": "3267ms vs 1684ms"
     },
     {
       "combo": "320x700 @%150",
@@ -4621,7 +4621,7 @@
       "combo": "320x700 @%150",
       "name": "hit tam 1 storage write üretir",
       "pass": true,
-      "detail": "1 write, 450ms"
+      "detail": "1 write, 455ms"
     },
     {
       "combo": "320x700 @%150",
@@ -4639,7 +4639,7 @@
       "combo": "320x700 @%150",
       "name": "Düzen ilk açılışta kurulur",
       "pass": true,
-      "detail": "{\"tracks\":3,\"sections\":4} @ 49ms"
+      "detail": "{\"tracks\":3,\"sections\":4} @ 43ms"
     },
     {
       "combo": "320x700 @%150",
@@ -4651,13 +4651,13 @@
       "combo": "320x700 @%150",
       "name": "ikinci açılış birinciden pahalı değil",
       "pass": true,
-      "detail": "soğuk 49ms, sıcak 43ms"
+      "detail": "soğuk 43ms, sıcak 43ms"
     },
     {
       "combo": "320x700 @%150",
       "name": "Çoklu ilk açılışta kurulur",
       "pass": true,
-      "detail": "3 lane @ 53ms"
+      "detail": "3 lane @ 55ms"
     },
     {
       "combo": "320x700 @%150",

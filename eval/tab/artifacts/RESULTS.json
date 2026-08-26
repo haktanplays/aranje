@@ -143,7 +143,7 @@
     {
       "name": "[390x844] L2 çalarken timing değişimi: transport duruyor, playhead yeni plandaki bar başında",
       "pass": true,
-      "detail": "playing@586 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
+      "detail": "playing@588 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
     },
     {
       "name": "[390x844] L3 AudioContext 1 → 1, ikinci scheduler kurulmuyor",
@@ -600,7 +600,7 @@
     "390x844.timingWhilePlaying": {
       "playing": {
         "status": "playing",
-        "ticks": 586
+        "ticks": 588
       },
       "after": {
         "status": "idle",

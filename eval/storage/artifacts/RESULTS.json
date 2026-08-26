@@ -213,12 +213,12 @@
     {
       "name": "23 the malformed-JSON ledger, in order @390x844",
       "pass": true,
-      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787724433081\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.project.project-1\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.projects\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787737363619\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.project.project-1\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.projects\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
     },
     {
       "name": "24 the rescued-previous ledger, in order @390x844",
       "pass": true,
-      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787724433712:true\",\"set:aranje.song:true\",\"set:aranje.project.project-1:true\",\"set:aranje.projects:true\",\"remove:aranje.song:true\"]"
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787737364285:true\",\"set:aranje.song:true\",\"set:aranje.project.project-1:true\",\"set:aranje.projects:true\",\"remove:aranje.song:true\"]"
     },
     {
       "name": "25 a failed repair leaves the file alone and editing closed @390x844",
@@ -238,12 +238,12 @@
     {
       "name": "23 the malformed-JSON ledger, in order @320x700",
       "pass": true,
-      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787724443253\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.project.project-1\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.projects\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
+      "detail": "[{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.probe\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.corrupt.1787737373820\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.project.project-1\",\"ok\":true},{\"op\":\"set\",\"key\":\"aranje.projects\",\"ok\":true},{\"op\":\"remove\",\"key\":\"aranje.song\",\"ok\":true}]"
     },
     {
       "name": "24 the rescued-previous ledger, in order @320x700",
       "pass": true,
-      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787724443928:true\",\"set:aranje.song:true\",\"set:aranje.project.project-1:true\",\"set:aranje.projects:true\",\"remove:aranje.song:true\"]"
+      "detail": "[\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.probe:true\",\"remove:aranje.probe:true\",\"set:aranje.corrupt.1787737374522:true\",\"set:aranje.song:true\",\"set:aranje.project.project-1:true\",\"set:aranje.projects:true\",\"remove:aranje.song:true\"]"
     },
     {
       "name": "25 a failed repair leaves the file alone and editing closed @320x700",
@@ -305,7 +305,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787724433081",
+        "key": "aranje.corrupt.1787737363619",
         "ok": true
       },
       {
@@ -352,7 +352,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787724433712",
+        "key": "aranje.corrupt.1787737364285",
         "ok": true
       },
       {
@@ -399,7 +399,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787724443253",
+        "key": "aranje.corrupt.1787737373820",
         "ok": true
       },
       {
@@ -446,7 +446,7 @@
       },
       {
         "op": "set",
-        "key": "aranje.corrupt.1787724443928",
+        "key": "aranje.corrupt.1787737374522",
         "ok": true
       },
       {
