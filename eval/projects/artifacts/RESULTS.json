@@ -186,6 +186,11 @@
       "detail": "1 → 1"
     },
     {
+      "name": "[390x844] 40.a düzenleme sırasında kütüphane kapısı çekiliyor",
+      "pass": true,
+      "detail": "kapı çekildi"
+    },
+    {
       "name": "[390x844] 40 proje geçişi oturum zeminini bırakıyor (düzenleme modu kapandı)",
       "pass": true,
       "detail": "önce açık → sonra kapalı"
@@ -461,6 +466,11 @@
       "detail": "1 → 1"
     },
     {
+      "name": "[320x700] 40.a düzenleme sırasında kütüphane kapısı çekiliyor",
+      "pass": true,
+      "detail": "kapı çekildi"
+    },
+    {
       "name": "[320x700] 40 proje geçişi oturum zeminini bırakıyor (düzenleme modu kapandı)",
       "pass": true,
       "detail": "önce açık → sonra kapalı"
@@ -573,7 +583,7 @@
     ],
     "390x844.twentyProjects": {
       "rows": 20,
-      "domNodes": 219
+      "domNodes": 220
     },
     "390x844.playback": {
       "audioBefore": 1,
@@ -609,7 +619,7 @@
     ],
     "320x700.twentyProjects": {
       "rows": 20,
-      "domNodes": 219
+      "domNodes": 220
     },
     "320x700.playback": {
       "audioBefore": 1,

@@ -123,23 +123,23 @@
     "layers": {
       "render: tap to the storage write": {
         "rounds": 12,
-        "median": 3.7,
-        "p95": 4.6,
-        "max": 4.6
+        "median": 3.4,
+        "p95": 4.8,
+        "max": 4.8
       },
       "render: tap to the first painted frame": {
         "rounds": 12,
-        "median": 23.1,
-        "p95": 24.6,
-        "max": 24.6
+        "median": 23.2,
+        "p95": 24,
+        "max": 24
       },
       "sample audio: play to the first buffer": {
         "rounds": 1,
-        "firstBufferMs": 224.6,
+        "firstBufferMs": 228.6,
         "buffersStarted": 6,
         "decodeCalls": 8,
-        "decodeTotalMs": 74.4,
-        "decodeMaxMs": 12.9
+        "decodeTotalMs": 72.4,
+        "decodeMaxMs": 15.2
       }
     },
     "pageErrors": []

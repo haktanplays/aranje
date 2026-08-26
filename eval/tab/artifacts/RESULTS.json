@@ -143,7 +143,7 @@
     {
       "name": "[390x844] L2 çalarken timing değişimi: transport duruyor, playhead yeni plandaki bar başında",
       "pass": true,
-      "detail": "playing@589 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
+      "detail": "playing@586 → idle@1344 (bar çizgileri 0,576,1344,1920,2496…, toplam 4800)"
     },
     {
       "name": "[390x844] L3 AudioContext 1 → 1, ikinci scheduler kurulmuyor",
@@ -219,6 +219,11 @@
       "name": "[390x844] 30 kasıtlı yatay scroller 1",
       "pass": true,
       "detail": "1"
+    },
+    {
+      "name": "[390x844] 31.a düzenleme başlığı 44 px",
+      "pass": true,
+      "detail": "44,45"
     },
     {
       "name": "[390x844] 31 44 px altı etkileşim hedefi 0",
@@ -456,6 +461,11 @@
       "detail": "1"
     },
     {
+      "name": "[320x700] 31.a düzenleme başlığı 44 px",
+      "pass": true,
+      "detail": "44,45"
+    },
+    {
       "name": "[320x700] 31 44 px altı etkileşim hedefi 0",
       "pass": true,
       "detail": "44,44,44,44"
@@ -590,7 +600,7 @@
     "390x844.timingWhilePlaying": {
       "playing": {
         "status": "playing",
-        "ticks": 589
+        "ticks": 586
       },
       "after": {
         "status": "idle",

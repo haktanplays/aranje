@@ -64,6 +64,7 @@ BRUSH="$V src/lib/song/legato-brush.test.ts"
 CONT="$V src/lib/song/continue-pattern.test.ts"
 HIST="$V src/lib/song/intent-history.test.ts"
 BOUND="$V src/lib/workspace/intent-boundary.test.ts"
+GEOM="$V src/components/workspace/edit-geometry.test.ts"
 WS="$V src/lib/workspace/workspace-boundary.test.ts"
 PLAN="$V src/lib/audio/expression-plan.test.ts"
 GUIDE="$V src/lib/tab/rhythm-guide.test.ts"
@@ -514,6 +515,20 @@ probe "72 a group takes the deepest level rather than the shallowest" \
   src/lib/tab/rhythm-guide.ts "$GUIDE" \
   '      const levels = Math.min(' \
   '      const levels = Math.max('
+
+echo "--- the focused edit layout's geometry (§18) ---"
+
+probe "73 an edit band shorter than a finger" \
+  src/components/workspace/geometry.ts "$GEOM" \
+  'export const EDIT_STRING_ROW_HEIGHT = MIN_TOUCH_TARGET_PX;' \
+  'export const EDIT_STRING_ROW_HEIGHT = 26;'
+
+probe "74 the doors go back to hiding while a run is selected" \
+  src/components/workspace/ComposerArea.tsx "$BOUND" \
+  '      <ComposerDoorRow tool={tool} onOpen={setDoor} onRelease={composer.release} />' \
+  '      {selection === null ? (
+        <ComposerDoorRow tool={tool} onOpen={setDoor} onRelease={composer.release} />
+      ) : null}'
 
 echo
 echo "$pass red, $fail vacuous, $skipped skipped"

@@ -1,14 +1,14 @@
 # 2S-A vacuity probes (§17)
 
-Ninety mutations, each one a way a guarantee this checkpoint claims could be
+Ninety-six mutations, each one a way a guarantee this checkpoint claims could be
 quietly untrue, run against the tests that are supposed to hold it.
 
 | Kind | Script | Probes | Red | Vacuous |
 |---|---|---:|---:|---:|
-| unit / AST | `probes.sh` | 72 | 70 | 2 |
+| unit / AST | `probes.sh` | 74 | 72 | 2 |
 | browser | `browser-probes.sh` | 16 | 16 | 0 |
 | real audio / render | `audio-probes.sh` | 6 | 6 | 0 |
-| **total** | | **94** | **92** | **2** |
+| **total** | | **96** | **94** | **2** |
 
 Every mutation is the *dangerous behaviour*, never a syntax error. Three of the
 first drafts only broke compilation or added dead code — they were rewritten
@@ -107,3 +107,17 @@ Retargeted rather than deleted:
   `*.probebak` exists anywhere, and `rg -n "PROBE" src scripts eval content`
   finds only `eval/shared/project-storage.mjs`'s own ledger key, which predates
   this phase.
+
+## §18 sonrası eklenen iki probe
+
+`73 an edit band shorter than a finger` — `EDIT_STRING_ROW_HEIGHT`'ı `26`'ya
+düşürür. Hedefi `edit-geometry.test.ts`; beş iddiadan dördü kırmızıya döner.
+Aynı test dosyası ikinci hileyi de tutuyor: 44 px bantları 26 px aralıklarla
+üst üste bindirmek. Bu mutasyon test içindeki yığma modelini değiştirdiğinde
+iki iddia kırmızıya dönüyor — yani "her eleman 44 px" kontrolünün yeşile
+boyayabileceği iki yol da bağlı.
+
+`74 the doors go back to hiding while a run is selected` — kapı satırını
+yeniden `selection`'a bağlar. Hedefi `intent-boundary.test.ts`. Bu, §18'de
+kendi yaptığım hatanın probe'u: Legato Fırçası seçili bir koşu üzerinde
+kullanılır, dolayısıyla "Bağla" kapısı tam o anda erişilebilir olmalı.

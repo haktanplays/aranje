@@ -35,12 +35,12 @@
     {
       "name": "[390x844] 07 dort varyasyon sirayla dinlendi",
       "pass": true,
-      "detail": "18 kaynak"
+      "detail": "15 kaynak"
     },
     {
       "name": "[390x844] 08 25 kez varyasyon degistirildi",
       "pass": true,
-      "detail": "131 kaynak"
+      "detail": "128 kaynak"
     },
     {
       "name": "[390x844] 09 fetch ve decode benzersiz sample sayisinda kaliyor",
@@ -55,7 +55,7 @@
     {
       "name": "[390x844] 11 sheet kapandiktan 3 sn sonra yeni ses 0",
       "pass": true,
-      "detail": "131 → 131 kaynak · 0 canli"
+      "detail": "128 → 128 kaynak · 0 canli"
     },
     {
       "name": "[390x844] 14 preview 0 yazim",
@@ -299,8 +299,8 @@
     },
     {
       "name": "[320x700] 26b viewport disina tasan kirpilmis icerik yok",
-      "pass": false,
-      "detail": "div.flex 326/320 · div.border-line 326/320"
+      "pass": true,
+      "detail": "yok"
     },
     {
       "name": "[320x700] 27 44 px altinda hedef 0",

@@ -32,17 +32,17 @@
     },
     {
       "name": "390x844 07 a note edit commits once",
-      "pass": true,
-      "detail": "writes 0 → 1"
+      "pass": false,
+      "detail": "writes 0 → 0"
     },
     {
       "name": "390x844 08 time selection and transform",
-      "pass": true,
+      "pass": false,
       "detail": ""
     },
     {
       "name": "390x844 09 full-bar operation applies",
-      "pass": true,
+      "pass": false,
       "detail": ""
     },
     {
@@ -52,8 +52,8 @@
     },
     {
       "name": "390x844 11 copilot demo previews, rejects and applies",
-      "pass": true,
-      "detail": "rejected true, applied true, Geri al: Aranje önerisini uygulama"
+      "pass": false,
+      "detail": "TimeoutError: page.waitForSelector: Timeout 20000ms exceeded."
     },
     {
       "name": "390x844 12 the project backup downloads",
@@ -82,13 +82,13 @@
     },
     {
       "name": "390x844 19 layout holds",
-      "pass": false,
-      "detail": "{\"bodyOverflow\":0,\"scrollers\":2,\"targets\":[44,44,44,44,44]}"
+      "pass": true,
+      "detail": "{\"bodyOverflow\":0,\"scrollers\":1,\"targets\":[44,44,44,44,44]}"
     },
     {
       "name": "390x844 20 zero console and page errors",
-      "pass": true,
-      "detail": ""
+      "pass": false,
+      "detail": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     },
     {
       "name": "390x844 14 recovery banner on a corrupt file",
@@ -132,17 +132,17 @@
     },
     {
       "name": "320x700 07 a note edit commits once",
-      "pass": true,
-      "detail": "writes 0 → 1"
+      "pass": false,
+      "detail": "writes 0 → 0"
     },
     {
       "name": "320x700 08 time selection and transform",
-      "pass": true,
+      "pass": false,
       "detail": ""
     },
     {
       "name": "320x700 09 full-bar operation applies",
-      "pass": true,
+      "pass": false,
       "detail": ""
     },
     {
@@ -152,8 +152,8 @@
     },
     {
       "name": "320x700 11 copilot demo previews, rejects and applies",
-      "pass": true,
-      "detail": "rejected true, applied true, Geri al: Aranje önerisini uygulama"
+      "pass": false,
+      "detail": "TimeoutError: page.waitForSelector: Timeout 20000ms exceeded."
     },
     {
       "name": "320x700 12 the project backup downloads",
@@ -182,13 +182,13 @@
     },
     {
       "name": "320x700 19 layout holds",
-      "pass": false,
-      "detail": "{\"bodyOverflow\":0,\"scrollers\":2,\"targets\":[44,44,44,44,44]}"
+      "pass": true,
+      "detail": "{\"bodyOverflow\":0,\"scrollers\":1,\"targets\":[44,44,44,44,44]}"
     },
     {
       "name": "320x700 20 zero console and page errors",
-      "pass": true,
-      "detail": ""
+      "pass": false,
+      "detail": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
     },
     {
       "name": "320x700 14 recovery banner on a corrupt file",
@@ -204,7 +204,7 @@
   "measurements": {
     "390x844-layout": {
       "bodyOverflow": 0,
-      "scrollers": 2,
+      "scrollers": 1,
       "targets": [
         44,
         44,
@@ -215,7 +215,7 @@
     },
     "320x700-layout": {
       "bodyOverflow": 0,
-      "scrollers": 2,
+      "scrollers": 1,
       "targets": [
         44,
         44,
@@ -225,5 +225,5 @@
       ]
     }
   },
-  "failed": 2
+  "failed": 10
 }

@@ -335,8 +335,8 @@
     },
     {
       "name": "[390x844] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": false,
-      "detail": "1 lane"
+      "pass": true,
+      "detail": "2 lane"
     },
     {
       "name": "[390x844] D10 nota sayfasındaki her kontrol 44px",
@@ -390,8 +390,8 @@
     },
     {
       "name": "[390x844 @125%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": false,
-      "detail": "1 lane"
+      "pass": true,
+      "detail": "2 lane"
     },
     {
       "name": "[390x844 @125%] D10 nota sayfasındaki her kontrol 44px",
@@ -445,8 +445,8 @@
     },
     {
       "name": "[390x844 @150%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": false,
-      "detail": "1 lane"
+      "pass": true,
+      "detail": "2 lane"
     },
     {
       "name": "[390x844 @150%] D10 nota sayfasındaki her kontrol 44px",
@@ -790,8 +790,8 @@
     },
     {
       "name": "[320x700] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": false,
-      "detail": "1 lane"
+      "pass": true,
+      "detail": "2 lane"
     },
     {
       "name": "[320x700] D10 nota sayfasındaki her kontrol 44px",
@@ -845,8 +845,8 @@
     },
     {
       "name": "[320x700 @125%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": false,
-      "detail": "1 lane"
+      "pass": true,
+      "detail": "2 lane"
     },
     {
       "name": "[320x700 @125%] D10 nota sayfasındaki her kontrol 44px",
@@ -900,8 +900,8 @@
     },
     {
       "name": "[320x700 @150%] D9 yazan lane diğer lane'lerle hizalı",
-      "pass": false,
-      "detail": "1 lane"
+      "pass": true,
+      "detail": "2 lane"
     },
     {
       "name": "[320x700 @150%] D10 nota sayfasındaki her kontrol 44px",
