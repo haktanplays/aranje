@@ -40,11 +40,26 @@ import {
 } from "@/lib/song/schema";
 import { withEmptyLaneInBar } from "@/lib/song/track-lanes";
 import { runValidators } from "@/lib/validators";
+import { ARTICULATION_CONTEXT_CODE } from "@/lib/validators/articulationContext";
 import {
   errorsOnly,
   warningsOnly,
   type ValidationIssue,
 } from "@/lib/validators/types";
+
+/**
+ * What one update means to do about articulation (2S-A kapanış §2).
+ *
+ * Three intents that an optional field cannot tell apart. "Not given" used to
+ * mean the same thing as "set to nothing", so changing a fret erased a
+ * hammer-on nobody asked about. Said as a union, each intent has to be
+ * chosen, and the default — keep — is the one a reader who only moved a fret
+ * would expect.
+ */
+export type ArticulationPatch =
+  | { kind: "keep" }
+  | { kind: "set"; articulation: Articulation }
+  | { kind: "clear" };
 
 export type EditTarget = {
   sectionId: string;
@@ -62,8 +77,10 @@ export type EditCommand =
       stringIndex: number;
       /** Capo-relative: 0 is the sound the capo is holding (spec 9.1). */
       fret: number;
+      /** Left out means "keep whatever this note already had". */
       velocity?: number;
-      articulation?: Articulation;
+      /** Left out means `{ kind: "keep" }`. */
+      articulation?: ArticulationPatch;
     }
   /** Remove one string's note, keeping the rest of the chord. */
   | { kind: "clear_string"; target: EditTarget; stringIndex: number }
@@ -99,6 +116,8 @@ export type EditErrorCode =
   | "orphan_tie"
   /** The move's moment does not exist on the grid it would land on (K-34). */
   | "target_grid_incompatible"
+  /** This update would leave a written link that cannot be played (§2). */
+  | "articulation_conflict"
   | "validation_failed";
 
 export type EditFailure = {
@@ -363,6 +382,31 @@ function laneReady(song: Song, command: EditCommand): Song {
   );
 }
 
+/**
+ * Did this edit break a link that was playing before it?
+ *
+ * Compared by where the issue is rather than by how it reads, so a reworded
+ * message cannot turn a broken chain into a silent one. The original song is
+ * only re-validated when the candidate has something to compare against,
+ * which for almost every edit is nothing at all.
+ */
+function brokeALink(
+  before: Song,
+  after: readonly ValidationIssue[],
+  trackId: string,
+): boolean {
+  const key = (issue: ValidationIssue) =>
+    `${issue.sectionId}|${issue.barIndex}|${issue.slotIndex}`;
+  const mine = (issue: ValidationIssue) =>
+    issue.code === ARTICULATION_CONTEXT_CODE && issue.trackId === trackId;
+
+  const now = after.filter(mine);
+  if (now.length === 0) return false;
+
+  const was = new Set(runValidators(before).filter(mine).map(key));
+  return now.some((issue) => !was.has(key(issue)));
+}
+
 export function applyEdit(input: Song, command: EditCommand): EditResult {
   const song = laneReady(input, command);
   const resolved = resolve(song, command.target);
@@ -407,13 +451,32 @@ export function applyEdit(input: Song, command: EditCommand): EditResult {
         );
       }
 
+      /*
+       * The note that is already on this string, if any.
+       *
+       * An update names a fret. Everything it does not name — how the note is
+       * played, how hard — belongs to the reader, not to the command, and is
+       * carried across rather than rebuilt from nothing.
+       */
+      const previous =
+        slot === null || slot === "-"
+          ? undefined
+          : slot.notes.find((entry) => entry.position?.string === command.stringIndex);
+
+      const patch: ArticulationPatch = command.articulation ?? { kind: "keep" };
+      const articulation =
+        patch.kind === "set"
+          ? patch.articulation
+          : patch.kind === "clear"
+            ? undefined
+            : previous?.articulation;
+      const velocity = command.velocity ?? previous?.velocity;
+
       const note: NoteEvent = {
         pitch,
         position: { string: command.stringIndex, fret: command.fret },
-        ...(command.velocity === undefined ? {} : { velocity: command.velocity }),
-        ...(command.articulation === undefined
-          ? {}
-          : { articulation: command.articulation }),
+        ...(velocity === undefined ? {} : { velocity }),
+        ...(articulation === undefined ? {} : { articulation }),
       };
 
       // A tie or a rest becomes a struck slot; an existing chord keeps every
@@ -429,7 +492,30 @@ export function applyEdit(input: Song, command: EditCommand): EditResult {
           (a, b) => (a.position?.string ?? 0) - (b.position?.string ?? 0),
         ),
       });
-      return settle(next);
+      const settled = settle(next);
+      if (!settled.ok) return settled;
+
+      /*
+       * Carrying the link across is only honest if the link still plays.
+       *
+       * The chain authority is the articulation validator — the same one the
+       * renderer and the player agree with — so this asks it rather than
+       * deciding again. What it reports is a warning ("will be played
+       * normally"), which is the right answer for a song that arrived that
+       * way and the wrong one for an edit that just caused it: silently
+       * downgrading a hammer-on the reader wrote is exactly the loss this
+       * whole section is about. So the gate is the *difference*: a link that
+       * played before and does not now stops the update instead of surviving
+       * it in name only.
+       */
+      if (brokeALink(song, settled.warnings, target.trackId)) {
+        return fail(
+          "articulation_conflict",
+          "Bu perde değişikliği mevcut nota bağlantısıyla birlikte çalınamıyor. " +
+            "Önce bağlantıyı kaldırabilir veya farklı bir perde seçebilirsin.",
+        );
+      }
+      return settled;
     }
 
     case "clear_string": {
