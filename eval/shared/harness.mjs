@@ -133,9 +133,23 @@ export function unwrapStoredSong(raw) {
  * a no-op, which is why it is safe to put in front of any header reach.
  */
 export async function leaveEditing(page) {
+  /*
+   * An open sheet is dismissed first, because it is meant to be in the way.
+   *
+   * Every sheet paints a full-screen backdrop over the surface behind it, so
+   * with one open `[data-edit-done]` is present, 44px tall and fully on
+   * screen while `elementFromPoint` at its centre returns the backdrop. That
+   * is the sheet doing its job, not a covered control: a reader closes the
+   * sheet and then presses "Bitti", and so does this.
+   */
+  for (let guard = 0; guard < 3; guard += 1) {
+    if ((await page.locator('[role="dialog"]').count()) === 0) break;
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(250);
+  }
   const done = page.locator("[data-edit-done]");
   if (await done.isVisible().catch(() => false)) {
-    await done.click();
+    await done.click({ timeout: 5000 }).catch(() => {});
     await page.waitForTimeout(250);
   }
 }

@@ -649,6 +649,9 @@ async function tourPitchedImport(page, vp, errors) {
   await safe(at("B23 Çoklu'da yazılan nota Tab'da da görünür"), async () => {
     const inMulti = await page.locator("[data-pitched-cell][data-state='note']").count();
     await toView(page, "tab");
+    // Changing surface leaves editing (2S-A §18), and the pitched lane is
+    // only drawn while writing — so ask for it again on the other surface.
+    await arm(page);
     await page.waitForTimeout(200);
     const inTab = await page.locator("[data-pitched-cell][data-state='note']").count();
     record_(

@@ -56,7 +56,16 @@ async function safe(name, fn) {
   try {
     return await fn();
   } catch (error) {
-    record(name, false, String(error).split("\n")[0].slice(0, 90));
+    /*
+     * The selector too, not only "click timed out".
+     *
+     * Playwright puts the control it waited for on a later line of the call
+     * log, and a scenario that presses eight things in sequence cannot be
+     * diagnosed from the first line alone.
+     */
+    const lines = String(error).split("\n");
+    const waiting = lines.find((line) => line.includes("waiting for")) ?? "";
+    record(name, false, `${lines[0].slice(0, 90)}${waiting ? ` · ${waiting.trim().slice(0, 90)}` : ""}`);
     return undefined;
   }
 }
@@ -141,6 +150,22 @@ const inArrange = (page) =>
     .getAttribute("aria-selected")
     .then((value) => value === "true")
     .catch(() => false);
+
+/**
+ * Put the tab into edit mode, if it is not already there.
+ *
+ * Coming back from Düzen now really leaves editing — the focused layout's
+ * "Bitti" is how the harness reaches the view switch (2S-A §18) — so a
+ * scenario that wants writable cells has to ask for them again, exactly as a
+ * reader does. Cells carry `data-cell` only while editing.
+ */
+async function enterEditing(page) {
+  const edit = page.getByRole("button", { name: "Düzenle", exact: true });
+  if (await edit.isVisible().catch(() => false)) {
+    await edit.click();
+    await page.waitForTimeout(300);
+  }
+}
 
 async function goArrange(page) {
   await leaveEditing(page);
@@ -508,6 +533,7 @@ async function run() {
 
         // 28 — back in the tab, the clipboard is still there.
         await goTab(page);
+        await enterEditing(page);
         await page.waitForTimeout(250);
         const cell2 = page.locator("[data-cell][data-onset]").first();
         await cell2.scrollIntoViewIfNeeded();
@@ -560,6 +586,7 @@ async function run() {
         const before = await marks();
 
         await goTab(page);
+        await enterEditing(page);
         await page.waitForTimeout(250);
         const cells = page.locator("[data-cell][data-onset]");
         if ((await cells.count()) === 0) {
