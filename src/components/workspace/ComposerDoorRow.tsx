@@ -34,6 +34,7 @@ export function ComposerDoorRow({
   onRelease: () => void;
 }) {
   const held = doorOf(tool);
+  const armed = isArmed(tool);
 
   return (
     <div
@@ -71,20 +72,32 @@ export function ComposerDoorRow({
            * nothing to do with the words in it. How wide a phone is does not
            * change with the text size.
            */
-          style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 56 }}
+          /*
+           * Narrower while something is held, so the chip that says what is
+           * held can sit on this line instead of taking one of its own
+           * (2S-A kapanış §4). Measured at 320x700: a second line cost the
+           * staff 50px and clipped the bottom string to 37px — the six
+           * strings stopped being whole, which is the one thing the focused
+           * edit layout promises. Every door is still a 44px target.
+           */
+          style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: armed ? 44 : 56 }}
         >
           {DOOR_LABELS[door]}
         </button>
       ))}
-      {isArmed(tool) ? (
+      {armed ? (
         <button
           type="button"
           data-composer-held
           onClick={onRelease}
           aria-label={`${toolLabel(tool)} — bırak`}
-          /* The held tool takes the whole line: it is a statement, not a door. */
-          className="border-bronze text-bronze flex min-h-11 basis-full items-center justify-between rounded-lg border px-3 text-xs"
-          style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+          /*
+           * Shares the doors' line. It is a statement rather than a door, so
+           * it takes what is left of the row rather than a width of its own,
+           * and its words truncate before the row grows a second line.
+           */
+          className="border-bronze text-bronze flex min-h-11 min-w-0 flex-1 items-center justify-between rounded-lg border px-2 text-xs"
+          style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 72 }}
         >
           <span className="truncate">{toolLabel(tool)}</span>
           <span aria-hidden className="pl-2">

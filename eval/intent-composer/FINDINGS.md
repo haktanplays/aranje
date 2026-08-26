@@ -516,3 +516,51 @@ kullanımı doğrulanamayan bir tur tamamen harcanmış sayılır. Test bunu bö
 pinliyor — sağlayıcı hata verdikten sonra bütçe bir sonraki çağırana geri
 verilmiyor — ve bağlantı koptuğunda kilidin bırakıldığını, aynı cihazın
 `concurrent_request` ile karşılaşmadığını ayrıca doğruluyor.
+
+## Kapanış turu §4 · Görsel paket bir kusur buldu, bir tanesini de açık bıraktı
+
+On iki ekran üretildi ve her biri için sayılar `FOUNDER-VISUAL.json`'a yazıldı.
+Ölçümün kendisi üç kez yanlış şey söyledi ve üçü de düzeltildi:
+
+- **80 «komşu tel çakışması»** — hiçbiri gerçek değildi. Tel 0 en kalın ve
+  **en altta** çiziliyor; kontrol tel numarasına göre sıralayıp `a.bottom >
+  b.top` diye soruyordu. Kutular ölçüldüğünde tam olarak uç uca: `315/359`,
+  `271/315`, `227/271` — 44 px, boşluksuz, bindirmesiz. Sıralama çizim
+  konumuna çevrildi.
+- **`data-cell` bar'a göre kapsanmıyordu**, dolayısıyla iki ayrı ölçünün aynı
+  satırı çakışma sayılıyordu.
+- **«Yanlış hit sahibi»**, sheet açıkken backdrop'u ve seçim kenarında
+  `Seçim sonunu taşı` tutamacını kusur sayıyordu. İkisi de kastenn orada.
+  Artık üç sınıf var: hücrenin kendisi, **adı olan bir kontrol**, ve cevabı
+  olmayan bir yabancı. Yalnız üçüncüsü kusur.
+
+**Bulunan gerçek kusur (düzeltildi).** `320×700`'de bir araç tutulduğunda
+tutulan araç çipi `basis-full` ile **ikinci bir satır** alıyordu: kapı satırı
+`48 → 98 px`, `main` `357 → 307 px`, ve en alttaki kalın E teli `37 px`'e
+kırpılıyordu. Altı telin aynı anda görünmesi, focused edit layout'un tek
+sözüydü. Çip artık kapıların satırını paylaşıyor; kapılar tutulu hâlde `44 px`
+tabanına iniyor, hepsi hâlâ `44 px` dokunma hedefi, ve satır büyümüyor.
+Ölçüm sonrası: `320×700` power chord kalemi **whole**.
+
+**Açık kalan kusur (ürün kararı gerektiriyor).** `320×700`'de **seçim
+açıkken** üç tel kırpılıyor: `[0, 0, 14, 44, 44, 44]`. Ölçülen chrome:
+
+| | seçim yok | seçim açık |
+|---|---:|---:|
+| `main` | `357 px` | **`196 px`** |
+| seçim eylem çubuğu | — | `108 px` |
+| edit başlığı | `45` | `45` |
+| kapı satırı | `48` | `48` |
+| action row | `101` | `101` |
+| footer | `105` | `105` |
+
+Staff `6 × 44 + 22 = 286 px` istiyor; `196 px` var. Kapsanan hâl bir sheet
+değil — sheet kapalı. Her kontrolü `44 px` tutarak `90 px` bulunabilecek bir
+yer **yok**: seçim çubuğunun kendi kontrolleri de gerçek dokunma hedefleri.
+
+Bu noktada hangi chrome'un geri çekileceği bir **ürün kararıdır**. Örneğin
+seçim açıkken action row'un düzenleme anahtarı geri çekilebilir — «Bitti»
+zaten edit başlığında — ve bu `101 px` kazandırır. Fakat bu, 2J.1'in kabul
+edilmiş seçim yerleşimini bir kapanış turunun kuyruğunda yeniden tasarlamak
+demek ve altı kabul paketini etkiler. Sessizce yapılmadı; ölçüsü, ekran
+görüntüsü ve seçenekleriyle K-59'un yanına açık borç olarak bırakıldı.

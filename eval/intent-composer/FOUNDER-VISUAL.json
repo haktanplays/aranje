@@ -1,0 +1,612 @@
+{
+  "what": "2S-A kapanış §4 — founder görsel kabul paketi",
+  "measuredOn": "Masaüstü Chromium, mobil emülasyon, production build. Fiziksel telefon kanıtı yoktur.",
+  "approves": "Hiçbir şey. Sayılar ölçümdür; 'doğal görünüyor' kararı insana aittir ve K-59 açık kalır.",
+  "verdicts": [
+    {
+      "name": "390x844-1-reading",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "390x844-2-focused-edit",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "390x844-3-power-pen-ghost",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "390x844-4-legato-preview",
+      "covered": true,
+      "ok": true
+    },
+    {
+      "name": "390x844-5-arcs-committed",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "320x700-1-reading",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "320x700-2-focused-edit",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "320x700-3-power-pen-ghost",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "320x700-4-legato-preview",
+      "covered": true,
+      "ok": true
+    },
+    {
+      "name": "320x700-5-arcs-committed",
+      "covered": false,
+      "ok": false
+    },
+    {
+      "name": "320x700-150-11-focused-edit",
+      "covered": false,
+      "ok": true
+    },
+    {
+      "name": "320x700-150-12-connect-controls",
+      "covered": true,
+      "ok": true
+    }
+  ],
+  "screens": [
+    {
+      "name": "390x844-1-reading",
+      "note": "Normal Tab okuma",
+      "sheetOpen": false,
+      "cells": 0,
+      "hitProbes": 0,
+      "minVisibleHeight": null,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [],
+      "stringsWhole": false,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "390x844-2-focused-edit",
+      "note": "Focused Edit Layout",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "390x844-3-power-pen-ghost",
+      "note": "Power Chord Kalemi ghost preview",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 1,
+      "beams": 0,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "390x844-4-legato-preview",
+      "note": "Bes notalik HO/PO secim preview",
+      "sheetOpen": true,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 72,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "390x844-5-arcs-committed",
+      "note": "Commit sonrasi H/P yaylari",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 1,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 4,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 4,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-1-reading",
+      "note": "Normal Tab okuma",
+      "sheetOpen": false,
+      "cells": 0,
+      "hitProbes": 0,
+      "minVisibleHeight": null,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [],
+      "stringsWhole": false,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-2-focused-edit",
+      "note": "Focused Edit Layout",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-3-power-pen-ghost",
+      "note": "Power Chord Kalemi ghost preview",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 1,
+      "beams": 0,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-4-legato-preview",
+      "note": "Bes notalik HO/PO secim preview",
+      "sheetOpen": true,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 14,
+      "wrongOwner": 36,
+      "handedToAControl": 36,
+      "strangers": [
+        {
+          "cell": "0:0",
+          "owner": "li"
+        },
+        {
+          "cell": "0:0",
+          "owner": "li"
+        },
+        {
+          "cell": "0:0",
+          "owner": "li"
+        },
+        {
+          "cell": "0:1",
+          "owner": "h2"
+        }
+      ],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        0,
+        0,
+        14,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": false,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-5-arcs-committed",
+      "note": "Commit sonrasi H/P yaylari",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 14,
+      "wrongOwner": 17,
+      "handedToAControl": 16,
+      "strangers": [
+        {
+          "cell": "0:1",
+          "owner": "p"
+        },
+        {
+          "cell": "0:1",
+          "owner": "div"
+        },
+        {
+          "cell": "0:2",
+          "owner": "div"
+        },
+        {
+          "cell": "0:2",
+          "owner": "p"
+        }
+      ],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        0,
+        0,
+        14,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": false,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 4,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 4,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-150-11-focused-edit",
+      "note": "320x700 · %150 · Focused Edit Layout",
+      "sheetOpen": false,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 0,
+      "handedToAControl": 0,
+      "strangers": [],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "320x700-150-12-connect-controls",
+      "note": "320x700 · %150 · Bagla kontrolleri",
+      "sheetOpen": true,
+      "cells": 96,
+      "hitProbes": 72,
+      "minVisibleHeight": 44,
+      "wrongOwner": 68,
+      "handedToAControl": 4,
+      "strangers": [
+        {
+          "cell": "0:0",
+          "owner": "button"
+        },
+        {
+          "cell": "0:0",
+          "owner": "div"
+        },
+        {
+          "cell": "0:0",
+          "owner": "button"
+        },
+        {
+          "cell": "0:1",
+          "owner": "span"
+        }
+      ],
+      "neighbourOverlap": 0,
+      "deadGround": 0,
+      "columnHeights": [
+        44,
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "stringsWhole": true,
+      "glyphBeamOverlap": 0,
+      "glyphArcOverlap": 0,
+      "playheadGlyphOverlap": 0,
+      "bodyOverflow": 0,
+      "horizontalScrollers": 1,
+      "staffVerticalScrollers": 0,
+      "glyphStyle": {
+        "border": "0px",
+        "radius": "0px",
+        "background": "rgba(0, 0, 0, 0)"
+      },
+      "glyphCount": 5,
+      "beams": 1,
+      "arcs": 0,
+      "openString": false,
+      "doubleDigit": false,
+      "consoleErrors": 0,
+      "firstError": null
+    },
+    {
+      "name": "390x844-13-after-pitch-update",
+      "note": "Legato zinciri yazildi, sonra bir perde degistirildi",
+      "linksBefore": 4,
+      "linksAfter": 4,
+      "arcsBefore": 4,
+      "arcsAfter": 4,
+      "updated": {
+        "from": 7,
+        "to": 6
+      },
+      "consoleErrors": 0
+    }
+  ],
+  "articulation": {
+    "name": "390x844-13-after-pitch-update",
+    "note": "Legato zinciri yazildi, sonra bir perde degistirildi",
+    "linksBefore": 4,
+    "linksAfter": 4,
+    "arcsBefore": 4,
+    "arcsAfter": 4,
+    "updated": {
+      "from": 7,
+      "to": 6
+    },
+    "consoleErrors": 0
+  }
+}
