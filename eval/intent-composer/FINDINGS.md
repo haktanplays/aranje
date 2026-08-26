@@ -277,55 +277,68 @@ değiştirilmedi — çünkü değiştirilecek bir kusur bulunamadı.
 Regresyon koşusu üç pakette **yeni kırmızı** verdi. Başlangıç SHA'sı
 (`217e7cb`) aynı makinede, aynı harness'lerle ölçüldü:
 
-| Paket | Bu build (ilk hâli) | `217e7cb` | Sonuç |
+| Paket | İlk hâli | `217e7cb` | Sonuç |
 |---|---|---|---|
 | `practice-loop` | 19 kaldı | **0 kaldı** | 19'u da yeni |
 | `selection-ui` | 2 kaldı | 1 kaldı | 1'i yeni |
 | `multitrack` | 26 kaldı | 22 kaldı | 4'ü yeni |
 
-Bunlar eskimiş harness beklentileri değil; bu fazın açtığı bir kusurdur.
-
 **Kök neden, ölçülerek.** `320×700`'de düzenleme modunda ilk onset hücresi
 `y=423`'te duruyor, okuma yüzeyi ise `y=402`'de bitiyor. Hücre yüzeyin
-**dışında**; o noktaya yapılan dokunuş track kontrol satırına gidiyor
-(`"Aktif track: Ritim Gitar · High gain"`). `390×844`'te aynı hücre `y=423`,
-yüzey `y=646`'da bitiyor — sorun yok.
+**dışında**; o noktaya yapılan dokunuş track kontrol satırına gidiyor.
+`390×844`'te aynı hücre yüzeyin içinde.
 
 ```
-320×700  cell {"x":34,"y":423,"h":44}  main {"top":153,"bottom":402}
-390×844  cell {"x":34,"y":423,"h":44}  main {"top":153,"bottom":646}
+320×700  cell {"y":423,"h":44}  main {"top":153,"bottom":402}
+390×844  cell {"y":423,"h":44}  main {"top":153,"bottom":646}
 ```
 
-Bu, zaman seçimini bütünüyle kırıyordu: uzun basış hiç band açmıyor
-(`"no band"`), dolayısıyla pratik döngüsünün kendi giriş kapısı da
-çalışmıyordu.
+Zaman seçimi bütünüyle kırılmıştı: uzun basış hiç band açmıyordu
+(`"no band"`), dolayısıyla pratik döngüsünün giriş kapısı da çalışmıyordu.
 
-**Aritmetik: §4 ile §11 bu ekranda birlikte sağlanamıyor.** §4 düzenleme
-hücresinin en az `44×44` olmasını istiyor; §11 `320×700`'de çalışma alanının
-kullanılır kalmasını istiyor. Altı tel × `44 px` + ölçü başlığı = `286 px`.
-`320×700`'de okuma yüzeyi %100 metinde `249 px`, %125'te `226 px`, %150'de
-`219 px`. `286 > 249`. İkisi aynı anda doğru olamaz.
+İkinci ölçüm, seçim eylem çubuğu açıkken: `320×700` %150 metinde `main`
+**`44 px`** (169→213). Dört niyet kapısı müziğin son satırını alıyordu.
 
-**Karar ve gerekçesi.** `44 px`'lik satır **sığdığı yerde** korunuyor,
-sığmadığı yerde okuma satırı (`26 px`) geri geliyor. Eşik, K-55'in transport
-için zaten kullandığı `--breakpoint-xs` (`360 px`). Tek soru, tek yerde
-sorulur: `lib/ui/narrow-viewport.ts`.
+**Kabul ölçümünün kendi kusuru.** Senaryo yalnız
+`getBoundingClientRect().height >= 44` soruyordu. `44` yüksekliğindeki bir
+hücrenin ekranda olup olmadığını, altında kalıp kalmadığını, komşusuyla üst
+üste binip binmediğini ve o noktaya basınca kimin cevap verdiğini
+sormuyordu. Kusur tam da bu boşluktan geçti.
 
-Nişan alması `26 px`'lik bir hücre `44 px`'likten kötüdür. Ekranda **hiç
-olmayan** bir hücre ikisinden de kötüdür. Seçilen, kötü olanın en azıdır ve
-gizlenmiyor: **`360 px`'in altında §4'ün `44 px` gereği karşılanmıyor.**
-Bu, K-59'un açık maddesidir ve kararı Haktan'ındır — genişletilecek olan
-düzenleme ızgarası mı, yoksa okuma yüzeyine yer açacak olan çevre mi.
+## Karar: Focused Edit Layout
 
-**Kabul senaryosu artık her iki ekranda da doğruyu söylüyor.** 59, geniş
-ekranda `≥44 px` arıyor, dar ekranda `26 px` bekliyor. Ayrıca **63** eklendi
-ve kusuru doğrudan bağlıyor: *her* düzenleme hücresinin okuyucunun baktığı
-yüzeyin içinde olduğu, altı kombinasyonun hepsinde ölçülüyor.
+Okuma modu `360 px` altında yoğun kalabilir; **düzenleme modunda bütün
+etkileşim satırları en az `44 px`**. Aritmetik kapanmıyorsa hedef değil
+**çevre** geri çekilir:
 
-| | yüzey | porte | yüzeyin dışındaki hücre |
+- düzenlemeye girince marka başlığı, görünüm anahtarı ve geniş bölüm
+  navigasyonu geri çekilir;
+- yerlerine tek bir kompakt satır gelir: **"Bitti · Ana Riff · 12. ölçü"**;
+- satır ve "Bitti" en az `44 px`;
+- uzun bölüm adı ekranda kırpılabilir, erişilebilir ad tam kalır
+  (`lib/workspace/edit-header.ts` saf, altı testi var);
+- staff kendi içinde dikey scroll almaz, altı tel aynı anda görünür;
+- transport korunur; çıkınca normal chrome geri gelir.
+
+Ölçülen sonuç — okuma yüzeyi düzenleme modunda:
+
+| | %100 | %125 | %150 |
 |---|---|---|---|
-| `390×844` %100 / %125 / %150 | `493` / `426` / `411 px` | `264 px` | `0` |
-| `320×700` %100 / %125 / %150 | `249` / `226` / `219 px` | `156 px` | `0` |
+| `390×844` | `601 px` | `542 px` | `535 px` |
+| `320×700` | `357 px` | `~340 px` | `~330 px` |
+| gereken porte | `264 px` | `264 px` | `264 px` |
+
+Altı kombinasyonun hepsinde: görünür hücre yüksekliği `44 px`, yanlış
+sahiplenen nokta `0/72`, komşu tel çakışması `0`, dış tellerin görünür
+yüksekliği `44 px`, staff içi scroller `0`.
+
+**Kabul artık gerçekten ölçüyor.** 59 görünür yüksekliği (her scroller ve
+viewport ile kırpılmış), 59.b `elementFromPoint` ile hücrenin merkezinde ve
+merkezin biraz altında/üstünde gerçek sahibi, 59.c komşu şeritlerin
+çakışmasını, 59.d dış iki telin bütünlüğünü, 59.e staff içi scroller
+olmadığını, 63 her hücrenin yüzeyin içinde olduğunu, 64/64.b/64.c focused
+satırı, çıkış kontrolünü ve eylem satırındaki her kontrolün `44 px` olduğunu
+soruyor.
 
 **Düzeltmeden sonra** `selection-ui` ve `multitrack` başlangıç SHA'sıyla
 **birebir aynı** (`1` ve `22`, aynı senaryolar).

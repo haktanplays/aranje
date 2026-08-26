@@ -266,6 +266,8 @@ export function Workspace() {
         onProjects={library.open}
         onOpenSectionList={() => overlays.open("section")}
         onJumpSection={focusSection}
+        editing={noteEditing.editing}
+        onDoneEditing={noteEditing.toggleEdit}
       />
 
       <WorkspaceSurface

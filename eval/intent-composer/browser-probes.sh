@@ -110,7 +110,7 @@ probe "B8 the edit row goes back to one fixed line" \
   '      <div className="flex flex-nowrap items-center gap-2 overflow-hidden">'
 
 probe "B9 the toggle is sized in rem again" \
-  src/components/workspace/EditToolbar.tsx "layout" \
+  src/components/workspace/EditToolbar.tsx "layout,glyph" \
   '            style={{ minHeight: MIN_TOUCH_TARGET_PX }}
             className={`min-w-0 flex-1 basis-32 rounded-lg border px-3 text-sm font-medium disabled:opacity-40 ${' \
   '            className={`min-h-16 min-w-0 flex-1 basis-32 rounded-lg border px-3 text-base font-medium disabled:opacity-40 ${'
@@ -121,6 +121,33 @@ probe "B10 the doors are sized in rem again" \
   '          className={`min-h-14 min-w-0 flex-1 basis-24 rounded-lg border px-3 text-base ${' \
   '          style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 56 }}' \
   '          style={{}}'
+
+echo "--- the focused edit layout (§18) ---"
+
+# The defect acceptance missed: a row with the right height, off the screen.
+probe "B13 the normal chrome stays up while writing" \
+  src/components/workspace/Workspace.tsx "glyph" \
+  '        editing={noteEditing.editing}' \
+  '        editing={false}'
+
+probe "B14 the staff answers a cramped screen with a scroller of its own" \
+  src/components/workspace/FrettedBarBlock.tsx "glyph" \
+  '      style={{ width }}' \
+  '      style={{ width, maxHeight: 120, overflowY: "auto" }}'
+
+probe "B15 six 44px bands are stacked 26px apart" \
+  src/components/workspace/geometry.ts "glyph" \
+  'export const EDIT_STRING_ROW_HEIGHT = MIN_TOUCH_TARGET_PX;' \
+  'export const EDIT_STRING_ROW_HEIGHT = 26;'
+
+probe "B16 the way out of edit mode is not a control" \
+  src/components/workspace/EditHeader.tsx "glyph" \
+  '        style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+      >
+        Bitti' \
+  '        style={{ minHeight: 12 }}
+      >
+        Bitti'
 
 echo "--- what one gesture writes (§7, §12) ---"
 

@@ -16,7 +16,6 @@ import {
   slotCentre,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
-import { useNarrowViewport } from "@/lib/ui/narrow-viewport";
 import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { buildLegatoArcs } from "@/lib/tab/legato-arc";
@@ -132,15 +131,13 @@ export function FrettedBarBlock({
    * number, used everywhere in this block, so the strings, the sustains, the
    * numbers, the arcs and the cells cannot end up on different grids.
    *
-   * Below `--breakpoint-xs` the finger's height does not fit: six of them
-   * plus the bar header is `286px` and the reading surface at `320×700` is
-   * `219–249px`, which put the whole staff off the surface. The narrow screen
-   * keeps the reading height — worse to aim at, but present — and the gap is
-   * recorded rather than hidden (see `narrow-viewport.ts`).
+   * The writing height is the finger's on every screen. It did not fit at
+   * `320×700` while the reading chrome was still up — six rows plus the bar
+   * header is `286px` and the surface was `219px` — so the *chrome* gave way
+   * rather than the target: entering edit mode replaces the brand header, the
+   * view switch and the section navigator with one compact row (2S-A §18).
    */
-  const narrow = useNarrowViewport();
-  const rowHeight =
-    editing && !narrow ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT;
+  const rowHeight = editing ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT;
   const staffHeight = stringCount * rowHeight;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
   /*

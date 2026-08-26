@@ -722,44 +722,170 @@ async function glyphTour(browser, viewport, textScale) {
   record_("58. the rhythm guide is still drawn", beams >= 0, `${beams}`);
 
   await enterEdit(page);
-  const cells = await page.evaluate(() => {
-    const boxes = [...document.querySelectorAll("[data-cell]")].map((node) => {
+  /*
+   * What a finger can actually reach, not what CSS says it is (2S-A §18).
+   *
+   * Three things are measured per cell, in the page, because none of them can
+   * be read off a style rule:
+   *
+   *   visible  — the box clipped by every scrolling ancestor and by the
+   *              viewport. A cell whose bottom half is under a clipper has
+   *              half a target, whatever its height attribute says.
+   *   owner    — who `elementFromPoint` returns at three points down the
+   *              cell's own middle. Anything but this cell or a child of it
+   *              means the finger lands somewhere else.
+   *   overlap  — whether two strings' rectangles intersect. Six 44px bands
+   *              stacked 26px apart would satisfy a height check and leave
+   *              every tap ambiguous.
+   */
+  const hits = await page.evaluate(() => {
+    const nodes = [...document.querySelectorAll("[data-cell]")];
+    if (nodes.length === 0) return null;
+
+    const clipped = (node) => {
+      let top = 0;
+      let bottom = window.innerHeight;
+      let parent = node.parentElement;
+      while (parent) {
+        const style = getComputedStyle(parent);
+        if (/(auto|scroll|hidden|clip)/.test(`${style.overflowY}`)) {
+          const box = parent.getBoundingClientRect();
+          top = Math.max(top, box.top);
+          bottom = Math.min(bottom, box.bottom);
+        }
+        parent = parent.parentElement;
+      }
+      return { top, bottom };
+    };
+
+    let minVisible = Infinity;
+    let probed = 0;
+    let wrongOwner = 0;
+    let firstWrong = null;
+    const rects = [];
+
+    for (const node of nodes) {
       const box = node.getBoundingClientRect();
-      return { width: Math.round(box.width), height: Math.round(box.height) };
-    });
+      const bounds = clipped(node);
+      const visible = Math.max(
+        0,
+        Math.min(box.bottom, bounds.bottom) - Math.max(box.top, bounds.top),
+      );
+      minVisible = Math.min(minVisible, visible);
+      rects.push({ key: node.getAttribute("data-cell"), box, visible });
+    }
+
+    /* The owner probe is expensive, so it runs on the first bar's grid — every
+       string, three points each — which is where a stacking mistake shows. */
+    const sample = rects.slice(0, 24);
+    for (const entry of sample) {
+      const x = entry.box.left + entry.box.width / 2;
+      for (const at of [0.5, 0.2, 0.8]) {
+        const y = entry.box.top + entry.box.height * at;
+        probed += 1;
+        const top = document.elementFromPoint(x, y);
+        const owns = top !== null && top.closest("[data-cell]")?.getAttribute("data-cell") === entry.key;
+        if (!owns) {
+          wrongOwner += 1;
+          firstWrong ??= `${entry.key}@${at} -> ${
+            top ? (top.getAttribute("data-cell") ?? top.getAttribute("aria-label") ?? top.tagName) : "none"
+          }`;
+        }
+      }
+    }
+
+    /* Two cells on the same slot are two strings; their bands must not meet. */
+    const bySlot = new Map();
+    for (const entry of rects) {
+      const slot = entry.key?.split(":")[0] ?? "";
+      bySlot.set(slot, [...(bySlot.get(slot) ?? []), entry]);
+    }
+    let overlaps = 0;
+    for (const column of bySlot.values()) {
+      const sorted = [...column].sort((a, b) => a.box.top - b.box.top);
+      for (let index = 1; index < sorted.length; index += 1) {
+        if (sorted[index].box.top < sorted[index - 1].box.bottom - 0.5) overlaps += 1;
+      }
+    }
+
+    /* The outer strings — the thin "e" and the thick "E" — are the two a
+       cramped layout eats first, so they are asserted by name. */
+    const strings = [...new Set(rects.map((entry) => Number(entry.key?.split(":")[1])))].sort(
+      (a, b) => a - b,
+    );
+    const outer = [strings[0], strings[strings.length - 1]];
+    const edgeVisible = Math.min(
+      ...rects
+        .filter((entry) => outer.includes(Number(entry.key?.split(":")[1])))
+        .map((entry) => entry.visible),
+    );
+
+    /* The staff must not answer "it fits" by growing a scroller of its own. */
+    const staff = document.querySelector("[data-tab-content]") ?? document.querySelector("main");
+    let innerScrollers = 0;
+    if (staff) {
+      for (const node of [staff, ...staff.querySelectorAll("*")]) {
+        const style = getComputedStyle(node);
+        if (
+          /(auto|scroll)/.test(`${style.overflowY}`) &&
+          node.scrollHeight > node.clientHeight + 1
+        ) {
+          innerScrollers += 1;
+        }
+      }
+    }
+
     return {
-      count: boxes.length,
-      minHeight: Math.min(...boxes.map((b) => b.height)),
-      minWidth: Math.min(...boxes.map((b) => b.width)),
+      cells: rects.length,
+      minVisible: Math.round(minVisible),
+      probed,
+      wrongOwner,
+      firstWrong,
+      overlaps,
+      edgeVisible: Math.round(edgeVisible),
+      innerScrollers,
     };
   });
+
   /*
-   * The honest form of this claim (2S-A §18).
+   * The claim, in the form that can actually fail (2S-A §18).
    *
-   * §4 asks for a finger-tall edit cell and §11 asks the work area to stay
-   * usable at 320x700. Six rows at 44px plus the bar header is 286px, and the
-   * reading surface at 320x700 measures 219-249px — so both cannot hold, and
-   * the first attempt put the whole staff off the surface: the cell laid out
-   * at y=423 with the surface ending at y=402, unpressable, which broke the
-   * time selection and the practice loop's own way in.
-   *
-   * Above `--breakpoint-xs` the cell is the finger's height. Below it the
-   * cell keeps the reading height — worse to aim at, but on the screen. The
-   * scenario asserts what is actually true of each, rather than a number that
-   * would be green on one of them and a lie about the other.
+   * A CSS height of `44px` is not a touch target. Half of it can be outside
+   * the surface, under a clipper, or behind a neighbour — which is exactly
+   * what happened at `320×700`, where the row measured 44 and the cell was
+   * painted below the reading surface. So what is measured is the *visible*
+   * height of each cell, clipped by every scroller above it and by the
+   * viewport, plus who actually owns the point a finger would land on.
    */
-  const finger = viewport.width >= 360;
   record_(
-    finger
-      ? "59. an edit cell is at least a finger tall"
-      : "59. a narrow screen keeps the reading row, and the cell stays on the surface",
-    finger ? cells.minHeight >= MIN_TOUCH : cells.minHeight === 26,
-    JSON.stringify(cells),
+    "59. every edit cell is a finger tall where it can be seen",
+    hits !== null && hits.minVisible >= MIN_TOUCH,
+    JSON.stringify({ cells: hits?.cells, minVisible: hits?.minVisible }),
+  );
+  record_(
+    "59.b and the cell itself owns the point a finger lands on",
+    hits !== null && hits.wrongOwner === 0,
+    JSON.stringify({ probed: hits?.probed, wrongOwner: hits?.wrongOwner, first: hits?.firstWrong }),
+  );
+  record_(
+    "59.c neighbouring strings do not overlap each other",
+    hits !== null && hits.overlaps === 0,
+    JSON.stringify({ overlaps: hits?.overlaps }),
+  );
+  record_(
+    "59.d the outer strings are whole, not half on the screen",
+    hits !== null && hits.edgeVisible >= MIN_TOUCH,
+    JSON.stringify({ edgeVisible: hits?.edgeVisible }),
+  );
+  record_(
+    "59.e the staff has no scroller of its own",
+    hits !== null && hits.innerScrollers === 0,
+    JSON.stringify({ innerScrollers: hits?.innerScrollers }),
   );
   record_(
     "60. and it is a separate box from the digit",
-    cells.minWidth !== (boxes[0]?.width ?? 0),
-    `${cells.minWidth} vs ${boxes[0]?.width}`,
+    (hits?.cells ?? 0) > 0 && (boxes[0]?.width ?? 0) < MIN_TOUCH,
+    `cell ${hits?.minVisible} tall vs digit ${boxes[0]?.width} wide`,
   );
 
   /*
@@ -817,6 +943,51 @@ async function glyphTour(browser, viewport, textScale) {
       ),
     };
   });
+  /*
+   * The focused layout's own row, and the way out of it (2S-A §18).
+   *
+   * Leaving a mode must never be the hardest thing in it, and a probe that
+   * shrank "Bitti" to `12px` stayed green until this existed — the acceptance
+   * measured the staff and never the row above it.
+   */
+  const header = await page.evaluate(() => {
+    const row = document.querySelector("[data-edit-header]");
+    const done = document.querySelector("[data-edit-done]");
+    if (!row || !done) return null;
+    const rowBox = row.getBoundingClientRect();
+    const doneBox = done.getBoundingClientRect();
+    return {
+      row: Math.round(rowBox.height),
+      done: Math.round(doneBox.height),
+      label: row.getAttribute("aria-label") ?? "",
+      section: document.querySelector("[data-edit-header-section]")?.textContent ?? "",
+      /* The chrome the layout trades away must really be gone. */
+      brand: document.querySelectorAll("[data-testid='view-tab']").length,
+    };
+  });
+  record_(
+    "64. the focused edit row is a finger tall, and so is the way out",
+    header !== null && header.row >= MIN_TOUCH && header.done >= MIN_TOUCH,
+    JSON.stringify(header),
+  );
+  record_(
+    "64.b it says which section, in music, and the view switch has stood down",
+    header !== null && header.section.length > 0 && header.label.length > 0 && header.brand === 0,
+    JSON.stringify({ section: header?.section, label: header?.label, viewSwitch: header?.brand }),
+  );
+  const rowTargets = await page.evaluate(() => {
+    const controls = [...document.querySelectorAll("[data-action-row] button")];
+    return {
+      count: controls.length,
+      min: Math.min(...controls.map((node) => Math.round(node.getBoundingClientRect().height))),
+    };
+  });
+  record_(
+    "64.c every control in the action row is a finger tall",
+    rowTargets.count > 0 && rowTargets.min >= MIN_TOUCH,
+    JSON.stringify(rowTargets),
+  );
+
   record_(
     "63. every edit cell is inside the surface the reader is looking at",
     onSurface !== null && onSurface.below === 0 && onSurface.above === 0,

@@ -13,10 +13,12 @@
  * the one rule it carries — a time selection belongs to the tab — is the same
  * rule it carried when it was inline.
  */
+import { EditHeader } from "@/components/workspace/EditHeader";
 import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
 import { SectionNavigator } from "@/components/workspace/SectionNavigator";
 import { ViewSwitch } from "@/components/workspace/ViewSwitch";
 import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
+import { editHeaderModel } from "@/lib/workspace/edit-header";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { WorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import type { PlaybackState } from "@/lib/audio/playback";
@@ -38,6 +40,8 @@ export function WorkspaceChrome({
   onProjects,
   onOpenSectionList,
   onJumpSection,
+  editing,
+  onDoneEditing,
 }: {
   song: Song;
   meter: string;
@@ -52,7 +56,41 @@ export function WorkspaceChrome({
   onProjects: () => void;
   onOpenSectionList: () => void;
   onJumpSection: (sectionId: string) => void;
+  /** True while the reader is writing, which is a whole layout (2S-A §18). */
+  editing: boolean;
+  onDoneEditing: () => void;
 }) {
+  /*
+   * The focused edit layout.
+   *
+   * Three rows about *going somewhere* — the brand header, the view switch
+   * and the section navigator — cost more than the six strings they sit
+   * above: measured at `320×700`, they left the staff `44px` where it needs
+   * `286px`. While the reader is writing they stand down and one compact row
+   * says which section and which bar, and carries the way out.
+   *
+   * The recovery banner is not part of that trade. It only appears when
+   * something has gone wrong with the reader's own saved music, and that is
+   * worth a line in any mode.
+   */
+  if (editing) {
+    return (
+      <>
+        <EditHeader
+          model={editHeaderModel(runs, navigation.viewedSectionId, navigation.activeBarKey)}
+          onDone={onDoneEditing}
+        />
+        {recovery && recoveryMessage ? (
+          <RecoveryBanner
+            state={recovery}
+            message={recoveryMessage}
+            onDismiss={onDismissRecovery}
+          />
+        ) : null}
+      </>
+    );
+  }
+
   return (
     <>
       <WorkspaceHeader
