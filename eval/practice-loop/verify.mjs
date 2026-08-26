@@ -101,6 +101,19 @@ const play = (page) => page.locator("footer button[aria-label='Çal']");
 const pause = (page) => page.locator("footer button[aria-label='Duraklat']");
 
 async function toView(page, id) {
+  /*
+   * The view switch is not on screen while the reader is writing (2S-A §18).
+   *
+   * Edit mode is a focused layout: the brand header, the view switch and the
+   * section navigator stand down so the six-string staff can have rows a
+   * finger can hit. The way out is "Bitti", so that is what the harness
+   * presses — the same door a reader has.
+   */
+  const done = page.locator("[data-edit-done]");
+  if (await done.isVisible().catch(() => false)) {
+    await done.click();
+    await page.waitForTimeout(250);
+  }
   await view(page, id).click();
   await page.waitForTimeout(350);
 }
@@ -1715,6 +1728,17 @@ function hitTicksOf(song, sectionId, piece = "kick", trackId = "drums") {
  */
 /** Click a view and wait for what it builds: click-to-mounted, in ms. */
 async function openViewTimed(page, id, selector) {
+  /*
+   * Leave the focused edit layout first, the way a reader does (2S-A §18).
+   * The switch this times is not on screen while writing, so pressing "Bitti"
+   * is part of the journey being measured rather than a way around it — the
+   * cost of the door is counted with the cost of the view.
+   */
+  const done = page.locator("[data-edit-done]");
+  if (await done.isVisible().catch(() => false)) {
+    await done.click();
+    await page.waitForTimeout(200);
+  }
   const at = Date.now();
   await view(page, id).click();
   await page.waitForSelector(selector, { timeout: 6000 }).catch(() => {});
