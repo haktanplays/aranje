@@ -3576,6 +3576,149 @@ Onaylanan olgular:
 
 **Karar (K-58 kapanışı):** «Haktan onayladı 25.08.2026. Pratik Döngüsü v1 teknik olarak kapandı. Gerçekçi medyan 31,8 ms ile hedefi geçti; p95 güvenlik payı kapanmış sayılmadı. Contract-ceiling düzenleme gecikmesi temiz koşuda 96,5–100,3 ms, yüklü ortamda yaklaşık 131 ms olarak açık performans borcudur. Fiziksel cihaz kanıtı yoktur. 320 px EditToolbar taşması ayrı ürün kusuru olarak açıktır.»
 
+### §13.28 Intent-First Composer Tools v1 · Tab Görsel Dili ve Playback Doğruluğu (§19 K-59)
+
+Nota okumayı bilmeyen birinin kafasındaki müziği şarkıya koyabilmesi için,
+mevcut düzenleme çekirdeğinin **üstüne** bir niyet katmanı kuruldu. Altındaki
+hiçbir komut yeniden yazılmadı: kalem `applyChordWrite`'a, fırça mevcut
+articulation semantiğine, devam ettirme `repeat_selection` /
+`translate_fret_shape` / `transpose_pitch`'e gider. Yeni olan, bir dokunuşun
+**ne demek istediğini** merkezî olarak bilen tek bir modeldir.
+
+#### §13.28.1 Bağlı notanın perdesi, indiği notaya sığar
+
+Bildirilen kusur «1/32'de bazı notalar duyulmuyor» idi. Katman katman ölçüldü
+ve **düşen bir nota bulunamadı**: her onset planlanıyor, zamanlanıyor,
+tetikleniyor ve hem offline hem canlı hem uygulamada duyuluyor (1/32'de de
+1/16'da da `13` buffer başlıyor). Bu olumsuz sonuç gizlenmedi.
+
+Yeniden üretilen gerçek kusur başkaydı: **bir parmağın inişi sabit süreliydi.**
+`hammer_on` `22 ms`, `pull_off` `28 ms` — ızgara ne olursa olsun, tempo ne
+olursa olsun. 1/8'de `132 BPM`'de hedef perde `180,3 ms` duyulurken, 1/32'de
+`24,1 ms`, ve **1/32 · 260 BPM'de `0,0 ms`**: ses, perde varmadan kesiliyordu.
+Ölçülen sapma `49,0 cent` — yazılan nota değil, ona doğru giden bir bükülme.
+
+Slide bu soruyu zaten soruyordu (`glideFor` yolculuğu kalan yere sığdırır).
+Aynı soru diğer ikisine de soruldu: `expressionPresets.legato.maxTravelFraction
+= 0.4`. Yolculuk, **indiği notanın kendi süresinin** en çok %40'ını alır.
+
+- Yazılan hiçbir şey değişmedi: onset da, süre de, tick de aynı. `1/32` ızgara
+  kabalaştırılmadı, hiçbir nota başka yuvaya yuvarlanmadı, BPM ve pratik hızı
+  değişmedi, kısa notalara keyfî bir asgari süre verilmedi, tekrar eden perde
+  «duyulmaz» diye atılmadı, pull-off sıradan bir atağa çevrilmedi.
+- **Production bend/slide eğrilerine dokunulmadı.** Değişen tek dal `glideSeconds
+  === null` olan dal — yani hammer-on ve pull-off — ve pull-off'un parmak
+  tıkırtısının kendi notasının içinde kalması.
+- Ölçülen sonuç (aynı harness, aynı fixture'lar): `1/32 · 260`'ta hedef perde
+  `0,0 → 15,9 ms` duyuluyor ve sapma `49,0 → 21,1 cent`. Yeri zaten bol olan
+  hiçbir durum değişmedi: `1/8 · 132`, `1/16 · 132` ve `1/32 · 40` hâlâ tam
+  preset süresini alıyor.
+- WAV ve export davranışı **bilerek** değişir, çünkü dosya playback'in okuduğu
+  aynı plandan render edilir. Değişmeyeni parite testi tutuyor: yazılan skor
+  ve dosyanın uzunluğu aynı (`renderDuration(...).expressionSeconds === 0`).
+
+#### §13.28.2 Tab: çizgi üstünde bir sayı, kart değil
+
+Perde rakamları kart gibi duruyordu: her rakam `13,23 × 12 px` dolgulu bir
+dikdörtgenin üstünde oturuyor, tel çizgisi **kutunun** kenarında bitiyordu.
+Tab bunun tersidir — altı çizgi, ve üstlerine yazılmış sayılar.
+
+- Rakamın kendisinde **dolgu, kenarlık, köşe yarıçapı ve gölge yoktur**.
+  Telin kesintisi ayrı bir elemandır ve genişliği basamak sayısına göre
+  hesaplanır (`maskWidthFor`), çünkü sabit bir boşluk `7`'yi kutulu, `12`'yi
+  sıkışık gösterir.
+- Tek ve çift basamaklı perdeler aynı yuva merkezine göre optik olarak
+  ortalanır; rakamlar `tabular-nums`, böylece bir akor dikey hizalanır.
+- Boş tel `0` yazılır ve **"Boş tel"** diye okunur; iki basamaklı ve
+  kapo-göreli perdeler tek sistemdedir.
+- **Dokunma hedefi görsel kutu değildir.** Hücre kendi ≥`44×44 px` kutusudur;
+  rakam `44 px`'lik bir kareye boyanmaz — altı telin arası düzenlemede `44 px`
+  olduğu için o kare komşularını örterdi.
+- Yedi durum vardır ve her biri **renkten başka bir şeyle** de söylenir:
+  normal (işaretsiz), seçili (altı çizili), hayalet önizleme (noktalı çerçeve),
+  çalan onset (üstte küçük ok), uzatma (kısa bağ çizgisi), HO/PO ucu (altı
+  çizili) ve reddedilen komut (üstü çizili).
+- Çalan onset'i **React sahiplenmez**: `data-playing` niteliği tek rAF
+  döngüsünden yazılır (2Q-C), böylece her karede tab yeniden render edilmez.
+- Beam'ler telin altındadır: 1/32 üç çizgi alır, çizgi rakamdan daha
+  hafiftir, sus grubu böler, ölçü çizgisini aşmaz.
+- HO/PO yayları telin üstündedir, `H`/`P` harfini taşır, art arda gelen yaylar
+  **dönüşümlü yükselir** ki bir koşu tek kapsül gibi okunmasın, ve katman
+  hiçbir pointer olayı almaz. Yön **duyulan perdeden** okunur, perde
+  numarasından değil.
+- Ekran okuyucu müzik konuşur: «7. perde», «8. perdeden 7. perdeye koparma».
+  `hammer_on`, `pull_off`, tick, yuva numarası ve tanılama arayüze çıkmaz.
+
+#### §13.28.3 Dört kapı: Nota · Şekil · Ritim · Bağla
+
+Oturumluk, tipli tek bir `ComposerTool` vardır (`note` | `power_chord` |
+`connect` | `continue_pattern`). Song'a, depoya, proje dosyasına, fingerprint'e
+ve Copilot isteğine **girmez**; yenilemede kaybolur; track, bölüm ve proje
+değişiminde bırakılır; undo/redo'nun parçası değildir. Aynı anda **tam olarak
+bir** araç tutulur, ve tutulan aracı yeniden seçmek onu bırakmaktır — okurun
+çıkamayacağı bir durum yoktur.
+
+- **Şekil → Power chord → 2 ses / 3 ses.** Kök teline ve perdesine dokunulur,
+  hayalet görünür, uygulanır, **kalem elde kalır.** 2 ses kök + beşli, 3 ses
+  buna oktav ekler; kök her zaman **en pes duyulan nota**dır ve parmağın
+  olduğu yerdir. Tek onset grubudur, varsayılan velocity mevcut nota girişi
+  kaynağından gelir, pozisyon açıkça yazılır, kapo-göreli semantik korunur,
+  Drop D ve alternatif akortlarda ve baste çalışır. Davul ve armonik olmayan
+  track tipli bir redle karşılanır; perdesiz track'e sahte perde şekli
+  yazılmaz.
+- Dolu bir vuruşta iki açık kapı vardır: **Vazgeç** ya da **Bu vuruşu power
+  chord ile değiştir**. Değiştirme onset grubunun bütününü değiştirir ve
+  **sonraki vuruşa dokunmaz**.
+- **Bağla → Otomatik / Çekiç / Koparma.** İlk notaya uzun basılır, tek track
+  içinde sürüklenir. Otomatik, **duyulan perdeden** karar verir: yükseliyorsa
+  hammer-on, düşüyorsa pull-off, aynıysa tipli red. Açık bir seçim yönü
+  tutmuyorsa reddedilir — sessiz bir geri düşüş yoktur. v1 tek track, tek
+  bölüm, çok ölçü, karışık ızgara, **tam tick**, tek telde monofonik ve en az
+  iki notadır; akordan akora, teller arası ve bölüm sınırı kapsam dışıdır.
+  **Hepsi ya da hiçbiri:** beş notanın bir bağı bozuksa hiçbiri yazılmaz.
+- **Seçim eylemi → "Bu deseni devam ettir".** Gam farkında değildir ve
+  "gamı tamamla" değildir. Üç seçenek: aynen tekrar, aynı şekli taşı, aynı
+  perdeyi taşı — ve tekrar sayısını, yönü ve deltayı okur seçer. Hiçbir
+  seçenek "en iyi", "önerilen", "gama uygun" ya da "doğru" diye
+  etiketlenmez. Seçimin `widthTicks`'i susları da taşır; offset, süre,
+  velocity ve içerideki articulation korunur. Sığmıyorsa
+  `target_grid_incompatible`, çakışma varsa **bütünü** reddedilir, bölüm
+  sonunu aşmak tipli bir red ya da okurun açıkça istediği "sığdığı kadar"
+  ister — sessiz kırpma yoktur. En çok üç hayalet kart çizilir ve her kart
+  gerçek komutun gerçek sonucudur; **sıfır sağlayıcı çağrısı** yapılır.
+
+#### §13.28.4 Atomiklik ve sınırlar
+
+- Başarı: aktif projeye **tam 1** `setItem`, katalog `0`, başka proje `0`,
+  **tam 1** geçmiş adımı. Başarısızlık: `0` yazma, `0` geçmiş, bayt-eş Song,
+  ham tanılama yok. Önizleme: `0` depo, `0` geçmiş, çalma durmaz, ikinci
+  AudioContext açılmaz, fingerprint değişmez, Copilot çağrılmaz.
+- **Bir jest bir adımdır**: power chord bir adım, beş notalık fırça bir adım,
+  devam ettirme kaç kopya olursa olsun bir adım.
+- Yeni alan adı davranış `Workspace.tsx`'te ya da bir `.tsx` handler'ında
+  hesaplanmaz. Saf çekirdekler React, Tone, `@/components/**` ve DOM
+  global'i görmez; tek istisna adıyla yazılıdır (`@/lib/audio/schedule`, bir
+  notanın yazılırken aldığı velocity'nin **zaten** yaşadığı yer).
+- Satır bütçeleri yükseltilmedi: `Workspace.tsx` `377 → 366`,
+  `ArrangementCanvas.tsx` `470 → 470`, `TabCanvas.tsx` `472 → 452`. Bağlama,
+  bütçeyle değil davranış koruyan üç ayrıştırmayla ödendi.
+
+#### §13.28.5 Kapanışta açık kalanlar
+
+- **`sus`, dead note, ghost note, muted strum ve vuruş yönü Song Contract'ta
+  yoktur.** Sahte alan, sahte enum ve çalışmayan seçenek eklenmedi; teklif
+  edilen sorumluluk katmanı, migration ihtiyacı ve çoklu-enstrüman etkisi
+  `eval/intent-composer/EXPRESSION-GAPS.md`'de yazılıdır ve K-59'un açık
+  devamıdır.
+- **Perde yazma sheet'inin "Güncelle" düğmesi az önce seçilen articulation'ı
+  siliyor** (baseline §D.1'de ölçüldü). Bu fazda kapatılmadı; ayrı bir ürün
+  kusuru olarak açıktır.
+- **Fiziksel Android/iOS kabulü yapılmadı.** Bütün sayılar masaüstü Node ve
+  masaüstü Chromium'dandır.
+- Bu katman **hiçbir müzikal öneri yapmaz.** Ne çalınacağına dair tek bir
+  karar vermez; yalnız okurun söylediğini tam, atomik ve geri alınabilir bir
+  komuta çevirir.
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)
