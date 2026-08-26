@@ -119,7 +119,7 @@ probe "B10 the doors are sized in rem again" \
   src/components/workspace/ComposerDoorRow.tsx "layout" \
   '          className={`min-h-11 min-w-0 flex-1 rounded-lg border px-1.5 text-sm whitespace-nowrap ${' \
   '          className={`min-h-14 min-w-0 flex-1 basis-24 rounded-lg border px-3 text-base ${' \
-  '          style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 56 }}' \
+  '          style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: armed ? 44 : 56 }}' \
   '          style={{}}'
 
 echo "--- the focused edit layout (§18) ---"
