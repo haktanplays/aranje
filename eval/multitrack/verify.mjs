@@ -16,6 +16,7 @@ import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { LEDGER, takeLedger } from "../projects/ledger.mjs";
+import { leaveEditing } from "../shared/harness.mjs";
 import { device, seed, twoProjects } from "./device.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -98,6 +99,17 @@ async function boot(browser, viewport, storage) {
 /* ----------------------------------------------------------- measurements */
 
 const view = (page, id) => page.getByTestId(`view-${id}`);
+/**
+ * Change surface the way a reader does (2S-A §18).
+ *
+ * The view switch stands down while a bar is being edited so the six-string
+ * staff can own rows a finger can hit; "Bitti" brings it back. Reaching for
+ * the switch without coming out first waits on a withdrawn control.
+ */
+async function toView(page, id) {
+  await leaveEditing(page);
+  await view(page, id).click();
+}
 const play = (page) => page.locator("footer button[aria-label='Çal']");
 const pause = (page) => page.locator("footer button[aria-label='Duraklat']");
 
@@ -197,14 +209,14 @@ async function run(page, errors, vp) {
   });
 
   await safe(at("2 Çoklu görünüm açılır"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(250);
     const lanes = await page.locator("[data-multi-lane]").count();
     record_(at("2 Çoklu görünüm açılır"), lanes === 4, `${lanes} şerit`);
   });
 
   await safe(at("3 Tab açılır"), async () => {
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await page.waitForTimeout(200);
     const n = await page.locator("[data-tab-content]").count();
     record_(at("3 Tab açılır"), n === 1, `${n} tab içeriği`);
@@ -232,7 +244,7 @@ async function run(page, errors, vp) {
 
   /* -- 5..12 lifecycle -------------------------------------------------- */
   await safe(at("5 AudioContext 1"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(150);
     await play(page).click();
     await page.waitForTimeout(1200);
@@ -274,7 +286,7 @@ async function run(page, errors, vp) {
     );
 
   await safe(at("51 manuel kaydırma takibi durdurur"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     if ((await pause(page).count()) === 0) {
       await play(page).click();
@@ -332,7 +344,7 @@ async function run(page, errors, vp) {
      * surface must not fetch a single buffer again (§11). Counted at the
      * fetch, not inferred from the bank's own bookkeeping.
      */
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     if ((await pause(page).count()) === 0) {
       await play(page).click();
@@ -360,9 +372,9 @@ async function run(page, errors, vp) {
     const before = await page.evaluate(() =>
       document.querySelector("[data-transport-status]")?.textContent ?? "",
     );
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await page.waitForTimeout(150);
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const after = await page.evaluate(() =>
       document.querySelector("[data-transport-status]")?.textContent ?? "",
@@ -379,9 +391,9 @@ async function run(page, errors, vp) {
   });
 
   await safe(at("6 boşta canlı rAF 0"), async () => {
-    await view(page, "arrange").click();
+    await toView(page, "arrange");
     await page.waitForTimeout(300);
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(300);
     const live = await probeLive(page);
     record_(at("6 boşta canlı rAF 0"), live === 0, String(live));
@@ -391,9 +403,9 @@ async function run(page, errors, vp) {
     const before = await page.evaluate(() =>
       document.querySelector("[data-multi-content]")?.getAttribute("data-viewed-section"),
     );
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await page.waitForTimeout(150);
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const after = await page.evaluate(() =>
       document.querySelector("[data-multi-content]")?.getAttribute("data-viewed-section"),
@@ -403,7 +415,7 @@ async function run(page, errors, vp) {
 
   /* -- 13..21 the axis and the lanes ------------------------------------ */
   await safe(at("13 Çoklu tek yatay scroller"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const n = await declaredScrollers(page);
     const multi = await page.locator("[data-multi-scroll]").count();
@@ -411,7 +423,7 @@ async function run(page, errors, vp) {
   });
 
   await safe(at("14 lane başına scroller 0"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const n = await page.evaluate(
       () =>
@@ -424,7 +436,7 @@ async function run(page, errors, vp) {
   });
 
   await safe(at("15 dört track aynı bar çizgisinde"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const x = await laneBarX(page);
     const rows = Object.values(x);
@@ -446,7 +458,7 @@ async function run(page, errors, vp) {
   }
 
   await safe(at("22 track header dokunuşu aktif eder"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(250);
     const before = await page.evaluate(() =>
       document.querySelector("[data-multi-lane][data-active]")?.getAttribute("data-multi-lane"),
@@ -488,7 +500,7 @@ async function run(page, errors, vp) {
      * the left edge while the notation scrolls under it (§6). Measured as a
      * box on screen rather than as a class name.
      */
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     await page.evaluate(() => {
       document.querySelector("[data-multi-scroll]").scrollLeft = 0;
@@ -522,7 +534,7 @@ async function run(page, errors, vp) {
   });
 
   await safe(at("20 sessiz track listeden düşmez"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const lanes = await page.evaluate(() =>
       [...document.querySelectorAll("[data-multi-lane]")].map((l) =>
@@ -576,7 +588,7 @@ async function run(page, errors, vp) {
   });
 
   await safe(at("47 kasıtlı yatay scroller 1"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const n = await scrollerCount(page);
     record_(at("47 kasıtlı yatay scroller 1"), n === 1, String(n));
@@ -621,7 +633,7 @@ async function tourSections(page, vp) {
   const at = (name) => `[${vp}] ${name}`;
 
   await safe(at("12 başka bölüm okunurken sahte playhead yok"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(250);
     const first = await page.evaluate(() => ({
       section: document
@@ -674,7 +686,7 @@ async function tourSections(page, vp) {
 async function tourGrids(page, vp, label) {
   const at = (name) => `[${vp}] ${name}`;
   await safe(at(`15.${label} bar çizgileri hizalı (${label})`), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(300);
     const x = await laneBarX(page);
     const rows = Object.values(x).filter((row) => row.length > 0);
@@ -693,7 +705,7 @@ async function tourPitched(page, vp) {
   const at = (name) => `[${vp}] ${name}`;
 
   await safe(at("19 perde şeridi"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(300);
     const shot = await page.evaluate(() => {
       const lane = document.querySelector("[data-multi-pitched='keys']");
@@ -733,7 +745,7 @@ async function tourScale(page, vp) {
   const at = (name) => `[${vp}] ${name}`;
 
   await safe(at("21 sekiz track dikey scroll ile erişilebilir"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(400);
     const shot = await page.evaluate(() => {
       const scroller = document.querySelector("[data-multi-scroll]");
@@ -856,7 +868,7 @@ async function dismiss(page) {
 /** Open the multi view with edit mode on and a known active track. */
 async function enterEditing(page, trackId) {
   await dismiss(page);
-  await view(page, "multi").click();
+  await toView(page, "multi");
   await page.waitForTimeout(250);
   await page.locator(`[data-multi-lane-header='${trackId}']`).click();
   await page.waitForTimeout(200);
@@ -1087,7 +1099,7 @@ async function tourEditing(page, vp) {
 
   await safe(at("35 davulda akor kurucu sunulmuyor"), async () => {
     await dismiss(page);
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(250);
     await page.locator("[data-multi-lane-header='drums']").click();
     await page.waitForTimeout(300);
@@ -1131,7 +1143,7 @@ async function tourNewTrack(page, vp) {
   const at = (name) => `[${vp}] ${name}`;
 
   await safe(at("36 yeni track oluşturuluyor"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     await page.locator("[data-track-control]").click();
     await page.waitForTimeout(250);
@@ -1269,7 +1281,7 @@ async function tourProjects(page, vp) {
   const at = (name) => `[${vp}] ${name}`;
 
   await safe(at("39 proje değişince şerit durumu sıfırlanır"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(300);
     await page.locator("[data-multi-lane-collapse]").first().click();
     await page.waitForTimeout(250);
@@ -1292,7 +1304,7 @@ async function tourProjects(page, vp) {
     await page.locator("[data-project-actions='project-2'] [data-project-action='open']").click();
     await page.waitForTimeout(1000);
     await dismiss(page);
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(300);
     const after = await page.evaluate(() => ({
       collapsed: document.querySelectorAll("[data-multi-lane][data-collapsed]").length,

@@ -20,6 +20,7 @@
 import { chromium } from "playwright";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { activeSongBytes, deviceWith } from "../shared/project-storage.mjs";
+import { leaveEditing } from "../shared/harness.mjs";
 /*
  * 2Q-B §1.3: the seed is a project device and the song is read back out of
  * the project record. Seeding `aranje.song` sent every run through the
@@ -142,11 +143,13 @@ const inArrange = (page) =>
     .catch(() => false);
 
 async function goArrange(page) {
+  await leaveEditing(page);
   await page.locator("[data-testid=view-arrange]").click();
   await page.waitForTimeout(250);
 }
 
 async function goTab(page) {
+  await leaveEditing(page);
   await page.locator("[data-testid=view-tab]").click();
   await page.waitForTimeout(250);
 }

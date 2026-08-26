@@ -22,6 +22,7 @@ import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { LEDGER, takeLedger } from "../projects/ledger.mjs";
+import { leaveEditing } from "../shared/harness.mjs";
 import { device, filePath, fixture } from "./device.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3100";
@@ -84,6 +85,18 @@ async function boot(browser, viewport, storage, extra = {}) {
 /* --------------------------------------------------------------- helpers */
 
 const view = (page, id) => page.getByTestId(`view-${id}`);
+/**
+ * Change surface the way a reader does (2S-A §18).
+ *
+ * While a bar is being edited the view switch stands down so the six-string
+ * staff can own rows a finger can hit; "Bitti" brings it back. Reaching for
+ * the switch without coming out first waits on a control the surface has
+ * deliberately withdrawn.
+ */
+async function toView(page, id) {
+  await leaveEditing(page);
+  await view(page, id).click();
+}
 const editButton = (page) =>
   page.locator("[data-action-row] button", { hasText: /^Düzenle$/ });
 const endEdit = (page) =>
@@ -257,7 +270,7 @@ async function tourKitChain(page, vp, errors) {
   }
 
   await safe(at("A6 boş kitin çekirdek satırları var"), async () => {
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await arm(page);
     const rows = await page.evaluate(() => {
       const cells = [...document.querySelectorAll("[data-drum-cell]")];
@@ -430,7 +443,7 @@ async function tourPitchedImport(page, vp, errors) {
   });
 
   await safe(at("B2 Tab okuma modunda dürüst cümleyi söyler"), async () => {
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await pickTrack(page, "Piyano");
     const text = await page.locator("main").innerText();
     record_(
@@ -626,7 +639,7 @@ async function tourPitchedImport(page, vp, errors) {
   });
 
   await safe(at("B22 Çoklu görünümde aynı şerit çıkar"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     await arm(page);
     const cells = await page.locator("[data-pitched-cell]").count();
@@ -635,7 +648,7 @@ async function tourPitchedImport(page, vp, errors) {
 
   await safe(at("B23 Çoklu'da yazılan nota Tab'da da görünür"), async () => {
     const inMulti = await page.locator("[data-pitched-cell][data-state='note']").count();
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await page.waitForTimeout(200);
     const inTab = await page.locator("[data-pitched-cell][data-state='note']").count();
     record_(
@@ -657,7 +670,7 @@ async function tourPitchedChord(page, vp, errors) {
 
   await safe(at("C1 içe aktarılan perdesiz track'te akor kapısı var"), async () => {
     await openProjectFile(page, "pitched");
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await pickTrack(page, "Piyano");
     await arm(page);
     await page.locator("[data-pitched-cell]").first().click();
@@ -824,7 +837,7 @@ async function tourLimits(page, vp, errors, scale) {
   });
 
   await safe(at("D5 davul hücresi tam dokunma yüksekliğinde"), async () => {
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await pickTrack(page, "Davul");
     await arm(page);
     const box = await boxOf(page, "[data-drum-cell]");
@@ -853,7 +866,7 @@ async function tourLimits(page, vp, errors, scale) {
   });
 
   await safe(at("D8 Çoklu görünümde de tek kaydırıcı"), async () => {
-    await view(page, "multi").click();
+    await toView(page, "multi");
     await page.waitForTimeout(200);
     const count = await scrollerCount(page);
     record_(at("D8 Çoklu görünümde de tek kaydırıcı"), count <= 1, String(count));
@@ -879,7 +892,7 @@ async function tourLimits(page, vp, errors, scale) {
   });
 
   await safe(at("D10 nota sayfasındaki her kontrol 44px"), async () => {
-    await view(page, "tab").click();
+    await toView(page, "tab");
     await pickTrack(page, "Davul");
     const small = await page.evaluate(() => {
       const sheet = document.querySelector("[role='dialog']");

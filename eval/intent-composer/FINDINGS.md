@@ -361,3 +361,30 @@ telin son hücreleri pilin altına giriyor, bu yüzden aynı zayıflık burada
 ısırıyor. `pressCell` artık dokunmadan önce o noktada gerçekten hedef
 hücrenin olup olmadığını soruyor. Düzeltmeden sonra `eval/tab` başlangıç
 SHA'sıyla **birebir aynı**: `89 geçti / 5 kaldı`, aynı beş senaryo.
+
+## §18'de bulunan üçüncü kusur, ve bu sefer kusur bendeydi: kapılar fırçanın kapısını da kapatıyordu
+
+320×700 · %150'de yüzeyin sıkışmasına verdiğim ilk cevap, bir koşu seçiliyken
+dört kapıyı gizlemekti (`doorsStandDown`). Ölçüm doğruydu — o kombinasyonda
+kapılar `main`'i `44px`'e indiriyordu — ama çözüm yanlış yeri kesti.
+
+Legato Fırçası **seçili bir koşu üzerinde** kullanılır: notaları kapla, sonra
+"Bağla"yı aç. Kapıları seçim varken gizlemek, fırçanın tek kapısını tam ihtiyaç
+duyulan anda ortadan kaldırdı. Kendi kabul paketim bunu söyledi:
+
+```
+locator.click: Timeout 30000ms exceeded.
+  - waiting for locator('[data-composer-door=\'connect\']')
+  at brushTour (eval/intent-composer/verify.mjs:569)
+```
+
+Suite senaryo üretmeyi bırakıp çöktü; 36 senaryodan sonrası hiç koşmadı.
+
+**Düzeltme.** Kapılar satırını geri aldım. Yer, Focused Edit Layout'tan
+geliyor: marka başlığı, görünüm anahtarı ve bölüm navigasyonu tek bir 44 px
+edit başlığına iniyor. Bunlar yazarken kullanılmayan chrome; kapılar değil.
+
+**Önce kırmızı test.** `intent-boundary.test.ts` artık `ComposerArea`'nın
+syntax tree'sini okuyor ve `ComposerDoorRow`'un `selection`'ı soran hiçbir
+koşulun içinde olmadığını doğruluyor. Kapıyı seçime bağlayan mutasyon testi
+kırmızıya çeviriyor (1 failed | 12 passed), yani iddia boş değil.

@@ -120,3 +120,22 @@ export function unwrapStoredSong(raw) {
   }
   return parsed?.format === "aranje.song" ? (parsed.current ?? null) : parsed;
 }
+
+/**
+ * Leave edit mode the way a reader does, if the surface is in it (2S-A §18).
+ *
+ * Editing opens a focused layout: the brand header, the view switch and the
+ * section navigator stand down so the six-string staff can own rows a finger
+ * can actually hit at 320 px. Everything they carried — opening a project,
+ * changing surface, walking the sections — is reachable again the moment
+ * "Bitti" is pressed, and that is the only door the product offers, so it is
+ * the door a harness uses too. Calling this when nothing is being edited is
+ * a no-op, which is why it is safe to put in front of any header reach.
+ */
+export async function leaveEditing(page) {
+  const done = page.locator("[data-edit-done]");
+  if (await done.isVisible().catch(() => false)) {
+    await done.click();
+    await page.waitForTimeout(250);
+  }
+}

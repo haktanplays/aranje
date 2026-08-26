@@ -6,9 +6,9 @@ quietly untrue, run against the tests that are supposed to hold it.
 | Kind | Script | Probes | Red | Vacuous |
 |---|---|---:|---:|---:|
 | unit / AST | `probes.sh` | 72 | 70 | 2 |
-| browser | `browser-probes.sh` | 12 | 12 | 0 |
+| browser | `browser-probes.sh` | 16 | 16 | 0 |
 | real audio / render | `audio-probes.sh` | 6 | 6 | 0 |
-| **total** | | **90** | **88** | **2** |
+| **total** | | **94** | **92** | **2** |
 
 Every mutation is the *dangerous behaviour*, never a syntax error. Three of the
 first drafts only broke compilation or added dead code — they were rewritten
@@ -69,6 +69,30 @@ Three first drafts were not valid probes and were replaced:
   nothing at all. They now filter repeated pitches out of the expression plan
   and turn a written slur into an ordinary attack — the two shortcuts §3
   forbids by name.
+
+## The four added in §18
+
+The regression sweep found a defect acceptance could not see: a row with the
+right CSS height, painted outside the surface. Four probes now bind that
+class, and two older ones were retargeted at the gaps they turned out to be
+measuring nothing about.
+
+| Probe | The dangerous behaviour it puts back |
+|---|---|
+| B13 | the normal chrome stays up while writing, so the staff loses its room again |
+| B14 | the staff answers a cramped screen by growing a scroller of its own |
+| B15 | six `44px` bands stacked `26px` apart — green on a height check, ambiguous under a finger |
+| B16 | the way out of edit mode is not a control any more |
+
+Retargeted rather than deleted:
+
+- **B9** (the toolbar sized in rem) stayed green because no scenario measured
+  the action row's own controls. Scenario **64.c** now does, and the probe
+  runs against it.
+- **B16**'s first form shrank "Bitti" to `12px` and nothing noticed, because
+  the focused row had no scenario at all. **64** and **64.b** now hold the
+  row, its accessible name, the section it says, and that the view switch has
+  really stood down.
 
 ## Hygiene
 

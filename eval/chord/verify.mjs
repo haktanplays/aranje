@@ -16,6 +16,7 @@ import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
 import { LEDGER, takeLedger } from "../projects/ledger.mjs";
+import { leaveEditing } from "../shared/harness.mjs";
 import {
   bassTrack,
   capoTrack,
@@ -808,6 +809,10 @@ async function run(label, size) {
         `${(await storedNotes(page)).length} nota A'da`,
       );
 
+      // The projects door lives in the header, and the header stands down
+      // while a bar is being edited (2S-A §18). Come out the way a reader
+      // does before reaching for it.
+      await leaveEditing(page);
       await page.locator("[data-open-projects]").click();
       await page.waitForSelector('[role="dialog"] section');
       await page.waitForTimeout(300);

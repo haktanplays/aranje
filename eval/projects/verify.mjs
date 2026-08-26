@@ -800,6 +800,22 @@ async function run(label, size) {
       const editingBefore =
         (await page.getByRole("button", { name: "Düzenlemeyi bitir" }).count()) === 1;
 
+      /*
+       * The library door is in the header, and the header stands down while a
+       * bar is being written (2S-A §18). That is the product decision, so the
+       * harness asserts it rather than routing around it: there is no way to
+       * change project mid-edit, and "Bitti" is the way back.
+       */
+      const libraryReachableWhileEditing =
+        (await page.locator("[data-open-projects]").isVisible().catch(() => false)) === true;
+      record_(
+        `[${label}] 40.a düzenleme sırasında kütüphane kapısı çekiliyor`,
+        editingBefore && !libraryReachableWhileEditing,
+        libraryReachableWhileEditing ? "kapı hâlâ açık" : "kapı çekildi",
+      );
+
+      await page.locator("[data-edit-done]").click();
+      await page.waitForTimeout(300);
       await openLibrary(page);
       await rowAction(page, "project-2", "open");
       await closeLibrary(page);

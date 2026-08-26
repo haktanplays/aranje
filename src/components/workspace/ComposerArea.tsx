@@ -18,7 +18,7 @@ import { ComposerDoorRow } from "@/components/workspace/ComposerDoorRow";
 import { ComposerSheet } from "@/components/workspace/ComposerSheet";
 import { ContinuePatternSheet } from "@/components/workspace/ContinuePatternSheet";
 import { LegatoDecisionSheet } from "@/components/workspace/LegatoDecisionSheet";
-import { isArmed, type ComposerDoor, type ComposerTool } from "@/lib/workspace/composer-tool";
+import type { ComposerDoor, ComposerTool } from "@/lib/workspace/composer-tool";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
 import type { Song, Track } from "@/lib/song/schema";
 import type { TimeSelection } from "@/lib/song/time-selection";
@@ -70,27 +70,20 @@ export function ComposerArea({
     setDoor(null);
   };
 
-  /*
-   * The doors stand down while a run is selected (2S-A §11, §18).
-   *
-   * §11 asks the work area to stay larger than the selector and the action
-   * together. With a time selection open there are already two bars under the
-   * music — the selection's own actions and the edit toolbar — and at 320x700
-   * with 150% text the four doors took the surface down to `44px`: measured,
-   * and it broke extending a selection, which broke the practice loop's way
-   * in. A reader with a run selected is acting on that run, not choosing a
-   * tool, so the doors give the music their line back and return the moment
-   * the selection is let go.
-   *
-   * A held tool keeps its row, because letting go of it has to stay possible.
-   */
-  const doorsStandDown = selection !== null && !isArmed(tool);
-
   return (
     <>
-      {doorsStandDown ? null : (
-        <ComposerDoorRow tool={tool} onOpen={setDoor} onRelease={composer.release} />
-      )}
+      {/*
+        The doors keep their line even while a run is selected (2S-A §18).
+
+        Hiding them was an earlier answer to the surface being squeezed at
+        320x700 with 150% text, and it took away the one door the legato
+        brush needs: the brush is *used* on a selected run, so "Bagla" has to
+        be reachable exactly when a selection exists. The room comes from the
+        focused edit layout instead — the brand header, the view switch and
+        the section navigator stand down for one 44px edit header — which is
+        chrome the reader is not using while writing, unlike the doors.
+      */}
+      <ComposerDoorRow tool={tool} onOpen={setDoor} onRelease={composer.release} />
 
       {composer.refusal ? (
         <p

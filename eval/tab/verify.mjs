@@ -18,7 +18,7 @@
 import { chromium } from "playwright";
 import { mkdirSync, writeFileSync } from "node:fs";
 
-import { layoutProbe, targetEdges } from "../shared/harness.mjs";
+import { layoutProbe, leaveEditing, targetEdges } from "../shared/harness.mjs";
 import { deviceWith, readActiveSong } from "../shared/project-storage.mjs";
 /*
  * 2Q-B §1.3: the seed is a project device and the song is read back out of
@@ -613,6 +613,9 @@ async function run(label, size) {
       );
 
       // 13-15: the readings, from the section form
+      // The section navigator is part of the chrome that stands down while a
+      // bar is being written (2S-A §18); come out the way a reader does.
+      await leaveEditing(page);
       await page.locator('[data-section-nav] button[aria-label^="Bölüm:"]').click();
       await page.waitForTimeout(300);
       await page.locator("[data-section-manage]").click();
@@ -659,6 +662,7 @@ async function run(label, size) {
     });
     try {
       const openBarTiming = async (barKey) => {
+        await leaveEditing(page);
         await page.locator('[data-testid="view-arrange"]').click();
         await page.waitForSelector("[data-arrangement-scroller]");
         await page.waitForTimeout(250);
@@ -912,6 +916,7 @@ async function run(label, size) {
         }));
 
       const openBarTiming = async (barKey) => {
+        await leaveEditing(page);
         await page.locator('[data-testid="view-arrange"]').click();
         await page.waitForSelector("[data-arrangement-scroller]");
         await page.waitForTimeout(250);
@@ -1248,6 +1253,23 @@ async function run(label, size) {
       record(`[${label}] 29 body yatay taşma 0`, layout.bodyOverflow <= 0, `${layout.bodyOverflow}`);
       record(`[${label}] 30 kasıtlı yatay scroller 1`, layout.scrollers === 1, `${layout.scrollers}`);
 
+      /*
+       * Edit mode is a focused layout (2S-A §18): the section navigator and
+       * the view switch stand down so the six-string staff can own rows a
+       * finger can hit, and one 44px edit header carries their place. So the
+       * claim is measured where each control actually lives — the edit header
+       * while writing, the normal chrome once "Bitti" has been pressed —
+       * rather than asking for four controls the surface has withdrawn and
+       * reading their absence as a zero-height target.
+       */
+      const editEdges = await targetEdges(page, ["[data-edit-done]", "[data-edit-header]"]);
+      record(
+        `[${label}] 31.a düzenleme başlığı 44 px`,
+        editEdges.length === 2 && editEdges.every((edge) => edge >= 44),
+        editEdges.join(","),
+      );
+
+      await leaveEditing(page);
       const edges = await targetEdges(page, [
         '[data-section-nav] button[aria-label^="Bölüm:"]',
         '[data-section-nav] button[aria-label^="Sonraki bölüm"]',
@@ -1256,7 +1278,7 @@ async function run(label, size) {
       ]);
       record(
         `[${label}] 31 44 px altı etkileşim hedefi 0`,
-        edges.every((edge) => edge >= 44),
+        edges.length === 4 && edges.every((edge) => edge >= 44),
         edges.join(","),
       );
 

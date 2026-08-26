@@ -11,7 +11,9 @@ import { describe, expect, it } from "vitest";
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-import { identifiersOf, sourceFilesUnder, valueImportsOf } from "@/lib/dev/ast";
+import ts from "typescript";
+
+import { identifiersOf, parseFile, sourceFilesUnder, valueImportsOf } from "@/lib/dev/ast";
 
 const lineCount = (path: string) => {
   const text = readFileSync(path, "utf8");
@@ -196,6 +198,45 @@ describe("41. the intent layer stays inside its line budget", () => {
     for (const path of VIEWS) {
       expect(lineCount(path), path).toBeLessThanOrEqual(250);
     }
+  });
+
+  it("keeps the doors reachable while a run is selected", () => {
+    /*
+     * The legato brush is *used* on a selected run: cover the notes, then
+     * open "Bagla". An earlier answer to the surface being squeezed at
+     * 320x700 with 150% text hid the door row whenever a selection existed,
+     * which took the brush's only door away at exactly the moment it was
+     * needed — the acceptance suite could no longer finish the brush tour.
+     *
+     * The room comes from the focused edit layout now, so this reads the
+     * syntax tree rather than the rendered pixels: the door row must not sit
+     * inside any condition that asks about the selection.
+     */
+    const source = parseFile("src/components/workspace/ComposerArea.tsx");
+    const guards: string[] = [];
+    const visit = (node: ts.Node, conditions: readonly ts.Node[]): void => {
+      if (ts.isJsxSelfClosingElement(node) || ts.isJsxOpeningElement(node)) {
+        if (node.tagName.getText(source) === "ComposerDoorRow") {
+          for (const condition of conditions) {
+            if (/\bselection\b/.test(condition.getText(source))) {
+              guards.push(condition.getText(source));
+            }
+          }
+        }
+      }
+      let next = conditions;
+      if (ts.isConditionalExpression(node)) next = [...conditions, node.condition];
+      if (
+        ts.isBinaryExpression(node) &&
+        (node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+          node.operatorToken.kind === ts.SyntaxKind.BarBarToken)
+      ) {
+        next = [...conditions, node.left];
+      }
+      ts.forEachChild(node, (child) => visit(child, next));
+    };
+    visit(source, []);
+    expect(guards).toEqual([]);
   });
 
   it("leaves the composition root and the canvases no bigger than it found them", () => {

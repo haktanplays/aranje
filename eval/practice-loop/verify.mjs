@@ -795,6 +795,21 @@ async function startLatency(page, ms) {
   };
 }
 
+/**
+ * What the latency sampler actually saw, when it disagreed with the claim.
+ *
+ * A count-in that reports "the playhead moved at 83 ms" is either a product
+ * defect or a measurement that mistook something else for transport motion,
+ * and the two are told apart by the samples rather than by the verdict.
+ */
+function dumpLatency(name, payload) {
+  mkdirSync(`${OUT}/artifacts`, { recursive: true });
+  writeFileSync(
+    `${OUT}/artifacts/countin-${combo.replace(/[^0-9a-zA-Z]+/g, "-")}-${name}.json`,
+    `${JSON.stringify(payload, null, 2)}\n`,
+  );
+}
+
 async function tourCountIn(page, sectionId, label) {
   await toView(page, "tab");
   await gotoSection(page, sectionId);
@@ -808,14 +823,17 @@ async function tourCountIn(page, sectionId, label) {
   await page.waitForTimeout(200);
   record_(`${label} count-in kapalı hemen başlar`, none.moved && none.movedAfterMs < 900, `${none.movedAfterMs}ms`);
 
-  await setCountIn(page, 1);
+  const armedOne = await setCountIn(page, 1);
   const one = await startLatency(page, 3200);
   if ((await pause(page).count()) > 0) await pause(page).click();
   await page.waitForTimeout(200);
+  const oneHeld =
+    armedOne && one.moved && none.movedAfterMs !== null && one.movedAfterMs > none.movedAfterMs + 300;
+  if (!oneHeld) dumpLatency(`${label}-one`, { armed: armedOne, none, one });
   record_(
     `${label} bir ölçü count-in bekletir`,
-    one.moved && none.movedAfterMs !== null && one.movedAfterMs > none.movedAfterMs + 300,
-    `${one.movedAfterMs}ms vs ${none.movedAfterMs}ms`,
+    oneHeld,
+    `${one.movedAfterMs}ms vs ${none.movedAfterMs}ms${armedOne ? "" : " — sayim kurulamadi"}`,
   );
 
   await setCountIn(page, 2);
