@@ -388,3 +388,38 @@ edit başlığına iniyor. Bunlar yazarken kullanılmayan chrome; kapılar deği
 syntax tree'sini okuyor ve `ComposerDoorRow`'un `selection`'ı soran hiçbir
 koşulun içinde olmadığını doğruluyor. Kapıyı seçime bağlayan mutasyon testi
 kırmızıya çeviriyor (1 failed | 12 passed), yani iddia boş değil.
+
+## §21 final doğrulamasında ortaya çıkan, bu faza ait olmayan bir yarış
+
+`npm test` final HEAD üzerinde dört kez koşuldu: **iki kez 3316/3316 yeşil,
+iki kez tek bir test kırmızı.**
+
+```
+FAIL src/lib/copilot/pipeline.test.ts
+  > the phase 2A budget and idempotency rules are untouched
+  > does not overspend when two callers arrive together
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+```
+
+Aynı dosya tek başına beş kez koşuldu, beşinde de `62/62` yeşil. Yani kırmızı,
+bütün suite paralel çalışırken oluşan bir zamanlama penceresine bağlı.
+
+**Kusur gerçek ve bu fazın değil.** Kırılan iddia bütçe *sonucu* değil —
+`[a.ok, b.ok]` hâlâ tam olarak bir kabul, bir red veriyor ve red kodu
+`budget_exhausted`. Kırılan, `adapter.calls` sayısı: iki çağıran aynı anda
+geldiğinde ikisi de bütçe kontrolünden geçip **sağlayıcıya gidiyor**, red
+sonradan veriliyor. Yani tek patch dönerken para iki kez harcanabiliyor.
+
+`src/lib/copilot/` bu fazda hiç değişmedi:
+
+```
+git diff --stat 217e7cb..HEAD -- src/lib/copilot/   →  (boş)
+```
+
+Kod başlangıç SHA'sıyla bayt-eş olduğu için davranış da bayt-eş; bu yarış
+2S-A'nın açtığı bir kırmızı değil, Faz 2A rezervasyonunun atomik olmayışı.
+
+**Kapatılmadı, gizlenmedi.** Para harcayan bir yolun kilitlenmesi kendi
+kararını ve kendi testlerini hak ediyor; bir 2S-A teslimatının kuyruğunda,
+kapsam dışı ve dokunulmamış bir modülde sessizce yapılacak iş değil. Açık
+borç olarak buraya ve final rapora yazıldı.
