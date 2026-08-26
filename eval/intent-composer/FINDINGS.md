@@ -423,3 +423,96 @@ Kod başlangıç SHA'sıyla bayt-eş olduğu için davranış da bayt-eş; bu ya
 kararını ve kendi testlerini hak ediyor; bir 2S-A teslimatının kuyruğunda,
 kapsam dışı ve dokunulmamış bir modülde sessizce yapılacak iş değil. Açık
 borç olarak buraya ve final rapora yazıldı.
+
+## Kapanış turu §2 · Perde güncellemesi articulation'ı siliyordu
+
+**Yeniden üretim, component'te değil komutta.** `applyEdit`'in `set_note` dalı
+notayı komuttan **sıfırdan** kuruyordu:
+
+```ts
+const note: NoteEvent = {
+  pitch,
+  position: { string: command.stringIndex, fret: command.fret },
+  ...(command.velocity === undefined ? {} : { velocity: command.velocity }),
+  ...(command.articulation === undefined ? {} : { articulation: command.articulation }),
+};
+```
+
+Perde sheet'i `onCommit(fret)` ile yalnız `{ kind, target, stringIndex, fret }`
+gönderiyor. Komutta olmayan her alan — articulation da, velocity de — böylece
+kayboluyordu. Yazılan yeni test dosyası mevcut HEAD üzerinde **29 iddiadan
+20'sini kırmızıya** çevirdi; kusur sheet'in değil, komutun.
+
+**Üç niyet ayrıldı.** `articulation?: Articulation` yerine ayrık birlik:
+
+```ts
+export type ArticulationPatch =
+  | { kind: "keep" }      // varsayılan
+  | { kind: "set"; articulation: Articulation }
+  | { kind: "clear" };
+```
+
+`undefined` artık «söylenmedi» demek ve «söylenmedi» **koru** demek. `velocity`
+de aynı kuralla korunuyor. İkinci bir note command yazılmadı.
+
+**Bağlantı geçersizleşiyorsa sessiz düşürme yok.** Articulation validator'ı
+bunu bir **uyarı** olarak raporluyor («normal çalınacak») — bu, öyle gelmiş bir
+şarkı için doğru, az önce bunu yapan bir düzenleme için yanlış cevap. Bu yüzden
+kapı *fark* üzerine kuruldu: düzenlemeden önce çalan bir bağlantı sonra
+çalmıyorsa komut `articulation_conflict` ile atomik reddediyor. Zaten kırık
+gelen bir bağlantı, sahibini düzenleme yapamaz hâle getirmesin diye engel
+değil.
+
+Reddin metni: «Bu perde değişikliği mevcut nota bağlantısıyla birlikte
+çalınamıyor. Önce bağlantıyı kaldırabilir veya farklı bir perde seçebilirsin.»
+Test, metinde `hammer_on`, `pull_off`, Zod, validator, diagnostic, tick, slot
+geçmediğini de doğruluyor.
+
+**Bir sınır dürüstçe yazıldı.** `set_note` bir slot'un **bir telini** yazar;
+başka bir tel adı vermek notayı taşımaz, akora ses ekler. Dolayısıyla tek bir
+`set_note` ile «bağlantı cross-string oldu» durumu üretilemiyor. Bunu üretiyor
+gibi yapan bir test yazmak yerine, gerçekte olan şey test edildi: dokunulmayan
+telin bağlantısı ne kırılıyor ne de yeni notaya kopyalanıyor.
+
+## Kapanış turu §3 · Copilot bütçe yarışı: kanıt, iddiadan farklı çıktı
+
+P0 çerçevesi «iki çağıran da adapter'a giriyor, para iki kez harcanabiliyor»
+idi. **Ölçüm bunu doğrulamadı.** Aynı senaryo 200 kez koşuldu ve dağılım
+şuydu:
+
+| sonuç | kaç kez |
+|---|---:|
+| `winner=a calls=1 refusal=budget_exhausted` | 197 |
+| `winner=b calls=2 refusal=budget_exhausted` | 3 |
+
+İkinci satırdaki ikinci çağrı **kaybedenin çağrısı değil**. `reserve()`
+`kv.transact` içinde çalışıyor, memory KV `transact`'i gerçekten seri hâle
+getiriyor ve rezervasyon adapter'dan **önce** yapılıyor — kaybeden hiçbir
+zaman sağlayıcıya ulaşmıyor. İki çağrı, **kazananın kendi düzeltme turu**:
+fake adapter senaryoları sırayla veriyor, `b` kazandığında kuyruğun başındaki
+`goodRound("drums")` bir bas isteğine yanlış patch olarak dönüyor, doğrulama
+düşüyor ve aynı rezervasyonun içinden ikinci tur çalışıyor.
+
+Yani kırmızı, üründe değil **testin fixture'ındaydı**: hangi çağıranın
+kazandığını varsayıyordu. Spec'in kendi kuralı da bunu yasaklıyor («sonuç
+sırası deterministik varsayılmaz»).
+
+**Yapılan.** Fiyatlandırma, bütçe miktarı, entitlement, provider, KV mimarisi
+ve global kuyruk — hiçbiri değiştirilmedi; değiştirilecek bir şey yoktu. Onun
+yerine iddia **kanıtlandı ve kilitlendi**:
+
+- `budget-race.test.ts`, `beforeAnswer` bariyeriyle ilk çağrıyı açık tutuyor;
+  ikinci çağıran gerçekten uçuş sırasında geliyor ve adapter'a girmeden
+  reddediliyor;
+- iki yüz kontrollü iterasyonun tamamı tek bir şekil veriyor:
+  `accepted=1 calls=1 refusal=budget_exhausted` — 200/200;
+- on çağıran, tek bütçe → 1 çağrı; iki bütçe → 2 çağrı; aynı idempotency key →
+  1 çağrı; farklı key'ler bütçe yettiği sürece bağımsız;
+- `pipeline.test.ts`'teki eski test artık kazananı varsaymıyor ve neden
+  varsaymadığı yorumda yazılı.
+
+**Mevcut hata politikası uydurulmadı, okundu ve sabitlendi.** Spec 12.3:
+kullanımı doğrulanamayan bir tur tamamen harcanmış sayılır. Test bunu böyle
+pinliyor — sağlayıcı hata verdikten sonra bütçe bir sonraki çağırana geri
+verilmiyor — ve bağlantı koptuğunda kilidin bırakıldığını, aynı cihazın
+`concurrent_request` ile karşılaşmadığını ayrıca doğruluyor.

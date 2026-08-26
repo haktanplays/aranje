@@ -749,7 +749,22 @@ describe("the phase 2A budget and idempotency rules are untouched", () => {
   });
 
   it("does not overspend when two callers arrive together", async () => {
-    const { deps, adapter } = harness([goodRound("drums"), goodRound("bass")], {
+    /*
+     * Both callers ask for the same skill, and that is the whole point.
+     *
+     * With different skills the fake adapter's positional queue decides what
+     * the winner is answered with: whichever caller the scheduler happened to
+     * let through second got the *other* skill's patch, failed validation and
+     * spent a correction round — a second `adapter.calls` entry that looked
+     * exactly like a double-spend and was not one. Measured across 200 runs it
+     * happened 3 times, always with the second caller winning.
+     *
+     * The claim worth holding is the one that costs money, and it does not
+     * depend on who wins: one reservation, one provider call, and the refusal
+     * decided before the call rather than after it. `budget-race.test.ts`
+     * holds the same claim against a barrier instead of the scheduler.
+     */
+    const { deps, adapter } = harness([goodRound("drums"), goodRound("drums")], {
       dailyBudgetUsd: WORST_CASE / 1_000_000,
     });
 
@@ -757,7 +772,7 @@ describe("the phase 2A budget and idempotency rules are untouched", () => {
       runCopilot(deps, arrangeRequest("drums", { subjectId: "device-a" })),
       runCopilot(
         deps,
-        arrangeRequest("bass", {
+        arrangeRequest("drums", {
           subjectId: "device-b",
           idempotencyKey: "idem-key-0002",
         }),
