@@ -28,6 +28,7 @@ const PURE = [
   "src/lib/song/continue-pattern.ts",
   "src/lib/tab/glyph-model.ts",
   "src/lib/tab/technique-geometry.ts",
+  "src/lib/tab/glyph-state.ts",
 ];
 
 /** The components the intent layer added, and the one it rewrote. */

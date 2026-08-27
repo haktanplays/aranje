@@ -57,6 +57,7 @@ PY
 V="npx vitest run"
 GLYPH="$V src/lib/tab/glyph-model.test.ts"
 TECH="$V src/lib/tab/technique-geometry.test.ts"
+STATE="$V src/lib/tab/glyph-state.test.ts"
 MARK="$V src/lib/tab/playing-onset.test.ts"
 TOOL="$V src/lib/workspace/composer-tool.test.ts"
 PEN="$V src/lib/chords/power-chord-pen.test.ts"
@@ -321,6 +322,32 @@ probe "27o the bar block draws the character mark on top of the geometry" \
                     techniqueNoteKey(span.stringIndex, span.startSlot),
                   ) ? (' \
   '                  {span.articulation ? ('
+
+echo "--- a drawn slur says it once (K-59 §2) ---"
+
+probe "27p the underline comes back under a drawn arc" \
+  src/lib/tab/glyph-state.ts "$STATE" \
+  '  if (slurred && !request.underArc) return "legato";' \
+  '  if (slurred) return "legato";'
+
+probe "27q the underline is dropped even where no arc was drawn" \
+  src/lib/tab/glyph-state.ts "$STATE" \
+  '  if (slurred && !request.underArc) return "legato";' \
+  '  if (false) return "legato";'
+
+probe "27r the rule reaches every annotated note, not only the slurred ones" \
+  src/lib/tab/glyph-state.ts "$STATE" \
+  '  for (const phrase of primitives.legato) {
+    for (const slot of phrase.slots) {
+      notes.add(techniqueNoteKey(phrase.stringIndex, slot));
+    }
+  }' \
+  '  for (const key of primitives.annotated) notes.add(key);'
+
+probe "27s the selection stops outranking the other states" \
+  src/lib/tab/glyph-state.ts "$STATE" \
+  '  if (request.selected) return "selected";' \
+  '  if (false) return "selected";'
 
 echo "--- the playhead marks the onset it is on (§4) ---"
 

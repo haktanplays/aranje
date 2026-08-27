@@ -23,6 +23,7 @@ import {
   techniqueNoteKey,
 } from "@/lib/tab/technique-geometry";
 import type { GlyphState } from "@/lib/tab/glyph-model";
+import { glyphStateFor, legatoNotes } from "@/lib/tab/glyph-state";
 import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
@@ -156,20 +157,23 @@ export function FrettedBarBlock({
       rowOffset(stringCount, stringIndex, rowHeight),
   });
 
+  /** The onsets a drawn slur already covers, so nothing says it twice. */
+  const arcNotes = legatoNotes(techniques);
+
   /** What the reader is meant to understand about this note right now. */
-  const stateOf = (span: FrettedBar["spans"][number]): GlyphState => {
-    if (onsets?.selectedSlots.has(span.startSlot)) return "selected";
-    if (
-      selectedCell?.slotIndex === span.startSlot &&
-      selectedCell.stringIndex === span.stringIndex
-    ) {
-      return "selected";
-    }
-    if (span.articulation === "hammer_on" || span.articulation === "pull_off") {
-      return "legato";
-    }
-    return "normal";
-  };
+  const stateOf = (span: FrettedBar["spans"][number]): GlyphState =>
+    glyphStateFor({
+      ...(span.articulation === undefined
+        ? {}
+        : { articulation: span.articulation }),
+      selected:
+        (onsets?.selectedSlots.has(span.startSlot) ?? false) ||
+        (selectedCell?.slotIndex === span.startSlot &&
+          selectedCell.stringIndex === span.stringIndex),
+      underArc: arcNotes.has(
+        techniqueNoteKey(span.stringIndex, span.startSlot),
+      ),
+    });
 
   /** The fret a slurred note came from, so its name can say the movement. */
   const slurredFrom = (span: FrettedBar["spans"][number]): number | null => {
