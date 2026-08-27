@@ -25,9 +25,21 @@ import type { TimingTarget } from "@/lib/workspace/use-timing-change";
 export function SelectionActionArea({
   session,
   practice,
+  compact,
   onOpenTiming,
 }: {
   session: SelectionSession;
+  /**
+   * True while the reader is writing (K-59 §3).
+   *
+   * The tall selection bar belongs to the reading surface. In focused edit the
+   * compact selection toolbar carries the same verbs in one 44px row, and two
+   * layers of the same thing is what clipped three strings at 320x700.
+   *
+   * The practice door stands down with it: practising a range is a reading
+   * errand, and it is one tap away again the moment "Bitti" is pressed.
+   */
+  compact: boolean;
   /** The practice loop, so a whole-bar time selection can become one (§V.B). */
   practice: PracticeSession;
   /** Opens the meter-and-rhythm sheet; owned by the timing controller. */
@@ -41,7 +53,7 @@ export function SelectionActionArea({
    */
   const selection = time.handle.selection;
   const offersPractice =
-    selection !== null && practice.offersFromSelection(selection);
+    !compact && selection !== null && practice.offersFromSelection(selection);
 
   return (
     <>
@@ -159,7 +171,7 @@ export function SelectionActionArea({
         </div>
       ) : null}
 
-      {time.handle.selection ? (
+      {time.handle.selection && !compact ? (
         <SelectionActionBar
           summary={
             time.pasteAt.kind === "choosing"

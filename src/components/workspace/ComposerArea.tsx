@@ -12,7 +12,7 @@
  * which in turn asks the pure cores; what this component owns is which door is
  * open, which is a fact about the screen and about nothing else.
  */
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { ComposerDoorRow } from "@/components/workspace/ComposerDoorRow";
 import { ComposerSheet } from "@/components/workspace/ComposerSheet";
@@ -28,6 +28,9 @@ export function ComposerArea({
   song,
   track,
   selection,
+  showDoors,
+  door,
+  onDoor,
   onOpenChordBuilder,
   onOpenRhythm,
 }: {
@@ -36,12 +39,22 @@ export function ComposerArea({
   track: Track | undefined;
   /** The time selection, which is what "this pattern" means (2S-A §9). */
   selection: TimeSelection | null;
+  /**
+   * False while a selection is open (K-59 §3).
+   *
+   * The doors and the selection toolbar are the same line of the screen, and
+   * a reader has one context at a time. The *sheets* stay mounted either way,
+   * because the selection toolbar's `Bağla` opens one of them.
+   */
+  showDoors: boolean;
+  /** Which door is open. Owned above, so the selection row can open one. */
+  door: ComposerDoor | null;
+  onDoor: (door: ComposerDoor | null) => void;
   /** Null when there is no beat for the catalogue to open on. */
   onOpenChordBuilder: ((power: boolean) => void) | null;
   /** Null when there is no section for the grid sheet to be about. */
   onOpenRhythm: (() => void) | null;
 }) {
-  const [door, setDoor] = useState<ComposerDoor | null>(null);
   const { tool, beginGesture, cancelGesture } = composer;
 
   /*
@@ -67,23 +80,20 @@ export function ComposerArea({
 
   const pick = (next: ComposerTool) => {
     composer.pick(next);
-    setDoor(null);
+    onDoor(null);
   };
 
   return (
     <>
       {/*
-        The doors keep their line even while a run is selected (2S-A §18).
+        The doors have this line while nothing is selected (K-59 §3).
 
-        Hiding them was an earlier answer to the surface being squeezed at
-        320x700 with 150% text, and it took away the one door the legato
-        brush needs: the brush is *used* on a selected run, so "Bagla" has to
-        be reachable exactly when a selection exists. The room comes from the
-        focused edit layout instead — the brand header, the view switch and
-        the section navigator stand down for one 44px edit header — which is
-        chrome the reader is not using while writing, unlike the doors.
+        2S-A gave them the line unconditionally, because hiding them took away
+        the one door the legato brush needs — the brush is *used* on a covered
+        run. That is still true, and it is now answered by the selection
+        toolbar carrying `Bağla` rather than by two rows on one screen.
       */}
-      <ComposerDoorRow tool={tool} onOpen={setDoor} onRelease={composer.release} />
+      {showDoors ? <ComposerDoorRow tool={tool} onOpen={onDoor} /> : null}
 
       {composer.refusal ? (
         <p
@@ -103,12 +113,12 @@ export function ComposerArea({
           capo={track?.fretboard?.capo ?? 0}
           canWriteShapes={track?.fretboard !== undefined}
           onPick={pick}
-          onClose={() => setDoor(null)}
+          onClose={() => onDoor(null)}
           onOpenChordBuilder={
             onOpenChordBuilder === null
               ? null
               : (power) => {
-                  setDoor(null);
+                  onDoor(null);
                   onOpenChordBuilder(power);
                 }
           }
@@ -116,7 +126,7 @@ export function ComposerArea({
             onOpenRhythm === null
               ? null
               : () => {
-                  setDoor(null);
+                  onDoor(null);
                   onOpenRhythm();
                 }
           }

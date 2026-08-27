@@ -171,6 +171,55 @@ export function toolLabel(tool: ComposerTool): string {
   }
 }
 
+/**
+ * The short form of a held tool, written on the door it came through (K-59).
+ *
+ * There is no fifth chip. A held tool used to get a strip of its own beside
+ * the four doors, which is a control that says something rather than doing
+ * something — and on a 320px row it was the width of a door. What the reader
+ * needs to know is *which door is holding something and what*, so the door
+ * says it: `Şekil` becomes `Power 3`, `Bağla` becomes `Otomatik`.
+ *
+ * Short on purpose. The full sentence is still the accessible name, so a
+ * screen reader hears "Bağla: Otomatik bağla" rather than one clipped word,
+ * and no door has to truncate to fit four of them on the narrowest screen.
+ */
+const SHORT_LABELS: Readonly<Record<ConnectionChoice, string>> = {
+  auto: "Otomatik",
+  hammer_on: "Çekiç",
+  pull_off: "Koparma",
+};
+
+const SHORT_CONTINUE: Readonly<Record<ContinueMode, string>> = {
+  repeat: "Tekrar",
+  shape: "Şekil",
+  pitch: "Perde",
+};
+
+export function doorLabel(door: ComposerDoor, tool: ComposerTool): string {
+  if (doorOf(tool) !== door) return DOOR_LABELS[door];
+  switch (tool.kind) {
+    case "power_chord":
+      return `Power ${tool.voices}`;
+    case "connect":
+      return SHORT_LABELS[tool.connection];
+    case "continue_pattern":
+      return SHORT_CONTINUE[tool.mode];
+    default:
+      return DOOR_LABELS[door];
+  }
+}
+
+/** The whole sentence, which is never cut for a reader who cannot see it. */
+export function doorAccessibleName(
+  door: ComposerDoor,
+  tool: ComposerTool,
+): string {
+  if (doorOf(tool) !== door) return DOOR_LABELS[door];
+  const held = toolLabel(tool);
+  return held ? `${DOOR_LABELS[door]}: ${held}` : DOOR_LABELS[door];
+}
+
 /** The one-line explanation under a door's option, for a reader who cannot read notation. */
 export const TOOL_HINTS: Readonly<Record<string, string>> = {
   "power_chord:2": "Bastığın perde kök olur, üstüne beşlisi eklenir.",

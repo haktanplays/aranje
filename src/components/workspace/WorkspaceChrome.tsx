@@ -14,6 +14,7 @@
  * rule it carried when it was inline.
  */
 import { EditHeader } from "@/components/workspace/EditHeader";
+import type { SelectionHeader } from "@/lib/workspace/selection-verbs";
 import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
 import { SectionNavigator } from "@/components/workspace/SectionNavigator";
 import { ViewSwitch } from "@/components/workspace/ViewSwitch";
@@ -41,6 +42,7 @@ export function WorkspaceChrome({
   onOpenSectionList,
   onJumpSection,
   editing,
+  editSelection,
   onDoneEditing,
 }: {
   song: Song;
@@ -58,6 +60,8 @@ export function WorkspaceChrome({
   onJumpSection: (sectionId: string) => void;
   /** True while the reader is writing, which is a whole layout (2S-A §18). */
   editing: boolean;
+  /** The covered run, shown in the edit header rather than in a bar. */
+  editSelection: SelectionHeader | null;
   onDoneEditing: () => void;
 }) {
   /*
@@ -78,6 +82,7 @@ export function WorkspaceChrome({
       <>
         <EditHeader
           model={editHeaderModel(runs, navigation.viewedSectionId, navigation.activeBarKey)}
+          selection={editSelection}
           onDone={onDoneEditing}
         />
         {recovery && recoveryMessage ? (

@@ -98,8 +98,25 @@ const enterEdit = async (page) => {
   await page.waitForTimeout(300);
 };
 
+/**
+ * Open one of the four doors, by whichever route the screen is offering.
+ *
+ * While a selection is covered the door row stands down and the compact
+ * selection toolbar carries `Bağla` instead (K-59 §3) — the brush is *used* on
+ * a covered run, so that is the route a reader takes to it. Both reach the
+ * same sheet; the tour follows the reader rather than the markup.
+ */
+const DOOR_VERB = { connect: "Bağla" };
+
 const openDoor = async (page, door) => {
-  await page.locator(`[data-composer-door='${door}']`).click();
+  const row = page.locator(`[data-composer-door='${door}']`);
+  if ((await row.count()) > 0) {
+    await row.click();
+  } else {
+    const verb = DOOR_VERB[door];
+    if (!verb) throw new Error(`no route to the ${door} door`);
+    await page.locator(`[data-selection-verb='${verb}']`).first().click();
+  }
   await page.waitForTimeout(250);
 };
 
@@ -284,28 +301,48 @@ async function doorTour(browser, viewport, textScale) {
   );
 
   await pickOption(page, "power-2");
-  const held = await page.evaluate(
-    () => document.querySelector("[data-composer-held]")?.textContent ?? "",
+  /*
+   * The held tool is written on its own door (K-59 §5). The fifth chip that
+   * used to say it is gone: it stated something rather than doing something,
+   * and on a 320px row it was the width of a door. What is drawn is the short
+   * form; the whole sentence is the accessible name.
+   */
+  const heldDoor = () =>
+    page.evaluate(() => {
+      const node = document.querySelector("[data-composer-door-held]");
+      return {
+        drawn: (node?.textContent ?? "").trim(),
+        name: node?.getAttribute("aria-label") ?? "",
+      };
+    });
+  const held = await heldDoor();
+  record_(
+    "8. the held tool says what it is, in music",
+    held.drawn === "Power 2" && held.name.includes("Power chord"),
+    JSON.stringify(held),
   );
-  record_("8. the held tool says what it is, in music", held.includes("Power chord"), held);
-  record_("9. no identifier reaches the reader", !/power_chord|hammer_on|pull_off/.test(held), held);
+  record_(
+    "9. no identifier reaches the reader",
+    !/power_chord|hammer_on|pull_off/.test(`${held.drawn} ${held.name}`),
+    JSON.stringify(held),
+  );
 
   await openDoor(page, "connect");
   await pickOption(page, "connect-auto");
-  const afterSwap = await page.evaluate(
-    () => document.querySelector("[data-composer-held]")?.textContent ?? "",
-  );
+  const afterSwap = await heldDoor();
   record_(
     "10. picking a second tool replaces the first",
-    afterSwap.includes("Otomatik") && !afterSwap.includes("Power chord"),
-    afterSwap,
+    afterSwap.drawn === "Otomatik" &&
+      !afterSwap.name.includes("Power chord") &&
+      (await page.locator("[data-composer-door-held]").count()) === 1,
+    JSON.stringify(afterSwap),
   );
 
   await openDoor(page, "connect");
   await pickOption(page, "connect-auto");
   record_(
     "11. picking the held tool again puts it down",
-    (await page.locator("[data-composer-held]").count()) === 0,
+    (await page.locator("[data-composer-door-held]").count()) === 0,
   );
 
   await openDoor(page, "rhythm");
@@ -372,7 +409,7 @@ async function penTour(browser, viewport, textScale) {
 
   record_(
     "21. the pen stays open after it writes",
-    (await page.locator("[data-composer-held]").count()) === 1,
+    (await page.locator("[data-composer-door-held]").count()) === 1,
   );
 
   // Three voices, on a beat of its own.
@@ -696,10 +733,18 @@ async function glyphTour(browser, viewport, textScale) {
     boxes.every((glyph) => !/hammer_on|pull_off|slot|tick/.test(glyph.label ?? "")),
     boxes.find((g) => g.state === "legato")?.label ?? "",
   );
+  /*
+   * The arc is what tells it apart (K-59 §2). The underline under every note
+   * of a drawn run said the same thing a second time, and four of them in a
+   * row read closer to a selection than to a slur — so it became the fallback
+   * for the notes no arc could be drawn over.
+   */
+  const slurLayers = await arcs(page);
   record_(
     "53. a slurred note is told apart from an ordinary one",
-    boxes.some((glyph) => glyph.state === "legato"),
-    boxes.map((g) => g.state).join(","),
+    slurLayers.some((layer) => layer.count >= 1) &&
+      boxes.every((glyph) => glyph.state !== "legato"),
+    `${JSON.stringify(slurLayers[0]?.marks ?? [])} · ${boxes.map((g) => g.state).join(",")}`,
   );
 
   const drawn = await arcs(page);

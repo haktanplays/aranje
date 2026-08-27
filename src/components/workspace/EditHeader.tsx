@@ -21,12 +21,23 @@
  */
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type { EditHeaderModel } from "@/lib/workspace/edit-header";
+import type { SelectionHeader } from "@/lib/workspace/selection-verbs";
 
 export function EditHeader({
   model,
+  selection,
   onDone,
 }: {
   model: EditHeaderModel;
+  /**
+   * The covered run, said in this row rather than in one of its own (K-59 §4).
+   *
+   * A selection used to describe itself in a summary line on top of a
+   * two-row action bar. The description is one short sentence and the way
+   * out is one word; both fit beside "Bitti" in a row that is already here,
+   * and the rows they used to need go back to the staff.
+   */
+  selection: SelectionHeader | null;
   onDone: () => void;
 }) {
   return (
@@ -46,19 +57,42 @@ export function EditHeader({
       >
         Bitti
       </button>
-      <p className="text-text min-w-0 flex-1 truncate text-sm" title={model.label}>
-        <span data-edit-header-section>{model.section}</span>
-        {model.bar ? (
-          <>
-            <span aria-hidden className="text-muted px-1">
-              ·
-            </span>
-            <span data-edit-header-bar className="text-muted">
-              {model.bar}
-            </span>
-          </>
-        ) : null}
-      </p>
+      {selection ? (
+        <>
+          <p
+            data-edit-header-selection
+            aria-live="polite"
+            className="text-text min-w-0 flex-1 truncate text-sm"
+            title={selection.summary}
+          >
+            {selection.summary}
+          </p>
+          <button
+            type="button"
+            data-selection-cancel
+            onClick={selection.onCancel}
+            aria-label="Seçimi iptal et"
+            className="text-muted border-line shrink-0 rounded-lg border px-3 text-sm"
+            style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+          >
+            İptal
+          </button>
+        </>
+      ) : (
+        <p className="text-text min-w-0 flex-1 truncate text-sm" title={model.label}>
+          <span data-edit-header-section>{model.section}</span>
+          {model.bar ? (
+            <>
+              <span aria-hidden className="text-muted px-1">
+                ·
+              </span>
+              <span data-edit-header-bar className="text-muted">
+                {model.bar}
+              </span>
+            </>
+          ) : null}
+        </p>
+      )}
     </div>
   );
 }

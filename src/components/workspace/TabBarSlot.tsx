@@ -46,12 +46,24 @@ function sectionIsSilent(
 export function BarSlot({
   bar,
   bars,
+  showSectionName = true,
   children,
 }: {
   bar: FrettedBar | DrumBar;
   bars: readonly (FrettedBar | DrumBar)[];
+  /**
+   * False while the reader is writing (K-59 §4).
+   *
+   * The focused edit header already says which section this is, at the top of
+   * the screen where the reader is looking. A second copy of the name inside
+   * the staff is a line of the music spent saying something twice. The accent
+   * stripe stays either way — that marks *where* the boundary is, which the
+   * header cannot.
+   */
+  showSectionName?: boolean;
   children: React.ReactNode;
 }) {
+  const silent = sectionIsSilent(bars, bar.sectionId);
   return (
     <div data-bar-key={bar.key} className="relative">
       {bar.isSectionStart ? (
@@ -63,12 +75,16 @@ export function BarSlot({
             )}`}
           />
           <span
+            data-section-name
+            hidden={!showSectionName && !silent}
             className={`absolute -top-5 left-1.5 text-[9px] font-semibold tracking-[0.12em] whitespace-nowrap uppercase ${sectionText(
               bar.sectionStatus,
             )}`}
           >
-            {bar.sectionName}
-            {sectionIsSilent(bars, bar.sectionId) ? (
+            {showSectionName ? bar.sectionName : null}
+            {/* The silence warning is not a duplicate of anything, so it
+                survives even when the name stands down. */}
+            {silent ? (
               <span className="text-muted/60 ml-1.5 tracking-normal normal-case">
                 (bu track susuyor)
               </span>

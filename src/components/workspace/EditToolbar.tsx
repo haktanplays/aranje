@@ -70,10 +70,21 @@ export function EditToolbar({
   /** False on a surface with no tab to edit (spec 13.10). */
   canToggleEdit?: boolean;
 }) {
+  /*
+   * One way out, not two (K-59 §4).
+   *
+   * While editing, the focused edit header already carries "Bitti" at the top
+   * of the screen. A second "Düzenlemeyi bitir" down here was the widest
+   * control in the row — 117px at 100% text and 168px at 150% — and it was
+   * the reason this row wrapped to two lines on a 320px screen. Leaving a
+   * mode should be one control in one place.
+   */
+  const showToggle = canToggleEdit && !editing;
+
   return (
     <div data-action-row className="border-line flex flex-col border-t px-3 py-0.5">
       <div className="flex flex-wrap items-center gap-2">
-        {canToggleEdit ? (
+        {showToggle ? (
           <button
             type="button"
             onClick={onToggleEdit}
@@ -142,7 +153,7 @@ export function EditToolbar({
         Both of these are transient. They get a line when they have something
         to say and none when they do not, rather than reserving one for ever.
       */}
-      {canToggleEdit && editDisabledReason ? (
+      {showToggle && editDisabledReason ? (
         <p role="status" className="text-muted pt-1 text-[11px]">
           {editDisabledReason}
         </p>
