@@ -12,6 +12,8 @@
  * above all three, so switching surfaces rebuilds no engine, schedules
  * nothing, and stops nothing.
  */
+import { useState } from "react";
+
 import type { ArrangementModel } from "@/lib/arrangement/model";
 import type { Lazy } from "@/lib/ui/lazy-value";
 import { ArrangementCanvas } from "@/components/workspace/ArrangementCanvas";
@@ -20,6 +22,9 @@ import { TabCanvas } from "@/components/workspace/TabCanvas";
 import { TimeSelectionBand } from "@/components/workspace/TimeSelectionBand";
 import { GUTTER_WIDTH } from "@/components/workspace/geometry";
 import type { PlayPosition } from "@/lib/audio/position";
+import type { CellSelection } from "@/components/workspace/FrettedBarBlock";
+import { armedPenGhost } from "@/lib/workspace/pen-preview";
+import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
 import type { Song } from "@/lib/song/schema";
 import type { TrackTimeline } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/instruments/registry";
@@ -36,6 +41,7 @@ export function WorkspaceSurface({
   navigation,
   session,
   noteEditing,
+  composer,
   song,
   arrangement,
   ghostArrangement,
@@ -51,6 +57,8 @@ export function WorkspaceSurface({
   navigation: WorkspaceNavigation;
   session: SelectionSession;
   noteEditing: NoteEditing;
+  /** Only the pen preview is read here; the edit area owns the doors. */
+  composer: Pick<IntentComposer, "penArmed" | "previewPen">;
   /** The song both reading surfaces lay their one axis over (2Q-C §4). */
   song: Song;
   arrangement: Lazy<ArrangementModel>;
@@ -85,6 +93,18 @@ export function WorkspaceSurface({
    * half-working on a surface nobody meant it for. `canPersist` is the harder
    * gate: a session that cannot save does not arm edit gestures (spec 13.14).
    */
+  /*
+   * The beat under the finger while a pen is held (K-59 §6).
+   *
+   * A pen writes on the tap, so the only moment a preview can exist is the
+   * press itself — and it is the only one that does not need a sheet in front
+   * of the staff to have somewhere to live. Transient by construction: it is
+   * set on pointer down and cleared on up, leave and cancel.
+   */
+  const [penTarget, setPenTarget] = useState<
+    (CellSelection & { barKey: string }) | null
+  >(null);
+
   const selectionEnabled =
     navigation.view === "tab" &&
     canPersist &&
@@ -255,6 +275,14 @@ export function WorkspaceSurface({
           pitchedEntry={pitchedEntry}
           editing={noteEditing.editing}
           selectedCell={noteEditing.cell}
+          /* The whole shape an armed pen would write, before it writes it. */
+          penGhost={armedPenGhost({
+            composer,
+            cell: penTarget,
+            song,
+            trackId: track?.id,
+          })}
+          {...(composer.penArmed ? { onPenTarget: setPenTarget } : {})}
           onCellSelect={noteEditing.selectCell}
           onsetsForBar={onsetsForBar}
         />

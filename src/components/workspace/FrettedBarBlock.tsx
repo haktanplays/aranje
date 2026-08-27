@@ -24,6 +24,7 @@ import {
 } from "@/lib/tab/technique-geometry";
 import type { GlyphState } from "@/lib/tab/glyph-model";
 import { glyphStateFor, legatoNotes } from "@/lib/tab/glyph-state";
+import type { PenGhost } from "@/lib/tab/pen-ghost";
 import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
@@ -84,6 +85,8 @@ export function FrettedBarBlock({
   onSelect,
   editing = false,
   selectedCell = null,
+  ghost = null,
+  onPenTarget,
   onCellSelect,
   onsets = null,
   timeSelectionOwnsPress = false,
@@ -98,6 +101,22 @@ export function FrettedBarBlock({
   /** In edit mode the bar is a grid of cells rather than one seek target. */
   editing?: boolean;
   selectedCell?: CellSelection | null;
+  /**
+   * The whole shape an armed pen would write here, or null (K-59 §6).
+   *
+   * Drawn, never written. The layer takes no pointer events and is not
+   * measured: it cannot move a number, grow the staff or steal a cell.
+   */
+  ghost?: PenGhost | null;
+  /**
+   * The beat under the finger while a pen is armed, or null on release.
+   *
+   * Given only when something is held. A pen writes on the tap, so the moment
+   * a preview can exist is the press itself — and a preview of the tap in
+   * flight is the only preview that does not need a sheet in front of the
+   * staff to have somewhere to live.
+   */
+  onPenTarget?: (cell: CellSelection | null) => void;
   onCellSelect?: (cell: CellSelection) => void;
   onsets?: OnsetSelection | null;
   /**
@@ -316,6 +335,31 @@ export function FrettedBarBlock({
               }
             />
 
+            {/* What an armed pen would write here: every voice of it, on the
+                real beat, at a third of the ink and behind no touch target. */}
+            {ghost ? (
+              <div
+                aria-hidden
+                data-pen-ghost={ghost.notes.length}
+                className="pointer-events-none absolute inset-0 opacity-60"
+              >
+                {ghost.notes.map((note) => (
+                  <span
+                    key={note.stringIndex}
+                    className="absolute flex items-center justify-center"
+                    style={{
+                      left: ghost.slotIndex * SLOT_WIDTH,
+                      top: rowOffset(stringCount, note.stringIndex, rowHeight),
+                      width: SLOT_WIDTH,
+                      height: rowHeight,
+                    }}
+                  >
+                    <FretGlyph fret={note.fret} state="ghost" />
+                  </span>
+                ))}
+              </div>
+            ) : null}
+
             {/* Fret numbers at each onset */}
             {bar.spans.map((span, index) =>
               span.openStart ? null : (
@@ -386,10 +430,22 @@ export function FrettedBarBlock({
                     data-group-selected={inGroup ? "" : undefined}
                     aria-pressed={isSelected || inGroup}
                     aria-label={label}
-                    onPointerDown={() => startHold(slotIndex)}
-                    onPointerUp={cancelHold}
-                    onPointerLeave={cancelHold}
-                    onPointerCancel={cancelHold}
+                    onPointerDown={() => {
+                      startHold(slotIndex);
+                      onPenTarget?.({ slotIndex, stringIndex });
+                    }}
+                    onPointerUp={() => {
+                      cancelHold();
+                      onPenTarget?.(null);
+                    }}
+                    onPointerLeave={() => {
+                      cancelHold();
+                      onPenTarget?.(null);
+                    }}
+                    onPointerCancel={() => {
+                      cancelHold();
+                      onPenTarget?.(null);
+                    }}
                     onClick={() => {
                       cancelHold();
                       // The press that opened the selection is not also a tap.

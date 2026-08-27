@@ -193,3 +193,31 @@ alınması, ve bend'in kendi odasından taşması.
 davranışı değil derlemeyi kırıyordu. Bu dosyanın kuralı gereği düzeltildi ve
 gerçek bir davranış mutasyonuna çevrildi: vibrato dalgasının `sustain`'e de
 çizilmesi.
+
+## K-59 Visual Closure — altı tarayıcı mutasyonu, üçü ilk turda yeşil
+
+`K1-K6` bu turun iki görsel kapanışını bağlıyor: yüksek seçim çubuğunun kompakt
+olanın üstüne geri gelmesi, kapıların seçim açıkken satırını koruması,
+düzenleme modundan ikinci bir çıkış yolunun geri gelmesi, staff'ın bölüm adını
+ikinci kez söylemesi, kalemin yalnız kökünü önizlemesi ve yayın altındaki
+alt çizginin geri gelmesi.
+
+**Üçü ilk turda yeşil geldi ve üçü de kabul koşusunun kendi eksiğiydi.**
+`K2`, `K3` ve `K4` mutasyonları ekranı gerçekten bozuyordu; kabul koşusu
+bunların hiçbirini *sormuyordu* — yalnız altı telin görünürlüğüne ve scroller
+sayısına bakıyordu, ve `320×700`'de kazanılan `212 px` bu üç bozulmayı da
+yutacak kadar boldu. §4'ün üç kuralı artık cümle değil sayı olarak ölçülüyor:
+
+- kapı satırı **yalnız** düzenleme açık ve seçim kapalıyken vardır;
+- düzenleme modundan çıkış yolu ekranda **tam olarak bir** tanedir;
+- bölüm adı **bir kez** söylenir — yazarken başlıkta, okurken staff'ta.
+
+Ölçüm eklendikten sonra altı mutasyonun altısı da kırmızı.
+
+**2S-A turunun dört senaryosu bu turun ürün kararlarıyla geçersizleşti ve
+zayıflatılmadan güncellendi.** `8`, `10` ve `21` beşinci çipi (`data-composer-held`)
+okuyordu; çip kaldırıldığı için artık tutan kapının kendisini okuyorlar —
+çizilen kısa ad **ve** tam erişilebilir ad birlikte. `53` bağlı notayı alt
+çizgiden tanıyordu; artık yayın çizildiğini **ve** alt çizginin bulunmadığını
+birlikte istiyor, yani iddia gevşemedi, yer değiştirdi. Brush turu da seçim
+açıkken kapıya değil `Bağla` düğmesine gidiyor: okurun gittiği yol o.

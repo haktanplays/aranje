@@ -52,6 +52,7 @@ import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { useTabPlayhead } from "@/components/workspace/use-tab-playhead";
 import type { PlayPosition } from "@/lib/audio/position";
+import type { PenGhost } from "@/lib/tab/pen-ghost";
 import type { Song } from "@/lib/song/schema";
 import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
 
@@ -83,6 +84,8 @@ export function TabCanvas({
   pitchedEntry = null,
   editing = false,
   selectedCell = null,
+  penGhost = null,
+  onPenTarget,
   onCellSelect,
   onsetsForBar,
 }: {
@@ -146,6 +149,10 @@ export function TabCanvas({
   pitchedEntry?: PitchedStepArming | null;
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
+  /** The armed pen's whole shape, on the bar it belongs to (K-59 §6). */
+  penGhost?: PenGhost | null;
+  /** The beat under the finger while a pen is armed (K-59 §6). */
+  onPenTarget?: (cell: (CellSelection & { barKey: string }) | null) => void;
   onCellSelect?: (cell: CellSelection & { barKey: string }) => void;
   /** The group selection, resolved for one bar at a time (spec 13.1). */
   onsetsForBar?: (bar: FrettedBar) => OnsetSelection | null;
@@ -351,7 +358,8 @@ export function TabCanvas({
               stays under the sticky gutter rather than over the string names. */}
           {selectionBand}
 
-          <SectionMarkers axis={surface.axis} sections={song.sections} />
+          {/* Not while writing: the header already names it (K-59 §4). */}
+          {editing ? null : <SectionMarkers axis={surface.axis} sections={song.sections} />}
 
           {/* The bars before this window. Empty, never a hit target, and
               exactly as wide as the music it stands in for — which is what
@@ -368,7 +376,7 @@ export function TabCanvas({
             ? timeline.bars
                 .filter((bar) => drawn.has(bar.key))
                 .map((bar, index) => (
-                <BarSlot key={bar.key} bar={bar} bars={bars}>
+                <BarSlot key={bar.key} bar={bar} bars={bars} showSectionName={!editing}>
                   <FrettedBarBlock
                     bar={bar}
                     gridLabel={gridLabelFor(bars, firstDrawn + index)}
@@ -383,6 +391,10 @@ export function TabCanvas({
                       onCellSelect?.({ ...cell, barKey: bar.key })
                     }
                     onsets={onsetsForBar?.(bar) ?? null}
+                    ghost={penGhost?.barKey === bar.key ? penGhost : null}
+                    onPenTarget={(cell) =>
+                      onPenTarget?.(cell && { ...cell, barKey: bar.key })
+                    }
                     timeSelectionOwnsPress={onSlotLongPress !== undefined}
                     onBarLongPress={
                       onBarLongPress ? () => onBarLongPress(bar.key) : undefined
@@ -403,7 +415,7 @@ export function TabCanvas({
             : timeline.bars
                 .filter((bar) => drawn.has(bar.key))
                 .map((bar, index) => (
-                <BarSlot key={bar.key} bar={bar} bars={bars}>
+                <BarSlot key={bar.key} bar={bar} bars={bars} showSectionName={!editing}>
                   <DrumBarBlock
                     bar={bar}
                     gridLabel={gridLabelFor(bars, firstDrawn + index)}

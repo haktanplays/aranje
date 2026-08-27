@@ -100,6 +100,42 @@ PY
   mv "$file.probebak" "$file"
 }
 
+# The same mutation harness against the K-59 visual closure run.
+k59probe() {
+  local name="$1" file="$2"; shift 2
+  if [ -e "$file.probebak" ]; then
+    echo "ABORT $name: $file.probebak exists — another probe run is in flight"
+    exit 2
+  fi
+  cp "$file" "$file.probebak"
+  python3 - "$file" "$@" <<'PY'
+import io,sys
+path=sys.argv[1]; pairs=sys.argv[2:]
+s=io.open(path,encoding="utf-8").read()
+for i in range(0,len(pairs),2):
+    f,r=pairs[i],pairs[i+1]
+    if f not in s:
+        sys.stderr.write("ANCHOR MISSING: "+f[:70]+"\n"); sys.exit(2)
+    s=s.replace(f,r,1)
+io.open(path,"w",encoding="utf-8").write(s)
+PY
+  if [ $? -ne 0 ]; then
+    echo "SKIP  $name (anchor)"; mv "$file.probebak" "$file"
+    skipped=$((skipped+1)); return
+  fi
+  if npm run build >/dev/null 2>&1; then
+    restart
+    if node eval/intent-composer/k59-visual.mjs >/tmp/aranje-probe-run.log 2>&1; then
+      echo "GREEN $name  <-- VACUOUS"; fail=$((fail+1))
+    else
+      echo "RED   $name"; pass=$((pass+1))
+    fi
+  else
+    echo "BROKEN $name (build failed)"; fail=$((fail+1))
+  fi
+  mv "$file.probebak" "$file"
+}
+
 echo "--- the edit grid is a finger tall (§4, §11) ---"
 
 probe "B1 the edit row shrinks back to the reading row" \
@@ -230,3 +266,35 @@ probe "B12 a tap with the pen armed is an ordinary tap again" \
 echo
 echo "$pass red, $fail vacuous, $skipped skipped"
 exit $(( fail > 0 ? 1 : 0 ))
+
+echo "--- the visual closure holds (K-59 §2-§7) ---"
+
+k59probe "K1 the tall selection bar comes back on top of the compact one" \
+  src/components/workspace/SelectionActionArea.tsx \
+  '      {time.handle.selection && !compact ? (' \
+  '      {time.handle.selection ? ('
+
+k59probe "K2 the doors keep their line while a selection is open" \
+  src/components/workspace/EditArea.tsx \
+  '            showDoors={selectionActions === null}' \
+  '            showDoors'
+
+k59probe "K3 a second way out of edit mode comes back" \
+  src/components/workspace/EditToolbar.tsx \
+  '  const showToggle = canToggleEdit && !editing;' \
+  '  const showToggle = canToggleEdit;'
+
+k59probe "K4 the staff says the section name a second time" \
+  src/components/workspace/TabCanvas.tsx \
+  'showSectionName={!editing}>' \
+  'showSectionName>'
+
+k59probe "K5 the pen previews its root and leaves the rest out" \
+  src/lib/tab/pen-ghost.ts \
+  '    notes: [...notes].sort((a, b) => a.stringIndex - b.stringIndex),' \
+  '    notes: [...notes].sort((a, b) => a.stringIndex - b.stringIndex).slice(0, 1),'
+
+k59probe "K6 the underline comes back under a drawn arc" \
+  src/lib/tab/glyph-state.ts \
+  '  if (slurred && !request.underArc) return "legato";' \
+  '  if (slurred) return "legato";'

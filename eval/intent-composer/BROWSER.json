@@ -55,19 +55,19 @@
       "combo": "390x844 @100%",
       "name": "8. the held tool says what it is, in music",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "390x844 @100%",
       "name": "9. no identifier reaches the reader",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "390x844 @100%",
       "name": "10. picking a second tool replaces the first",
       "pass": true,
-      "detail": "Otomatik bağla✕"
+      "detail": "{\"drawn\":\"Otomatik\",\"name\":\"Bağla: Otomatik bağla\"}"
     },
     {
       "combo": "390x844 @100%",
@@ -337,13 +337,13 @@
       "combo": "390x844 @100%",
       "name": "52. no identifier, tick or slot reaches a name",
       "pass": true,
-      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+      "detail": ""
     },
     {
       "combo": "390x844 @100%",
       "name": "53. a slurred note is told apart from an ordinary one",
       "pass": true,
-      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+      "detail": "[\"P\"] · normal,normal,normal,normal,normal,normal,normal,normal"
     },
     {
       "combo": "390x844 @100%",
@@ -433,7 +433,7 @@
       "combo": "390x844 @100%",
       "name": "64.c every control in the action row is a finger tall",
       "pass": true,
-      "detail": "{\"count\":4,\"min\":44}"
+      "detail": "{\"count\":3,\"min\":44}"
     },
     {
       "combo": "390x844 @100%",
@@ -529,19 +529,19 @@
       "combo": "390x844 @125%",
       "name": "8. the held tool says what it is, in music",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "390x844 @125%",
       "name": "9. no identifier reaches the reader",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "390x844 @125%",
       "name": "10. picking a second tool replaces the first",
       "pass": true,
-      "detail": "Otomatik bağla✕"
+      "detail": "{\"drawn\":\"Otomatik\",\"name\":\"Bağla: Otomatik bağla\"}"
     },
     {
       "combo": "390x844 @125%",
@@ -811,13 +811,13 @@
       "combo": "390x844 @125%",
       "name": "52. no identifier, tick or slot reaches a name",
       "pass": true,
-      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+      "detail": ""
     },
     {
       "combo": "390x844 @125%",
       "name": "53. a slurred note is told apart from an ordinary one",
       "pass": true,
-      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+      "detail": "[\"P\"] · normal,normal,normal,normal,normal,normal,normal,normal"
     },
     {
       "combo": "390x844 @125%",
@@ -907,13 +907,13 @@
       "combo": "390x844 @125%",
       "name": "64.c every control in the action row is a finger tall",
       "pass": true,
-      "detail": "{\"count\":4,\"min\":44}"
+      "detail": "{\"count\":3,\"min\":44}"
     },
     {
       "combo": "390x844 @125%",
       "name": "63. every edit cell is inside the surface the reader is looking at",
       "pass": true,
-      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":542,\"staff\":264}"
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":596,\"staff\":264}"
     },
     {
       "combo": "390x844 @125%",
@@ -943,7 +943,7 @@
       "combo": "390x844 @125%",
       "name": "65. the music stays bigger than the controls under it",
       "pass": true,
-      "detail": "{\"surface\":542,\"doors\":49,\"action\":104}"
+      "detail": "{\"surface\":596,\"doors\":49,\"action\":50}"
     },
     {
       "combo": "390x844 @125%",
@@ -1003,19 +1003,19 @@
       "combo": "390x844 @150%",
       "name": "8. the held tool says what it is, in music",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "390x844 @150%",
       "name": "9. no identifier reaches the reader",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "390x844 @150%",
       "name": "10. picking a second tool replaces the first",
       "pass": true,
-      "detail": "Otomatik bağla✕"
+      "detail": "{\"drawn\":\"Otomatik\",\"name\":\"Bağla: Otomatik bağla\"}"
     },
     {
       "combo": "390x844 @150%",
@@ -1285,13 +1285,13 @@
       "combo": "390x844 @150%",
       "name": "52. no identifier, tick or slot reaches a name",
       "pass": true,
-      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+      "detail": ""
     },
     {
       "combo": "390x844 @150%",
       "name": "53. a slurred note is told apart from an ordinary one",
       "pass": true,
-      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+      "detail": "[\"P\"] · normal,normal,normal,normal,normal,normal,normal,normal"
     },
     {
       "combo": "390x844 @150%",
@@ -1381,13 +1381,13 @@
       "combo": "390x844 @150%",
       "name": "64.c every control in the action row is a finger tall",
       "pass": true,
-      "detail": "{\"count\":4,\"min\":44}"
+      "detail": "{\"count\":3,\"min\":44}"
     },
     {
       "combo": "390x844 @150%",
       "name": "63. every edit cell is inside the surface the reader is looking at",
       "pass": true,
-      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":535,\"staff\":264}"
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":591,\"staff\":264}"
     },
     {
       "combo": "390x844 @150%",
@@ -1417,7 +1417,7 @@
       "combo": "390x844 @150%",
       "name": "65. the music stays bigger than the controls under it",
       "pass": true,
-      "detail": "{\"surface\":535,\"doors\":50,\"action\":107}"
+      "detail": "{\"surface\":591,\"doors\":50,\"action\":51}"
     },
     {
       "combo": "390x844 @150%",
@@ -1477,19 +1477,19 @@
       "combo": "320x700 @100%",
       "name": "8. the held tool says what it is, in music",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "320x700 @100%",
       "name": "9. no identifier reaches the reader",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "320x700 @100%",
       "name": "10. picking a second tool replaces the first",
       "pass": true,
-      "detail": "Otomatik bağla✕"
+      "detail": "{\"drawn\":\"Otomatik\",\"name\":\"Bağla: Otomatik bağla\"}"
     },
     {
       "combo": "320x700 @100%",
@@ -1759,13 +1759,13 @@
       "combo": "320x700 @100%",
       "name": "52. no identifier, tick or slot reaches a name",
       "pass": true,
-      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+      "detail": ""
     },
     {
       "combo": "320x700 @100%",
       "name": "53. a slurred note is told apart from an ordinary one",
       "pass": true,
-      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+      "detail": "[\"P\"] · normal,normal,normal,normal,normal,normal,normal,normal"
     },
     {
       "combo": "320x700 @100%",
@@ -1855,13 +1855,13 @@
       "combo": "320x700 @100%",
       "name": "64.c every control in the action row is a finger tall",
       "pass": true,
-      "detail": "{\"count\":4,\"min\":44}"
+      "detail": "{\"count\":3,\"min\":44}"
     },
     {
       "combo": "320x700 @100%",
       "name": "63. every edit cell is inside the surface the reader is looking at",
       "pass": true,
-      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":357,\"staff\":264}"
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":409,\"staff\":264}"
     },
     {
       "combo": "320x700 @100%",
@@ -1891,7 +1891,7 @@
       "combo": "320x700 @100%",
       "name": "65. the music stays bigger than the controls under it",
       "pass": true,
-      "detail": "{\"surface\":357,\"doors\":48,\"action\":101}"
+      "detail": "{\"surface\":409,\"doors\":48,\"action\":49}"
     },
     {
       "combo": "320x700 @100%",
@@ -1951,19 +1951,19 @@
       "combo": "320x700 @125%",
       "name": "8. the held tool says what it is, in music",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "320x700 @125%",
       "name": "9. no identifier reaches the reader",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "320x700 @125%",
       "name": "10. picking a second tool replaces the first",
       "pass": true,
-      "detail": "Otomatik bağla✕"
+      "detail": "{\"drawn\":\"Otomatik\",\"name\":\"Bağla: Otomatik bağla\"}"
     },
     {
       "combo": "320x700 @125%",
@@ -2233,13 +2233,13 @@
       "combo": "320x700 @125%",
       "name": "52. no identifier, tick or slot reaches a name",
       "pass": true,
-      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+      "detail": ""
     },
     {
       "combo": "320x700 @125%",
       "name": "53. a slurred note is told apart from an ordinary one",
       "pass": true,
-      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+      "detail": "[\"P\"] · normal,normal,normal,normal,normal,normal,normal,normal"
     },
     {
       "combo": "320x700 @125%",
@@ -2329,13 +2329,13 @@
       "combo": "320x700 @125%",
       "name": "64.c every control in the action row is a finger tall",
       "pass": true,
-      "detail": "{\"count\":4,\"min\":44}"
+      "detail": "{\"count\":3,\"min\":44}"
     },
     {
       "combo": "320x700 @125%",
       "name": "63. every edit cell is inside the surface the reader is looking at",
       "pass": true,
-      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":342,\"staff\":264}"
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":404,\"staff\":264}"
     },
     {
       "combo": "320x700 @125%",
@@ -2365,7 +2365,7 @@
       "combo": "320x700 @125%",
       "name": "65. the music stays bigger than the controls under it",
       "pass": true,
-      "detail": "{\"surface\":342,\"doors\":49,\"action\":112}"
+      "detail": "{\"surface\":404,\"doors\":49,\"action\":50}"
     },
     {
       "combo": "320x700 @125%",
@@ -2425,19 +2425,19 @@
       "combo": "320x700 @150%",
       "name": "8. the held tool says what it is, in music",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "320x700 @150%",
       "name": "9. no identifier reaches the reader",
       "pass": true,
-      "detail": "Power chord · 2 ses · 5. perde✕"
+      "detail": "{\"drawn\":\"Power 2\",\"name\":\"Şekil: Power chord · 2 ses · 5. perde\"}"
     },
     {
       "combo": "320x700 @150%",
       "name": "10. picking a second tool replaces the first",
       "pass": true,
-      "detail": "Otomatik bağla✕"
+      "detail": "{\"drawn\":\"Otomatik\",\"name\":\"Bağla: Otomatik bağla\"}"
     },
     {
       "combo": "320x700 @150%",
@@ -2707,13 +2707,13 @@
       "combo": "320x700 @150%",
       "name": "52. no identifier, tick or slot reaches a name",
       "pass": true,
-      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+      "detail": ""
     },
     {
       "combo": "320x700 @150%",
       "name": "53. a slurred note is told apart from an ordinary one",
       "pass": true,
-      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+      "detail": "[\"P\"] · normal,normal,normal,normal,normal,normal,normal,normal"
     },
     {
       "combo": "320x700 @150%",
@@ -2803,13 +2803,13 @@
       "combo": "320x700 @150%",
       "name": "64.c every control in the action row is a finger tall",
       "pass": true,
-      "detail": "{\"count\":4,\"min\":44}"
+      "detail": "{\"count\":3,\"min\":44}"
     },
     {
       "combo": "320x700 @150%",
       "name": "63. every edit cell is inside the surface the reader is looking at",
       "pass": true,
-      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":343,\"staff\":264}"
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":399,\"staff\":264}"
     },
     {
       "combo": "320x700 @150%",
@@ -2839,7 +2839,7 @@
       "combo": "320x700 @150%",
       "name": "65. the music stays bigger than the controls under it",
       "pass": true,
-      "detail": "{\"surface\":343,\"doors\":50,\"action\":107}"
+      "detail": "{\"surface\":399,\"doors\":50,\"action\":51}"
     },
     {
       "combo": "320x700 @150%",

@@ -1,0 +1,982 @@
+{
+  "what": "K-59 Visual Closure — sekiz founder ekranı ve altlarındaki sayılar",
+  "build": "before",
+  "fixture": "techniques: 5-7-8-7-5 HO/PO koşusu, çıkan ve inen slide, ½ ve 1 bend, tutulan vibrato, üç notalık palm mute.",
+  "notes": [
+    "Hiçbir görsel kabul burada onaylanmaz; ölçüm ölçüm olarak kaydedilir.",
+    "Fiziksel Android/iOS kabulü yapılmadı; bütün sayılar masaüstü Chromium'dandır."
+  ],
+  "screens": [
+    {
+      "name": "1-390-read-hopo",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "staffBounds": {
+        "top": 153,
+        "left": 0,
+        "width": 390,
+        "height": 541
+      },
+      "mainHeight": 541,
+      "stringY": [
+        349.5,
+        323.5,
+        297.5,
+        271.5,
+        245.5,
+        219.5
+      ],
+      "visibleStringCount": 6,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 297.5
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 297.5
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 297.5
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 297.5
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 297.5
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 297.5
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 297.5
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 297.5
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 297.5
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 297.5
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 297.5
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 297.5
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 297.5
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 297.5
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 297.5
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 297.5
+        }
+      },
+      "internalScrollers": 0,
+      "undersizedTargets": [],
+      "slotWideEditCells": 0,
+      "truncatedLabels": [],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 0,
+      "doorRowHeight": 0,
+      "actionRowHeight": 49,
+      "doorLabels": [],
+      "consoleErrors": 0
+    },
+    {
+      "name": "2-390-edit-hopo-selected",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 390,
+        "height": 440
+      },
+      "mainHeight": 440,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 6,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 0,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 161,
+      "doorRowHeight": 48,
+      "actionRowHeight": 49,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    },
+    {
+      "name": "3-390-edit-techniques",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 390,
+        "height": 601
+      },
+      "mainHeight": 601,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 6,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": -313.01,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": -279.01,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": -245.01,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": -211.01,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": -177.01,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": -109.01,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": -75.01,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": -41.01,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 26.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 60.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 94.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 162.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 230.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 264.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 298.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 332.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 0,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 0,
+      "doorRowHeight": 48,
+      "actionRowHeight": 49,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    },
+    {
+      "name": "4-390-power-ghost",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 390,
+        "height": 601
+      },
+      "mainHeight": 601,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 6,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 0,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [
+        "Power chord · 3 ses · 5."
+      ],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 0,
+      "doorRowHeight": 48,
+      "actionRowHeight": 49,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    },
+    {
+      "name": "5-320-selection-top",
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 320,
+        "height": 196
+      },
+      "mainHeight": 196,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 3,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 1,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 161,
+      "doorRowHeight": 48,
+      "actionRowHeight": 101,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    },
+    {
+      "name": "6-320-selection-staff",
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 320,
+        "height": 196
+      },
+      "mainHeight": 196,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 3,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 1,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 161,
+      "doorRowHeight": 48,
+      "actionRowHeight": 101,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    },
+    {
+      "name": "7-320-more-sheet",
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 320,
+        "height": 196
+      },
+      "mainHeight": 196,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 3,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 1,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 161,
+      "doorRowHeight": 48,
+      "actionRowHeight": 101,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    },
+    {
+      "name": "8-320-power-ghost",
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "staffBounds": {
+        "top": 45,
+        "left": 0,
+        "width": 320,
+        "height": 357
+      },
+      "mainHeight": 357,
+      "stringY": [
+        337,
+        293,
+        249,
+        205,
+        161,
+        117
+      ],
+      "visibleStringCount": 6,
+      "digitCentres": {
+        "s1:0:0:5": {
+          "x": 50.99,
+          "y": 249
+        },
+        "s1:0:1:7": {
+          "x": 84.99,
+          "y": 249
+        },
+        "s1:0:2:8": {
+          "x": 118.99,
+          "y": 249
+        },
+        "s1:0:3:7": {
+          "x": 152.99,
+          "y": 249
+        },
+        "s1:0:4:5": {
+          "x": 186.99,
+          "y": 249
+        },
+        "s1:0:6:5": {
+          "x": 254.99,
+          "y": 249
+        },
+        "s1:0:7:7": {
+          "x": 288.99,
+          "y": 249
+        },
+        "s1:0:8:5": {
+          "x": 322.99,
+          "y": 249
+        },
+        "s1:0:10:7": {
+          "x": 390.99,
+          "y": 249
+        },
+        "s1:0:11:5": {
+          "x": 424.99,
+          "y": 249
+        },
+        "s1:0:12:7": {
+          "x": 458.99,
+          "y": 249
+        },
+        "s1:0:14:7": {
+          "x": 526.99,
+          "y": 249
+        },
+        "s1:1:0:5": {
+          "x": 594.99,
+          "y": 249
+        },
+        "s1:1:1:5": {
+          "x": 628.99,
+          "y": 249
+        },
+        "s1:1:2:5": {
+          "x": 662.99,
+          "y": 249
+        },
+        "s1:1:3:7": {
+          "x": 696.99,
+          "y": 249
+        }
+      },
+      "internalScrollers": 0,
+      "undersizedTargets": [],
+      "slotWideEditCells": 192,
+      "truncatedLabels": [
+        "Power chord · 3 ses · 5."
+      ],
+      "annotationCollisions": 0,
+      "ownerSlotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "legatoUnderlines": 4,
+      "characterMarks": 0,
+      "ghostVoices": 0,
+      "selectionToolbarHeight": 0,
+      "tallSelectionBarHeight": 0,
+      "doorRowHeight": 48,
+      "actionRowHeight": 101,
+      "doorLabels": [
+        {
+          "drawn": "Nota",
+          "name": null
+        },
+        {
+          "drawn": "Şekil",
+          "name": null
+        },
+        {
+          "drawn": "Ritim",
+          "name": null
+        },
+        {
+          "drawn": "Bağla",
+          "name": null
+        }
+      ],
+      "consoleErrors": 0
+    }
+  ]
+}

@@ -43,6 +43,7 @@ import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { mixerAudioOf } from "@/lib/workspace/mixer-audio";
 import { useEventEntry } from "@/lib/workspace/use-event-entry";
+import { coveredRun } from "@/lib/workspace/selection-verbs";
 import { useTransportHandles } from "@/lib/workspace/use-transport-handles";
 import { usePracticeSession } from "@/lib/workspace/use-practice-session";
 import { useMultiTrackView } from "@/lib/workspace/use-multitrack-session";
@@ -250,6 +251,9 @@ export function Workspace() {
     previewSong: session.bars.handle.previewSong,
   });
 
+  /* What a covered run says and offers while writing (K-59 §3, §4). */
+  const covered = coveredRun({ editing: noteEditing.editing, time: session.time, composer });
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <WorkspaceChrome
@@ -267,6 +271,7 @@ export function Workspace() {
         onOpenSectionList={() => overlays.open("section")}
         onJumpSection={focusSection}
         editing={noteEditing.editing}
+        editSelection={covered?.header ?? null}
         onDoneEditing={noteEditing.toggleEdit}
       />
 
@@ -274,6 +279,7 @@ export function Workspace() {
         navigation={navigation}
         session={session}
         noteEditing={editingSurface}
+        composer={composer}
         song={song}
         arrangement={arrangement}
         ghostArrangement={ghostArrangement}
@@ -287,7 +293,7 @@ export function Workspace() {
         copilotOwnsScreen={previewOpen || arrangeOpen}
       />
 
-      <SelectionActionArea session={session} practice={practice} onOpenTiming={timing.open} />
+      <SelectionActionArea session={session} practice={practice} compact={covered !== null} onOpenTiming={timing.open} />
 
       {/* Both notation surfaces; the multi view needs this door too (§8). */}
       {navigation.view !== "arrange" ? (
@@ -300,6 +306,7 @@ export function Workspace() {
         song={song}
         track={track}
         selection={session.time.handle.selection}
+        selectionActions={covered?.verbs ?? null}
         onOpenChordBuilder={doors.catalogue}
         onOpenRhythm={doors.rhythm}
         toolbar={{
