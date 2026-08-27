@@ -92,9 +92,9 @@ export function AcceptanceConductor() {
    * client sees the installed session, and no pass disagrees with another.
    *
    * Nothing below renders until it exists, so the workspace cannot mount
-   * against `localStorage` even for one frame. A failure is shown rather than
-   * swallowed: a test that quietly ran against the reader's own music would
-   * be worse than no test.
+   * against the device's own store even for one frame. A failure is shown
+   * rather than swallowed: a test that quietly ran against the reader's own
+   * music would be worse than no test.
    */
   const session = useSyncExternalStore<AcceptanceSession | null>(
     () => () => {},

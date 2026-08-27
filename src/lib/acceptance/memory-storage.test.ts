@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { deviceStorageSnapshot } from "@/lib/acceptance/device-storage";
 import { createMemoryStorage } from "@/lib/acceptance/memory-storage";
 
 /*
@@ -58,5 +59,18 @@ describe("createMemoryStorage", () => {
     storage.setItem("b", "2");
     expect(before).toEqual({ a: "1" });
     expect(storage.snapshot()).toEqual({ a: "1", b: "2" });
+  });
+});
+
+describe("deviceStorageSnapshot", () => {
+  /*
+   * Node has no `window`, which is the case that matters here: a snapshot
+   * taken where there is no store must be a value the comparison can use, not
+   * a throw that would take the whole watcher down.
+   */
+  it("is a comparable value even where there is no store at all", () => {
+    const first = deviceStorageSnapshot();
+    expect(typeof first).toBe("string");
+    expect(deviceStorageSnapshot()).toBe(first);
   });
 });

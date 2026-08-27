@@ -12,6 +12,8 @@
  * missing is not a pass either — it is a partial, and it says so.
  */
 
+import { BRAND_NAME } from "@/lib/brand";
+
 /** What the reader answered about a technique they listened to. */
 export type ListenAnswer = "clear" | "unsure" | "wrong" | "silent" | null;
 
@@ -167,7 +169,7 @@ export function formatResult(input: {
   };
 
   return [
-    "ARANJÉ ANDROID PHYSICAL ACCEPTANCE",
+    `${BRAND_NAME.toUpperCase()} ANDROID PHYSICAL ACCEPTANCE`,
     `Date: ${device.date}`,
     `Device: ${device.platform || "—"}`,
     `Android: ${androidVersion(device.userAgent)}`,

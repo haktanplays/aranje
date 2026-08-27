@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { BRAND_NAME } from "@/lib/brand";
+
 import { AcceptanceConductor } from "@/components/acceptance/AcceptanceConductor";
 
 /**
@@ -11,7 +13,7 @@ import { AcceptanceConductor } from "@/components/acceptance/AcceptanceConductor
  * owns rather than the reader's own music.
  */
 export const metadata: Metadata = {
-  title: "Aranjé · Android kabul testi",
+  title: `${BRAND_NAME} \u00B7 Android kabul testi`,
   robots: { index: false, follow: false },
 };
 

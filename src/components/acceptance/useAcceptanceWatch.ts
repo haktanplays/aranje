@@ -8,13 +8,16 @@
  * **read only**, by design: this watches, it never drives. Everything else is
  * the DOM the workspace already publishes.
  *
- * The storage proof is the important one. A snapshot of `localStorage` is
- * taken before the fixture mounts and compared byte for byte at the end: if a
- * guided test on a fixed riff can change the reader's own music, that is the
- * finding, and it is not one a person could be expected to spot.
+ * The storage proof is the important one. A snapshot of the device's own store
+ * is taken before the fixture mounts and compared byte for byte at the end: if
+ * a guided test on a fixed riff can change the reader's own music, that is the
+ * finding, and it is not one a person could be expected to spot. The reading
+ * itself belongs to `lib/acceptance/device-storage`, because no component owns
+ * a store.
  */
 import { useEffect, useRef, useState } from "react";
 
+import { deviceStorageSnapshot } from "@/lib/acceptance/device-storage";
 import { LISTEN_KEYS, type AcceptanceAuto, type ListenKey } from "@/lib/acceptance/report";
 
 /** Where each technique sits, in ticks from the song's start. */
@@ -32,23 +35,6 @@ const readDebug = (): Debug | null =>
   (typeof window === "undefined"
     ? null
     : ((window as unknown as { __aranjeDebug?: Debug }).__aranjeDebug ?? null));
-
-const snapshotStorage = (): string => {
-  if (typeof window === "undefined") return "";
-  try {
-    const store = window.localStorage;
-    const keys: string[] = [];
-    for (let index = 0; index < store.length; index += 1) {
-      const key = store.key(index);
-      if (key !== null) keys.push(key);
-    }
-    keys.sort();
-    return JSON.stringify(keys.map((key) => [key, store.getItem(key)]));
-  } catch {
-    // A browser that refuses storage cannot have had it changed either.
-    return "unavailable";
-  }
-};
 
 const EMPTY_HEARD = Object.fromEntries(
   LISTEN_KEYS.map((key) => [key, false]),
@@ -89,7 +75,7 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
   }>({ loadMs: null, firstSoundMs: null });
 
   useEffect(() => {
-    before.current ??= snapshotStorage();
+    before.current ??= deviceStorageSnapshot();
 
     const errors: string[] = [];
     const onError = (event: ErrorEvent) => errors.push(event.message);
@@ -213,7 +199,7 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
           errors: errors.slice(0, 8),
           heard,
           transportDesync: previous.transportDesync || desyncTicks >= 3,
-          storageUnchanged: before.current === snapshotStorage(),
+          storageUnchanged: before.current === deviceStorageSnapshot(),
         };
       });
       wasPlaying = status === "playing";
