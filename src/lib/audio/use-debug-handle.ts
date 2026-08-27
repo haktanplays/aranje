@@ -2,10 +2,13 @@
 
 import { useEffect } from "react";
 
+import { debugArmed } from "@/lib/audio/debug-arm";
 import type { PlaybackController } from "@/lib/audio/playback";
 
 /**
- * Measurement surface for `?debug=1` (spec 8.4/8.5).
+ * Measurement surface for the debug query and the eval routes (spec 8.4/8.5).
+ *
+ * `debugArmed` owns the decision; see the reason it is not just a query.
  *
  * Reports the transport's own clock so timing can be checked against wall time
  * from outside the app. Reading only; nothing here can drive playback.
@@ -32,7 +35,7 @@ declare global {
 export function useDebugHandle(controller: PlaybackController): void {
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (!new URLSearchParams(window.location.search).has("debug")) return;
+    if (!debugArmed(window.location.search, window.location.pathname)) return;
 
     const handle: AranjeDebug = {
       status: () => controller.getState().status,

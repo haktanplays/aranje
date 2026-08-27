@@ -1,24 +1,41 @@
 "use client";
 
 /**
- * What the page notices while the reader works (K-59.1 §5).
+ * What the page notices while the reader works (K-59.1 §6, §7).
  *
- * Nobody is asked to read a log or name a coordinate. The transport is read
- * through the same `?debug=1` handle every browser harness uses — which is
- * **read only**, by design: this watches, it never drives. Everything else is
- * the DOM the workspace already publishes.
+ * Two things were wrong with the first version, and a live run on a real
+ * browser found both.
  *
- * The storage proof is the important one. A snapshot of the device's own store
- * is taken before the fixture mounts and compared byte for byte at the end: if
- * a guided test on a fixed riff can change the reader's own music, that is the
- * finding, and it is not one a person could be expected to spot. The reading
- * itself belongs to `lib/acceptance/device-storage`, because no component owns
- * a store.
+ * The transport was read as a set of booleans sampled by a timer, so a
+ * transition that happened between two ticks had never happened. That is now
+ * a `TransportLog`: the samples are folded into an ordered list of events, and
+ * a transition survives being seen once.
+ *
+ * "Did the ghost write anything" was answered by counting fret numbers on
+ * screen, which counts *drawings* — so a preview, which exists precisely to
+ * draw numbers without writing them, reported a write. That is now judged from
+ * the song's own bytes, the record's revision, the history and the undo
+ * control, through `judgeWrite`.
+ *
+ * The song is read out of the page's own storage rather than from the engine,
+ * because the guided route owns that storage: what is in it *is* the fixture,
+ * and comparing it before and after is the same question a project file would
+ * ask. The device's own store is compared separately, and must never move.
  */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { deviceStorageSnapshot } from "@/lib/acceptance/device-storage";
+import { readFixture } from "@/lib/acceptance/fixture-read";
+import { judgeWrite, type WriteEvidence, type WriteVerdict } from "@/lib/acceptance/evidence";
+import {
+  emptyTransportLog,
+  observeTransport,
+  type TransportLog,
+  type TransportSample,
+  type TransportStatus,
+} from "@/lib/acceptance/transitions";
 import { LISTEN_KEYS, type AcceptanceAuto, type ListenKey } from "@/lib/acceptance/report";
+import type { MemoryStorage } from "@/lib/acceptance/memory-storage";
 
 /** Where each technique sits, in ticks from the song's start. */
 export type ListenWindow = { readonly from: number; readonly to: number };
@@ -36,33 +53,62 @@ const readDebug = (): Debug | null =>
     ? null
     : ((window as unknown as { __aranjeDebug?: Debug }).__aranjeDebug ?? null));
 
+const STATUSES: readonly TransportStatus[] = [
+  "idle",
+  "loading",
+  "playing",
+  "paused",
+  "ended",
+  "error",
+];
+
+const statusOf = (raw: string): TransportStatus =>
+  STATUSES.find((known) => known === raw) ?? "idle";
+
 const EMPTY_HEARD = Object.fromEntries(
   LISTEN_KEYS.map((key) => [key, false]),
 ) as Record<ListenKey, boolean>;
 
-export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWindow>>): {
+const undoOffered = (): boolean => {
+  const node = document.querySelector("[data-undo]");
+  return node !== null && !node.hasAttribute("disabled");
+};
+
+export function useAcceptanceWatch(
+  windows: Readonly<Record<ListenKey, ListenWindow>>,
+  storage: MemoryStorage,
+): {
   readonly observed: AcceptanceAuto;
   readonly loadingText: string;
-  /** Milliseconds from the reader's first tap, or null while it has not happened. */
   readonly loadMs: number | null;
   readonly firstSoundMs: number | null;
   markFirstTap(): void;
+  /** Take the "before" picture for the ghost step. */
+  openGhostWindow(): void;
 } {
   const before = useRef<string | null>(null);
   const firstTap = useRef<number | null>(null);
+  const ghostStart = useRef<WriteEvidence | null>(null);
+  const previousSample = useRef<TransportSample | null>(null);
+  /*
+   * The log is folded here, in the tick, and not inside the state updater.
+   *
+   * React runs an updater when it renders, which is after the tick that
+   * queued it has already advanced `previousSample` — so a fold written
+   * inside the updater compared every sample with itself, and no transition
+   * ever had a "before". The seek was the visible casualty: the playhead
+   * really did move to the second bar and the log said it never happened.
+   */
+  const log = useRef<TransportLog>(emptyTransportLog());
+  const store = useRef(storage);
+
   const [observed, setObserved] = useState<AcceptanceAuto>(() => ({
     selectionOpened: false,
     moreSheetOpened: false,
     selectionCancelled: false,
     ghostVoices: 0,
-    ghostWroteNothing: true,
-    played: false,
-    paused: false,
-    resumed: false,
-    seekedBarIndex: null,
-    loopSeen: false,
-    tempoChanged: false,
-    transportDesync: false,
+    ghostWrite: { kind: "nothing_written" } as WriteVerdict,
+    transport: emptyTransportLog(),
     stuckLoading: false,
     errors: [],
     heard: { ...EMPTY_HEARD },
@@ -75,6 +121,10 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
   }>({ loadMs: null, firstSoundMs: null });
 
   useEffect(() => {
+    store.current = storage;
+  });
+
+  useEffect(() => {
     before.current ??= deviceStorageSnapshot();
 
     const errors: string[] = [];
@@ -84,22 +134,15 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
     window.addEventListener("error", onError);
     window.addEventListener("unhandledrejection", onRejection);
 
-    /* What the previous tick saw, so a transition can be told from a state. */
-    let wasPlaying = false;
-    let sawPause = false;
-    let baseBpm: number | null = null;
     let loadingSince: number | null = null;
-    let digitsBefore = -1;
-    /* Three consecutive ticks of disagreement, so a transition is not one. */
-    let desyncTicks = 0;
     let everLoaded = false;
 
     const tick = () => {
       const debug = readDebug();
-      const status = debug?.status() ?? "idle";
-      const bpm = debug?.bpm() ?? 0;
+      const status = statusOf(debug?.status() ?? "idle");
       const at = debug?.position();
       const loop = debug?.loop();
+      const ticks = debug?.ticks() ?? 0;
 
       const statusNode = document.querySelector("[data-transport-status]");
       setLoadingText(statusNode?.textContent?.trim() ?? "");
@@ -111,12 +154,6 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
         loadingSince = null;
       }
 
-      /*
-       * Two timings, both measured from the reader's own first tap and both
-       * null until the thing actually happened. Nothing here is estimated: a
-       * run where the sounds never finished loading reports a dash, not a
-       * number that would read like a result.
-       */
       const since = firstTap.current;
       if (since !== null) {
         setTiming((current) => ({
@@ -132,41 +169,56 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
       }
 
       /*
-       * The play control still offering to play while the engine says it is
-       * playing. Read from the button's own accessible name, because that is
-       * what the reader is looking at.
+       * The practice speed comes from the pill's own accessible name, which
+       * is built from the settings the transport is actually running at — not
+       * from a class, which could be styled without the engine agreeing.
        */
-      const offersPlay =
-        document.querySelector("[aria-label='Çal']") !== null &&
-        document.querySelector("[aria-label='Duraklat']") === null;
-      desyncTicks = status === "playing" && offersPlay ? desyncTicks + 1 : 0;
+      const pill = document.querySelector("[aria-label^='Çalışma hızı yüzde']");
+      const percent = Number(
+        /yüzde (\d+)/.exec(pill?.getAttribute("aria-label") ?? "")?.[1] ?? 100,
+      );
 
-      // Real fret numbers, ghosts excluded: a preview is not music.
-      const digits = [...document.querySelectorAll("[data-fret-glyph]")].filter(
-        (node) => !node.closest("[data-pen-ghost]"),
-      ).length;
-      if (digitsBefore < 0) digitsBefore = digits;
+      const sample: TransportSample = {
+        status,
+        ticks,
+        barIndex: at?.barIndex ?? 0,
+        loopOn: loop?.on ?? false,
+        percent,
+        offersPlay:
+          document.querySelector("[aria-label='Çal']") !== null &&
+          document.querySelector("[aria-label='Duraklat']") === null,
+      };
+
+      log.current = observeTransport(log.current, sample, previousSample.current);
+      previousSample.current = sample;
+      const transport = log.current;
 
       const ghost = Number(
         document.querySelector("[data-pen-ghost]")?.getAttribute("data-pen-ghost") ?? 0,
       );
+      const fixture = readFixture(store.current);
 
       setObserved((previous) => {
-        const playing = status === "playing";
-        const played = previous.played || playing;
-        const paused = previous.paused || (wasPlaying && status === "paused");
-        if (wasPlaying && status === "paused") sawPause = true;
-        const resumed = previous.resumed || (sawPause && playing);
-        if (playing && baseBpm === null) baseBpm = bpm;
-
         const heard = { ...previous.heard };
-        const ticks = debug?.ticks() ?? 0;
-        if (playing) {
+        if (status === "playing") {
           for (const key of LISTEN_KEYS) {
             const window_ = windows[key];
             if (ticks >= window_.from && ticks <= window_.to) heard[key] = true;
           }
         }
+
+        const opened = ghostStart.current;
+        const ghostWrite: WriteVerdict =
+          opened === null
+            ? previous.ghostWrite
+            : judgeWrite({
+                ...opened,
+                songAfter: fixture.song,
+                notesAfter: fixture.notes,
+                storageWrites: Math.max(0, fixture.revision - opened.historyDepthBefore),
+                historyDepthAfter: fixture.revision,
+                undoOfferedAfter: undoOffered(),
+              });
 
         return {
           ...previous,
@@ -181,31 +233,24 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
             (previous.selectionOpened &&
               document.querySelector("[data-selection-toolbar]") === null),
           ghostVoices: Math.max(previous.ghostVoices, ghost),
-          // The pen previews on a press and commits on the release. A preview
-          // that added a real number would show up here as one more digit.
-          ghostWroteNothing: previous.ghostWroteNothing && digits <= digitsBefore,
-          played,
-          paused,
-          resumed,
-          seekedBarIndex:
-            previous.seekedBarIndex ??
-            (at && at.barIndex > 0 && !playing ? at.barIndex : null),
-          loopSeen: previous.loopSeen || (loop?.on ?? false),
-          tempoChanged:
-            previous.tempoChanged || (baseBpm !== null && bpm > 0 && bpm !== baseBpm),
+          ghostWrite,
+          transport,
           stuckLoading:
             previous.stuckLoading ||
             (loadingSince !== null && performance.now() - loadingSince > 20_000),
           errors: errors.slice(0, 8),
           heard,
-          transportDesync: previous.transportDesync || desyncTicks >= 3,
           storageUnchanged: before.current === deviceStorageSnapshot(),
         };
       });
-      wasPlaying = status === "playing";
     };
 
-    const timer = window.setInterval(tick, 250);
+    /*
+     * Fast enough that a transition is unlikely to fall between two samples,
+     * and cheap because every read is a getter or a `querySelector`. The log
+     * itself no longer depends on the rate — this only narrows the window.
+     */
+    const timer = window.setInterval(tick, 100);
     tick();
     return () => {
       window.clearInterval(timer);
@@ -214,13 +259,39 @@ export function useAcceptanceWatch(windows: Readonly<Record<ListenKey, ListenWin
     };
   }, [windows]);
 
+  /*
+   * Both handles are stable, and that is load-bearing rather than tidy. This
+   * hook re-renders ten times a second, so a callback rebuilt each render
+   * would change the identity of anything that depends on it — and the caller
+   * depends on `openGhostWindow` to decide when a guided step is entered. The
+   * first version was not stable, and the effect it fed re-entered the step on
+   * every tick: the workspace was put back into its starting state ten times a
+   * second, and no selection the reader made survived long enough to be seen.
+   */
+  const markFirstTap = useCallback(() => {
+    firstTap.current ??= performance.now();
+  }, []);
+
+  const openGhostWindow = useCallback(() => {
+    const fixture = readFixture(store.current);
+    ghostStart.current = {
+      songBefore: fixture.song,
+      songAfter: fixture.song,
+      notesBefore: fixture.notes,
+      notesAfter: fixture.notes,
+      storageWrites: 0,
+      historyDepthBefore: fixture.revision,
+      historyDepthAfter: fixture.revision,
+      undoOfferedAfter: false,
+    };
+  }, []);
+
   return {
     observed,
     loadingText,
     loadMs: timing.loadMs,
     firstSoundMs: timing.firstSoundMs,
-    markFirstTap: () => {
-      firstTap.current ??= performance.now();
-    },
+    markFirstTap,
+    openGhostWindow,
   };
 }

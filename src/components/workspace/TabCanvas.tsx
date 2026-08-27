@@ -47,6 +47,7 @@ import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { useLongPress } from "@/lib/ui/use-long-press";
+import { pointerOwner } from "@/lib/tab/pointer-ownership";
 import { xAtTicks } from "@/lib/tab/song-axis";
 import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
@@ -222,6 +223,11 @@ export function TabCanvas({
    * to. Reading the rect at fire time rather than at press time keeps that
    * true even if the tab moved during the press.
    */
+  /* A writing pen takes the press; both gestures used to run (K-59.1 §5). */
+  const owner = pointerOwner({
+    penArmed: onPenTarget !== undefined,
+    selectionAvailable: onSlotLongPress !== undefined,
+  });
   const longPress = useLongPress(
     ({ clientX }) => {
       const element = contentRef.current;
@@ -234,7 +240,7 @@ export function TabCanvas({
        */
       onSlotLongPress(clientX - element.getBoundingClientRect().left - GUTTER_WIDTH);
     },
-    { enabled: onSlotLongPress !== undefined },
+    { enabled: owner === "selection" },
   );
 
   if (timeline.kind === "unsupported") {

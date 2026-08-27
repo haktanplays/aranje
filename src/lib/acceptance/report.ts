@@ -13,6 +13,8 @@
  */
 
 import { BRAND_NAME } from "@/lib/brand";
+import { writeLine, type WriteVerdict } from "@/lib/acceptance/evidence";
+import type { TransportLog } from "@/lib/acceptance/transitions";
 
 /** What the reader answered about a technique they listened to. */
 export type ListenAnswer = "clear" | "unsure" | "wrong" | "silent" | null;
@@ -71,19 +73,14 @@ export type AcceptanceAuto = {
   readonly moreSheetOpened: boolean;
   readonly selectionCancelled: boolean;
   readonly ghostVoices: number;
-  readonly ghostWroteNothing: boolean;
-  readonly played: boolean;
-  readonly paused: boolean;
-  readonly resumed: boolean;
-  readonly seekedBarIndex: number | null;
-  readonly loopSeen: boolean;
-  readonly tempoChanged: boolean;
   /**
-   * The engine says it is playing while the button still offers to play, for
-   * long enough that it is not a transition — the shape a second transport
-   * would take.
+   * What the ghost actually did to the song, judged from five sources rather
+   * than from how many numbers were on screen (§6). A preview draws numbers;
+   * drawing is not writing.
    */
-  readonly transportDesync: boolean;
+  readonly ghostWrite: WriteVerdict;
+  /** Every transport transition, in the order the reader made it happen. */
+  readonly transport: TransportLog;
   readonly stuckLoading: boolean;
   readonly errors: readonly string[];
   /** True when the playhead really crossed each technique's own window. */
@@ -113,45 +110,132 @@ const mark = (value: CheckAnswer): string =>
 
 const auto = (ok: boolean): string => (ok ? "PASS" : "ISSUE");
 
+export type Verdict = "PASS" | "PARTIAL" | "FAIL";
+
+export type Verdicts = {
+  /** The route, the selection, the ghost, the transport and the isolation. */
+  readonly functional: Verdict;
+  /** What the reader said they heard. */
+  readonly listening: Verdict;
+  /** Whether this was a real Android phone with a real finger on it. */
+  readonly physical: Verdict;
+  readonly overall: Verdict;
+  /** Why it is not a PASS, in the reader's language. */
+  readonly reasons: readonly string[];
+};
+
 /**
- * PASS, PARTIAL or FAIL, from what was measured and what was answered.
+ * A real phone with a real finger, or not (§8).
  *
- * FAIL when something objective broke: an uncaught error, a mutated store, a
- * technique that came back silent or wrong. PARTIAL when the run is simply
- * incomplete, or when a person was unsure. PASS only when every measured thing
- * held and every answer was given.
+ * Both halves are required and neither is inferable from the other: a desktop
+ * Chromium can be told to send an Android user agent, and a touchscreen laptop
+ * is not an Android phone. The live run that prompted this was a `1363x936`
+ * MacIntel Chrome with `touch=0`, and the honest answer for it is that the
+ * physical question was not asked at all.
  */
-export function overallVerdict(
+export function physicalEvidence(device: AcceptanceDevice): {
+  readonly android: boolean;
+  readonly touch: boolean;
+} {
+  return {
+    android: /Android\s+[\d.]/.test(device.userAgent),
+    touch: device.touchPoints > 0,
+  };
+}
+
+/**
+ * Three questions, answered separately, and then the worst of them (§8).
+ *
+ * They are separate because they fail for different reasons and are fixed by
+ * different people. A functional defect is a bug in the app. A missing
+ * listening answer is a test that was not finished. A desktop browser is not
+ * a defect at all — it is simply not the thing the physical round is about,
+ * and reporting it as a pass would be the single most misleading line this
+ * block could contain.
+ */
+export function verdicts(
   answers: AcceptanceAnswers,
   observed: AcceptanceAuto,
-): "PASS" | "PARTIAL" | "FAIL" {
-  const listened = LISTEN_KEYS.map((key) => answers.listen[key]);
-  const broke =
-    observed.errors.length > 0 ||
-    !observed.storageUnchanged ||
-    observed.transportDesync ||
-    observed.stuckLoading ||
-    answers.visual === "issue" ||
-    answers.ghost === "issue" ||
-    listened.some((value) => value === "wrong" || value === "silent");
-  if (broke) return "FAIL";
+  device: AcceptanceDevice,
+): Verdicts {
+  const reasons: string[] = [];
+  const transport = observed.transport;
 
-  const incomplete =
-    answers.visual === null ||
-    answers.ghost === null ||
-    listened.some((value) => value === null) ||
-    listened.some((value) => value === "unsure") ||
-    !observed.selectionOpened ||
-    !observed.moreSheetOpened ||
-    !observed.selectionCancelled ||
-    observed.ghostVoices !== 3 ||
-    !observed.played ||
-    !observed.paused ||
-    !observed.resumed ||
-    observed.seekedBarIndex === null ||
-    !observed.loopSeen ||
-    !observed.tempoChanged;
-  return incomplete ? "PARTIAL" : "PASS";
+  /* ------------------------------------------------------------ functional */
+  const functionalBroke: readonly [boolean, string][] = [
+    [observed.errors.length > 0, `sayfada ${observed.errors.length} hata`],
+    [!observed.storageUnchanged, "cihaz deposu değişti"],
+    [transport.desync, "motor çalıyor ama düğme hâlâ Çal diyor"],
+    [observed.stuckLoading, "sesler yüklenmedi"],
+    [observed.ghostWrite.kind !== "nothing_written", `hayalet: ${writeLine(observed.ghostWrite)}`],
+    [answers.visual === "issue", "okuyucu görünümde sorun bildirdi"],
+    [answers.ghost === "issue", "okuyucu hayalette sorun bildirdi"],
+  ];
+  const functionalMissing: readonly [boolean, string][] = [
+    [!observed.selectionOpened, "seçim açılmadı"],
+    [!observed.moreSheetOpened, "Daha fazla açılmadı"],
+    [!observed.selectionCancelled, "seçim iptal edilmedi"],
+    [observed.ghostVoices !== 3, `hayalet ${observed.ghostVoices}/3 ses`],
+    [!transport.played, "hiç çalınmadı"],
+    [!transport.paused, "duraklatılmadı"],
+    [!transport.resumed, "yeniden başlatılmadı"],
+    [transport.seekedBarIndex === null, "ölçüye atlanmadı"],
+    [!transport.loopSeen, "döngü açılmadı"],
+    [transport.tempoPercent === null, "hız değiştirilmedi"],
+    [!transport.rewound, "başa sarılmadı"],
+    [answers.visual === null, "görünüm cevaplanmadı"],
+    [answers.ghost === null, "hayalet cevaplanmadı"],
+  ];
+  for (const [hit, why] of [...functionalBroke, ...functionalMissing]) {
+    if (hit) reasons.push(why);
+  }
+  const functional: Verdict = functionalBroke.some(([hit]) => hit)
+    ? "FAIL"
+    : functionalMissing.some(([hit]) => hit)
+      ? "PARTIAL"
+      : "PASS";
+
+  /* ------------------------------------------------------------- listening */
+  const said = LISTEN_KEYS.map((key) => answers.listen[key]);
+  /*
+   * An answer about a passage the playhead never reached is not an answer,
+   * whatever the reader clicked. "Belirsiz" is never turned into anything
+   * positive, and a browser cannot report that the sound was good.
+   */
+  const unheard = LISTEN_KEYS.filter((key) => !observed.heard[key]);
+  const listeningBroke = said.some((value) => value === "wrong" || value === "silent");
+  const listeningMissing =
+    unheard.length > 0 ||
+    said.some((value) => value === null || value === "unsure");
+  if (listeningBroke) reasons.push("bir teknik yanlış veya sessiz geldi");
+  if (unheard.length > 0) reasons.push(`${unheard.length} pasaj hiç çalınmadı`);
+  const listening: Verdict = listeningBroke
+    ? "FAIL"
+    : listeningMissing
+      ? "PARTIAL"
+      : "PASS";
+
+  /* --------------------------------------------------------------- physical */
+  const evidence = physicalEvidence(device);
+  if (!evidence.android) reasons.push("Android olmayan tarayıcı");
+  if (!evidence.touch) reasons.push("dokunmatik olmayan ortam");
+  const physical: Verdict =
+    evidence.android && evidence.touch && listening === "PASS" && functional === "PASS"
+      ? "PASS"
+      : "PARTIAL";
+
+  /*
+   * The overall answer is the worst of the three, and it can never be better
+   * than the physical one — which is what stops a clean desktop run from
+   * reading as a finished physical acceptance.
+   */
+  const overall: Verdict = [functional, listening, physical].includes("FAIL")
+    ? "FAIL"
+    : [functional, listening, physical].includes("PARTIAL")
+      ? "PARTIAL"
+      : "PASS";
+
+  return { functional, listening, physical, overall, reasons };
 }
 
 /** The block the reader copies. Nothing here is sent anywhere. */
@@ -161,6 +245,9 @@ export function formatResult(input: {
   readonly observed: AcceptanceAuto;
 }): string {
   const { device, answers, observed } = input;
+  const t = observed.transport;
+  const decision = verdicts(answers, observed, device);
+  const evidence = physicalEvidence(device);
   const listened = (key: ListenKey): string => {
     const value = answers.listen[key];
     const said = value ? LISTEN_LABELS[value] : "—";
@@ -179,11 +266,13 @@ export function formatResult(input: {
     `Visual: ${mark(answers.visual)}`,
     `Selection: ${auto(observed.selectionOpened)}`,
     `More sheet: ${auto(observed.moreSheetOpened)}`,
-    `Power ghost: ${mark(answers.ghost)} (otomatik: ${observed.ghostVoices}/3 ses, yazma ${observed.ghostWroteNothing ? "yok" : "VAR"})`,
-    `Play-pause: ${auto(observed.played && observed.paused && observed.resumed)}`,
-    `Seek: ${observed.seekedBarIndex === null ? "ISSUE" : `PASS (${observed.seekedBarIndex + 1}. ölçü)`}`,
-    `Loop: ${auto(observed.loopSeen)}`,
-    `Tempo: ${auto(observed.tempoChanged)}`,
+    `Power ghost: ${mark(answers.ghost)} (otomatik: ${observed.ghostVoices}/3 ses, ${writeLine(observed.ghostWrite)})`,
+    `Play-pause: ${auto(t.played && t.paused && t.resumed)}`,
+    `Seek: ${t.seekedBarIndex === null ? "ISSUE" : `PASS (${t.seekedBarIndex + 1}. ölçü)`}`,
+    `Loop: ${auto(t.loopSeen)}`,
+    `Tempo: ${t.tempoPercent === null ? "ISSUE" : `PASS (%${t.tempoPercent})`}`,
+    `Rewind: ${auto(t.rewound)}`,
+    `Transport sırası: ${t.order.length === 0 ? "—" : t.order.join(" → ")}`,
     `HO/PO: ${listened("hopo")}`,
     `Slide: ${listened("slide")}`,
     `Bend ½: ${listened("bendHalf")}`,
@@ -193,7 +282,13 @@ export function formatResult(input: {
     `Automatic errors: ${observed.errors.length === 0 ? "0" : `${observed.errors.length} — ${observed.errors.slice(0, 3).join(" | ")}`}`,
     `Storage/history mutation: ${observed.storageUnchanged ? "none" : "DETECTED"}`,
     `User note: ${answers.note.trim() || "—"}`,
-    `Overall: ${overallVerdict(answers, observed)}`,
+    `Functional: ${decision.functional}`,
+    `Listening: ${decision.listening}`,
+    `Physical environment: ${decision.physical} (Android ${evidence.android ? "evet" : "hayır"} · touch ${device.touchPoints})`,
+    decision.reasons.length === 0
+      ? "Notlar: —"
+      : `Notlar: ${decision.reasons.join(" · ")}`,
+    `Overall: ${decision.overall}`,
   ].join("\n");
 }
 

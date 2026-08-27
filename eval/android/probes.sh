@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Can this harness fail? Twelve mutations that say it can (K-59.1 §8).
+# Can this harness fail? Twelve mutations that say it can (K-59.1 §9).
 #
-# The Android acceptance harness went green on its first clean run, and a
-# harness that is green the first time has told you nothing until you have
-# seen it go red. Each probe below breaks exactly one guarantee the harness
-# claims to hold, rebuilds the production app, runs the harness, and asserts
-# that it reports the *named* failure — not merely that it exits non-zero,
-# because a build that crashed would do that too.
+# The previous harness went green on its first run and stayed green while a
+# person found four defects on the same build — because it clicked "next"
+# through the steps without ever doing them. Every probe below breaks one
+# guarantee the harness now claims to hold, rebuilds the production app, runs
+# the harness and asserts it reports the *named* failure, not merely that it
+# exited non-zero.
 #
 #   ./eval/chord-audio/serve.sh   # once, for the clean baseline
 #   ./eval/android/probes.sh
@@ -51,7 +51,7 @@ PY
       echo "RED   $name  ($expect)"; pass=$((pass+1))
     else
       echo "WRONG $name  (red, but not for \"$expect\")"
-      grep '^FAIL' /tmp/aranje-android-probe.log | head -1
+      grep '^FAIL' /tmp/aranje-android-probe.log | head -1 | cut -c1-160
       fail=$((fail+1))
     fi
   else
@@ -60,97 +60,80 @@ PY
   mv "$file.probebak" "$file"
 }
 
-CONDUCTOR=src/components/acceptance/AcceptanceConductor.tsx
-SESSION=src/lib/acceptance/session.ts
-REPORT=src/lib/acceptance/report.ts
+STAGE=src/lib/workspace/workspace-stage.ts
+GROUND=src/lib/workspace/use-session-ground.ts
+OWNER=src/lib/tab/pointer-ownership.ts
+GHOST=src/lib/tab/pen-ghost.ts
+BAR=src/components/workspace/FrettedBarBlock.tsx
+EVIDENCE=src/lib/acceptance/evidence.ts
 WATCH=src/components/acceptance/useAcceptanceWatch.ts
-APP=src/components/workspace/Workspace.tsx
+TRANSIT=src/lib/acceptance/transitions.ts
+REPORT=src/lib/acceptance/report.ts
 
-# 1 — no way back at all.
-probe "A1 back button removed" "back/forward" "$CONDUCTOR" \
-  '{step > 0 ? (' '{false ? ('
+# 1 — the route opens where the live run found it: on the arrangement.
+probe "B1 route starts on Düzen" "route did not open on the tab" "$STAGE" \
+  '    it.navigation.showTab();' '    void it;' \
+  'const plan = stagePlan(stageName);' 'const plan = stagePlan(stageName);'
+# (anchor lives in the ground; retargeted below)
 
-# 2 — a back that throws away what the reader already answered.
-probe "A2 back clears the answers" "answers lost on back" "$CONDUCTOR" \
-  '  const back = () => {' \
-  '  const back = () => {
-    setAnswers((current) => ({ ...current, visual: null }));'
+# 2 — steps stop cleaning up after themselves.
+probe "B2 no cleanup between steps" "listening step inherited" "$GROUND" \
+  '    it.overlays.close();
+    it.resetEditSurfaces();' '    it.overlays.close();'
 
-# 3 — a result block missing one of the six techniques.
-probe "A3 result drops a technique" "result incomplete" "$REPORT" \
-  '`Palm mute: ${listened("palmMute")}`,' '`Palm: ${listened("palmMute")}`,'
+# 3 — the pen stops owning the press, so both gestures run again.
+probe "B3 long press wins over the pen" "a time selection opened under the pen" "$OWNER" \
+  '  if (input.penArmed) return "pen";' \
+  '  if (input.penArmed && !input.selectionAvailable) return "pen";'
 
-# 4 — a copy button that changes its label but copies nothing.
-probe "A4 copy button copies nothing" "copy did not reach the clipboard" "$CONDUCTOR" \
-  'navigator.clipboard?.writeText(text).catch(() => undefined);' \
-  'void text;'
+# 4 — the ghost drops a voice.
+probe "B4 ghost drops a voice" "ghost showed 2/3 voices" "$GHOST" \
+  'export function penGhost(' 'export function penGhostFull(' \
+  'export function penGhostFull(' 'function penGhostFull('
 
-# 5 — the reader's own note never reaching the block they hand over.
-probe "A5 note omitted from the result" "result incomplete" "$REPORT" \
-  '`User note: ${answers.note.trim() || "—"}`,' '`User note: —`,'
+# 5 — a pointer-cancel writes instead of abandoning.
+probe "B5 pointer-cancel writes" "the ghost changed the song" "$BAR" \
+  '                    onPointerCancel={() => {
+                      cancelHold();
+                      onPenTarget?.(null);
+                    }}' \
+  '                    onPointerCancel={() => {
+                      cancelHold();
+                    }}'
 
-# 6 — the fixture writing to the device instead of its own Map.
-probe "A6 fixture writes to localStorage" "reader storage mutated" "$SESSION" \
-  '  const storage = createMemoryStorage();' \
-  '  const storage = createMemoryStorage();
-  if (typeof window !== "undefined") window.localStorage.setItem("aranje.song", "{}");'
+# 6 — selection state counted as a write again.
+probe "B6 selection counted as a write" "ghost line" "$EVIDENCE" \
+  '  const songChanged = evidence.songBefore !== evidence.songAfter;' \
+  '  const songChanged = true;'
 
-# 7 — the guided route advertised in the app the reader normally opens.
-probe "A7 route linked from the app" "route linked from the app" "$APP" \
-  '    <div className="flex h-dvh flex-col overflow-hidden">' \
-  '    <div className="flex h-dvh flex-col overflow-hidden">
-      <a href="/eval/android-acceptance" className="sr-only">Android kabul</a>'
+# 7 — a song change hidden from the history and storage evidence.
+probe "B7 song change hidden from history" "ghost line" "$EVIDENCE" \
+  '  if (songChanged && !(historyGrew && stored)) {' '  if (false) {'
 
-# 8 — a control below the touch minimum.
-probe "A8 control under the touch minimum" "under 44" "$CONDUCTOR" \
-  'style={{ minHeight: MIN_TOUCH_TARGET_PX }}
-      className={`w-full rounded-lg border px-3 text-sm font-medium ${' \
-  'style={{ minHeight: 30, height: 30 }}
-      className={`w-full rounded-lg border px-3 text-sm font-medium ${'
+# 8 — the transition log turned back into a polling boolean.
+probe "B8 play measured by polling instant" "play-pause" "$TRANSIT" \
+  '  const played = log.played || nowPlaying || sample.status === "ended";' \
+  '  const played = nowPlaying;'
 
-# 9 — a step the reader cannot get past.
-probe "A9 a step becomes unreachable" "steps 0,1,2,3,4" "$CONDUCTOR" \
-  '<Big testId="transport-next" onClick={next}>' \
-  '<Big testId="transport-none" onClick={next}>'
+# 9 — the loop read from the DOM instead of the engine.
+probe "B9 loop read from the DOM" "loop ISSUE" "$WATCH" \
+  '        loopOn: loop?.on ?? false,' \
+  '        loopOn: document.querySelector("[data-loop-on]") !== null,'
 
-# 10 — the flow remembering where it was, which means it wrote something.
-probe "A10 progress survives a refresh" "reader storage mutated" "$CONDUCTOR" \
-  'import { useMemo, useState, useSyncExternalStore } from "react";' \
-  'import { useEffect, useMemo, useState, useSyncExternalStore } from "react";' \
-  '  const [step, setStep] = useState(0);' \
-  '  const [step, setStep] = useState(() =>
-    typeof window === "undefined"
-      ? 0
-      : Number(window.localStorage.getItem("aranje.acceptance-step") ?? 0),
-  );
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("aranje.acceptance-step", String(step));
-    }
-  }, [step]);'
+# 10 — the tempo detached from the settings the transport runs at.
+probe "B10 tempo detached from settings" "tempo ISSUE" "$WATCH" \
+  '        /yüzde (\d+)/.exec(pill?.getAttribute("aria-label") ?? "")?.[1] ?? 100,' \
+  '        100,'
 
-# 11 — the session installed during render, which is the defect §8 found:
-# the server has no storage to swap, so the two passes disagree, React throws
-# the server HTML away, and the re-render asks for a second session.
-probe "A11 session installed during render" "session:" "$CONDUCTOR" \
-  '  const session = useSyncExternalStore<AcceptanceSession | null>(
-    () => () => {},
-    acceptanceSession,
-    () => null,
-  );' \
-  '  const [session] = useState<AcceptanceSession | null>(() =>
-    typeof window === "undefined" ? null : startAcceptanceSession(),
-  );' \
-  'import { acceptanceSession, type AcceptanceSession } from "@/lib/acceptance/session";' \
-  'import { startAcceptanceSession, type AcceptanceSession } from "@/lib/acceptance/session";'
+# 11 — a desktop with no touch allowed to claim a physical pass.
+probe "B11 desktop claims physical PASS" "desktop claimed physical" "$REPORT" \
+  '    touch: device.touchPoints > 0,' '    touch: true,' \
+  '    android: /Android\s+[\d.]/.test(device.userAgent),' '    android: true,'
 
-# 12 — anything at all thrown while the reader works.
-probe "A12 an error on the page" "console:" "$WATCH" \
-  '    const timer = window.setInterval(tick, 250);' \
-  '    window.setTimeout(() => {
-      throw new Error("probe");
-    }, 400);
-    const timer = window.setInterval(tick, 250);'
+# 12 — an unheard passage counted as answered.
+probe "B12 unheard passage counted as heard" "listening" "$REPORT" \
+  '  const unheard = LISTEN_KEYS.filter((key) => !observed.heard[key]);' \
+  '  const unheard: ListenKey[] = [];'
 
 echo
 echo "kırmızı ${pass} · vacuous ${fail} · atlanan ${skipped}"
