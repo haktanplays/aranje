@@ -37,7 +37,11 @@ const fillOf = (tone: Tone) => (tone === "preview" ? "fill-bronze" : "fill-muted
 
 function Legato({ phrase, tone }: { phrase: LegatoPhrase; tone: Tone }) {
   return (
-    <g data-technique="legato" data-technique-tone={tone}>
+    <g
+      data-technique="legato"
+      data-technique-string={phrase.stringIndex}
+      data-technique-tone={tone}
+    >
       <path
         d={phrase.path}
         fill="none"
@@ -65,6 +69,7 @@ function Slide({ mark, tone }: { mark: SlideMark; tone: Tone }) {
   return (
     <line
       data-technique="slide"
+      data-technique-string={mark.stringIndex}
       data-technique-tone={tone}
       x1={mark.x1}
       y1={mark.y1}
@@ -79,7 +84,11 @@ function Slide({ mark, tone }: { mark: SlideMark; tone: Tone }) {
 
 function Bend({ mark, tone }: { mark: BendMark; tone: Tone }) {
   return (
-    <g data-technique="bend" data-technique-tone={tone}>
+    <g
+      data-technique="bend"
+      data-technique-string={mark.stringIndex}
+      data-technique-tone={tone}
+    >
       <path
         d={mark.path}
         fill="none"
@@ -107,6 +116,7 @@ function Vibrato({ mark, tone }: { mark: VibratoMark; tone: Tone }) {
   return (
     <path
       data-technique="vibrato"
+      data-technique-string={mark.stringIndex}
       data-technique-tone={tone}
       d={mark.path}
       fill="none"
@@ -119,7 +129,11 @@ function Vibrato({ mark, tone }: { mark: VibratoMark; tone: Tone }) {
 
 function PalmMute({ range, tone }: { range: PalmMuteRange; tone: Tone }) {
   return (
-    <g data-technique="palm-mute" data-technique-tone={tone}>
+    <g
+      data-technique="palm-mute"
+      data-technique-string={range.stringIndex}
+      data-technique-tone={tone}
+    >
       <text
         x={range.labelX}
         y={range.labelY}
@@ -155,18 +169,25 @@ export function TechniqueLayer({
   primitives,
   width,
   height,
-  previewSlots,
+  preview,
 }: {
   primitives: TechniquePrimitives;
   width: number;
   height: number;
-  /** Onsets currently under a preview, drawn in the accent instead of grey. */
-  previewSlots?: ReadonlySet<number>;
+  /**
+   * Whether one note is the one under the reader's hand right now.
+   *
+   * Asked per note rather than handed a set, because the two things that can
+   * put a note under a hand — the selected cell and the group selection —
+   * are keyed differently, and flattening them into one set here would mean
+   * building six keys per slot for every bar on screen.
+   */
+  preview?: (stringIndex: number, slot: number) => boolean;
 }) {
   if (primitives.count === 0) return null;
 
-  const toneFor = (slots: readonly number[]): Tone =>
-    previewSlots && slots.some((slot) => previewSlots.has(slot))
+  const toneFor = (stringIndex: number, slots: readonly number[]): Tone =>
+    preview && slots.some((slot) => preview(stringIndex, slot))
       ? "preview"
       : "read";
 
@@ -192,35 +213,35 @@ export function TechniqueLayer({
         <Legato
           key={`legato-${phrase.stringIndex}-${phrase.slots[0]}`}
           phrase={phrase}
-          tone={toneFor(phrase.slots)}
+          tone={toneFor(phrase.stringIndex, phrase.slots)}
         />
       ))}
       {primitives.slides.map((mark) => (
         <Slide
           key={`slide-${mark.stringIndex}-${mark.slot}`}
           mark={mark}
-          tone={toneFor([mark.slot])}
+          tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
       {primitives.bends.map((mark) => (
         <Bend
           key={`bend-${mark.stringIndex}-${mark.slot}`}
           mark={mark}
-          tone={toneFor([mark.slot])}
+          tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
       {primitives.vibratos.map((mark) => (
         <Vibrato
           key={`vibrato-${mark.stringIndex}-${mark.slot}`}
           mark={mark}
-          tone={toneFor([mark.slot])}
+          tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
       {primitives.palmMutes.map((range) => (
         <PalmMute
           key={`pm-${range.stringIndex}-${range.slots[0]}`}
           range={range}
-          tone={toneFor(range.slots)}
+          tone={toneFor(range.stringIndex, range.slots)}
         />
       ))}
     </svg>

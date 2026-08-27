@@ -58,6 +58,19 @@ export type Lane = { readonly top: number; readonly bottom: number };
 export const SLOT_INSET_PX = 4;
 /** How far a mark keeps clear of the string lines above and below it. */
 export const LANE_CLEAR_PX = 4;
+/**
+ * Half the height of a fret number's own box, at the tab's 12px glyph.
+ *
+ * The lane's floor is the larger of the two clearances, because a mark that
+ * cleared the string line by 4px would still be sitting on the numeral: the
+ * digit is centred on that line and is taller than the gap. Measured from the
+ * glyph model's own size rather than guessed.
+ */
+export const DIGIT_HALF_PX = 6;
+/** Ink below a 9px label's baseline, so a lane floor can account for it. */
+const LABEL_DESCENT_PX = 2;
+/** Ink above it, so a label never climbs out of the top of its lane. */
+const LABEL_ASCENT_PX = 7;
 
 const ARC_OVERHANG_PX = 5;
 const ARC_RISE_PX = 7;
@@ -239,7 +252,7 @@ export function annotationLane(
   const y = lineY(stringIndex, layout);
   return {
     top: y - layout.stringRowHeight + LANE_CLEAR_PX,
-    bottom: y - LANE_CLEAR_PX,
+    bottom: y - Math.max(LANE_CLEAR_PX, DIGIT_HALF_PX + 1),
   };
 }
 
@@ -322,7 +335,12 @@ function buildLegato(
       const last = run[run.length - 1] as TabSpan;
       const lane = annotationLane(stringIndex, layout);
       const baseY = lane.bottom;
-      const rise = Math.min(ARC_RISE_PX, (baseY - lane.top) / 2);
+      // The label sits above the curve, so the rise is capped by the room the
+      // label needs rather than by the lane alone.
+      const rise = Math.max(
+        0,
+        Math.min(ARC_RISE_PX, baseY - lane.top - LABEL_ASCENT_PX - 2),
+      );
 
       const left = Math.max(
         0,
@@ -569,13 +587,16 @@ function buildPalmMutes(
           arc.extent.left < end.right &&
           arc.extent.right > start.left,
       );
-      const railY = clash ? lane.top + 3 : lane.bottom - 3;
+      const labelY = lane.bottom - LABEL_DESCENT_PX;
+      const railY = clash
+        ? lane.top + LABEL_ASCENT_PX
+        : labelY - Math.round(LABEL_ASCENT_PX / 2);
 
       ranges.push({
         stringIndex,
         slots: run.map((span) => span.startSlot),
         labelX: round(start.left),
-        labelY: round(railY + 3),
+        labelY: round(clash ? railY + LABEL_ASCENT_PX / 2 : labelY),
         railY: round(railY),
         rail: { left: round(railLeft), right: round(end.right) },
         capX: round(end.right),

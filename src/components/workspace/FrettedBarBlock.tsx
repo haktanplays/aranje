@@ -259,6 +259,7 @@ export function FrettedBarBlock({
         {Array.from({ length: stringCount }, (_, stringIndex) => (
           <div
             key={stringIndex}
+            data-string-line={stringIndex}
             className="bg-line absolute right-0 left-0 h-px"
             style={{
               top:
@@ -304,7 +305,11 @@ export function FrettedBarBlock({
               primitives={techniques}
               width={width}
               height={staffHeight}
-              {...(onsets ? { previewSlots: onsets.selectedSlots } : {})}
+              preview={(stringIndex, slot) =>
+                (selectedCell?.slotIndex === slot &&
+                  selectedCell.stringIndex === stringIndex) ||
+                (onsets?.selectedSlots.has(slot) ?? false)
+              }
             />
 
             {/* Fret numbers at each onset */}

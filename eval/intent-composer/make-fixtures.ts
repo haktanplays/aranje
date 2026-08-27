@@ -12,7 +12,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { songSchema, type Song } from "@/lib/song/schema";
 import { errorsOnly, runValidators, warningsOnly } from "@/lib/validators";
 
-import { REPORTED, matrix, songFor } from "./fixtures";
+import { REPORTED, matrix, songFor, techniqueShowcase } from "./fixtures";
 
 const OUT = "eval/intent-composer";
 mkdirSync(OUT, { recursive: true });
@@ -29,6 +29,8 @@ const named: Record<string, Song> = {
     resolution: 16,
     onsets: [{ fret: 5 }, { fret: 7 }, { fret: 8 }, { fret: 7 }, { fret: 5 }],
   }),
+  /** Every technique the contract can express, for the notation acceptance. */
+  techniques: techniqueShowcase(),
   /** One onset and a lot of room: what the power chord pen writes into. */
   roomy: songFor({
     ...REPORTED,

@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 import {
   annotationLane,
   buildTechniquePrimitives,
+  DIGIT_HALF_PX,
   digitBounds,
   ownerSlot,
   type TechniqueLayout,
@@ -23,6 +24,13 @@ const LAYOUT: TechniqueLayout = {
   stringRowHeight: 26,
   stringCount: 6,
   rowTop: (stringIndex) => (6 - 1 - stringIndex) * 26,
+};
+
+/** Every absolute y in a path. Relative `q` segments carry deltas, not ys. */
+const ys = (path: string): number[] => {
+  const head = path.split(" q ")[0] ?? path;
+  const numbers = [...head.matchAll(/-?\d+(?:\.\d+)?/g)].map((m) => Number(m[0]));
+  return numbers.filter((_, index) => index % 2 === 1);
 };
 
 const span = (
@@ -337,6 +345,54 @@ describe("palm mute is a range, not a mark per note", () => {
     ]);
     const { palmMutes } = buildTechniquePrimitives(broken, LAYOUT);
     expect(palmMutes.map((range) => range.slots)).toEqual([[0], [2], [3]]);
+  });
+});
+
+describe("no mark sits on a number", () => {
+  it("keeps the lane's floor clear of the numerals, not just of the line", () => {
+    /*
+     * A digit is centred on its string's line and is taller than the 4px the
+     * line itself needs, so a lane that cleared only the line would put every
+     * arc, rail and wave on top of the numbers it is annotating.
+     */
+    const lane = annotationLane(2, LAYOUT);
+    const line = LAYOUT.rowTop(2) + 13;
+    expect(lane.bottom).toBeLessThanOrEqual(line - DIGIT_HALF_PX);
+  });
+
+  it("draws every mark of a full showcase above its own digits", () => {
+    const showcase = bar([
+      span(0, 2, 5, "C4"),
+      span(1, 2, 7, "D4", "hammer_on"),
+      span(2, 2, 8, "D#4", "hammer_on"),
+      span(4, 2, 7, "D4", "bend_full"),
+      span(6, 2, 7, "D4", "vibrato", 7),
+    ]);
+    const primitives = buildTechniquePrimitives(showcase, LAYOUT);
+    const floor = annotationLane(2, LAYOUT).bottom;
+    const ink: number[] = [
+      ...primitives.legato.flatMap((phrase) => [
+        ...ys(phrase.path),
+        ...phrase.marks.map((mark) => mark.y),
+      ]),
+      ...primitives.bends.flatMap((mark) => [...ys(mark.path), mark.labelY - 3]),
+      // The wave's lowest ink, not its centre line.
+      ...primitives.vibratos.flatMap((mark) => ys(mark.path).map((y) => y + 2)),
+    ];
+    expect(ink.length).toBeGreaterThan(6);
+    expect(Math.max(...ink)).toBeLessThanOrEqual(floor);
+  });
+
+  it("keeps a palm mute's own label and rail off the numbers too", () => {
+    const muted = bar([
+      span(0, 2, 5, "C4", "palm_mute"),
+      span(1, 2, 5, "C4", "palm_mute"),
+    ]);
+    const range = buildTechniquePrimitives(muted, LAYOUT).palmMutes[0];
+    const floor = annotationLane(2, LAYOUT).bottom;
+    // The label's baseline plus its descender, and the cap's lowest point.
+    expect((range?.labelY ?? 0) + 2).toBeLessThanOrEqual(floor);
+    expect(range?.capBottom).toBeLessThanOrEqual(floor);
   });
 });
 

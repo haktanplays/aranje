@@ -1,0 +1,218 @@
+{
+  "what": "Technique Notation Grammar v1 §11 — tarayıcı kabulü",
+  "fixture": "techniques: 5-7-8-7-5 legato koşusu, çıkan ve inen slide, ½ ve 1 bend, tutulan vibrato, üç notalık palm mute aralığı.",
+  "method": "Aynı sayfa iki kez ölçülür: teknik katmanı çizilirken ve gizliyken. Tel çizgileri ile perde rakamlarının koordinatları birebir aynı kalmak zorundadır.",
+  "notes": [
+    "Ölçüm boş dönerse geçmez: her ekran gerçekten kaç işaret gördüğünü kaydeder ve katman gizlendiğinde sıfıra düşmek zorundadır.",
+    "320×700 seçim çubuğu ürün kararı bu turda yeniden tasarlanmadı; burada yalnız teknik katmanının mevcut durumu kötüleştirmediği ölçüldü."
+  ],
+  "screens": [
+    {
+      "name": "390x844-read",
+      "viewport": "390x844",
+      "mode": "read",
+      "stringLines": 12,
+      "digits": 15,
+      "marksDrawn": 7,
+      "perTechnique": {
+        "legato": 1,
+        "slide": 2,
+        "bend": 2,
+        "vibrato": 1,
+        "palm-mute": 1
+      },
+      "tones": {
+        "read": 7
+      },
+      "layoutDrift": 0,
+      "movedExamples": [],
+      "digitCollisions": 0,
+      "neighbourCollisions": 0,
+      "slotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "staffScrollers": 0,
+      "staffScrollersWithoutMarks": 0,
+      "staffScrollersAdded": 0,
+      "consoleErrors": 0,
+      "selectedGlyphs": 0,
+      "marksHiddenWhenLayerIsOff": 7,
+      "observedTheLayer": true,
+      "worst": [],
+      "pass": true
+    },
+    {
+      "name": "390x844-tail",
+      "viewport": "390x844",
+      "mode": "tail",
+      "stringLines": 12,
+      "digits": 15,
+      "marksDrawn": 7,
+      "perTechnique": {
+        "legato": 1,
+        "slide": 2,
+        "bend": 2,
+        "vibrato": 1,
+        "palm-mute": 1
+      },
+      "tones": {
+        "read": 7
+      },
+      "layoutDrift": 0,
+      "movedExamples": [],
+      "digitCollisions": 0,
+      "neighbourCollisions": 0,
+      "slotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "staffScrollers": 0,
+      "staffScrollersWithoutMarks": 0,
+      "staffScrollersAdded": 0,
+      "consoleErrors": 0,
+      "selectedGlyphs": 0,
+      "marksHiddenWhenLayerIsOff": 7,
+      "observedTheLayer": true,
+      "worst": [],
+      "pass": true
+    },
+    {
+      "name": "390x844-edit",
+      "viewport": "390x844",
+      "mode": "edit",
+      "stringLines": 12,
+      "digits": 15,
+      "marksDrawn": 7,
+      "perTechnique": {
+        "legato": 1,
+        "slide": 2,
+        "bend": 2,
+        "vibrato": 1,
+        "palm-mute": 1
+      },
+      "tones": {
+        "preview": 1,
+        "read": 6
+      },
+      "layoutDrift": 0,
+      "movedExamples": [],
+      "digitCollisions": 0,
+      "neighbourCollisions": 0,
+      "slotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "staffScrollers": 0,
+      "staffScrollersWithoutMarks": 0,
+      "staffScrollersAdded": 0,
+      "consoleErrors": 0,
+      "selectedGlyphs": 1,
+      "marksHiddenWhenLayerIsOff": 7,
+      "observedTheLayer": true,
+      "worst": [],
+      "pass": true
+    },
+    {
+      "name": "320x700-read",
+      "viewport": "320x700",
+      "mode": "read",
+      "stringLines": 12,
+      "digits": 15,
+      "marksDrawn": 7,
+      "perTechnique": {
+        "legato": 1,
+        "slide": 2,
+        "bend": 2,
+        "vibrato": 1,
+        "palm-mute": 1
+      },
+      "tones": {
+        "read": 7
+      },
+      "layoutDrift": 0,
+      "movedExamples": [],
+      "digitCollisions": 0,
+      "neighbourCollisions": 0,
+      "slotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "staffScrollers": 0,
+      "staffScrollersWithoutMarks": 0,
+      "staffScrollersAdded": 0,
+      "consoleErrors": 0,
+      "selectedGlyphs": 0,
+      "marksHiddenWhenLayerIsOff": 7,
+      "observedTheLayer": true,
+      "worst": [],
+      "pass": true
+    },
+    {
+      "name": "320x700-tail",
+      "viewport": "320x700",
+      "mode": "tail",
+      "stringLines": 12,
+      "digits": 15,
+      "marksDrawn": 7,
+      "perTechnique": {
+        "legato": 1,
+        "slide": 2,
+        "bend": 2,
+        "vibrato": 1,
+        "palm-mute": 1
+      },
+      "tones": {
+        "read": 7
+      },
+      "layoutDrift": 0,
+      "movedExamples": [],
+      "digitCollisions": 0,
+      "neighbourCollisions": 0,
+      "slotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "staffScrollers": 0,
+      "staffScrollersWithoutMarks": 0,
+      "staffScrollersAdded": 0,
+      "consoleErrors": 0,
+      "selectedGlyphs": 0,
+      "marksHiddenWhenLayerIsOff": 7,
+      "observedTheLayer": true,
+      "worst": [],
+      "pass": true
+    },
+    {
+      "name": "320x700-edit",
+      "viewport": "320x700",
+      "mode": "edit",
+      "stringLines": 12,
+      "digits": 15,
+      "marksDrawn": 7,
+      "perTechnique": {
+        "legato": 1,
+        "slide": 2,
+        "bend": 2,
+        "vibrato": 1,
+        "palm-mute": 1
+      },
+      "tones": {
+        "preview": 1,
+        "read": 6
+      },
+      "layoutDrift": 0,
+      "movedExamples": [],
+      "digitCollisions": 0,
+      "neighbourCollisions": 0,
+      "slotViolations": 0,
+      "stolenTargets": 0,
+      "bodyOverflow": 0,
+      "staffScrollers": 1,
+      "staffScrollersWithoutMarks": 1,
+      "staffScrollersAdded": 0,
+      "consoleErrors": 0,
+      "selectedGlyphs": 1,
+      "marksHiddenWhenLayerIsOff": 7,
+      "observedTheLayer": true,
+      "worst": [],
+      "pass": true
+    }
+  ],
+  "green": true
+}

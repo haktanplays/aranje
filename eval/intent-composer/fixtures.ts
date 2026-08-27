@@ -295,3 +295,84 @@ export function matrix(): FixtureSpec[] {
 
   return out;
 }
+
+/* --------------------------------------------- the technique notation slice */
+
+/**
+ * Every technique the Song Contract can express, on one string, in two bars.
+ *
+ * Written out slot by slot rather than through `songFor`, because this is the
+ * one fixture that needs rests and a tie: a slur has to be broken before the
+ * slides start, and the vibrato has to be held long enough for its length to
+ * mean something. Nothing is invented — every value is one the schema already
+ * accepts, and `make-fixtures` runs the strict parse and the central validator
+ * chain over it before it is written.
+ *
+ * Bar 1: `5 h 7 h 8 p 7 p 5`, a rest, then `5 / 7 \ 5`, then a half bend, a
+ * full bend, and a vibrato held one slot. Bar 2: three palm-muted notes and
+ * one open one, so the rail has something to stop before.
+ */
+export function techniqueShowcase(): Song {
+  const track = guitar();
+  const stringIndex = 2;
+  const at = (fret: number, articulation?: Articulation): MelodicSlot => ({
+    notes: [
+      {
+        pitch: soundingPitch(E_STANDARD, stringIndex, fret, 0),
+        position: { string: stringIndex, fret },
+        ...(articulation ? { articulation } : {}),
+      },
+    ],
+  });
+  const rest: MelodicSlot = null;
+  const tie: MelodicSlot = "-";
+
+  const first: MelodicSlot[] = [
+    at(5),
+    at(7, "hammer_on"),
+    at(8, "hammer_on"),
+    at(7, "pull_off"),
+    at(5, "pull_off"),
+    rest,
+    at(5),
+    at(7, "slide"),
+    at(5, "slide"),
+    rest,
+    at(7, "bend_half"),
+    rest,
+    at(7, "bend_full"),
+    rest,
+    at(7, "vibrato"),
+    tie,
+  ];
+
+  const second: MelodicSlot[] = [
+    at(5, "palm_mute"),
+    at(5, "palm_mute"),
+    at(5, "palm_mute"),
+    at(7),
+    ...Array.from({ length: 12 }, () => rest),
+  ];
+
+  const bar = (slots: MelodicSlot[]): Bar => ({
+    timeSignature: [4, 4],
+    resolution: 16,
+    slots: { [track.id]: slots },
+  });
+
+  return {
+    version: 2,
+    title: "Teknik yazımı",
+    bpm: 96,
+    key: "E minor",
+    tracks: [{ ...track, fretboard: { tuning: [...E_STANDARD], capo: 0 } }],
+    sections: [
+      {
+        id: "s1",
+        name: "Bölüm 1",
+        status: "fixed",
+        bars: [bar(first), bar(second)],
+      },
+    ],
+  };
+}
