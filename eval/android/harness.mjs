@@ -269,6 +269,7 @@ async function run(browser, shape) {
   await page.waitForSelector("[data-acceptance-step]", { timeout: 20000 });
 
   const readerBefore = seededBaseline();
+  const songAtOpen = await fixtureBytes(page);
   const sessionRefused = await page
     .locator("[role='alert']")
     .first()
@@ -355,8 +356,21 @@ async function run(browser, shape) {
   const selectionAfterCancel = await page.locator("[data-selection-toolbar]").count();
   small.push(...(await smallControls(page)));
 
+  /*
+   * Leave a selection open on the way out.
+   *
+   * The reader on the live run tapped "next" with a selection still up, and
+   * the step after inherited it. Tidying up here would test the harness's
+   * manners rather than the step's contract, so the mess is deliberate and
+   * the next step is measured on having cleared it.
+   */
+  const untidy = await boxOf(page, "[data-cell='4:2']");
+  if (untidy) await pressAt(page, cdp, untidy, { hold: 700, touch });
+  const selectionLeftOpen = await page.locator("[data-selection-toolbar]").count();
+
   await tap(page, "selection-next");
   steps.push(await step(page));
+  const inheritedSelection = await page.locator("[data-selection-toolbar]").count();
 
   /* ---- step 4: the pen owns the press; the ghost writes nothing ---- */
   const penArmed = await page.evaluate(
@@ -409,6 +423,40 @@ async function run(browser, shape) {
     }
     await page.waitForTimeout(500);
   }
+  /*
+   * The third road a press can end by: cancelled, not released. A phone takes
+   * the pointer away whenever a scroll wins or a call arrives, and an
+   * abandoned gesture must abandon its preview too — with nothing written and
+   * no ghost left on screen.
+   */
+  let ghostDuringCancel = 0;
+  let ghostAfterCancel = 0;
+  /*
+   * Slot 9 of the first bar is the rest after the hammer/pull run. Slot 7 was
+   * tried first and sits under the run: the pen refuses an occupied beat, so
+   * there was never a ghost to abandon and the check proved nothing.
+   */
+  const cancelCell = await boxOf(page, "[data-cell='9:1']");
+  if (cancelCell && touch) {
+    const cx = cancelCell.x + cancelCell.width / 2;
+    const cy = cancelCell.y + cancelCell.height / 2;
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchStart",
+      touchPoints: [{ x: cx, y: cy, id: 1 }],
+    });
+    await page.waitForTimeout(600);
+    ghostDuringCancel = Number(
+      (await page
+        .locator("[data-pen-ghost]")
+        .first()
+        .getAttribute("data-pen-ghost")
+        .catch(() => "0")) ?? "0",
+    );
+    await cdp.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
+    await page.waitForTimeout(500);
+    ghostAfterCancel = await page.locator("[data-pen-ghost]").count();
+  }
+
   const songAfterGhost = await fixtureBytes(page);
   const selectionAfterGhost = await page.locator("[data-selection-toolbar]").count();
   const undoOffered = await page.evaluate(() => {
@@ -521,6 +569,7 @@ async function run(browser, shape) {
     .evaluate(() => navigator.clipboard.readText())
     .catch(() => "");
 
+  const songAtEnd = await fixtureBytes(page);
   const readerAfter = await deviceStorage(page);
   await page.reload({ waitUntil: "networkidle" });
   await page.waitForSelector("[data-acceptance-step]", { timeout: 20000 });
@@ -563,6 +612,10 @@ async function run(browser, shape) {
     verbsShown,
     moreSheet,
     selectionAfterCancel,
+    selectionLeftOpen,
+    inheritedSelection,
+    ghostDuringCancel,
+    ghostAfterCancel,
 
     /* §5/§6 — the pen owns the press and writes nothing */
     penHeld: penArmed.trim(),
@@ -570,6 +623,7 @@ async function run(browser, shape) {
     selectionDuringGhost,
     selectionAfterGhost,
     songUnchangedByGhost: songBefore !== "" && songBefore === songAfterGhost,
+    songUnchangedOverall: songAtOpen !== "" && songAtOpen === songAtEnd,
     undoOffered,
 
     /* §4 — the listening step starts clean */
@@ -637,6 +691,8 @@ function gate(entry) {
   need(entry.verbsShown === 3, `${entry.verbsShown} verbs shown`);
   need(entry.moreSheet > 0, "more sheet did not open");
   need(entry.selectionAfterCancel === 0, "selection survived the cancel");
+  need(entry.selectionLeftOpen > 0, "the harness failed to leave a selection open");
+  need(entry.inheritedSelection === 0, "the next step inherited a selection");
 
   /* §5/§6 ghost */
   need(entry.penHeld.length > 0, "pen was not held at the ghost step");
@@ -644,7 +700,17 @@ function gate(entry) {
   need(entry.selectionDuringGhost === 0, "a time selection opened under the pen");
   need(entry.selectionAfterGhost === 0, "an empty selection was left behind");
   need(entry.songUnchangedByGhost, "the ghost changed the song");
+  /*
+   * Nothing in the whole guided run may change the music. The ghost window is
+   * the narrow version of this question; this is the wide one, and it is what
+   * catches a write that happens at some other step entirely.
+   */
+  need(entry.songUnchangedOverall, "the guided run changed the song");
   need(!entry.undoOffered, "undo was offered after a preview");
+  if (entry.touchEnvironment) {
+    need(entry.ghostDuringCancel === 3, `cancel gesture drew ${entry.ghostDuringCancel}/3`);
+  }
+  need(entry.ghostAfterCancel === 0, "a cancelled press left its ghost behind");
   need(/yazma yok/.test(entry.ghostLine), `ghost line: ${entry.ghostLine}`);
   need(entry.mutationLine === "none", `mutation line: ${entry.mutationLine}`);
 
@@ -662,6 +728,7 @@ function gate(entry) {
 
   /* §8 verdicts */
   need(entry.functional === "PASS", `functional ${entry.functional}`);
+  need(entry.listening === "PASS", `listening ${entry.listening}`);
   need(entry.seekedTo === 1, `seek landed on bar index ${entry.seekedTo}`);
   /*
    * Only the context that is *both* Android and touch may reach a physical

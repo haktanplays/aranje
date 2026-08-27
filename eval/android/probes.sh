@@ -20,8 +20,14 @@ restart() {
 }
 
 # probe <name> <expected-failure-substring> <file> <find1> <repl1> [...]
+#
+# `ONLY=B5,B7` runs just those, so a probe that needed correcting can be
+# re-checked without sitting through eleven rebuilds.
 probe() {
   local name="$1" expect="$2" file="$3"; shift 3
+  if [ -n "${ONLY:-}" ] && ! printf '%s' ",${ONLY}," | grep -q ",${name%% *},"; then
+    return
+  fi
   if [ -e "$file.probebak" ]; then
     echo "ABORT $name: $file.probebak exists — another probe run is in flight"
     exit 2
@@ -69,15 +75,16 @@ EVIDENCE=src/lib/acceptance/evidence.ts
 WATCH=src/components/acceptance/useAcceptanceWatch.ts
 TRANSIT=src/lib/acceptance/transitions.ts
 REPORT=src/lib/acceptance/report.ts
+RIFF=src/lib/acceptance/riff.ts
+COMPOSER=src/lib/workspace/use-intent-composer.ts
 
 # 1 — the route opens where the live run found it: on the arrangement.
-probe "B1 route starts on Düzen" "route did not open on the tab" "$STAGE" \
-  '    it.navigation.showTab();' '    void it;' \
-  'const plan = stagePlan(stageName);' 'const plan = stagePlan(stageName);'
-# (anchor lives in the ground; retargeted below)
+probe "B1 route starts on Düzen" "route did not open on the tab" "$GROUND" \
+  '    it.navigation.showTab();' '    void it.navigation;'
 
-# 2 — steps stop cleaning up after themselves.
-probe "B2 no cleanup between steps" "listening step inherited" "$GROUND" \
+# 2 — steps stop cleaning up after themselves. The harness deliberately walks
+# out of the selection step with a selection still open, so the mess is real.
+probe "B2 no cleanup between steps" "the next step inherited a selection" "$GROUND" \
   '    it.overlays.close();
     it.resetEditSurfaces();' '    it.overlays.close();'
 
@@ -86,13 +93,20 @@ probe "B3 long press wins over the pen" "a time selection opened under the pen" 
   '  if (input.penArmed) return "pen";' \
   '  if (input.penArmed && !input.selectionAvailable) return "pen";'
 
-# 4 — the ghost drops a voice.
-probe "B4 ghost drops a voice" "ghost showed 2/3 voices" "$GHOST" \
-  'export function penGhost(' 'export function penGhostFull(' \
-  'export function penGhostFull(' 'function penGhostFull('
+# 4 — the ghost drops a voice: the pen is armed with two instead of three.
+probe "B4 ghost drops a voice" "ghost showed 2/3 voices" "$GROUND" \
+  'const POWER_PEN: ComposerTool = { kind: "power_chord", voices: 3, fret: 5 };' \
+  'const POWER_PEN: ComposerTool = { kind: "power_chord", voices: 2, fret: 5 };'
 
-# 5 — a pointer-cancel writes instead of abandoning.
-probe "B5 pointer-cancel writes" "the ghost changed the song" "$BAR" \
+# 5 — a cancelled press keeps its preview on screen instead of abandoning it.
+probe "B5 an abandoned press keeps its ghost" "a cancelled press left its ghost behind" "$BAR" \
+  '                    onPointerLeave={() => {
+                      cancelHold();
+                      onPenTarget?.(null);
+                    }}' \
+  '                    onPointerLeave={() => {
+                      cancelHold();
+                    }}' \
   '                    onPointerCancel={() => {
                       cancelHold();
                       onPenTarget?.(null);
@@ -106,9 +120,24 @@ probe "B6 selection counted as a write" "ghost line" "$EVIDENCE" \
   '  const songChanged = evidence.songBefore !== evidence.songAfter;' \
   '  const songChanged = true;'
 
-# 7 — a song change hidden from the history and storage evidence.
-probe "B7 song change hidden from history" "ghost line" "$EVIDENCE" \
-  '  if (songChanged && !(historyGrew && stored)) {' '  if (false) {'
+# 7 — the preview stops being a preview: the pen writes on the press.
+#
+# The first version of this probe disabled the inconsistency branch, and that
+# branch is unreachable in a run where nothing writes — a mutation nothing can
+# execute proves nothing. This one makes a real write happen instead.
+# The preview stops being a preview: drawing the ghost commits it.
+#
+# Two earlier attempts were rejected rather than kept. Writing on every
+# pointer-down tripped the selection step before the ghost window opened, and
+# writing on every pointer-leave changed the layout so violently that the
+# harness timed out — a crash is a red exit, not a finding. This one writes
+# exactly where the ghost is drawn, which is exactly where the guarantee is.
+probe "B7 the preview commits itself" "the guided run changed the song" "$COMPOSER" \
+  '      const result = runPen(target, "insert") ?? runPen(target, "replace_onset");
+      return result && result.ok ? result.song : null;' \
+  '      const result = runPen(target, "insert") ?? runPen(target, "replace_onset");
+      if (result && result.ok) commit(result.song, { kind: "note_edit" });
+      return result && result.ok ? result.song : null;'
 
 # 8 — the transition log turned back into a polling boolean.
 probe "B8 play measured by polling instant" "play-pause" "$TRANSIT" \
@@ -130,10 +159,20 @@ probe "B11 desktop claims physical PASS" "desktop claimed physical" "$REPORT" \
   '    touch: device.touchPoints > 0,' '    touch: true,' \
   '    android: /Android\s+[\d.]/.test(device.userAgent),' '    android: true,'
 
-# 12 — an unheard passage counted as answered.
-probe "B12 unheard passage counted as heard" "listening" "$REPORT" \
-  '  const unheard = LISTEN_KEYS.filter((key) => !observed.heard[key]);' \
-  '  const unheard: ListenKey[] = [];'
+# 12 — a passage the playhead never reaches, answered anyway.
+#
+# Moving the listening windows out of the riff's reach is the honest form of
+# this: the reader still answers "Net duydum" six times, the playhead still
+# never crosses any of them, and the block must refuse a listening pass and
+# say "bu bölüm çalınmadı". Blanking the unheard list was the first attempt
+# and changed nothing, because in a clean run there is nothing to blank.
+probe "B12 unheard passage counted as heard" "listening PARTIAL" "$RIFF" \
+  'export const LISTEN_WINDOWS' 'const REAL_LISTEN_WINDOWS' \
+  'export const ACCEPTANCE_TRACK' 'export const LISTEN_WINDOWS = Object.fromEntries(
+  Object.keys(REAL_LISTEN_WINDOWS).map((key) => [key, { from: 99000, to: 99001 }]),
+) as typeof REAL_LISTEN_WINDOWS;
+
+export const ACCEPTANCE_TRACK'
 
 echo
 echo "kırmızı ${pass} · vacuous ${fail} · atlanan ${skipped}"
