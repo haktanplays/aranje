@@ -12,7 +12,7 @@
  * page owns — so the test can be run on a phone that already has the reader's
  * own music on it without touching a byte of it.
  */
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { Workspace } from "@/components/workspace/Workspace";
 import { useAcceptanceWatch } from "@/components/acceptance/useAcceptanceWatch";
@@ -28,6 +28,24 @@ import {
   type ListenKey,
 } from "@/lib/acceptance/report";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
+import { fixtureDigest, readFixture } from "@/lib/acceptance/fixture-read";
+import { createMemoryStorage } from "@/lib/acceptance/memory-storage";
+import { setStage } from "@/lib/acceptance/stage-channel";
+import type { StageName } from "@/lib/workspace/workspace-stage";
+
+/** Which state each of the seven steps needs the workspace to be in. */
+const STEP_STAGE: readonly StageName[] = [
+  "read",
+  "read",
+  "select",
+  "ghost",
+  "play",
+  "play",
+  "play",
+];
+
+/* Somewhere for the watcher to look before the session exists. */
+const EMPTY_STORAGE = createMemoryStorage();
 
 /** What a listener is asked about each technique. Plain words, no theory. */
 const LISTEN_PROMPTS: Readonly<Record<ListenKey, string>> = {
@@ -113,10 +131,22 @@ export function AcceptanceConductor() {
   const [startedAt] = useState(() => new Date().toISOString());
 
   const windows = useMemo(() => LISTEN_WINDOWS, []);
-  const { observed, loadingText, loadMs, firstSoundMs, markFirstTap } =
-    useAcceptanceWatch(windows);
+  const { observed, loadingText, loadMs, firstSoundMs, markFirstTap, openGhostWindow } =
+    useAcceptanceWatch(windows, session?.storage ?? EMPTY_STORAGE);
 
+  /*
+   * Every step says what it needs before the reader is asked to do anything
+   * (K-59.1 §3, §4). Setting the stage is what guarantees the tab is showing,
+   * the editor is in the right mode, the right tool is held and nothing is
+   * left selected from the step before — none of which the reader should have
+   * to arrange for themselves, and all of which the live run found missing.
+   */
   const [step, setStep] = useState(0);
+  useEffect(() => {
+    setStage(STEP_STAGE[Math.min(step, STEP_STAGE.length - 1)]!);
+    // The ghost step's "before" picture is taken as the step is entered.
+    if (step === 3) openGhostWindow();
+  }, [step, openGhostWindow]);
   const [listenIndex, setListenIndex] = useState(0);
   const [answers, setAnswers] = useState<AcceptanceAnswers>({
     visual: null,
@@ -187,6 +217,11 @@ export function AcceptanceConductor() {
     <div className="bg-app flex h-dvh flex-col overflow-hidden">
       <div
         data-acceptance-step={step}
+        /*
+         * A digest of the fixture, so a harness can ask whether the music
+         * changed without the page rendering the whole song to answer.
+         */
+        data-acceptance-fixture={fixtureDigest(readFixture(session.storage))}
         className="border-line bg-app shrink-0 border-b px-3 py-2"
       >
         {!session.ok ? (

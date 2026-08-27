@@ -22,7 +22,6 @@
  */
 import { useMemo } from "react";
 
-
 import { EditArea } from "@/components/workspace/EditArea";
 import { SelectionActionArea } from "@/components/workspace/SelectionActionArea";
 import { TrackControl } from "@/components/workspace/TrackControl";
@@ -185,6 +184,9 @@ export function Workspace() {
     canRedo,
     undo,
     redo,
+    composer,
+    overlays,
+    setPracticePercent: setPracticeRatePercent,
   });
   const { undoEdit, redoEdit, focusSection } = ground;
 
