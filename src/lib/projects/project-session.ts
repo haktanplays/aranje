@@ -160,3 +160,25 @@ export function getProjectSession(): ProjectSession {
   session ??= createProjectSession(browserStorage());
   return session;
 }
+
+/**
+ * Build the session out of something other than `localStorage`.
+ *
+ * The one caller is the guided Android acceptance route, which runs the real
+ * workspace on a fixed riff and must leave the reader's own music alone. It
+ * hands over a storage the page itself owns, so every write the test makes
+ * dies with the tab.
+ *
+ * **Refused once a session exists.** Swapping mid-flight would leave the
+ * engine, the history and the screen pointing at two different songs, and a
+ * silent no-op would be worse than a refusal the caller can see. Returns
+ * whether the install happened, so a caller that must not proceed can stop.
+ */
+export function installProjectSession(
+  storage: EnumerableStorage | null,
+  now: () => number = Date.now,
+): boolean {
+  if (session !== null) return false;
+  session = createProjectSession(storage, now);
+  return true;
+}

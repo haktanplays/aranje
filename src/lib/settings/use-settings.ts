@@ -59,6 +59,20 @@ export function getSettingsStore(): SettingsStore {
   return browserStore;
 }
 
+/**
+ * Keep the practice speed in a storage the caller owns.
+ *
+ * Same reason and same rule as the project session: the guided acceptance
+ * route asks the reader to change the tempo one step, and that step must not
+ * be the thing that rewrites their saved settings. Refused once the store
+ * exists, for the same reason — two stores would be two speeds.
+ */
+export function installSettingsStore(storage: StorageLike): boolean {
+  if (browserStore !== null) return false;
+  browserStore = createSettingsStore(loadSettings(storage), storage);
+  return true;
+}
+
 export type SettingsHandle = Settings & {
   setPracticeRatePercent(percent: number): void;
 };
