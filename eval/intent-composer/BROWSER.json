@@ -4,11 +4,293 @@
     "base": "http://127.0.0.1:3100"
   },
   "combinations": 6,
-  "uniqueScenarios": 26,
-  "results": 156,
-  "passed": 138,
-  "failed": 18,
+  "uniqueScenarios": 79,
+  "results": 474,
+  "passed": 474,
+  "failed": 0,
   "entries": [
+    {
+      "combo": "390x844 @100%",
+      "name": "1. four doors, named in Turkish",
+      "pass": true,
+      "detail": "Nota/Şekil/Ritim/Bağla"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "2. every door is a real touch target",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "3. the door row never overflows its own width",
+      "pass": true,
+      "detail": "{\"scrollWidth\":390,\"clientWidth\":390,\"clipped\":0,\"targets\":[{\"width\":87,\"height\":44},{\"width\":87,\"height\":44},{\"width\":87,\"height\":44},{\"width\":87,\"height\":44}],\"bodyScrollWidth\":390,\"bodyClientWidth\":390}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "4. the page itself never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "5. the shape door offers the pen first",
+      "pass": true,
+      "detail": "power-2,power-3"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "6. every option explains itself without a musical term",
+      "pass": true,
+      "detail": "Bastığın perde kök olur, üstün | Kök, beşlisi ve kökün bir okta"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "7. the wide catalogue is still there, behind the pen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "8. the held tool says what it is, in music",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "9. no identifier reaches the reader",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "10. picking a second tool replaces the first",
+      "pass": true,
+      "detail": "Otomatik bağla✕"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "11. picking the held tool again puts it down",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "12. no door opens onto nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "13. a tool does not survive a refresh",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "14. the tool is never written to the project",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "15. the door tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "16. a touch writes root and fifth",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "17. the root is the string and fret the finger asked for",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "18. every note carries its position",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "19. one write, and only to the open project",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "20. the song really changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "21. the pen stays open after it writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "22. three voices add the octave above the root",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "23. writing over a beat replaces the whole onset",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "24. it does not reach the next beat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "25. a replace is still one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":5,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "26. and it really changed something",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "27. undo takes a power chord back in one step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "28. and puts back exactly the three voices that were there",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "28b. the same chord twice is refused rather than written again",
+      "pass": true,
+      "detail": "Bu vuruşta zaten aynı akor var."
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "29. the pen tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "30. an unreachable root is refused by name",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "31. and says it in music, not in a code",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "32. a refusal writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "33. a refusal costs zero storage writes",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "34. the pen refusal tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "34b. the run is covered by the surface's own gesture",
+      "pass": true,
+      "detail": "{\"start\":0,\"end\":288}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "35. covering a run asks one question",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "36. it says how many notes it found",
+      "pass": true,
+      "detail": "5 nota seçildi."
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "37. the choice is visible before it is written",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "38. and it is said in music, never in an identifier",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "39. nothing changes until a decision",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "40. auto joins rising with a hammer-on and falling with a pull-off",
+      "pass": true,
+      "detail": "[null,\"hammer_on\",\"hammer_on\",\"pull_off\",\"pull_off\"]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "40b. and it joins every note the gesture reached",
+      "pass": true,
+      "detail": "4 link"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "41. a whole run is one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "42. and one undo step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "43. undo takes every link back at once",
+      "pass": true,
+      "detail": "[null,null,null,null,null]"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "44. the brush tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
     {
       "combo": "390x844 @100%",
       "name": "45. every onset draws a fret number",
@@ -66,32 +348,32 @@
     {
       "combo": "390x844 @100%",
       "name": "54. a pull-off draws an arc",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "390x844 @100%",
       "name": "55. with a P on it",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "390x844 @100%",
       "name": "56. the arc layer takes no pointer events",
       "pass": true,
-      "detail": ""
+      "detail": "none"
     },
     {
       "combo": "390x844 @100%",
       "name": "57. the arc is named by the movement",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "2 notalık bağlı geçiş: 8. perdeden 7. perdeye koparma"
     },
     {
       "combo": "390x844 @100%",
       "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "2"
+      "detail": "3"
     },
     {
       "combo": "390x844 @100%",
@@ -166,6 +448,324 @@
       "detail": ""
     },
     {
+      "combo": "390x844 @100%",
+      "name": "62. the edit toolbar never clips while reading",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":366}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "63. nor while writing",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":366}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "64. and the page still never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "65. the music stays bigger than the controls under it",
+      "pass": true,
+      "detail": "{\"surface\":601,\"doors\":48,\"action\":49}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "66. a 1/32 bar starts every buffer it should",
+      "pass": true,
+      "detail": "13"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "67. the layout tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "1. four doors, named in Turkish",
+      "pass": true,
+      "detail": "Nota/Şekil/Ritim/Bağla"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "2. every door is a real touch target",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "3. the door row never overflows its own width",
+      "pass": true,
+      "detail": "{\"scrollWidth\":390,\"clientWidth\":390,\"clipped\":0,\"targets\":[{\"width\":84,\"height\":44},{\"width\":84,\"height\":44},{\"width\":84,\"height\":44},{\"width\":84,\"height\":44}],\"bodyScrollWidth\":390,\"bodyClientWidth\":390}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "4. the page itself never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "5. the shape door offers the pen first",
+      "pass": true,
+      "detail": "power-2,power-3"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "6. every option explains itself without a musical term",
+      "pass": true,
+      "detail": "Bastığın perde kök olur, üstün | Kök, beşlisi ve kökün bir okta"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "7. the wide catalogue is still there, behind the pen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "8. the held tool says what it is, in music",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "9. no identifier reaches the reader",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "10. picking a second tool replaces the first",
+      "pass": true,
+      "detail": "Otomatik bağla✕"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "11. picking the held tool again puts it down",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "12. no door opens onto nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "13. a tool does not survive a refresh",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "14. the tool is never written to the project",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "15. the door tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "16. a touch writes root and fifth",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "17. the root is the string and fret the finger asked for",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "18. every note carries its position",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "19. one write, and only to the open project",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "20. the song really changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "21. the pen stays open after it writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "22. three voices add the octave above the root",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "23. writing over a beat replaces the whole onset",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "24. it does not reach the next beat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "25. a replace is still one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":5,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "26. and it really changed something",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "27. undo takes a power chord back in one step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "28. and puts back exactly the three voices that were there",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "28b. the same chord twice is refused rather than written again",
+      "pass": true,
+      "detail": "Bu vuruşta zaten aynı akor var."
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "29. the pen tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "30. an unreachable root is refused by name",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "31. and says it in music, not in a code",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "32. a refusal writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "33. a refusal costs zero storage writes",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "34. the pen refusal tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "34b. the run is covered by the surface's own gesture",
+      "pass": true,
+      "detail": "{\"start\":0,\"end\":288}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "35. covering a run asks one question",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "36. it says how many notes it found",
+      "pass": true,
+      "detail": "5 nota seçildi."
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "37. the choice is visible before it is written",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "38. and it is said in music, never in an identifier",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "39. nothing changes until a decision",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "40. auto joins rising with a hammer-on and falling with a pull-off",
+      "pass": true,
+      "detail": "[null,\"hammer_on\",\"hammer_on\",\"pull_off\",\"pull_off\"]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "40b. and it joins every note the gesture reached",
+      "pass": true,
+      "detail": "4 link"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "41. a whole run is one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "42. and one undo step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "43. undo takes every link back at once",
+      "pass": true,
+      "detail": "[null,null,null,null,null]"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "44. the brush tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "combo": "390x844 @125%",
       "name": "45. every onset draws a fret number",
       "pass": true,
@@ -222,32 +822,32 @@
     {
       "combo": "390x844 @125%",
       "name": "54. a pull-off draws an arc",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "390x844 @125%",
       "name": "55. with a P on it",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "390x844 @125%",
       "name": "56. the arc layer takes no pointer events",
       "pass": true,
-      "detail": ""
+      "detail": "none"
     },
     {
       "combo": "390x844 @125%",
       "name": "57. the arc is named by the movement",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "2 notalık bağlı geçiş: 8. perdeden 7. perdeye koparma"
     },
     {
       "combo": "390x844 @125%",
       "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "2"
+      "detail": "3"
     },
     {
       "combo": "390x844 @125%",
@@ -322,6 +922,324 @@
       "detail": ""
     },
     {
+      "combo": "390x844 @125%",
+      "name": "62. the edit toolbar never clips while reading",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":360}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "63. nor while writing",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":360}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "64. and the page still never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "65. the music stays bigger than the controls under it",
+      "pass": true,
+      "detail": "{\"surface\":542,\"doors\":49,\"action\":104}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "66. a 1/32 bar starts every buffer it should",
+      "pass": true,
+      "detail": "13"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "67. the layout tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "1. four doors, named in Turkish",
+      "pass": true,
+      "detail": "Nota/Şekil/Ritim/Bağla"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "2. every door is a real touch target",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "3. the door row never overflows its own width",
+      "pass": true,
+      "detail": "{\"scrollWidth\":390,\"clientWidth\":390,\"clipped\":0,\"targets\":[{\"width\":82,\"height\":44},{\"width\":82,\"height\":44},{\"width\":82,\"height\":44},{\"width\":82,\"height\":44}],\"bodyScrollWidth\":390,\"bodyClientWidth\":390}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "4. the page itself never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "5. the shape door offers the pen first",
+      "pass": true,
+      "detail": "power-2,power-3"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "6. every option explains itself without a musical term",
+      "pass": true,
+      "detail": "Bastığın perde kök olur, üstün | Kök, beşlisi ve kökün bir okta"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "7. the wide catalogue is still there, behind the pen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "8. the held tool says what it is, in music",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "9. no identifier reaches the reader",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "10. picking a second tool replaces the first",
+      "pass": true,
+      "detail": "Otomatik bağla✕"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "11. picking the held tool again puts it down",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "12. no door opens onto nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "13. a tool does not survive a refresh",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "14. the tool is never written to the project",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "15. the door tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "16. a touch writes root and fifth",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "17. the root is the string and fret the finger asked for",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "18. every note carries its position",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "19. one write, and only to the open project",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "20. the song really changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "21. the pen stays open after it writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "22. three voices add the octave above the root",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "23. writing over a beat replaces the whole onset",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "24. it does not reach the next beat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "25. a replace is still one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":5,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "26. and it really changed something",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "27. undo takes a power chord back in one step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "28. and puts back exactly the three voices that were there",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "28b. the same chord twice is refused rather than written again",
+      "pass": true,
+      "detail": "Bu vuruşta zaten aynı akor var."
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "29. the pen tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "30. an unreachable root is refused by name",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "31. and says it in music, not in a code",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "32. a refusal writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "33. a refusal costs zero storage writes",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "34. the pen refusal tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "34b. the run is covered by the surface's own gesture",
+      "pass": true,
+      "detail": "{\"start\":0,\"end\":288}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "35. covering a run asks one question",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "36. it says how many notes it found",
+      "pass": true,
+      "detail": "5 nota seçildi."
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "37. the choice is visible before it is written",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "38. and it is said in music, never in an identifier",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "39. nothing changes until a decision",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "40. auto joins rising with a hammer-on and falling with a pull-off",
+      "pass": true,
+      "detail": "[null,\"hammer_on\",\"hammer_on\",\"pull_off\",\"pull_off\"]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "40b. and it joins every note the gesture reached",
+      "pass": true,
+      "detail": "4 link"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "41. a whole run is one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "42. and one undo step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "43. undo takes every link back at once",
+      "pass": true,
+      "detail": "[null,null,null,null,null]"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "44. the brush tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "combo": "390x844 @150%",
       "name": "45. every onset draws a fret number",
       "pass": true,
@@ -378,32 +1296,32 @@
     {
       "combo": "390x844 @150%",
       "name": "54. a pull-off draws an arc",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "390x844 @150%",
       "name": "55. with a P on it",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "390x844 @150%",
       "name": "56. the arc layer takes no pointer events",
       "pass": true,
-      "detail": ""
+      "detail": "none"
     },
     {
       "combo": "390x844 @150%",
       "name": "57. the arc is named by the movement",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "2 notalık bağlı geçiş: 8. perdeden 7. perdeye koparma"
     },
     {
       "combo": "390x844 @150%",
       "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "2"
+      "detail": "3"
     },
     {
       "combo": "390x844 @150%",
@@ -478,6 +1396,324 @@
       "detail": ""
     },
     {
+      "combo": "390x844 @150%",
+      "name": "62. the edit toolbar never clips while reading",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":354}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "63. nor while writing",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":354}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "64. and the page still never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "65. the music stays bigger than the controls under it",
+      "pass": true,
+      "detail": "{\"surface\":535,\"doors\":50,\"action\":107}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "66. a 1/32 bar starts every buffer it should",
+      "pass": true,
+      "detail": "13"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "67. the layout tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "1. four doors, named in Turkish",
+      "pass": true,
+      "detail": "Nota/Şekil/Ritim/Bağla"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "2. every door is a real touch target",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "3. the door row never overflows its own width",
+      "pass": true,
+      "detail": "{\"scrollWidth\":320,\"clientWidth\":320,\"clipped\":0,\"targets\":[{\"width\":70,\"height\":44},{\"width\":70,\"height\":44},{\"width\":70,\"height\":44},{\"width\":70,\"height\":44}],\"bodyScrollWidth\":320,\"bodyClientWidth\":320}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "4. the page itself never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "5. the shape door offers the pen first",
+      "pass": true,
+      "detail": "power-2,power-3"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "6. every option explains itself without a musical term",
+      "pass": true,
+      "detail": "Bastığın perde kök olur, üstün | Kök, beşlisi ve kökün bir okta"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "7. the wide catalogue is still there, behind the pen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "8. the held tool says what it is, in music",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "9. no identifier reaches the reader",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "10. picking a second tool replaces the first",
+      "pass": true,
+      "detail": "Otomatik bağla✕"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "11. picking the held tool again puts it down",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "12. no door opens onto nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "13. a tool does not survive a refresh",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "14. the tool is never written to the project",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "15. the door tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "16. a touch writes root and fifth",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "17. the root is the string and fret the finger asked for",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "18. every note carries its position",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "19. one write, and only to the open project",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "20. the song really changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "21. the pen stays open after it writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "22. three voices add the octave above the root",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "23. writing over a beat replaces the whole onset",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "24. it does not reach the next beat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "25. a replace is still one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":5,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "26. and it really changed something",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "27. undo takes a power chord back in one step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "28. and puts back exactly the three voices that were there",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "28b. the same chord twice is refused rather than written again",
+      "pass": true,
+      "detail": "Bu vuruşta zaten aynı akor var."
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "29. the pen tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "30. an unreachable root is refused by name",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "31. and says it in music, not in a code",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "32. a refusal writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "33. a refusal costs zero storage writes",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "34. the pen refusal tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "34b. the run is covered by the surface's own gesture",
+      "pass": true,
+      "detail": "{\"start\":0,\"end\":288}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "35. covering a run asks one question",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "36. it says how many notes it found",
+      "pass": true,
+      "detail": "5 nota seçildi."
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "37. the choice is visible before it is written",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "38. and it is said in music, never in an identifier",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "39. nothing changes until a decision",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "40. auto joins rising with a hammer-on and falling with a pull-off",
+      "pass": true,
+      "detail": "[null,\"hammer_on\",\"hammer_on\",\"pull_off\",\"pull_off\"]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "40b. and it joins every note the gesture reached",
+      "pass": true,
+      "detail": "4 link"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "41. a whole run is one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "42. and one undo step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "43. undo takes every link back at once",
+      "pass": true,
+      "detail": "[null,null,null,null,null]"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "44. the brush tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "combo": "320x700 @100%",
       "name": "45. every onset draws a fret number",
       "pass": true,
@@ -534,32 +1770,32 @@
     {
       "combo": "320x700 @100%",
       "name": "54. a pull-off draws an arc",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "320x700 @100%",
       "name": "55. with a P on it",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "320x700 @100%",
       "name": "56. the arc layer takes no pointer events",
       "pass": true,
-      "detail": ""
+      "detail": "none"
     },
     {
       "combo": "320x700 @100%",
       "name": "57. the arc is named by the movement",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "2 notalık bağlı geçiş: 8. perdeden 7. perdeye koparma"
     },
     {
       "combo": "320x700 @100%",
       "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "2"
+      "detail": "3"
     },
     {
       "combo": "320x700 @100%",
@@ -634,6 +1870,324 @@
       "detail": ""
     },
     {
+      "combo": "320x700 @100%",
+      "name": "62. the edit toolbar never clips while reading",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":296}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "63. nor while writing",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":296}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "64. and the page still never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "65. the music stays bigger than the controls under it",
+      "pass": true,
+      "detail": "{\"surface\":357,\"doors\":48,\"action\":101}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "66. a 1/32 bar starts every buffer it should",
+      "pass": true,
+      "detail": "13"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "67. the layout tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "1. four doors, named in Turkish",
+      "pass": true,
+      "detail": "Nota/Şekil/Ritim/Bağla"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "2. every door is a real touch target",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "3. the door row never overflows its own width",
+      "pass": true,
+      "detail": "{\"scrollWidth\":320,\"clientWidth\":320,\"clipped\":0,\"targets\":[{\"width\":67,\"height\":44},{\"width\":67,\"height\":44},{\"width\":67,\"height\":44},{\"width\":67,\"height\":44}],\"bodyScrollWidth\":320,\"bodyClientWidth\":320}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "4. the page itself never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "5. the shape door offers the pen first",
+      "pass": true,
+      "detail": "power-2,power-3"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "6. every option explains itself without a musical term",
+      "pass": true,
+      "detail": "Bastığın perde kök olur, üstün | Kök, beşlisi ve kökün bir okta"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "7. the wide catalogue is still there, behind the pen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "8. the held tool says what it is, in music",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "9. no identifier reaches the reader",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "10. picking a second tool replaces the first",
+      "pass": true,
+      "detail": "Otomatik bağla✕"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "11. picking the held tool again puts it down",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "12. no door opens onto nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "13. a tool does not survive a refresh",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "14. the tool is never written to the project",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "15. the door tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "16. a touch writes root and fifth",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "17. the root is the string and fret the finger asked for",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "18. every note carries its position",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "19. one write, and only to the open project",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "20. the song really changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "21. the pen stays open after it writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "22. three voices add the octave above the root",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "23. writing over a beat replaces the whole onset",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "24. it does not reach the next beat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "25. a replace is still one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":5,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "26. and it really changed something",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "27. undo takes a power chord back in one step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "28. and puts back exactly the three voices that were there",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "28b. the same chord twice is refused rather than written again",
+      "pass": true,
+      "detail": "Bu vuruşta zaten aynı akor var."
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "29. the pen tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "30. an unreachable root is refused by name",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "31. and says it in music, not in a code",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "32. a refusal writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "33. a refusal costs zero storage writes",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "34. the pen refusal tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "34b. the run is covered by the surface's own gesture",
+      "pass": true,
+      "detail": "{\"start\":0,\"end\":288}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "35. covering a run asks one question",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "36. it says how many notes it found",
+      "pass": true,
+      "detail": "5 nota seçildi."
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "37. the choice is visible before it is written",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "38. and it is said in music, never in an identifier",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "39. nothing changes until a decision",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "40. auto joins rising with a hammer-on and falling with a pull-off",
+      "pass": true,
+      "detail": "[null,\"hammer_on\",\"hammer_on\",\"pull_off\",\"pull_off\"]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "40b. and it joins every note the gesture reached",
+      "pass": true,
+      "detail": "4 link"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "41. a whole run is one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "42. and one undo step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "43. undo takes every link back at once",
+      "pass": true,
+      "detail": "[null,null,null,null,null]"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "44. the brush tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "combo": "320x700 @125%",
       "name": "45. every onset draws a fret number",
       "pass": true,
@@ -690,32 +2244,32 @@
     {
       "combo": "320x700 @125%",
       "name": "54. a pull-off draws an arc",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "320x700 @125%",
       "name": "55. with a P on it",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "320x700 @125%",
       "name": "56. the arc layer takes no pointer events",
       "pass": true,
-      "detail": ""
+      "detail": "none"
     },
     {
       "combo": "320x700 @125%",
       "name": "57. the arc is named by the movement",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "2 notalık bağlı geçiş: 8. perdeden 7. perdeye koparma"
     },
     {
       "combo": "320x700 @125%",
       "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "2"
+      "detail": "3"
     },
     {
       "combo": "320x700 @125%",
@@ -790,6 +2344,324 @@
       "detail": ""
     },
     {
+      "combo": "320x700 @125%",
+      "name": "62. the edit toolbar never clips while reading",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":290}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "63. nor while writing",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":290}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "64. and the page still never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "65. the music stays bigger than the controls under it",
+      "pass": true,
+      "detail": "{\"surface\":342,\"doors\":49,\"action\":112}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "66. a 1/32 bar starts every buffer it should",
+      "pass": true,
+      "detail": "13"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "67. the layout tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "1. four doors, named in Turkish",
+      "pass": true,
+      "detail": "Nota/Şekil/Ritim/Bağla"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "2. every door is a real touch target",
+      "pass": true,
+      "detail": "44,44,44,44"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "3. the door row never overflows its own width",
+      "pass": true,
+      "detail": "{\"scrollWidth\":320,\"clientWidth\":320,\"clipped\":0,\"targets\":[{\"width\":64,\"height\":44},{\"width\":64,\"height\":44},{\"width\":64,\"height\":44},{\"width\":64,\"height\":44}],\"bodyScrollWidth\":320,\"bodyClientWidth\":320}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "4. the page itself never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "5. the shape door offers the pen first",
+      "pass": true,
+      "detail": "power-2,power-3"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "6. every option explains itself without a musical term",
+      "pass": true,
+      "detail": "Bastığın perde kök olur, üstün | Kök, beşlisi ve kökün bir okta"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "7. the wide catalogue is still there, behind the pen",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "8. the held tool says what it is, in music",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "9. no identifier reaches the reader",
+      "pass": true,
+      "detail": "Power chord · 2 ses · 5. perde✕"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "10. picking a second tool replaces the first",
+      "pass": true,
+      "detail": "Otomatik bağla✕"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "11. picking the held tool again puts it down",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "12. no door opens onto nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "13. a tool does not survive a refresh",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "14. the tool is never written to the project",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "15. the door tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "16. a touch writes root and fifth",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "17. the root is the string and fret the finger asked for",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "18. every note carries its position",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "19. one write, and only to the open project",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "20. the song really changed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "21. the pen stays open after it writes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "22. three voices add the octave above the root",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "23. writing over a beat replaces the whole onset",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "24. it does not reach the next beat",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "25. a replace is still one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":5,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "26. and it really changed something",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "27. undo takes a power chord back in one step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "28. and puts back exactly the three voices that were there",
+      "pass": true,
+      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "28b. the same chord twice is refused rather than written again",
+      "pass": true,
+      "detail": "Bu vuruşta zaten aynı akor var."
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "29. the pen tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "30. an unreachable root is refused by name",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "31. and says it in music, not in a code",
+      "pass": true,
+      "detail": "Bu tel ve perdeden başlayan bir power chord bu akortta çalınamıyor. Başka bir tele ya da perdeye dokun."
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "32. a refusal writes nothing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "33. a refusal costs zero storage writes",
+      "pass": true,
+      "detail": "0 → 0"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "34. the pen refusal tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "34b. the run is covered by the surface's own gesture",
+      "pass": true,
+      "detail": "{\"start\":0,\"end\":288}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "35. covering a run asks one question",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "36. it says how many notes it found",
+      "pass": true,
+      "detail": "5 nota seçildi."
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "37. the choice is visible before it is written",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "38. and it is said in music, never in an identifier",
+      "pass": true,
+      "detail": "[\"5. perdeden 7. perdeye çekiç\",\"7. perdeden 8. perdeye çekiç\",\"8. perdeden 7. perdeye koparma\",\"7. perdeden 5. perdeye "
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "39. nothing changes until a decision",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "40. auto joins rising with a hammer-on and falling with a pull-off",
+      "pass": true,
+      "detail": "[null,\"hammer_on\",\"hammer_on\",\"pull_off\",\"pull_off\"]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "40b. and it joins every note the gesture reached",
+      "pass": true,
+      "detail": "4 link"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "41. a whole run is one write",
+      "pass": true,
+      "detail": "{\"get:active_project\":3,\"set:active_project\":1,\"get:catalog\":1}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "42. and one undo step",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "43. undo takes every link back at once",
+      "pass": true,
+      "detail": "[null,null,null,null,null]"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "44. the brush tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
       "combo": "320x700 @150%",
       "name": "45. every onset draws a fret number",
       "pass": true,
@@ -846,32 +2718,32 @@
     {
       "combo": "320x700 @150%",
       "name": "54. a pull-off draws an arc",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "320x700 @150%",
       "name": "55. with a P on it",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "[\"P\"]"
     },
     {
       "combo": "320x700 @150%",
       "name": "56. the arc layer takes no pointer events",
       "pass": true,
-      "detail": ""
+      "detail": "none"
     },
     {
       "combo": "320x700 @150%",
       "name": "57. the arc is named by the movement",
-      "pass": false,
-      "detail": ""
+      "pass": true,
+      "detail": "2 notalık bağlı geçiş: 8. perdeden 7. perdeye koparma"
     },
     {
       "combo": "320x700 @150%",
       "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "2"
+      "detail": "3"
     },
     {
       "combo": "320x700 @150%",
@@ -942,6 +2814,42 @@
     {
       "combo": "320x700 @150%",
       "name": "61. the glyph tour raised no page error",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "62. the edit toolbar never clips while reading",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":284}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "63. nor while writing",
+      "pass": true,
+      "detail": "{\"clipped\":0,\"scrollWidth\":284}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "64. and the page still never scrolls sideways",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "65. the music stays bigger than the controls under it",
+      "pass": true,
+      "detail": "{\"surface\":343,\"doors\":50,\"action\":107}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "66. a 1/32 bar starts every buffer it should",
+      "pass": true,
+      "detail": "13"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "67. the layout tour raised no page error",
       "pass": true,
       "detail": ""
     }
