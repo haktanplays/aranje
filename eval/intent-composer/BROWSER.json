@@ -4,548 +4,944 @@
     "base": "http://127.0.0.1:3100"
   },
   "combinations": 6,
-  "uniqueScenarios": 15,
-  "results": 90,
-  "passed": 78,
-  "failed": 12,
+  "uniqueScenarios": 26,
+  "results": 156,
+  "passed": 138,
+  "failed": 18,
   "entries": [
     {
       "combo": "390x844 @100%",
-      "name": "16. a touch writes root and fifth",
+      "name": "45. every onset draws a fret number",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "8"
     },
     {
       "combo": "390x844 @100%",
-      "name": "17. the root is the string and fret the finger asked for",
+      "name": "46. the digit has no padding of its own",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px"
     },
     {
       "combo": "390x844 @100%",
-      "name": "18. every note carries its position",
+      "name": "47. no border, no radius, no shadow",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px/none"
     },
     {
       "combo": "390x844 @100%",
-      "name": "19. one write, and only to the open project",
+      "name": "48. the digit sits on the page, not on a filled card",
+      "pass": true,
+      "detail": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "49. the numerals are tabular",
+      "pass": true,
+      "detail": "tabular-nums"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "50. a one-digit fret is one digit wide",
+      "pass": true,
+      "detail": "7.23"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "51. every glyph is named as music",
+      "pass": true,
+      "detail": "7. perde"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "52. no identifier, tick or slot reaches a name",
+      "pass": true,
+      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "53. a slurred note is told apart from an ordinary one",
+      "pass": true,
+      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "54. a pull-off draws an arc",
       "pass": false,
-      "detail": "{\"get:active_project\":5,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "390x844 @100%",
-      "name": "20. the song really changed",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @100%",
-      "name": "21. the pen stays open after it writes",
-      "pass": true,
+      "name": "55. with a P on it",
+      "pass": false,
       "detail": ""
     },
     {
       "combo": "390x844 @100%",
-      "name": "22. three voices add the octave above the root",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "390x844 @100%",
-      "name": "23. writing over a beat replaces the whole onset",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "390x844 @100%",
-      "name": "24. it does not reach the next beat",
+      "name": "56. the arc layer takes no pointer events",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @100%",
-      "name": "25. a replace is still one write",
+      "name": "57. the arc is named by the movement",
       "pass": false,
-      "detail": "{\"get:active_project\":7,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "390x844 @100%",
-      "name": "26. and it really changed something",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @100%",
-      "name": "27. undo takes a power chord back in one step",
+      "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": ""
+      "detail": "2"
     },
     {
       "combo": "390x844 @100%",
-      "name": "28. and puts back exactly the three voices that were there",
+      "name": "59. every edit cell is a finger tall where it can be seen",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+      "detail": "{\"cells\":96,\"minVisible\":44}"
     },
     {
       "combo": "390x844 @100%",
-      "name": "28b. the same chord twice is refused rather than written again",
+      "name": "59.b and the cell itself owns the point a finger lands on",
       "pass": true,
-      "detail": "Bu vuruşta zaten aynı akor var."
+      "detail": "{\"probed\":72,\"wrongOwner\":0,\"first\":null}"
     },
     {
       "combo": "390x844 @100%",
-      "name": "29. the pen tour raised no page error",
+      "name": "59.c neighbouring strings do not overlap each other",
+      "pass": true,
+      "detail": "{\"overlaps\":0}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "59.d the outer strings are whole, not half on the screen",
+      "pass": true,
+      "detail": "{\"edgeVisible\":44}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "59.e the staff has no scroller of its own",
+      "pass": true,
+      "detail": "{\"innerScrollers\":0}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "60. and it is a separate box from the digit",
+      "pass": true,
+      "detail": "cell 44 tall vs digit 7.23 wide"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "64. the focused edit row is a finger tall, and so is the way out",
+      "pass": true,
+      "detail": "{\"row\":45,\"done\":44,\"label\":\"Düzenleniyor: Bölüm 1\",\"section\":\"Bölüm 1\",\"brand\":0}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "64.b it says which section, in music, and the view switch has stood down",
+      "pass": true,
+      "detail": "{\"section\":\"Bölüm 1\",\"label\":\"Düzenleniyor: Bölüm 1\",\"viewSwitch\":0}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "64.c every control in the action row is a finger tall",
+      "pass": true,
+      "detail": "{\"count\":4,\"min\":44}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "63. every edit cell is inside the surface the reader is looking at",
+      "pass": true,
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":601,\"staff\":264}"
+    },
+    {
+      "combo": "390x844 @100%",
+      "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @125%",
-      "name": "16. a touch writes root and fifth",
+      "name": "45. every onset draws a fret number",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "8"
     },
     {
       "combo": "390x844 @125%",
-      "name": "17. the root is the string and fret the finger asked for",
+      "name": "46. the digit has no padding of its own",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px"
     },
     {
       "combo": "390x844 @125%",
-      "name": "18. every note carries its position",
+      "name": "47. no border, no radius, no shadow",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px/none"
     },
     {
       "combo": "390x844 @125%",
-      "name": "19. one write, and only to the open project",
+      "name": "48. the digit sits on the page, not on a filled card",
+      "pass": true,
+      "detail": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "49. the numerals are tabular",
+      "pass": true,
+      "detail": "tabular-nums"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "50. a one-digit fret is one digit wide",
+      "pass": true,
+      "detail": "7.23"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "51. every glyph is named as music",
+      "pass": true,
+      "detail": "7. perde"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "52. no identifier, tick or slot reaches a name",
+      "pass": true,
+      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "53. a slurred note is told apart from an ordinary one",
+      "pass": true,
+      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "54. a pull-off draws an arc",
       "pass": false,
-      "detail": "{\"get:active_project\":5,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "390x844 @125%",
-      "name": "20. the song really changed",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @125%",
-      "name": "21. the pen stays open after it writes",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "390x844 @125%",
-      "name": "22. three voices add the octave above the root",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "390x844 @125%",
-      "name": "23. writing over a beat replaces the whole onset",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "390x844 @125%",
-      "name": "24. it does not reach the next beat",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "390x844 @125%",
-      "name": "25. a replace is still one write",
+      "name": "55. with a P on it",
       "pass": false,
-      "detail": "{\"get:active_project\":7,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "390x844 @125%",
-      "name": "26. and it really changed something",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @125%",
-      "name": "27. undo takes a power chord back in one step",
+      "name": "56. the arc layer takes no pointer events",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @125%",
-      "name": "28. and puts back exactly the three voices that were there",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+      "name": "57. the arc is named by the movement",
+      "pass": false,
+      "detail": ""
     },
     {
       "combo": "390x844 @125%",
-      "name": "28b. the same chord twice is refused rather than written again",
+      "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "Bu vuruşta zaten aynı akor var."
+      "detail": "2"
     },
     {
       "combo": "390x844 @125%",
-      "name": "29. the pen tour raised no page error",
+      "name": "59. every edit cell is a finger tall where it can be seen",
+      "pass": true,
+      "detail": "{\"cells\":96,\"minVisible\":44}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "59.b and the cell itself owns the point a finger lands on",
+      "pass": true,
+      "detail": "{\"probed\":72,\"wrongOwner\":0,\"first\":null}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "59.c neighbouring strings do not overlap each other",
+      "pass": true,
+      "detail": "{\"overlaps\":0}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "59.d the outer strings are whole, not half on the screen",
+      "pass": true,
+      "detail": "{\"edgeVisible\":44}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "59.e the staff has no scroller of its own",
+      "pass": true,
+      "detail": "{\"innerScrollers\":0}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "60. and it is a separate box from the digit",
+      "pass": true,
+      "detail": "cell 44 tall vs digit 7.23 wide"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "64. the focused edit row is a finger tall, and so is the way out",
+      "pass": true,
+      "detail": "{\"row\":45,\"done\":44,\"label\":\"Düzenleniyor: Bölüm 1\",\"section\":\"Bölüm 1\",\"brand\":0}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "64.b it says which section, in music, and the view switch has stood down",
+      "pass": true,
+      "detail": "{\"section\":\"Bölüm 1\",\"label\":\"Düzenleniyor: Bölüm 1\",\"viewSwitch\":0}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "64.c every control in the action row is a finger tall",
+      "pass": true,
+      "detail": "{\"count\":4,\"min\":44}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "63. every edit cell is inside the surface the reader is looking at",
+      "pass": true,
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":542,\"staff\":264}"
+    },
+    {
+      "combo": "390x844 @125%",
+      "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @150%",
-      "name": "16. a touch writes root and fifth",
+      "name": "45. every onset draws a fret number",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "8"
     },
     {
       "combo": "390x844 @150%",
-      "name": "17. the root is the string and fret the finger asked for",
+      "name": "46. the digit has no padding of its own",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px"
     },
     {
       "combo": "390x844 @150%",
-      "name": "18. every note carries its position",
+      "name": "47. no border, no radius, no shadow",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px/none"
     },
     {
       "combo": "390x844 @150%",
-      "name": "19. one write, and only to the open project",
+      "name": "48. the digit sits on the page, not on a filled card",
+      "pass": true,
+      "detail": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "49. the numerals are tabular",
+      "pass": true,
+      "detail": "tabular-nums"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "50. a one-digit fret is one digit wide",
+      "pass": true,
+      "detail": "7.23"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "51. every glyph is named as music",
+      "pass": true,
+      "detail": "7. perde"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "52. no identifier, tick or slot reaches a name",
+      "pass": true,
+      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "53. a slurred note is told apart from an ordinary one",
+      "pass": true,
+      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "54. a pull-off draws an arc",
       "pass": false,
-      "detail": "{\"get:active_project\":5,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "390x844 @150%",
-      "name": "20. the song really changed",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @150%",
-      "name": "21. the pen stays open after it writes",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "390x844 @150%",
-      "name": "22. three voices add the octave above the root",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "390x844 @150%",
-      "name": "23. writing over a beat replaces the whole onset",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "390x844 @150%",
-      "name": "24. it does not reach the next beat",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "390x844 @150%",
-      "name": "25. a replace is still one write",
+      "name": "55. with a P on it",
       "pass": false,
-      "detail": "{\"get:active_project\":7,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "390x844 @150%",
-      "name": "26. and it really changed something",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @150%",
-      "name": "27. undo takes a power chord back in one step",
+      "name": "56. the arc layer takes no pointer events",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "390x844 @150%",
-      "name": "28. and puts back exactly the three voices that were there",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+      "name": "57. the arc is named by the movement",
+      "pass": false,
+      "detail": ""
     },
     {
       "combo": "390x844 @150%",
-      "name": "28b. the same chord twice is refused rather than written again",
+      "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "Bu vuruşta zaten aynı akor var."
+      "detail": "2"
     },
     {
       "combo": "390x844 @150%",
-      "name": "29. the pen tour raised no page error",
+      "name": "59. every edit cell is a finger tall where it can be seen",
+      "pass": true,
+      "detail": "{\"cells\":96,\"minVisible\":44}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "59.b and the cell itself owns the point a finger lands on",
+      "pass": true,
+      "detail": "{\"probed\":72,\"wrongOwner\":0,\"first\":null}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "59.c neighbouring strings do not overlap each other",
+      "pass": true,
+      "detail": "{\"overlaps\":0}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "59.d the outer strings are whole, not half on the screen",
+      "pass": true,
+      "detail": "{\"edgeVisible\":44}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "59.e the staff has no scroller of its own",
+      "pass": true,
+      "detail": "{\"innerScrollers\":0}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "60. and it is a separate box from the digit",
+      "pass": true,
+      "detail": "cell 44 tall vs digit 7.23 wide"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "64. the focused edit row is a finger tall, and so is the way out",
+      "pass": true,
+      "detail": "{\"row\":45,\"done\":44,\"label\":\"Düzenleniyor: Bölüm 1\",\"section\":\"Bölüm 1\",\"brand\":0}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "64.b it says which section, in music, and the view switch has stood down",
+      "pass": true,
+      "detail": "{\"section\":\"Bölüm 1\",\"label\":\"Düzenleniyor: Bölüm 1\",\"viewSwitch\":0}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "64.c every control in the action row is a finger tall",
+      "pass": true,
+      "detail": "{\"count\":4,\"min\":44}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "63. every edit cell is inside the surface the reader is looking at",
+      "pass": true,
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":535,\"staff\":264}"
+    },
+    {
+      "combo": "390x844 @150%",
+      "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @100%",
-      "name": "16. a touch writes root and fifth",
+      "name": "45. every onset draws a fret number",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "8"
     },
     {
       "combo": "320x700 @100%",
-      "name": "17. the root is the string and fret the finger asked for",
+      "name": "46. the digit has no padding of its own",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px"
     },
     {
       "combo": "320x700 @100%",
-      "name": "18. every note carries its position",
+      "name": "47. no border, no radius, no shadow",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px/none"
     },
     {
       "combo": "320x700 @100%",
-      "name": "19. one write, and only to the open project",
+      "name": "48. the digit sits on the page, not on a filled card",
+      "pass": true,
+      "detail": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "49. the numerals are tabular",
+      "pass": true,
+      "detail": "tabular-nums"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "50. a one-digit fret is one digit wide",
+      "pass": true,
+      "detail": "7.23"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "51. every glyph is named as music",
+      "pass": true,
+      "detail": "7. perde"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "52. no identifier, tick or slot reaches a name",
+      "pass": true,
+      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "53. a slurred note is told apart from an ordinary one",
+      "pass": true,
+      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "54. a pull-off draws an arc",
       "pass": false,
-      "detail": "{\"get:active_project\":5,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "20. the song really changed",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @100%",
-      "name": "21. the pen stays open after it writes",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "22. three voices add the octave above the root",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "23. writing over a beat replaces the whole onset",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "24. it does not reach the next beat",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "25. a replace is still one write",
+      "name": "55. with a P on it",
       "pass": false,
-      "detail": "{\"get:active_project\":7,\"set:active_project\":2,\"get:catalog\":1}"
+      "detail": ""
     },
     {
       "combo": "320x700 @100%",
-      "name": "26. and it really changed something",
+      "name": "56. the arc layer takes no pointer events",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @100%",
-      "name": "27. undo takes a power chord back in one step",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "28. and puts back exactly the three voices that were there",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "28b. the same chord twice is refused rather than written again",
-      "pass": true,
-      "detail": "Bu vuruşta zaten aynı akor var."
-    },
-    {
-      "combo": "320x700 @100%",
-      "name": "29. the pen tour raised no page error",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "16. a touch writes root and fifth",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "17. the root is the string and fret the finger asked for",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "18. every note carries its position",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "19. one write, and only to the open project",
+      "name": "57. the arc is named by the movement",
       "pass": false,
-      "detail": "{\"get:active_project\":5,\"set:active_project\":2,\"get:catalog\":1}"
+      "detail": ""
     },
     {
-      "combo": "320x700 @125%",
-      "name": "20. the song really changed",
+      "combo": "320x700 @100%",
+      "name": "58. the rhythm guide is still drawn",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "59. every edit cell is a finger tall where it can be seen",
+      "pass": true,
+      "detail": "{\"cells\":96,\"minVisible\":44}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "59.b and the cell itself owns the point a finger lands on",
+      "pass": true,
+      "detail": "{\"probed\":72,\"wrongOwner\":0,\"first\":null}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "59.c neighbouring strings do not overlap each other",
+      "pass": true,
+      "detail": "{\"overlaps\":0}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "59.d the outer strings are whole, not half on the screen",
+      "pass": true,
+      "detail": "{\"edgeVisible\":44}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "59.e the staff has no scroller of its own",
+      "pass": true,
+      "detail": "{\"innerScrollers\":0}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "60. and it is a separate box from the digit",
+      "pass": true,
+      "detail": "cell 44 tall vs digit 7.23 wide"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "64. the focused edit row is a finger tall, and so is the way out",
+      "pass": true,
+      "detail": "{\"row\":45,\"done\":44,\"label\":\"Düzenleniyor: Bölüm 1\",\"section\":\"Bölüm 1\",\"brand\":0}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "64.b it says which section, in music, and the view switch has stood down",
+      "pass": true,
+      "detail": "{\"section\":\"Bölüm 1\",\"label\":\"Düzenleniyor: Bölüm 1\",\"viewSwitch\":0}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "64.c every control in the action row is a finger tall",
+      "pass": true,
+      "detail": "{\"count\":4,\"min\":44}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "63. every edit cell is inside the surface the reader is looking at",
+      "pass": true,
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":357,\"staff\":264}"
+    },
+    {
+      "combo": "320x700 @100%",
+      "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @125%",
-      "name": "21. the pen stays open after it writes",
+      "name": "45. every onset draws a fret number",
       "pass": true,
-      "detail": ""
+      "detail": "8"
     },
     {
       "combo": "320x700 @125%",
-      "name": "22. three voices add the octave above the root",
+      "name": "46. the digit has no padding of its own",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+      "detail": "0px/0px"
     },
     {
       "combo": "320x700 @125%",
-      "name": "23. writing over a beat replaces the whole onset",
+      "name": "47. no border, no radius, no shadow",
       "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
+      "detail": "0px/0px/none"
     },
     {
       "combo": "320x700 @125%",
-      "name": "24. it does not reach the next beat",
+      "name": "48. the digit sits on the page, not on a filled card",
       "pass": true,
-      "detail": ""
+      "detail": "rgba(0, 0, 0, 0)"
     },
     {
       "combo": "320x700 @125%",
-      "name": "25. a replace is still one write",
+      "name": "49. the numerals are tabular",
+      "pass": true,
+      "detail": "tabular-nums"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "50. a one-digit fret is one digit wide",
+      "pass": true,
+      "detail": "7.23"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "51. every glyph is named as music",
+      "pass": true,
+      "detail": "7. perde"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "52. no identifier, tick or slot reaches a name",
+      "pass": true,
+      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "53. a slurred note is told apart from an ordinary one",
+      "pass": true,
+      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "54. a pull-off draws an arc",
       "pass": false,
-      "detail": "{\"get:active_project\":7,\"set:active_project\":2,\"get:catalog\":1}"
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "26. and it really changed something",
-      "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @125%",
-      "name": "27. undo takes a power chord back in one step",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "28. and puts back exactly the three voices that were there",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "28b. the same chord twice is refused rather than written again",
-      "pass": true,
-      "detail": "Bu vuruşta zaten aynı akor var."
-    },
-    {
-      "combo": "320x700 @125%",
-      "name": "29. the pen tour raised no page error",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "16. a touch writes root and fifth",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "17. the root is the string and fret the finger asked for",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "18. every note carries its position",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "19. one write, and only to the open project",
+      "name": "55. with a P on it",
       "pass": false,
-      "detail": "{\"get:active_project\":5,\"set:active_project\":2,\"get:catalog\":1}"
+      "detail": ""
     },
     {
-      "combo": "320x700 @150%",
-      "name": "20. the song really changed",
+      "combo": "320x700 @125%",
+      "name": "56. the arc layer takes no pointer events",
       "pass": true,
       "detail": ""
     },
     {
-      "combo": "320x700 @150%",
-      "name": "21. the pen stays open after it writes",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "22. three voices add the octave above the root",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "23. writing over a beat replaces the whole onset",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\"]"
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "24. it does not reach the next beat",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "combo": "320x700 @150%",
-      "name": "25. a replace is still one write",
+      "combo": "320x700 @125%",
+      "name": "57. the arc is named by the movement",
       "pass": false,
-      "detail": "{\"get:active_project\":7,\"set:active_project\":2,\"get:catalog\":1}"
+      "detail": ""
     },
     {
-      "combo": "320x700 @150%",
-      "name": "26. and it really changed something",
+      "combo": "320x700 @125%",
+      "name": "58. the rhythm guide is still drawn",
+      "pass": true,
+      "detail": "2"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "59. every edit cell is a finger tall where it can be seen",
+      "pass": true,
+      "detail": "{\"cells\":96,\"minVisible\":44}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "59.b and the cell itself owns the point a finger lands on",
+      "pass": true,
+      "detail": "{\"probed\":72,\"wrongOwner\":0,\"first\":null}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "59.c neighbouring strings do not overlap each other",
+      "pass": true,
+      "detail": "{\"overlaps\":0}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "59.d the outer strings are whole, not half on the screen",
+      "pass": true,
+      "detail": "{\"edgeVisible\":44}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "59.e the staff has no scroller of its own",
+      "pass": true,
+      "detail": "{\"innerScrollers\":0}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "60. and it is a separate box from the digit",
+      "pass": true,
+      "detail": "cell 44 tall vs digit 7.23 wide"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "64. the focused edit row is a finger tall, and so is the way out",
+      "pass": true,
+      "detail": "{\"row\":45,\"done\":44,\"label\":\"Düzenleniyor: Bölüm 1\",\"section\":\"Bölüm 1\",\"brand\":0}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "64.b it says which section, in music, and the view switch has stood down",
+      "pass": true,
+      "detail": "{\"section\":\"Bölüm 1\",\"label\":\"Düzenleniyor: Bölüm 1\",\"viewSwitch\":0}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "64.c every control in the action row is a finger tall",
+      "pass": true,
+      "detail": "{\"count\":4,\"min\":44}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "63. every edit cell is inside the surface the reader is looking at",
+      "pass": true,
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":342,\"staff\":264}"
+    },
+    {
+      "combo": "320x700 @125%",
+      "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @150%",
-      "name": "27. undo takes a power chord back in one step",
+      "name": "45. every onset draws a fret number",
+      "pass": true,
+      "detail": "8"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "46. the digit has no padding of its own",
+      "pass": true,
+      "detail": "0px/0px"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "47. no border, no radius, no shadow",
+      "pass": true,
+      "detail": "0px/0px/none"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "48. the digit sits on the page, not on a filled card",
+      "pass": true,
+      "detail": "rgba(0, 0, 0, 0)"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "49. the numerals are tabular",
+      "pass": true,
+      "detail": "tabular-nums"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "50. a one-digit fret is one digit wide",
+      "pass": true,
+      "detail": "7.23"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "51. every glyph is named as music",
+      "pass": true,
+      "detail": "7. perde"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "52. no identifier, tick or slot reaches a name",
+      "pass": true,
+      "detail": "7. perde, 8. perdeden 7. perdeye koparma"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "53. a slurred note is told apart from an ordinary one",
+      "pass": true,
+      "detail": "normal,normal,normal,normal,normal,legato,normal,normal"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "54. a pull-off draws an arc",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "55. with a P on it",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "56. the arc layer takes no pointer events",
       "pass": true,
       "detail": ""
     },
     {
       "combo": "320x700 @150%",
-      "name": "28. and puts back exactly the three voices that were there",
-      "pass": true,
-      "detail": "[\"A2@0:5\",\"E3@1:7\",\"A3@2:7\"]"
+      "name": "57. the arc is named by the movement",
+      "pass": false,
+      "detail": ""
     },
     {
       "combo": "320x700 @150%",
-      "name": "28b. the same chord twice is refused rather than written again",
+      "name": "58. the rhythm guide is still drawn",
       "pass": true,
-      "detail": "Bu vuruşta zaten aynı akor var."
+      "detail": "2"
     },
     {
       "combo": "320x700 @150%",
-      "name": "29. the pen tour raised no page error",
+      "name": "59. every edit cell is a finger tall where it can be seen",
+      "pass": true,
+      "detail": "{\"cells\":96,\"minVisible\":44}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "59.b and the cell itself owns the point a finger lands on",
+      "pass": true,
+      "detail": "{\"probed\":72,\"wrongOwner\":0,\"first\":null}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "59.c neighbouring strings do not overlap each other",
+      "pass": true,
+      "detail": "{\"overlaps\":0}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "59.d the outer strings are whole, not half on the screen",
+      "pass": true,
+      "detail": "{\"edgeVisible\":44}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "59.e the staff has no scroller of its own",
+      "pass": true,
+      "detail": "{\"innerScrollers\":0}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "60. and it is a separate box from the digit",
+      "pass": true,
+      "detail": "cell 44 tall vs digit 7.23 wide"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "62. the glyph's own box is smaller than the finger's",
+      "pass": true,
+      "detail": "{\"count\":8,\"maxHeight\":12,\"maxWidth\":7}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "64. the focused edit row is a finger tall, and so is the way out",
+      "pass": true,
+      "detail": "{\"row\":45,\"done\":44,\"label\":\"Düzenleniyor: Bölüm 1\",\"section\":\"Bölüm 1\",\"brand\":0}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "64.b it says which section, in music, and the view switch has stood down",
+      "pass": true,
+      "detail": "{\"section\":\"Bölüm 1\",\"label\":\"Düzenleniyor: Bölüm 1\",\"viewSwitch\":0}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "64.c every control in the action row is a finger tall",
+      "pass": true,
+      "detail": "{\"count\":4,\"min\":44}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "63. every edit cell is inside the surface the reader is looking at",
+      "pass": true,
+      "detail": "{\"cells\":96,\"below\":0,\"above\":0,\"surface\":343,\"staff\":264}"
+    },
+    {
+      "combo": "320x700 @150%",
+      "name": "61. the glyph tour raised no page error",
       "pass": true,
       "detail": ""
     }

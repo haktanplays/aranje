@@ -56,7 +56,7 @@ PY
 
 V="npx vitest run"
 GLYPH="$V src/lib/tab/glyph-model.test.ts"
-ARC="$V src/lib/tab/legato-arc.test.ts"
+TECH="$V src/lib/tab/technique-geometry.test.ts"
 MARK="$V src/lib/tab/playing-onset.test.ts"
 TOOL="$V src/lib/workspace/composer-tool.test.ts"
 PEN="$V src/lib/chords/power-chord-pen.test.ts"
@@ -171,61 +171,156 @@ probe "18 the shape cue is claimed even when there is no shape" \
   '    hasShapeCue: marker !== "none",' \
   '    hasShapeCue: true,'
 
-echo "--- a slur arc is the movement it draws (§4) ---"
+echo "--- the technique grammar draws what the music says (TNG §4-§8) ---"
 
 probe "19 the arc direction is read off the fret rather than the pitch" \
-  src/lib/tab/legato-arc.ts "$ARC" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
   '  const from = pitchToMidi(previous.pitch);
-  const to = pitchToMidi(span.pitch);' \
-  '  const from = previous.fret;
-  const to = span.fret;'
+  const to = pitchToMidi(span.pitch);
+  if (from === null || to === null) return false;
+  return kind === "hammer_on" ? to > from : to < from;' \
+  '  const from = previous.fret ?? 0;
+  const to = span.fret ?? 0;
+  return kind === "hammer_on" ? to > from : to < from;'
 
-probe "20 an arc is drawn even when the note moves the other way" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '    if (!movesAsWritten(previous, span, kind)) {' \
-  '    if (false) {'
+probe "20 a slur is drawn even when the note moves the other way" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '      movesAsWritten(previous, span, span.articulation);' \
+  '      true;'
 
-probe "21 consecutive arcs merge into one capsule" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '    const rise = baseRise + (depth % 2) * stepRise;' \
-  '    const rise = baseRise;'
+probe "21 a run of slurs becomes one arc per transition again" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '      if (run.length === 0) run = [previous];
+      run.push(span);' \
+  '      runs.push([previous, span]);'
 
-probe "22 the arc runs into the fret numbers at both ends" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '    const fromX = previous.startSlot * layout.slotWidth + half + clearance;
-    const toX = span.startSlot * layout.slotWidth + half - clearance;' \
-  '    const fromX = previous.startSlot * layout.slotWidth + half;
-    const toX = span.startSlot * layout.slotWidth + half;'
+probe "22 the arc stops exactly on the first and last number" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '        centreOf(first.startSlot, layout) - ARC_OVERHANG_PX,' \
+  '        centreOf(first.startSlot, layout),'
 
-probe "23 an arc crosses the bar line" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '    if (span.openStart) continue;' \
-  '    if (false) continue;'
+probe "23 a run keeps going across a rest" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '  previous.endSlot + 1 === span.startSlot;' \
+  '  previous.startSlot < span.startSlot;'
 
-probe "24 a silent bar still draws its arcs" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '  if (bar.silent) return [];' \
-  '  if (false) return [];'
+probe "24 an arc crosses the bar line" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '    .filter((span) => span.stringIndex === stringIndex && !span.openStart)' \
+  '    .filter((span) => span.stringIndex === stringIndex)'
 
-probe "25 the mark says H for both kinds" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '      mark: kind === "hammer_on" ? "H" : "P",' \
-  '      mark: "H",'
+probe "25 a silent bar still draws its marks" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '  if (bar.silent) return EMPTY;' \
+  '  if (false) return EMPTY;'
 
-probe "26 the curve peaks at half the rise it claims" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '    const controlY = y - rise * 2;' \
-  '    const controlY = y - rise;'
+probe "26 the mark says H for both kinds of slur" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '          text: (kind === "hammer_on" ? "H" : "P") as "H" | "P",' \
+  '          text: "H" as "H" | "P",'
 
-probe "27 the chain depth never resets after a broken link" \
-  src/lib/tab/legato-arc.ts "$ARC" \
-  '    if (!previous) {
-      chain.set(span.stringIndex, 0);
-      continue;
+probe "27 the H and the P drift off the transition centres" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '          (centreOf(from.startSlot, layout) + centreOf(span.startSlot, layout)) /
+          2;' \
+  '          centreOf(span.startSlot, layout);'
+
+probe "27a the owner slot forgets its neighbours and takes the whole bar" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '      left = Math.max(left, (centreOf(other.startSlot, layout) + centre) / 2);' \
+  '      left = Math.max(left, 0);'
+
+probe "27b a mark may sit inside the neighbouring number" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '  const inset = { left: left + SLOT_INSET_PX, right: right - SLOT_INSET_PX };' \
+  '  const inset = { left, right };'
+
+probe "27c the lane clears the string line but not the numerals" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '    bottom: y - Math.max(LANE_CLEAR_PX, DIGIT_HALF_PX + 1),' \
+  '    bottom: y - LANE_CLEAR_PX,'
+
+probe "27d a digit is measured as one slot wide whatever it says" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '  const half = maskWidthFor(glyphText(span.fret)) / 2;' \
+  '  const half = layout.slotWidth / 2;'
+
+probe "27e the bend arrow grows with the amount it is bending" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '    const run = Math.max(0, Math.min(BEND_RUN_PX, slot.right - startX));' \
+  '    const run = Math.max(
+      0,
+      Math.min(BEND_RUN_PX * (amount === "1" ? 2 : 1), slot.right - startX),
+    );'
+
+probe "27f a bend with no amount in the contract still writes a half step" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '  if (articulation === "bend_half") return "½";
+  if (articulation === "bend_full") return "1";
+  return null;' \
+  '  if (articulation === "bend_full") return "1";
+  return "½";'
+
+probe "27g a slide moves the digits instead of drawing between them" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '        left: digitBounds(previous, layout).right,
+        right: digitBounds(span, layout).left,' \
+  '        left: centreOf(previous.startSlot, layout),
+        right: centreOf(span.startSlot, layout),'
+
+probe "27h a slide leans the same way whatever the music does" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '      const rising = to > from;' \
+  '      const rising = true;'
+
+probe "27i vibrato ignores how long the note is held" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '        VIBRATO_PER_SLOT_PX * (span.endSlot - span.startSlot);' \
+  '        VIBRATO_PER_SLOT_PX * 0;'
+
+probe "27j vibrato reaches into the next number" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '        ? Math.min(slot.right, digitBounds(next, layout).left - 2)
+        : slot.right;' \
+  '        ? bar.slotCount * layout.slotWidth
+        : slot.right;'
+
+probe "27k palm mute writes PM once per note again" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '      run.push(span);
+    } else {
+      if (run.length > 0) runs.push(run);
+      run = [span];
     }' \
-  '    if (!previous) {
-      continue;
+  '      runs.push(run);
+      run = [span];
+    } else {
+      if (run.length > 0) runs.push(run);
+      run = [span];
     }'
+
+probe "27l the palm mute rail runs into the first unmuted note" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '        rail: { left: round(railLeft), right: round(end.right) },' \
+  '        rail: { left: round(railLeft), right: round(end.right + 40) },'
+
+probe "27m a technique the contract cannot express is faked from a tie" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '    if (span.articulation !== "vibrato") return;' \
+  '    if (span.articulation !== "vibrato" && span.articulation !== "sustain") return;'
+
+probe "27n a note claims a mark that was never drawn for it" \
+  src/lib/tab/technique-geometry.ts "$TECH" \
+  '  for (const mark of slides) annotated.add(noteKey(mark.stringIndex, mark.slot));' \
+  '  for (const span of bar.spans) annotated.add(noteKey(span.stringIndex, span.startSlot));'
+
+probe "27o the bar block draws the character mark on top of the geometry" \
+  src/components/workspace/FrettedBarBlock.tsx "$BOUND $TECH" \
+  '                  {span.articulation &&
+                  !techniques.annotated.has(
+                    techniqueNoteKey(span.stringIndex, span.startSlot),
+                  ) ? (' \
+  '                  {span.articulation ? ('
 
 echo "--- the playhead marks the onset it is on (§4) ---"
 

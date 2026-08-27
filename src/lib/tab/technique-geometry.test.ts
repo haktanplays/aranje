@@ -226,6 +226,26 @@ describe("a slide is a movement between two numbers", () => {
     expect((down?.y2 ?? 0) > (down?.y1 ?? 0)).toBe(true);
   });
 
+  it("is centred between the numerals it joins, not between their slots", () => {
+    /*
+     * `12` is wider than `5`, so the gap between two numbers is not centred on
+     * the gap between two slots. Taking the midpoint of the slots instead of
+     * the midpoint of the numerals leans the connector towards the wider
+     * number and, on a tighter grid, into it.
+     */
+    const lopsided = bar([
+      span(0, 2, 12, "D4"),
+      span(1, 2, 5, "A3", "slide"),
+    ]);
+    const mark = buildTechniquePrimitives(lopsided, LAYOUT).slides[0];
+    const from = digitBounds(lopsided.spans[0] as TabSpan, LAYOUT);
+    const to = digitBounds(lopsided.spans[1] as TabSpan, LAYOUT);
+    expect(((mark?.x1 ?? 0) + (mark?.x2 ?? 0)) / 2).toBeCloseTo(
+      (from.right + to.left) / 2,
+      2,
+    );
+  });
+
   it("never crosses either numeral", () => {
     const { slides } = buildTechniquePrimitives(rising, LAYOUT);
     const from = digitBounds(rising.spans[0] as TabSpan, LAYOUT);
@@ -270,6 +290,26 @@ describe("a bend says its amount in words, not in length", () => {
     expect(Math.min(...points)).toBeGreaterThanOrEqual(slot.left);
     expect(Math.max(...points)).toBeLessThanOrEqual(slot.right);
     expect(Math.min(...ys)).toBeGreaterThanOrEqual(lane.top);
+  });
+
+  it("keeps the arrowhead inside the slot as well as the curve", () => {
+    /*
+     * The head is wider than the line, so a bend whose *path* ends exactly on
+     * the slot's edge still paints past it. Found by measuring the drawn
+     * boxes in a browser rather than the path endpoints.
+     */
+    const crowded = bar([
+      span(0, 2, 7, "D4", "bend_half"),
+      span(1, 2, 5, "C4"),
+    ]);
+    const mark = buildTechniquePrimitives(crowded, LAYOUT).bends[0];
+    const slot = ownerSlot(crowded, crowded.spans[0] as TabSpan, LAYOUT);
+    const points = (mark?.head ?? "")
+      .split(" ")
+      .map((pair) => Number(pair.split(",")[0]));
+    expect(points.length).toBe(3);
+    expect(Math.max(...points)).toBeLessThanOrEqual(slot.right);
+    expect(Math.min(...points)).toBeGreaterThanOrEqual(slot.left);
   });
 
   it("does not overflow onto the neighbouring string", () => {
@@ -441,8 +481,18 @@ describe("the primitives are a statement about the song and nothing else", () =>
   });
 
   it("draws nothing at all over a silent bar", () => {
-    const quiet = buildTechniquePrimitives(bar([], { silent: true }), LAYOUT);
+    /*
+     * A silent bar is one this track writes nothing into, so the timeline
+     * gives it no spans. The bar carries spans here anyway: "silent" is the
+     * answer, and it has to win over anything else the bar happens to hold —
+     * an early return that only agreed with an empty list would be no rule.
+     */
+    const quiet = buildTechniquePrimitives(
+      bar([...RUN.spans], { silent: true }),
+      LAYOUT,
+    );
     expect(quiet.count).toBe(0);
+    expect(quiet.annotated.size).toBe(0);
   });
 
   it("invents nothing for a technique the contract cannot express", () => {

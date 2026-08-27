@@ -308,8 +308,8 @@ export function matrix(): FixtureSpec[] {
  * accepts, and `make-fixtures` runs the strict parse and the central validator
  * chain over it before it is written.
  *
- * Bar 1: `5 h 7 h 8 p 7 p 5`, a rest, then `5 / 7 \ 5`, then a half bend, a
- * full bend, and a vibrato held one slot. Bar 2: three palm-muted notes and
+ * Bar 1: `5 h 7 h 8 p 7 p 5`, a rest, then `5 / 7 \ 5`, then a half bend with a
+ * note right after it, a full bend, and a vibrato held one slot. Bar 2: three palm-muted notes and
  * one open one, so the rail has something to stop before.
  */
 export function techniqueShowcase(): Song {
@@ -339,7 +339,9 @@ export function techniqueShowcase(): Song {
     at(5, "slide"),
     rest,
     at(7, "bend_half"),
-    rest,
+    // Not a rest: a bend needs a neighbour close enough that "stays inside
+    // its own room" is a claim about something rather than about empty space.
+    at(5),
     at(7, "bend_full"),
     rest,
     at(7, "vibrato"),

@@ -102,7 +102,10 @@ export type LegatoMark = {
   readonly label: string;
 };
 
-export type LegatoPhrase = {
+/** The room a mark is allowed to use, so a view can prove it stayed in it. */
+export type Owned = { readonly owner: Extent };
+
+export type LegatoPhrase = Owned & {
   readonly stringIndex: number;
   /** Every onset under the arc, source note first. Always two or more. */
   readonly slots: readonly number[];
@@ -113,7 +116,7 @@ export type LegatoPhrase = {
   readonly label: string;
 };
 
-export type SlideMark = {
+export type SlideMark = Owned & {
   readonly stringIndex: number;
   readonly slot: number;
   /** True when the *sounding pitch* rises, whatever the fret numbers do. */
@@ -125,7 +128,7 @@ export type SlideMark = {
   readonly label: string;
 };
 
-export type BendMark = {
+export type BendMark = Owned & {
   readonly stringIndex: number;
   readonly slot: number;
   /** The same short curve for every bend: length never encodes amount. */
@@ -139,7 +142,7 @@ export type BendMark = {
   readonly label: string;
 };
 
-export type VibratoMark = {
+export type VibratoMark = Owned & {
   readonly stringIndex: number;
   readonly slot: number;
   readonly path: string;
@@ -147,7 +150,7 @@ export type VibratoMark = {
   readonly label: string;
 };
 
-export type PalmMuteRange = {
+export type PalmMuteRange = Owned & {
   readonly stringIndex: number;
   readonly slots: readonly number[];
   readonly labelX: number;
@@ -373,7 +376,13 @@ function buildLegato(
         };
       });
 
+      const owner = {
+        left: round(ownerSlot(bar, first, layout).left),
+        right: round(ownerSlot(bar, last, layout).right),
+      };
+
       phrases.push({
+        owner,
         stringIndex,
         slots: run.map((span) => span.startSlot),
         path: `M ${round(left)} ${round(baseY)} Q ${round(midX)} ${round(controlY)} ${round(right)} ${round(baseY)}`,
@@ -415,6 +424,10 @@ function buildSlides(bar: FrettedBar, layout: TechniqueLayout): SlideMark[] {
       const rising = to > from;
 
       marks.push({
+        owner: {
+          left: round(ownerSlot(bar, previous, layout).left),
+          right: round(ownerSlot(bar, span, layout).right),
+        },
         stringIndex,
         slot: span.startSlot,
         rising,
@@ -449,20 +462,29 @@ function buildBends(bar: FrettedBar, layout: TechniqueLayout): BendMark[] {
     const lane = annotationLane(span.stringIndex, layout);
     const digits = digitBounds(span, layout);
 
+    /*
+     * The arrowhead is wider than the line it sits on, so the room the curve
+     * may use is the owner slot minus the head. Reserving it here rather than
+     * after the fact is what keeps the *drawn* mark inside its slot: an
+     * acceptance run measures painted boxes, not path endpoints.
+     */
+    const ceiling = slot.right - BEND_HEAD_PX;
+    const floor = Math.min(slot.left + BEND_HEAD_PX, ceiling);
     const startX = Math.max(
-      slot.left,
-      Math.min(digits.right, slot.right - BEND_RUN_PX),
+      floor,
+      Math.min(digits.right, ceiling - BEND_RUN_PX),
     );
-    const run = Math.max(0, Math.min(BEND_RUN_PX, slot.right - startX));
+    const run = Math.max(0, Math.min(BEND_RUN_PX, ceiling - startX));
     const tipX = startX + run;
     const baseY = lane.bottom;
     const rise = Math.min(BEND_RISE_PX, baseY - lane.top);
     const tipY = baseY - rise;
 
     const labelWidth = LABEL_ADVANCE_PX + 1;
-    const fits = tipX + 2 + labelWidth <= slot.right;
+    const fits = tipX + BEND_HEAD_PX + 2 + labelWidth <= slot.right;
 
     marks.push({
+      owner: { left: round(slot.left), right: round(slot.right) },
       stringIndex: span.stringIndex,
       slot: span.startSlot,
       path: `M ${round(startX)} ${round(baseY)} Q ${round(tipX)} ${round(baseY)} ${round(tipX)} ${round(tipY)}`,
@@ -522,6 +544,7 @@ function buildVibratos(
 
       const y = lane.bottom - VIBRATO_AMPLITUDE_PX - 1;
       marks.push({
+        owner: { left: round(slot.left), right: round(slot.right) },
         stringIndex,
         slot: span.startSlot,
         path: wavePath(startX, y, width),
@@ -593,6 +616,7 @@ function buildPalmMutes(
         : labelY - Math.round(LABEL_ASCENT_PX / 2);
 
       ranges.push({
+        owner: { left: round(start.left), right: round(end.right) },
         stringIndex,
         slots: run.map((span) => span.startSlot),
         labelX: round(start.left),

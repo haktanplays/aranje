@@ -31,32 +31,52 @@ const STROKE = 1;
 
 type Tone = "read" | "preview";
 
-const strokeOf = (tone: Tone) =>
-  tone === "preview" ? "stroke-bronze" : "stroke-muted";
+/**
+ * What every mark says about itself in the DOM.
+ *
+ * Which technique it is, which string owns it, whether it is in the accent,
+ * and the horizontal room the pure model allowed it — the last of which is
+ * what lets an acceptance run compare a *painted* box against the geometry
+ * rather than trusting the path arithmetic.
+ */
+const markProps = (
+  kind: string,
+  mark: { stringIndex: number; owner: { left: number; right: number } },
+  tone: Tone,
+) => ({
+  "data-technique": kind,
+  "data-technique-string": mark.stringIndex,
+  "data-technique-tone": tone,
+  "data-owner": `${mark.owner.left},${mark.owner.right}`,
+});
+
 const fillOf = (tone: Tone) => (tone === "preview" ? "fill-bronze" : "fill-muted");
+
+/** One stroke for the whole grammar: same weight, same cap, one colour rule. */
+const strokeProps = (tone: Tone) => ({
+  fill: "none" as const,
+  className: tone === "preview" ? "stroke-bronze" : "stroke-muted",
+  strokeWidth: STROKE,
+  strokeLinecap: "round" as const,
+});
+
+/** One label rule too, so no mark can invent its own size. */
+const labelProps = (tone: Tone) => ({
+  className: fillOf(tone),
+  style: { fontSize: LABEL_PX },
+});
 
 function Legato({ phrase, tone }: { phrase: LegatoPhrase; tone: Tone }) {
   return (
-    <g
-      data-technique="legato"
-      data-technique-string={phrase.stringIndex}
-      data-technique-tone={tone}
-    >
-      <path
-        d={phrase.path}
-        fill="none"
-        className={strokeOf(tone)}
-        strokeWidth={STROKE}
-        strokeLinecap="round"
-      />
+    <g {...markProps("legato", phrase, tone)}>
+      <path d={phrase.path} {...strokeProps(tone)} />
       {phrase.marks.map((mark) => (
         <text
           key={`${mark.fromSlot}-${mark.toSlot}`}
           x={mark.x}
           y={mark.y}
           textAnchor="middle"
-          className={fillOf(tone)}
-          style={{ fontSize: LABEL_PX }}
+          {...labelProps(tone)}
         >
           {mark.text}
         </text>
@@ -68,42 +88,27 @@ function Legato({ phrase, tone }: { phrase: LegatoPhrase; tone: Tone }) {
 function Slide({ mark, tone }: { mark: SlideMark; tone: Tone }) {
   return (
     <line
-      data-technique="slide"
-      data-technique-string={mark.stringIndex}
-      data-technique-tone={tone}
+      {...markProps("slide", mark, tone)}
       x1={mark.x1}
       y1={mark.y1}
       x2={mark.x2}
       y2={mark.y2}
-      className={strokeOf(tone)}
-      strokeWidth={STROKE}
-      strokeLinecap="round"
+      {...strokeProps(tone)}
     />
   );
 }
 
 function Bend({ mark, tone }: { mark: BendMark; tone: Tone }) {
   return (
-    <g
-      data-technique="bend"
-      data-technique-string={mark.stringIndex}
-      data-technique-tone={tone}
-    >
-      <path
-        d={mark.path}
-        fill="none"
-        className={strokeOf(tone)}
-        strokeWidth={STROKE}
-        strokeLinecap="round"
-      />
+    <g {...markProps("bend", mark, tone)}>
+      <path d={mark.path} {...strokeProps(tone)} />
       <polygon points={mark.head} className={fillOf(tone)} />
       {mark.amount === null ? null : (
         <text
           x={mark.labelX}
           y={mark.labelY}
           textAnchor={mark.labelAnchor === "end" ? "end" : "start"}
-          className={fillOf(tone)}
-          style={{ fontSize: LABEL_PX }}
+          {...labelProps(tone)}
         >
           {mark.amount}
         </text>
@@ -115,31 +120,17 @@ function Bend({ mark, tone }: { mark: BendMark; tone: Tone }) {
 function Vibrato({ mark, tone }: { mark: VibratoMark; tone: Tone }) {
   return (
     <path
-      data-technique="vibrato"
-      data-technique-string={mark.stringIndex}
-      data-technique-tone={tone}
+      {...markProps("vibrato", mark, tone)}
       d={mark.path}
-      fill="none"
-      className={strokeOf(tone)}
-      strokeWidth={STROKE}
-      strokeLinecap="round"
+      {...strokeProps(tone)}
     />
   );
 }
 
 function PalmMute({ range, tone }: { range: PalmMuteRange; tone: Tone }) {
   return (
-    <g
-      data-technique="palm-mute"
-      data-technique-string={range.stringIndex}
-      data-technique-tone={tone}
-    >
-      <text
-        x={range.labelX}
-        y={range.labelY}
-        className={fillOf(tone)}
-        style={{ fontSize: LABEL_PX }}
-      >
+    <g {...markProps("palm-mute", range, tone)}>
+      <text x={range.labelX} y={range.labelY} {...labelProps(tone)}>
         PM
       </text>
       {range.rail.right > range.rail.left ? (
@@ -148,8 +139,7 @@ function PalmMute({ range, tone }: { range: PalmMuteRange; tone: Tone }) {
           y1={range.railY}
           x2={range.rail.right}
           y2={range.railY}
-          className={strokeOf(tone)}
-          strokeWidth={STROKE}
+          {...strokeProps(tone)}
           strokeDasharray="2 2"
         />
       ) : null}
@@ -158,8 +148,7 @@ function PalmMute({ range, tone }: { range: PalmMuteRange; tone: Tone }) {
         y1={range.capTop}
         x2={range.capX}
         y2={range.capBottom}
-        className={strokeOf(tone)}
-        strokeWidth={STROKE}
+        {...strokeProps(tone)}
       />
     </g>
   );
@@ -191,53 +180,50 @@ export function TechniqueLayer({
       ? "preview"
       : "read";
 
-  const labels = [
-    ...primitives.legato.map((phrase) => phrase.label),
-    ...primitives.slides.map((mark) => mark.label),
-    ...primitives.bends.map((mark) => mark.label),
-    ...primitives.vibratos.map((mark) => mark.label),
-    ...primitives.palmMutes.map((range) => range.label),
-  ];
+  const { legato, slides, bends, vibratos, palmMutes } = primitives;
+  const labels = [legato, slides, bends, vibratos, palmMutes]
+    .flat()
+    .map((mark) => mark.label);
 
   return (
     <svg
       data-technique-layer={primitives.count}
-      data-legato-arcs={primitives.legato.length}
+      data-legato-arcs={legato.length}
       className="pointer-events-none absolute top-0 left-0 overflow-visible"
       width={width}
       height={height}
       role="img"
       aria-label={labels.join(", ")}
     >
-      {primitives.legato.map((phrase) => (
+      {legato.map((phrase) => (
         <Legato
           key={`legato-${phrase.stringIndex}-${phrase.slots[0]}`}
           phrase={phrase}
           tone={toneFor(phrase.stringIndex, phrase.slots)}
         />
       ))}
-      {primitives.slides.map((mark) => (
+      {slides.map((mark) => (
         <Slide
           key={`slide-${mark.stringIndex}-${mark.slot}`}
           mark={mark}
           tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
-      {primitives.bends.map((mark) => (
+      {bends.map((mark) => (
         <Bend
           key={`bend-${mark.stringIndex}-${mark.slot}`}
           mark={mark}
           tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
-      {primitives.vibratos.map((mark) => (
+      {vibratos.map((mark) => (
         <Vibrato
           key={`vibrato-${mark.stringIndex}-${mark.slot}`}
           mark={mark}
           tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
-      {primitives.palmMutes.map((range) => (
+      {palmMutes.map((range) => (
         <PalmMute
           key={`pm-${range.stringIndex}-${range.slots[0]}`}
           range={range}

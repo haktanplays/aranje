@@ -560,7 +560,17 @@
                     }
                   ]
                 },
-                null,
+                {
+                  "notes": [
+                    {
+                      "pitch": "G3",
+                      "position": {
+                        "string": 2,
+                        "fret": 5
+                      }
+                    }
+                  ]
+                },
                 {
                   "notes": [
                     {

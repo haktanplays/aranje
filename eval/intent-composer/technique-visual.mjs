@@ -97,9 +97,14 @@ async function selectRunNote(page) {
 const anchors = (page) =>
   page.evaluate(() => {
     const round = (value) => Math.round(value * 100) / 100;
-    const out = { lines: {}, digits: {} };
+    const out = { lines: {}, digits: {}, bars: {} };
     for (const bar of document.querySelectorAll("[data-bar-key]")) {
       const key = bar.getAttribute("data-bar-key");
+      const frame = bar.getBoundingClientRect();
+      // The bar's own size is the sharpest test of "the overlay is not part
+      // of the layout": every string line and digit inside it is absolutely
+      // positioned, so only the frame notices an in-flow child.
+      out.bars[key] = { w: round(frame.width), h: round(frame.height) };
       for (const line of bar.querySelectorAll("[data-string-line]")) {
         const box = line.getBoundingClientRect();
         out.lines[`${key}:${line.getAttribute("data-string-line")}`] = round(box.top);
@@ -183,13 +188,53 @@ const marks = (page) =>
           worst.push({ kind, why: "hit" });
         }
 
-        // The bar is the outer bound a mark may never leave.
+        // The room this mark was allowed, as the pure model decided it.
+        // A tolerance of one pixel, because a glyph's painted box is not its
+        // advance width and the model does not pretend to know font metrics.
         const frame = bar.getBoundingClientRect();
+        const [ownerLeft, ownerRight] = (node.getAttribute("data-owner") ?? "")
+          .split(",")
+          .map(Number);
+        if (Number.isFinite(ownerLeft) && Number.isFinite(ownerRight)) {
+          if (
+            box.left < frame.left + ownerLeft - 1 ||
+            box.right > frame.left + ownerRight + 1
+          ) {
+            slotViolations += 1;
+            worst.push({
+              kind,
+              why: "owner",
+              box: [round(box.left - frame.left), round(box.right - frame.left)],
+              owner: [ownerLeft, ownerRight],
+            });
+          }
+        }
         if (box.left < frame.left - 0.5 || box.right > frame.right + 0.5) {
           slotViolations += 1;
           worst.push({ kind, why: "bar", left: round(box.left), right: round(box.right) });
         }
       }
+    }
+
+    /*
+     * The staff is exactly six rows tall and nothing else. Measured as an
+     * absolute fact rather than as a before/after, because a staff that grew
+     * with the marks would grow in both measurements and drift would see
+     * nothing.
+     */
+    let staffGrew = 0;
+    for (const line of document.querySelectorAll("[data-string-line]")) {
+      const staffBox = line.parentElement?.getBoundingClientRect();
+      const siblings = [...(line.parentElement?.children ?? [])].filter((node) =>
+        node.hasAttribute?.("data-string-line"),
+      );
+      if (!staffBox || siblings.length < 2) continue;
+      const tops = siblings.map((node) => node.getBoundingClientRect().top);
+      const spacing = Math.abs((tops[1] ?? 0) - (tops[0] ?? 0));
+      if (spacing > 0 && Math.abs(staffBox.height - siblings.length * spacing) > 1) {
+        staffGrew += 1;
+      }
+      break;
     }
 
     const staff = document.querySelector("[data-tab-scroll]") ?? document.body;
@@ -203,6 +248,7 @@ const marks = (page) =>
       kinds,
       tones,
       invisible,
+      staffGrew,
       selectedGlyphs: document.querySelectorAll("[data-glyph-state='selected']").length,
       digitCollisions,
       neighbourCollisions,
@@ -216,6 +262,12 @@ const marks = (page) =>
 
 const drift = (before, after) => {
   const moved = [];
+  for (const [key, value] of Object.entries(before.bars)) {
+    const now = after.bars[key];
+    if (!now || now.w !== value.w || now.h !== value.h) {
+      moved.push({ key, before: value, after: now ?? null });
+    }
+  }
   for (const [key, value] of Object.entries(before.lines)) {
     if (after.lines[key] !== value) moved.push({ key, before: value, after: after.lines[key] });
   }
@@ -289,6 +341,16 @@ async function run(browser, viewport, mode) {
   const stillDrawn = Object.values(hidden.kinds).reduce((a, b) => a + b, 0);
   const wentDark = hidden.invisible;
 
+  const preview = measured.tones.preview ?? 0;
+  const read = measured.tones.read ?? 0;
+  /*
+   * Grey is what permanent notation looks like; the accent belongs only to
+   * the note under the reader's hand. A read screen with any accent on it is
+   * a layer that has forgotten the difference.
+   */
+  const tonesCorrect =
+    mode === "edit" ? preview >= 1 && read >= 1 : preview === 0 && read === drawn;
+
   const verdict = {
     name,
     viewport: viewport.name,
@@ -298,6 +360,7 @@ async function run(browser, viewport, mode) {
     marksDrawn: drawn,
     perTechnique: measured.kinds,
     tones: measured.tones,
+    tonesCorrect,
     layoutDrift: moved.length,
     movedExamples: moved.slice(0, 4),
     digitCollisions: measured.digitCollisions,
@@ -305,6 +368,7 @@ async function run(browser, viewport, mode) {
     slotViolations: measured.slotViolations,
     stolenTargets: measured.stolenTargets,
     bodyOverflow: measured.bodyOverflow,
+    staffGrewWithTheMarks: measured.staffGrew,
     staffScrollers: measured.staffScrollers,
     staffScrollersWithoutMarks: hidden.staffScrollers,
     staffScrollersAdded: newScrollers,
@@ -322,6 +386,8 @@ async function run(browser, viewport, mode) {
   };
   verdict.pass =
     verdict.observedTheLayer &&
+    tonesCorrect &&
+    verdict.staffGrewWithTheMarks === 0 &&
     verdict.layoutDrift === 0 &&
     verdict.digitCollisions === 0 &&
     verdict.neighbourCollisions === 0 &&
@@ -337,7 +403,7 @@ async function run(browser, viewport, mode) {
       `${JSON.stringify(measured.kinds)} tones=${JSON.stringify(measured.tones)} ` +
       `drift=${moved.length} collide=${measured.digitCollisions}/${measured.neighbourCollisions} ` +
       `slot=${measured.slotViolations} hits=${measured.stolenTargets} ` +
-      `overflow=${measured.bodyOverflow} ` +
+      `overflow=${measured.bodyOverflow} grew=${measured.staffGrew} ` +
       `scrollers=${measured.staffScrollers}(+${newScrollers}) ` +
       `errors=${errors.length} sel=${measured.selectedGlyphs} dark=${wentDark}/${drawn}`,
   );
@@ -368,3 +434,5 @@ const artefact = {
 };
 writeFileSync(`${OUT}/../../TECHNIQUE-VISUAL.json`, `${JSON.stringify(artefact, null, 2)}\n`);
 console.log(artefact.green ? "GREEN" : "NOT GREEN");
+// Non-zero on failure, so a vacuity probe can assert this run goes red.
+process.exitCode = artefact.green ? 0 : 1;

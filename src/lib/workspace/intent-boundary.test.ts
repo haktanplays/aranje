@@ -159,6 +159,39 @@ describe("40. both notation surfaces read the same tab", () => {
     expect(valueImportsOf(BAR_BLOCK)).toContain("@/lib/tab/technique-geometry");
   });
 
+  it("keeps the character mark a fallback rather than a second notation", () => {
+    /*
+     * The geometry layer draws a slur, a slide, a bend, a vibrato and a palm
+     * mute; the small character beside the number exists for the ones it
+     * could *not* draw — a hammer-on with nothing to hammer from. If the
+     * glyph were rendered unconditionally the two would say the same thing
+     * twice, and the reader would see `h` under an arc that already says it.
+     *
+     * Read off the syntax tree: the mark has to sit inside a condition that
+     * asks what was really annotated, not merely somewhere near one.
+     */
+    const source = parseFile(BAR_BLOCK);
+    let guarded = false;
+    let seen = 0;
+    const visit = (node: ts.Node): void => {
+      if (
+        ts.isJsxSelfClosingElement(node) &&
+        node.tagName.getText() === "ArticulationGlyph"
+      ) {
+        seen += 1;
+        for (let up: ts.Node | undefined = node; up; up = up.parent) {
+          if (!ts.isConditionalExpression(up)) continue;
+          if (up.condition.getText().includes("annotated")) guarded = true;
+          break;
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    expect(seen).toBe(1);
+    expect(guarded).toBe(true);
+  });
+
   it("gives neither canvas a command core of its own", () => {
     const cores = [
       "@/lib/chords/power-chord-pen",

@@ -61,6 +61,45 @@ PY
   mv "$file.probebak" "$file"
 }
 
+# The same mutation harness, run against the technique-notation acceptance
+# instead of the 2S-A tour (Technique Notation Grammar v1 §11).
+techprobe() {
+  local name="$1" file="$2"; shift 2
+  if [ -e "$file.probebak" ]; then
+    echo "ABORT $name: $file.probebak exists — another probe run is in flight"
+    exit 2
+  fi
+  cp "$file" "$file.probebak"
+  python3 - "$file" "$@" <<'PY'
+import io,sys
+path=sys.argv[1]; pairs=sys.argv[2:]
+s=io.open(path,encoding="utf-8").read()
+for i in range(0,len(pairs),2):
+    f,r=pairs[i],pairs[i+1]
+    if f not in s:
+        sys.stderr.write("ANCHOR MISSING: "+f[:70]+"\n"); sys.exit(2)
+    s=s.replace(f,r,1)
+io.open(path,"w",encoding="utf-8").write(s)
+PY
+  if [ $? -ne 0 ]; then
+    echo "SKIP  $name (anchor)"; mv "$file.probebak" "$file"
+    skipped=$((skipped+1)); return
+  fi
+  if npm run build >/dev/null 2>&1; then
+    restart
+    if node eval/intent-composer/technique-visual.mjs \
+        >/tmp/aranje-probe-run.log 2>&1; then
+      echo "GREEN $name  <-- VACUOUS"; fail=$((fail+1))
+    else
+      echo "RED   $name  ($(grep -c '^FAIL' /tmp/aranje-probe-run.log) ekran)"
+      pass=$((pass+1))
+    fi
+  else
+    echo "BROKEN $name (build failed)"; fail=$((fail+1))
+  fi
+  mv "$file.probebak" "$file"
+}
+
 echo "--- the edit grid is a finger tall (§4, §11) ---"
 
 probe "B1 the edit row shrinks back to the reading row" \
@@ -90,17 +129,43 @@ probe "B5 the digit is painted into the 44px hit target" \
   '      className="relative inline-flex items-center justify-center"' \
   '      className="relative inline-flex h-11 w-11 items-center justify-center"'
 
-echo "--- the slur arc is drawn, and touches nothing (§4) ---"
+echo "--- the technique marks are drawn, and touch nothing (TNG §2, §11) ---"
 
-probe "B6 the arc layer swallows the taps meant for the notes" \
-  src/components/workspace/LegatoArcLayer.tsx "glyph" \
+probe "B6 the technique layer swallows the taps meant for the notes" \
+  src/components/workspace/TechniqueLayer.tsx "glyph" \
   'pointer-events-none' \
   'pointer-events-auto'
 
-probe "B7 the arcs never reach the page" \
-  src/components/workspace/LegatoArcLayer.tsx "glyph" \
-  '  if (arcs.length === 0) return null;' \
-  '  if (arcs.length >= 0) return null;'
+probe "B7 the marks never reach the page" \
+  src/components/workspace/TechniqueLayer.tsx "glyph" \
+  '  if (primitives.count === 0) return null;' \
+  '  if (primitives.count >= 0) return null;'
+
+# The staff's height is `stringCount * rowHeight` and knows nothing about
+# annotations, so making the layer an in-flow element cannot grow it — that
+# mutation is equivalent, and this asks the real question instead: what if the
+# marks were allowed into the measurement at all?
+techprobe "B17 the marks are allowed to grow the staff they are drawn over" \
+  src/components/workspace/FrettedBarBlock.tsx \
+  '      <div className="relative" style={{ height: staffHeight }}>' \
+  '      <div className="relative" style={{ height: staffHeight + techniques.count * 4 }}>'
+
+techprobe "B18 a mark is drawn in the accent even when nothing is selected" \
+  src/components/workspace/TechniqueLayer.tsx \
+  '    preview && slots.some((slot) => preview(stringIndex, slot))
+      ? "preview"
+      : "read";' \
+  '    "preview";'
+
+techprobe "B19 the lane floor goes back to the string line" \
+  src/lib/tab/technique-geometry.ts \
+  '    bottom: y - Math.max(LANE_CLEAR_PX, DIGIT_HALF_PX + 1),' \
+  '    bottom: y - LANE_CLEAR_PX,'
+
+techprobe "B20 a bend may spill past its own note into the next" \
+  src/lib/tab/technique-geometry.ts \
+  '      Math.min(digits.right, ceiling - BEND_RUN_PX),' \
+  '      digits.right + BEND_RUN_PX * 3,'
 
 echo "--- the action row wraps rather than clipping (§5) ---"
 

@@ -12,7 +12,7 @@
       "viewport": "390x844",
       "mode": "read",
       "stringLines": 12,
-      "digits": 15,
+      "digits": 16,
       "marksDrawn": 7,
       "perTechnique": {
         "legato": 1,
@@ -24,6 +24,7 @@
       "tones": {
         "read": 7
       },
+      "tonesCorrect": true,
       "layoutDrift": 0,
       "movedExamples": [],
       "digitCollisions": 0,
@@ -31,6 +32,7 @@
       "slotViolations": 0,
       "stolenTargets": 0,
       "bodyOverflow": 0,
+      "staffGrewWithTheMarks": 0,
       "staffScrollers": 0,
       "staffScrollersWithoutMarks": 0,
       "staffScrollersAdded": 0,
@@ -46,7 +48,7 @@
       "viewport": "390x844",
       "mode": "tail",
       "stringLines": 12,
-      "digits": 15,
+      "digits": 16,
       "marksDrawn": 7,
       "perTechnique": {
         "legato": 1,
@@ -58,6 +60,7 @@
       "tones": {
         "read": 7
       },
+      "tonesCorrect": true,
       "layoutDrift": 0,
       "movedExamples": [],
       "digitCollisions": 0,
@@ -65,6 +68,7 @@
       "slotViolations": 0,
       "stolenTargets": 0,
       "bodyOverflow": 0,
+      "staffGrewWithTheMarks": 0,
       "staffScrollers": 0,
       "staffScrollersWithoutMarks": 0,
       "staffScrollersAdded": 0,
@@ -80,7 +84,7 @@
       "viewport": "390x844",
       "mode": "edit",
       "stringLines": 12,
-      "digits": 15,
+      "digits": 16,
       "marksDrawn": 7,
       "perTechnique": {
         "legato": 1,
@@ -93,6 +97,7 @@
         "preview": 1,
         "read": 6
       },
+      "tonesCorrect": true,
       "layoutDrift": 0,
       "movedExamples": [],
       "digitCollisions": 0,
@@ -100,6 +105,7 @@
       "slotViolations": 0,
       "stolenTargets": 0,
       "bodyOverflow": 0,
+      "staffGrewWithTheMarks": 0,
       "staffScrollers": 0,
       "staffScrollersWithoutMarks": 0,
       "staffScrollersAdded": 0,
@@ -115,7 +121,7 @@
       "viewport": "320x700",
       "mode": "read",
       "stringLines": 12,
-      "digits": 15,
+      "digits": 16,
       "marksDrawn": 7,
       "perTechnique": {
         "legato": 1,
@@ -127,6 +133,7 @@
       "tones": {
         "read": 7
       },
+      "tonesCorrect": true,
       "layoutDrift": 0,
       "movedExamples": [],
       "digitCollisions": 0,
@@ -134,6 +141,7 @@
       "slotViolations": 0,
       "stolenTargets": 0,
       "bodyOverflow": 0,
+      "staffGrewWithTheMarks": 0,
       "staffScrollers": 0,
       "staffScrollersWithoutMarks": 0,
       "staffScrollersAdded": 0,
@@ -149,7 +157,7 @@
       "viewport": "320x700",
       "mode": "tail",
       "stringLines": 12,
-      "digits": 15,
+      "digits": 16,
       "marksDrawn": 7,
       "perTechnique": {
         "legato": 1,
@@ -161,6 +169,7 @@
       "tones": {
         "read": 7
       },
+      "tonesCorrect": true,
       "layoutDrift": 0,
       "movedExamples": [],
       "digitCollisions": 0,
@@ -168,6 +177,7 @@
       "slotViolations": 0,
       "stolenTargets": 0,
       "bodyOverflow": 0,
+      "staffGrewWithTheMarks": 0,
       "staffScrollers": 0,
       "staffScrollersWithoutMarks": 0,
       "staffScrollersAdded": 0,
@@ -183,7 +193,7 @@
       "viewport": "320x700",
       "mode": "edit",
       "stringLines": 12,
-      "digits": 15,
+      "digits": 16,
       "marksDrawn": 7,
       "perTechnique": {
         "legato": 1,
@@ -196,6 +206,7 @@
         "preview": 1,
         "read": 6
       },
+      "tonesCorrect": true,
       "layoutDrift": 0,
       "movedExamples": [],
       "digitCollisions": 0,
@@ -203,6 +214,7 @@
       "slotViolations": 0,
       "stolenTargets": 0,
       "bodyOverflow": 0,
+      "staffGrewWithTheMarks": 0,
       "staffScrollers": 1,
       "staffScrollersWithoutMarks": 1,
       "staffScrollersAdded": 0,

@@ -146,3 +146,50 @@ tutuluyor ve ancak ondan sonra ikisi birden bırakılıyor. Gerçekten serileşe
 bir store'da ikinci çağıran birincinin yazdığını görüyor ve reddediliyor;
 yazmadan önce anlık görüntü alan bir store'da ikisi de boş bir gün görüp
 sağlayıcıya ulaşırdı. Probe artık kırmızı.
+
+## Technique Notation Grammar v1 — otuz bir aday, otuz kırmızı
+
+Yayın turu 19–27'yi (eski `legato-arc.ts`) yeni `technique-geometry.ts`'e
+taşıdı ve on beş yeni mutasyon ekledi: sahiplik slotunun komşularını unutması,
+şeridin tabanının tel çizgisini temizleyip rakamı temizlememesi, rakam
+genişliğinin bir slot sanılması, bend okunun miktarla büyümesi, sözleşmede
+miktar yokken `½` uydurulması, slide'ın rakamları kaydırması, yön sabitlenmesi,
+vibratonun süreyi ya da komşu rakamı yok sayması, palm mute'un her notaya `PM`
+yazması ve rayın ilk susmamış notaya girmesi, sözleşmede olmayan bir tekniğin
+mevcut bir articulation'dan taklit edilmesi, ve bir notanın hiç çizilmemiş bir
+işareti sahiplenmesi.
+
+Tarayıcı tarafında altı mutasyon `technique-visual.mjs`'i kırmızıya çeviriyor:
+katmanın dokunuşları yutması, hiç çizilmemesi, işaretlerin staff'ı büyütmesi,
+hiçbir şey seçili değilken vurgu rengiyle çizilmesi, şerit tabanının geri
+alınması, ve bend'in kendi odasından taşması.
+
+**Beşi ilk turda yeşil ya da atlanmış geldi; hiçbiri gizlenmedi.**
+
+- `25` (sessiz ölçü) eşdeğerdi: fixture'ın span'i yoktu, dolayısıyla erken
+  dönüşü kaldırmak hiçbir şeyi değiştirmiyordu. Fixture span taşıyacak şekilde
+  değiştirildi — «sessiz» cevabı, ölçünün başka ne taşıdığına bakmaksızın
+  kazanmak zorunda.
+- `27g` (slide'ın rakam sınırları yerine slot merkezlerinden türetilmesi)
+  eşdeğerdi: `SLIDE_MAX_PX` bağlayıcı olduğu için 34 px'lik slotta iki türetme
+  aynı segmenti veriyordu. Asimetrik bir çift (`12 → 5`) üzerinde bağlayıcı
+  olan iddia eklendi: bağlantı, birleştirdiği **rakamların** ortasındadır.
+- `B17`'nin ilk mutasyonu (katmanın `absolute` yerine `relative` olması)
+  **gerçekten eşdeğerdi ve bu kayda geçirilmiştir**: staff'ın yüksekliği
+  `stringCount * rowHeight`'tır ve anotasyonlardan haberi yoktur, dolayısıyla
+  akış içine giren bir çocuk onu büyütemez. Probe, asıl garantiyi soran bir
+  mutasyonla değiştirildi — ya işaretler ölçüme dahil edilseydi?
+- `B18` (her işaretin vurgu renginde çizilmesi) yeşildi çünkü kabul koşusu
+  renkleri hiç iddia etmiyordu. Ekran başına ton disiplini eklendi: okuma
+  ekranında sıfır vurgu, düzenleme ekranında en az bir vurgu ve en az bir gri.
+- `B20` (bend'in kendi odasından taşması) yeşildi çünkü kabul koşusu **sahiplik
+  slotunu ölçmüyordu** — yalnız ölçü çerçevesini soruyordu. Saf model her
+  ilkelin `owner` aralığını artık DOM'a yazıyor ve kabul koşusu çizilen kutuyu
+  o aralıkla karşılaştırıyor. Ölçüm eklenir eklenmez **gerçek bir kusur**
+  buldu: ok başı çizgiden geniş olduğu için yarım bend slotunun sağ kenarını
+  `2,6 px` aşıyordu. Baş için yer artık önceden ayrılıyor.
+
+`27m` ilk yazımında bir **sözdizimi hatası** üretiyordu (kaçırılmış `&&`), yani
+davranışı değil derlemeyi kırıyordu. Bu dosyanın kuralı gereği düzeltildi ve
+gerçek bir davranış mutasyonuna çevrildi: vibrato dalgasının `sustain`'e de
+çizilmesi.
