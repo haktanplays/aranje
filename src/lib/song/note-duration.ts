@@ -32,6 +32,7 @@
  * tick count with a remainder.
  */
 import { ticksPerSlot, slotCount } from "@/lib/music/timing";
+import { writtenSpans } from "@/lib/song/sounding";
 import {
   isMelodicSlotArray,
   songSchema,
@@ -104,7 +105,21 @@ export function slotTicksAt(song: Song, target: DurationTarget): number {
  */
 export function currentDurationTicks(song: Song, target: DurationTarget): number {
   const note = noteAt(song, target);
-  return note?.durationTicks ?? slotTicksAt(song, target);
+  if (note?.durationTicks !== undefined) return note.durationTicks;
+  /*
+   * With no stated length the note is as long as the tie run under it, and
+   * that is what the tab is drawing. A handle that started from one slot
+   * would jump the note shorter the moment it was touched (2T-B §6).
+   */
+  const section = song.sections.find((entry) => entry.id === target.sectionId);
+  if (!section) return 0;
+  const span = writtenSpans(section.bars, target.trackId).find(
+    (entry) =>
+      entry.barIndex === target.barIndex &&
+      entry.slotIndex === target.slotIndex &&
+      entry.noteIndex === target.noteIndex,
+  );
+  return span?.writtenTicks ?? slotTicksAt(song, target);
 }
 
 function noteAt(song: Song, target: DurationTarget): NoteEvent | null {

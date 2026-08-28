@@ -143,6 +143,8 @@ export type GridReading = {
   readonly stepsPerBeat: number;
   /** "Izgara: 16'lık · Her vuruşta 4 adım" */
   readonly plain: string;
+  /** "Izgara · 16'lık" — the chip's width; `plain` is what is read aloud. */
+  readonly short: string;
   /** "1/16" — never removed, never the only thing shown. */
   readonly technical: string;
 };
@@ -180,6 +182,12 @@ export function readGrid(
     name,
     stepsPerBeat,
     plain: `Izgara: ${name} · Her vuruşta ${stepsPerBeat} adım`,
+    /*
+     * The chip has room for the answer and not the explanation (2T-B §5), so
+     * the short form is what is drawn and `plain` is what a screen reader is
+     * given. Two forms of one sentence, never two different sentences.
+     */
+    short: `Izgara · ${name}`,
     technical: resolutionLabel(resolution),
   };
 }

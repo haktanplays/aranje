@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { DurationControl } from "@/components/workspace/DurationControl";
+import type { DurationGestureProps } from "@/components/workspace/FrettedBarBlock";
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { maxCapoRelativeFret } from "@/lib/music/fretboard";
 import { pitchAt } from "@/lib/song/edit";
@@ -39,6 +41,12 @@ export type FretSheetTarget = {
   currentArticulation: Articulation | null;
   /** What the validators say about that choice, if anything. */
   articulationWarning: string | null;
+  /**
+   * Which voice of the onset this is, and how long it is written for. Null
+   * when the cell holds no note — there is no length to set on nothing.
+   */
+  noteIndex: number | null;
+  writtenTicks: number | null;
 };
 
 /**
@@ -65,6 +73,7 @@ export function FretSheet({
   onNudge,
   onArticulation,
   onChord,
+  duration = null,
   error,
 }: {
   open: boolean;
@@ -84,6 +93,14 @@ export function FretSheet({
    * two different things to write, not confirming a mode.
    */
   onChord: (power: boolean) => void;
+  /**
+   * The finger on this note's length (2T-B §6), or null off a fretted track.
+   *
+   * Here rather than on the staff because this is where the selected note is:
+   * choosing a cell opens this sheet, so a grip drawn on the staff would sit
+   * behind it and never be reachable.
+   */
+  duration?: DurationGestureProps | null;
   /** Set when the last command was refused, in words the reader can act on. */
   error: string | null;
 }) {
@@ -209,6 +226,20 @@ export function FretSheet({
             );
           })}
         </div>
+
+        {duration && target.noteIndex !== null && target.writtenTicks !== null ? (
+          <DurationControl
+            writtenTicks={target.writtenTicks}
+            noteIndex={target.noteIndex}
+            previewTicks={duration.previewTicks}
+            label={duration.label}
+            active={duration.active}
+            onGrab={duration.grab}
+            onMove={duration.moveBy}
+            onRelease={duration.release}
+            onCancel={duration.cancel}
+          />
+        ) : null}
 
         {target.articulationWarning ? (
           <p role="status" className="text-bronze pt-2 text-xs">

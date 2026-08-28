@@ -95,6 +95,11 @@ export type BarMeta = {
 
 export type TabSpan = {
   stringIndex: number;
+  /**
+   * Which voice of the onset this is — a chord's notes each have their own
+   * length, so anything aiming an edit at one of them needs to say which.
+   */
+  noteIndex: number;
   /** null when no playable placement exists for the written pitch. */
   fret: number | null;
   pitch: string;
@@ -232,6 +237,7 @@ function buildFretted(
         // An onset the engine could not place keeps its pitch and loses only
         // its position; `unplaceable` reports it (spec 10.3).
         stringIndex: position?.stringIndex ?? -1,
+        noteIndex: span.noteIndex,
         fret: position?.fret ?? null,
         pitch: span.note.pitch,
         velocity: span.note.velocity,

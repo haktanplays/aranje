@@ -249,6 +249,7 @@ export function WorkspaceOverlays({
           open={noteEditing.cell !== null && !previewOpen}
           fretboard={fretboard}
           target={noteEditing.fretTarget}
+          duration={noteEditing.duration}
           error={noteEditing.editError}
           onClose={noteEditing.closeCell}
           onNudge={noteEditing.nudge}

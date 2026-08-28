@@ -126,6 +126,16 @@ export type HistoryAction =
    */
   | { readonly kind: "legato_brush" }
   /**
+   * One note's length changed with the duration handle (2T-B §6, §8).
+   *
+   * One action per gesture, however far the finger travelled: the reader made
+   * one drag, so undo gives back the length they started from. The direction
+   * is carried because "made it longer" and "made it shorter" are different
+   * sentences to be offered back, and a reader deciding whether to undo wants
+   * the one they actually did.
+   */
+  | { readonly kind: "note_duration"; readonly direction: "longer" | "shorter" }
+  /**
    * One pattern continued (2S-A §9).
    *
    * One action however many copies: the reader asked for four, so undo gives

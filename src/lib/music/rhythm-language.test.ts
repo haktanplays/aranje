@@ -176,3 +176,24 @@ describe("the grid, said as a grid (2T §3.1)", () => {
     expect(choices.map((c) => c.resolution)).toEqual([8, 16, 32]);
   });
 });
+
+/*
+ * 2T-B §5. Two forms of one sentence, never two different sentences: the chip
+ * has room for the answer and the accessible description carries the whole of
+ * it, so nothing a reader can hear is missing from what they can see.
+ */
+describe("the grid chip and what is read aloud", () => {
+  it("shortens to the name and keeps the full reading beside it", () => {
+    const reading = readGrid([4, 4], 16);
+    expect(reading.short).toBe("Izgara · 16'lık");
+    expect(reading.plain).toBe("Izgara: 16'lık · Her vuruşta 4 adım");
+  });
+
+  it("keeps the short form a prefix of the full one, for every grid", () => {
+    for (const resolution of [4, 8, 12, 16, 24, 32] as const) {
+      const reading = readGrid([4, 4], resolution);
+      expect(reading.short).toBe(`Izgara · ${reading.name}`);
+      expect(reading.plain.startsWith(`Izgara: ${reading.name}`)).toBe(true);
+    }
+  });
+});

@@ -64,7 +64,8 @@ describe("which way a slide leans", () => {
     pitch,
     startSlot,
     endSlot: startSlot,
-    writtenTicks: 96,
+    noteIndex: 0,
+  writtenTicks: 96,
     openStart: false,
     openEnd: false,
   });

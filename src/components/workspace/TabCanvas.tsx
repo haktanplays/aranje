@@ -28,6 +28,7 @@ import type { PitchedStepArming } from "@/components/workspace/PitchedMultiLane"
 import type { DrumStepArming } from "@/components/workspace/DrumMultiLane";
 import {
   FrettedBarBlock,
+  type DurationGestureProps,
   type CellSelection,
   type OnsetSelection,
 } from "@/components/workspace/FrettedBarBlock";
@@ -44,6 +45,7 @@ import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { ReturnToPlayback } from "@/components/workspace/ReturnToPlayback";
 import { SectionMarkers } from "@/components/workspace/SectionMarkers";
 import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
+import { TabGutter } from "@/components/workspace/TabGutter";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { useLongPress } from "@/lib/ui/use-long-press";
@@ -85,6 +87,7 @@ export function TabCanvas({
   pitchedEntry = null,
   editing = false,
   selectedCell = null,
+  duration = null,
   penGhost = null,
   onPenTarget,
   onCellSelect,
@@ -150,6 +153,8 @@ export function TabCanvas({
   pitchedEntry?: PitchedStepArming | null;
   editing?: boolean;
   selectedCell?: (CellSelection & { barKey: string }) | null;
+  /** The finger on the selected note's length, handed straight through. */
+  duration?: DurationGestureProps | null;
   /** The armed pen's whole shape, on the bar it belongs to (K-59 §6). */
   penGhost?: PenGhost | null;
   /** The beat under the finger while a pen is armed (K-59 §6). */
@@ -322,43 +327,7 @@ export function TabCanvas({
             onHandleUp?.();
           }}
         >
-          {/* String or lane names stay put while the bars scroll past */}
-          <div
-            className="bg-app sticky left-0 z-10 shrink-0"
-            style={{ width: GUTTER_WIDTH }}
-          >
-            <div style={{ height: BAR_HEADER_HEIGHT }} />
-            <div className="relative" style={{ height: bodyHeight }}>
-              {labels.map((label, index) => (
-                <span
-                  key={index}
-                  className="text-muted/80 absolute flex items-center justify-center font-mono text-[10px]"
-                  style={{
-                    top: index * rowHeight,
-                    height: rowHeight,
-                    width: GUTTER_WIDTH,
-                  }}
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-            <div style={{ height: RHYTHM_ROW_HEIGHT }} />
-
-            {/* Notes scrolling past the labels disappear under this strip
-                instead of being sliced in half at the gutter edge. A fret
-                glyph is about 14px wide, so the solid part alone is wider than
-                any glyph can be. */}
-            <span
-              aria-hidden
-              className="bg-app pointer-events-none absolute inset-y-0 left-full w-2.5"
-            />
-            <span
-              aria-hidden
-              className="from-app pointer-events-none absolute inset-y-0 w-4 bg-gradient-to-r to-transparent"
-              style={{ left: "calc(100% + 0.625rem)" }}
-            />
-          </div>
+          <TabGutter labels={labels} rowHeight={rowHeight} bodyHeight={bodyHeight} />
 
           {/* Positioned in tab coordinates, so it scrolls with the music and
               stays under the sticky gutter rather than over the string names. */}
@@ -397,6 +366,7 @@ export function TabCanvas({
                       onCellSelect?.({ ...cell, barKey: bar.key })
                     }
                     onsets={onsetsForBar?.(bar) ?? null}
+                    duration={selectedCell?.barKey === bar.key ? duration : null}
                     ghost={penGhost?.barKey === bar.key ? penGhost : null}
                     onPenTarget={(cell) =>
                       onPenTarget?.(cell && { ...cell, barKey: bar.key })

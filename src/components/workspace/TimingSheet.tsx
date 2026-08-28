@@ -129,8 +129,13 @@ export function TimingSheet({ timing }: { timing: TimingChangeHandle }) {
           that were on one screen with nothing saying they answered different
           questions.
         */}
-        <span data-testid="timing-draft-grid" className="text-muted block text-xs">
-          {readGrid(timing.meter, timing.resolution).plain}
+        <span
+          data-testid="timing-draft-grid"
+          className="text-muted block text-xs"
+          title={readGrid(timing.meter, timing.resolution).plain}
+          aria-label={readGrid(timing.meter, timing.resolution).plain}
+        >
+          {readGrid(timing.meter, timing.resolution).short}
         </span>
         <span data-testid="timing-draft-technical" className="text-muted block text-xs">
           {draft?.technical ?? "—"}

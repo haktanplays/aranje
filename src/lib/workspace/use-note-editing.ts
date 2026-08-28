@@ -14,6 +14,14 @@
 import { useCallback, useMemo, useState } from "react";
 
 import type { FretSheetTarget } from "@/components/workspace/FretSheet";
+import {
+  beginDurationDrag,
+  commitDurationDrag,
+  dragChanged,
+  durationDragLabel,
+  moveDurationDrag,
+  type DurationDrag,
+} from "@/lib/song/duration-drag";
 import { applyEdit, type EditCommand } from "@/lib/song/edit";
 import { applyMoveOnsetGroup, type OnsetMovement } from "@/lib/song/move";
 import {
@@ -31,6 +39,16 @@ import {
 } from "@/lib/song/selection";
 import type { TrackTimeline } from "@/lib/tab/timeline";
 import { validateArticulationContext } from "@/lib/validators";
+
+/** What a refused length is called, in the reader's words. */
+const DURATION_REFUSALS: Readonly<Record<string, string>> = {
+  target_not_found: "Bu nota artık burada değil.",
+  not_a_melodic_track: "Bu track'te nota süresi yazılamaz.",
+  not_an_onset: "Bu adımda başlayan bir nota yok.",
+  note_not_found: "Bu nota artık burada değil.",
+  duration_out_of_range: "Bu uzunluk bu bölüme sığmıyor.",
+  validation_failed: "Bu uzunluk yazılamadı.",
+};
 
 export type EditedCell = {
   barKey: string;
@@ -54,6 +72,29 @@ export type GroupSelection = {
   clear(): void;
 };
 
+/**
+ * A finger on the selected note's length (2T-B §6).
+ *
+ * Nothing is written while `drag` is live. The handle draws the preview from
+ * `previewTicks`, the reader is told `label`, and the only call that touches
+ * the song is `release`. Cancelling leaves the song byte-identical because it
+ * was never anything but a number in an object.
+ */
+export type DurationGesture = {
+  readonly drag: DurationDrag | null;
+  /** What the note would be, or null when no drag is running. */
+  readonly previewTicks: number | null;
+  /** The value and how far it moved, for the reader to see mid-gesture. */
+  readonly label: string | null;
+  /** True while the gesture owns the pointer and the page must not scroll. */
+  readonly active: boolean;
+  grab(noteIndex: number): void;
+  moveBy(deltaPx: number, slotWidthPx: number): void;
+  /** Apply, atomically, as one command and one step of history. */
+  release(): void;
+  cancel(): void;
+};
+
 export type NoteEditing = {
   readonly editing: boolean;
   readonly cell: EditedCell | null;
@@ -62,6 +103,7 @@ export type NoteEditing = {
   readonly currentArticulation: string | null;
   readonly fretTarget: FretSheetTarget | null;
   readonly group: GroupSelection;
+  readonly duration: DurationGesture;
   toggleEdit(): void;
   /** Leave edit mode without touching the cell/selection resets. */
   exitEditMode(): void;
@@ -95,6 +137,7 @@ export function useNoteEditing(options: {
 
   const [editing, setEditing] = useState(false);
   const [cell, setCell] = useState<EditedCell | null>(null);
+  const [drag, setDrag] = useState<DurationDrag | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
 
   // A group selection belongs to one track and one section at a time, so the
@@ -123,11 +166,13 @@ export function useNoteEditing(options: {
 
   const selectCell = useCallback((next: EditedCell | null) => {
     setEditError(null);
+    setDrag(null);
     setCell(next);
   }, []);
 
   const closeCell = useCallback(() => {
     setCell(null);
+    setDrag(null);
     setEditError(null);
   }, []);
 
@@ -179,8 +224,10 @@ export function useNoteEditing(options: {
       currentFret,
       currentArticulation,
       articulationWarning,
+      noteIndex: currentSpan?.noteIndex ?? null,
+      writtenTicks: currentSpan?.writtenTicks ?? null,
     };
-  }, [articulationWarning, cell, currentArticulation, currentFret, timeline]);
+  }, [articulationWarning, cell, currentArticulation, currentFret, currentSpan, timeline]);
 
   /*
    * The builder gets the whole target: every command aims at the selected
@@ -331,14 +378,76 @@ export function useNoteEditing(options: {
   const reset = useCallback(() => {
     clearGroup();
     setCell(null);
+    setDrag(null);
     setEditError(null);
   }, [clearGroup]);
 
   const stopForTrackChange = useCallback(() => {
     setEditing(false);
     setCell(null);
+    setDrag(null);
     clearGroup();
   }, [clearGroup]);
+
+  /* ------------------------------------------------ the duration gesture */
+
+  const durationTargetOf = useCallback(
+    (noteIndex: number) => {
+      if (!cell || !track) return null;
+      const [sectionId, barIndexText] = cell.barKey.split(":");
+      const barIndex = Number(barIndexText);
+      if (!sectionId || !Number.isInteger(barIndex)) return null;
+      return {
+        sectionId,
+        barIndex,
+        trackId: track.id,
+        slotIndex: cell.slotIndex,
+        noteIndex,
+      };
+    },
+    [cell, track],
+  );
+
+  const grabDuration = useCallback(
+    (noteIndex: number) => {
+      const target = durationTargetOf(noteIndex);
+      if (!target) return;
+      setEditError(null);
+      setDrag(beginDurationDrag(song, target));
+    },
+    [durationTargetOf, song],
+  );
+
+  const moveDuration = useCallback(
+    (deltaPx: number, slotWidthPx: number) => {
+      setDrag((current) =>
+        current === null ? current : moveDurationDrag(song, current, deltaPx, slotWidthPx),
+      );
+    },
+    [song],
+  );
+
+  const cancelDuration = useCallback(() => setDrag(null), []);
+
+  const releaseDuration = useCallback(() => {
+    if (drag === null) return;
+    setDrag(null);
+    /*
+     * A gesture that asked for nothing writes nothing. Committing an
+     * unchanged length would put an empty step into the history that undo
+     * would then spend itself on.
+     */
+    if (!dragChanged(drag)) return;
+    const result = commitDurationDrag(song, drag);
+    if (!result.ok) {
+      setEditError(DURATION_REFUSALS[result.reason] ?? "Bu uzunluk yazılamadı.");
+      return;
+    }
+    commit(result.song, {
+      kind: "note_duration",
+      direction: drag.ticks > drag.startTicks ? "longer" : "shorter",
+    });
+  }, [commit, drag, song]);
 
   return {
     editing,
@@ -347,6 +456,16 @@ export function useNoteEditing(options: {
     currentFret,
     currentArticulation,
     fretTarget,
+    duration: {
+      drag,
+      previewTicks: drag?.ticks ?? null,
+      label: drag === null ? null : durationDragLabel(drag),
+      active: drag !== null,
+      grab: grabDuration,
+      moveBy: moveDuration,
+      release: releaseDuration,
+      cancel: cancelDuration,
+    },
     group: {
       selection,
       moveError,

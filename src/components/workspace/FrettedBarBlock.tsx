@@ -17,6 +17,7 @@ import {
   slotsPerBeat,
 } from "@/components/workspace/geometry";
 import { RhythmTailLayer } from "@/components/workspace/RhythmTailLayer";
+import { ticksPerSlot } from "@/lib/music/timing";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import {
   buildTechniquePrimitives,
@@ -33,6 +34,24 @@ import { LONG_PRESS_MS } from "@/lib/ui/interaction";
 import { NO_PRESS, useLongPress } from "@/lib/ui/use-long-press";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
+
+/**
+ * The duration gesture, as this block needs it (2T-B §6).
+ *
+ * Spelled out here rather than imported from the controller: a bar block
+ * should not know which session owns the finger, only what a finger on a
+ * length can do. The controller's own type satisfies this structurally.
+ */
+export type DurationGestureProps = {
+  /** What the note would become while the finger is down, else null. */
+  readonly previewTicks: number | null;
+  readonly label: string | null;
+  readonly active: boolean;
+  grab(noteIndex: number): void;
+  moveBy(deltaPx: number, slotWidthPx: number): void;
+  release(): void;
+  cancel(): void;
+};
 
 /**
  * Which way a slide leans, read from the bar itself.
@@ -89,6 +108,7 @@ export function FrettedBarBlock({
   onPenTarget,
   onCellSelect,
   onsets = null,
+  duration = null,
   timeSelectionOwnsPress = false,
   onBarLongPress,
 }: {
@@ -119,6 +139,14 @@ export function FrettedBarBlock({
   onPenTarget?: (cell: CellSelection | null) => void;
   onCellSelect?: (cell: CellSelection) => void;
   onsets?: OnsetSelection | null;
+  /**
+   * The finger on the selected note's length, or null where there is none.
+   *
+   * Given only in edit mode and used only on the selected cell: a handle on
+   * every note would be a row of grips over the music, and a length is the
+   * one thing you can only mean about a note you have already chosen.
+   */
+  duration?: DurationGestureProps | null;
   /**
    * True when the time selection (spec 13.1) is listening for the same hold.
    *
@@ -168,6 +196,33 @@ export function FrettedBarBlock({
    * view switch and the section navigator with one compact row (2S-A §18).
    */
   const rowHeight = editing ? EDIT_STRING_ROW_HEIGHT : STRING_ROW_HEIGHT;
+  /*
+   * The note the duration handle belongs to: the selected cell, if a note
+   * actually starts there. A tie tail or an empty cell has no length of its
+   * own to drag, so it gets no grip (2T-B §6).
+   */
+  const heldNote =
+    editing && duration && selectedCell
+      ? (bar.spans.find(
+          (span) =>
+            !span.openStart &&
+            span.startSlot === selectedCell.slotIndex &&
+            span.stringIndex === selectedCell.stringIndex,
+        ) ?? null)
+      : null;
+  /*
+   * Where the note ends *while the finger is down*, which is the whole point
+   * of a live preview: the grip and the band follow the drag, and the song is
+   * not touched until release.
+   */
+  const heldEndSlot =
+    heldNote === null
+      ? null
+      : duration?.previewTicks != null && duration.active
+        ? heldNote.startSlot +
+          Math.max(1, Math.ceil(duration.previewTicks / ticksPerSlot(bar.resolution))) -
+          1
+        : heldNote.endSlot;
   const staffHeight = stringCount * rowHeight;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
   /*
@@ -486,6 +541,22 @@ export function FrettedBarBlock({
               }),
             )
           : null}
+
+        {/* What the length would become while the finger is on the sheet's
+            grip: drawn here, on the note itself, and never written. */}
+        {heldNote !== null && heldEndSlot !== null && duration?.active ? (
+          <span
+            aria-hidden
+            data-duration-preview
+            className="bg-accent/20 border-accent/50 pointer-events-none absolute rounded-sm border border-dashed"
+            style={{
+              left: heldNote.startSlot * SLOT_WIDTH,
+              top: rowOffset(stringCount, heldNote.stringIndex, rowHeight),
+              width: (heldEndSlot - heldNote.startSlot + 1) * SLOT_WIDTH,
+              height: rowHeight,
+            }}
+          />
+        ) : null}
       </div>
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }} className="relative">

@@ -275,6 +275,7 @@ export function WorkspaceSurface({
           pitchedEntry={pitchedEntry}
           editing={noteEditing.editing}
           selectedCell={noteEditing.cell}
+          duration={noteEditing.duration}
           /* The whole shape an armed pen would write, before it writes it. */
           penGhost={armedPenGhost({
             composer,

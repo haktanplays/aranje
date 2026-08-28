@@ -139,6 +139,10 @@ export function historyActionLabel(action: HistoryAction): string {
       return "Notaları bağlama";
     case "continue_pattern":
       return "Deseni devam ettirme";
+    case "note_duration":
+      return action.direction === "longer"
+        ? "Nota süresini uzatma"
+        : "Nota süresini kısaltma";
   }
 }
 

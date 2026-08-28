@@ -14,6 +14,7 @@ const span = (
   pitch: "E2",
   startSlot,
   endSlot: startSlot,
+  noteIndex: 0,
   writtenTicks,
   openStart: false,
   openEnd: false,
