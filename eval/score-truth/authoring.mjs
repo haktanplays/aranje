@@ -114,15 +114,91 @@ async function toggleLetRing(page) {
 }
 
 /**
+ * Lengthen a note with the sheet's own step button.
+ *
+ * Some lengths are not note values at all — a string that rings from the
+ * second sixteenth to the bar line is 720 ticks, which no chip offers and no
+ * notation names. The reader reaches those the way the sheet offers them: one
+ * grid step at a time, watching the number.
+ */
+async function stepLonger(page, steps) {
+  const longer = page.locator('[data-testid="duration-longer"]');
+  await longer.scrollIntoViewIfNeeded();
+  for (let index = 0; index < steps; index += 1) {
+    if (await longer.isDisabled()) throw new Error("cannot lengthen any further");
+    /*
+     * Ten taps a second. Before 2T-C §11 fixed the button, half of these
+     * were dropped and the passage came out at half its written length; the
+     * pace is left this fast on purpose, so a return of that fault fails
+     * here rather than in somebody's hands.
+     */
+    await longer.click();
+    await page.waitForTimeout(100);
+  }
+}
+
+/**
+ * Change one bar's rhythm grid through "Ölçü ve ritim".
+ *
+ * The grid is a reader's choice, not a property of the empty project, so a
+ * passage written in thirty-seconds has to start by asking for them. Bars are
+ * selected outside edit mode — that is where a bar is a button — so this
+ * leaves edit mode, chooses, applies, and goes back in.
+ */
+async function setBarGrid(page, barNumber, resolution) {
+  /* Bars are chosen in Düzen, and a whole bar is a press and hold — which is
+     what the bar's own label tells the reader to do. The view switch is not
+     offered while a staff is being edited, so this leaves edit mode first,
+     exactly as a reader would. */
+  await page.getByRole("button", { name: "Bitti", exact: true }).first().click();
+  await page.waitForTimeout(300);
+  await page.locator('[data-testid="view-arrange"]').click();
+  await page.waitForSelector("[data-arrangement-scroller]");
+  await page.waitForTimeout(250);
+
+  const bar = page.locator(`[aria-label^="${barNumber}. ölçü"]`).first();
+  await bar.scrollIntoViewIfNeeded();
+  const box = await bar.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(700);
+  await page.mouse.up();
+  await page.waitForSelector("[data-bar-action-bar]", { timeout: 5000 });
+
+  await page.getByRole("button", { name: "Daha fazla", exact: true }).first().click();
+  await page.waitForTimeout(250);
+  await page.locator('[data-testid="bar-more-timing"]').click();
+  await page.waitForTimeout(250);
+  await page
+    .locator('[data-testid="timing-grid"]')
+    .selectOption(String(resolution));
+  await page.waitForTimeout(150);
+  await page.locator('[data-testid="timing-apply"]').click();
+  await page.waitForTimeout(500);
+  await page.locator("[aria-label='Ölçü seçimini iptal et']").first().click();
+  await page.waitForTimeout(250);
+
+  /* Back to the tab, and back into edit mode, where notes are written. */
+  await page.locator('[data-testid="view-tab"]').click();
+  await page.waitForSelector("[data-bar-key]");
+  await page.getByRole("button", { name: "Düzenle", exact: true }).first().click();
+  await page.waitForTimeout(350);
+}
+
+/**
  * Write one note: open its cell, pick its length, type its fret, and add any
  * articulation. Exactly the sequence a person performs.
  */
-async function note(page, { bar = 1, slot, string, fret, ticks, articulation, letRing }) {
+async function note(
+  page,
+  { bar = 1, slot, string, fret, ticks, articulation, letRing, longerBy },
+) {
   await openCell(page, bar, slot, string);
   if (ticks !== undefined) await chooseRhythm(page, ticks);
   await writeFret(page, fret);
   if (articulation !== undefined) await chooseArticulation(page, articulation);
   if (letRing === true) await toggleLetRing(page);
+  if (longerBy !== undefined) await stepLonger(page, longerBy);
   await closeSheet(page);
 }
 
@@ -170,6 +246,85 @@ async function writeFixtureA(page) {
   }
 }
 
+/**
+ * Fixture B — pedal string under fast legato.
+ *
+ * The bar starts on the ordinary sixteenth grid and the reader asks for
+ * thirty-seconds, because that is a choice somebody makes rather than a
+ * property of an empty project. Then an open low E left ringing under a
+ * 9-10-9 cell, a sixteenth beside those thirty-seconds, a string change and
+ * a vibrato to finish.
+ */
+async function writeFixtureB(page) {
+  await setBarGrid(page, 1, 32);
+
+  /* Struck once and left to ring through everything that follows. */
+  await note(page, { slot: 0, string: 0, fret: 0, ticks: 768, letRing: true });
+
+  /* The legato cell, in thirty-seconds, on the third string. */
+  await note(page, { slot: 8, string: 2, fret: 9, ticks: 24 });
+  await note(page, { slot: 9, string: 2, fret: 10, ticks: 24, articulation: "Hammer-on" });
+  await note(page, { slot: 10, string: 2, fret: 9, ticks: 24, articulation: "Pull-off" });
+
+  /* A sixteenth in the same beat as those thirty-seconds. */
+  await note(page, { slot: 12, string: 2, fret: 7, ticks: 48 });
+
+  /* String change, and the phrase ends on a vibrato. */
+  await note(page, {
+    slot: 20,
+    string: 3,
+    fret: 9,
+    ticks: 288,
+    articulation: "Vibrato",
+  });
+}
+
+/**
+ * Fixture C — six-string ringing arpeggio with a partial re-attack.
+ *
+ * Every string is left ringing and every one has its own length, so most of
+ * these lengths are not note values at all: a string struck on the second
+ * sixteenth and ringing to the bar line is 720 ticks, which no chip offers.
+ * The reader reaches them with the sheet's step button, one grid step at a
+ * time — which is exactly why that button exists.
+ */
+async function writeFixtureC(page) {
+  const voicing = [
+    { string: 0, fret: 0 },
+    { string: 1, fret: 2 },
+    { string: 2, fret: 2 },
+    { string: 3, fret: 0 },
+    { string: 4, fret: 0 },
+    { string: 5, fret: 0 },
+  ];
+  const RESTRIKE_SLOT = 10;
+
+  for (const [index, voice] of voicing.entries()) {
+    const endSlot = voice.string === 4 || voice.string === 5 ? RESTRIKE_SLOT : 16;
+    /* One sixteenth is already written by the chip; the rest are steps. */
+    await note(page, {
+      slot: index,
+      string: voice.string,
+      fret: voice.fret,
+      ticks: 48,
+      letRing: true,
+      longerBy: endSlot - index - 1,
+    });
+  }
+
+  /* Two of the six taken again while the other four keep sounding. */
+  for (const string of [4, 5]) {
+    await note(page, {
+      slot: RESTRIKE_SLOT,
+      string,
+      fret: 0,
+      ticks: 48,
+      letRing: true,
+      longerBy: 16 - RESTRIKE_SLOT - 1,
+    });
+  }
+}
+
 /* -------------------------------------------------------------- the runner */
 
 const FIXTURES = [
@@ -185,6 +340,31 @@ const FIXTURES = [
       "senkop",
       "kesintili palm-mute",
       "kısa HO hareketi",
+    ],
+  },
+  {
+    name: "B",
+    seed: () => emptySong(16, 16, 96),
+    write: writeFixtureB,
+    covers: [
+      "pedal tel (çınlat)",
+      "1/32 ızgara",
+      "hammer-on + pull-off hücresi",
+      "aynı vuruşta 1/16 ve 1/32",
+      "tel değişimi",
+      "vibrato",
+    ],
+  },
+  {
+    name: "C",
+    seed: () => emptySong(16, 16, 84),
+    write: writeFixtureC,
+    covers: [
+      "altı telli arpej",
+      "her tel kendi süresi",
+      "çınlat",
+      "kısmi yeniden vuruş",
+      "üst üste binen sesler",
     ],
   },
 ];

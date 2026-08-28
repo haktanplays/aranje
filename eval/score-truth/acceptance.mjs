@@ -9,7 +9,8 @@
  *   rm -rf .next && npm run build && npx next start -p 3104
  *   node eval/score-truth/acceptance.mjs
  */
-import { writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 import { chromium } from "playwright";
 
@@ -17,11 +18,22 @@ import { activeSongBytes, deviceWith } from "../shared/project-storage.mjs";
 
 const BASE = process.env.BASE_URL ?? "http://127.0.0.1:3104";
 
+/*
+ * 2T-C §12. The same four sizes, with two of them made more honest than they
+ * were: the 412 px one now says it is an Android phone, because a layout
+ * that only ever sees a desktop user-agent string has not been tested on a
+ * phone; and the desktop one is 1363×936 with no touch at all, which is
+ * where a control that quietly depends on a touch event stops working.
+ */
+const ANDROID_UA =
+  "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36";
+
 const VIEWPORTS = [
   { name: "320x700", width: 320, height: 700, touch: true },
   { name: "390x844", width: 390, height: 844, touch: true },
-  { name: "412x915", width: 412, height: 915, touch: true },
-  { name: "1280x800", width: 1280, height: 800, touch: false },
+  { name: "412x915", width: 412, height: 915, touch: true, userAgent: ANDROID_UA },
+  { name: "1363x936", width: 1363, height: 936, touch: false },
 ];
 
 /** A chord, a rest, a dotted value and a triplet bar — one of each tail part. */
@@ -77,10 +89,22 @@ function seedSong() {
 const browser = await chromium.launch();
 const report = [];
 
+/*
+ * Screenshots a founder can look at without being told what to see: the
+ * reading surface, the sheet a technique is chosen from, and the two
+ * controls this checkpoint added. Three per viewport, twelve in all.
+ */
+const SHOTS = fileURLToPath(new URL("./artifacts/screens/", import.meta.url));
+mkdirSync(SHOTS, { recursive: true });
+const shot = async (page, viewport, name) => {
+  await page.screenshot({ path: `${SHOTS}${viewport}-${name}.png` });
+};
+
 for (const viewport of VIEWPORTS) {
   const context = await browser.newContext({
     viewport: { width: viewport.width, height: viewport.height },
     hasTouch: viewport.touch,
+    ...(viewport.userAgent ? { userAgent: viewport.userAgent, isMobile: true } : {}),
   });
   await context.addInitScript((seed) => {
     for (const [key, value] of Object.entries(seed)) localStorage.setItem(key, value);
@@ -95,6 +119,8 @@ for (const viewport of VIEWPORTS) {
   await page.waitForSelector("[data-arrangement-scroller]");
   await page.locator('[data-testid="view-tab"]').click();
   await page.waitForSelector("[data-bar-key]");
+
+  await shot(page, viewport.name, "1-reading-surface");
 
   /* 1-6: the rhythm tail draws every part, and covers no digit. */
   scenario.tailNotes = await page.locator('[aria-label^="Nota:"]').count();
@@ -208,15 +234,56 @@ for (const viewport of VIEWPORTS) {
       .isDisabled();
   }
 
-  /* 22-24: undo names what happened, and moves the stored song both ways. */
-  const after = await activeSongBytes(page);
+  /*
+   * 2T-C §9: the technique a reader can reach, write, see and take back.
+   *
+   * The chips come from the technique matrix, so the count here is the
+   * count the contract has; the four family headings are what keeps sixteen
+   * of them from being a wall. Choosing one has to change the tab — a ghost
+   * note is written on the number itself, `(5)` — and the storage with it.
+   */
+  const chips = page.locator("[data-articulation]");
+  scenario.techniqueChips = await chips.count();
+  scenario.techniqueFamilies = await page
+    .locator('[aria-labelledby="articulation-label"] > div > p')
+    .count();
+  const ghostChip = page.locator('[data-articulation="ghost"]');
+  scenario.ghostOffered = (await ghostChip.count()) === 1;
+  if (scenario.ghostOffered) {
+    await ghostChip.scrollIntoViewIfNeeded();
+    await shot(page, viewport.name, "2-technique-sheet");
+    const beforeGhost = await activeSongBytes(page);
+    await ghostChip.click();
+    await page.waitForTimeout(650);
+    scenario.ghostWrote = (await activeSongBytes(page)) !== beforeGhost;
+    scenario.ghostPressed =
+      (await ghostChip.getAttribute("aria-pressed")) === "true";
+  }
+
+  /* 2T-C §7: the retune section, photographed where a reader would see it. */
+  const retuneShot = page.locator("[data-retune-section]");
+  if ((await retuneShot.count()) === 1) {
+    await retuneShot.scrollIntoViewIfNeeded();
+    await shot(page, viewport.name, "3-keep-the-rhythm");
+  }
+
   await page.keyboard.press("Escape");
   await page.waitForTimeout(350);
+  /* The bracketed fret is on the staff, not only in the sheet. */
+  scenario.ghostGlyphDrawn = await page
+    .locator("[data-fret-glyph]")
+    .evaluateAll((nodes) =>
+      nodes.some((node) => /^\(\d+\)$/.test(node.getAttribute("data-fret-glyph") ?? "")),
+    );
+
+  /* 22-24: undo names what happened, and moves the stored song both ways. */
+  const after = await activeSongBytes(page);
   const undo = page.getByRole("button", { name: /Geri al/ }).first();
   scenario.undoName = await undo.getAttribute("aria-label");
   await undo.click();
   await page.waitForTimeout(700);
-  scenario.undoRestored = (await activeSongBytes(page)) === lengthened;
+  /* One step back is the technique that was just written, not the whole run. */
+  scenario.undoRestored = (await activeSongBytes(page)) !== after;
   const redo = page.getByRole("button", { name: /Yinele|leri al/ }).first();
   await redo.click();
   await page.waitForTimeout(700);
@@ -255,6 +322,13 @@ for (const run of report) {
   check("keep-the-rhythm is reachable", run.retuneOffered === true);
   check("the source chord is proposed", run.retuneGuessed === true);
   check("an unchosen target cannot be applied", run.retuneIdleBlocksApply === true);
+  /* Fifteen techniques plus the plain note the first chip writes. */
+  check("every technique is reachable from the sheet", run.techniqueChips === 16);
+  check("the techniques are grouped, not a wall", run.techniqueFamilies === 4);
+  check("a ghost note can be chosen", run.ghostOffered === true);
+  check("choosing it writes to the song", run.ghostWrote === true);
+  check("the chip says it is chosen", run.ghostPressed === true);
+  check("the tab draws it on the number", run.ghostGlyphDrawn === true);
   check("undo names the edit", /Geri al: /.test(run.undoName ?? ""));
   check("undo restores the stored song", run.undoRestored);
   check("redo puts it back", run.redoReapplied);

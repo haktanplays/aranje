@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# 2T-B §14. Twenty-five mutations, each of which must turn one named test red.
+# 2T-B §14 and 2T-C §13. Forty-six mutations, each of which must turn one
+# named test red.
 #
 # A green suite says nothing on its own: it is equally consistent with the code
 # being right and with the tests never having looked. Each probe below breaks
@@ -189,6 +190,118 @@ probe P26 "$TIMELINE" \
   'sliceSpan(flatBars, span.startTicks, span.soundingTicks)' \
   'sliceSpan(flatBars, span.startTicks, span.writtenTicks)' \
   src/lib/tab/timeline.test.ts "stops a long note where its own string is taken again"
+
+# ==========================================================================
+# 2T-C. Eighteen more, for the surfaces this checkpoint added.
+# ==========================================================================
+
+COLLIDE=src/lib/song/string-collision.ts
+EDIT=src/lib/song/edit.ts
+COUNT=src/lib/music/counting-language.ts
+CHOICE=src/lib/song/rhythm-choice.ts
+PRINT=src/lib/song/fingerprint.ts
+PLAY=src/lib/song/playability.ts
+GUESS=src/lib/song/harmony-guess.ts
+PLAN=src/lib/audio/expression-plan.ts
+CHAIN=src/lib/audio/legato-chain.ts
+GLYPH=src/lib/tab/glyph-model.ts
+STRUM=src/lib/tab/strum-mark.ts
+
+# ---- one string, one note at a time ---------------------------------------
+probe P27 "$COLLIDE" \
+  '  const had = new Set(stringCollisions(before, trackId).map(collisionKey));' \
+  '  const had = new Set<string>();' \
+  src/lib/song/string-collision.test.ts "says nothing about a collision the song already had"
+
+SHAPE=src/lib/song/chord-shape.ts
+probe P28 "$SHAPE" \
+  '    if (taken !== undefined) {' '    if (false) {' \
+  src/lib/song/chord-shape.test.ts "refuses whole rather than writing a chord no hand can play"
+
+# ---- meter, tempo and grid are three questions ----------------------------
+probe P29 "$COUNT" \
+  '    text: `Izgara: ${name}`,' '    text: `Izgara: ${reading.short}`,' \
+  src/lib/music/counting-language.test.ts "names the writing grid and how many steps a beat has"
+
+probe P30 "$CHOICE" \
+  '  if (value.modifier === "triplet") return isTripletGrid(resolution as never);' \
+  '  if (value.modifier === "triplet") return true;' \
+  src/lib/song/rhythm-choice.test.ts "keeps triplet values off a straight grid"
+
+# ---- the fingerprint is the comparison ------------------------------------
+probe P31 "$PRINT" \
+  '        note.letRing === true ? "L" : "",' '        "",' \
+  src/lib/song/fingerprint.test.ts "hears let-ring being taken off"
+
+probe P32 "$PRINT" \
+  '        note.strum ?? "",' '        "",' \
+  src/lib/song/fingerprint.test.ts "hears a strum direction that was added"
+
+# ---- what a hand can reach ------------------------------------------------
+probe P33 "$PLAY" \
+  '        if (span <= COMFORTABLE_SPAN) return;' '        if (span <= 99) return;' \
+  src/lib/song/playability.test.ts "calls a wide fret span hard rather than impossible"
+
+probe P34 "$PLAY" \
+  '          .filter((fret): fret is number => fret !== undefined && fret > 0);' \
+  '          .filter((fret): fret is number => fret !== undefined);' \
+  src/lib/song/playability.test.ts "does not count open strings into the stretch"
+
+# ---- which chord the passage is already over ------------------------------
+probe P35 "$GUESS" \
+  '        (explained / total - degrees.size * TONE_COST) * 10_000 +' \
+  '        (explained / total) * 10_000 +' \
+  src/lib/song/harmony-guess.test.ts "reads a passing note as decoration rather than as the chord"
+
+# ---- the five techniques, in the plan -------------------------------------
+probe P36 "$PLAN" \
+  '      durationSeconds: held,' '      durationSeconds,' \
+  src/lib/song/technique-matrix.test.ts "a ghost note is quieter than the note it shadows, and stops earlier"
+
+probe P37 "$PLAN" \
+  '      filterPreset: "dead",' '      filterPreset: "palm_mute",' \
+  src/lib/song/technique-matrix.test.ts "a dead note is a short damped knock, not a quiet note"
+
+probe P38 "$PLAN" \
+  '        { timeSeconds: 0, value: 0 },' \
+  '        { timeSeconds: 0, value: round(gain) },' \
+  src/lib/song/technique-matrix.test.ts "a tapped note arrives instead of landing"
+
+probe P39 "$PLAN" \
+  '          cents: expressionPresets.harmonic.naturalCents,' '          cents: 0,' \
+  src/lib/song/technique-matrix.test.ts "a natural harmonic sounds the node, an octave above the stopped note"
+
+probe P40 "$PLAN" \
+  '          cents: expressionPresets.harmonic.pinchCents,' '          cents: 0,' \
+  src/lib/song/technique-matrix.test.ts "a pinch harmonic squeals up a moment after the pick"
+
+# ---- the hand crossing the strings ----------------------------------------
+probe P41 "$PLAN" \
+  '  if (direction === "up") order.reverse();' '  if (false) order.reverse();' \
+  src/lib/song/technique-matrix.test.ts "crosses back the other way going up"
+
+probe P42 "$PLAN" \
+  '  const step = Math.min(perStringSeconds, room / gaps);' \
+  '  const step = perStringSeconds;' \
+  src/lib/song/technique-matrix.test.ts "fits the crossing inside a chord too short to hold all of it"
+
+probe P43 "$STRUM" \
+  '    if (group.length < 2) continue;' '    if (false) continue;' \
+  src/lib/tab/strum-mark.test.ts "draws nothing for a single note, because one string is not a crossing"
+
+# ---- the finger landing ---------------------------------------------------
+probe P44 "$CHAIN" \
+  '        : decision.transition === "hammer_on"' '        : false' \
+  src/lib/audio/expression-plan.test.ts "gives each finger landing its own short transient, and a slide none"
+
+# ---- the number the tab prints --------------------------------------------
+probe P45 "$GLYPH" \
+  '  if (articulation === "ghost") return `(${fret})`;' '  if (false) return "";' \
+  src/components/workspace/ArticulationGlyph.test.ts "leaves the three written on the number without a second mark"
+
+probe P46 "$GLYPH" \
+  '  if (articulation === "dead") return "x";' '  if (false) return "x";' \
+  src/components/workspace/ArticulationGlyph.test.ts "draws something for every technique the matrix claims"
 
 printf '\n'
 for line in "${results[@]}"; do printf '%s\n' "$line"; done

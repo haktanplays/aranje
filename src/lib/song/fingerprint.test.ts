@@ -78,6 +78,16 @@ describe("musicalFingerprint", () => {
     ).not.toBe(base());
   });
 
+  /* 2T-C §9. A strum is a performance mark, and two songs that differ only
+     in which way the hand went are not the same music. */
+  it("hears a strum direction that was added", () => {
+    expect(
+      changed((slots) => {
+        (slots[0] as { notes: { strum?: "down" | "up" }[] }).notes[0]!.strum = "down";
+      }),
+    ).not.toBe(base());
+  });
+
   it("hears a different articulation", () => {
     expect(
       changed((slots) => {

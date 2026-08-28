@@ -132,12 +132,18 @@ export function fixtureB(): Song {
   /* Struck once, ringing through everything that follows. */
   bar[0] = {
     notes: [
+      /*
+       * No accent on it (2T-C §3). The pedal used to be written a little
+       * louder than the rest, and velocity is the one thing on this note
+       * that no control in the app can write: a reference passage nobody can
+       * type is a reference to nothing. What makes the pedal a pedal is that
+       * it is struck once and left ringing, which is written right here.
+       */
       {
         pitch: "E2",
         position: { string: 0, fret: 0 },
         durationTicks: 768,
         letRing: true,
-        velocity: 104,
       },
     ],
   };

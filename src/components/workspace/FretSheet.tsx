@@ -300,6 +300,7 @@ export function FretSheet({
             onMove={duration.moveBy}
             onRelease={duration.release}
             onCancel={duration.cancel}
+            onStep={duration.step}
           />
       ) : null}
 

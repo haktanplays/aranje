@@ -3797,6 +3797,71 @@ kalın tel `37 px`'e kırpılıyordu. Çip artık kapıların satırını payla�
   karar vermez; yalnız okurun söylediğini tam, atomik ve geri alınabilir bir
   komuta çevirir.
 
+### §13.29 Score Truth v2 kullanıcı yüzeyi ve gitar performansı (Faz 2T)
+
+Faz 2T'nin ölçüsü tek cümledir: **çekirdekte var fakat kullanıcı yüzeyinden
+ulaşılamayan iş tamamlanmış sayılmaz.** Bu bölüm sözleşmenin nereye
+taşındığını ve neyin ölçüldüğünü kaydeder; onay kaydı değildir.
+
+#### §13.29.1 Song Contract v4
+
+`SONG_VERSION = 4`, `READABLE_SONG_VERSIONS = [2, 3, 4]`. v4 tek bir şey
+ekler: artikülasyon sözlüğü on birden **on altıya** çıktı — `ghost`, `dead`,
+`tapping`, `natural_harmonic`, `pinch_harmonic`. Hiçbiri varsayılan değildir;
+yokluğu, her zaman olduğu gibi, sıradan çalınan bir notadır. Bu yüzden v2 ve
+v3 şarkılar tek bayt değişmeden okunur ve migration hiçbir notaya sahip
+olmadığı bir artikülasyon vermez.
+
+`letRing` ve `strum` bu listeye **girmez**. İkisi de atağın nasıl yapıldığını
+değil, etrafında ne olduğunu söyler ve kendi alanlarında yaşarlar.
+
+#### §13.29.2 Teknik matrisi — beş halka
+
+`lib/song/technique-matrix.ts` her tekniği dört ailede (Bağlantı · Perde
+hareketi · Vuruş · Tını ve süre) ve beş halkasıyla yazar: okur seçebilir,
+tab çizer, şema saklar, undo geri alır, **playback ölçülebilir biçimde
+ayrıştırır**. Yalnız glyph çizen bir özellik desteklenmiş sayılmaz; matrisin
+yanındaki test her satır için bu zinciri yürür.
+
+Notasyon tablatürün kendi geleneğidir: hayalet nota `(5)`, ölü nota `x`,
+doğal armonik `<5>` — numaranın *üzerine*; tapping `T`, pinch armonik `PH`,
+staccato `.`, uzatma `–` — numaranın *yanına*. Ekran okuyucu bu üçünün adını
+ayrıca söyler.
+
+Bir **strum** yazılı tek onset'tir ve el telleri geçerken çalınır: aşağı
+vuruş en kalın telden, yukarı vuruş ince telden başlar, telden tele
+`perStringSeconds` gecikmeyle, akorun süresine sığmayan yayılım
+sıkıştırılarak. Skorda hiçbir şey değişmez — yayılım notanın yanında
+taşınır, `timeTicks`'e katılmaz.
+
+#### §13.29.3 Parmağın indiği an (§10 ölçümü)
+
+Hammer-on ile pull-off arasındaki fark `6ded910` üzerinde ölçüldü ve
+yetersiz bulundu: `1,72 dB` seviye farkı ve hammer-on tarafında **hiç
+transient yok**. Pull-off'un 2F.1'den beri taşıdığı kısa tıkırtının eşi
+hammer-on'a da verildi — daha kısık (`0.11`/`0.16`) ve daha mat
+(`2000`/`4500 Hz`), çünkü parmak ucunun teli perdeye bastırması tırnağın
+teli yandan koparmasıyla aynı ses değildir. İki hareketin telin enerjisine
+yaptığı şey artık zıt yönde: `levelAfter` `0.92` / `0.72`.
+
+Kabul eşikleri yamadan **önce** yazıldı ve işitmeye dayandırıldı
+(`eval/guitar-performance/THRESHOLDS.md`); ölçüm, WAV'lar ve `6ded910`
+baseline'ları aynı dizinde durur.
+
+#### §13.29.4 Referans pasajları gerçek UI'dan yazılır
+
+Üç referans pasajı (A senkoplu palm-mute double-stop, B pedal tel altında
+hızlı legato, C altı telli çınlayan arpej) **boş bir projeden başlayarak**,
+yalnız parmakla dokunulabilecek kontrollerle yazılabilir ve yazıldıklarında
+kanonik repertuvarla müzikal parmak izi düzeyinde birebir aynıdır. Internal
+command, debug handle, store injection ve fixture kısayolu bu ölçümde
+yasaktır.
+
+Bunun sonucu olarak referans pasajları yalnız uygulamanın yazabildiği
+şeyleri içerir: nota velocity'si hiçbir kontrolden yazılamadığı için
+fixture'lardan çıkarıldı.
+
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)

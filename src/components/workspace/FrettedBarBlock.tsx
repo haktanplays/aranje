@@ -52,6 +52,8 @@ export type DurationGestureProps = {
   moveBy(deltaPx: number, slotWidthPx: number): void;
   release(): void;
   cancel(): void;
+  /** One whole step, from the buttons rather than from a drag. */
+  step(noteIndex: number, steps: number): void;
 };
 
 /**

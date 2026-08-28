@@ -150,6 +150,8 @@ export type DurationGesture = {
   /** Apply, atomically, as one command and one step of history. */
   release(): void;
   cancel(): void;
+  /** One whole step from the buttons, without going through a drag. */
+  step(noteIndex: number, steps: number): void;
 };
 
 /** What the reader can ask of the chord under the selection (2T-B §7). */
@@ -786,6 +788,44 @@ export function useNoteEditing(options: {
 
   const cancelDuration = useCallback(() => setDrag(null), []);
 
+  /**
+   * One step longer or shorter, from the buttons beside the grip (2T-C §11).
+   *
+   * The buttons used to perform the drag: grab, move one step, release, all
+   * in one event handler. Two things were wrong with that, and both were
+   * measured through the real UI rather than reasoned about — a reader
+   * tapping `+` five times got three steps, and the first tap did nothing at
+   * all. `release` read the drag from its own closure, which is last
+   * render's value: the first tap released a drag that did not exist yet,
+   * and every tap after it committed the *previous* tap's length.
+   *
+   * A tap is not a drag with the mouse held still. It is one command, so it
+   * is written as one: read the note as it is now, move it a step, commit.
+   * Nothing is stored between the taps, so nothing can be stale.
+   */
+  const stepDuration = useCallback(
+    (noteIndex: number, steps: number) => {
+      const target = durationTargetOf(noteIndex);
+      if (!target) return;
+      setEditError(null);
+      const begun = beginDurationDrag(song, target);
+      if (begun === null) return;
+      /* One pixel to one step: the pure core only reads the ratio. */
+      const moved = moveDurationDrag(song, begun, steps, 1);
+      if (!dragChanged(moved)) return;
+      const result = commitDurationDrag(song, moved);
+      if (!result.ok) {
+        setEditError(DURATION_REFUSALS[result.reason] ?? "Bu uzunluk yazılamadı.");
+        return;
+      }
+      commit(result.song, {
+        kind: "note_duration",
+        direction: steps > 0 ? "longer" : "shorter",
+      });
+    },
+    [commit, durationTargetOf, song],
+  );
+
   const releaseDuration = useCallback(() => {
     if (drag === null) return;
     setDrag(null);
@@ -843,6 +883,7 @@ export function useNoteEditing(options: {
       moveBy: moveDuration,
       release: releaseDuration,
       cancel: cancelDuration,
+      step: stepDuration,
     },
     group: {
       selection,

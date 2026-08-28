@@ -1,6 +1,6 @@
 {
-  "base": "http://127.0.0.1:3110",
-  "ranAt": "2026-08-28T19:15:27.350Z",
+  "base": "http://127.0.0.1:3104",
+  "ranAt": "2026-08-28T20:47:19.355Z",
   "results": [
     {
       "fixture": "A",
@@ -17,7 +17,7 @@
       "changed": true,
       "survivedReload": true,
       "song": {
-        "version": 3,
+        "version": 4,
         "title": "Boş",
         "bpm": 132,
         "key": "E minor",
@@ -240,6 +240,396 @@
                         }
                       ]
                     },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "reloadDiff": null,
+      "pageErrors": []
+    },
+    {
+      "fixture": "B",
+      "covers": [
+        "pedal tel (çınlat)",
+        "1/32 ızgara",
+        "hammer-on + pull-off hücresi",
+        "aynı vuruşta 1/16 ve 1/32",
+        "tel değişimi",
+        "vibrato"
+      ],
+      "failure": null,
+      "startedEmpty": true,
+      "changed": true,
+      "survivedReload": true,
+      "song": {
+        "version": 4,
+        "title": "Boş",
+        "bpm": 96,
+        "key": "E minor",
+        "tracks": [
+          {
+            "id": "gtr",
+            "name": "Gitar",
+            "instrumentId": "electric_guitar",
+            "presetId": "clean",
+            "volumeDb": -6,
+            "fretboard": {
+              "tuning": [
+                "E2",
+                "A2",
+                "D3",
+                "G3",
+                "B3",
+                "E4"
+              ],
+              "capo": 0
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "s1",
+            "name": "Ana",
+            "status": "fixed",
+            "bars": [
+              {
+                "timeSignature": [
+                  4,
+                  4
+                ],
+                "resolution": 32,
+                "slots": {
+                  "gtr": [
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 768,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "B3",
+                          "position": {
+                            "string": 2,
+                            "fret": 9
+                          },
+                          "durationTicks": 24
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "C4",
+                          "articulation": "hammer_on",
+                          "position": {
+                            "string": 2,
+                            "fret": 10
+                          },
+                          "durationTicks": 24
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "B3",
+                          "articulation": "pull_off",
+                          "position": {
+                            "string": 2,
+                            "fret": 9
+                          },
+                          "durationTicks": 24
+                        }
+                      ]
+                    },
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "A3",
+                          "position": {
+                            "string": 2,
+                            "fret": 7
+                          },
+                          "durationTicks": 48
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E4",
+                          "articulation": "vibrato",
+                          "position": {
+                            "string": 3,
+                            "fret": 9
+                          },
+                          "durationTicks": 288
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                  ]
+                }
+              },
+              {
+                "timeSignature": [
+                  4,
+                  4
+                ],
+                "resolution": 16,
+                "slots": {
+                  "gtr": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "reloadDiff": null,
+      "pageErrors": []
+    },
+    {
+      "fixture": "C",
+      "covers": [
+        "altı telli arpej",
+        "her tel kendi süresi",
+        "çınlat",
+        "kısmi yeniden vuruş",
+        "üst üste binen sesler"
+      ],
+      "failure": null,
+      "startedEmpty": true,
+      "changed": true,
+      "survivedReload": true,
+      "song": {
+        "version": 4,
+        "title": "Boş",
+        "bpm": 84,
+        "key": "E minor",
+        "tracks": [
+          {
+            "id": "gtr",
+            "name": "Gitar",
+            "instrumentId": "electric_guitar",
+            "presetId": "clean",
+            "volumeDb": -6,
+            "fretboard": {
+              "tuning": [
+                "E2",
+                "A2",
+                "D3",
+                "G3",
+                "B3",
+                "E4"
+              ],
+              "capo": 0
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "s1",
+            "name": "Ana",
+            "status": "fixed",
+            "bars": [
+              {
+                "timeSignature": [
+                  4,
+                  4
+                ],
+                "resolution": 16,
+                "slots": {
+                  "gtr": [
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 768,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "B2",
+                          "position": {
+                            "string": 1,
+                            "fret": 2
+                          },
+                          "durationTicks": 720,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E3",
+                          "position": {
+                            "string": 2,
+                            "fret": 2
+                          },
+                          "durationTicks": 672,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "G3",
+                          "position": {
+                            "string": 3,
+                            "fret": 0
+                          },
+                          "durationTicks": 624,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "B3",
+                          "position": {
+                            "string": 4,
+                            "fret": 0
+                          },
+                          "durationTicks": 288,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E4",
+                          "position": {
+                            "string": 5,
+                            "fret": 0
+                          },
+                          "durationTicks": 240,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "B3",
+                          "position": {
+                            "string": 4,
+                            "fret": 0
+                          },
+                          "durationTicks": 288,
+                          "letRing": true
+                        },
+                        {
+                          "pitch": "E4",
+                          "position": {
+                            "string": 5,
+                            "fret": 0
+                          },
+                          "durationTicks": 288,
+                          "letRing": true
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                  ]
+                }
+              },
+              {
+                "timeSignature": [
+                  4,
+                  4
+                ],
+                "resolution": 16,
+                "slots": {
+                  "gtr": [
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
                     null,
                     null,
                     null,

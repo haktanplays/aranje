@@ -117,6 +117,33 @@ describe("moveDurationDrag", () => {
     const drag = start(subject);
     expect(moveDurationDrag(subject, drag, 999, 0)).toBe(drag);
   });
+
+  /*
+   * 2T-C §11. The `+` and `−` buttons ask for whole steps rather than for
+   * pixels, and the controller hands them one pixel per step. That is only
+   * sound if the core reads the ratio and nothing else — which it does, and
+   * this says so, because the buttons now depend on it.
+   *
+   * The buttons used to perform a drag instead. Measured through the real
+   * UI, a reader tapping `+` fifteen times got seven steps and the first tap
+   * did nothing: the release read a drag React had not rendered yet. A tap
+   * is one command, so it is one command now.
+   */
+  it("reads the ratio, so one pixel a step is the same as a wide drag", () => {
+    for (const steps of [1, 2, 5, -1, -3]) {
+      expect(moveDurationDrag(subject, start(subject), steps, 1).ticks).toBe(
+        moveDurationDrag(subject, start(subject), steps * SLOT, SLOT).ticks,
+      );
+    }
+  });
+
+  it("asks for one step and gets one step, never two and never none", () => {
+    const from = start(subject);
+    expect(moveDurationDrag(subject, from, 1, 1).ticks).toBe(from.startTicks + 48);
+    expect(moveDurationDrag(subject, from, -1, 1).ticks).toBe(
+      Math.max(48, from.startTicks - 48),
+    );
+  });
 });
 
 describe("what the reader is told", () => {

@@ -306,7 +306,19 @@ describe("one budget finances exactly one provider call", () => {
     }
   });
 
-  it("holds across two hundred runs, whoever wins each one", async () => {
+  /*
+   * Twenty seconds, because two hundred rounds is genuinely two hundred
+   * rounds (2T-C §14).
+   *
+   * It takes about five seconds alone and comfortably more than that when
+   * the whole suite is running beside it, which made it time out roughly one
+   * full run in four — and a timeout is not a result: the assertion below
+   * never ran at all, so the run reported neither a passing claim nor a
+   * failing one. The limit is the machine's, not the code's, so the limit is
+   * what moved. Nothing here is weakened: the same two hundred rounds are
+   * counted and the same single shape is demanded of every one of them.
+   */
+  it("holds across two hundred runs, whoever wins each one", { timeout: 20_000 }, async () => {
     /*
      * Two hundred local iterations against the fake adapter — no network, no
      * provider, no sleep. What is counted is the shape of every round: one

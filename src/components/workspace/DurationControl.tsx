@@ -57,6 +57,7 @@ export function DurationControl({
   onMove,
   onRelease,
   onCancel,
+  onStep,
 }: {
   /** What the note is written at now, for the resting label. */
   writtenTicks: number;
@@ -68,6 +69,7 @@ export function DurationControl({
   onMove: (deltaPx: number, slotWidthPx: number) => void;
   onRelease: () => void;
   onCancel: () => void;
+  onStep: (noteIndex: number, steps: number) => void;
 }) {
   const origin = useRef<number | null>(null);
   const owner = pointerOwner({
@@ -78,13 +80,17 @@ export function DurationControl({
   const owns = owner === "duration";
   const shown = active && previewTicks !== null ? previewTicks : writtenTicks;
 
-  const step = (steps: number) => {
-    /* The buttons are the same gesture, done exactly: grab, move one whole
-       step, release. One command and one step of history, like a drag. */
-    onGrab(noteIndex);
-    onMove(steps * DRAG_STEP_PX, DRAG_STEP_PX);
-    onRelease();
-  };
+  /*
+   * A tap is its own command (2T-C §11).
+   *
+   * These buttons used to perform the drag — grab, move a step, release — in
+   * one handler, and the release read a drag that React had not rendered
+   * yet. The result, measured through the real UI: the first tap did
+   * nothing, and every tap after it wrote the length the tap before it had
+   * asked for. So the tap asks the controller for a step and stores nothing
+   * of its own.
+   */
+  const step = (steps: number) => onStep(noteIndex, steps);
 
   return (
     <div className="border-line flex items-center gap-2 border-t pt-3" data-duration-row>
