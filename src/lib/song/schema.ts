@@ -105,6 +105,21 @@ export const noteEventSchema = z.strictObject({
    */
   durationTicks: z.number().int().positive().optional(),
   /**
+   * The chord this note belongs to is strummed, and in which direction
+   * (2T §3.4).
+   *
+   * A performance intent, not a rhythm. A strum is one written onset played
+   * by dragging a pick across the strings, so the score keeps saying "one
+   * chord here" and this says how the hand crossed it. Writing a strum as
+   * separate onsets would be writing down a lie — nobody counts a strum in
+   * sixteenths — which is exactly what separates it from an arpeggio.
+   *
+   * It sits on the note rather than the slot because a slot has no room for
+   * anything but its notes, and every voice of one chord carries the same
+   * value. The performance reads it once, from the chord.
+   */
+  strum: z.enum(["down", "up"]).optional(),
+  /**
    * Keep sounding past the next attack on this same string (2T §3.3).
    *
    * The dirty arpeggio: a guitarist lets an open string ring and plays over
