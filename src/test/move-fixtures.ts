@@ -6,7 +6,7 @@
  */
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 import type { Resolution } from "@/lib/music/timing";
-import { songSchema, type Bar, type MelodicSlot, type Song } from "@/lib/song/schema";
+import { songSchema, type Bar, type MelodicSlot, type Song, SONG_VERSION } from "@/lib/song/schema";
 
 const GUITAR = SAMPLE_SONG.tracks.find((track) => track.id === "gtr");
 if (!GUITAR) throw new Error("demo song has no guitar");
@@ -45,7 +45,7 @@ export function song(bars: readonly Bar[], second: readonly Bar[] = []): Song {
       : []),
   ];
   const parsed = songSchema.safeParse({
-    version: 2,
+    version: SONG_VERSION,
     title: "move fixture",
     bpm: 120,
     key: "E minor",

@@ -12,7 +12,7 @@
  * guitarist would play in one place.
  */
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
-import { songSchema, type Bar, type MelodicSlot, type Song } from "@/lib/song/schema";
+import { songSchema, type Bar, type MelodicSlot, type Song, SONG_VERSION } from "@/lib/song/schema";
 import visualFixture from "@/lib/song/visual-fixture.json";
 
 function parse(candidate: unknown, label: string): Song {
@@ -71,7 +71,7 @@ if (!GUITAR_TRACK) throw new Error("demo song has no guitar");
 function guitarSong(bars: readonly Bar[], id: string): Song {
   return parse(
     {
-      version: 2,
+      version: SONG_VERSION,
       title: `Fixture ${id}`,
       bpm: 120,
       key: "E minor",

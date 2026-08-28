@@ -82,6 +82,36 @@ export const noteEventSchema = z.strictObject({
   velocity: z.number().int().min(velocityRange.min).max(velocityRange.max).optional(),
   articulation: articulationSchema.optional(),
   position: positionSchema.optional(),
+  /**
+   * How long this note sounds, in ticks (2T §3.2, Score Truth v2).
+   *
+   * Absent means what it has always meant: the note lasts until the tie run
+   * under it ends, and the next onset anywhere in the track ends it. That is
+   * why every song written before this field sounds byte-for-byte the same —
+   * absence is not a default, it is the old rule.
+   *
+   * Present, it says this note's own length and nothing else's. Two things
+   * follow, and both were impossible before:
+   *
+   * - A note on one string may go on ringing while another string is struck.
+   *   The written score already meant that; the model could not hold it,
+   *   because a slot was an onset for *every* string at once.
+   * - A note may be longer or shorter than the slot it starts on without
+   *   moving, shortening or deleting anything after it.
+   *
+   * Ticks rather than slots, because a duration outlives the grid it was
+   * written on: a bar regridded from sixteenths to thirty-seconds must not
+   * change how long anything sounds.
+   */
+  durationTicks: z.number().int().positive().optional(),
+  /**
+   * Keep sounding past the next attack on this same string (2T §3.3).
+   *
+   * The dirty arpeggio: a guitarist lets an open string ring and plays over
+   * it. Absent is the ordinary physical truth — one string, one sounding
+   * note — and this is the reader saying otherwise on purpose.
+   */
+  letRing: z.boolean().optional(),
 });
 
 /** null is a rest, "-" ties the previous event (spec 5.4). */
@@ -168,8 +198,20 @@ export const trackSchema = z.strictObject({
   fretboard: fretboardSchema.optional(),
 });
 
+/**
+ * The version this app writes (2T §4).
+ *
+ * 3 adds `durationTicks` and `letRing` to a note event and changes the
+ * meaning of nothing else. A version 2 song is still accepted and is lifted
+ * on load — see `migrateSong`, which touches not one note.
+ */
+export const SONG_VERSION = 3;
+
+/** Versions this app can read. The newest is the one it writes. */
+export const READABLE_SONG_VERSIONS = [2, 3] as const;
+
 export const songSchema = z.strictObject({
-  version: z.literal(2),
+  version: z.literal(READABLE_SONG_VERSIONS),
   title: z.string().min(1),
   bpm: z.number().min(bpmRange.min).max(bpmRange.max),
   key: z.string().regex(KEY_PATTERN, "invalid key"),

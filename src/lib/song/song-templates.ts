@@ -1,3 +1,4 @@
+import { SONG_VERSION } from "@/lib/song/schema";
 /**
  * Launch templates for a new song (spec 13.17, 2L-B §4).
  *
@@ -192,7 +193,7 @@ export function materializeTemplate(templateId: string): Song | null {
   });
 
   return {
-    version: 2,
+    version: SONG_VERSION,
     title: TEMPLATE_DEFAULTS.title,
     bpm: TEMPLATE_DEFAULTS.bpm,
     key: TEMPLATE_DEFAULTS.key,

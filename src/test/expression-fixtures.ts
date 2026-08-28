@@ -13,8 +13,7 @@ import {
   type MelodicSlot,
   type NoteEvent,
   type Resolution,
-  type Song,
-} from "@/lib/song/schema";
+  type Song, SONG_VERSION } from "@/lib/song/schema";
 
 const GUITAR = SAMPLE_SONG.tracks.find((track) => track.id === "gtr");
 if (!GUITAR) throw new Error("demo song has no guitar");
@@ -102,7 +101,7 @@ export function song(
       : []),
   ];
   const parsed = songSchema.safeParse({
-    version: 2,
+    version: SONG_VERSION,
     title: "expression fixture",
     bpm,
     key: "E minor",

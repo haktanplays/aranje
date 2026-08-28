@@ -30,6 +30,7 @@
  */
 import { z } from "zod";
 
+import { migrateSong } from "@/lib/song/migrate";
 import { songSchema, type Song } from "@/lib/song/schema";
 
 export const SONG_ENVELOPE_FORMAT = "aranje.song";
@@ -124,8 +125,19 @@ export function decideLoad(raw: string | null): LoadDecision {
     return { kind: "corrupt" };
   }
 
+  /*
+   * Everything that comes off disk is lifted to the version this app writes
+   * (2T §4). It happens here, at the one door, rather than in each reader —
+   * a song that reached the engine still carrying an older version number
+   * would be a second shape for everything downstream to know about.
+   *
+   * The lift changes the version and nothing else, so this is not a place
+   * where old music can quietly become different music.
+   */
   const legacy = songSchema.safeParse(parsed);
-  if (legacy.success) return { kind: "legacy", song: legacy.data };
+  if (legacy.success) {
+    return { kind: "legacy", song: migrateSong(legacy.data).song };
+  }
 
   const tag = envelopeTagSchema.safeParse(parsed);
   if (tag.success && tag.data.version !== SONG_ENVELOPE_VERSION) {
@@ -141,15 +153,15 @@ export function decideLoad(raw: string | null): LoadDecision {
   if (current.success) {
     return {
       kind: "envelope",
-      song: current.data,
+      song: migrateSong(current.data).song,
       revision: shell.data.revision,
-      previous: previous.success ? previous.data : null,
+      previous: previous.success ? migrateSong(previous.data).song : null,
     };
   }
   if (previous.success) {
     return {
       kind: "recovered_previous",
-      song: previous.data,
+      song: migrateSong(previous.data).song,
       revision: shell.data.revision,
     };
   }

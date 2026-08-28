@@ -1,3 +1,4 @@
+import { SONG_VERSION } from "@/lib/song/schema";
 /**
  * Core demo song (spec 2.4): electric guitar, steel acoustic, electric bass and
  * drums. The riff material comes from design/prototype.html and stays inside E
@@ -115,7 +116,7 @@ const GROOVE_WITH_CRASH: readonly DrumSlot[] = [
 ];
 
 export const SAMPLE_SONG: Song = {
-  version: 2,
+  version: SONG_VERSION,
   title: "Metal Demo",
   bpm: 132,
   key: "E minor",

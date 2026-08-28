@@ -1,3 +1,4 @@
+import { SONG_VERSION } from "@/lib/song/schema";
 /**
  * Small song builders used by the unit tests. Kept out of the app code path;
  * nothing in src/app or src/components imports this file.
@@ -71,7 +72,7 @@ export function song(
   overrides: Partial<Song> = {},
 ): Song {
   return {
-    version: 2,
+    version: SONG_VERSION,
     title: "Test",
     bpm: 120,
     key: "E minor",
