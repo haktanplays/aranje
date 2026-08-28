@@ -8,14 +8,46 @@ import { risingAt } from "@/components/workspace/FrettedBarBlock";
 import type { FrettedBar } from "@/lib/tab/timeline";
 import { articulationSchema } from "@/lib/song/schema";
 import { EXPRESSIVE_ARTICULATIONS } from "@/lib/audio/expression";
+import { glyphText } from "@/lib/tab/glyph-model";
+import { matrixArticulations } from "@/lib/song/technique-matrix";
+
+/**
+ * The three techniques tablature writes *on* the number rather than beside
+ * it, so they have no mark in this file and must not have one: `(5)`, `x` and
+ * `<5>` are already the notation (2T-C §9).
+ */
+const ON_THE_NUMBER = ["ghost", "dead", "natural_harmonic"] as const;
 
 describe("marks", () => {
-  it("gives every pilot articulation a mark of its own", () => {
-    const marks = EXPRESSIVE_ARTICULATIONS.map((articulation) =>
-      articulationMark(articulation),
+  it("gives every articulation drawn beside the digit a mark of its own", () => {
+    const beside = EXPRESSIVE_ARTICULATIONS.filter(
+      (articulation) =>
+        !(ON_THE_NUMBER as readonly string[]).includes(articulation),
     );
+    const marks = beside.map((articulation) => articulationMark(articulation));
     expect(marks.every((mark) => mark !== null && mark.length > 0)).toBe(true);
     expect(new Set(marks).size).toBe(marks.length);
+  });
+
+  it("leaves the three written on the number without a second mark", () => {
+    for (const articulation of ON_THE_NUMBER) {
+      expect(articulationMark(articulation)).toBeNull();
+      expect(glyphText(5, articulation)).not.toBe("5");
+    }
+  });
+
+  /*
+   * 2T-C §9. Nothing in the matrix may be drawn nowhere. Either the number
+   * itself changes, or there is a mark beside it — and the two techniques
+   * that are neither, hammer-on and pull-off, are drawn as an arc by the
+   * technique layer and carry `h`/`p` as the fallback when it cannot.
+   */
+  it("draws something for every technique the matrix claims", () => {
+    for (const articulation of matrixArticulations()) {
+      const onTheNumber = glyphText(5, articulation) !== "5";
+      const beside = articulationMark(articulation) !== null;
+      expect(onTheNumber || beside, articulation).toBe(true);
+    }
   });
 
   it("uses the marks the spec names", () => {
@@ -35,19 +67,26 @@ describe("marks", () => {
     expect(articulationMark("slide")).toBe("/");
   });
 
-  it("says nothing about the values that were never expression", () => {
-    for (const articulation of ["normal", "sustain", "staccato"] as const) {
-      expect(articulationMark(articulation)).toBeNull();
-    }
+  it("says nothing about a note nobody asked anything of", () => {
+    expect(articulationMark("normal")).toBeNull();
+    expect(glyphText(5, "normal")).toBe("5");
+  });
+
+  /*
+   * Staccato and sustain used to be drawn nowhere: a reader who shortened a
+   * note heard the change and saw nothing on the page. The dot and the
+   * tenuto bar are the marks notation already uses for those two.
+   */
+  it("draws the two length marks the tab used to leave silent", () => {
+    expect(articulationMark("staccato")).toBe(".");
+    expect(articulationMark("sustain")).toBe("–");
   });
 
   it("covers every value the schema allows, one way or the other", () => {
     for (const articulation of articulationSchema.options) {
-      const mark = articulationMark(articulation);
-      const expected = (EXPRESSIVE_ARTICULATIONS as readonly string[]).includes(
-        articulation,
-      );
-      expect(mark !== null).toBe(expected);
+      const drawn =
+        articulationMark(articulation) !== null || glyphText(5, articulation) !== "5";
+      expect(drawn, articulation).toBe(articulation !== "normal");
     }
   });
 });

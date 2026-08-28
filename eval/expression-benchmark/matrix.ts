@@ -16,6 +16,8 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import { articulationMark } from "@/components/workspace/ArticulationGlyph";
+import { FRET_SHEET_ARTICULATIONS } from "@/components/workspace/FretSheet";
+import { glyphText } from "@/lib/tab/glyph-model";
 import {
   EXPRESSIVE_ARTICULATIONS,
   isExpressive,
@@ -32,13 +34,14 @@ mkdirSync(OUT, { recursive: true });
 /** Every articulation the one enum admits. Read from the schema itself. */
 const CONTRACT: readonly Articulation[] = articulationSchema.options;
 
-/**
+/*
  * Whether the riff editor offers this articulation to a reader.
  *
- * Asked of the component's own source rather than of a copy of its list: the
- * question is what the sheet actually renders.
+ * 2T-C §9: the fret sheet builds its chips from the technique matrix, so the
+ * list it renders is exported rather than grepped out of its source. Reading
+ * the file for a quoted name would now answer "no" for every technique, which
+ * is how a document quietly stops being an inventory.
  */
-const EDITOR_SOURCE = readFileSync("src/components/workspace/FretSheet.tsx", "utf8");
 const CHORD_SHEET_SOURCE = readFileSync(
   "src/components/workspace/ChordBuilderSheet.tsx",
   "utf8",
@@ -88,13 +91,13 @@ const BRIEF: readonly { technique: string; family: Family; contractName?: Articu
   { technique: "sustain / let ring (nota)", family: "guitar_bass", contractName: "sustain", layer: "note_attack", combinable: true, priority: "launch" },
   { technique: "palm mute", family: "guitar_bass", contractName: "palm_mute", layer: "technique_span", combinable: true, priority: "launch" },
   { technique: "let ring (span)", family: "guitar_bass", layer: "technique_span", combinable: true, priority: "near_term" },
-  { technique: "ghost note", family: "guitar_bass", layer: "note_attack", combinable: true, priority: "near_term" },
-  { technique: "dead note", family: "guitar_bass", layer: "note_attack", combinable: true, priority: "near_term" },
+  { technique: "ghost note", family: "guitar_bass", contractName: "ghost", layer: "note_attack", combinable: true, priority: "near_term" },
+  { technique: "dead note", family: "guitar_bass", contractName: "dead", layer: "note_attack", combinable: true, priority: "near_term" },
   { technique: "upstroke / downstroke", family: "guitar_bass", layer: "picking_gesture", combinable: true, priority: "near_term" },
-  { technique: "natural harmonic", family: "guitar_bass", layer: "note_attack", combinable: false, priority: "later" },
+  { technique: "natural harmonic", family: "guitar_bass", contractName: "natural_harmonic", layer: "note_attack", combinable: false, priority: "later" },
   { technique: "artificial harmonic", family: "guitar_bass", layer: "note_attack", combinable: false, priority: "later" },
-  { technique: "pinch harmonic", family: "guitar_bass", layer: "note_attack", combinable: true, priority: "later" },
-  { technique: "tapping", family: "guitar_bass", layer: "note_attack", combinable: false, priority: "later" },
+  { technique: "pinch harmonic", family: "guitar_bass", contractName: "pinch_harmonic", layer: "note_attack", combinable: true, priority: "later" },
+  { technique: "tapping", family: "guitar_bass", contractName: "tapping", layer: "note_attack", combinable: false, priority: "later" },
   { technique: "left-hand tapping", family: "guitar_bass", layer: "note_attack", combinable: false, priority: "later" },
   { technique: "hammer-on", family: "guitar_bass", contractName: "hammer_on", layer: "note_connection", combinable: true, priority: "launch" },
   { technique: "pull-off", family: "guitar_bass", contractName: "pull_off", layer: "note_connection", combinable: true, priority: "launch" },
@@ -158,7 +161,13 @@ function writable(name: Articulation | null, family: Family): boolean {
     // and string families have no editor of their own at all.
     return family === "drums" && (name === "accent" || name === "normal");
   }
-  return EDITOR_SOURCE.includes(`"${name}"`) || CHORD_SHEET_SOURCE.includes(`"${name}"`);
+  // The sheet's first chip. It writes "normal" by removing the field, which
+  // is still a reader choosing it.
+  if (name === "normal") return true;
+  return (
+    (FRET_SHEET_ARTICULATIONS as readonly string[]).includes(name) ||
+    CHORD_SHEET_SOURCE.includes(`"${name}"`)
+  );
 }
 
 const rows: Row[] = BRIEF.map((entry) => {
@@ -171,7 +180,13 @@ const rows: Row[] = BRIEF.map((entry) => {
     contractName: name,
     inSongContract: inContract,
     writableInUi: writable(name, entry.family),
-    drawnInTab: name !== null && articulationMark(name) !== null,
+    /*
+     * Drawn either beside the number or on it: 2T-C §9 writes ghost, dead and
+     * natural harmonic as `(5)`, `x` and `<5>`, which is notation the mark
+     * table deliberately does not carry.
+     */
+    drawnInTab:
+      name !== null && (articulationMark(name) !== null || glyphText(5, name) !== "5"),
     // "normal" is in the contract and is deliberately never written; it is
     // also, deliberately, not a sound of its own.
     heardInPlayback: expressive,
@@ -196,7 +211,10 @@ const roles = CONTRACT.map((name) => ({
   movesPitch: movesPitch(name),
   needsPreviousNote: needsPrevious(name),
   bondsToNeighbour: isChainArticulation(name),
-  tabMark: articulationMark(name),
+  /* The mark beside the digit, or the way the digit itself is written. */
+  tabMark:
+    articulationMark(name) ??
+    (glyphText(5, name) === "5" ? null : glyphText(5, name)),
 }));
 
 const yes = (value: boolean) => (value ? "evet" : "hayır");

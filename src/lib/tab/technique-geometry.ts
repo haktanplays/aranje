@@ -266,7 +266,7 @@ export function annotationLane(
  * `7` and a mark that assumed a slot-wide number would cross one of them.
  */
 export function digitBounds(span: TabSpan, layout: TechniqueLayout): Extent {
-  const half = maskWidthFor(glyphText(span.fret)) / 2;
+  const half = maskWidthFor(glyphText(span.fret, span.articulation)) / 2;
   const centre = centreOf(span.startSlot, layout);
   return { left: centre - half, right: centre + half };
 }

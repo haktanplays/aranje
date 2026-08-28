@@ -3,8 +3,8 @@
 Teknik adları bu checkpoint'in kendi listesinden; geri kalan her sütun
 üretim kodundan okundu (`npx tsx eval/expression-benchmark/matrix.ts`).
 
-Song Contract'taki artikülasyon sayısı: **11**.
-Bunlardan çalarken gerçekten farklı duyulan: **8**.
+Song Contract'taki artikülasyon sayısı: **16**.
+Bunlardan çalarken gerçekten farklı duyulan: **13**.
 
 ## Bugünkü sözleşmenin rolleri
 
@@ -13,14 +13,19 @@ Bunlardan çalarken gerçekten farklı duyulan: **8**.
 | `normal` | Normal | hayır | hayır | hayır | hayır | — |
 | `palm_mute` | Palm mute | evet | hayır | hayır | hayır | PM |
 | `accent` | Vurgu | evet | hayır | hayır | hayır | > |
-| `sustain` | Uzatma | hayır | hayır | hayır | hayır | — |
-| `staccato` | Staccato | hayır | hayır | hayır | hayır | — |
+| `sustain` | Uzatma | hayır | hayır | hayır | hayır | – |
+| `staccato` | Staccato | hayır | hayır | hayır | hayır | . |
 | `vibrato` | Vibrato | evet | evet | hayır | hayır | ~ |
 | `bend_half` | Yarım bend | evet | evet | hayır | hayır | b½ |
 | `bend_full` | Tam bend | evet | evet | hayır | hayır | b1 |
 | `slide` | Slide | evet | evet | evet | evet | / |
 | `hammer_on` | Hammer-on | evet | evet | evet | evet | h |
 | `pull_off` | Pull-off | evet | evet | evet | evet | p |
+| `ghost` | Hayalet nota | evet | hayır | hayır | hayır | (5) |
+| `dead` | Ölü nota | evet | hayır | hayır | hayır | x |
+| `tapping` | Tapping | evet | hayır | hayır | hayır | T |
+| `natural_harmonic` | Doğal armonik | evet | hayır | hayır | hayır | <5> |
+| `pinch_harmonic` | Pinch armonik | evet | hayır | hayır | hayır | PH |
 
 ## Teknik matrisi
 
@@ -29,17 +34,17 @@ Bunlardan çalarken gerçekten farklı duyulan: **8**.
 | normal | guitar_bass | `normal` | evet | hayır | hayır | hayır | hayır | nota atağı | hayır | `normal` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
 | accent | guitar_bass | `accent` | evet | evet | evet | hayır | evet | nota atağı | evet | `accent` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
 | heavy accent | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | geçmiş dosyalarda yok; migration gerekmiyor | near_term |
-| staccato | guitar_bass | `staccato` | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | `staccato` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
-| sustain / let ring (nota) | guitar_bass | `sustain` | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | `sustain` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
+| staccato | guitar_bass | `staccato` | evet | evet | hayır | hayır | hayır | nota atağı | evet | `staccato` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
+| sustain / let ring (nota) | guitar_bass | `sustain` | evet | evet | hayır | hayır | hayır | nota atağı | evet | `sustain` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
 | palm mute | guitar_bass | `palm_mute` | evet | evet | evet | hayır | evet | zaman aralığı | evet | `palm_mute` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
 | let ring (span) | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | zaman aralığı | evet | geçmiş dosyalarda yok; migration gerekmiyor | near_term |
-| ghost note | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | geçmiş dosyalarda yok; migration gerekmiyor | near_term |
-| dead note | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | geçmiş dosyalarda yok; migration gerekmiyor | near_term |
+| ghost note | guitar_bass | `ghost` | evet | evet | evet | hayır | evet | nota atağı | evet | `ghost` okunmaya devam eder; v2 katmanına birebir çevrilir | near_term |
+| dead note | guitar_bass | `dead` | evet | evet | evet | hayır | evet | nota atağı | evet | `dead` okunmaya devam eder; v2 katmanına birebir çevrilir | near_term |
 | upstroke / downstroke | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | vuruş yönü/hareketi | evet | geçmiş dosyalarda yok; migration gerekmiyor | near_term |
-| natural harmonic | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | hayır | geçmiş dosyalarda yok; migration gerekmiyor | later |
+| natural harmonic | guitar_bass | `natural_harmonic` | evet | evet | evet | hayır | evet | nota atağı | hayır | `natural_harmonic` okunmaya devam eder; v2 katmanına birebir çevrilir | later |
 | artificial harmonic | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | hayır | geçmiş dosyalarda yok; migration gerekmiyor | later |
-| pinch harmonic | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | geçmiş dosyalarda yok; migration gerekmiyor | later |
-| tapping | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | hayır | geçmiş dosyalarda yok; migration gerekmiyor | later |
+| pinch harmonic | guitar_bass | `pinch_harmonic` | evet | evet | evet | hayır | evet | nota atağı | evet | `pinch_harmonic` okunmaya devam eder; v2 katmanına birebir çevrilir | later |
+| tapping | guitar_bass | `tapping` | evet | evet | evet | hayır | evet | nota atağı | hayır | `tapping` okunmaya devam eder; v2 katmanına birebir çevrilir | later |
 | left-hand tapping | guitar_bass | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | hayır | geçmiş dosyalarda yok; migration gerekmiyor | later |
 | hammer-on | guitar_bass | `hammer_on` | evet | evet | evet | hayır | evet | iki nota arası bağ | evet | `hammer_on` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
 | pull-off | guitar_bass | `pull_off` | evet | evet | evet | hayır | evet | iki nota arası bağ | evet | `pull_off` okunmaya devam eder; v2 katmanına birebir çevrilir | launch |
@@ -75,7 +80,7 @@ Bunlardan çalarken gerçekten farklı duyulan: **8**.
 | cymbal bell / bow / edge | drums | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | hayır | geçmiş dosyalarda yok; migration gerekmiyor | later |
 | sustain pedal (span) | keyboard | yok | hayır | hayır | hayır | hayır | hayır | zaman aralığı | evet | geçmiş dosyalarda yok; migration gerekmiyor | later |
 | pedal up / down | keyboard | yok | hayır | hayır | hayır | hayır | hayır | zaman aralığı | evet | geçmiş dosyalarda yok; migration gerekmiyor | later |
-| staccato | keyboard | `staccato` | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | `staccato` okunmaya devam eder; v2 katmanına birebir çevrilir | later |
+| staccato | keyboard | `staccato` | hayır | evet | hayır | hayır | hayır | nota atağı | evet | `staccato` okunmaya devam eder; v2 katmanına birebir çevrilir | later |
 | tenuto | keyboard | yok | hayır | hayır | hayır | hayır | hayır | nota atağı | evet | geçmiş dosyalarda yok; migration gerekmiyor | later |
 | accent | keyboard | `accent` | hayır | evet | evet | hayır | evet | nota atağı | evet | `accent` okunmaya devam eder; v2 katmanına birebir çevrilir | later |
 | dynamics | keyboard | yok | hayır | hayır | hayır | hayır | hayır | yalnız notasyon | evet | geçmiş dosyalarda yok; migration gerekmiyor | later |
@@ -89,10 +94,10 @@ Bunlardan çalarken gerçekten farklı duyulan: **8**.
 ## Sayılar
 
 - Değerlendirilen teknik: **59**
-- Song Contract'ta karşılığı olan: **14**
-- Playback'te gerçekten duyulan: **10**
+- Song Contract'ta karşılığı olan: **19**
+- Playback'te gerçekten duyulan: **15**
 - MIDI'ye taşınan: **0**
-- Hiçbir katmanda karşılığı olmayan: **45**
+- Hiçbir katmanda karşılığı olmayan: **40**
 
 ## Tek `articulation` alanının yetmediği yer
 

@@ -148,9 +148,91 @@ export const expressionPresets = {
      */
     gainMultiplier: 1.18,
   },
+  /*
+   * 2T-C §9. Five techniques that have to be heard, not only drawn.
+   *
+   * Each number below is a claim about what a hand does, and each is
+   * measurable in a render — level, length, attack time, or where the pitch
+   * sits. Nothing here is a marker that leaves the sound alone.
+   */
+  ghost: {
+    /** Barely fretted: the note is there and deliberately under everything. */
+    gainMultiplier: 0.45,
+    /** It does not ring on either; the finger is not pressing hard enough. */
+    holdFraction: 0.6,
+  },
+  dead: {
+    /**
+     * No definite pitch at all — the string is damped and struck, so what is
+     * left is a short broadband knock. Short enough that no listener hears a
+     * note in it, and rolled off so it does not read as a muted chord.
+     */
+    holdSeconds: 0.055,
+    gainMultiplier: 0.55,
+    filterHz: 1200,
+    filterQ: 0.9,
+  },
+  tapping: {
+    /**
+     * Struck by the fretting hand, so there is no pick in it. The difference
+     * a listener actually hears is the attack: a finger arriving on a
+     * fingerboard has a softer front than a plectrum crossing a string.
+     */
+    gainMultiplier: 0.85,
+    attackSeconds: 0.014,
+  },
+  harmonic: {
+    /**
+     * A natural harmonic sounds a node of the string rather than the stopped
+     * length. This models the twelfth-fret node — one octave up — which is
+     * the common case and the only one the score currently says enough to
+     * know. A written harmonic at another node will sound an octave rather
+     * than its own interval, and that limit is recorded here rather than
+     * hidden: the alternative is guessing a node the reader never named.
+     */
+    naturalCents: 1200,
+    naturalGain: 0.7,
+    /**
+     * A pinch harmonic is the fretted note squealing an octave and a fifth
+     * above, and it is loud — that is the whole point of using one.
+     */
+    pinchCents: 1900,
+    pinchGain: 0.95,
+    /** The squeal arrives a moment after the pick, not with it. */
+    pinchRiseSeconds: 0.03,
+  },
+  /**
+   * A strum, which is not an articulation at all (2T-C §9).
+   *
+   * A strummed chord is one written onset, and the hand still takes real time
+   * to cross the strings. That crossing is the entire audible difference
+   * between a strum and a block chord, and it has a direction: down starts at
+   * the thickest string, up starts at the thinnest.
+   *
+   * The spread is in seconds rather than in ticks because it is a property of
+   * the arm, not of the tempo — a guitarist's hand does not cross the strings
+   * twice as slowly because the song is at half speed.
+   */
+  strum: {
+    /** Between one string and the next. */
+    perStringSeconds: 0.014,
+    /**
+     * A short chord may not have room for the full crossing. It is spread
+     * into the room there is rather than played over the top of the next
+     * onset, which is the same rule the legato travel already follows.
+     */
+    maxSpreadFraction: 0.5,
+  },
 } as const;
 
-/** The eight the pilot actually plays differently (spec 8.5). */
+/**
+ * The articulations that are actually played differently (spec 8.5, 2T-C §9).
+ *
+ * Eight in the pilot; thirteen now. Membership here is not decoration — a
+ * technique in this list has a branch in the planner that changes level,
+ * length, attack or pitch, and `technique-matrix.test.ts` proves it by
+ * planning one and comparing it with a plain note.
+ */
 export const EXPRESSIVE_ARTICULATIONS = [
   "accent",
   "palm_mute",
@@ -160,6 +242,11 @@ export const EXPRESSIVE_ARTICULATIONS = [
   "slide",
   "hammer_on",
   "pull_off",
+  "ghost",
+  "dead",
+  "tapping",
+  "natural_harmonic",
+  "pinch_harmonic",
 ] as const;
 
 export type ExpressiveArticulation = (typeof EXPRESSIVE_ARTICULATIONS)[number];

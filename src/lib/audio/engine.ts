@@ -661,11 +661,19 @@ export function scheduleSong(
       // chain, the chain owns it.
       if (current.chainId !== undefined) return;
 
+      /*
+       * A strummed chord is one written onset played by a hand that takes
+       * real time to cross the strings (2T-C §9). The score is not changed by
+       * it — the notes are still written together — so the crossing is added
+       * here, at the moment of striking, and nowhere else.
+       */
+      const struck = time + (current.strumOffsetSeconds ?? 0);
+
       if (current.expressive) {
-        const played = engine.expression.play(current, time);
+        const played = engine.expression.play(current, struck);
         if (played) return;
       }
-      sampler.triggerAttackRelease(current.pitch, duration, time, current.gain);
+      sampler.triggerAttackRelease(current.pitch, duration, struck, current.gain);
     }, ticks(note.timeTicks));
   }
 

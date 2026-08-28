@@ -105,6 +105,8 @@ export type TabSpan = {
   pitch: string;
   velocity?: number;
   articulation?: Articulation;
+  /** The picking hand's direction across a chord, when the reader wrote one. */
+  strum?: "down" | "up";
   startSlot: number;
   /** Inclusive. */
   endSlot: number;
@@ -242,6 +244,7 @@ function buildFretted(
         pitch: span.note.pitch,
         velocity: span.note.velocity,
         articulation: span.note.articulation,
+        strum: span.note.strum,
         writtenTicks: span.writtenTicks,
         startSlot: slice.startSlot,
         endSlot: slice.endSlot,

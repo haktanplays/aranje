@@ -32,6 +32,8 @@ export type LegatoOnset = {
   midi: number | null;
   velocity: number;
   articulation?: Articulation;
+  /** The hand's direction across a strummed chord, when one was written. */
+  strum?: "down" | "up";
   /** Ticks from the start of the song, as `buildSongPlan` counts them. */
   timeTicks: number;
   /** Exactly what `buildSongPlan` schedules, so the two never disagree. */
@@ -94,6 +96,7 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
         midi: pitchToMidi(span.pitch),
         velocity: span.velocity ?? DEFAULT_VELOCITY,
         ...(span.articulation === undefined ? {} : { articulation: span.articulation }),
+        ...(span.strum === undefined ? {} : { strum: span.strum }),
         timeTicks: start + span.startSlot * step,
         durationTicks: Math.max(
           1,

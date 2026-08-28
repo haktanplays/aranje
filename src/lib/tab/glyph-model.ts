@@ -105,9 +105,30 @@ const MARKERS: Readonly<Record<GlyphState, GlyphMarker>> = {
   rejected: "struck",
 };
 
-/** What is printed for a fret, including the note that has no placement. */
-export function glyphText(fret: number | null): string {
+/**
+ * What is printed for a fret, including the note that has no placement.
+ *
+ * Three techniques are written **on the number itself**, because that is how
+ * tablature has always written them and inventing a private mark for them
+ * would make this app's tab unreadable to someone who learned from anyone
+ * else's (2T-C §9):
+ *
+ * - a ghost note is its fret in brackets, `(5)`;
+ * - a dead note has no pitch to print, so it is `x`;
+ * - a natural harmonic is its fret in angle brackets, `<5>`.
+ *
+ * The rest are marks *beside* the number and belong to `ArticulationGlyph`.
+ * The mask follows the printed text, so a bracketed fret cuts a wider gap in
+ * the string than a bare one rather than being drawn over the line.
+ */
+export function glyphText(
+  fret: number | null,
+  articulation?: Articulation,
+): string {
+  if (articulation === "dead") return "x";
   if (fret === null) return "?";
+  if (articulation === "ghost") return `(${fret})`;
+  if (articulation === "natural_harmonic") return `<${fret}>`;
   return String(fret);
 }
 
@@ -135,6 +156,21 @@ export function fretLabel(fret: number | null): string {
   if (fret === 0) return "Boş tel";
   return `${fret}. perde`;
 }
+
+/**
+ * The spoken name of the three techniques written on the number itself.
+ *
+ * A bracket around a number is a mark somebody has to have been taught, and a
+ * screen reader would otherwise say "parantez beş parantez". These three are
+ * here and no others: every remaining technique is a mark *beside* the digit,
+ * and that mark carries its own name where it is drawn. Saying it twice would
+ * be worse than saying it once.
+ */
+const TECHNIQUE_SPOKEN: Readonly<Partial<Record<Articulation, string>>> = {
+  ghost: "hayalet nota",
+  dead: "ölü nota",
+  natural_harmonic: "doğal armonik",
+};
 
 /** "8. perdeden 7. perdeye pull-off" — the movement, not the enum. */
 export function legatoLabel(
@@ -164,15 +200,21 @@ export type GlyphRequest = {
  * label to the accessibility tree.
  */
 export function buildFretGlyph(request: GlyphRequest): FretGlyph {
-  const text = glyphText(request.fret);
+  const text = glyphText(request.fret, request.articulation);
   const advance = request.advance ?? DIGIT_ADVANCE_PX;
   const marker = MARKERS[request.state];
   const base = fretLabel(request.fret);
+  const spoken =
+    request.articulation === undefined
+      ? undefined
+      : TECHNIQUE_SPOKEN[request.articulation];
   const label =
     (request.articulation === "hammer_on" || request.articulation === "pull_off") &&
     request.slurredFrom !== undefined
       ? `${base}, ${legatoLabel(request.slurredFrom, request.fret, request.articulation)}`
-      : base;
+      : spoken === undefined
+        ? base
+        : `${base}, ${spoken}`;
 
   return {
     text,

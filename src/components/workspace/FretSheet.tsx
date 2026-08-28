@@ -17,28 +17,64 @@ import {
 import { maxCapoRelativeFret } from "@/lib/music/fretboard";
 import { pitchAt } from "@/lib/song/edit";
 import { articulationLabel } from "@/lib/validators";
+import { FAMILY_LABELS, familyRows } from "@/lib/song/technique-matrix";
 import type { Articulation, Fretboard } from "@/lib/song/schema";
 
 /**
- * What the sheet offers, in playing order rather than alphabetical: the plain
- * note first, then the two that change the level, then the four that change
- * the pitch, then the two that join to the note before (spec 13.9).
+ * What the sheet offers, grouped the way a player thinks (2T-C §9).
+ *
+ * Sixteen techniques in one wrapping row would be a wall. They come from the
+ * technique matrix instead, in its four families — what joins a note to the
+ * one before it, what moves the pitch, how the string is struck, and what
+ * happens to the sound afterwards — so the sheet and the matrix cannot drift
+ * apart: adding a technique to the contract without a row here would leave it
+ * unreachable, and `technique-matrix.test.ts` fails when it does.
  *
  * `null` is "normal" and removes the field. The reader never sees an
  * identifier like `bend_half`; the labels come from the one place they are
  * written down.
  */
-const CHOICES: readonly (Articulation | null)[] = [
-  null,
-  "accent",
-  "palm_mute",
-  "vibrato",
-  "bend_half",
-  "bend_full",
-  "slide",
-  "hammer_on",
-  "pull_off",
-];
+const FAMILY_ORDER = ["bağlantı", "perde", "vuruş", "tını"] as const;
+
+/** The families with the articulations they offer, empty ones dropped. */
+const CHOICE_GROUPS = FAMILY_ORDER.map((family) => ({
+  family,
+  label: FAMILY_LABELS[family],
+  choices: familyRows(family)
+    .filter((row) => row.field === "articulation")
+    .map((row) => row.id as Articulation),
+})).filter((group) => group.choices.length > 0);
+
+/** Every articulation the sheet can write, for the boundary test to read. */
+export const FRET_SHEET_ARTICULATIONS: readonly Articulation[] =
+  CHOICE_GROUPS.flatMap((group) => group.choices);
+
+/** One technique chip. A 44px target, and never an identifier as its name. */
+function ArticulationChip({
+  choice,
+  selected,
+  onArticulation,
+}: {
+  choice: Articulation | null;
+  selected: boolean;
+  onArticulation: (articulation: Articulation | null) => void;
+}) {
+  return (
+    <button
+      type="button"
+      data-articulation={choice ?? "normal"}
+      aria-pressed={selected}
+      onClick={() => onArticulation(choice)}
+      className={`min-h-11 rounded-lg border px-3 text-sm ${
+        selected
+          ? "border-bronze text-bronze bg-raised font-semibold"
+          : "border-line text-muted"
+      }`}
+    >
+      {choice === null ? "Normal" : articulationLabel(choice)}
+    </button>
+  );
+}
 
 export type FretSheetTarget = {
   barNumber: number;
@@ -292,29 +328,29 @@ export function FretSheet({
         <p className="text-muted pb-2 text-xs" id="articulation-label">
           Bu telin çalınışı
         </p>
-        <div
-          role="group"
-          aria-labelledby="articulation-label"
-          className="flex flex-wrap gap-2"
-        >
-          {CHOICES.map((choice) => {
-            const selected = (target.currentArticulation ?? null) === choice;
-            return (
-              <button
-                key={choice ?? "normal"}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => onArticulation(choice)}
-                className={`min-h-11 rounded-lg border px-3 text-sm ${
-                  selected
-                    ? "border-bronze text-bronze bg-raised font-semibold"
-                    : "border-line text-muted"
-                }`}
-              >
-                {choice === null ? "Normal" : articulationLabel(choice)}
-              </button>
-            );
-          })}
+        <div role="group" aria-labelledby="articulation-label">
+          <div className="flex flex-wrap gap-2">
+            <ArticulationChip
+              choice={null}
+              selected={target.currentArticulation === null}
+              onArticulation={onArticulation}
+            />
+          </div>
+          {CHOICE_GROUPS.map((group) => (
+            <div key={group.family} className="pt-2">
+              <p className="text-muted pb-1 text-[11px]">{group.label}</p>
+              <div className="flex flex-wrap gap-2">
+                {group.choices.map((choice) => (
+                  <ArticulationChip
+                    key={choice}
+                    choice={choice}
+                    selected={target.currentArticulation === choice}
+                    onArticulation={onArticulation}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         {target.currentFret === null ? null : (

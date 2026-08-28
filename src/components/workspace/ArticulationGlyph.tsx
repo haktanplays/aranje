@@ -21,6 +21,23 @@ const MARKS: Readonly<Record<string, string>> = {
   bend_full: "b1",
   hammer_on: "h",
   pull_off: "p",
+  /*
+   * 2T-C §9. Four more marks beside the digit.
+   *
+   * `tapping` and `pinch_harmonic` are the two new techniques a tab writes
+   * beside the number; the other three added with them — ghost, dead and
+   * natural harmonic — are written *on* the number instead, the way
+   * tablature writes them, so they are absent here on purpose.
+   *
+   * `staccato` and `sustain` are older than all of them and had no mark at
+   * all: a reader who shortened a note saw the length change when it played
+   * and nothing at all on the page. The dot and the tenuto bar are the marks
+   * notation already uses for exactly these two, so nothing new is invented.
+   */
+  tapping: "T",
+  pinch_harmonic: "PH",
+  staccato: ".",
+  sustain: "–",
 };
 
 /** Slide leans the way the music goes; everything else has one shape. */

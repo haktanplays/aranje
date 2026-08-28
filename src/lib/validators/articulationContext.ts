@@ -44,6 +44,12 @@ export const ARTICULATION_LABELS: Readonly<Record<string, string>> = {
   slide: "Slide",
   hammer_on: "Hammer-on",
   pull_off: "Pull-off",
+  /* 2T-C §9. Named here too, or a reader would be shown the enum value. */
+  ghost: "Hayalet nota",
+  dead: "Ölü nota",
+  tapping: "Tapping",
+  natural_harmonic: "Doğal armonik",
+  pinch_harmonic: "Pinch armonik",
 };
 
 export function articulationLabel(articulation: string): string {

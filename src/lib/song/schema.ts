@@ -69,6 +69,21 @@ export const articulationSchema = z.enum([
   "slide",
   "hammer_on",
   "pull_off",
+  /*
+   * 2T-C §9. Five more ways of striking a string, each of which changes what
+   * is heard rather than only what is drawn.
+   *
+   * They are articulations because that is what they are: a hand doing
+   * something different to the string at the moment of attack. `letRing` and
+   * `strum` deliberately stay out of this list — those say what happens
+   * *around* the attack, not how it was made, and moving them in to keep one
+   * tidy list would teach the wrong thing about all seven.
+   */
+  "ghost",
+  "dead",
+  "tapping",
+  "natural_harmonic",
+  "pinch_harmonic",
 ]);
 
 export const positionSchema = z
@@ -220,10 +235,10 @@ export const trackSchema = z.strictObject({
  * meaning of nothing else. A version 2 song is still accepted and is lifted
  * on load — see `migrateSong`, which touches not one note.
  */
-export const SONG_VERSION = 3;
+export const SONG_VERSION = 4;
 
 /** Versions this app can read. The newest is the one it writes. */
-export const READABLE_SONG_VERSIONS = [2, 3] as const;
+export const READABLE_SONG_VERSIONS = [2, 3, 4] as const;
 
 export const songSchema = z.strictObject({
   version: z.literal(READABLE_SONG_VERSIONS),

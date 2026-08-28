@@ -15,7 +15,14 @@ import { SYSTEM_PROMPT } from "@/lib/copilot/prompt";
 import { articulationSchema, noteEventSchema, songSchema } from "@/lib/song/schema";
 import { HARMONY_SONG, mainSection } from "@/test/copilot-fixtures";
 
-const PILOT = [
+/**
+ * Every value that is played differently, pinned as a list.
+ *
+ * Eight in the pilot; thirteen since 2T-C §9 added ghost, dead, tapping and
+ * the two harmonics. Written out rather than counted, so swapping one for
+ * another still fails here.
+ */
+const EXPRESSIVE = [
   "accent",
   "palm_mute",
   "vibrato",
@@ -24,6 +31,11 @@ const PILOT = [
   "slide",
   "hammer_on",
   "pull_off",
+  "ghost",
+  "dead",
+  "tapping",
+  "natural_harmonic",
+  "pinch_harmonic",
 ] as const;
 
 describe("the song contract", () => {
@@ -39,13 +51,13 @@ describe("the song contract", () => {
     }
   });
 
-  it("accepts all eight of the pilot's expression values", () => {
-    for (const articulation of PILOT) {
+  it("accepts every value that is played differently", () => {
+    for (const articulation of EXPRESSIVE) {
       expect(
         noteEventSchema.safeParse({ pitch: "A3", articulation }).success,
       ).toBe(true);
     }
-    expect([...PILOT].sort()).toEqual([...EXPRESSIVE_ARTICULATIONS].sort());
+    expect([...EXPRESSIVE].sort()).toEqual([...EXPRESSIVE_ARTICULATIONS].sort());
   });
 
   it("rejects anything else, rather than dropping it quietly", () => {
@@ -130,10 +142,34 @@ describe("the model's narrow output", () => {
   });
 });
 
+/*
+ * What the model may write, which is deliberately narrower than what a
+ * person may write. 2T-C §17 puts provider and Copilot changes out of scope,
+ * so the five techniques added in §9 are reachable from the sheet and not
+ * from the prompt — and this list says so rather than leaving the difference
+ * to be discovered.
+ */
+const PROMPT_ARTICULATIONS = [
+  "accent",
+  "palm_mute",
+  "vibrato",
+  "bend_half",
+  "bend_full",
+  "slide",
+  "hammer_on",
+  "pull_off",
+] as const;
+
 describe("what the model is told", () => {
-  it("names every allowed articulation in the fixed system block", () => {
-    for (const articulation of PILOT) {
+  it("names every articulation the model may write", () => {
+    for (const articulation of PROMPT_ARTICULATIONS) {
       expect(SYSTEM_PROMPT).toContain(articulation);
+    }
+  });
+
+  it("does not offer the model the techniques 2T-C added for people", () => {
+    for (const articulation of ["ghost", "dead", "tapping", "pinch_harmonic"]) {
+      expect(SYSTEM_PROMPT).not.toContain(articulation);
     }
   });
 

@@ -39,9 +39,20 @@ function productionFiles(dir = "src"): string[] {
   return out;
 }
 
-describe("190. the production expression contract did not move", () => {
-  it("still has exactly the eleven articulations it had", () => {
-    // Pinned as a list rather than a count: a swap would keep the count.
+describe("190. the production expression contract is exactly this", () => {
+  /*
+   * This pin was written in 2P-A to say "the benchmark changed nothing", and
+   * it did its job: the contract stood at eleven articulations through that
+   * checkpoint and through 2Q, 2R and 2S. It moved once, in 2T-C §9, by a
+   * decision written down in the spec — five techniques a guitarist needs
+   * that the app could not say at all.
+   *
+   * So the pin is not deleted, it is re-set: still a list rather than a
+   * count, so a swap fails, and still the thing that makes a silent addition
+   * impossible. The benchmark's own numbers are pinned separately below and
+   * did not move at all.
+   */
+  it("has exactly these sixteen articulations", () => {
     expect(articulationSchema.options).toEqual([
       "normal",
       "palm_mute",
@@ -54,10 +65,15 @@ describe("190. the production expression contract did not move", () => {
       "slide",
       "hammer_on",
       "pull_off",
+      "ghost",
+      "dead",
+      "tapping",
+      "natural_harmonic",
+      "pinch_harmonic",
     ]);
   });
 
-  it("still plays exactly the eight it played", () => {
+  it("plays exactly these thirteen differently", () => {
     expect([...EXPRESSIVE_ARTICULATIONS]).toEqual([
       "accent",
       "palm_mute",
@@ -67,6 +83,11 @@ describe("190. the production expression contract did not move", () => {
       "slide",
       "hammer_on",
       "pull_off",
+      "ghost",
+      "dead",
+      "tapping",
+      "natural_harmonic",
+      "pinch_harmonic",
     ]);
   });
 

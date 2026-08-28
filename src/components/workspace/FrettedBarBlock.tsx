@@ -4,6 +4,7 @@ import { useCallback, useRef } from "react";
 
 import { ArticulationGlyph } from "@/components/workspace/ArticulationGlyph";
 import { FretGlyph } from "@/components/workspace/FretGlyph";
+import { strumMarks } from "@/lib/tab/strum-mark";
 import { TechniqueLayer } from "@/components/workspace/TechniqueLayer";
 import {
   BAR_HEADER_HEIGHT,
@@ -421,6 +422,33 @@ export function FrettedBarBlock({
                 ))}
               </div>
             ) : null}
+
+            {/* One arrow per strummed chord, beside the numbers rather than
+                on them: a strum is a single gesture across the strings, so it
+                is drawn once and reaches only the strings it crosses. */}
+            {strumMarks(bar.spans).map((mark) => {
+              const top =
+                rowOffset(stringCount, mark.fromString, rowHeight) + rowHeight / 2;
+              const bottom =
+                rowOffset(stringCount, mark.toString, rowHeight) + rowHeight / 2;
+              return (
+                <span
+                  key={`strum-${mark.slotIndex}`}
+                  data-strum-mark={mark.direction}
+                  data-strum-slot={mark.slotIndex}
+                  role="img"
+                  aria-label={mark.label}
+                  className="text-bronze pointer-events-none absolute flex items-center justify-center font-mono text-[10px] leading-none"
+                  style={{
+                    left: slotCentre(mark.slotIndex) - SLOT_WIDTH / 2 - 6,
+                    top: Math.min(top, bottom) - 4,
+                    height: Math.abs(bottom - top) + 8,
+                  }}
+                >
+                  <span aria-hidden>{mark.direction === "down" ? "↓" : "↑"}</span>
+                </span>
+              );
+            })}
 
             {/* Fret numbers at each onset */}
             {bar.spans.map((span, index) =>

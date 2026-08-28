@@ -136,12 +136,18 @@ export class ExpressiveVoicePool {
     gain.connect(host.destination);
 
     let filter: Tone.Filter | null = null;
-    if (plan.filterPreset === "palm_mute") {
+    if (plan.filterPreset !== undefined) {
+      /* Two presets, one node. A dead note is rolled off harder than a palm
+         mute, because there is no note left in it to keep (2T-C §9). */
+      const preset =
+        plan.filterPreset === "dead"
+          ? expressionPresets.dead
+          : expressionPresets.palmMute;
       filter = new this.tone.Filter({
         context: this.context,
         type: "lowpass",
-        frequency: expressionPresets.palmMute.filterHz,
-        Q: expressionPresets.palmMute.filterQ,
+        frequency: preset.filterHz,
+        Q: preset.filterQ,
       });
       filter.connect(gain);
     }

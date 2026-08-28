@@ -90,7 +90,18 @@ export type ExpressiveNotePlan = {
   position?: { stringIndex: number; fret: number };
   pitchAutomation: PitchPoint[];
   gainEnvelope: GainPoint[];
-  filterPreset?: "palm_mute";
+  filterPreset?: "palm_mute" | "dead";
+  /** The hand's direction across a strummed chord, as the reader wrote it. */
+  strum?: "down" | "up";
+  /**
+   * How long after the written onset this voice is struck (2T-C §9).
+   *
+   * Set only on the notes of a chord marked as a strum. It belongs to the
+   * picking hand rather than to the note, so it is carried beside the note
+   * instead of being folded into `timeTicks`: the score still says one onset,
+   * which is what the reader wrote and what the tab draws.
+   */
+  strumOffsetSeconds?: number;
   fallbackReason?: ExpressionFallbackReason;
   /** True when this note needs a voice of its own rather than the sampler. */
   expressive: boolean;
@@ -461,6 +472,7 @@ function planFor(
     velocity: onset.velocity,
     gain,
     ...(onset.articulation === undefined ? {} : { articulation: onset.articulation }),
+    ...(onset.strum === undefined ? {} : { strum: onset.strum }),
     ...(onset.fret === null
       ? {}
       : { position: { stringIndex: onset.stringIndex, fret: onset.fret } }),
@@ -496,6 +508,90 @@ function planFor(
       durationSeconds,
       gainEnvelope: palmMuteGain(durationSeconds, gain),
       filterPreset: "palm_mute",
+    };
+  }
+
+  if (articulation === "ghost") {
+    /* Under everything, and it does not ring on: the finger is barely down. */
+    const held = round(durationSeconds * expressionPresets.ghost.holdFraction);
+    return {
+      ...base,
+      expressive: true,
+      durationSeconds: held,
+      gainEnvelope: [
+        { timeSeconds: 0, value: round(gain * expressionPresets.ghost.gainMultiplier) },
+      ],
+    };
+  }
+
+  if (articulation === "dead") {
+    /* A damped string struck: a short knock with no note in it. */
+    const held = Math.min(durationSeconds, expressionPresets.dead.holdSeconds);
+    return {
+      ...base,
+      expressive: true,
+      durationSeconds: round(held),
+      gainEnvelope: [
+        { timeSeconds: 0, value: round(gain * expressionPresets.dead.gainMultiplier) },
+        { timeSeconds: round(held), value: 0 },
+      ],
+      filterPreset: "dead",
+    };
+  }
+
+  if (articulation === "tapping") {
+    /* No pick, so no pick transient: the level arrives rather than lands. */
+    const attack = Math.min(expressionPresets.tapping.attackSeconds, durationSeconds / 2);
+    return {
+      ...base,
+      expressive: true,
+      gainEnvelope: [
+        { timeSeconds: 0, value: 0 },
+        {
+          timeSeconds: round(attack),
+          value: round(gain * expressionPresets.tapping.gainMultiplier),
+        },
+      ],
+    };
+  }
+
+  if (articulation === "natural_harmonic") {
+    return {
+      ...base,
+      expressive: true,
+      pitchAutomation: [
+        {
+          timeSeconds: 0,
+          cents: expressionPresets.harmonic.naturalCents,
+          curve: "step",
+        },
+      ],
+      gainEnvelope: [
+        { timeSeconds: 0, value: round(gain * expressionPresets.harmonic.naturalGain) },
+      ],
+    };
+  }
+
+  if (articulation === "pinch_harmonic") {
+    const rise = Math.min(
+      expressionPresets.harmonic.pinchRiseSeconds,
+      durationSeconds / 2,
+    );
+    return {
+      ...base,
+      expressive: true,
+      /* The squeal arrives a moment after the pick, not with it. */
+      pitchAutomation: [
+        { timeSeconds: 0, cents: 0, curve: "step" },
+        {
+          timeSeconds: round(rise),
+          cents: expressionPresets.harmonic.pinchCents,
+          curve: "linear",
+        },
+      ],
+      gainEnvelope: [
+        { timeSeconds: 0, value: round(gain * expressionPresets.harmonic.pinchGain) },
+      ],
     };
   }
 
@@ -584,6 +680,71 @@ function planFor(
  * The song is read, never written. Practice speed is applied here, so the same
  * plan describes the same music at whatever speed it is being worked at.
  */
+/**
+ * Where each voice of a strummed chord is struck (2T-C §9).
+ *
+ * A down strum starts at the thickest string and crosses towards the thinnest;
+ * an up strum starts at the other end. The gap between neighbours is a
+ * constant of the arm rather than of the tempo — but a chord shorter than the
+ * crossing would otherwise spill over the onset after it, so the spread is
+ * fitted into the room the chord has, exactly as the legato travel is.
+ *
+ * Voices come back in the order they were given, so a caller can lay the
+ * result onto its own notes without sorting anything.
+ */
+export function strumOffsets(
+  stringIndexes: readonly number[],
+  direction: "down" | "up",
+  durationSeconds: number,
+): number[] {
+  const gaps = stringIndexes.length - 1;
+  if (gaps <= 0) return stringIndexes.map(() => 0);
+
+  const { perStringSeconds, maxSpreadFraction } = expressionPresets.strum;
+  const room = Math.max(0, durationSeconds) * maxSpreadFraction;
+  const step = Math.min(perStringSeconds, room / gaps);
+
+  // Thickest first going down, thinnest first coming up. String 0 is the
+  // thickest, which is the tuning's own order.
+  const order = [...stringIndexes].sort((a, b) => a - b);
+  if (direction === "up") order.reverse();
+
+  return stringIndexes.map((stringIndex) => round(order.indexOf(stringIndex) * step));
+}
+
+/**
+ * Spreads every strummed chord of a built plan across its strings.
+ *
+ * Chain members are left alone: a chain is one voice, struck once at the note
+ * that starts it, so there is nothing there for a hand to cross.
+ */
+function applyStrumSpread(notes: ExpressiveNotePlan[]): void {
+  const groups = new Map<string, ExpressiveNotePlan[]>();
+  for (const note of notes) {
+    if (note.strum === undefined || note.chainId !== undefined) continue;
+    if (note.position === undefined) continue;
+    const key = `${note.trackId}:${note.timeTicks}`;
+    groups.set(key, [...(groups.get(key) ?? []), note]);
+  }
+
+  for (const group of groups.values()) {
+    const direction = group[0]!.strum!;
+    // The shortest voice sets the room: the crossing has to fit under all of
+    // them, not only under whichever one happens to ring longest.
+    const shortest = Math.min(...group.map((note) => note.durationSeconds));
+    const offsets = strumOffsets(
+      group.map((note) => note.position!.stringIndex),
+      direction,
+      shortest,
+    );
+    group.forEach((note, index) => {
+      const offset = offsets[index] ?? 0;
+      note.strumOffsetSeconds = offset;
+      note.startSeconds = round(note.startSeconds + offset);
+    });
+  }
+}
+
 export function buildExpressionPlan(
   song: Song,
   options: ExpressionPlanOptions = {},
@@ -668,6 +829,8 @@ export function buildExpressionPlan(
       });
     });
   }
+
+  applyStrumSpread(notes);
 
   notes.sort(
     (a, b) => a.startSeconds - b.startSeconds || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
