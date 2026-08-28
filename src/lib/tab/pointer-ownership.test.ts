@@ -59,8 +59,85 @@ describe("the duration handle", () => {
    */
   it("stops the page scrolling under itself and nowhere else", () => {
     expect(stopsPageScroll("duration")).toBe(true);
+    expect(stopsPageScroll("measure")).toBe(false);
     expect(stopsPageScroll("pen")).toBe(false);
     expect(stopsPageScroll("selection")).toBe(false);
     expect(stopsPageScroll("none")).toBe(false);
+  });
+});
+
+/**
+ * The bar header (2U-A §2).
+ *
+ * Holding a header means "this whole bar", which is not a question about a
+ * string. So the pen does not get it: there is nothing under a header to
+ * write on, and the reader who held one with a pen up used to get three
+ * ghost numbers in the first slot instead of a selected bar.
+ */
+describe("a press on a bar's header", () => {
+  it("is the measure's, even with a pen in hand", () => {
+    expect(
+      pointerOwner({
+        onMeasureHeader: true,
+        penArmed: true,
+        selectionAvailable: true,
+      }),
+    ).toBe("measure");
+  });
+
+  it("still loses to a finger already on a duration handle", () => {
+    expect(
+      pointerOwner({
+        onDurationHandle: true,
+        onMeasureHeader: true,
+        penArmed: false,
+        selectionAvailable: true,
+      }),
+    ).toBe("duration");
+  });
+
+  it("changes nothing for a press anywhere else on the staff", () => {
+    expect(
+      pointerOwner({
+        onMeasureHeader: false,
+        penArmed: true,
+        selectionAvailable: true,
+      }),
+    ).toBe("pen");
+    expect(
+      pointerOwner({
+        onMeasureHeader: false,
+        penArmed: false,
+        selectionAvailable: true,
+      }),
+    ).toBe("selection");
+  });
+
+  /* One press, one owner: the four cannot overlap. */
+  it("gives every combination exactly one owner", () => {
+    const owners = new Set<string>();
+    for (const onDurationHandle of [true, false]) {
+      for (const onMeasureHeader of [true, false]) {
+        for (const penArmed of [true, false]) {
+          for (const selectionAvailable of [true, false]) {
+            owners.add(
+              pointerOwner({
+                onDurationHandle,
+                onMeasureHeader,
+                penArmed,
+                selectionAvailable,
+              }),
+            );
+          }
+        }
+      }
+    }
+    expect([...owners].sort()).toEqual([
+      "duration",
+      "measure",
+      "none",
+      "pen",
+      "selection",
+    ]);
   });
 });

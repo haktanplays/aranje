@@ -1,0 +1,2991 @@
+{
+  "what": "2U-A §1 — UI Contract v1'in dondurduğu geometri",
+  "recordedAt": "2026-08-28T22:39:30.182Z",
+  "commit": "dc8cde8",
+  "viewports": [
+    "320x700",
+    "390x844",
+    "412x915",
+    "1363x936"
+  ],
+  "states": [
+    "1-read",
+    "2-focused-edit",
+    "3-note-selection",
+    "4-range-selection",
+    "5-more-sheet",
+    "6-duration-edit",
+    "7-technique-sheet",
+    "8-arpeggio-preview"
+  ],
+  "measured": {
+    "320x700": {
+      "1-read": {
+        "staff": {
+          "x": 34,
+          "y": 181,
+          "w": 544,
+          "h": 215.5
+        },
+        "strings": [
+          349.5,
+          323.5,
+          297.5,
+          271.5,
+          245.5,
+          219.5
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 349.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 323.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 297.5
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 271.5
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 245.5
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 219.5
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 271.5
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 153,
+          "w": 320,
+          "h": 297
+        },
+        "toolbar": null,
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 2,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 20,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "2-focused-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 409
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 498,
+          "w": 320,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 16,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "3-note-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 409
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 498,
+          "w": 320,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 36,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "4-range-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 408
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 497,
+          "w": 320,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 19,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": "data-selection-toolbar"
+        }
+      },
+      "5-more-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 408
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 497,
+          "w": 320,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 25,
+        "owners": {
+          "staff": "role",
+          "durationHandle": null,
+          "toolbar": "role"
+        }
+      },
+      "6-duration-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 409
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 498,
+          "w": 320,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 36,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "7-technique-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 409
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 498,
+          "w": 320,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 43,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      },
+      "8-arpeggio-preview": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 320,
+          "h": 409
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 498,
+          "w": 320,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 320,
+          "h": 700
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 40,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      }
+    },
+    "390x844": {
+      "1-read": {
+        "staff": {
+          "x": 34,
+          "y": 181,
+          "w": 544,
+          "h": 215.5
+        },
+        "strings": [
+          349.5,
+          323.5,
+          297.5,
+          271.5,
+          245.5,
+          219.5
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 349.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 323.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 297.5
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 271.5
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 245.5
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 219.5
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 271.5
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 153,
+          "w": 390,
+          "h": 541
+        },
+        "toolbar": null,
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 2,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 20,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "2-focused-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 601
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 690,
+          "w": 390,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 16,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "3-note-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 601
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 690,
+          "w": 390,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 42,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "4-range-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 600
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 689,
+          "w": 390,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 19,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": "data-selection-toolbar"
+        }
+      },
+      "5-more-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 600
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 689,
+          "w": 390,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 25,
+        "owners": {
+          "staff": "role",
+          "durationHandle": null,
+          "toolbar": "role"
+        }
+      },
+      "6-duration-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 601
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 690,
+          "w": 390,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 42,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "7-technique-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 601
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 690,
+          "w": 390,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 49,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      },
+      "8-arpeggio-preview": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 390,
+          "h": 601
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 690,
+          "w": 390,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 390,
+          "h": 844
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 47,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      }
+    },
+    "412x915": {
+      "1-read": {
+        "staff": {
+          "x": 34,
+          "y": 181,
+          "w": 544,
+          "h": 215.5
+        },
+        "strings": [
+          349.5,
+          323.5,
+          297.5,
+          271.5,
+          245.5,
+          219.5
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 349.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 323.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 297.5
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 271.5
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 245.5
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 219.5
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 271.5
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 153,
+          "w": 412,
+          "h": 612
+        },
+        "toolbar": null,
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 2,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 20,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "2-focused-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 672
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 761,
+          "w": 412,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 16,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "3-note-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 672
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 761,
+          "w": 412,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 915
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 46,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "4-range-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 671
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 760,
+          "w": 412,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 19,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": "data-selection-toolbar"
+        }
+      },
+      "5-more-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 671
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 760,
+          "w": 412,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 915
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 25,
+        "owners": {
+          "staff": "role",
+          "durationHandle": null,
+          "toolbar": "role"
+        }
+      },
+      "6-duration-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 672
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 761,
+          "w": 412,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 915
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 46,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "7-technique-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 672
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 761,
+          "w": 412,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 915
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 57,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      },
+      "8-arpeggio-preview": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 412,
+          "h": 672
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 761,
+          "w": 412,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 412,
+          "h": 915
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 48,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      }
+    },
+    "1363x936": {
+      "1-read": {
+        "staff": {
+          "x": 34,
+          "y": 181,
+          "w": 544,
+          "h": 215.5
+        },
+        "strings": [
+          349.5,
+          323.5,
+          297.5,
+          271.5,
+          245.5,
+          219.5
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 349.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 323.5
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 297.5
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 271.5
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 245.5
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 219.5
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 271.5
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 271.5
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 153,
+          "w": 1363,
+          "h": 633
+        },
+        "toolbar": null,
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 2,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 20,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "2-focused-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 693
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 782,
+          "w": 1363,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 16,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": null
+        }
+      },
+      "3-note-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 693
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 782,
+          "w": 1363,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 1363,
+          "h": 936
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 52,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "4-range-selection": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 692
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 781,
+          "w": 1363,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": null,
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 19,
+        "owners": {
+          "staff": "data-bar-key",
+          "durationHandle": null,
+          "toolbar": "data-selection-toolbar"
+        }
+      },
+      "5-more-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 692
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 781,
+          "w": 1363,
+          "h": 49
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 1363,
+          "h": 936
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 25,
+        "owners": {
+          "staff": "role",
+          "durationHandle": null,
+          "toolbar": "role"
+        }
+      },
+      "6-duration-edit": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 693
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 782,
+          "w": 1363,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 1363,
+          "h": 936
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 52,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "7-technique-sheet": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 693
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 782,
+          "w": 1363,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 1363,
+          "h": 936
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 52,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "data-testid",
+          "toolbar": null
+        }
+      },
+      "8-arpeggio-preview": {
+        "staff": {
+          "x": 34,
+          "y": 73,
+          "w": 544,
+          "h": 320
+        },
+        "strings": [
+          337,
+          293,
+          249,
+          205,
+          161,
+          117
+        ],
+        "digits": [
+          {
+            "text": "0",
+            "cx": 51,
+            "cy": 337
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 293
+          },
+          {
+            "text": "2",
+            "cx": 51,
+            "cy": 249
+          },
+          {
+            "text": "0",
+            "cx": 187,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 289,
+            "cy": 205
+          },
+          {
+            "text": "0",
+            "cx": 323,
+            "cy": 161
+          },
+          {
+            "text": "0",
+            "cx": 459,
+            "cy": 117
+          },
+          {
+            "text": "0",
+            "cx": 595,
+            "cy": 205
+          },
+          {
+            "text": "2",
+            "cx": 731,
+            "cy": 205
+          }
+        ],
+        "main": {
+          "x": 0,
+          "y": 45,
+          "w": 1363,
+          "h": 693
+        },
+        "toolbar": {
+          "x": 0,
+          "y": 782,
+          "w": 1363,
+          "h": 48
+        },
+        "transport": null,
+        "barActionBar": null,
+        "dialog": {
+          "x": 0,
+          "y": 0,
+          "w": 1363,
+          "h": 936
+        },
+        "bodyOverflowX": false,
+        "staffScrollers": 0,
+        "shortCells": 0,
+        "cellCount": 192,
+        "smallControls": [],
+        "clippedLabels": [],
+        "controlCount": 52,
+        "owners": {
+          "staff": "role",
+          "durationHandle": "role",
+          "toolbar": null
+        }
+      }
+    }
+  }
+}

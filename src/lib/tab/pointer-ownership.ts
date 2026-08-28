@@ -33,18 +33,36 @@
  * scrolling under *itself*; a finger anywhere else on the staff still scrolls
  * the page, because taking that away would be fixing one gesture by breaking
  * the one every reader uses most.
+ *
+ * ## The measure header (2U-A §2)
+ *
+ * A bar header is not a staff cell, and holding one means "this whole bar" —
+ * which is a different question from "write a note here". It is a *place*
+ * rather than a surface, so like the handle it wins outright: an armed pen
+ * does not write into a header, because there is no string under it to write
+ * on. Without this rule the pen would own every press on the block, and
+ * holding a header with the power-chord pen up would write three notes into
+ * the first slot instead of selecting the bar.
  */
-export type PointerOwner = "duration" | "pen" | "selection" | "none";
+export type PointerOwner =
+  | "duration"
+  | "measure"
+  | "pen"
+  | "selection"
+  | "none";
 
 export function pointerOwner(input: {
   /** True when the pointer went down on a duration handle. */
   readonly onDurationHandle?: boolean;
+  /** True when the pointer went down on a bar's header or gutter. */
+  readonly onMeasureHeader?: boolean;
   /** True when a touch on the staff would write notes. */
   readonly penArmed: boolean;
   /** True when this surface has a selection gesture to offer at all. */
   readonly selectionAvailable: boolean;
 }): PointerOwner {
   if (input.onDurationHandle === true) return "duration";
+  if (input.onMeasureHeader === true) return "measure";
   if (input.penArmed) return "pen";
   return input.selectionAvailable ? "selection" : "none";
 }
