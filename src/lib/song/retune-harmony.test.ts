@@ -358,12 +358,12 @@ describe("retuneHarmony — ornaments keep their shape", () => {
    * string is an upper neighbour: strike, hammer a semitone up, pull back.
    * Whatever chord it is asked for over, it has to come back as x–(x+1)–x.
    */
-  it("keeps an upper-neighbour cell as x – (x+1) – x", () => {
+  it("keeps an upper-neighbour cell as x, x plus one, x", () => {
     const result = retuned(onOneString(["B3", "C4", "B3"]));
     expect(played(result.song)).toEqual(["E4", "F4", "E4"]);
   });
 
-  it("keeps a lower-neighbour cell as x – (x-1) – x", () => {
+  it("keeps a lower-neighbour cell as x, x minus one, x", () => {
     const result = retuned(onOneString(["B3", "A#3", "B3"]));
     expect(played(result.song)).toEqual(["E4", "D#4", "E4"]);
   });

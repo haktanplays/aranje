@@ -22,6 +22,15 @@ describe("sliceSpan", () => {
     ]);
   });
 
+  /*
+   * A dotted sixteenth is 72 ticks: it fills one sixteenth slot and half of
+   * the next, and the reader has to see both. Rounding down here is how a
+   * dotted value comes out looking undotted.
+   */
+  it("gives a note that ends inside a slot that whole slot", () => {
+    expect(sliceSpan([bar()], 0, 72)).toMatchObject([{ startSlot: 0, endSlot: 1 }]);
+  });
+
   /* Nowhere smaller to draw it, and dropping it would lose the note. */
   it("still gives a slot to a note shorter than one", () => {
     expect(sliceSpan([bar()], 48, 24)).toMatchObject([{ startSlot: 1, endSlot: 1 }]);
