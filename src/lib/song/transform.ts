@@ -361,6 +361,23 @@ function resolveScope(
 
 // ------------------------------------------------------------------- reading
 
+/**
+ * A note with nothing left pointing back at where it came from (2U-A §4).
+ *
+ * A spread copies the fields; it does not copy `position`, which is an
+ * object. So a clipboard built with `{ ...note }` held the *same* position
+ * object as the song it was read from, and a paste wrote notes that shared
+ * one with the clipboard — three places that looked independent and were
+ * one. Nothing in the current cores mutates a note in place, so this never
+ * fired; it was a loaded gun in a drawer, and §4 asks for the drawer to be
+ * empty rather than for everyone to keep remembering not to open it.
+ *
+ * `structuredClone` rather than a hand-written copy of the one nested field:
+ * a field added to `NoteEvent` later should be detached by default, not by
+ * somebody remembering to come back here.
+ */
+const detachedNote = (note: NoteEvent): NoteEvent => structuredClone(note);
+
 /** Read a range into clipboard events, ties folded into durations. */
 function readRegion(
   stream: readonly SlotPosition[],
@@ -402,7 +419,7 @@ function readRegion(
     events.push({
       offsetTicks: entry.startTicks - selection.startTicks,
       durationTicks: duration,
-      notes: notesOf(entry).map((note) => ({ ...note })),
+      notes: notesOf(entry).map(detachedNote),
     });
   }
 
@@ -547,7 +564,7 @@ function writeEvents(
       writes.push({
         barIndex: slotEntry.barIndex,
         slotIndex: slotEntry.slotIndex,
-        slot: index === 0 ? { notes: event.notes.map((note) => ({ ...note })) } : "-",
+        slot: index === 0 ? { notes: event.notes.map(detachedNote) } : "-",
       });
     });
   }
