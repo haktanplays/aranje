@@ -136,6 +136,26 @@ export type HistoryAction =
    */
   | { readonly kind: "note_duration"; readonly direction: "longer" | "shorter" }
   /**
+   * One chord turned into an arpeggio, gathered back, or marked strummed
+   * (2T-B §7, §8).
+   *
+   * One action however many voices moved: the reader asked for an arpeggio
+   * once, so undo gives back the chord once. The three are separate words
+   * because they read differently in the history line — spreading a chord out
+   * and marking one strummed are not the same edit.
+   */
+  | {
+      readonly kind: "chord_shape";
+      readonly command: "to_arpeggio" | "to_chord" | "set_strum" | "clear_strum";
+    }
+  /**
+   * One figure asked for over a different chord (2T-B §12).
+   *
+   * One action for the whole run: the rhythm was kept and only the pitches
+   * moved, and undo puts the whole figure back rather than a note at a time.
+   */
+  | { readonly kind: "retune_harmony" }
+  /**
    * One pattern continued (2S-A §9).
    *
    * One action however many copies: the reader asked for four, so undo gives

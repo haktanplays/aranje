@@ -155,6 +155,8 @@ describe("27. every mutation path goes through the one gate", () => {
       "src/lib/song/event-entry-history.test.ts",
       // 2S-A §12: that one composer gesture is one step, at the same level.
       "src/lib/song/intent-history.test.ts",
+      // 2T-B §8: that each of the five new transforms is one step, likewise.
+      "src/lib/song/shape-history.test.ts",
     ];
     const others = readdirSync("src/lib/song")
       .filter((name) => name.endsWith(".ts"))

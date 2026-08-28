@@ -139,6 +139,19 @@ export function historyActionLabel(action: HistoryAction): string {
       return "Notaları bağlama";
     case "continue_pattern":
       return "Deseni devam ettirme";
+    case "chord_shape":
+      switch (action.command) {
+        case "to_arpeggio":
+          return "Akoru arpeje çevirme";
+        case "to_chord":
+          return "Arpeji akora toplama";
+        case "set_strum":
+          return "Vuruş yönü verme";
+        case "clear_strum":
+          return "Vuruş yönünü kaldırma";
+      }
+    case "retune_harmony":
+      return "Figürü yeni akora taşıma";
     case "note_duration":
       return action.direction === "longer"
         ? "Nota süresini uzatma"

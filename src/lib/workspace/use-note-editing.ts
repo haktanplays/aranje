@@ -22,6 +22,14 @@ import {
   moveDurationDrag,
   type DurationDrag,
 } from "@/lib/song/duration-drag";
+import {
+  arpeggioToChord,
+  chordToArpeggio,
+  setChordStrum,
+  type ArpeggioDirection,
+  type ArpeggioStep,
+  type TransformFailure,
+} from "@/lib/song/chord-shape";
 import { applyEdit, type EditCommand } from "@/lib/song/edit";
 import { applyMoveOnsetGroup, type OnsetMovement } from "@/lib/song/move";
 import {
@@ -39,6 +47,27 @@ import {
 } from "@/lib/song/selection";
 import type { TrackTimeline } from "@/lib/tab/timeline";
 import { validateArticulationContext } from "@/lib/validators";
+
+/** What a refused transform is called, in the reader's words. */
+const SHAPE_REFUSALS: Readonly<Record<TransformFailure, string>> = {
+  target_not_found: "Bu vuruş artık burada değil.",
+  not_a_melodic_track: "Bu track'te akor dönüşümü yapılamaz.",
+  not_a_chord: "Burada dönüştürülecek bir akor yok.",
+  would_not_fit: "Bu dönüşüm bu ölçüye sığmıyor.",
+  validation_failed: "Bu dönüşüm yazılamadı.",
+};
+
+/** One line saying what would happen, for a preview that writes nothing. */
+function shapeSummary(command: ShapeCommand, voices: number): string {
+  if (command.kind === "to_arpeggio") {
+    const ring = command.ring ? "çınlayarak" : "ayrık";
+    return `${voices} ses ${ring} arpeje yayılır.`;
+  }
+  if (command.kind === "to_chord") return `${voices} ses tek vuruşta toplanır.`;
+  return command.direction === null
+    ? "Vuruş yönü kaldırılır."
+    : `${voices} ses ${command.direction === "down" ? "aşağı" : "yukarı"} vuruşla çalınır.`;
+}
 
 /** What a refused length is called, in the reader's words. */
 const DURATION_REFUSALS: Readonly<Record<string, string>> = {
@@ -95,6 +124,40 @@ export type DurationGesture = {
   cancel(): void;
 };
 
+/** What the reader can ask of the chord under the selection (2T-B §7). */
+export type ShapeCommand =
+  | {
+      readonly kind: "to_arpeggio";
+      readonly direction: ArpeggioDirection;
+      readonly stepTicks: ArpeggioStep;
+      readonly ring: boolean;
+    }
+  | { readonly kind: "to_chord"; readonly spanSlots: number }
+  | { readonly kind: "set_strum"; readonly direction: "down" | "up" | null };
+
+/**
+ * What one of those would do, worked out without writing anything.
+ *
+ * The preview runs the same pure core the apply runs, on the same song, and
+ * throws the result away. That is the only kind of preview worth having: it
+ * cannot disagree with what applying would do, because it *is* what applying
+ * would do.
+ */
+export type ShapePreview =
+  | {
+      readonly kind: "ready";
+      readonly onsets: readonly { readonly slotIndex: number; readonly pitch: string }[];
+      readonly summary: string;
+    }
+  | { readonly kind: "refused"; readonly reason: string };
+
+export type ShapeGesture = {
+  /** True when there is a chord here at all to ask anything of. */
+  readonly available: boolean;
+  preview(command: ShapeCommand): ShapePreview;
+  apply(command: ShapeCommand): void;
+};
+
 export type NoteEditing = {
   readonly editing: boolean;
   readonly cell: EditedCell | null;
@@ -104,6 +167,7 @@ export type NoteEditing = {
   readonly fretTarget: FretSheetTarget | null;
   readonly group: GroupSelection;
   readonly duration: DurationGesture;
+  readonly shape: ShapeGesture;
   toggleEdit(): void;
   /** Leave edit mode without touching the cell/selection resets. */
   exitEditMode(): void;
@@ -389,6 +453,76 @@ export function useNoteEditing(options: {
     clearGroup();
   }, [clearGroup]);
 
+  /* -------------------------------------------- the chord-shape transforms */
+
+  const shapeTarget = useMemo(() => {
+    if (!cell || !track) return null;
+    const [sectionId, barIndexText] = cell.barKey.split(":");
+    const barIndex = Number(barIndexText);
+    if (!sectionId || !Number.isInteger(barIndex)) return null;
+    return { sectionId, barIndex, trackId: track.id, slotIndex: cell.slotIndex };
+  }, [cell, track]);
+
+  const runShape = useCallback(
+    (command: ShapeCommand) => {
+      if (!shapeTarget) return null;
+      switch (command.kind) {
+        case "to_arpeggio":
+          return chordToArpeggio(song, shapeTarget, {
+            direction: command.direction,
+            stepTicks: command.stepTicks,
+            ring: command.ring,
+          });
+        case "to_chord":
+          return arpeggioToChord(song, shapeTarget, command.spanSlots);
+        case "set_strum":
+          return setChordStrum(song, shapeTarget, command.direction);
+      }
+    },
+    [shapeTarget, song],
+  );
+
+  const previewShape = useCallback(
+    (command: ShapeCommand): ShapePreview => {
+      const result = runShape(command);
+      if (result === null) return { kind: "refused", reason: SHAPE_REFUSALS.target_not_found };
+      if (!result.ok) {
+        return {
+          kind: "refused",
+          reason: result.detail ?? SHAPE_REFUSALS[result.reason],
+        };
+      }
+      return {
+        kind: "ready",
+        onsets: result.onsets,
+        summary: shapeSummary(command, result.onsets.length),
+      };
+    },
+    [runShape],
+  );
+
+  const applyShape = useCallback(
+    (command: ShapeCommand) => {
+      const result = runShape(command);
+      if (result === null) return;
+      if (!result.ok) {
+        setEditError(result.detail ?? SHAPE_REFUSALS[result.reason]);
+        return;
+      }
+      setEditError(null);
+      commit(result.song, {
+        kind: "chord_shape",
+        command:
+          command.kind === "set_strum"
+            ? command.direction === null
+              ? "clear_strum"
+              : "set_strum"
+            : command.kind,
+      });
+    },
+    [commit, runShape],
+  );
+
   /* ------------------------------------------------ the duration gesture */
 
   const durationTargetOf = useCallback(
@@ -456,6 +590,11 @@ export function useNoteEditing(options: {
     currentFret,
     currentArticulation,
     fretTarget,
+    shape: {
+      available: shapeTarget !== null,
+      preview: previewShape,
+      apply: applyShape,
+    },
     duration: {
       drag,
       previewTicks: drag?.ticks ?? null,

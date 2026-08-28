@@ -5,6 +5,11 @@ import { useState } from "react";
 import { DurationControl } from "@/components/workspace/DurationControl";
 import type { DurationGestureProps } from "@/components/workspace/FrettedBarBlock";
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
+import {
+  ShapeSection,
+  type ShapeCommandInput,
+  type ShapePreviewResult,
+} from "@/components/workspace/ShapeSection";
 import { maxCapoRelativeFret } from "@/lib/music/fretboard";
 import { pitchAt } from "@/lib/song/edit";
 import { articulationLabel } from "@/lib/validators";
@@ -74,6 +79,7 @@ export function FretSheet({
   onArticulation,
   onChord,
   duration = null,
+  shape = null,
   error,
 }: {
   open: boolean;
@@ -101,6 +107,15 @@ export function FretSheet({
    * behind it and never be reachable.
    */
   duration?: DurationGestureProps | null;
+  /**
+   * The chord transforms behind "Daha fazla" (2T-B §7), or null where the
+   * selection is not on a track that can hold a chord.
+   */
+  shape?: {
+    readonly available: boolean;
+    preview(command: ShapeCommandInput): ShapePreviewResult;
+    apply(command: ShapeCommandInput): void;
+  } | null;
   /** Set when the last command was refused, in words the reader can act on. */
   error: string | null;
 }) {
@@ -239,6 +254,10 @@ export function FretSheet({
             onRelease={duration.release}
             onCancel={duration.cancel}
           />
+        ) : null}
+
+        {shape?.available ? (
+          <ShapeSection preview={shape.preview} apply={shape.apply} />
         ) : null}
 
         {target.articulationWarning ? (
