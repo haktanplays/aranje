@@ -254,7 +254,7 @@ export function Workspace() {
   });
 
   /* What a covered run says and offers while writing (K-59 §3, §4). */
-  const covered = coveredRun({ editing: noteEditing.editing, time: session.time, composer });
+  const covered = coveredRun({ editing: noteEditing.editing, time: session.time, song });
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">

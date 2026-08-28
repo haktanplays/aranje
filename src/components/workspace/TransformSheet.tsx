@@ -26,6 +26,7 @@ import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { ticksPerSlot } from "@/lib/music/timing";
 import type { Preview } from "@/lib/song/use-transform";
+import { TIME_GRAINS } from "@/lib/song/movement-menu";
 import type { TransformCommand } from "@/lib/song/transform";
 import type { Bar } from "@/lib/song/schema";
 
@@ -49,11 +50,19 @@ function TimeNudges({
   barTicks: number;
   onNudge: (ticks: number) => void;
 }) {
-  const options: readonly Nudge[] = [
-    { label: "grid", ticks: step },
-    { label: "vuruş", ticks: beat },
-    { label: "ölçü", ticks: barTicks },
-  ];
+  /*
+   * The three grains, named once in `movement-menu.ts` so the eight movements
+   * "Taşı" promises cannot quietly become seven.
+   */
+  const ticksOf: Record<string, number> = {
+    "time-grid": step,
+    "time-beat": beat,
+    "time-bar": barTicks,
+  };
+  const options: readonly Nudge[] = TIME_GRAINS.map((grain) => ({
+    label: grain.label,
+    ticks: ticksOf[grain.id] ?? step,
+  }));
 
   return (
     <div className="space-y-2">

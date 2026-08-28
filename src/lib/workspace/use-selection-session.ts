@@ -84,6 +84,15 @@ export type TimeSelectionSession = {
   closeSheet(): void;
   /** Drop a waiting chain decision and the action behind it. Writes nothing. */
   cancelChainDecision(): void;
+  /**
+   * True while "Devam" is waiting for the reader to say where to reach to.
+   *
+   * A state on a control the toolbar already draws, not a control of its own:
+   * the row stays the four verbs UI Contract v1 froze.
+   */
+  readonly extendArmed: boolean;
+  /** Arm "Devam", or put it down again. Writes nothing either way. */
+  toggleExtend(): void;
   onSlotLongPress(x: number): void;
   onHandleDown(edge: "start" | "end", event: ReactPointerEvent): void;
   onHandleMove(event: ReactPointerEvent): void;
@@ -171,6 +180,19 @@ export function useSelectionSession(options: {
    * afterwards.
    */
   const [pasteAt, setPasteAt] = useState<PasteFlow>({ kind: "idle" });
+  /**
+   * True while "Devam" is armed (2U-A §3).
+   *
+   * Armed, the next long press on the staff moves the *end* of what is
+   * already held instead of starting something new. It is the same reach the
+   * band's end handle offers — needed as well as the handle because on a
+   * one-slot selection the two handles are 34px apart, and a finger cannot
+   * choose between them.
+   *
+   * Not a mode in any lasting sense: it survives one press and then puts
+   * itself down, so there is no state a reader can get stuck in.
+   */
+  const [extendArmed, setExtendArmed] = useState(false);
 
   /** The section a time selection lives in, resolved once. */
   const selectedSection = useMemo(
@@ -261,17 +283,23 @@ export function useSelectionSession(options: {
     [],
   );
 
-  const onHandleMove = useCallback(
-    (event: ReactPointerEvent) => {
-      const edge = dragEdge.current;
+  /**
+   * Move one edge of the selection to the slot under `x` (2U-A §3).
+   *
+   * The one piece of arithmetic behind both ways of reaching: dragging a
+   * handle, and arming "Devam" and pressing where to reach to. They have to
+   * agree — a selection that ends one slot short of where the finger landed,
+   * depending on which of the two the reader used, is a selection they cannot
+   * predict.
+   *
+   * Selection only. No Song, no history step, no storage write; shrinking is
+   * allowed, because taking a bar back out of a run is the same gesture as
+   * putting one in.
+   */
+  const moveEdge = useCallback(
+    (edge: "start" | "end", x: number) => {
       const selection = transform.selection;
-      if (!edge || !selection || !selectedSection || timeline.kind === "unsupported")
-        return;
-      const content = scrollRef.current?.querySelector("[data-tab-content]");
-      if (!content) return;
-
-      const x =
-        event.clientX - content.getBoundingClientRect().left - GUTTER_WIDTH;
+      if (!selection || !selectedSection || timeline.kind === "unsupported") return;
       const hit = slotAtX(timeline.bars, x);
       if (!hit || hit.sectionId !== selection.sectionId) return;
       const bar = selectedSection.bars[hit.barIndex];
@@ -288,7 +316,18 @@ export function useSelectionSession(options: {
           : { ...selection, endTicks: Math.max(ticks + step, selection.startTicks + step) };
       transform.select(next);
     },
-    [scrollRef, selectedSection, timeline, transform],
+    [selectedSection, timeline, transform],
+  );
+
+  const onHandleMove = useCallback(
+    (event: ReactPointerEvent) => {
+      const edge = dragEdge.current;
+      if (!edge) return;
+      const content = scrollRef.current?.querySelector("[data-tab-content]");
+      if (!content) return;
+      moveEdge(edge, event.clientX - content.getBoundingClientRect().left - GUTTER_WIDTH);
+    },
+    [moveEdge, scrollRef],
   );
 
   const onHandleUp = useCallback(() => {
@@ -347,7 +386,19 @@ export function useSelectionSession(options: {
     transform.clear();
     setSheet(null);
     setPasteAt({ kind: "idle" });
+    setExtendArmed(false);
   }, [transform]);
+
+  /**
+   * "Devam" pressed. Arms the reach, or puts it down if it was already armed.
+   *
+   * Nothing is written and nothing is staged — pressing it twice leaves the
+   * selection exactly as it was, which is what a reader who pressed it by
+   * accident needs it to do.
+   */
+  const toggleExtend = useCallback(() => {
+    setExtendArmed((armed) => !armed && transform.selection !== null);
+  }, [transform.selection]);
 
   /**
    * "Vazgeç".
@@ -393,6 +444,17 @@ export function useSelectionSession(options: {
         return;
       }
 
+      /*
+       * With "Devam" armed the press says where the run should reach to. The
+       * start does not move, and the arm is put down afterwards so the next
+       * press means what it always meant.
+       */
+      if (extendArmed) {
+        moveEdge("end", x);
+        setExtendArmed(false);
+        return;
+      }
+
       // The other selection model lets go, for the same reason a bar press
       // clears this one: one press, one thing selected.
       barTransform.clear();
@@ -417,7 +479,17 @@ export function useSelectionSession(options: {
         },
       );
     },
-    [barTransform, pasteAt.kind, pause, song.sections, timeline, track, transform],
+    [
+      barTransform,
+      extendArmed,
+      moveEdge,
+      pasteAt.kind,
+      pause,
+      song.sections,
+      timeline,
+      track,
+      transform,
+    ],
   );
 
   /* ------------------------------------------------------ bar selection */
@@ -600,6 +672,8 @@ export function useSelectionSession(options: {
       closeSheet,
       cancelChainDecision,
       onSlotLongPress,
+      extendArmed,
+      toggleExtend,
       onHandleDown,
       onHandleMove,
       onHandleUp,

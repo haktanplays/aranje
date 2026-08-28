@@ -10,13 +10,31 @@
  * Every verb here is a handle that already existed. Nothing new is staged, no
  * command is invented, and this file writes nothing: it names the calls.
  */
-import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
+import {
+  offeredVerbs,
+  selectionCapabilities,
+  type SelectionVerb,
+  type VerbOffer,
+} from "@/lib/song/selection-capability";
+import { describeTimeSelection } from "@/lib/song/selection-descriptor";
+import type { Song } from "@/lib/song/schema";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 
 /** Everything the selection toolbar can ask for. */
 export type SelectionActions = {
   readonly notice: string | null;
   readonly error: string | null;
+  /**
+   * What this selection may be asked to do, computed once (2U-A §3).
+   *
+   * The drawer draws what is offered and greys what is disabled, with the
+   * reason the model gave. It does not decide for itself — a screen that
+   * works out whether a run can be joined by counting notes will offer
+   * "Bağla" on one note the day the counting is off by one.
+   */
+  readonly offers: readonly VerbOffer[];
+  /** True while "Devam" is waiting for the reader to say where to reach to. */
+  readonly extendArmed: boolean;
   /** The legato brush's own door; owned by the edit area, which has it open. */
   onConnect(): void;
   onMove(): void;
@@ -27,6 +45,18 @@ export type SelectionActions = {
   onRepeat(): void;
   onDelete(): void;
 };
+
+/** Which verb each drawer entry runs, so the two lists cannot drift apart. */
+export const DRAWER_VERBS: readonly {
+  readonly key: keyof SelectionActions;
+  readonly verb: SelectionVerb;
+}[] = [
+  { key: "onCopy", verb: "copy" },
+  { key: "onCut", verb: "cut" },
+  { key: "onDuplicate", verb: "duplicate" },
+  { key: "onRepeat", verb: "repeat" },
+  { key: "onDelete", verb: "delete" },
+];
 
 /** The one line the edit header says about a covered run, and its way out. */
 export type SelectionHeader = { readonly summary: string; onCancel(): void };
@@ -51,8 +81,8 @@ export type CoveredRun = {
 export type CoveredRunInput = {
   readonly editing: boolean;
   readonly time: SelectionSession["time"];
-  /** Only `pick` is used: "Devam" picks the pattern tool up, nothing else. */
-  readonly composer: Pick<IntentComposer, "pick">;
+  /** Read to describe the selection; never written through. */
+  readonly song: Song;
 };
 
 export function coveredRun(input: CoveredRunInput): CoveredRun | null {
@@ -64,12 +94,39 @@ export function coveredRun(input: CoveredRunInput): CoveredRun | null {
 function selectionVerbs(input: CoveredRunInput): SelectionVerbs | null {
   const { time } = input;
   if (!input.editing || !time.handle.selection) return null;
+
+  const descriptor = describeTimeSelection(input.song, time.handle.selection);
+  const section = input.song.sections.find(
+    (entry) => entry.id === time.handle.selection?.sectionId,
+  );
+  const offers = descriptor
+    ? offeredVerbs(
+        selectionCapabilities(descriptor, {
+          hasClipboard: time.handle.hasClipboard,
+          /* The time clipboard only ever holds a run of notes. */
+          clipboardScope: time.handle.hasClipboard ? "range" : null,
+          sectionBarCount: section?.bars.length ?? 0,
+        }),
+      )
+    : [];
+
   return {
     notice: time.handle.notice ?? null,
     error: time.handle.error ?? null,
+    offers,
+    extendArmed: time.extendArmed,
     onMove: () => time.openSheet("move"),
-    onContinue: () =>
-      input.composer.pick({ kind: "continue_pattern", mode: "repeat" }),
+    /*
+     * "Devam" reaches from the end of what is held (2U-A §3).
+     *
+     * It used to pick up the pattern-continuation composer tool. That tool is
+     * not lost — it is one tap away behind the Ritim door, where it has been
+     * since K-59 — but a verb sitting on a selection toolbar should do
+     * something to the selection, and "carry on from here" is the one reach a
+     * covered run needs that its two handles cannot give it: on a one-slot
+     * selection they are 34px apart and a finger cannot pick between them.
+     */
+    onContinue: time.toggleExtend,
     // Reading only: no commit, no write, no undo step.
     onCopy: time.handle.copy,
     onCut: () => time.handle.apply({ kind: "cut_selection" }),

@@ -19,31 +19,44 @@
  * ## Four verbs and a drawer
  *
  * `Bağla` opens the legato brush's own door — the brush is *used* on a covered
- * run, so it has to be one tap from a selection. `Taşı` and `Devam` are the
- * other two things a reader does to a run they have just covered. Everything
+ * run, so it has to be one tap from a selection. `Taşı` opens the eight
+ * movements, and `Devam` reaches from the end of what is held. Everything
  * else — copy, cut, duplicate, repeat, delete — lives behind `Daha fazla`,
  * because those are the operations you go looking for rather than reach for.
  *
  * No new command is invented here. Every one of these calls the same handle
  * the tall bar called.
+ *
+ * ## What is drawn, and what is greyed (2U-A §3)
+ *
+ * The row itself is frozen at these four — UI Contract v1 — so a verb that
+ * does not apply cannot be dropped to make space; it is greyed instead, with
+ * the reason the capability model gave, on the control rather than after the
+ * press. The drawer may drop an entry, because a sheet has room to be shorter.
+ *
+ * Neither list decides anything for itself. Which verbs apply is a musical
+ * question — is this one onset or several, is there a bar to the left, is
+ * there anything on the clipboard — and it is answered once, in
+ * `selection-capability.ts`, so that the three places a selection appears
+ * cannot answer it three ways.
  */
 import { useState } from "react";
 
 import { Sheet } from "@/components/workspace/Sheet";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
-import type { SelectionActions } from "@/lib/workspace/selection-verbs";
+import type { SelectionVerb, VerbState } from "@/lib/song/selection-capability";
+import {
+  DRAWER_VERBS,
+  type SelectionActions,
+} from "@/lib/workspace/selection-verbs";
 
-const MORE: readonly {
-  readonly key: keyof SelectionActions;
-  readonly label: string;
-  readonly hint: string;
-}[] = [
-  { key: "onCopy", label: "Kopyala", hint: "Seçimi panoya alır; şarkı değişmez." },
-  { key: "onCut", label: "Kes", hint: "Seçimi panoya alır ve yerinden kaldırır." },
-  { key: "onDuplicate", label: "Çoğalt", hint: "Seçimin bir kopyasını hemen ardına koyar." },
-  { key: "onRepeat", label: "Tekrarla", hint: "Seçimi kaç kez tekrarlayacağını sorar." },
-  { key: "onDelete", label: "Sil", hint: "Seçili notaları kaldırır." },
-];
+const LABELS: Record<string, { readonly label: string; readonly hint: string }> = {
+  copy: { label: "Kopyala", hint: "Seçimi panoya alır; şarkı değişmez." },
+  cut: { label: "Kes", hint: "Seçimi panoya alır ve yerinden kaldırır." },
+  duplicate: { label: "Çoğalt", hint: "Seçimin bir kopyasını hemen ardına koyar." },
+  repeat: { label: "Tekrarla", hint: "Seçimi kaç kez tekrarlayacağını sorar." },
+  delete: { label: "Sil", hint: "Seçili notaları kaldırır." },
+};
 
 export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
   const [more, setMore] = useState(false);
@@ -53,6 +66,22 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
     if (typeof action === "function") action();
     setMore(false);
   };
+
+  /*
+   * What the drawer draws (2U-A §3).
+   *
+   * Every entry is asked of the capability model rather than decided here: a
+   * verb is offered and works, or greyed with the model's own sentence, or
+   * absent because it does not belong to this kind of selection at all. What
+   * must never happen is the fourth thing — drawn, pressed, and refused.
+   */
+  const stateOf = (verb: SelectionVerb): VerbState | null =>
+    actions.offers.find((offer) => offer.verb === verb)?.state ?? null;
+  const drawer = DRAWER_VERBS.map((entry) => ({
+    ...entry,
+    ...LABELS[entry.verb]!,
+    state: stateOf(entry.verb),
+  })).filter((entry) => entry.state !== null);
 
   return (
     <>
@@ -88,21 +117,44 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
         className="border-line flex items-center gap-1.5 border-t px-3 py-0.5"
       >
         {[
-          { key: "onConnect" as const, label: "Bağla" },
-          { key: "onMove" as const, label: "Taşı" },
-          { key: "onContinue" as const, label: "Devam" },
-        ].map((entry) => (
-          <button
-            key={entry.key}
-            type="button"
-            data-selection-verb={entry.label}
-            onClick={() => run(entry.key)}
-            className="border-line text-muted min-w-0 flex-1 rounded-lg border px-1.5 text-sm whitespace-nowrap"
-            style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 48 }}
-          >
-            {entry.label}
-          </button>
-        ))}
+          { key: "onConnect" as const, label: "Bağla", verb: "connect" as const },
+          { key: "onMove" as const, label: "Taşı", verb: "move_time" as const },
+          { key: "onContinue" as const, label: "Devam", verb: "extend" as const },
+        ].map((entry) => {
+          const state = stateOf(entry.verb);
+          const off = state?.kind === "disabled";
+          return (
+            <button
+              key={entry.key}
+              type="button"
+              data-selection-verb={entry.label}
+              onClick={() => run(entry.key)}
+              disabled={off}
+              /*
+               * The reason travels with the control rather than waiting for a
+               * press. A reader learns "Bağlamak için en az iki nota
+               * gerekiyor." from a grey button; they learn nothing from one
+               * that looks live and then says no.
+               */
+              title={off ? state.reason : undefined}
+              aria-label={off ? `${entry.label} — ${state.reason}` : undefined}
+              /* "Devam" is armed or not; the other two are not toggles. */
+              aria-pressed={
+                entry.key === "onContinue" ? actions.extendArmed : undefined
+              }
+              className={`min-w-0 flex-1 rounded-lg border px-1.5 text-sm whitespace-nowrap ${
+                off
+                  ? "border-line/50 text-muted/40"
+                  : entry.key === "onContinue" && actions.extendArmed
+                    ? "border-accent bg-accent/10 text-text"
+                    : "border-line text-muted"
+              }`}
+              style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 48 }}
+            >
+              {entry.label}
+            </button>
+          );
+        })}
         <button
           type="button"
           data-selection-more
@@ -132,19 +184,33 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
           Seçimle ne yapılsın?
         </h2>
         <div className="flex flex-col gap-2">
-          {MORE.map((entry) => (
-            <button
-              key={entry.key}
-              type="button"
-              data-selection-action={entry.label}
-              onClick={() => run(entry.key)}
-              className="border-line rounded-lg border px-3 py-2 text-left"
-              style={{ minHeight: MIN_TOUCH_TARGET_PX }}
-            >
-              <span className="text-text block text-sm">{entry.label}</span>
-              <span className="text-muted block text-[11px]">{entry.hint}</span>
-            </button>
-          ))}
+          {drawer.map((entry) => {
+            const off = entry.state?.kind === "disabled";
+            return (
+              <button
+                key={entry.key}
+                type="button"
+                data-selection-action={entry.label}
+                onClick={() => run(entry.key)}
+                disabled={off}
+                className={`rounded-lg border px-3 py-2 text-left ${
+                  off ? "border-line/50" : "border-line"
+                }`}
+                style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+              >
+                <span
+                  className={`block text-sm ${off ? "text-muted/40" : "text-text"}`}
+                >
+                  {entry.label}
+                </span>
+                <span className="text-muted block text-[11px]">
+                  {off && entry.state?.kind === "disabled"
+                    ? entry.state.reason
+                    : entry.hint}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </Sheet>
     </>
