@@ -46,6 +46,7 @@ const span = (
   pitch,
   startSlot,
   endSlot,
+  writtenTicks: 96,
   openStart: false,
   openEnd: false,
   ...(articulation === undefined ? {} : { articulation }),

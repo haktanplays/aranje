@@ -337,3 +337,123 @@ describe("rhythm strip", () => {
     ]);
   });
 });
+
+/**
+ * 2T-B §4. Score Truth v2 gave notes their own lengths in the last round, and
+ * nothing downstream could see them: the tab drew tie runs and the scheduler
+ * read its durations back off the tab. These are the assertions that a
+ * written duration now reaches the screen.
+ */
+describe("a span is as long as the note is heard", () => {
+  const sixteenths = (slots: readonly MelodicSlot[]) =>
+    song(
+      [guitarTrack()],
+      [section([melodicBar("gtr", slots, { resolution: 16 })])],
+    );
+
+  const rest16 = (count: number): MelodicSlot[] =>
+    Array.from({ length: count }, () => null);
+
+  const spansOf = (subject: Song) => fretted(subject, "gtr").bars[0]!.spans;
+
+  it("draws a note for as many slots as its own duration asks", () => {
+    const slots = rest16(16);
+    slots[0] = {
+      notes: [{ pitch: "E2", position: { string: 0, fret: 0 }, durationTicks: 192 }],
+    };
+    const spans = spansOf(sixteenths(slots));
+    expect(spans).toHaveLength(1);
+    expect(spans[0]).toMatchObject({ startSlot: 0, endSlot: 3 });
+  });
+
+  /*
+   * The founder's finding, from the other side. A long note used to stop at
+   * the next onset even when that onset was on a different string, which is
+   * what made extending a note look like it deleted the next one.
+   */
+  it("does not stop a long note at an onset on another string", () => {
+    const slots = rest16(16);
+    slots[0] = {
+      notes: [{ pitch: "E2", position: { string: 0, fret: 0 }, durationTicks: 384 }],
+    };
+    slots[2] = { notes: [{ pitch: "E4", position: { string: 5, fret: 0 } }] };
+    const spans = spansOf(sixteenths(slots));
+    const low = spans.find((span) => span.pitch === "E2");
+    expect(low).toMatchObject({ startSlot: 0, endSlot: 7 });
+    expect(spans.find((span) => span.pitch === "E4")).toMatchObject({
+      startSlot: 2,
+      endSlot: 2,
+    });
+  });
+
+  /* And the other half of the rule: its own string still ends it. */
+  it("stops a long note where its own string is taken again", () => {
+    const slots = rest16(16);
+    slots[0] = {
+      notes: [{ pitch: "E2", position: { string: 0, fret: 0 }, durationTicks: 384 }],
+    };
+    slots[2] = { notes: [{ pitch: "F2", position: { string: 0, fret: 1 } }] };
+    const spans = spansOf(sixteenths(slots));
+    expect(spans.find((span) => span.pitch === "E2")).toMatchObject({
+      startSlot: 0,
+      endSlot: 1,
+    });
+  });
+
+  it("carries a written duration across a bar line", () => {
+    const first = rest16(16);
+    first[12] = {
+      notes: [{ pitch: "E2", position: { string: 0, fret: 0 }, durationTicks: 384 }],
+    };
+    const subject = song(
+      [guitarTrack()],
+      [
+        section([
+          melodicBar("gtr", first, { resolution: 16 }),
+          melodicBar("gtr", rest16(16), { resolution: 16 }),
+        ]),
+      ],
+    );
+    const bars = fretted(subject, "gtr").bars;
+    expect(bars[0]!.spans[0]).toMatchObject({
+      startSlot: 12,
+      endSlot: 15,
+      openEnd: true,
+    });
+    expect(bars[1]!.spans[0]).toMatchObject({
+      startSlot: 0,
+      endSlot: 3,
+      openStart: true,
+      openEnd: false,
+    });
+  });
+
+  /*
+   * A song written before durations existed has to slice to exactly the spans
+   * it always did, or this was a rewrite rather than a correction.
+   */
+  it("reads a song with no written durations exactly as it always did", () => {
+    const slots = rest16(16);
+    slots[0] = { notes: [{ pitch: "E2", position: { string: 0, fret: 0 } }] };
+    slots[1] = "-";
+    slots[2] = "-";
+    slots[4] = { notes: [{ pitch: "A2", position: { string: 1, fret: 0 } }] };
+    const spans = spansOf(sixteenths(slots));
+    expect(spans).toEqual([
+      expect.objectContaining({ pitch: "E2", startSlot: 0, endSlot: 2 }),
+      expect.objectContaining({ pitch: "A2", startSlot: 4, endSlot: 4 }),
+    ]);
+  });
+
+  it("keeps a note that is heard for nothing visible in its own slot", () => {
+    const slots = rest16(16);
+    slots[0] = {
+      notes: [
+        { pitch: "E2", position: { string: 0, fret: 0 }, durationTicks: 192 },
+        { pitch: "F2", position: { string: 0, fret: 1 }, durationTicks: 192 },
+      ],
+    };
+    const spans = spansOf(sixteenths(slots));
+    expect(spans.map((span) => span.pitch).sort()).toEqual(["E2", "F2"]);
+  });
+});

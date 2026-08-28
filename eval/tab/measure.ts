@@ -18,8 +18,8 @@ import { RESOLUTIONS, type Resolution, type TimeSignature } from "@/lib/music/ti
 import { slotCount } from "@/lib/music/timing";
 import { changeTiming } from "@/lib/song/timing-change";
 import { songSchema, type Bar, type MelodicSlot, type Song } from "@/lib/song/schema";
-import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
-import { frettedRhythm, buildTrackTimeline } from "@/lib/tab/timeline";
+import { buildRhythmTail } from "@/lib/tab/rhythm-tail";
+import { buildTrackTimeline } from "@/lib/tab/timeline";
 
 const ROUNDS = 60;
 /*
@@ -131,7 +131,13 @@ if (fineTimeline.kind !== "fretted") throw new Error("timeline invalid — measu
 const warmAll = (timeline: typeof fineTimeline) => {
   for (let round = 0; round < 200; round += 1) {
     for (const bar of timeline.bars) {
-      buildRhythmGuide(frettedRhythm(bar), bar.timeSignature, bar.resolution);
+      buildRhythmTail({
+        spans: bar.spans,
+        restSlots: bar.rests,
+        timeSignature: bar.timeSignature,
+        resolution: bar.resolution,
+        slotCount: bar.slotCount,
+      });
     }
   }
 };
@@ -147,35 +153,33 @@ if (chordTimeline.kind !== "fretted") throw new Error("timeline invalid — meas
 warmAll(fineTimeline);
 warmAll(chordTimeline);
 
-/* -------- 1. the guide for the finest grid, single line, and 2. in chords */
+/* --------- 1. the tail for the finest grid, single line, and 2. in chords */
+
+const tailOf = (bar: (typeof fineTimeline)["bars"][number]) =>
+  buildRhythmTail({
+    spans: bar.spans,
+    restSlots: bar.rests,
+    timeSignature: bar.timeSignature,
+    resolution: bar.resolution,
+    slotCount: bar.slotCount,
+  });
 
 const fineGuide = bench(() => {
-  for (const bar of fineTimeline.bars) {
-    buildRhythmGuide(frettedRhythm(bar), bar.timeSignature, bar.resolution);
-  }
+  for (const bar of fineTimeline.bars) tailOf(bar);
 });
 
 const chordGuide = bench(() => {
-  for (const bar of chordTimeline.bars) {
-    buildRhythmGuide(frettedRhythm(bar), bar.timeSignature, bar.resolution);
-  }
+  for (const bar of chordTimeline.bars) tailOf(bar);
 });
 
 /*
- * The model half on its own, with the slot states read once beforehand.
- *
- * `frettedRhythm` is the tab's own traversal and existed before this
- * checkpoint; separating it says how much of the cost above 2N-A really added.
+ * The same again, to keep the shape of the 2N-A comparison. The tail reads
+ * the bar's spans directly, so unlike the guide it has no separate traversal
+ * to subtract — this number and the one above measure the same work, and
+ * saying so is more useful than inventing a difference.
  */
-const chordStates = chordTimeline.bars.map((bar) => ({
-  states: frettedRhythm(bar),
-  timeSignature: bar.timeSignature,
-  resolution: bar.resolution,
-}));
 const chordGuideOnly = bench(() => {
-  for (const entry of chordStates) {
-    buildRhythmGuide(entry.states, entry.timeSignature, entry.resolution);
-  }
+  for (const bar of chordTimeline.bars) tailOf(bar);
 });
 
 /* ------------- 3. a whole section's timing change, validators included */

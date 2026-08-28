@@ -46,14 +46,22 @@ export const DRUM_STEP_ROW_HEIGHT = MIN_TOUCH_TARGET_PX;
  * The strip under the staff.
  *
  * It grew from 18 to 28 in 2N-A: the beat ticks and the onset dots were all it
- * carried, and the rhythmic guide (spec 13.20 §7) needs room under them for a
- * stem, up to three beam lines and a triplet "3". Vertical only — nothing here
- * widens a bar, so the horizontal-overflow and scroller counts are unchanged.
+ * carried, and the rhythmic guide (spec 13.20 §7) needed room under them for a
+ * stem, up to three beam lines and a triplet "3". It grew again to 34 in
+ * 2T-B §4, when the guide became a real tail: the same stem and beams, plus a
+ * dot, a tie mark, a rest with its own value, and a tuplet bracket with its
+ * number under the beams rather than crowded into them.
+ *
+ * Vertical only — nothing here widens a bar, so the horizontal-overflow and
+ * scroller counts are unchanged, and no fret digit moves by a pixel.
  */
-export const RHYTHM_ROW_HEIGHT = 28;
+export const RHYTHM_ROW_HEIGHT = 34;
 
-/** How much of that row the beat ticks and onset dots use; the guide is under. */
+/** How much of that row the beat ticks and onset dots use; the tail is under. */
 export const RHYTHM_STRIP_HEIGHT = 14;
+
+/** What is left for the tail itself. */
+export const RHYTHM_TAIL_HEIGHT = RHYTHM_ROW_HEIGHT - RHYTHM_STRIP_HEIGHT;
 export const GUTTER_WIDTH = 34;
 export const BAR_HEADER_HEIGHT = 22;
 

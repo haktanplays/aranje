@@ -6,13 +6,26 @@
  *
  * Positions come from the note itself when written out, otherwise from the
  * ergonomic placement engine (spec 9.2, K-19), which reads the whole track in
- * time rather than one chord at a time. A tie chain that reaches the first
- * slot of a bar continues the previous bar, so sounding state is carried
- * across bars exactly as the voice counter does (spec 6).
+ * time rather than one chord at a time.
  *
  * This is the only place placement happens. The tab, the validators, the
  * copilot preview and the audio scheduler all read the timeline, so they
  * cannot disagree about where a note is played.
+ *
+ * ## How long a span is (2T-B §4)
+ *
+ * It used to be the tie run: a span opened on an onset and every open span
+ * closed at the next one, whatever string that one was on. That is where the
+ * tab and the scheduler both got their lengths, which meant a note's own
+ * `durationTicks` reached neither the screen nor the speakers — Score Truth
+ * knew about it and the reader never found out.
+ *
+ * A span's extent is now what `soundingSpans` says is heard: the written
+ * length, which is the note's own if it has one and the tie run if it does
+ * not, capped where its own string is taken again. A song with no written
+ * durations therefore slices to exactly the spans it always did — that is
+ * what makes this a correction rather than a rewrite — and a song with them
+ * finally draws and plays what it says.
  */
 import { isDrumInstrument } from "@/lib/instruments/registry";
 import type { Fretboard } from "@/lib/music/fretboard";
@@ -22,6 +35,13 @@ import {
   type PlacementDiagnostics,
 } from "@/lib/music/placement";
 import { trackPlacementInput } from "@/lib/tab/placement-input";
+import { sliceSpan } from "@/lib/tab/span-extent";
+import {
+  sectionTicks,
+  soundingSpans,
+  writtenSpans,
+  type WrittenSpan,
+} from "@/lib/song/sounding";
 import { slotCount } from "@/lib/music/timing";
 import type {
   Articulation,
@@ -83,6 +103,14 @@ export type TabSpan = {
   startSlot: number;
   /** Inclusive. */
   endSlot: number;
+  /**
+   * The note's written value in ticks — its own `durationTicks` if it stated
+   * one, otherwise the tie run under it. This is what a stem, its beams and
+   * its dot are claims about, and it is exact where `endSlot` is rounded to
+   * the grid: a dotted sixteenth covers two sixteenth slots but is 72 ticks,
+   * not 96, and only one of those two numbers may be drawn as a value.
+   */
+  writtenTicks: number;
   /** Already sounding when the bar began. */
   openStart: boolean;
   /** Still sounding when the bar ended. */
@@ -112,17 +140,6 @@ export type TrackTimeline =
     }
   | { kind: "drums"; trackId: string; lanes: DrumPiece[]; bars: DrumBar[] }
   | { kind: "unsupported"; trackId: string; reason: string };
-
-type OpenSpan = {
-  stringIndex: number;
-  fret: number | null;
-  pitch: string;
-  velocity?: number;
-  articulation?: Articulation;
-  startSlot: number;
-  endSlot: number;
-  openStart: boolean;
-};
 
 function isMelodicSlot(
   slot: MelodicSlot | DrumSlot | undefined,
@@ -182,8 +199,51 @@ function buildFretted(
     maxShift: maxShiftFor(track.instrumentId) ?? maxShiftFor("electric_guitar") ?? 7,
   });
 
-  // What is still sounding when the previous bar ended.
-  let carried: Omit<OpenSpan, "startSlot" | "endSlot" | "openStart">[] = [];
+  /*
+   * Which string each written note ended up on, so occlusion can be asked.
+   * A note the engine could not place has no string, and a note with no
+   * string competes with nothing.
+   */
+  const flatBars = metas.map((entry) => entry.bar);
+  const placedNotes = (span: WrittenSpan) => {
+    const outcome = placement.byOnset.get(
+      `${metas[span.barIndex]!.meta.key}:${span.slotIndex}`,
+    );
+    // A partial outcome still carries its written positions; only the notes
+    // that found no string come back without one.
+    const placed =
+      outcome?.kind === "placed" || outcome?.kind === "partial"
+        ? outcome.voicing.notes
+        : null;
+    return placed?.find((note) => note.noteIndex === span.noteIndex);
+  };
+
+  const heard = soundingSpans(
+    writtenSpans(flatBars, track.id),
+    (span) => placedNotes(span)?.stringIndex ?? null,
+    sectionTicks(flatBars),
+  );
+
+  const perBar: TabSpan[][] = metas.map(() => []);
+  for (const span of heard) {
+    const position = placedNotes(span);
+    for (const slice of sliceSpan(flatBars, span.startTicks, span.soundingTicks)) {
+      perBar[slice.barIndex]!.push({
+        // An onset the engine could not place keeps its pitch and loses only
+        // its position; `unplaceable` reports it (spec 10.3).
+        stringIndex: position?.stringIndex ?? -1,
+        fret: position?.fret ?? null,
+        pitch: span.note.pitch,
+        velocity: span.note.velocity,
+        articulation: span.note.articulation,
+        writtenTicks: span.writtenTicks,
+        startSlot: slice.startSlot,
+        endSlot: slice.endSlot,
+        openStart: slice.openStart,
+        openEnd: slice.openEnd,
+      });
+    }
+  }
 
   metas.forEach((entry, index) => {
     const slots = entry.bar.slots[track.id];
@@ -191,91 +251,17 @@ function buildFretted(
 
     if (slots === undefined) {
       bars.push({ ...rest, silent: true, spans: [], rests: [] });
-      carried = [];
       return;
     }
 
-    const spans: TabSpan[] = [];
+    const spans = perBar[index]!;
     const rests: number[] = [];
-    let open: OpenSpan[] = [];
-
-    const closeOpen = () => {
-      for (const span of open) {
-        spans.push({ ...span, openEnd: false });
-      }
-      open = [];
-    };
 
     for (let slotIndex = 0; slotIndex < slots.length; slotIndex += 1) {
       const slot = slots[slotIndex];
       if (!isMelodicSlot(slot)) continue; // shape errors are the validator's job
-
-      if (slot === null) {
-        closeOpen();
-        rests.push(slotIndex);
-        continue;
-      }
-
-      if (slot === "-") {
-        if (open.length === 0 && slotIndex === 0 && carried.length > 0) {
-          open = carried.map((span) => ({
-            ...span,
-            startSlot: 0,
-            endSlot: 0,
-            openStart: true,
-          }));
-        }
-        for (const span of open) span.endSlot = slotIndex;
-        continue;
-      }
-
-      closeOpen();
-      const outcome = placement.byOnset.get(`${entry.meta.key}:${slotIndex}`);
-      // A partial outcome still carries its written positions; only the notes
-      // that found no string come back without one.
-      const placed =
-        outcome?.kind === "placed" || outcome?.kind === "partial"
-          ? outcome.voicing.notes
-          : null;
-
-      open = slot.notes.map((note, noteIndex) => {
-        const position = placed?.find((entry) => entry.noteIndex === noteIndex);
-        return {
-          // An onset the engine could not place keeps its pitch and loses only
-          // its position; `unplaceable` reports it (spec 10.3).
-          stringIndex: position?.stringIndex ?? -1,
-          fret: position?.fret ?? null,
-          pitch: note.pitch,
-          velocity: note.velocity,
-          articulation: note.articulation,
-          startSlot: slotIndex,
-          endSlot: slotIndex,
-          openStart: false,
-        };
-      });
+      if (slot === null) rests.push(slotIndex);
     }
-
-    // Anything still open runs to the end of the bar.
-    const stillOpen = open;
-    const nextEntry = metas[index + 1];
-    const nextSlots = nextEntry?.bar.slots[track.id];
-    const continues = nextSlots !== undefined && nextSlots[0] === "-";
-
-    for (const span of stillOpen) {
-      spans.push({ ...span, openEnd: continues });
-    }
-
-    carried = continues
-      ? stillOpen.map(
-          ({ stringIndex, fret, pitch, velocity, articulation }) => ({
-            stringIndex,
-            fret,
-            pitch,
-            velocity,
-            articulation,
-          }),
-        )
-      : [];
 
     bars.push({ ...rest, silent: false, spans, rests });
   });

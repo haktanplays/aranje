@@ -479,7 +479,13 @@ describe("41. the seven responsibilities 2N-A separated (spec 13.20 §8)", () =>
      * a render — beam levels, the beat grouping and the plain rhythm reading —
      * are checked by name, on the syntax tree rather than on the text.
      */
-    const forbidden = ["buildRhythmGuide", "beamLevels", "readRhythm"];
+    const forbidden = [
+      "buildRhythmGuide",
+      "buildRhythmTail",
+      "beamLevels",
+      "beatSlots",
+      "readRhythm",
+    ];
     for (const path of workspaceComponents) {
       const identifiers = identifiersOf(path);
       for (const name of forbidden) {

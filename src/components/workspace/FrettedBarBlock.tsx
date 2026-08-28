@@ -16,7 +16,7 @@ import {
   slotCentre,
   slotsPerBeat,
 } from "@/components/workspace/geometry";
-import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
+import { RhythmTailLayer } from "@/components/workspace/RhythmTailLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import {
   buildTechniquePrimitives,
@@ -25,7 +25,7 @@ import {
 import type { GlyphState } from "@/lib/tab/glyph-model";
 import { glyphStateFor, legatoNotes } from "@/lib/tab/glyph-state";
 import type { PenGhost } from "@/lib/tab/pen-ghost";
-import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
+import { buildRhythmTail } from "@/lib/tab/rhythm-tail";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 import { pitchToMidi } from "@/lib/music/pitch";
@@ -143,12 +143,19 @@ export function FrettedBarBlock({
 }) {
   const width = barWidth(bar.slotCount);
   /*
-   * One reading of the bar's rhythm, shared by the strip and the guide. The
-   * guide's "a chord is one onset, a tie is not" comes from these states
-   * rather than from a second look at the bar (spec 13.20 §7).
+   * One reading of the bar's rhythm, shared by the strip and the tail. The
+   * strip's beat ticks come from these states; the tail reads the same bar's
+   * spans, whose lengths are now Score Truth rather than tie runs (2T-B §4),
+   * so the two cannot disagree about where a note starts or how long it is.
    */
   const states = frettedRhythm(bar);
-  const guide = buildRhythmGuide(states, bar.timeSignature, bar.resolution);
+  const tail = buildRhythmTail({
+    spans: bar.spans,
+    restSlots: bar.rests,
+    timeSignature: bar.timeSignature,
+    resolution: bar.resolution,
+    slotCount: bar.slotCount,
+  });
   /*
    * Reading rows are compact; writing rows are the finger's (2S-A §4). One
    * number, used everywhere in this block, so the strings, the sustains, the
@@ -483,9 +490,9 @@ export function FrettedBarBlock({
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }} className="relative">
         <RhythmStrip states={states} slotsPerBeat={beat} />
-        {/* Below the ticks, so the beams sit under the rhythm they describe. */}
+        {/* Below the ticks, so the tail sits under the rhythm it describes. */}
         <div className="absolute inset-x-0" style={{ top: RHYTHM_STRIP_HEIGHT }}>
-          <RhythmGuideLayer guide={guide} />
+          <RhythmTailLayer tail={tail} />
         </div>
       </div>
     </Frame>
