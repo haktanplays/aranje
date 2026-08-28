@@ -17,6 +17,8 @@ eval/chord/.render/
 # 2O-B.1 launch audio + headroom render bundle
 eval/chord-audio/.render/
 eval/expression-benchmark/.render/
+# 2T-C §10 guitar-performance render bundle
+eval/guitar-performance/.render/
 # 2S-A intent-composer render bundle
 eval/intent-composer/.render/
 

@@ -97,12 +97,42 @@ export const expressionPresets = {
   legato: {
     hammerOn: {
       transitionSeconds: 0.022,
-      /** What the ringing voice keeps after the finger lands. */
-      levelAfter: 0.88,
+      /**
+       * What the ringing voice keeps after the finger lands.
+       *
+       * 2T-C §10 moved this from 0.88 and the pull-off's from 0.78, because
+       * the two together said something untrue about the instrument: 1 dB
+       * between them, when the two gestures do opposite things to the
+       * string's energy. A hammer-on *drives* the string onto the fret and
+       * puts energy in; a pull-off releases a string whose sounding length
+       * has just grown, and takes energy out. The pair is now 2.15 dB apart,
+       * which is twice the smallest level difference a listener can name.
+       */
+      levelAfter: 0.92,
+      /**
+       * The finger landing (2T-C §10).
+       *
+       * A hammer-on had no moment of arrival at all: the pitch changed and
+       * nothing else happened, which is why it sounded like a pitch envelope
+       * rather than like a hand. Measured on `6ded910`, the only thing
+       * separating it from a pull-off was 1.72 dB of level — under the two
+       * decibels a listener can rely on hearing away from a quiet room.
+       *
+       * So it gets the noise it makes. A fingertip driving the string down
+       * onto a fret is duller and quieter than a nail plucking the string
+       * sideways on the way off, so both numbers sit below the pull-off's:
+       * this is the same event, made by a different part of the hand.
+       */
+      auxiliary: {
+        gain: 0.11,
+        maxSeconds: 0.028,
+        filterHz: 2000,
+      },
     },
     pullOff: {
       transitionSeconds: 0.028,
-      levelAfter: 0.78,
+      /** The other half of the pair above: the hand takes energy out. */
+      levelAfter: 0.72,
       /**
        * A pull-off plucks the string sideways on the way off, so it has a
        * little more bite than a hammer-on. This is that click — short, quiet

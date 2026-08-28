@@ -323,28 +323,37 @@ const G3 = () => note("G3", 1, 10);
 const B3 = (a?: Parameters<typeof note>[3]) => note("B3", 1, 14, a);
 
 describe("a legato chain is one voice", () => {
-  it("starts a single source for a hammer-on pair", () => {
+  /*
+   * 2T-C §10 gave the hammer-on the noise its own hand makes, so the pair is
+   * one *note* played by one voice plus one short transient — the same shape
+   * the pull-off has had since 2F.1. The claim being kept here is the one
+   * that matters: the string is never struck again.
+   */
+  it("plays a hammer-on pair on one voice, with one short landing beside it", () => {
     const { pool, sources } = harness();
     const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
 
     expect(pool.playChain(chain, 0)).toBe(true);
 
-    expect(sources).toHaveLength(1);
     expect(pool.counts.primary).toBe(1);
-    expect(pool.counts.auxiliaryTransient).toBe(0);
+    expect(pool.counts.auxiliaryTransient).toBe(1);
+    expect(sources.filter((entry) => entry.started !== null)).toHaveLength(2);
   });
 
-  it("never starts a second source at the hammer-on target", () => {
+  it("never restrikes the note at the hammer-on target", () => {
     const { pool, sources } = harness();
     const chain = chainOf(song([bar(slots([G3(), B3("hammer_on")]))]));
     pool.playChain(chain, 0);
 
-    // One source, started once, for the whole chain.
-    expect(sources).toHaveLength(1);
+    // The voice carrying the note is started once, for the whole chain.
     expect(sources[0]?.started?.duration).toBeCloseTo(
       chain.endSeconds - chain.startSeconds,
       6,
     );
+    /* And the landing beside it is a click, not a note: far shorter. */
+    const landing = sources[1]?.started?.duration ?? 0;
+    expect(landing).toBeGreaterThan(0);
+    expect(landing).toBeLessThan((chain.endSeconds - chain.startSeconds) / 4);
   });
 
   it("moves the pitch of the voice that is already ringing", () => {
@@ -373,10 +382,10 @@ describe("a legato chain is one voice", () => {
     );
     pool.playChain(chain, 0);
 
-    // One primary, plus the pull-off's own short click.
+    // One primary, plus a short click for each of the two landings.
     expect(pool.counts.primary).toBe(1);
-    expect(pool.counts.auxiliaryTransient).toBe(1);
-    expect(sources.filter((entry) => entry.started !== null)).toHaveLength(2);
+    expect(pool.counts.auxiliaryTransient).toBe(2);
+    expect(sources.filter((entry) => entry.started !== null)).toHaveLength(3);
 
     const ramps = (sources[0]?.playbackRate.calls ?? []).filter(
       (call) => call.kind === "ramp",

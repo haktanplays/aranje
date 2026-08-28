@@ -695,17 +695,37 @@ describe("hammer-on and pull-off become a chain", () => {
     );
   });
 
-  it("gives a pull-off a short quiet transient and a hammer-on none", () => {
+  /*
+   * 2T-C §10. Both hands make a noise, and they are not the same noise.
+   * Until this checkpoint only the pull-off had one, which left a hammer-on
+   * sounding like a pitch that changed by itself — 1.72 dB from a pull-off
+   * in the render, under what a listener can be relied on to hear.
+   */
+  it("gives each finger landing its own short transient, and a slide none", () => {
     const pull = buildExpressionPlan(song([bar(slots([B3(), G3("pull_off")]))]));
     const hammer = buildExpressionPlan(song([bar(slots([G3(), B3("hammer_on")]))]));
 
-    const aux = pull.chains[0]?.transitions[0]?.auxiliary;
-    expect(aux?.gain).toBe(expressionPresets.legato.pullOff.auxiliary.gain);
-    expect(aux?.durationSeconds).toBeCloseTo(
+    const pulled = pull.chains[0]?.transitions[0]?.auxiliary;
+    expect(pulled?.gain).toBe(expressionPresets.legato.pullOff.auxiliary.gain);
+    expect(pulled?.durationSeconds).toBeCloseTo(
       expressionPresets.legato.pullOff.auxiliary.maxSeconds,
       6,
     );
-    expect(hammer.chains[0]?.transitions[0]?.auxiliary).toBeUndefined();
+
+    const landed = hammer.chains[0]?.transitions[0]?.auxiliary;
+    expect(landed?.gain).toBe(expressionPresets.legato.hammerOn.auxiliary.gain);
+    expect(landed?.durationSeconds).toBeCloseTo(
+      expressionPresets.legato.hammerOn.auxiliary.maxSeconds,
+      6,
+    );
+
+    /* A fingertip on a fret is quieter and duller than a nail on a string. */
+    expect(landed!.gain).toBeLessThan(pulled!.gain);
+    expect(landed!.filterHz).toBeLessThan(pulled!.filterHz);
+
+    /* Nothing is struck or released on the way, so a slide has neither. */
+    const slid = buildExpressionPlan(held(A3(), B3("slide")));
+    expect(slid.chains[0]?.transitions[0]?.auxiliary).toBeUndefined();
   });
 
   it("keeps 5h7p5 as one chain with two transitions", () => {

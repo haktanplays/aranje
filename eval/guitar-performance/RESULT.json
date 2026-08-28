@@ -1,0 +1,131 @@
+{
+  "checkedAt": "2026-08-28T20:12:01.539Z",
+  "thresholds": [
+    {
+      "id": "T1",
+      "claim": "mızrap yeniden vurur (2 onset), legato vurmaz (1 onset)",
+      "baseline": {
+        "pass": true,
+        "detail": "pick-up=2 pick-down=2 hammer-on=1 pull-off=1 slide=1"
+      },
+      "current": {
+        "pass": true,
+        "detail": "pick-up=2 pick-down=2 hammer-on=1 pull-off=1 slide=1"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T2",
+      "claim": "hammer-on ile pull-off arasındaki seviye farkı ≥ 2 dB",
+      "baseline": {
+        "pass": false,
+        "detail": "1.72 dB"
+      },
+      "current": {
+        "pass": true,
+        "detail": "2.31 dB"
+      },
+      "fixedByPatch": true,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T3",
+      "claim": "hammer-on'ın bir iniş anı var (fiziksel kaynak ≥ 2)",
+      "baseline": {
+        "pass": false,
+        "detail": "1 kaynak"
+      },
+      "current": {
+        "pass": true,
+        "detail": "2 kaynak"
+      },
+      "fixedByPatch": true,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T4",
+      "claim": "tepe ≤ −1 dBFS ve kırpılan örnek yok",
+      "baseline": {
+        "pass": true,
+        "detail": "pick-up=-16.5 pick-down=-16.5 hammer-on=-17.3 pull-off=-16.5 slide=-17.3"
+      },
+      "current": {
+        "pass": true,
+        "detail": "pick-up=-16.5 pick-down=-16.5 hammer-on=-17.3 pull-off=-16.5 slide=-17.3"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T5",
+      "claim": "yazılan perde ±25 sent içinde çalınıyor",
+      "baseline": {
+        "pass": true,
+        "detail": "pick-up=4.5c pick-down=10.2c hammer-on=1.7c pull-off=0.5c slide=1.7c"
+      },
+      "current": {
+        "pass": true,
+        "detail": "pick-up=4.5c pick-down=10.2c hammer-on=1.7c pull-off=0.5c slide=1.7c"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T6",
+      "claim": "slide yola önceden çıkar (≤ −80 ms), parmak inişleri çıkmaz (≥ −40 ms)",
+      "baseline": {
+        "pass": true,
+        "detail": "slide=-114ms parmak=-26ms/-26ms"
+      },
+      "current": {
+        "pass": true,
+        "detail": "slide=-114ms parmak=-26ms/-26ms"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T7",
+      "claim": "render bittiğinde çalan ses kalmıyor",
+      "baseline": {
+        "pass": true,
+        "detail": "0 0 0 0 0"
+      },
+      "current": {
+        "pass": true,
+        "detail": "0 0 0 0 0"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T8",
+      "claim": "legato çifti tek mantıksal ses olarak kalıyor",
+      "baseline": {
+        "pass": true,
+        "detail": "pick-up=2 pick-down=2 hammer-on=1 pull-off=1 slide=1"
+      },
+      "current": {
+        "pass": true,
+        "detail": "pick-up=2 pick-down=2 hammer-on=1 pull-off=1 slide=1"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    },
+    {
+      "id": "T9",
+      "claim": "hammer-on ile pull-off parlaklıkta ≥ %15 ayrışıyor",
+      "baseline": {
+        "pass": true,
+        "detail": "2509 Hz vs 3061 Hz — %22.0"
+      },
+      "current": {
+        "pass": true,
+        "detail": "2511 Hz vs 3060 Hz — %21.8"
+      },
+      "fixedByPatch": false,
+      "brokenByPatch": false
+    }
+  ]
+}

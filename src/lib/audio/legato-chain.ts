@@ -81,7 +81,10 @@ export type LegatoTransition = {
   noteId: string;
   /** The pitch travel, written out. The voice replays exactly these. */
   points: TransitionPoint[];
-  /** Pull-off only: the short click of the finger coming off the string. */
+  /**
+   * The short noise the fretting hand makes: a pull-off's pluck coming off
+   * the string, or a hammer-on's landing on the fret. A slide has neither.
+   */
   auxiliary?: LegatoAuxiliary;
 };
 
@@ -493,15 +496,28 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
         chain.startSeconds -
         arrivesAt,
     );
+    /*
+     * Both hands make a noise (2T-C §10). A pull-off plucks the string
+     * sideways coming off it; a hammer-on drives it onto the fret. Which
+     * preset is used says which of the two it was — quieter and duller for
+     * the landing, brighter for the pluck — and a slide makes neither,
+     * because nothing is struck or released on the way.
+     */
+    const fingerNoise =
+      decision.transition === "pull_off"
+        ? expressionPresets.legato.pullOff.auxiliary
+        : decision.transition === "hammer_on"
+          ? expressionPresets.legato.hammerOn.auxiliary
+          : null;
     const auxiliary =
-      decision.transition === "pull_off" && (input.withAuxiliary ?? true)
+      fingerNoise !== null && (input.withAuxiliary ?? true)
         ? {
-            gain: expressionPresets.legato.pullOff.auxiliary.gain,
+            gain: fingerNoise.gain,
             durationSeconds: Math.min(
-              expressionPresets.legato.pullOff.auxiliary.maxSeconds * timeScale,
+              fingerNoise.maxSeconds * timeScale,
               heldAfterArrival,
             ),
-            filterHz: expressionPresets.legato.pullOff.auxiliary.filterHz,
+            filterHz: fingerNoise.filterHz,
           }
         : undefined;
 

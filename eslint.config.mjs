@@ -16,6 +16,7 @@ const config = [
       "eval/chord-audio/.render/**",
       "eval/expression-benchmark/.render/**",
       "eval/intent-composer/.render/**",
+      "eval/guitar-performance/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",
