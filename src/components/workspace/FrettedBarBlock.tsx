@@ -26,7 +26,9 @@ import {
 } from "@/lib/tab/technique-geometry";
 import type { GlyphState } from "@/lib/tab/glyph-model";
 import { glyphStateFor, legatoNotes } from "@/lib/tab/glyph-state";
+import { measureGestureWanted } from "@/lib/song/measure-gesture";
 import type { PenGhost } from "@/lib/tab/pen-ghost";
+import { pointerOwner } from "@/lib/tab/pointer-ownership";
 import { buildRhythmTail } from "@/lib/tab/rhythm-tail";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
@@ -294,13 +296,29 @@ export function FrettedBarBlock({
   );
 
   /*
-   * `stopPropagation` on the way down, because the tab's content element is
-   * carrying the time-selection press. Without it one finger arms two
-   * selections, and the reader gets a band of slots they never asked for
-   * alongside the bars they did.
+   * Who owns a press on the header (2U-A §9).
+   *
+   * Asked of `pointerOwner` rather than answered here, because the header is
+   * the fourth thing that can want one finger and the other three already
+   * queue through that function. Being *outside* the ranking is how the pen
+   * and the selection ended up both running in K-59.1, and the header would
+   * have got there the same way: it wins today only because no pen cell
+   * happens to sit on it, which is a fact about the layout rather than a rule
+   * anybody wrote down.
+   *
+   * `stopPropagation` still goes on the way down, because the tab's content
+   * element is carrying the time-selection press. Ownership decides which
+   * gesture is armed; stopping the bubble is what keeps the other one from
+   * hearing the same finger anyway.
    */
+  const headerOwner = pointerOwner({
+    onMeasureHeader: onBarLongPress !== undefined,
+    penArmed: onPenTarget !== undefined,
+    selectionAvailable: timeSelectionOwnsPress,
+  });
+  const headerWanted = measureGestureWanted(headerOwner);
   const barPress = useLongPress(onBarLongPress ?? NO_PRESS, {
-    enabled: onBarLongPress !== undefined,
+    enabled: headerWanted,
   });
 
   const Frame = editing ? "div" : "button";
@@ -324,7 +342,7 @@ export function FrettedBarBlock({
       <div
         {...barPress}
         onPointerDown={(event) => {
-          if (!onBarLongPress) return;
+          if (!headerWanted || !onBarLongPress) return;
           event.stopPropagation();
           barPress.onPointerDown(event);
         }}

@@ -87,6 +87,17 @@ export type SelectionDescriptor = {
   readonly wholeBars: boolean;
   /** The bars covered, when the selection is expressed in bars at all. */
   readonly barRange: BarRange | null;
+  /**
+   * Which of the two bar scopes this is, for a measure selection.
+   *
+   * `null` for everything else, and never inferred: a `full` selection on a
+   * one-track song covers the same notes as a `track` one, so counting tracks
+   * cannot tell them apart. Only the gesture knows, and it says so here —
+   * without which a surface would offer "Ölçü ekle" on a selection that holds
+   * one instrument's bar, and the core would refuse it after the press
+   * (`bar-transform.ts`, `not_available_in_scope`).
+   */
+  readonly barScope: "track" | "full" | null;
   /** Struck onsets inside the selection. Ties belong to their onset. */
   readonly onsetCount: number;
 };
@@ -216,6 +227,7 @@ export function describeTimeSelection(
     eventIds,
     wholeBars: sitsOnBarLines(section, selection.startTicks, selection.endTicks),
     barRange: coveredBars(section, selection.startTicks, selection.endTicks),
+    barScope: null,
     onsetCount: struck.length,
   };
 }
@@ -293,6 +305,7 @@ export function describeBarSelection(
       startBarIndex: selection.startBarIndex,
       endBarIndex: selection.endBarIndex,
     },
+    barScope: selection.scope,
     onsetCount,
   };
 }

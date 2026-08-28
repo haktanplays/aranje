@@ -157,6 +157,9 @@ describe("27. every mutation path goes through the one gate", () => {
       "src/lib/song/intent-history.test.ts",
       // 2T-B §8: that each of the five new transforms is one step, likewise.
       "src/lib/song/shape-history.test.ts",
+      // 2U-A §12: that each of the six measure operations is one step, and
+      // that a refused one is none. The subject is the step count itself.
+      "src/lib/song/measure-spine.test.ts",
     ];
     const others = readdirSync("src/lib/song")
       .filter((name) => name.endsWith(".ts"))

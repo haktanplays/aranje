@@ -143,6 +143,30 @@ const MEASURE_VERBS: readonly SelectionVerb[] = [
   "move_bar_right",
 ];
 
+/**
+ * The measure verbs a one-instrument bar selection cannot run (2U-A §10).
+ *
+ * Adding a bar makes the section longer, and there is no such thing as doing
+ * that to one instrument: a bar inserted in the guitar and not in the bass is
+ * not a longer song, it is two songs of different lengths. "Ölçü ve ritim" is
+ * here for the same reason — a bar's metre and grid are properties of the bar,
+ * shared by every track written in it.
+ *
+ * The rest of the measure verbs are *not* here, and deliberately. Deleting,
+ * duplicating, repeating and moving all have an honest one-instrument meaning
+ * that `bar-transform.ts` implements: the bars stay where they are and only
+ * this track's content is emptied, copied or nudged. The section keeps its
+ * length, so no other track notices.
+ *
+ * The list is exactly the set the core answers `not_available_in_scope` for,
+ * plus the timing sheet. Anything wider would grey out a control that works.
+ */
+const FULL_SCOPE_VERBS: readonly SelectionVerb[] = [
+  "timing",
+  "insert_bar_before",
+  "insert_bar_after",
+];
+
 export const ALL_VERBS: readonly SelectionVerb[] = [
   ...RANGE_VERBS,
   ...CHORD_VERBS,
@@ -217,12 +241,21 @@ export function selectionCapabilities(
     /* --------------------------------------------- the measure verbs */
     if (!isMeasures) return hidden;
 
+    /* Whole-bar work, on a selection that holds one instrument's bar. */
+    if (descriptor.barScope === "track" && FULL_SCOPE_VERBS.includes(verb)) {
+      return disabled("Bu işlem için ölçünün tamamı seçilmeli.");
+    }
+
     if (verb === "delete_bar") {
       /*
        * A song is at least one bar long. Deleting the last one would leave
        * nothing to write on, so it is refused where the reader can see it
        * rather than after they have pressed it.
+       *
+       * Only in the full scope: emptying one instrument's bars leaves the
+       * bars themselves standing, so the section cannot run out of them.
        */
+      if (descriptor.barScope === "track") return available;
       return context.sectionBarCount > barCount(descriptor)
         ? available
         : disabled("Şarkıda en az bir ölçü kalmalı.");

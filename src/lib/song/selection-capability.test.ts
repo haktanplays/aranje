@@ -30,6 +30,7 @@ const base: SelectionDescriptor = {
   eventIds: ["s1:0:0:gtr:3", "s1:0:4:gtr:3"],
   wholeBars: false,
   barRange: { startBarIndex: 0, endBarIndex: 0 },
+  barScope: null,
   onsetCount: 2,
 };
 
@@ -55,6 +56,7 @@ const measures = (start: number, end: number): SelectionDescriptor => ({
   endTicks: (end + 1) * BAR,
   wholeBars: true,
   barRange: { startBarIndex: start, endBarIndex: end },
+  barScope: "full",
 });
 
 const context = (over: Partial<CapabilityContext> = {}): CapabilityContext => ({
