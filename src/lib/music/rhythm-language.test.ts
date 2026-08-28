@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { hasFeltBeat, readRhythm, rhythmSummary } from "@/lib/music/rhythm-language";
+import { hasFeltBeat, readRhythm, rhythmSummary, gridChoices, readGrid } from "@/lib/music/rhythm-language";
 import {
   isRepresentableGrid,
   RESOLUTIONS,
@@ -126,5 +126,53 @@ describe("100. one formatter, both lines", () => {
     // paper over that with a rounded number.
     expect(() => readRhythm([6, 8], 4)).toThrow(RangeError);
     expect(() => readRhythm([7, 8], 12)).toThrow(RangeError);
+  });
+});
+
+describe("the grid, said as a grid (2T §3.1)", () => {
+  /*
+   * The founder saw "4/4", "132 BPM" and "1/16" together and read them as one
+   * fact. They are three answers to three questions, and only this control
+   * changes the third.
+   */
+  it("says how finely a beat is divided, not how big the bar is", () => {
+    expect(readGrid([4, 4], 16).plain).toBe("Izgara: 16'lık · Her vuruşta 4 adım");
+    expect(readGrid([4, 4], 8).plain).toBe("Izgara: sekizlik · Her vuruşta 2 adım");
+    expect(readGrid([4, 4], 4).plain).toBe("Izgara: dörtlük · Her vuruşta 1 adım");
+    expect(readGrid([4, 4], 32).plain).toBe("Izgara: 32'lik · Her vuruşta 8 adım");
+  });
+
+  it("counts triplet steps as triplets, not as a denser straight grid", () => {
+    expect(readGrid([4, 4], 12).stepsPerBeat).toBe(3);
+    expect(readGrid([4, 4], 24).stepsPerBeat).toBe(6);
+    expect(readGrid([4, 4], 12).name).toBe("sekizlik triole");
+  });
+
+  it("counts against the felt beat in compound time", () => {
+    /* 6/8 at 1/16 is twelve steps and two dotted beats: six steps a beat. */
+    expect(readGrid([6, 8], 16).stepsPerBeat).toBe(6);
+  });
+
+  it("never drops the notation the reader will meet everywhere else", () => {
+    expect(readGrid([4, 4], 16).technical).toBe("1/16");
+    expect(readGrid([4, 4], 12).technical).toBe("1/8 üçleme");
+  });
+
+  it("offers both names on every choice, and only grids the meter can write", () => {
+    const choices = gridChoices([4, 4], [4, 8, 12, 16, 24, 32]);
+    expect(choices.map((c) => c.label)).toEqual([
+      "Vuruş — 1/4",
+      "Yarım vuruş — 1/8",
+      "Sekizlik triole — 1/8 üçleme",
+      "Çeyrek vuruş — 1/16",
+      "On altılık triole — 1/16 üçleme",
+      "Çok ince — 1/32",
+    ]);
+  });
+
+  it("leaves out a grid the meter cannot be written on", () => {
+    /* 7/8 counts in eighths, so a grid of quarters cannot write its value. */
+    const choices = gridChoices([7, 8], [4, 8, 16, 32]);
+    expect(choices.map((c) => c.resolution)).toEqual([8, 16, 32]);
   });
 });

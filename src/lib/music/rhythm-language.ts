@@ -116,3 +116,109 @@ export function rhythmSummary(
   const reading = readRhythm(timeSignature, resolution);
   return `${reading.plain} (${reading.technical})`;
 }
+
+/**
+ * The grid, said as a grid (2T §3.1).
+ *
+ * `readRhythm` describes a *bar*: how many beats it has and how many places
+ * there are to write in it. That is the right thing under a bar and the wrong
+ * thing beside a grid control, where the question is not "how big is this
+ * bar" but "how finely am I writing".
+ *
+ * The founder read "1/16" beside "4/4" and "132 BPM" and asked why 1/16 was
+ * not making the tempo 4/4 — which is not a gap in their musical knowledge,
+ * it is three numbers on one screen with nothing saying they answer different
+ * questions. So this says the one thing that separates them:
+ *
+ *     Izgara: 16'lık · Her vuruşta 4 adım
+ *
+ * The meter is the bar's shape, the BPM is how fast the beat goes, and the
+ * grid is how finely a beat is divided. Only the third is what this control
+ * changes, and now it says so.
+ */
+export type GridReading = {
+  /** "16'lık", "sekizlik triole" */
+  readonly name: string;
+  /** How many grid steps fall inside one felt beat. */
+  readonly stepsPerBeat: number;
+  /** "Izgara: 16'lık · Her vuruşta 4 adım" */
+  readonly plain: string;
+  /** "1/16" — never removed, never the only thing shown. */
+  readonly technical: string;
+};
+
+/** Beginner-first names for the grids, with the notation beside each. */
+export const GRID_NAMES: Readonly<Record<Resolution, string>> = {
+  4: "Vuruş",
+  8: "Yarım vuruş",
+  12: "Sekizlik triole",
+  16: "Çeyrek vuruş",
+  24: "On altılık triole",
+  32: "Çok ince",
+};
+
+/** What each grid writes, in note values a reader can look up. */
+export const GRID_VALUE_NAMES: Readonly<Record<Resolution, string>> = {
+  4: "dörtlük",
+  8: "sekizlik",
+  12: "sekizlik triole",
+  16: "16'lık",
+  24: "16'lık triole",
+  32: "32'lik",
+};
+
+export function readGrid(
+  timeSignature: TimeSignature,
+  resolution: Resolution,
+): GridReading {
+  const stepsPerBeat = Math.round(
+    slotCount(timeSignature, resolution) /
+      Math.max(1, slotCount(timeSignature, resolution) / slotsPerFeltBeat(timeSignature, resolution)),
+  );
+  const name = GRID_VALUE_NAMES[resolution];
+  return {
+    name,
+    stepsPerBeat,
+    plain: `Izgara: ${name} · Her vuruşta ${stepsPerBeat} adım`,
+    technical: resolutionLabel(resolution),
+  };
+}
+
+export type GridChoice = {
+  readonly resolution: Resolution;
+  /** "Çeyrek vuruş" */
+  readonly name: string;
+  /** "1/16" */
+  readonly technical: string;
+  /** "Çeyrek vuruş — 1/16" */
+  readonly label: string;
+};
+
+/**
+ * The grid options a sheet offers, each carrying both names.
+ *
+ * The plain name first, because it is the one a reader who does not read
+ * notation can act on; the notation second, because it is the one they will
+ * meet everywhere else and hiding it would leave them unable to look anything
+ * up. Neither is ever shown without the other.
+ */
+export function gridChoices(
+  timeSignature: TimeSignature,
+  available: readonly Resolution[],
+): readonly GridChoice[] {
+  return available
+    .filter((resolution) => {
+      try {
+        slotCount(timeSignature, resolution);
+        return true;
+      } catch {
+        return false;
+      }
+    })
+    .map((resolution) => ({
+      resolution,
+      name: GRID_NAMES[resolution],
+      technical: resolutionLabel(resolution),
+      label: `${GRID_NAMES[resolution]} — ${resolutionLabel(resolution)}`,
+    }));
+}

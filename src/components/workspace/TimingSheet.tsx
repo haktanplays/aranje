@@ -17,7 +17,8 @@
  * rather than offered and then refused.
  */
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
-import { formatTimeSignature, resolutionLabel, TIME_SIGNATURES } from "@/lib/music/timing";
+import { formatTimeSignature, TIME_SIGNATURES } from "@/lib/music/timing";
+import { gridChoices, readGrid } from "@/lib/music/rhythm-language";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type { TimingChangeHandle } from "@/lib/workspace/use-timing-change";
 
@@ -90,7 +91,7 @@ export function TimingSheet({ timing }: { timing: TimingChangeHandle }) {
           </select>
         </label>
         <label className="block flex-1">
-          <span className="text-muted mb-1 block text-xs">Ritim aralığı</span>
+          <span className="text-muted mb-1 block text-xs">Izgara</span>
           <select
             data-testid="timing-grid"
             value={String(timing.resolution)}
@@ -102,9 +103,14 @@ export function TimingSheet({ timing }: { timing: TimingChangeHandle }) {
             className={FIELD}
             style={{ minHeight: MIN_TOUCH_TARGET_PX }}
           >
-            {timing.grids.map((entry) => (
-              <option key={entry} value={String(entry)}>
-                {resolutionLabel(entry)}
+            {/*
+              Both names on every option (2T §3.1). "1/16" alone is the
+              private vocabulary of people who already read notation; the
+              plain name alone leaves a reader unable to look anything up.
+            */}
+            {gridChoices(timing.meter, timing.grids).map((choice) => (
+              <option key={choice.resolution} value={String(choice.resolution)}>
+                {choice.label}
               </option>
             ))}
           </select>
@@ -115,6 +121,16 @@ export function TimingSheet({ timing }: { timing: TimingChangeHandle }) {
       <p className="mt-3">
         <span data-testid="timing-draft-plain" className="text-text block text-sm">
           {draft?.plain ?? "—"}
+        </span>
+        {/*
+          What the grid control itself changes, said separately from the bar
+          (2T §3.1). The meter is the bar's shape, the BPM is how fast the
+          beat goes, and this is how finely a beat is divided — three numbers
+          that were on one screen with nothing saying they answered different
+          questions.
+        */}
+        <span data-testid="timing-draft-grid" className="text-muted block text-xs">
+          {readGrid(timing.meter, timing.resolution).plain}
         </span>
         <span data-testid="timing-draft-technical" className="text-muted block text-xs">
           {draft?.technical ?? "—"}
