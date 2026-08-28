@@ -158,18 +158,28 @@ export function fixtureB(): Song {
 
 /* --------------------------------------------------------------- fixture C */
 
+/** The sixteenth the top two strings are taken again on. */
+const C_RESTRIKE_SLOT = 10;
+
 /**
  * **Six-string ringing arpeggio with a partial re-attack.**
  *
  * A six-string voicing rolled out one string at a time, every string left
- * ringing to the end of the bar, and then two of the six struck again while
- * the other four keep sounding.
+ * ringing, and then two of the six struck again while the other four keep
+ * sounding.
  *
  * **This bar was unwritable before**, twice over: the strings could not hold
  * their own lengths, and re-striking two of them would have ended all six.
+ *
+ * The four strings nobody comes back to ring to the end of the bar. The two
+ * that are taken again are written to end exactly where the second attack
+ * begins (2T-B §3.1) — a string is not playing two frets at once, and the
+ * score should not claim it is. The arpeggio is still dirty: four voices are
+ * overlapping when the re-attack lands, and six are overlapping before it.
  */
 export function fixtureC(): Song {
   const bar = empty(16);
+  const restrikeTicks = C_RESTRIKE_SLOT * 48;
   const voicing = [
     { pitch: "E2", string: 0, fret: 0 },
     { pitch: "B2", string: 1, fret: 2 },
@@ -178,15 +188,18 @@ export function fixtureC(): Song {
     { pitch: "B3", string: 4, fret: 0 },
     { pitch: "E4", string: 5, fret: 0 },
   ];
+  const retaken = new Set([4, 5]);
 
-  /* Rolled out, a sixteenth apart, each ringing to the end of the bar. */
+  /* Rolled out, a sixteenth apart, each ringing until its string is needed. */
   voicing.forEach((voice, index) => {
+    const startTicks = index * 48;
+    const endTicks = retaken.has(voice.string) ? restrikeTicks : 768;
     bar[index] = {
       notes: [
         {
           pitch: voice.pitch,
           position: { string: voice.string, fret: voice.fret },
-          durationTicks: (16 - index) * 48,
+          durationTicks: endTicks - startTicks,
           letRing: true,
         },
       ],
@@ -194,10 +207,20 @@ export function fixtureC(): Song {
   });
 
   /* Two of the six taken again while the other four keep ringing. */
-  bar[10] = {
+  bar[C_RESTRIKE_SLOT] = {
     notes: [
-      { pitch: "B3", position: { string: 4, fret: 0 }, durationTicks: 288, letRing: true },
-      { pitch: "E4", position: { string: 5, fret: 0 }, durationTicks: 288, letRing: true },
+      {
+        pitch: "B3",
+        position: { string: 4, fret: 0 },
+        durationTicks: 768 - restrikeTicks,
+        letRing: true,
+      },
+      {
+        pitch: "E4",
+        position: { string: 5, fret: 0 },
+        durationTicks: 768 - restrikeTicks,
+        letRing: true,
+      },
     ],
   };
 

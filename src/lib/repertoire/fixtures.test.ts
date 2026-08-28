@@ -145,12 +145,38 @@ describe("C — six-string ringing arpeggio with a partial re-attack", () => {
   });
 
   /* Every string keeps its own life: the dirty let-ring arpeggio. */
-  it("leaves every string ringing to the end of the bar", () => {
+  it("rings each string until something actually needs it", () => {
     const heard = heardOf(song);
     const rolled = heard.filter((s) => s.startTicks < 48 * 6);
     for (const span of rolled) {
-      expect(span.startTicks + span.writtenTicks).toBe(768);
+      const string = span.note.position!.string;
+      /* Four strings to the bar line; the two taken again, to the re-attack. */
+      const expected = string === 4 || string === 5 ? 48 * 10 : 768;
+      expect(span.startTicks + span.writtenTicks).toBe(expected);
       expect(span.soundingTicks).toBe(span.writtenTicks);
+    }
+  });
+
+  /*
+   * 2T-B §3.1. Nowhere in this bar is one string sounding two frets at once —
+   * which is the whole difference between a dirty arpeggio and a fiction.
+   */
+  it("never sounds two voices on one string at the same time", () => {
+    const heard = heardOf(song);
+    const byString = new Map<number, typeof heard>();
+    for (const span of heard) {
+      const string = span.note.position!.string;
+      byString.set(string, [...(byString.get(string) ?? []), span]);
+    }
+    for (const spans of byString.values()) {
+      const sorted = [...spans].sort((a, b) => a.startTicks - b.startTicks);
+      for (let i = 1; i < sorted.length; i += 1) {
+        const before = sorted[i - 1]!;
+        expect(before.startTicks + before.soundingTicks).toBeLessThanOrEqual(
+          sorted[i]!.startTicks,
+        );
+      }
+      expect(spans.every((s) => !s.cutByRestrike)).toBe(true);
     }
   });
 

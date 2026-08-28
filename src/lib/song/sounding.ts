@@ -20,13 +20,29 @@
  *    otherwise the tie run under it, which is exactly the old rule. A song
  *    with no durations therefore reads identically — that is what makes the
  *    migration silent in the honest sense.
- * 3. **How long does it sound?** Its written length, unless the same string
- *    is struck again first — and even then only when the note did not ask to
- *    ring on. A different string being struck does nothing to it at all.
+ * 3. **How long does it sound?** Its written length, capped at the moment its
+ *    own string is taken again. A different string being struck does nothing
+ *    to it at all.
  *
  * Only the third question is about physics, and it is the only one that
  * shortens anything. Nothing here deletes, moves or rewrites a note: this
  * module reads a score and returns what would be heard.
+ *
+ * ## What `letRing` is, and what it is not (2T-B §3.1)
+ *
+ * It is not a licence to break the instrument. One string sounds one note,
+ * and a second attack on it ends the first no matter what any flag says —
+ * otherwise this module would print same-string polyphony that no hand could
+ * produce, and the playback built on it would be a fiction.
+ *
+ * What `letRing` lifts is the *other* rule, the one that really is too
+ * strict: a note with no stated length gets its length from the tie run, and
+ * a tie run ends at the next slot **anything** is written in, on any string.
+ * That is a global-onset rule, and it is why a bass pedal could not ring
+ * under a melody. A let-ring note ignores that boundary and keeps sounding
+ * until its own string is needed. Where the writer *did* state a length,
+ * that length stands — `letRing` never stretches it, or "ring on" would
+ * quietly rewrite every duration in the bar.
  */
 import { isMelodicSlotArray, type Bar, type NoteEvent, type Song } from "@/lib/song/schema";
 import { slotCount, ticksPerSlot } from "@/lib/music/timing";
@@ -48,7 +64,11 @@ export type SoundingSpan = WrittenSpan & {
   readonly soundingTicks: number;
   /** The string this was resolved onto, or null when nothing resolved it. */
   readonly stringIndex: number | null;
-  /** True when a later attack on the same string ended it early. */
+  /**
+   * True when an attack on the same string ended it before its written
+   * length. A simultaneous attack on that string cuts it to nothing, which
+   * is the same fact at zero length.
+   */
   readonly cutByRestrike: boolean;
 };
 
@@ -61,6 +81,15 @@ export function barOffsets(bars: readonly Bar[]): readonly number[] {
     at += slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
   }
   return offsets;
+}
+
+/** How long a whole run of bars lasts, in ticks. The edge everything stops at. */
+export function sectionTicks(bars: readonly Bar[]): number {
+  return bars.reduce(
+    (total, bar) =>
+      total + slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution),
+    0,
+  );
 }
 
 /**
@@ -140,26 +169,42 @@ export function writtenSpans(
 }
 
 /**
- * What a string can physically do, applied to written spans (§3.3).
+ * What a string can physically do, applied to written spans (§3.3, §3.1).
  *
- * One string sounds one note, so a second attack on it ends the first — that
- * is the guitar, not a policy. `letRing` is the reader saying they want the
- * dirty version anyway, and it is honoured: a let-ring note keeps its full
- * written length and the two overlap, which is what a real let-ring pedal
- * point sounds like and what the previous model could not express at all.
+ * Three rules, and between them they cannot produce a sound a guitar cannot
+ * make:
  *
- * Notes on *different* strings never touch each other here. That is the whole
- * point: six strings, six independent lives.
+ * 1. A note stops when its own string is attacked again. Always — this is the
+ *    instrument, and no flag overrides it.
+ * 2. Two notes attacking one string at the same instant is not a chord, it is
+ *    a contradiction. The first one written gets the string; the second is
+ *    heard for exactly nothing and says so through `cutByRestrike`.
+ * 3. Notes on *different* strings never touch each other at all. Six strings,
+ *    six independent lives — that is the whole point.
+ *
+ * `letRing` sits underneath all three: it can lift a tie-run length past a
+ * global onset (rule 3's benefit, spelled out), and it can do nothing else.
  *
  * `stringOf` resolves a span to a string. It returns null for a note nothing
  * could place, and an unplaced note occludes nothing and is occluded by
  * nothing — a note with no string cannot be competing for one.
+ *
+ * `endTicks` is where the music stops; a ringing note cannot ring past it.
+ * Left out, it is taken as the end of the longest written span, which is the
+ * right answer when the caller has nothing but spans to hand.
  */
 export function soundingSpans(
   spans: readonly WrittenSpan[],
   stringOf: (span: WrittenSpan) => number | null,
+  endTicks?: number,
 ): readonly SoundingSpan[] {
   const withStrings = spans.map((span) => ({ span, stringIndex: stringOf(span) }));
+  const end =
+    endTicks ??
+    withStrings.reduce(
+      (most, { span }) => Math.max(most, span.startTicks + span.writtenTicks),
+      0,
+    );
 
   /* Attack times per string, so "the next attack" is a lookup, not a scan. */
   const attacks = new Map<number, number[]>();
@@ -171,21 +216,27 @@ export function soundingSpans(
   }
   for (const list of attacks.values()) list.sort((a, b) => a - b);
 
+  /* One string, one attack, one instant. Written order decides who gets it. */
+  const claimed = new Set<string>();
+
   return withStrings.map(({ span, stringIndex }) => {
-    const letRing = span.note.letRing === true;
-    if (stringIndex === null || letRing) {
-      return {
-        ...span,
-        stringIndex,
-        soundingTicks: span.writtenTicks,
-        cutByRestrike: false,
-      };
+    if (stringIndex !== null) {
+      const claim = `${stringIndex}:${span.startTicks}`;
+      if (claimed.has(claim)) {
+        return { ...span, stringIndex, soundingTicks: 0, cutByRestrike: true };
+      }
+      claimed.add(claim);
     }
-    const next = (attacks.get(stringIndex) ?? []).find(
-      (at) => at > span.startTicks,
-    );
-    const room = next === undefined ? span.writtenTicks : next - span.startTicks;
-    const soundingTicks = Math.min(span.writtenTicks, room);
+
+    const next =
+      stringIndex === null
+        ? undefined
+        : (attacks.get(stringIndex) ?? []).find((at) => at > span.startTicks);
+    const room = Math.max(0, (next ?? end) - span.startTicks);
+    /* Only an unstated length may ring on; a stated one is the writer talking. */
+    const ringsOn = span.note.letRing === true && !span.explicit;
+    const wanted = ringsOn ? Math.max(span.writtenTicks, room) : span.writtenTicks;
+    const soundingTicks = Math.min(wanted, room);
     return {
       ...span,
       stringIndex,
@@ -204,5 +255,9 @@ export function soundingOf(
 ): readonly SoundingSpan[] {
   const section = song.sections.find((entry) => entry.id === sectionId);
   if (!section) return [];
-  return soundingSpans(writtenSpans(section.bars, trackId), stringOf);
+  return soundingSpans(
+    writtenSpans(section.bars, trackId),
+    stringOf,
+    sectionTicks(section.bars),
+  );
 }

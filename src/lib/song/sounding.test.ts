@@ -150,7 +150,12 @@ describe("soundingSpans — what is heard", () => {
     expect(heard.every((s) => !s.cutByRestrike)).toBe(true);
   });
 
-  it("honours a note that asked to ring on through its own string", () => {
+  /*
+   * 2T-B §3.1. One string cannot be playing two different frets at once, and
+   * no flag on a note may say otherwise. `letRing` is a request not to damp;
+   * it is not permission to break the instrument.
+   */
+  it("still ends a let-ring note when its own string is taken again", () => {
     const written = writtenSpans(
       [
         line({
@@ -161,7 +166,107 @@ describe("soundingSpans — what is heard", () => {
       TRACK,
     );
     const heard = soundingSpans(written, onString(0));
-    expect(heard[0]).toMatchObject({ soundingTicks: 768, cutByRestrike: false });
+    expect(heard[0]).toMatchObject({ soundingTicks: 192, cutByRestrike: true });
+    /* The score event is untouched — only what is heard got shorter. */
+    expect(heard[0]!.writtenTicks).toBe(768);
+  });
+
+  /*
+   * What `letRing` actually buys, and the only thing it buys: a written
+   * length that came from the tie run is a *global* onset rule — it ends at
+   * the next slot anything is written in, whatever string that is on. A
+   * let-ring note ignores that boundary and keeps going until its own string
+   * is needed.
+   */
+  it("rings past a global onset on another string when it has no written length", () => {
+    const written = writtenSpans(
+      [
+        line({
+          0: { notes: [note("E2", { letRing: true })] },
+          4: { notes: [note("B3")] },
+        }),
+      ],
+      TRACK,
+    );
+    /* The E2 is on string 0; the B3 is on string 4. */
+    const heard = soundingSpans(written, (span) => (span.slotIndex === 0 ? 0 : 4), 768);
+    expect(heard[0]!.writtenTicks).toBe(48);
+    expect(heard[0]!.soundingTicks).toBe(768);
+    expect(heard[0]!.cutByRestrike).toBe(false);
+  });
+
+  it("rings only up to the next attack on its own string, never past it", () => {
+    const written = writtenSpans(
+      [
+        line({
+          0: { notes: [note("E2", { letRing: true })] },
+          4: { notes: [note("B3")] },
+          8: { notes: [note("G2")] },
+        }),
+      ],
+      TRACK,
+    );
+    /* B3 on string 4, both E2 and G2 on string 0. */
+    const heard = soundingSpans(written, (span) => (span.slotIndex === 4 ? 4 : 0), 768);
+    expect(heard[0]!.soundingTicks).toBe(384);
+  });
+
+  /*
+   * A stated length is the writer speaking. `letRing` does not overrule it
+   * upward, or "ring on" would quietly rewrite every duration in the bar.
+   */
+  it("does not stretch a length the note stated for itself", () => {
+    const written = writtenSpans(
+      [line({ 0: { notes: [note("E2", { durationTicks: 96, letRing: true })] } })],
+      TRACK,
+    );
+    expect(soundingSpans(written, onString(0), 768)[0]!.soundingTicks).toBe(96);
+  });
+
+  /*
+   * Two frets on one string at one instant is not a chord, it is a
+   * contradiction. The first one written gets the string; the second is
+   * heard for exactly nothing, and says so.
+   */
+  it("refuses to sound two notes on one string at the same instant", () => {
+    const written = writtenSpans(
+      [
+        line({
+          0: {
+            notes: [
+              note("E2", { durationTicks: 384, letRing: true }),
+              note("F2", { durationTicks: 384, letRing: true }),
+            ],
+          },
+        }),
+      ],
+      TRACK,
+    );
+    const heard = soundingSpans(written, onString(0), 768);
+    expect(heard.map((s) => s.soundingTicks)).toEqual([384, 0]);
+    expect(heard[1]!.cutByRestrike).toBe(true);
+    /* Neither note was deleted; both are still in the score. */
+    expect(heard.map((s) => s.note.pitch)).toEqual(["E2", "F2"]);
+  });
+
+  it("never leaves two sounding voices overlapping on one string", () => {
+    const written = writtenSpans(
+      [
+        line({
+          0: { notes: [note("E2", { durationTicks: 768, letRing: true })] },
+          4: { notes: [note("G2", { durationTicks: 768, letRing: true })] },
+          8: { notes: [note("A2", { durationTicks: 768, letRing: true })] },
+        }),
+      ],
+      TRACK,
+    );
+    const heard = soundingSpans(written, onString(0), 768);
+    for (let i = 1; i < heard.length; i += 1) {
+      const before = heard[i - 1]!;
+      expect(before.startTicks + before.soundingTicks).toBeLessThanOrEqual(
+        heard[i]!.startTicks,
+      );
+    }
   });
 
   it("never lengthens a note past what the score wrote", () => {

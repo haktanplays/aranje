@@ -216,9 +216,11 @@ export function chordToArpeggio(
       : options.stepTicks;
     const note: NoteEvent = { ...entry.note, durationTicks: heldTicks };
     /*
-     * Ringing means the strings are meant to overlap, and only `letRing` says
-     * that to the physics. Without it a voice would still be cut by the next
-     * attack on its own string, which is right for detached and wrong here.
+     * The overlap is carried by the durations — each voice is written long
+     * enough to reach the end of the figure, and the voices are on different
+     * strings, so nothing cuts them (2T-B §3.1). `letRing` is written beside
+     * that as the performance instruction it is: do not damp these. It cannot
+     * make a string hold two frets, and it is not being asked to.
      */
     if (options.ring) note.letRing = true;
     next[slotIndex] = { notes: [note] };
