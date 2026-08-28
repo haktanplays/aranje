@@ -4,7 +4,9 @@ import { useState } from "react";
 
 import { DurationControl } from "@/components/workspace/DurationControl";
 import type { DurationGestureProps } from "@/components/workspace/FrettedBarBlock";
+import { RetuneSection } from "@/components/workspace/RetuneSection";
 import { RhythmRow } from "@/components/workspace/RhythmRow";
+import { LEVEL_LABELS } from "@/lib/song/playability";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import {
@@ -95,6 +97,8 @@ export function FretSheet({
   duration = null,
   rhythm = null,
   shape = null,
+  retune = null,
+  playability = [],
   error,
 }: {
   open: boolean;
@@ -147,6 +151,23 @@ export function FretSheet({
     preview(command: ShapeCommandInput): ShapePreviewResult;
     apply(command: ShapeCommandInput): void;
   } | null;
+  /** "Ritmi koru, akoru değiştir", on the bar this note is in (2T-C §7). */
+  retune?:
+    | ({ readonly available: boolean } & Omit<
+        React.ComponentProps<typeof RetuneSection>,
+        "onFrom" | "onTo" | "onApply"
+      > & {
+          chooseFrom: React.ComponentProps<typeof RetuneSection>["onFrom"];
+          chooseTo: React.ComponentProps<typeof RetuneSection>["onTo"];
+          apply: () => void;
+        })
+    | null;
+  /** What a real guitar would have trouble with, in this bar (2T-C §8). */
+  playability?: readonly {
+    readonly level: "conflict" | "warning" | "info";
+    readonly kind: string;
+    readonly message: string;
+  }[];
   /** Set when the last command was refused, in words the reader can act on. */
   error: string | null;
 }) {
@@ -321,6 +342,42 @@ export function FretSheet({
 
         {shape?.available ? (
           <ShapeSection preview={shape.preview} apply={shape.apply} />
+        ) : null}
+
+        {retune?.available ? (
+          <RetuneSection
+            from={retune.from}
+            to={retune.to}
+            preview={retune.preview}
+            onFrom={retune.chooseFrom}
+            onTo={retune.chooseTo}
+            onApply={retune.apply}
+          />
+        ) : null}
+
+        {playability.length > 0 ? (
+          <ul
+            data-playability
+            aria-label="Bu ölçüde çalınabilirlik notları"
+            className="border-line border-t pt-3 text-xs"
+          >
+            {playability.map((note) => (
+              <li
+                key={`${note.kind}-${note.message}`}
+                data-playability-level={note.level}
+                className={
+                  note.level === "conflict"
+                    ? "text-danger"
+                    : note.level === "warning"
+                      ? "text-bronze"
+                      : "text-muted"
+                }
+              >
+                <span className="font-medium">{LEVEL_LABELS[note.level]}:</span>{" "}
+                {note.message}
+              </li>
+            ))}
+          </ul>
         ) : null}
 
         {target.articulationWarning ? (

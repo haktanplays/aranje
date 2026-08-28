@@ -30,7 +30,15 @@ import {
   type ArpeggioStep,
   type TransformFailure,
 } from "@/lib/song/chord-shape";
+import { slotCount } from "@/lib/music/timing";
 import { applyEdit, type EditCommand } from "@/lib/song/edit";
+import {
+  guessHarmony,
+  harmonyOf,
+  type HarmonyChoice,
+} from "@/lib/song/harmony-guess";
+import { notesForBar, playabilityNotes, type PlayabilityNote } from "@/lib/song/playability";
+import { retuneHarmony, type RetuneWarning } from "@/lib/song/retune-harmony";
 import {
   defaultRhythmTicks,
   rhythmChoices,
@@ -58,6 +66,15 @@ import {
 } from "@/lib/song/selection";
 import type { TrackTimeline } from "@/lib/tab/timeline";
 import { validateArticulationContext } from "@/lib/validators";
+
+/** What a refused retune is called, in the reader's words. */
+const RETUNE_REFUSALS: Readonly<Record<string, string>> = {
+  target_not_found: "Bu ölçü artık burada değil.",
+  not_a_melodic_track: "Bu track'te akor değiştirilemez.",
+  empty_selection: "Bu ölçüde taşınacak nota yok.",
+  unknown_root: "Bu kök ses tanınmadı.",
+  unreachable_pitch: "Sonuç enstrümanın dışına düşüyor.",
+};
 
 /** What a refused transform is called, in the reader's words. */
 const SHAPE_REFUSALS: Readonly<Record<TransformFailure, string>> = {
@@ -186,6 +203,32 @@ export type RhythmSession = {
   choose(ticks: number): void;
 };
 
+/**
+ * "Keep the rhythm, change the chord", as a reader uses it (2T-C §7).
+ *
+ * The source chord is proposed from the notes already there and stays
+ * editable — a guess that is usually right and always correctable beats a
+ * blank field. The preview runs the same transform the apply runs and throws
+ * the result away, so it cannot disagree about what would happen, including
+ * about a refusal.
+ */
+export type RetuneSession = {
+  readonly available: boolean;
+  readonly from: HarmonyChoice | null;
+  readonly to: HarmonyChoice | null;
+  chooseFrom(choice: HarmonyChoice): void;
+  chooseTo(choice: HarmonyChoice): void;
+  readonly preview:
+    | { readonly kind: "idle" }
+    | {
+        readonly kind: "ready";
+        readonly moves: readonly { readonly from: string; readonly to: string }[];
+        readonly warnings: readonly RetuneWarning[];
+      }
+    | { readonly kind: "refused"; readonly reason: string };
+  apply(): void;
+};
+
 export type NoteEditing = {
   readonly editing: boolean;
   readonly cell: EditedCell | null;
@@ -197,6 +240,9 @@ export type NoteEditing = {
   readonly duration: DurationGesture;
   readonly shape: ShapeGesture;
   readonly rhythm: RhythmSession;
+  readonly retune: RetuneSession;
+  /** What a real guitar would have trouble with, in this bar (2T-C §8). */
+  readonly playability: readonly PlayabilityNote[];
   toggleEdit(): void;
   /** Leave edit mode without touching the cell/selection resets. */
   exitEditMode(): void;
@@ -233,6 +279,8 @@ export function useNoteEditing(options: {
   const [drag, setDrag] = useState<DurationDrag | null>(null);
   /* Null until the reader picks one; the grid's own step until then. */
   const [chosenTicks, setChosenTicks] = useState<number | null>(null);
+  const [retuneFrom, setRetuneFrom] = useState<HarmonyChoice | null>(null);
+  const [retuneTo, setRetuneTo] = useState<HarmonyChoice | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
 
   // A group selection belongs to one track and one section at a time, so the
@@ -553,6 +601,81 @@ export function useNoteEditing(options: {
     ];
   }, [rhythmTarget, song]);
 
+  /* ------------------------------------------------ keep rhythm, new chord */
+
+  const retuneRun = useMemo(() => {
+    if (!rhythmTarget) return null;
+    const bar = song.sections
+      .find((entry) => entry.id === rhythmTarget.sectionId)
+      ?.bars[rhythmTarget.barIndex];
+    if (!bar) return null;
+    /*
+     * The whole bar the reader is standing in. A bar is a unit a reader
+     * already thinks in, and it is what the selection they made covers.
+     */
+    return {
+      sectionId: rhythmTarget.sectionId,
+      barIndex: rhythmTarget.barIndex,
+      trackId: rhythmTarget.trackId,
+      fromSlot: 0,
+      toSlot: slotCount(bar.timeSignature, bar.resolution),
+    };
+  }, [rhythmTarget, song]);
+
+  const guessed = useMemo(
+    () => (retuneRun ? guessHarmony(song, retuneRun) : null),
+    [retuneRun, song],
+  );
+  const sourceHarmony = retuneFrom ?? guessed;
+
+  const retunePreview = useMemo((): RetuneSession["preview"] => {
+    if (!retuneRun || sourceHarmony === null || retuneTo === null) {
+      return { kind: "idle" };
+    }
+    const result = retuneHarmony(
+      song,
+      retuneRun,
+      harmonyOf(sourceHarmony),
+      harmonyOf(retuneTo),
+    );
+    if (!result.ok) {
+      return {
+        kind: "refused",
+        reason: result.detail ?? RETUNE_REFUSALS[result.reason] ?? "Bu dönüşüm yapılamadı.",
+      };
+    }
+    return {
+      kind: "ready",
+      moves: result.moves.map((move) => ({ from: move.from, to: move.to })),
+      warnings: result.warnings,
+    };
+  }, [retuneRun, retuneTo, song, sourceHarmony]);
+
+  const applyRetune = useCallback(() => {
+    if (!retuneRun || sourceHarmony === null || retuneTo === null) return;
+    const result = retuneHarmony(
+      song,
+      retuneRun,
+      harmonyOf(sourceHarmony),
+      harmonyOf(retuneTo),
+    );
+    if (!result.ok) {
+      setEditError(
+        result.detail ?? RETUNE_REFUSALS[result.reason] ?? "Bu dönüşüm yapılamadı.",
+      );
+      return;
+    }
+    setEditError(null);
+    commit(result.song, { kind: "retune_harmony" });
+  }, [commit, retuneRun, retuneTo, song, sourceHarmony]);
+
+  /* ------------------------------------------- what the instrument can do */
+
+  const playability = useMemo(() => {
+    if (!track || !rhythmTarget) return [];
+    return notesForBar(playabilityNotes(song, track.id), rhythmTarget.barIndex);
+  }, [rhythmTarget, song, track]);
+
   /* -------------------------------------------- the chord-shape transforms */
 
   const shapeTarget = useMemo(() => {
@@ -696,6 +819,16 @@ export function useNoteEditing(options: {
       counting,
       choose: setChosenTicks,
     },
+    retune: {
+      available: retuneRun !== null && guessed !== null,
+      from: sourceHarmony,
+      to: retuneTo,
+      chooseFrom: setRetuneFrom,
+      chooseTo: setRetuneTo,
+      preview: retunePreview,
+      apply: applyRetune,
+    },
+    playability,
     shape: {
       available: shapeTarget !== null,
       preview: previewShape,

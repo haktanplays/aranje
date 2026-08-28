@@ -185,12 +185,27 @@ for (const viewport of VIEWPORTS) {
   scenario.previewRefused = (await preview.getAttribute("data-refused")) === "true";
   scenario.shapePreviewWroteNothing =
     (await activeSongBytes(page)) === lengthened;
+  /* 2T-C §6: the preview names the strings the arpeggio would land on. */
+  scenario.shapeTargets = await page.locator("[data-shape-target]").count();
   const arpeggio = page.locator("[data-shape-arpeggio]");
   scenario.arpeggioOffered = !(await arpeggio.isDisabled());
   if (scenario.arpeggioOffered) {
     await arpeggio.click();
     await page.waitForTimeout(650);
     scenario.arpeggioWrote = (await activeSongBytes(page)) !== lengthened;
+  }
+
+  /* 2T-C §7: "keep the rhythm, change the chord" is reachable and proposes
+     the chord the passage is already over. */
+  const retune = page.locator("[data-retune-section]");
+  scenario.retuneOffered = (await retune.count()) === 1;
+  if (scenario.retuneOffered) {
+    await retune.scrollIntoViewIfNeeded();
+    scenario.retuneGuessed =
+      (await page.locator('[data-testid="retune-from-root"]').inputValue()) !== "";
+    scenario.retuneIdleBlocksApply = await page
+      .locator("[data-retune-apply]")
+      .isDisabled();
   }
 
   /* 22-24: undo names what happened, and moves the stored song both ways. */
@@ -236,6 +251,10 @@ for (const run of report) {
   check("releasing writes the length", run.lengthenWrote);
   check("the chord door starts shut", run.doorStartsShut);
   check("the shape preview writes nothing", run.shapePreviewWroteNothing);
+  check("the arpeggio preview names its target strings", run.shapeTargets > 0);
+  check("keep-the-rhythm is reachable", run.retuneOffered === true);
+  check("the source chord is proposed", run.retuneGuessed === true);
+  check("an unchosen target cannot be applied", run.retuneIdleBlocksApply === true);
   check("undo names the edit", /Geri al: /.test(run.undoName ?? ""));
   check("undo restores the stored song", run.undoRestored);
   check("redo puts it back", run.redoReapplied);

@@ -146,12 +146,33 @@ export function ShapeSection({
 
       {/* What would happen, in the core's own words. Nothing is written to
           find this out, and a refusal is shown as a refusal. */}
+      {/* The strings the arpeggio would actually land on, in the order the
+          hand crosses them. Drawn, never written, and no pointer target. */}
+      {shown.kind === "ready" ? (
+        <ul
+          data-shape-targets
+          aria-label="Arpejin geçeceği teller"
+          className="text-muted/80 pointer-events-none flex flex-wrap gap-x-3 gap-y-1 pb-1 text-[11px]"
+        >
+          {shown.onsets.map((onset, index) => (
+            <li key={`${onset.slotIndex}-${onset.pitch}`} data-shape-target>
+              {index + 1}. {onset.pitch}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
       <p
         data-shape-preview
         data-refused={shown.kind === "refused" ? "true" : "false"}
         className={`py-2 text-xs ${shown.kind === "refused" ? "text-danger" : "text-muted"}`}
       >
         {shown.kind === "refused" ? shown.reason : shown.summary}
+      </p>
+
+      {/* Two different things, said once so nobody has to guess (2T-C §6). */}
+      <p className="text-muted/80 pb-2 text-xs">
+        Arpej ayrı vuruşlar yazar; strum tek akoru elin geçiş yönüyle çalar.
       </p>
 
       <div className="grid grid-cols-2 gap-2">
