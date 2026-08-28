@@ -12,10 +12,18 @@
  * difference is which context is injected.
  *
  * Only the proven nodes are used: Sampler, MembraneSynth, NoiseSynth, Filter,
- * Channel, Gain, Destination and Meter (spec 8.1).
+ * Channel, Gain, Limiter, Destination and Meter (spec 8.1).
+ *
+ * `Limiter` joined that list in 2T §10, and not for a tone: the master was a
+ * unity gain wired straight at the destination, and a measured six-note chord
+ * peaked at +5.15 dBFS with 1576 clipped samples. Clipping is a square edge
+ * where a decaying string should be, which is what "firing a gun" sounds
+ * like. See `master-bus.ts` for the measurements and for why the trim and the
+ * ceiling are two stages rather than one.
  */
 import type * as Tone from "tone";
 
+import { MASTER_CEILING_DB, masterGain } from "@/lib/audio/master-bus";
 import {
   audioPresetAvailability,
   silentTracks,
@@ -384,8 +392,15 @@ export async function createEngine(
   const excluded = new Set(options.excludeTrackIds ?? []);
 
   const tone = await loadTone();
-  const master = new tone.Gain({ context, gain: 1 });
-  master.connect(context.destination);
+  /*
+   * Headroom, then a ceiling, then out. The trim is linear and changes no
+   * timbre; the ceiling should be idle on ordinary material and is there for
+   * the dense chord and the second guitar that were measured going over.
+   */
+  const master = new tone.Gain({ context, gain: masterGain() });
+  const ceiling = new tone.Limiter({ context, threshold: MASTER_CEILING_DB });
+  master.connect(ceiling);
+  ceiling.connect(context.destination);
   const metronome = buildMetronome(tone, context, master);
 
   const voices = new Map<string, TrackVoice>();
@@ -525,6 +540,7 @@ export async function createEngine(
       metronome.click.dispose();
       metronome.filter.dispose();
       master.dispose();
+      ceiling.dispose();
     },
   };
 }
