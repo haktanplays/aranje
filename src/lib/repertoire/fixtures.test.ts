@@ -66,11 +66,27 @@ describe("A — syncopated palm-muted double stops", () => {
     expect(bar!.filter((slot) => slot === null).length).toBeGreaterThan(6);
   });
 
-  /* Off the beat: sixteenth five is the second sixteenth of beat two. */
-  it("puts an accent off the beat", () => {
-    const accent = spansOf(song).find((span) => span.note.velocity === 112);
-    expect(accent?.startTicks).toBe(48 * 5);
-    expect(accent!.startTicks % 192).not.toBe(0);
+  /*
+   * 2T-C §3 asks this passage for syncopation, and syncopation is where the
+   * figure lands, not how hard it is hit. The third double stop starts on the
+   * second sixteenth of beat two — off the beat, and reachable by a reader
+   * who can only place notes and choose their lengths.
+   */
+  it("puts a figure off the beat", () => {
+    const offBeat = spansOf(song).find((span) => span.startTicks === 48 * 5);
+    expect(offBeat).toBeDefined();
+    expect(offBeat!.startTicks % 192).not.toBe(0);
+  });
+
+  it("writes eighths and sixteenths side by side", () => {
+    const lengths = new Set(spansOf(song).map((span) => span.writtenTicks));
+    expect(lengths.has(96)).toBe(true);
+    expect(lengths.has(48)).toBe(true);
+  });
+
+  /* Every note says how long it is, rather than leaning on the tie run. */
+  it("states every length on the note itself", () => {
+    expect(spansOf(song).every((span) => span.explicit)).toBe(true);
   });
 
   it("carries more than one palm-mute span", () => {

@@ -37,6 +37,7 @@ import {
   type SlotPosition,
 } from "@/lib/song/onset-block";
 import { settle } from "@/lib/song/edit";
+import { collisionsIntroduced } from "@/lib/song/string-collision";
 import { sameSong } from "@/lib/song/edit-history";
 import {
   isDrumSlotArray,
@@ -289,6 +290,16 @@ export function applyChordWrite(
 
   const settled = settle(next);
   if (!settled.ok) return chordFail("chord_validation_failed");
+
+  /*
+   * The shape was screened before it was chosen, but a chord written over
+   * notes that were already there is a second chance to ask for one string
+   * twice (2T-C §1). Asked of the result, so no path can be the one nobody
+   * remembered to check.
+   */
+  if (collisionsIntroduced(song, settled.song, command.trackId).length > 0) {
+    return chordFail("voicing_string_collision");
+  }
 
   return {
     ok: true,

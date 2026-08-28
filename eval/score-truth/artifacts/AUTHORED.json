@@ -1,0 +1,261 @@
+{
+  "base": "http://127.0.0.1:3110",
+  "ranAt": "2026-08-28T19:15:27.350Z",
+  "results": [
+    {
+      "fixture": "A",
+      "covers": [
+        "iki telli tekrarlar",
+        "16'lık ritim",
+        "açık esler",
+        "senkop",
+        "kesintili palm-mute",
+        "kısa HO hareketi"
+      ],
+      "failure": null,
+      "startedEmpty": true,
+      "changed": true,
+      "survivedReload": true,
+      "song": {
+        "version": 3,
+        "title": "Boş",
+        "bpm": 132,
+        "key": "E minor",
+        "tracks": [
+          {
+            "id": "gtr",
+            "name": "Gitar",
+            "instrumentId": "electric_guitar",
+            "presetId": "clean",
+            "volumeDb": -6,
+            "fretboard": {
+              "tuning": [
+                "E2",
+                "A2",
+                "D3",
+                "G3",
+                "B3",
+                "E4"
+              ],
+              "capo": 0
+            }
+          }
+        ],
+        "sections": [
+          {
+            "id": "s1",
+            "name": "Ana",
+            "status": "fixed",
+            "bars": [
+              {
+                "timeSignature": [
+                  4,
+                  4
+                ],
+                "resolution": 16,
+                "slots": {
+                  "gtr": [
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 96
+                        },
+                        {
+                          "pitch": "A2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 1,
+                            "fret": 0
+                          },
+                          "durationTicks": 96
+                        }
+                      ]
+                    },
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 48
+                        },
+                        {
+                          "pitch": "A2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 1,
+                            "fret": 0
+                          },
+                          "durationTicks": 48
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 48
+                        },
+                        {
+                          "pitch": "A2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 1,
+                            "fret": 0
+                          },
+                          "durationTicks": 48
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 96
+                        },
+                        {
+                          "pitch": "A2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 1,
+                            "fret": 0
+                          },
+                          "durationTicks": 96
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 48
+                        },
+                        {
+                          "pitch": "A2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 1,
+                            "fret": 0
+                          },
+                          "durationTicks": 48
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null
+                  ]
+                }
+              },
+              {
+                "timeSignature": [
+                  4,
+                  4
+                ],
+                "resolution": 16,
+                "slots": {
+                  "gtr": [
+                    {
+                      "notes": [
+                        {
+                          "pitch": "G3",
+                          "position": {
+                            "string": 2,
+                            "fret": 5
+                          },
+                          "durationTicks": 48
+                        }
+                      ]
+                    },
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "A3",
+                          "articulation": "hammer_on",
+                          "position": {
+                            "string": 2,
+                            "fret": 7
+                          },
+                          "durationTicks": 48
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    {
+                      "notes": [
+                        {
+                          "pitch": "E2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 0,
+                            "fret": 0
+                          },
+                          "durationTicks": 96
+                        },
+                        {
+                          "pitch": "A2",
+                          "articulation": "palm_mute",
+                          "position": {
+                            "string": 1,
+                            "fret": 0
+                          },
+                          "durationTicks": 96
+                        }
+                      ]
+                    },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "reloadDiff": null,
+      "pageErrors": []
+    }
+  ]
+}

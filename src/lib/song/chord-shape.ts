@@ -265,6 +265,30 @@ export function arpeggioToChord(
     return { ok: false, reason: "not_a_chord", detail: "Toplanacak birden fazla ses yok." };
   }
 
+  /*
+   * Gathering is the one transform that can genuinely ask a string for two
+   * notes at once: the voices being collected were on separate onsets, and
+   * nothing said they were on separate strings (2T-C §1). A chord that would
+   * need one string twice is refused whole rather than written and then
+   * half-played.
+   */
+  const strings = new Map<number, string>();
+  for (const note of notes) {
+    const string = note.position?.string;
+    if (string === undefined) continue;
+    const taken = strings.get(string);
+    if (taken !== undefined) {
+      return {
+        ok: false,
+        reason: "would_not_fit",
+        detail:
+          `${string + 1}. tel iki kez isteniyor (${taken} ve ${note.pitch}). ` +
+          "Bir tel aynı anda tek ses verir.",
+      };
+    }
+    strings.set(string, note.pitch);
+  }
+
   next[target.slotIndex] = { notes };
   return settle(
     withSlots(song, target, found.sectionIndex, next),

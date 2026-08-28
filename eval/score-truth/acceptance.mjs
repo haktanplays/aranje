@@ -148,6 +148,8 @@ for (const viewport of VIEWPORTS) {
 
   const handle = page.locator('[data-testid="duration-handle"]');
   scenario.handlePresent = (await handle.count()) === 1;
+  /* A sheet taller than the screen scrolls, and so does a reader. */
+  await handle.scrollIntoViewIfNeeded();
   const grip = await handle.boundingBox();
   scenario.handleTall = Math.round(grip.height);
   const plus = await page.locator('[data-testid="duration-longer"]').boundingBox();
@@ -175,6 +177,7 @@ for (const viewport of VIEWPORTS) {
   /* 17-21: the chord door, its preview, and one transform end to end. */
   const door = page.locator("[data-shape-open]");
   scenario.doorStartsShut = (await door.count()) === 1;
+  await door.scrollIntoViewIfNeeded();
   await door.click();
   await page.waitForTimeout(250);
   const preview = page.locator("[data-shape-preview]");

@@ -4,6 +4,8 @@ import { useState } from "react";
 
 import { DurationControl } from "@/components/workspace/DurationControl";
 import type { DurationGestureProps } from "@/components/workspace/FrettedBarBlock";
+import { RhythmRow } from "@/components/workspace/RhythmRow";
+import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import {
   ShapeSection,
@@ -52,10 +54,21 @@ export type FretSheetTarget = {
    */
   noteIndex: number | null;
   writtenTicks: number | null;
+  /** Whether this note is marked to ring on (2T-C §9). */
+  letRing: boolean;
 };
 
 /**
  * Where a fret number is entered (spec 13.1).
+ *
+ * ## The order of the sheet is the order of use
+ *
+ * Fret, then rhythm, then length: those three are touched on every note. The
+ * articulations, the way it is played, the chord transforms and the destructive
+ * actions come after, because they are occasional. At 320px the sheet scrolls,
+ * so what is above the fold is a decision about what a reader reaches for most
+ * — and it was measured: burying the length control put it out of reach of a
+ * thumb on the smallest screen this app supports.
  *
  * The note name beside the field is read-only on purpose: a pitch is derived
  * from the tuning, the capo and the fret (spec 9.1), so offering it as a
@@ -77,8 +90,10 @@ export function FretSheet({
   onTie,
   onNudge,
   onArticulation,
+  onLetRing,
   onChord,
   duration = null,
+  rhythm = null,
   shape = null,
   error,
 }: {
@@ -92,6 +107,14 @@ export function FretSheet({
   onTie: () => void;
   onNudge: (delta: { slot?: number; string?: number }) => void;
   onArticulation: (articulation: Articulation | null) => void;
+  /**
+   * Ring on, or damp with the rest (2T-C §9).
+   *
+   * Beside the articulations rather than among them: those are eleven ways of
+   * striking a string and this is an instruction to the hand that is not
+   * striking it. Putting it in the same list would teach the wrong thing.
+   */
+  onLetRing: (letRing: boolean) => void;
   /**
    * Open the chord builder on this cell.
    *
@@ -107,6 +130,14 @@ export function FretSheet({
    * behind it and never be reachable.
    */
   duration?: DurationGestureProps | null;
+  /**
+   * What the next note will be written at, and the three counting questions
+   * around it (2T-C §2, §4).
+   */
+  rhythm?: Pick<
+    React.ComponentProps<typeof RhythmRow>,
+    "counting" | "choices" | "ticks"
+  > & { choose(ticks: number): void } | null;
   /**
    * The chord transforms behind "Daha fazla" (2T-B §7), or null where the
    * selection is not on a track that can hold a chord.
@@ -192,6 +223,29 @@ export function FretSheet({
         </p>
       ) : null}
 
+      {rhythm ? (
+        <RhythmRow
+            counting={rhythm.counting}
+            choices={rhythm.choices}
+            ticks={rhythm.ticks}
+            onChoose={rhythm.choose}
+          />
+      ) : null}
+
+      {duration && target.noteIndex !== null && target.writtenTicks !== null ? (
+        <DurationControl
+            writtenTicks={target.writtenTicks}
+            noteIndex={target.noteIndex}
+            previewTicks={duration.previewTicks}
+            label={duration.label}
+            active={duration.active}
+            onGrab={duration.grab}
+            onMove={duration.moveBy}
+            onRelease={duration.release}
+            onCancel={duration.cancel}
+          />
+      ) : null}
+
       <div className="border-line grid grid-cols-4 gap-2 border-t py-3">
         <SheetButton onClick={() => onNudge({ slot: -1 })} aria-label="Bir slot geri">
           ←
@@ -242,19 +296,28 @@ export function FretSheet({
           })}
         </div>
 
-        {duration && target.noteIndex !== null && target.writtenTicks !== null ? (
-          <DurationControl
-            writtenTicks={target.writtenTicks}
-            noteIndex={target.noteIndex}
-            previewTicks={duration.previewTicks}
-            label={duration.label}
-            active={duration.active}
-            onGrab={duration.grab}
-            onMove={duration.moveBy}
-            onRelease={duration.release}
-            onCancel={duration.cancel}
-          />
-        ) : null}
+        {target.currentFret === null ? null : (
+          <div className="border-line flex items-center gap-2 border-t pt-3">
+            <span className="text-muted shrink-0 text-sm">Çalınış</span>
+            <button
+              type="button"
+              data-let-ring
+              aria-pressed={target.letRing}
+              onClick={() => onLetRing(!target.letRing)}
+              className={`border-line rounded-lg border px-3 text-sm ${
+                target.letRing ? "border-accent/60 bg-accent/15" : ""
+              }`}
+              style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+            >
+              Çınlat
+            </button>
+            <span className="text-muted text-xs">
+              {target.letRing
+                ? "Kendi teli tekrar çalınana kadar sürer."
+                : "Sonraki notayla birlikte susar."}
+            </span>
+          </div>
+        )}
 
         {shape?.available ? (
           <ShapeSection preview={shape.preview} apply={shape.apply} />

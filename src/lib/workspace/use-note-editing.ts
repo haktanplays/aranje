@@ -31,6 +31,17 @@ import {
   type TransformFailure,
 } from "@/lib/song/chord-shape";
 import { applyEdit, type EditCommand } from "@/lib/song/edit";
+import {
+  defaultRhythmTicks,
+  rhythmChoices,
+  type RhythmChoice,
+} from "@/lib/song/rhythm-choice";
+import {
+  gridLine,
+  meterLine,
+  tempoLine,
+  type CountingLine,
+} from "@/lib/music/counting-language";
 import { applyMoveOnsetGroup, type OnsetMovement } from "@/lib/song/move";
 import {
   blockContaining,
@@ -158,6 +169,23 @@ export type ShapeGesture = {
   apply(command: ShapeCommand): void;
 };
 
+/**
+ * The rhythm the next note will be written at, and the three counting
+ * questions that surround it (2T-C §2, §4).
+ *
+ * `ticks` is what a new note's `durationTicks` becomes, so a note written
+ * through the real UI says how long it is rather than inheriting a tie run.
+ * It follows the bar's grid until the reader chooses otherwise, because a
+ * length nobody picked should be the one the grid is already counting in.
+ */
+export type RhythmSession = {
+  readonly ticks: number;
+  readonly choices: readonly RhythmChoice[];
+  /** Ölçü, tempo and ızgara — three questions, three sentences. */
+  readonly counting: readonly CountingLine[];
+  choose(ticks: number): void;
+};
+
 export type NoteEditing = {
   readonly editing: boolean;
   readonly cell: EditedCell | null;
@@ -168,6 +196,7 @@ export type NoteEditing = {
   readonly group: GroupSelection;
   readonly duration: DurationGesture;
   readonly shape: ShapeGesture;
+  readonly rhythm: RhythmSession;
   toggleEdit(): void;
   /** Leave edit mode without touching the cell/selection resets. */
   exitEditMode(): void;
@@ -202,6 +231,8 @@ export function useNoteEditing(options: {
   const [editing, setEditing] = useState(false);
   const [cell, setCell] = useState<EditedCell | null>(null);
   const [drag, setDrag] = useState<DurationDrag | null>(null);
+  /* Null until the reader picks one; the grid's own step until then. */
+  const [chosenTicks, setChosenTicks] = useState<number | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
 
   // A group selection belongs to one track and one section at a time, so the
@@ -257,6 +288,28 @@ export function useNoteEditing(options: {
   const currentFret = currentSpan?.fret ?? null;
   const currentArticulation = currentSpan?.articulation ?? null;
 
+  /*
+   * Let-ring is a performance field rather than an articulation, so it is
+   * read from the note itself instead of from the span's articulation.
+   */
+  const currentLetRing = useMemo(() => {
+    if (!cell || !track) return false;
+    const [sectionId, barIndexText] = cell.barKey.split(":");
+    const bar = song.sections
+      .find((entry) => entry.id === sectionId)
+      ?.bars[Number(barIndexText)];
+    const slots = bar?.slots[track.id];
+    if (!slots || !Array.isArray(slots)) return false;
+    const slot = slots[cell.slotIndex];
+    if (slot === null || slot === undefined || slot === "-" || Array.isArray(slot)) {
+      return false;
+    }
+    return (
+      slot.notes.find((note) => note.position?.string === cell.stringIndex)?.letRing ===
+      true
+    );
+  }, [cell, song, track]);
+
   /**
    * What the validators say about the articulation on the selected cell.
    * A warning is information, not a refusal: it is shown, and the edit stands.
@@ -290,8 +343,17 @@ export function useNoteEditing(options: {
       articulationWarning,
       noteIndex: currentSpan?.noteIndex ?? null,
       writtenTicks: currentSpan?.writtenTicks ?? null,
+      letRing: currentLetRing,
     };
-  }, [articulationWarning, cell, currentArticulation, currentFret, currentSpan, timeline]);
+  }, [
+    articulationWarning,
+    cell,
+    currentArticulation,
+    currentFret,
+    currentLetRing,
+    currentSpan,
+    timeline,
+  ]);
 
   /*
    * The builder gets the whole target: every command aims at the selected
@@ -453,6 +515,44 @@ export function useNoteEditing(options: {
     clearGroup();
   }, [clearGroup]);
 
+  /* --------------------------------------------- the rhythm being written */
+
+  const rhythmTarget = useMemo(() => {
+    if (!cell || !track) return null;
+    const [sectionId, barIndexText] = cell.barKey.split(":");
+    const barIndex = Number(barIndexText);
+    if (!sectionId || !Number.isInteger(barIndex)) return null;
+    return { sectionId, barIndex, trackId: track.id, slotIndex: cell.slotIndex };
+  }, [cell, track]);
+
+  const choices = useMemo(
+    () => (rhythmTarget ? rhythmChoices(song, rhythmTarget) : []),
+    [rhythmTarget, song],
+  );
+
+  const gridTicks = rhythmTarget ? defaultRhythmTicks(song, rhythmTarget) : 0;
+  /*
+   * A chosen value this grid cannot write is not silently kept: changing the
+   * grid under a choice would otherwise write a note whose end nothing can
+   * start from.
+   */
+  const rhythmTicks =
+    chosenTicks !== null && choices.some((choice) => choice.ticks === chosenTicks)
+      ? chosenTicks
+      : gridTicks;
+
+  const counting = useMemo(() => {
+    const bar = song.sections
+      .find((entry) => entry.id === rhythmTarget?.sectionId)
+      ?.bars[rhythmTarget?.barIndex ?? -1];
+    if (!bar) return [];
+    return [
+      meterLine(bar.timeSignature),
+      tempoLine(song.bpm),
+      gridLine(bar.timeSignature, bar.resolution),
+    ];
+  }, [rhythmTarget, song]);
+
   /* -------------------------------------------- the chord-shape transforms */
 
   const shapeTarget = useMemo(() => {
@@ -590,6 +690,12 @@ export function useNoteEditing(options: {
     currentFret,
     currentArticulation,
     fretTarget,
+    rhythm: {
+      ticks: rhythmTicks,
+      choices,
+      counting,
+      choose: setChosenTicks,
+    },
     shape: {
       available: shapeTarget !== null,
       preview: previewShape,

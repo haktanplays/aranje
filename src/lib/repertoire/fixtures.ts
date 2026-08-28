@@ -57,40 +57,56 @@ const empty = (count: number): MelodicSlot[] =>
 /**
  * **Syncopated palm-muted double stops.**
  *
- * Two open strings struck together, real rests between the figures, the
- * accent landing off the beat, two separate palm-mute spans and a short
- * hammer-on at the end. Written at 1/16 because that is the finest value it
- * contains; every eighth is two slots and every eighth rest is two empty
- * ones, which is how a single-grid bar writes mixed values.
+ * Two open strings struck together, eighths and sixteenths side by side, real
+ * rests between the figures, the third figure landing off the beat, two
+ * separate palm-mute spans and a hammer-on.
+ *
+ * Every note states its own length (2T-C §1), because that is what the editor
+ * now writes: a reader picks a rhythm value and the note carries it. The
+ * lengths are the same ones the tie-run reading gave, so the music did not
+ * change when the way of saying it did.
  */
 export function fixtureA(): Song {
   const bar1 = empty(16);
-  const stop = (fret: number, extra: Record<string, unknown> = {}): MelodicSlot => ({
+  const stop = (ticks: number): MelodicSlot => ({
     notes: [
-      { pitch: "E2", position: { string: 0, fret: 0 }, articulation: "palm_mute", ...extra },
-      { pitch: "A2", position: { string: 1, fret: 0 }, articulation: "palm_mute", ...extra },
+      {
+        pitch: "E2",
+        position: { string: 0, fret: 0 },
+        articulation: "palm_mute",
+        durationTicks: ticks,
+      },
+      {
+        pitch: "A2",
+        position: { string: 1, fret: 0 },
+        articulation: "palm_mute",
+        durationTicks: ticks,
+      },
     ],
   });
-  bar1[0] = stop(0);
-  bar1[2] = stop(0);
-  /* Off the beat: the accent lands on the second sixteenth of beat two. */
-  bar1[5] = stop(0, { velocity: 112 });
-  bar1[8] = stop(0);
-  bar1[11] = stop(0, { velocity: 112 });
+  bar1[0] = stop(96);
+  bar1[2] = stop(48);
+  /* Off the beat: the third figure lands on the second sixteenth of beat two. */
+  bar1[5] = stop(48);
+  bar1[8] = stop(96);
+  bar1[11] = stop(48);
 
   const bar2 = empty(16);
   bar2[0] = {
-    notes: [{ pitch: "G3", position: { string: 2, fret: 5 } }],
+    notes: [{ pitch: "G3", position: { string: 2, fret: 5 }, durationTicks: 48 }],
   };
   bar2[2] = {
-    notes: [{ pitch: "A3", position: { string: 2, fret: 7 }, articulation: "hammer_on" }],
-  };
-  bar2[8] = {
     notes: [
-      { pitch: "E2", position: { string: 0, fret: 0 }, articulation: "palm_mute" },
-      { pitch: "A2", position: { string: 1, fret: 0 }, articulation: "palm_mute" },
+      {
+        pitch: "A3",
+        position: { string: 2, fret: 7 },
+        articulation: "hammer_on",
+        durationTicks: 48,
+      },
     ],
   };
+  /* The palm mute stops for the two legato notes and comes back here. */
+  bar2[8] = stop(96);
 
   return song("A — senkoplu PM double-stop", [
     { timeSignature: [4, 4], resolution: 16, slots: { gtr: bar1 } },

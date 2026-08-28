@@ -39,6 +39,10 @@ import {
   type Track,
 } from "@/lib/song/schema";
 import { withEmptyLaneInBar } from "@/lib/song/track-lanes";
+import {
+  collisionMessage,
+  collisionsIntroduced,
+} from "@/lib/song/string-collision";
 import { runValidators } from "@/lib/validators";
 import { ARTICULATION_CONTEXT_CODE } from "@/lib/validators/articulationContext";
 import {
@@ -81,6 +85,16 @@ export type EditCommand =
       velocity?: number;
       /** Left out means `{ kind: "keep" }`. */
       articulation?: ArticulationPatch;
+      /**
+       * The written length of the new note, in ticks (2T-C §1).
+       *
+       * Given by the rhythm value the reader chose, so a note written through
+       * the real UI says how long it is instead of inheriting a tie run.
+       * Left out means "keep what this note already had", which is what an
+       * articulation-only or fret-only correction wants — and on a note that
+       * never had one, means the legacy reading, unchanged.
+       */
+      durationTicks?: number;
     }
   /** Remove one string's note, keeping the rest of the chord. */
   | { kind: "clear_string"; target: EditTarget; stringIndex: number }
@@ -100,6 +114,24 @@ export type EditCommand =
       target: EditTarget;
       stringIndex: number;
       articulation: Articulation | null;
+    }
+  /**
+   * Whether one note is left to ring (2T-C §9).
+   *
+   * A performance instruction, not an articulation: it says "do not damp
+   * this", which is about the hand that is *not* playing rather than about
+   * how the note was struck. It lives in its own field for that reason and is
+   * set from its own command, so nothing has to pretend it is one of the
+   * eleven ways of hitting a string.
+   *
+   * `false` removes the field rather than writing it, so a note never given
+   * one and a note set back are the same bytes.
+   */
+  | {
+      kind: "set_let_ring";
+      target: EditTarget;
+      stringIndex: number;
+      letRing: boolean;
     };
 
 export type EditErrorCode =
@@ -114,6 +146,8 @@ export type EditErrorCode =
   | "pitch_unreadable"
   | "no_note_on_string"
   | "orphan_tie"
+  /** One string cannot sound two notes at one instant (2T-C §1). */
+  | "string_collision"
   /** The move's moment does not exist on the grid it would land on (K-34). */
   | "target_grid_incompatible"
   /** This update would leave a written link that cannot be played (§2). */
@@ -471,12 +505,19 @@ export function applyEdit(input: Song, command: EditCommand): EditResult {
             ? undefined
             : previous?.articulation;
       const velocity = command.velocity ?? previous?.velocity;
+      /*
+       * A stated length is the reader's; an unstated one is whatever the note
+       * already had. Writing a default here would put an explicit duration on
+       * every fret correction in an old song, which is a silent rewrite.
+       */
+      const durationTicks = command.durationTicks ?? previous?.durationTicks;
 
       const note: NoteEvent = {
         pitch,
         position: { string: command.stringIndex, fret: command.fret },
         ...(velocity === undefined ? {} : { velocity }),
         ...(articulation === undefined ? {} : { articulation }),
+        ...(durationTicks === undefined ? {} : { durationTicks }),
       };
 
       // A tie or a rest becomes a struck slot; an existing chord keeps every
@@ -508,6 +549,18 @@ export function applyEdit(input: Song, command: EditCommand): EditResult {
        * played before and does not now stops the update instead of surviving
        * it in name only.
        */
+      /*
+       * One string, one note, one instant (2T-C §1). `set_note` replaces the
+       * note on the string it names, so it cannot cause this on its own —
+       * the check is here because this is the gate every fretted edit goes
+       * through, and a rule that only holds for the paths somebody remembered
+       * is not a rule.
+       */
+      const collided = collisionsIntroduced(song, settled.song, target.trackId);
+      if (collided.length > 0) {
+        return fail("string_collision", collisionMessage(collided[0]!));
+      }
+
       if (brokeALink(song, settled.warnings, target.trackId)) {
         return fail(
           "articulation_conflict",
@@ -561,6 +614,33 @@ export function applyEdit(input: Song, command: EditCommand): EditResult {
         if (orphan.kind !== "slot") continue;
         writeSlot(next, orphan.sectionIndex, orphan.barIndex, target.trackId, orphan.slotIndex, null);
       }
+      return settle(next);
+    }
+
+    case "set_let_ring": {
+      if (slot === null || slot === "-") {
+        return fail("no_note_on_string", "Bu vuruşta çınlatılacak bir nota yok.");
+      }
+      const found = slot.notes.find(
+        (entry) => entry.position?.string === command.stringIndex,
+      );
+      if (!found) {
+        return fail(
+          "no_note_on_string",
+          `${command.stringIndex + 1}. telde bu vuruşta nota yok.`,
+        );
+      }
+
+      const next = cloneSong(song);
+      writeSlot(next, sectionIndex, target.barIndex, target.trackId, target.slotIndex, {
+        notes: slot.notes.map((entry) => {
+          if (entry.position?.string !== command.stringIndex) return entry;
+          const updated = { ...entry };
+          if (command.letRing) updated.letRing = true;
+          else delete updated.letRing;
+          return updated;
+        }),
+      });
       return settle(next);
     }
 

@@ -250,10 +250,19 @@ export function WorkspaceOverlays({
           fretboard={fretboard}
           target={noteEditing.fretTarget}
           duration={noteEditing.duration}
+          rhythm={noteEditing.rhythm}
           shape={noteEditing.shape}
           error={noteEditing.editError}
           onClose={noteEditing.closeCell}
           onNudge={noteEditing.nudge}
+          onLetRing={(letRing) =>
+            noteEditing.runCommand((target) => ({
+              kind: "set_let_ring",
+              target,
+              stringIndex: noteEditing.cell?.stringIndex ?? 0,
+              letRing,
+            }))
+          }
           onArticulation={(articulation) =>
             noteEditing.runCommand((target) => ({
               kind: "set_articulation",
@@ -268,6 +277,9 @@ export function WorkspaceOverlays({
               target,
               stringIndex: noteEditing.cell?.stringIndex ?? 0,
               fret,
+              /* The value the reader chose becomes the note's own length
+                 (2T-C §1); nothing new leans on the tie run. */
+              durationTicks: noteEditing.rhythm.ticks,
             }))
           }
           onClearString={() =>

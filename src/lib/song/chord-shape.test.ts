@@ -297,3 +297,33 @@ describe("setChordStrum", () => {
     });
   });
 });
+
+/**
+ * 2T-C §1. Gathering is the one transform that can genuinely ask a string for
+ * two notes at once — the voices were on separate onsets and nothing said
+ * they were on separate strings.
+ */
+describe("gathering refuses to put two notes on one string", () => {
+  it("refuses whole rather than writing a chord no hand can play", () => {
+    const slots: MelodicSlot[] = Array.from({ length: 16 }, () => null);
+    slots[0] = { notes: [{ pitch: "E2", position: { string: 0, fret: 0 } }] };
+    slots[2] = { notes: [{ pitch: "G2", position: { string: 0, fret: 3 } }] };
+    const subject = fixture(slots);
+    const before = JSON.stringify(subject);
+
+    const result = arpeggioToChord(subject, at, 8);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.detail).toContain("1. tel iki kez isteniyor");
+    expect(result.detail).toContain("Bir tel aynı anda tek ses verir");
+    expect(JSON.stringify(subject)).toBe(before);
+  });
+
+  it("still gathers voices that are on strings of their own", () => {
+    const slots: MelodicSlot[] = Array.from({ length: 16 }, () => null);
+    slots[0] = { notes: [{ pitch: "E2", position: { string: 0, fret: 0 } }] };
+    slots[2] = { notes: [{ pitch: "B2", position: { string: 1, fret: 2 } }] };
+    const result = arpeggioToChord(fixture(slots), at, 8);
+    expect(result.ok).toBe(true);
+  });
+});
