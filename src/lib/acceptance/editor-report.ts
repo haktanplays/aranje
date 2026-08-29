@@ -106,7 +106,7 @@ const ROW_KEYS: readonly { readonly label: string; readonly keys: readonly strin
     label: "Undo/redo",
     keys: ["historyMarked", "undoByteEqual", "redoByteEqual"],
   },
-  { label: "Zamanda taşı", keys: ["moveTimeRight", "moveTimeLeft"] },
+  { label: "Zamanda taşı", keys: ["moveSelected", "moveTimeRight", "moveTimeLeft"] },
   {
     label: "Perde taşı",
     keys: ["movePitchUp", "movePitchDown", "moveOctaveUp", "moveOctaveDown"],
@@ -149,6 +149,7 @@ const ROW_KEYS: readonly { readonly label: string; readonly keys: readonly strin
       "noStaffScroller",
       "noTruncatedLabel",
       "allTargets44",
+      "contractLooked",
     ],
   },
 ];

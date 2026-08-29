@@ -84,6 +84,12 @@ const bandWidth = (): number | null => {
  * Every answer is "worst seen so far" rather than "true right now": a toolbar
  * that overflowed for one frame overflowed, and a later clean frame does not
  * take that back. Once false, a standing observation stays false.
+ *
+ * The result is the *same object* when nothing changed. That is not a
+ * micro-optimisation: returning a fresh object every 400ms made React
+ * re-render the whole route — the real workspace included — four times a
+ * second forever, and the four-viewport run found it by never seeing a
+ * button stand still long enough to be clicked.
  */
 function observeScreen(previous: StandingObservations): StandingObservations {
   const worse = (was: boolean | null, now: boolean): boolean =>
@@ -153,7 +159,7 @@ function observeScreen(previous: StandingObservations): StandingObservations {
   const targets =
     controls.length === 0 ? previous.allTargets44 : worse(previous.allTargets44, small === 0);
 
-  return {
+  const next: StandingObservations = {
     noteHidesMeasureVerbs: noteHides,
     measureOffersMeasureVerbs: measureOffers,
     patternToolReachable: patternReachable,
@@ -165,6 +171,11 @@ function observeScreen(previous: StandingObservations): StandingObservations {
     noTruncatedLabel: noTruncation,
     allTargets44: targets,
   };
+
+  const unchanged = (Object.keys(next) as (keyof StandingObservations)[]).every(
+    (key) => next[key] === previous[key],
+  );
+  return unchanged ? previous : next;
 }
 
 export function useEditorWatch(storage: MemoryStorage): {

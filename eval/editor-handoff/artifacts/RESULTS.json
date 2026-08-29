@@ -1,0 +1,594 @@
+{
+  "results": [
+    {
+      "viewport": "320x700",
+      "step": 1,
+      "name": "the route opens and names the build",
+      "pass": true,
+      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 320×700 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 2,
+      "name": "it promises not to touch the reader's music, on screen",
+      "pass": true,
+      "detail": "Bu test gerçek projeni değiştirmez."
+    },
+    {
+      "viewport": "320x700",
+      "step": 3,
+      "name": "the real workspace is mounted under the guide",
+      "pass": true,
+      "detail": "surfaces=1 guide=1"
+    },
+    {
+      "viewport": "320x700",
+      "step": 4,
+      "name": "one task is on screen, not seven",
+      "pass": true,
+      "detail": "\"İlk ölçüdeki akora basılı tut. Seçim açılsın.\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 5,
+      "name": "every step is reachable, and the last one ends the run",
+      "pass": true,
+      "detail": "steps=7 screens=31 finished=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 6,
+      "name": "a run where nothing was done does not report a pass",
+      "pass": true,
+      "detail": "verdict=FAIL"
+    },
+    {
+      "viewport": "320x700",
+      "step": 7,
+      "name": "the founder line is never filled in by the page",
+      "pass": true,
+      "detail": "Founder verdict: Haktan doldurmadı"
+    },
+    {
+      "viewport": "320x700",
+      "step": 8,
+      "name": "the block carries every row the handoff asks for",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "320x700",
+      "step": 9,
+      "name": "the questions are asked, and an answer sticks",
+      "pass": true,
+      "detail": "options=12 pressed=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 10,
+      "name": "a note can be typed and reaches the block",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "320x700",
+      "step": 11,
+      "name": "the result is there to copy even without clipboard rights",
+      "pass": true,
+      "detail": "chars=989 button=1"
+    },
+    {
+      "viewport": "320x700",
+      "step": 12,
+      "name": "going back keeps the answer that was already given",
+      "pass": true,
+      "detail": "back=\"İlk ölçüdeki akora basıl\" forward=\"«Devam»a dokun.\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 13,
+      "name": "restart gives a clean session",
+      "pass": true,
+      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 14,
+      "name": "the device's own store is byte-identical afterwards",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "320x700",
+      "step": 15,
+      "name": "nothing was asked of the network or the device",
+      "pass": true,
+      "detail": "outward=0 permissions=0 "
+    },
+    {
+      "viewport": "320x700",
+      "step": 16,
+      "name": "the page never scrolls sideways",
+      "pass": true,
+      "detail": "overflow=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 17,
+      "name": "every guide control is a 44px target",
+      "pass": true,
+      "detail": "under44=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 18,
+      "name": "a link carrying the wrong commit refuses to start",
+      "pass": true,
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 19,
+      "name": "the right commit is allowed through",
+      "pass": true,
+      "detail": "sha=8dae4f0 tasks=1"
+    },
+    {
+      "viewport": "320x700",
+      "step": 20,
+      "name": "a run without touch does not read as a physical pass",
+      "pass": true,
+      "detail": "touch=1 founderOpen=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 21,
+      "name": "nothing threw while all of that happened",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "390x844",
+      "step": 1,
+      "name": "the route opens and names the build",
+      "pass": true,
+      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 390×844 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 2,
+      "name": "it promises not to touch the reader's music, on screen",
+      "pass": true,
+      "detail": "Bu test gerçek projeni değiştirmez."
+    },
+    {
+      "viewport": "390x844",
+      "step": 3,
+      "name": "the real workspace is mounted under the guide",
+      "pass": true,
+      "detail": "surfaces=1 guide=1"
+    },
+    {
+      "viewport": "390x844",
+      "step": 4,
+      "name": "one task is on screen, not seven",
+      "pass": true,
+      "detail": "\"İlk ölçüdeki akora basılı tut. Seçim açılsın.\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 5,
+      "name": "every step is reachable, and the last one ends the run",
+      "pass": true,
+      "detail": "steps=7 screens=31 finished=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 6,
+      "name": "a run where nothing was done does not report a pass",
+      "pass": true,
+      "detail": "verdict=FAIL"
+    },
+    {
+      "viewport": "390x844",
+      "step": 7,
+      "name": "the founder line is never filled in by the page",
+      "pass": true,
+      "detail": "Founder verdict: Haktan doldurmadı"
+    },
+    {
+      "viewport": "390x844",
+      "step": 8,
+      "name": "the block carries every row the handoff asks for",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "390x844",
+      "step": 9,
+      "name": "the questions are asked, and an answer sticks",
+      "pass": true,
+      "detail": "options=12 pressed=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 10,
+      "name": "a note can be typed and reaches the block",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "390x844",
+      "step": 11,
+      "name": "the result is there to copy even without clipboard rights",
+      "pass": true,
+      "detail": "chars=989 button=1"
+    },
+    {
+      "viewport": "390x844",
+      "step": 12,
+      "name": "going back keeps the answer that was already given",
+      "pass": true,
+      "detail": "back=\"İlk ölçüdeki akora basıl\" forward=\"«Devam»a dokun.\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 13,
+      "name": "restart gives a clean session",
+      "pass": true,
+      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 14,
+      "name": "the device's own store is byte-identical afterwards",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "390x844",
+      "step": 15,
+      "name": "nothing was asked of the network or the device",
+      "pass": true,
+      "detail": "outward=0 permissions=0 "
+    },
+    {
+      "viewport": "390x844",
+      "step": 16,
+      "name": "the page never scrolls sideways",
+      "pass": true,
+      "detail": "overflow=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 17,
+      "name": "every guide control is a 44px target",
+      "pass": true,
+      "detail": "under44=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 18,
+      "name": "a link carrying the wrong commit refuses to start",
+      "pass": true,
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 19,
+      "name": "the right commit is allowed through",
+      "pass": true,
+      "detail": "sha=8dae4f0 tasks=1"
+    },
+    {
+      "viewport": "390x844",
+      "step": 20,
+      "name": "a run without touch does not read as a physical pass",
+      "pass": true,
+      "detail": "touch=1 founderOpen=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 21,
+      "name": "nothing threw while all of that happened",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "412x915",
+      "step": 1,
+      "name": "the route opens and names the build",
+      "pass": true,
+      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 412×915 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 2,
+      "name": "it promises not to touch the reader's music, on screen",
+      "pass": true,
+      "detail": "Bu test gerçek projeni değiştirmez."
+    },
+    {
+      "viewport": "412x915",
+      "step": 3,
+      "name": "the real workspace is mounted under the guide",
+      "pass": true,
+      "detail": "surfaces=1 guide=1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 4,
+      "name": "one task is on screen, not seven",
+      "pass": true,
+      "detail": "\"İlk ölçüdeki akora basılı tut. Seçim açılsın.\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 5,
+      "name": "every step is reachable, and the last one ends the run",
+      "pass": true,
+      "detail": "steps=7 screens=31 finished=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 6,
+      "name": "a run where nothing was done does not report a pass",
+      "pass": true,
+      "detail": "verdict=FAIL"
+    },
+    {
+      "viewport": "412x915",
+      "step": 7,
+      "name": "the founder line is never filled in by the page",
+      "pass": true,
+      "detail": "Founder verdict: Haktan doldurmadı"
+    },
+    {
+      "viewport": "412x915",
+      "step": 8,
+      "name": "the block carries every row the handoff asks for",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "412x915",
+      "step": 9,
+      "name": "the questions are asked, and an answer sticks",
+      "pass": true,
+      "detail": "options=12 pressed=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 10,
+      "name": "a note can be typed and reaches the block",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "412x915",
+      "step": 11,
+      "name": "the result is there to copy even without clipboard rights",
+      "pass": true,
+      "detail": "chars=989 button=1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 12,
+      "name": "going back keeps the answer that was already given",
+      "pass": true,
+      "detail": "back=\"İlk ölçüdeki akora basıl\" forward=\"«Devam»a dokun.\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 13,
+      "name": "restart gives a clean session",
+      "pass": true,
+      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 14,
+      "name": "the device's own store is byte-identical afterwards",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "412x915",
+      "step": 15,
+      "name": "nothing was asked of the network or the device",
+      "pass": true,
+      "detail": "outward=0 permissions=0 "
+    },
+    {
+      "viewport": "412x915",
+      "step": 16,
+      "name": "the page never scrolls sideways",
+      "pass": true,
+      "detail": "overflow=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 17,
+      "name": "every guide control is a 44px target",
+      "pass": true,
+      "detail": "under44=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 18,
+      "name": "a link carrying the wrong commit refuses to start",
+      "pass": true,
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 19,
+      "name": "the right commit is allowed through",
+      "pass": true,
+      "detail": "sha=8dae4f0 tasks=1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 20,
+      "name": "a run without touch does not read as a physical pass",
+      "pass": true,
+      "detail": "touch=1 founderOpen=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 21,
+      "name": "nothing threw while all of that happened",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 1,
+      "name": "the route opens and names the build",
+      "pass": true,
+      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 1363×936 · dokunma 0 Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 2,
+      "name": "it promises not to touch the reader's music, on screen",
+      "pass": true,
+      "detail": "Bu test gerçek projeni değiştirmez."
+    },
+    {
+      "viewport": "1363x936",
+      "step": 3,
+      "name": "the real workspace is mounted under the guide",
+      "pass": true,
+      "detail": "surfaces=1 guide=1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 4,
+      "name": "one task is on screen, not seven",
+      "pass": true,
+      "detail": "\"İlk ölçüdeki akora basılı tut. Seçim açılsın.\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 5,
+      "name": "every step is reachable, and the last one ends the run",
+      "pass": true,
+      "detail": "steps=7 screens=31 finished=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 6,
+      "name": "a run where nothing was done does not report a pass",
+      "pass": true,
+      "detail": "verdict=FAIL"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 7,
+      "name": "the founder line is never filled in by the page",
+      "pass": true,
+      "detail": "Founder verdict: Haktan doldurmadı"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 8,
+      "name": "the block carries every row the handoff asks for",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 9,
+      "name": "the questions are asked, and an answer sticks",
+      "pass": true,
+      "detail": "options=12 pressed=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 10,
+      "name": "a note can be typed and reaches the block",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 11,
+      "name": "the result is there to copy even without clipboard rights",
+      "pass": true,
+      "detail": "chars=990 button=1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 12,
+      "name": "going back keeps the answer that was already given",
+      "pass": true,
+      "detail": "back=\"İlk ölçüdeki akora basıl\" forward=\"«Devam»a dokun.\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 13,
+      "name": "restart gives a clean session",
+      "pass": true,
+      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 14,
+      "name": "the device's own store is byte-identical afterwards",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 15,
+      "name": "nothing was asked of the network or the device",
+      "pass": true,
+      "detail": "outward=0 permissions=0 "
+    },
+    {
+      "viewport": "1363x936",
+      "step": 16,
+      "name": "the page never scrolls sideways",
+      "pass": true,
+      "detail": "overflow=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 17,
+      "name": "every guide control is a 44px target",
+      "pass": true,
+      "detail": "under44=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 18,
+      "name": "a link carrying the wrong commit refuses to start",
+      "pass": true,
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 19,
+      "name": "the right commit is allowed through",
+      "pass": true,
+      "detail": "sha=8dae4f0 tasks=1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 20,
+      "name": "a run without touch does not read as a physical pass",
+      "pass": true,
+      "detail": "touch=0 founderOpen=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 21,
+      "name": "nothing threw while all of that happened",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": 0,
+  "shots": 12
+}

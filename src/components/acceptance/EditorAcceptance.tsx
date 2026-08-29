@@ -294,12 +294,35 @@ export function EditorAcceptance() {
         <span data-acceptance-safety>Bu test gerçek projeni değiştirmez.</span>
       </header>
 
-      {/* The real workspace, on the fixture, in this page's own storage. */}
-      <div className="min-h-0 flex-1">{session?.ok ? <Workspace /> : null}</div>
+      {/*
+        The real workspace, on the fixture, in this page's own storage.
 
+        `overflow-hidden` is not decoration. Without it the workspace's own
+        bottom chrome painted *over* the guide at 412px — the guide's own
+        "Geri" was on screen, enabled and the right size, and every press on
+        it went to a toolbar button underneath. The four-viewport run caught
+        it because the same press worked at 320 and on the desktop; a
+        one-viewport check would have shipped it.
+      */}
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {session?.ok ? <Workspace /> : null}
+      </div>
+
+      {/*
+        The guide scrolls; the workspace does not give up its room.
+
+        On a 320px phone the result screen carries three questions, a note
+        field, the block itself and three buttons — more than fits under a
+        staff that needs 286px. Left unscrollable those controls sit below the
+        fold and simply cannot be pressed, which the four-viewport run found
+        by failing to click them on every phone and passing on the desktop.
+
+        A cap plus its own scroller is the smaller hammer: the staff keeps the
+        height it needs, and everything the reader has to reach is reachable.
+      */}
       <section
         data-acceptance-guide
-        className="border-line bg-panel shrink-0 space-y-2 border-t px-3 py-2"
+        className="border-line bg-panel max-h-[58dvh] shrink-0 space-y-2 overflow-y-auto border-t px-3 py-2"
       >
         {done ? (
           <>

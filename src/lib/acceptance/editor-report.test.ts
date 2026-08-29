@@ -185,6 +185,34 @@ describe("the block that gets copied out", () => {
     }
   });
 
+  /*
+   * The rows are the report; a check that no row names is a check nobody
+   * reads. This is what stops a standing check being quietly orphaned.
+   */
+  it("gives every check a row that names it", () => {
+    const text = formatEditorResult({
+      gate: versionGate(null),
+      device,
+      observations: observations({
+        checks: Object.fromEntries(ALL_CHECK_KEYS.map((key) => [key, false])),
+      }),
+      answers: allAnswered(),
+      notes: "",
+    });
+    const reported = new Set(
+      [...text.matchAll(/FAIL \(([^)]+)\)/g)].flatMap((match) =>
+        match[1]!.split(", "),
+      ),
+    );
+    const missing = ALL_CHECK_KEYS.filter(
+      (key) =>
+        !reported.has(key) &&
+        /* These three are reported on their own lines, not inside a row. */
+        !["noConsoleError", "userStorageUnchanged", "fixtureHasTwoTracks"].includes(key),
+    );
+    expect(missing).toEqual([]);
+  });
+
   it("names the checks that failed, rather than only saying FAIL", () => {
     const text = formatEditorResult({
       gate: versionGate(null),
