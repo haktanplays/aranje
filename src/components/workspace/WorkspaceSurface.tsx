@@ -243,13 +243,13 @@ export function WorkspaceSurface({
           activeBarKey={navigation.activeBarKey}
           onActiveBarChange={navigation.setActiveBarKey}
           onSeekBar={navigation.seekToBar}
-          onBarLongPress={
+          barRange={
             /*
              * Not while the Copilot owns the screen, and not while a
              * candidate is on it: a bar selection is an edit gesture, and a
              * candidate is measured against the song as it was asked for.
              */
-            copilotOwnsScreen || !canPersist ? undefined : bars.selectFromTab
+            copilotOwnsScreen || !canPersist ? undefined : bars.range
           }
           onScrolledToSection={navigation.scrolledToSection}
           pendingScroll={navigation.pendingScroll}

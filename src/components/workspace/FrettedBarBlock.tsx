@@ -34,7 +34,11 @@ import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
 import { pitchToMidi } from "@/lib/music/pitch";
 import { LONG_PRESS_MS } from "@/lib/ui/interaction";
-import { NO_PRESS, useLongPress } from "@/lib/ui/use-long-press";
+import {
+  BAR_INDEX_ATTRIBUTE,
+  BAR_SECTION_ATTRIBUTE,
+  type BoundBarDrag,
+} from "@/lib/ui/use-bar-range-drag";
 
 export type CellSelection = { slotIndex: number; stringIndex: number };
 
@@ -115,7 +119,7 @@ export function FrettedBarBlock({
   onsets = null,
   duration = null,
   timeSelectionOwnsPress = false,
-  onBarLongPress,
+  barDrag,
 }: {
   bar: FrettedBar;
   stringCount: number;
@@ -172,7 +176,14 @@ export function FrettedBarBlock({
    * else: the tab draws one track, and a gesture made on one track's staff
    * must not quietly reach the seven the reader cannot see.
    */
-  onBarLongPress?: () => void;
+  /**
+   * Hold this bar and reach across its neighbours (2U-B §8).
+   *
+   * Handlers already bound to this bar's index, plus whether the drag has
+   * taken ownership of the pointer. Absent when the surface offers no bar
+   * gesture at all.
+   */
+  barDrag?: BoundBarDrag;
 }) {
   const width = barWidth(bar.slotCount);
   /*
@@ -312,14 +323,17 @@ export function FrettedBarBlock({
    * hearing the same finger anyway.
    */
   const headerOwner = pointerOwner({
-    onMeasureHeader: onBarLongPress !== undefined,
+    /*
+     * Once the drag has been recognised the ranking must keep saying yes, or
+     * the gesture would lose its own pointer at the moment it took it.
+     */
+    barRangeOwning: barDrag?.owning === true,
+    onMeasureHeader: barDrag !== undefined,
     penArmed: onPenTarget !== undefined,
     selectionAvailable: timeSelectionOwnsPress,
   });
   const headerWanted = measureGestureWanted(headerOwner);
-  const barPress = useLongPress(onBarLongPress ?? NO_PRESS, {
-    enabled: headerWanted,
-  });
+  const barPress = barDrag?.handlers;
 
   const Frame = editing ? "div" : "button";
   const frameProps = editing
@@ -334,6 +348,17 @@ export function FrettedBarBlock({
   return (
     <Frame
       {...frameProps}
+      /*
+       * Which bar this is, for the drag to hit-test against (2U-B §8). On the
+       * whole block rather than the header alone: a finger reaching sideways
+       * drifts vertically too, and a range that stopped growing because the
+       * reader strayed onto the staff would be a gesture they have to be
+       * careful with.
+       */
+      {...{
+        [BAR_INDEX_ATTRIBUTE]: bar.barIndex,
+        [BAR_SECTION_ATTRIBUTE]: bar.sectionId,
+      }}
       className={`relative shrink-0 border-r text-left ${
         selected ? "bg-steel/8 border-steel" : "border-line bg-transparent"
       }`}
@@ -342,12 +367,19 @@ export function FrettedBarBlock({
       <div
         {...barPress}
         onPointerDown={(event) => {
-          if (!headerWanted || !onBarLongPress) return;
+          if (!headerWanted || !barPress) return;
           event.stopPropagation();
           barPress.onPointerDown(event);
         }}
         data-tab-bar-header={bar.key}
         className="flex items-center gap-1.5 overflow-hidden px-1.5"
+        /*
+         * Still `pan-x` (2U-B §8). The page must remain scrollable from a bar
+         * number, because most presses on one are a scroll — the drag takes
+         * the sequence half a second later, by suppressing each `touchmove`
+         * for as long as it owns the pointer, which is the only mechanism that
+         * can express a decision made after the gesture began.
+         */
         style={{ height: BAR_HEADER_HEIGHT, touchAction: "pan-x" }}
       >
         <span className="text-muted/70 text-[10px] tabular-nums">

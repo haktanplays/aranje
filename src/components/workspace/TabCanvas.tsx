@@ -55,6 +55,7 @@ import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { useTabPlayhead } from "@/components/workspace/use-tab-playhead";
 import type { PlayPosition } from "@/lib/audio/position";
+import type { BarRangeGesture } from "@/lib/ui/use-bar-range-drag";
 import type { PenGhost } from "@/lib/tab/pen-ghost";
 import type { Song } from "@/lib/song/schema";
 import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
@@ -77,7 +78,7 @@ export function TabCanvas({
   onPendingHandled,
   onActiveBarChange,
   onSeekBar,
-  onBarLongPress,
+  barRange,
   scrollRef,
   selectionBand,
   onSlotLongPress,
@@ -121,7 +122,15 @@ export function TabCanvas({
    * A long press on a bar's header, asking for that bar on the active track
    * (spec 13.12). Absent means the gesture is not offered on this surface.
    */
-  onBarLongPress?: (barKey: string) => void;
+  /**
+   * Hold a bar and reach across its neighbours (spec 13.12, 2U-B §8).
+   *
+   * One gesture for both, rather than a press callback plus a separate way to
+   * widen: the founder could select a bar and could not extend the selection
+   * to the next one, because "press" and "reach" were different mechanisms
+   * living on different surfaces.
+   */
+  barRange?: BarRangeGesture;
   scrollRef: React.RefObject<HTMLDivElement | null>;
   /** The time band, already positioned; null when nothing is selected. */
   selectionBand?: React.ReactNode;
@@ -372,8 +381,13 @@ export function TabCanvas({
                       onPenTarget?.(cell && { ...cell, barKey: bar.key })
                     }
                     timeSelectionOwnsPress={onSlotLongPress !== undefined}
-                    onBarLongPress={
-                      onBarLongPress ? () => onBarLongPress(bar.key) : undefined
+                    barDrag={
+                      barRange
+                        ? {
+                            handlers: barRange.handlers(bar.barIndex, bar.sectionId),
+                            owning: barRange.owning,
+                          }
+                        : undefined
                     }
                   />
                 </BarSlot>
@@ -398,8 +412,13 @@ export function TabCanvas({
                     laneCount={timeline.lanes.length}
                     selected={activeBarKey === bar.key}
                     onSelect={() => onSeekBar(bar.key)}
-                    onBarLongPress={
-                      onBarLongPress ? () => onBarLongPress(bar.key) : undefined
+                    barDrag={
+                      barRange
+                        ? {
+                            handlers: barRange.handlers(bar.barIndex, bar.sectionId),
+                            owning: barRange.owning,
+                          }
+                        : undefined
                     }
                   />
                 </BarSlot>

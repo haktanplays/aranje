@@ -43,6 +43,14 @@ import {
   type BarCommand,
 } from "@/lib/song/bar-transform";
 import { sameBarSelection, type BarSelection } from "@/lib/song/bar-selection";
+import {
+  resolveMeasureGesture,
+  type MeasureBounds,
+} from "@/lib/song/measure-gesture";
+import {
+  useBarRangeDrag,
+  type BarRangeDragHandlers,
+} from "@/lib/ui/use-bar-range-drag";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { TransformCommand } from "@/lib/song/transform";
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
@@ -118,7 +126,29 @@ export type BarSelectionSession = {
   setSheet(sheet: "more" | "move" | "repeat" | null): void;
   select(request: BarSelectRequest): void;
   extend(edge: BarSelectEdge, barIndex: number): void;
-  selectFromTab(barKey: string): void;
+  /**
+   * Hold a bar and reach across its neighbours in one gesture (2U-B §8).
+   *
+   * Handed out per bar, because the pointer handlers have to know which bar
+   * they started on. `owning` is true only once the long press has been
+   * recognised — until then the press is indistinguishable from a scroll and
+   * is left alone.
+   */
+  readonly range: {
+    handlers(barIndex: number, sectionId: string): BarRangeDragHandlers;
+    readonly owning: boolean;
+  };
+  /**
+   * Switch what the held bars mean (2U-B §6).
+   *
+   * One instrument's content, or the bars themselves with every track in
+   * them. The two were only ever told apart by *which gesture made them* — a
+   * tab press meant one, an arrangement press meant the other — so from the
+   * tab there was no way to reach the whole-measure scope at all, and the
+   * verbs that only exist there could not be got at. This is that way, said
+   * out loud rather than hidden in a gesture.
+   */
+  setScope(scope: "track" | "full"): void;
   stage(command: BarCommand): void;
   apply(options?: { readonly replace?: boolean }): void;
   clear(): void;
@@ -568,22 +598,133 @@ export function useSelectionSession(options: {
   );
 
   /**
-   * The same gesture from the tab: a press on a bar's header.
+   * The drag's two moments, both routed through the same `select` (2U-B §8).
    *
-   * Track scope, always. The tab draws one track, and a press made on one
-   * staff must not reach into the seven the reader cannot see — a whole-bar
-   * selection is offered where whole bars are visible, which is the
-   * arrangement.
+   * `onPress` is the long press landing: it takes hold of one bar, in the
+   * scope the tab offers. `onReach` is the finger travelling: it re-selects
+   * from the gesture's own anchor and reach rather than nudging whatever is
+   * currently held, so a drag back over the anchor shrinks the run instead of
+   * leaving a range the reader cannot get rid of.
+   *
+   * Re-selecting each time also means chain expansion is applied by the same
+   * code that applies it to a fresh press — a dragged edge landing mid-chain
+   * cannot end up widened differently from a pressed one.
    */
-  const selectBarsFromTab = useCallback(
-    (barKey: string) => {
-      if (!track) return;
-      const [sectionId, indexText] = barKey.split(":");
-      const barIndex = Number(indexText);
-      if (!sectionId || !Number.isInteger(barIndex)) return;
-      selectBars({ barIndex, sectionId, trackId: track.id });
+  const rangeScope = useRef<"track" | "full">("track");
+
+  /** How many bars a section has, so a gesture cannot point past its end. */
+  const boundsOf = useCallback(
+    (sectionId: string): MeasureBounds | null => {
+      const section = song.sections.find((entry) => entry.id === sectionId);
+      return section ? { sectionId, barCount: section.bars.length } : null;
     },
-    [selectBars, track],
+    [song.sections],
+  );
+
+  const rangePress = useCallback(
+    (barIndex: number, sectionId: string) => {
+      if (!track) return;
+      const bounds = boundsOf(sectionId);
+      if (!bounds) return;
+      const resolved = resolveMeasureGesture(
+        barTransform.selection,
+        {
+          kind: "press",
+          sectionId,
+          barIndex,
+          ...(rangeScope.current === "full" ? {} : { trackId: track.id }),
+        },
+        bounds,
+      );
+      if (!resolved.ok) return;
+      /* Through `selectBars`, so the time selection lets go exactly as it
+         does for any other way of taking hold of bars. */
+      selectBars(
+        resolved.selection.scope === "full"
+          ? { barIndex, sectionId }
+          : { barIndex, sectionId, trackId: resolved.selection.trackId },
+      );
+    },
+    [barTransform.selection, boundsOf, selectBars, track],
+  );
+
+  /*
+   * The reach is resolved from the *anchor* rather than from whatever is
+   * currently held, so travelling back past the anchor shrinks the run instead
+   * of dragging the far edge along with it. Which edge moves follows the
+   * direction of travel; `resolveMeasureGesture` then refuses a bar the
+   * section does not have, and keeps the edges from crossing.
+   */
+  const rangeReach = useCallback(
+    (startBarIndex: number, endBarIndex: number, sectionId: string) => {
+      if (!track) return;
+      const bounds = boundsOf(sectionId);
+      if (!bounds) return;
+      const held = barTransform.selection;
+      const anchor =
+        held && held.startBarIndex === startBarIndex ? startBarIndex : endBarIndex;
+      const reach = anchor === startBarIndex ? endBarIndex : startBarIndex;
+      const base: BarSelection =
+        rangeScope.current === "full"
+          ? { scope: "full", sectionId, startBarIndex: anchor, endBarIndex: anchor }
+          : {
+              scope: "track",
+              sectionId,
+              trackId: track.id,
+              startBarIndex: anchor,
+              endBarIndex: anchor,
+            };
+      const resolved = resolveMeasureGesture(
+        base,
+        {
+          kind: "extend",
+          sectionId,
+          barIndex: reach,
+          edge: reach >= anchor ? "end" : "start",
+          ...(rangeScope.current === "full" ? {} : { trackId: track.id }),
+        },
+        bounds,
+      );
+      if (!resolved.ok || resolved.unchanged) return;
+      barTransform.select(resolved.selection);
+    },
+    [barTransform, boundsOf, track],
+  );
+
+  const barRange = useBarRangeDrag({
+    enabled: track !== undefined,
+    onPress: rangePress,
+    onReach: rangeReach,
+  });
+
+  /**
+   * Widen the held bars to every track, or narrow them back to this one.
+   *
+   * Goes through `select`, so the new scope is expanded and summarised by the
+   * same code any other selection is. The preference is remembered for the
+   * next press: a reader who has said "I am working on whole measures" should
+   * not have to say it again for every bar.
+   */
+  const setBarScope = useCallback(
+    (scope: "track" | "full") => {
+      const current = barTransform.selection;
+      rangeScope.current = scope;
+      if (!current || current.scope === scope) return;
+      const { sectionId, startBarIndex, endBarIndex } = current;
+      if (scope === "full") {
+        barTransform.select({ scope: "full", sectionId, startBarIndex, endBarIndex });
+        return;
+      }
+      if (!track) return;
+      barTransform.select({
+        scope: "track",
+        sectionId,
+        trackId: track.id,
+        startBarIndex,
+        endBarIndex,
+      });
+    },
+    [barTransform, track],
   );
 
   /**
@@ -708,8 +849,9 @@ export function useSelectionSession(options: {
       sheet: barSheet,
       setSheet: setBarSheet,
       select: selectBars,
+      range: barRange,
+      setScope: setBarScope,
       extend: extendBars,
-      selectFromTab: selectBarsFromTab,
       stage: stageBarCommand,
       apply: applyBars,
       clear: clearBars,

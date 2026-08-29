@@ -241,7 +241,13 @@ export function resolveMeasureGesture(
  * from the props it happens to have been given.
  */
 export function measureGestureWanted(owner: PointerOwner): boolean {
-  return owner === "measure";
+  /*
+   * `bar_range` too, because it *is* this gesture — the same press, half a
+   * second later, once it has been recognised (2U-B §8). Leaving it out would
+   * make the drag stop wanting its own pointer at the exact moment it took
+   * ownership of it.
+   */
+  return owner === "measure" || owner === "bar_range";
 }
 
 /**

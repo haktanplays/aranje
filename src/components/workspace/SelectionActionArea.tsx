@@ -145,6 +145,7 @@ export function SelectionActionArea({
           onCloseMore={() => bars.setSheet(null)}
           onMoveLeft={() => bars.stage({ kind: "move_bars_left" })}
           onMoveRight={() => bars.stage({ kind: "move_bars_right" })}
+          onScope={bars.setScope}
           onApply={() => bars.apply()}
           onReplace={() => bars.apply({ replace: true })}
           onCancel={bars.handle.cancel}

@@ -10,7 +10,11 @@ import {
 import { RhythmGuideLayer } from "@/components/workspace/RhythmGuideLayer";
 import { RhythmStrip } from "@/components/workspace/RhythmStrip";
 import { buildRhythmGuide } from "@/lib/tab/rhythm-guide";
-import { NO_PRESS, useLongPress } from "@/lib/ui/use-long-press";
+import {
+  BAR_INDEX_ATTRIBUTE,
+  BAR_SECTION_ATTRIBUTE,
+  type BoundBarDrag,
+} from "@/lib/ui/use-bar-range-drag";
 import { drumRhythm, type DrumBar } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/song/schema";
 
@@ -36,7 +40,7 @@ export function DrumBarBlock({
   gridLabel = null,
   selected,
   onSelect,
-  onBarLongPress,
+  barDrag,
 }: {
   bar: DrumBar;
   laneCount: number;
@@ -44,17 +48,15 @@ export function DrumBarBlock({
   gridLabel?: string | null;
   selected: boolean;
   onSelect: () => void;
-  /** A long press on the header picks this bar up on this track (13.12). */
-  onBarLongPress?: () => void;
+  /** Hold this bar and reach across its neighbours (13.12, 2U-B §8). */
+  barDrag?: BoundBarDrag;
 }) {
   const width = barWidth(bar.slotCount);
   const gridHeight = Math.max(laneCount, 1) * DRUM_ROW_HEIGHT;
   const beat = slotsPerBeat(bar.timeSignature, bar.resolution);
   /* One reading of the bar's rhythm, shared by the strip and the guide. */
   const states = drumRhythm(bar);
-  const barPress = useLongPress(onBarLongPress ?? NO_PRESS, {
-    enabled: onBarLongPress !== undefined,
-  });
+  const barPress = barDrag?.handlers;
 
   return (
     <button
@@ -62,6 +64,11 @@ export function DrumBarBlock({
       onClick={onSelect}
       aria-pressed={selected}
       aria-label={`Bar ${bar.barNumber}`}
+      /* Which bar this is, for the range drag to hit-test (2U-B §8). */
+      {...{
+        [BAR_INDEX_ATTRIBUTE]: bar.barIndex,
+        [BAR_SECTION_ATTRIBUTE]: bar.sectionId,
+      }}
       className={`relative shrink-0 border-r text-left ${
         selected ? "bg-steel/8 border-steel" : "border-line bg-transparent"
       }`}
@@ -70,7 +77,7 @@ export function DrumBarBlock({
       <div
         {...barPress}
         onPointerDown={(event) => {
-          if (!onBarLongPress) return;
+          if (!barPress) return;
           event.stopPropagation();
           barPress.onPointerDown(event);
         }}

@@ -144,6 +144,7 @@ export function BarActionBar({
   onReplace,
   onCancel,
   onClear,
+  onScope,
 }: {
   selection: BarSelection;
   summary: string;
@@ -164,6 +165,8 @@ export function BarActionBar({
   onReplace: () => void;
   onCancel: () => void;
   onClear: () => void;
+  /** Switch between one instrument's content and the whole measure (§6). */
+  onScope: (scope: "track" | "full") => void;
 }) {
   const full = selection.scope === "full";
   const labels = SCOPE_LABELS[full ? "full" : "track"];
@@ -201,6 +204,51 @@ export function BarActionBar({
         >
           İptal
         </button>
+      </div>
+
+      {/*
+        Which of the two this selection is, and the way to the other one
+        (2U-B §6).
+
+        The scopes used to be told apart only by *which gesture made them* — a
+        press on the tab meant one instrument, a press in the arrangement meant
+        the whole bar — so from the tab the whole-measure scope was simply
+        unreachable, and with it every verb that only exists there. Adding a
+        bar was a thing the app could do and the reader could not get to.
+
+        Two radio buttons rather than a toggle, because "Gitar" and "Tüm
+        enstrümanlar" are two states a reader should be able to see at once
+        rather than infer from the label of a button that will change it.
+      */}
+      <div
+        role="radiogroup"
+        aria-label="Seçim kapsamı"
+        className="flex items-center gap-1 px-3 pt-2"
+      >
+        {(
+          [
+            { scope: "track" as const, label: "Bu enstrüman" },
+            { scope: "full" as const, label: "Tüm enstrümanlar" },
+          ]
+        ).map((entry) => {
+          const on = selection.scope === entry.scope;
+          return (
+            <button
+              key={entry.scope}
+              type="button"
+              role="radio"
+              aria-checked={on}
+              data-bar-scope={entry.scope}
+              onClick={() => onScope(entry.scope)}
+              className={`min-w-0 flex-1 truncate rounded-md border px-2 text-xs ${
+                on ? "border-bronze text-bronze" : "border-line text-muted"
+              }`}
+              style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+            >
+              {entry.label}
+            </button>
+          );
+        })}
       </div>
 
       {notice ? (
