@@ -569,16 +569,30 @@ async function runViewport(browser, size) {
 
     // ----------------------------------------------------------------- 15
     await safe(15, "“Daha fazla” greys “Yapıştır” with the reason", async () => {
+      /*
+       * This step used to demand that "Yapıştır" was *absent* from the drawer,
+       * which is the opposite of what its own name says — and it passed,
+       * because paste had no entry in `DRAWER_VERBS` and could not be drawn at
+       * all. The assertion was describing the defect the founder then found:
+       * a verb the capability model offers and no surface draws (2U-B §3).
+       *
+       * What the name always meant: with nothing on the clipboard the entry is
+       * there, shut, and carrying the model's own sentence — so a reader
+       * learns the rule from a grey control instead of from a refusal.
+       */
       await fresh(page);
       await longPressSlot(page, cdp, 0);
       await openDrawer(page);
-      const body = await page.locator("[role=dialog]").innerText();
       const entries = await page.locator("[data-selection-action]").count();
+      const paste = page.locator("[data-selection-action='Yapıştır']");
+      const drawn = await paste.count();
+      const shut = drawn > 0 ? await paste.first().isDisabled() : false;
+      const reason = drawn > 0 ? await paste.first().innerText() : "";
       record(
         15,
         "“Daha fazla” greys “Yapıştır” with the reason",
-        entries >= 4 && !/Yapıştır/.test(body),
-        `entries=${entries} paste=${/Yapıştır/.test(body)}`,
+        entries >= 4 && drawn === 1 && shut && /Panoda bir şey yok/.test(reason),
+        `entries=${entries} paste=${drawn} shut=${shut} said="${reason.replace(/\n/g, " ").slice(0, 40)}"`,
       );
       await shot(page, "15-drawer");
     });

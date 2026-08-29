@@ -5,7 +5,7 @@
       "step": 1,
       "name": "the route opens and names the build",
       "pass": true,
-      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 320×700 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
+      "detail": "sha=1eb9e83 header=\"Editör kabulü · 1eb9e83 · 320×700 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
     },
     {
       "viewport": "320x700",
@@ -33,7 +33,7 @@
       "step": 5,
       "name": "every step is reachable, and the last one ends the run",
       "pass": true,
-      "detail": "steps=7 screens=31 finished=true"
+      "detail": "steps=7 screens=36 finished=true"
     },
     {
       "viewport": "320x700",
@@ -75,7 +75,7 @@
       "step": 11,
       "name": "the result is there to copy even without clipboard rights",
       "pass": true,
-      "detail": "chars=989 button=1"
+      "detail": "chars=1092 button=1"
     },
     {
       "viewport": "320x700",
@@ -89,7 +89,7 @@
       "step": 13,
       "name": "restart gives a clean session",
       "pass": true,
-      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+      "detail": "step=\"1 · Seçim ve Devam · 1/36\" resultGone=true"
     },
     {
       "viewport": "320x700",
@@ -124,14 +124,14 @@
       "step": 18,
       "name": "a link carrying the wrong commit refuses to start",
       "pass": true,
-      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 1eb9e83\" tasks=0"
     },
     {
       "viewport": "320x700",
       "step": 19,
       "name": "the right commit is allowed through",
       "pass": true,
-      "detail": "sha=8dae4f0 tasks=1"
+      "detail": "sha=1eb9e83 tasks=1"
     },
     {
       "viewport": "320x700",
@@ -152,7 +152,7 @@
       "step": 1,
       "name": "the route opens and names the build",
       "pass": true,
-      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 390×844 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
+      "detail": "sha=1eb9e83 header=\"Editör kabulü · 1eb9e83 · 390×844 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
     },
     {
       "viewport": "390x844",
@@ -180,7 +180,7 @@
       "step": 5,
       "name": "every step is reachable, and the last one ends the run",
       "pass": true,
-      "detail": "steps=7 screens=31 finished=true"
+      "detail": "steps=7 screens=36 finished=true"
     },
     {
       "viewport": "390x844",
@@ -222,7 +222,7 @@
       "step": 11,
       "name": "the result is there to copy even without clipboard rights",
       "pass": true,
-      "detail": "chars=989 button=1"
+      "detail": "chars=1092 button=1"
     },
     {
       "viewport": "390x844",
@@ -236,7 +236,7 @@
       "step": 13,
       "name": "restart gives a clean session",
       "pass": true,
-      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+      "detail": "step=\"1 · Seçim ve Devam · 1/36\" resultGone=true"
     },
     {
       "viewport": "390x844",
@@ -271,14 +271,14 @@
       "step": 18,
       "name": "a link carrying the wrong commit refuses to start",
       "pass": true,
-      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 1eb9e83\" tasks=0"
     },
     {
       "viewport": "390x844",
       "step": 19,
       "name": "the right commit is allowed through",
       "pass": true,
-      "detail": "sha=8dae4f0 tasks=1"
+      "detail": "sha=1eb9e83 tasks=1"
     },
     {
       "viewport": "390x844",
@@ -299,7 +299,7 @@
       "step": 1,
       "name": "the route opens and names the build",
       "pass": true,
-      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 412×915 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
+      "detail": "sha=1eb9e83 header=\"Editör kabulü · 1eb9e83 · 412×915 · dokunma 1 Bu test gerçek projeni değiştirmez.\""
     },
     {
       "viewport": "412x915",
@@ -327,7 +327,7 @@
       "step": 5,
       "name": "every step is reachable, and the last one ends the run",
       "pass": true,
-      "detail": "steps=7 screens=31 finished=true"
+      "detail": "steps=7 screens=36 finished=true"
     },
     {
       "viewport": "412x915",
@@ -369,7 +369,7 @@
       "step": 11,
       "name": "the result is there to copy even without clipboard rights",
       "pass": true,
-      "detail": "chars=989 button=1"
+      "detail": "chars=1092 button=1"
     },
     {
       "viewport": "412x915",
@@ -383,7 +383,7 @@
       "step": 13,
       "name": "restart gives a clean session",
       "pass": true,
-      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+      "detail": "step=\"1 · Seçim ve Devam · 1/36\" resultGone=true"
     },
     {
       "viewport": "412x915",
@@ -418,14 +418,14 @@
       "step": 18,
       "name": "a link carrying the wrong commit refuses to start",
       "pass": true,
-      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 1eb9e83\" tasks=0"
     },
     {
       "viewport": "412x915",
       "step": 19,
       "name": "the right commit is allowed through",
       "pass": true,
-      "detail": "sha=8dae4f0 tasks=1"
+      "detail": "sha=1eb9e83 tasks=1"
     },
     {
       "viewport": "412x915",
@@ -446,7 +446,7 @@
       "step": 1,
       "name": "the route opens and names the build",
       "pass": true,
-      "detail": "sha=8dae4f0 header=\"Editör kabulü · 8dae4f0 · 1363×936 · dokunma 0 Bu test gerçek projeni değiştirmez.\""
+      "detail": "sha=1eb9e83 header=\"Editör kabulü · 1eb9e83 · 1363×936 · dokunma 0 Bu test gerçek projeni değiştirmez.\""
     },
     {
       "viewport": "1363x936",
@@ -474,7 +474,7 @@
       "step": 5,
       "name": "every step is reachable, and the last one ends the run",
       "pass": true,
-      "detail": "steps=7 screens=31 finished=true"
+      "detail": "steps=7 screens=36 finished=true"
     },
     {
       "viewport": "1363x936",
@@ -516,7 +516,7 @@
       "step": 11,
       "name": "the result is there to copy even without clipboard rights",
       "pass": true,
-      "detail": "chars=990 button=1"
+      "detail": "chars=1093 button=1"
     },
     {
       "viewport": "1363x936",
@@ -530,7 +530,7 @@
       "step": 13,
       "name": "restart gives a clean session",
       "pass": true,
-      "detail": "step=\"1 · Seçim ve Devam · 1/31\" resultGone=true"
+      "detail": "step=\"1 · Seçim ve Devam · 1/36\" resultGone=true"
     },
     {
       "viewport": "1363x936",
@@ -565,14 +565,14 @@
       "step": 18,
       "name": "a link carrying the wrong commit refuses to start",
       "pass": true,
-      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 8dae4f0\" tasks=0"
+      "detail": "\"Yanlış sürüm: beklenen deadbee, açılan 1eb9e83\" tasks=0"
     },
     {
       "viewport": "1363x936",
       "step": 19,
       "name": "the right commit is allowed through",
       "pass": true,
-      "detail": "sha=8dae4f0 tasks=1"
+      "detail": "sha=1eb9e83 tasks=1"
     },
     {
       "viewport": "1363x936",

@@ -103,7 +103,7 @@
       "step": 15,
       "name": "“Daha fazla” greys “Yapıştır” with the reason",
       "pass": true,
-      "detail": "entries=5 paste=false"
+      "detail": "entries=6 paste=1 shut=true said=\"Yapıştır Panoda bir şey yok.\""
     },
     {
       "viewport": "320x700",
@@ -257,7 +257,7 @@
       "step": 15,
       "name": "“Daha fazla” greys “Yapıştır” with the reason",
       "pass": true,
-      "detail": "entries=5 paste=false"
+      "detail": "entries=6 paste=1 shut=true said=\"Yapıştır Panoda bir şey yok.\""
     },
     {
       "viewport": "390x844",
@@ -411,7 +411,7 @@
       "step": 15,
       "name": "“Daha fazla” greys “Yapıştır” with the reason",
       "pass": true,
-      "detail": "entries=5 paste=false"
+      "detail": "entries=6 paste=1 shut=true said=\"Yapıştır Panoda bir şey yok.\""
     },
     {
       "viewport": "412x915",
@@ -565,7 +565,7 @@
       "step": 15,
       "name": "“Daha fazla” greys “Yapıştır” with the reason",
       "pass": true,
-      "detail": "entries=5 paste=false"
+      "detail": "entries=6 paste=1 shut=true said=\"Yapıştır Panoda bir şey yok.\""
     },
     {
       "viewport": "1363x936",

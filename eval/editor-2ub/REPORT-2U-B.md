@@ -203,7 +203,7 @@ kalamıyor çünkü her birinin kendi ekranı var.
 ## 14. Dört viewport kabulü
 
 `node eval/editor-2ub/verify.mjs` — 27 ölçüm × 4 context = **108/108**,
-40 ekran görüntüsü.
+40 ekran görüntüsü. **Ardışık on koşum, onunda da 108/108, sıfır başarısızlık.**
 
 Context'ler: 320×700, 390×844, 412×915 (Android Chrome UA), 1363×936
 (`touch=0`). Masaüstünde `hasTouch` kapalı, jestler mouse ile; üçünde CDP
@@ -254,7 +254,37 @@ Bütçeler **yükseltilmedi**:
 
 ## 17. Final komutlar
 
-Final HEAD üzerinde taze koşuldu; sonuçlar §21'in altında.
+Final HEAD üzerinde taze:
+
+| Komut | Sonuç |
+|---|---|
+| `npm run build` | exit 0 |
+| `npx tsc --noEmit` | exit 0 |
+| `npm test` | 254 dosya, **4174 test**, hepsi geçti |
+| `npm run lint` | temiz |
+| `git status --porcelain` | boş |
+
+Ek koşumlar:
+
+| | |
+|---|---|
+| Hedefli suite (307 test) | 10 ardışık yeşil |
+| `eval/editor-2ub/verify.mjs` | 10 ardışık **108/108** |
+| `eval/editor-2ub/probes.sh` | 32 kırmızı / 0 vacuous / 0 invalid |
+| `eval/editor-parity/verify.mjs` (regresyon) | **88/88** |
+| `eval/editor-parity/probes.sh` (regresyon) | 40 kırmızı / 0 / 0 |
+| `eval/editor-handoff/verify.mjs` (regresyon) | **84/84** |
+| `eval/editor-handoff/probes.sh` (regresyon) | 30 kırmızı / 0 / 0 |
+
+İki regresyon harness'ında birer düzeltme gerekti ve ikisi de bu turun
+bulgusunu doğruluyor:
+
+- `editor-parity` adım 15'in **adı** «“Daha fazla” greys “Yapıştır”» diyordu,
+  **iddiası** ise «Yapıştır» metninin ekranda *bulunmamasını* şart koşuyordu —
+  ve geçiyordu, çünkü paste hiç çizilemiyordu. Test kusuru kodluyordu. İddia
+  adına uyduruldu: girdi var, kapalı, ve modelin cümlesini taşıyor.
+- `editor-handoff` probe 12'nin anchor'ı `returns_to` dalı değişince kaydı;
+  runner bunu doğru biçimde INVALID saydı (kanıt değil) ve anchor yenilendi.
 
 ## 18. Temiz diff ve push
 

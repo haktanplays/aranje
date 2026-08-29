@@ -162,8 +162,8 @@ probe "11 a copy that wrote to the song still passes" \
 
 probe "12 undo passes without coming back to the remembered bytes" \
   src/lib/acceptance/editor-steps.ts \
-  '      return remembered !== undefined && diff.songAfter === remembered;' \
-  '      return true;' \
+  '      if (remembered === undefined || diff.songAfter !== remembered) return false;' \
+  '      if (false) return false;' \
   "$PHASE"
 
 probe "13 a selection that shrank counts as one that grew" \
