@@ -31,8 +31,25 @@ import { deviceStorageSnapshot } from "@/lib/acceptance/device-storage";
 import { readFixture } from "@/lib/acceptance/fixture-read";
 import type { MemoryStorage } from "@/lib/acceptance/memory-storage";
 
-/** Words that only a whole-bar selection may offer (2U-A §10). */
-const MEASURE_WORDS = /Ölçü ekle|Öncesine ölçü|Sonrasına ölçü|Ölçüyü sil|Sola taşı|Sağa taşı|Ölçü ve ritim/;
+/**
+ * Words that only a whole-measure selection may offer (2U-A §10, 2U-B §10).
+ *
+ * Written against the labels the product actually draws, and case-insensitively
+ * — the previous version looked for "Ölçü ekle" with a capital Ö and the
+ * button says "Önüne ölçü ekle", so it matched nothing and the whole
+ * measure/note distinction reported "—" for a run that had opened both.
+ */
+const MEASURE_WORDS = /ölçü ekle|ölçüyü kaldır|ölçüyü taşı|ölçüyü çoğalt|ölçü ve ritim|kopyalanan ölçüleri/i;
+
+/** What a note selection must be able to reach, when there is a clipboard. */
+const PASTE_LABEL = "Yapıştır";
+
+/** Whether a control is on screen and not refusing to be pressed. */
+function runnable(node: Element | null | undefined): boolean {
+  if (!node) return false;
+  if (node instanceof HTMLButtonElement && node.disabled) return false;
+  return node.getAttribute("aria-disabled") !== "true";
+}
 
 export type EditorSnapshot = {
   readonly song: string;
@@ -44,8 +61,26 @@ export type EditorSnapshot = {
 export type StandingObservations = {
   /** A note or range selection was open and offered no measure verb. */
   readonly noteHidesMeasureVerbs: boolean | null;
-  /** A measure selection was open and did offer them. */
-  readonly measureOffersMeasureVerbs: boolean | null;
+  /**
+   * A note selection offered a paste that could actually be pressed.
+   *
+   * Visibility *and* `canRun`, because a greyed control is not a reachable
+   * verb — and because the founder's clipboard defect was precisely a verb
+   * the model offered and no surface drew (2U-B §3, §10).
+   */
+  readonly noteOffersPaste: boolean | null;
+  /** One instrument's bars were held and offered no bar-adding verb. */
+  readonly trackBarHidesInsert: boolean | null;
+  /** The whole measure was held and its bar-adding verb could be pressed. */
+  readonly wholeMeasureRunsInsert: boolean | null;
+  /** No dialog was ever opened with nothing inside it (2U-B §6). */
+  readonly noEmptyDialog: boolean | null;
+  /** A run of two bars was really held, not one described as two (§9). */
+  readonly twoBarsHeld: boolean | null;
+  /** A refusal showed the typed playability sentence rather than nothing. */
+  readonly stringRefusalTyped: boolean | null;
+  /** No "Yerine koy" appeared on a refusal no overwrite can answer (§7). */
+  readonly noUnhonouredReplace: boolean | null;
   /** The old pattern-continuation tool is still reachable from its door. */
   readonly patternToolReachable: boolean | null;
   /** "Devam" never opened the composer instead of extending. */
@@ -60,7 +95,13 @@ export type StandingObservations = {
 
 const EMPTY_STANDING: StandingObservations = {
   noteHidesMeasureVerbs: null,
-  measureOffersMeasureVerbs: null,
+  noteOffersPaste: null,
+  trackBarHidesInsert: null,
+  wholeMeasureRunsInsert: null,
+  noEmptyDialog: null,
+  twoBarsHeld: null,
+  stringRefusalTyped: null,
+  noUnhonouredReplace: null,
   patternToolReachable: null,
   extendComposerClosed: null,
   sixStringsVisible: null,
@@ -100,15 +141,94 @@ function observeScreen(previous: StandingObservations): StandingObservations {
   const noteSelectionOpen = document.querySelector("[data-selection-toolbar]") !== null;
   const barSelectionOpen = document.querySelector("[data-bar-action-bar]") !== null;
 
+  /*
+   * Which scope is held, from the control that says so rather than from the
+   * summary text (2U-B §10). Reading a sentence to find out what the app
+   * thinks is how a measurement ends up testing the wording.
+   */
+  const scopeNode = document.querySelector("[data-bar-scope][aria-checked=true]");
+  const barScope = scopeNode?.getAttribute("data-bar-scope") ?? null;
+
   let noteHides = previous.noteHidesMeasureVerbs;
   if (noteSelectionOpen && dialog !== null && !barSelectionOpen) {
     noteHides = worse(noteHides, !MEASURE_WORDS.test(dialogText));
   }
 
-  let measureOffers = previous.measureOffersMeasureVerbs;
-  if (barSelectionOpen && dialog !== null) {
-    /* Only claim it once the sheet that holds them is actually open. */
-    if (MEASURE_WORDS.test(dialogText)) measureOffers = true;
+  /*
+   * The other half of the note scope: not only that the wrong verbs are
+   * absent, but that the right ones are there and pressable. "Görünmeyen
+   * komutun test edilmemesi PASS değildir" cuts both ways.
+   */
+  let notePaste = previous.noteOffersPaste;
+  if (noteSelectionOpen && dialog !== null && !barSelectionOpen) {
+    const entry = [...dialog.querySelectorAll("[data-selection-action]")].find(
+      (node) => node.getAttribute("data-selection-action") === PASTE_LABEL,
+    );
+    if (entry) notePaste = worse(notePaste, runnable(entry));
+  }
+
+  /* One instrument's bars may never be offered a way to lengthen the song. */
+  let trackHides = previous.trackBarHidesInsert;
+  if (barSelectionOpen && barScope === "track" && dialog !== null) {
+    trackHides = worse(trackHides, !MEASURE_WORDS.test(dialogText));
+  }
+
+  /* The whole measure must offer one, and it must be pressable. */
+  let wholeRuns = previous.wholeMeasureRunsInsert;
+  if (barSelectionOpen && barScope === "full" && dialog !== null) {
+    const insert = dialog.querySelector("[data-testid=bar-more-blank_after]");
+    if (insert) wholeRuns = worse(wholeRuns, runnable(insert));
+  }
+
+  /*
+   * No door may open onto nothing (2U-B §6). Counted rather than read: a
+   * sheet whose only control is its own close button is the empty dialog the
+   * founder found, however carefully it is titled.
+   */
+  let noEmpty = previous.noEmptyDialog;
+  if (dialog !== null) {
+    /*
+     * Controls inside the sheet's own panel. The backdrop is a button too —
+     * it is how a tap outside dismisses the sheet — and counting it would
+     * make every empty dialog look like it held one thing.
+     */
+    const choices = dialog.querySelectorAll("section button").length;
+    noEmpty = worse(noEmpty, choices > 0);
+  }
+
+  /*
+   * Two bars, said by the selection summary the app writes for itself. The
+   * route must not be able to select one bar and report "two" (§9).
+   */
+  const summary = document.querySelector("[data-bar-summary]")?.textContent ?? "";
+  const twoBars = /·\s*2\s+ölçü/.test(summary) ? true : previous.twoBarsHeld;
+
+  /*
+   * A refusal that names itself. `transform-preview` carries the command's
+   * own sentence when it will not run, and "Uygula" must be shut with it —
+   * a refusal the reader can press past is not a refusal (§5).
+   */
+  let refusalTyped = previous.stringRefusalTyped;
+  const preview = document.querySelector("[data-testid=transform-preview]");
+  if (preview && /çalınamıyor|hedef tel yok/i.test(preview.textContent ?? "")) {
+    const apply = [...document.querySelectorAll("[role=dialog] button")].find(
+      (node) => node.textContent?.trim() === "Uygula",
+    );
+    refusalTyped = worse(refusalTyped, !runnable(apply));
+  }
+
+  /*
+   * "Yerine koy" must never be drawn on a collision no overwrite answers
+   * (§7). The move refusal names itself; if that sentence and the replace
+   * button are on screen together, the button is one the core will not
+   * honour.
+   */
+  let honestReplace = previous.noUnhonouredReplace;
+  const barPreview = document.querySelector("[data-bar-preview]")?.textContent ?? "";
+  if (barPreview.length > 0) {
+    const replaceShown = document.querySelector("[data-bar-replace]") !== null;
+    const unanswerable = /taşınacak yerde/i.test(barPreview);
+    honestReplace = worse(honestReplace, !(unanswerable && replaceShown));
   }
 
   /*
@@ -161,7 +281,13 @@ function observeScreen(previous: StandingObservations): StandingObservations {
 
   const next: StandingObservations = {
     noteHidesMeasureVerbs: noteHides,
-    measureOffersMeasureVerbs: measureOffers,
+    noteOffersPaste: notePaste,
+    trackBarHidesInsert: trackHides,
+    wholeMeasureRunsInsert: wholeRuns,
+    noEmptyDialog: noEmpty,
+    twoBarsHeld: twoBars,
+    stringRefusalTyped: refusalTyped,
+    noUnhonouredReplace: honestReplace,
     patternToolReachable: patternReachable,
     extendComposerClosed: extendClean,
     sixStringsVisible: sixStrings,

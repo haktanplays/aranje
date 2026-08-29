@@ -17,6 +17,8 @@ import {
 import { songSchema } from "@/lib/song/schema";
 import { runValidators, SONG_VALIDATORS } from "@/lib/validators";
 import { errorsOnly } from "@/lib/validators/types";
+import { applyTransform } from "@/lib/song/transform";
+import { ticksPerBar } from "@/lib/music/timing";
 
 const slotsOf = (barIndex: number, trackId: string) =>
   editorFixture().sections[0]!.bars[barIndex]!.slots[trackId]!;
@@ -107,5 +109,76 @@ describe("what each step needs is already there", () => {
     const { start, end } = EDITOR_LANDMARKS.multiBars;
     expect(end).toBe(start + 1);
     expect(end).toBeLessThan(editorFixture().sections[0]!.bars.length);
+  });
+
+  /*
+   * The claim the guide makes, measured rather than asserted (2U-B §5).
+   *
+   * The last round's step told the reader to move the bar-1 motif to a
+   * thinner string. That motif opens on an open low E, which no thinner
+   * string can sound and which has no thicker string beside it, so the guide
+   * was asking for a movement the fretboard does not have and the run failed
+   * on both directions. A comment saying "bar 3 works" would be the same
+   * mistake one file along, so it is run through the real command instead.
+   */
+  describe("the string-move landmarks are what they claim", () => {
+    const barTicks = () => {
+      const bar = editorFixture().sections[0]!.bars[0]!;
+      return ticksPerBar(bar.timeSignature, bar.resolution);
+    };
+    const restring = (barIndex: number, stringDelta: number) => {
+      const song = editorFixture();
+      const width = barTicks();
+      return applyTransform(
+        song,
+        {
+          sectionId: EDITOR_LANDMARKS.sectionId,
+          trackId: EDITOR_GUITAR_ID,
+          startTicks: barIndex * width,
+          endTicks: (barIndex + 1) * width,
+        },
+        { kind: "restring_same_pitch", stringDelta },
+      );
+    };
+
+    it("can move the restring motif to a thinner string", () => {
+      expect(restring(EDITOR_LANDMARKS.restringBar, 1).ok).toBe(true);
+    });
+
+    it("can move it to a thicker string too", () => {
+      expect(restring(EDITOR_LANDMARKS.restringBar, -1).ok).toBe(true);
+    });
+
+    it("keeps a selection that genuinely cannot be restrung", () => {
+      /*
+       * Both directions, because the negative step must stay negative however
+       * the reader reaches it.
+       */
+      const thinner = restring(EDITOR_LANDMARKS.unplayableRestring.barIndex, 1);
+      const thicker = restring(EDITOR_LANDMARKS.unplayableRestring.barIndex, -1);
+      expect(thinner.ok).toBe(false);
+      expect(thicker.ok).toBe(false);
+      if (thinner.ok || thicker.ok) return;
+      /* Typed, and with something a reader can act on. */
+      expect(thinner.error.code).toBe("out_of_range");
+      expect(thinner.error.message.length).toBeGreaterThan(10);
+    });
+
+    it("refuses without touching the song it was given", () => {
+      const song = editorFixture();
+      const before = JSON.stringify(song);
+      const width = barTicks();
+      applyTransform(
+        song,
+        {
+          sectionId: EDITOR_LANDMARKS.sectionId,
+          trackId: EDITOR_GUITAR_ID,
+          startTicks: 0,
+          endTicks: width,
+        },
+        { kind: "restring_same_pitch", stringDelta: 1 },
+      );
+      expect(JSON.stringify(song)).toBe(before);
+    });
   });
 });

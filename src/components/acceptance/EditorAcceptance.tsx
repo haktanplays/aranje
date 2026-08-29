@@ -36,6 +36,7 @@ import {
   EDITOR_STEPS,
   emptyChecks,
   judgePhase,
+  phaseBlockedBy,
   type Check,
 } from "@/lib/acceptance/editor-steps";
 import { createMemoryStorage } from "@/lib/acceptance/memory-storage";
@@ -169,19 +170,50 @@ export function EditorAcceptance() {
   /* The device's own store as the run ends, taken through the watcher. */
   const [userStorageAfter, setUserStorageAfter] = useState<string | null>(null);
 
+  const observations = useMemo(
+    () => ({
+      checks: {
+        ...checks,
+        ...Object.fromEntries(
+          Object.entries(watch.standing).filter(([, value]) => value !== null),
+        ),
+        /* A fact about the fixture, known without pressing anything. */
+        fixtureHasTwoTracks: editorFixture().tracks.length >= 2,
+        noConsoleError: watch.consoleErrors.length === 0,
+        userStorageUnchanged:
+          userStorageAfter === null ? null : userStorageAfter === watch.userStorageBefore,
+      } as Record<string, Check>,
+      consoleErrors: watch.consoleErrors,
+      userStorageBefore: watch.userStorageBefore,
+      userStorageAfter: userStorageAfter ?? watch.userStorageBefore,
+    }),
+    [checks, watch.standing, watch.consoleErrors, watch.userStorageBefore, userStorageAfter],
+  );
+
   const finishPhase = () => {
     if (!current) return;
     const after = watch.snapshot();
     const start = before.current ?? after;
-    const passed = judgePhase(current.phase.expect, {
-      songBefore: start.song,
-      songAfter: after.song,
-      revisionBefore: start.revision,
-      revisionAfter: after.revision,
-      bandBefore: start.band,
-      bandAfter: after.band,
-      marks,
-    });
+    /*
+     * A phase whose subject never happened cannot be judged by looking at the
+     * song (2U-B §4). The live run reported "Undo/redo: PASS" for a paste that
+     * was never applied — with nothing written, the marks either side of it
+     * held the same bytes, so an inert «Geri al» satisfied "it came back".
+     * Dependencies are checked first, and a blocked phase fails on its own
+     * account rather than borrowing a neighbour's clean state.
+     */
+    const blocked = phaseBlockedBy(current.phase, observations.checks);
+    const passed =
+      blocked.length === 0 &&
+      judgePhase(current.phase.expect, {
+        songBefore: start.song,
+        songAfter: after.song,
+        revisionBefore: start.revision,
+        revisionAfter: after.revision,
+        bandBefore: start.band,
+        bandAfter: after.band,
+        marks,
+      });
     /*
      * The musical promise, asked of the two songs rather than of the history.
      * A gesture can write exactly once and still change what is heard.
@@ -217,26 +249,6 @@ export function EditorAcceptance() {
     if (screen === SCREENS.length - 1) setUserStorageAfter(watch.userStorageNow());
     setScreen((index) => index + 1);
   };
-
-  const observations = useMemo(
-    () => ({
-      checks: {
-        ...checks,
-        ...Object.fromEntries(
-          Object.entries(watch.standing).filter(([, value]) => value !== null),
-        ),
-        /* A fact about the fixture, known without pressing anything. */
-        fixtureHasTwoTracks: editorFixture().tracks.length >= 2,
-        noConsoleError: watch.consoleErrors.length === 0,
-        userStorageUnchanged:
-          userStorageAfter === null ? null : userStorageAfter === watch.userStorageBefore,
-      } as Record<string, Check>,
-      consoleErrors: watch.consoleErrors,
-      userStorageBefore: watch.userStorageBefore,
-      userStorageAfter: userStorageAfter ?? watch.userStorageBefore,
-    }),
-    [checks, watch.standing, watch.consoleErrors, watch.userStorageBefore, userStorageAfter],
-  );
 
   const result = () =>
     formatEditorResult({

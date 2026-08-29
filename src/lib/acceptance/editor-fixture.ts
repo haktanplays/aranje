@@ -54,6 +54,24 @@ export const EDITOR_LANDMARKS = {
   motifEnd: { barIndex: 0, slotIndex: 12 },
   /** The empty bar a copy is pasted into. */
   emptyTarget: { barIndex: 1, slotIndex: 0 },
+  /**
+   * The motif the string moves are made on (2U-B §5).
+   *
+   * Not the one in bar 1. That opens on an open low E, and E2 is below the A
+   * string's open pitch, so no thinner string can sound it — and there is no
+   * thicker string than the sixth. Bar 3 sits mid-neck, where a note has a
+   * neighbour in both directions, so "move to the next string" is a movement
+   * that exists rather than one the guide only asks for.
+   */
+  restringBar: 2,
+  /**
+   * A selection that genuinely cannot be restrung, kept on purpose.
+   *
+   * The chord in bar 1 is the negative case: the refusal it produces is a
+   * feature, and a package that only exercised the movements that work would
+   * say nothing about whether the guard is there at all.
+   */
+  unplayableRestring: { barIndex: 0, slotIndex: 0 },
   /** A written bar with free space on its right, for the measure moves. */
   movableBar: 2,
   /** The empty bar that free space is. */

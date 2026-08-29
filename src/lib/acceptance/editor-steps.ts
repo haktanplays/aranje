@@ -62,8 +62,21 @@ export type PhaseExpectation =
   | { readonly kind: "one_write" }
   /** A selection moved and nothing was written. */
   | { readonly kind: "selection_only"; readonly band: "wider" | "narrower" | "any" }
-  /** Undo or redo: the song returns to bytes it held before. */
-  | { readonly kind: "returns_to"; readonly mark: string }
+  /**
+   * Undo or redo: the song returns to bytes it held before.
+   *
+   * `distinctFrom` names a second mark the first must *differ* from, and it
+   * is what keeps this from passing vacuously (2U-B §4). If the edit under
+   * test never happened, the "before" and "after" marks hold the same bytes,
+   * and returning to either is satisfied by doing nothing at all — which is
+   * exactly how the live run reported "Undo/redo: PASS" for a paste that was
+   * never applied.
+   */
+  | {
+      readonly kind: "returns_to";
+      readonly mark: string;
+      readonly distinctFrom?: string;
+    }
   /** Remember the current bytes under a name, for a later `returns_to`. */
   | { readonly kind: "mark"; readonly mark: string }
   /** Navigation or looking. Nothing is asserted about the song. */
@@ -75,6 +88,17 @@ export type Phase = {
   /** The one thing the reader is asked to do on this screen. */
   readonly text: string;
   readonly expect: PhaseExpectation;
+  /**
+   * Checks that must already have passed for this phase to mean anything
+   * (2U-B §4, §11).
+   *
+   * A phase whose subject never happened cannot be judged by looking at the
+   * song: "did undo restore the bytes" has no content when nothing was
+   * written, and the honest answer is not "yes". Naming the dependency makes
+   * the failure land on the phase that is actually unproven, rather than on
+   * a neighbour that happens to look clean.
+   */
+  readonly requires?: readonly string[];
 };
 
 export type FounderQuestion = {
@@ -180,12 +204,30 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
       {
         id: "undoByteEqual",
         text: "«Geri al»a dokun.",
-        expect: { kind: "returns_to", mark: "beforePaste" },
+        /*
+         * Tied to the paste in three ways at once (2U-B §4): the bytes must
+         * be the ones from before it, those bytes must differ from the ones
+         * after it, and the paste itself must have been measured as a real
+         * write. The live run reported PASS here for a paste that never
+         * happened — with nothing written, "before" and "after" were the same
+         * song, and pressing an inert «Geri al» satisfied both.
+         */
+        expect: {
+          kind: "returns_to",
+          mark: "beforePaste",
+          distinctFrom: "pasted",
+        },
+        requires: ["pasteApplied"],
       },
       {
         id: "redoByteEqual",
         text: "«İleri al»a dokun.",
-        expect: { kind: "returns_to", mark: "pasted" },
+        expect: {
+          kind: "returns_to",
+          mark: "pasted",
+          distinctFrom: "beforePaste",
+        },
+        requires: ["pasteApplied", "undoByteEqual"],
       },
     ],
     standingChecks: [],
@@ -231,18 +273,53 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
         expect: { kind: "one_write" },
       },
       {
+        /*
+         * A different motif for the string moves, and this is the whole of
+         * 2U-B §5 (2U-B §5).
+         *
+         * Bar 1 opens on an open low E. There is no thinner string that can
+         * sound an E2 — the A string's lowest note is three semitones above
+         * it — and there is no thicker string at all, so *neither* direction
+         * was possible and the guide was asking for a movement the fretboard
+         * does not have. The app was right to refuse; the instruction was
+         * wrong. Bar 3 sits in the middle of the neck, where both moves are
+         * real, and the impossible case is kept as its own step below rather
+         * than quietly dropped.
+         */
+        id: "restringSelected",
+        text: "Üçüncü ölçüdeki notaları seç (boş ölçüden bir öncekiler).",
+        expect: { kind: "selection_only", band: "any" },
+      },
+      {
         id: "moveStringThin",
         text: "«Taşı» → Tel → ince tele. Uygula.",
         expect: { kind: "one_write" },
+        requires: ["restringSelected"],
       },
       {
         id: "moveStringThick",
         text: "«Taşı» → Tel → kalın tele. Uygula.",
         expect: { kind: "one_write" },
+        requires: ["restringSelected"],
+      },
+      {
+        /*
+         * The other half of §5. A refusal is a feature, and a package that
+         * only ever exercised the movements that work would say nothing about
+         * whether the guard exists.
+         */
+        id: "restringRefused",
+        text: "İlk ölçüdeki akoru seç, «Taşı» → Tel → ince tele. Bu kez uygulanmamalı.",
+        expect: { kind: "no_write" },
       },
     ],
     /* Answered from the music itself by `editor-invariants.ts`. */
-    standingChecks: ["moveKeptSoundingPitch", "moveNoOverwrite"],
+    standingChecks: [
+      "moveKeptSoundingPitch",
+      "moveNoOverwrite",
+      /* The refusal was typed and said so, rather than silently doing nothing. */
+      "stringRefusalTyped",
+    ],
     questions: [
       {
         id: "moveClear",
@@ -253,7 +330,17 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
   },
   {
     id: "scope",
-    title: "5 · Nota seçimi ve ölçü seçimi",
+    title: "5 · Üç seçim, üç fiil kümesi",
+    /*
+     * Three scopes, not two (2U-B §6, §10).
+     *
+     * A note range, one instrument's bars, and the bars themselves with every
+     * track in them. The live report said "Nota/ölçü ayrımı: —", which was
+     * honest and useless: the measure half was only ever claimed when a sheet
+     * showed measure words, and on a track-scope selection that sheet was
+     * empty, so nothing was ever measured. Each scope now has a screen, and
+     * each is measured twice — what it draws, and what it can actually run.
+     */
     phases: [
       {
         id: "scopeNoteSelected",
@@ -261,14 +348,26 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
         expect: { kind: "no_write" },
       },
       {
-        id: "scopeMeasureSelected",
-        text: "Kapat. Şimdi ölçü başlığına — ölçü numarasının olduğu şeride — basılı tut.",
+        id: "scopeTrackBarSelected",
+        text: "Kapat. Ölçü başlığına basılı tut: «Bu enstrüman» seçili olmalı.",
+        expect: { kind: "no_write" },
+      },
+      {
+        id: "scopeWholeMeasureSelected",
+        text: "«Tüm enstrümanlar»a dokun, sonra «Daha fazla»yı aç.",
         expect: { kind: "no_write" },
       },
     ],
     standingChecks: [
+      /* What a note range must not offer, and what it must. */
       "noteHidesMeasureVerbs",
-      "measureOffersMeasureVerbs",
+      "noteOffersPaste",
+      /* One instrument's bars: content verbs, and never a bar-adding one. */
+      "trackBarHidesInsert",
+      /* The whole measure: the structural verbs, and runnable. */
+      "wholeMeasureRunsInsert",
+      /* No path may open a dialog with nothing in it. */
+      "noEmptyDialog",
       /* A one-track song cannot falsify "covers every track". */
       "fixtureHasTwoTracks",
     ],
@@ -280,8 +379,10 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
     phases: [
       {
         id: "measureInserted",
-        text: "Seçili ölçünün sonrasına yeni bir ölçü ekle.",
+        text: "«Tüm enstrümanlar» kapsamındayken «Daha fazla» → «Arkasına ölçü ekle».",
         expect: { kind: "one_write" },
+        /* Adding a bar only exists in the whole-measure scope (2U-B §6). */
+        requires: ["scopeWholeMeasureSelected"],
       },
       {
         id: "measureDuplicated",
@@ -299,19 +400,47 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
         expect: { kind: "one_write" },
       },
       {
+        /*
+         * Moving onto an occupied bar (2U-B §7).
+         *
+         * The founder was offered "Yerine koy" here and pressing it did
+         * nothing: the dialog stayed open and the same warning was rewritten
+         * underneath. A move's collision has no overwrite that answers it, so
+         * what must be on screen now is a refusal that says so — and no
+         * button promising otherwise.
+         */
+        id: "moveIntoOccupiedRefused",
+        text: "Dolu bir komşusu olan ölçüyü onun üzerine taşımayı dene.",
+        expect: { kind: "no_write" },
+      },
+      {
+        id: "multiSelectedByDrag",
+        /*
+         * The gesture itself, and the reason this step exists (2U-B §8).
+         * Pressing one bar and then pressing another used to replace the
+         * selection rather than widen it, so "two adjacent bars" was not
+         * something a reader could reach at all.
+         */
+        text: "Bir ölçüye basılı tut ve parmağını komşusuna sürükle. İki ölçü seçilsin.",
+        expect: { kind: "selection_only", band: "any" },
+      },
+      {
         id: "multiMarked",
-        text: "İki bitişik ölçü seç. Henüz bir şey yapma.",
+        text: "Bir şey yapma — bu hâli işaretliyoruz.",
         expect: { kind: "mark", mark: "beforeRepeat" },
+        requires: ["multiSelectedByDrag"],
       },
       {
         id: "multiRepeatOneHistory",
         text: "Seçili iki ölçüyü tekrarla.",
         expect: { kind: "one_write" },
+        requires: ["multiSelectedByDrag"],
       },
       {
         id: "multiUndoByteEqual",
         text: "Tek «Geri al» ile tekrarı geri al.",
         expect: { kind: "returns_to", mark: "beforeRepeat" },
+        requires: ["multiRepeatOneHistory"],
       },
       {
         id: "measureDeleted",
@@ -319,8 +448,15 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
         expect: { kind: "one_write" },
       },
     ],
-    /* The first two come from the music; the last is the pure suite's. */
-    standingChecks: ["measureAllTracksAligned", "measureOtherTrackKept"],
+    standingChecks: [
+      /* These two come from the music itself. */
+      "measureAllTracksAligned",
+      "measureOtherTrackKept",
+      /* And this from the screen: two bars were really held, not one. */
+      "twoBarsHeld",
+      /* A refusal that offered no button it could not honour. */
+      "noUnhonouredReplace",
+    ],
     questions: [],
   },
   {
@@ -437,7 +573,29 @@ export function judgePhase(expect: PhaseExpectation, diff: PhaseDiff): boolean {
     }
     case "returns_to": {
       const remembered = diff.marks[expect.mark];
-      return remembered !== undefined && diff.songAfter === remembered;
+      if (remembered === undefined || diff.songAfter !== remembered) return false;
+      if (expect.distinctFrom === undefined) return true;
+      /*
+       * The two marks must be different pieces of music, or "it came back" is
+       * a sentence about nothing (2U-B §4).
+       */
+      const other = diff.marks[expect.distinctFrom];
+      return other !== undefined && other !== remembered;
     }
   }
+}
+
+/**
+ * Whether a phase's dependencies are satisfied.
+ *
+ * Kept apart from `judgePhase` because it is a different kind of question:
+ * `judgePhase` asks what the app did, this asks whether asking was meaningful.
+ * A dependency that is `null` — never attempted — blocks just as firmly as one
+ * that failed; "we did not check" is not evidence that it worked.
+ */
+export function phaseBlockedBy(
+  phase: Phase,
+  checks: Readonly<Record<string, Check>>,
+): readonly string[] {
+  return (phase.requires ?? []).filter((key) => checks[key] !== true);
 }

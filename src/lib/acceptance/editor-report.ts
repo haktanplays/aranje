@@ -113,15 +113,28 @@ const ROW_KEYS: readonly { readonly label: string; readonly keys: readonly strin
   },
   {
     label: "Telde taşı",
-    keys: ["moveStringThin", "moveStringThick", "moveKeptSoundingPitch", "moveNoOverwrite"],
+    keys: [
+      "restringSelected",
+      "moveStringThin",
+      "moveStringThick",
+      "moveKeptSoundingPitch",
+      "moveNoOverwrite",
+      /* Both halves in one row: the moves that work and the one that must not. */
+      "restringRefused",
+      "stringRefusalTyped",
+    ],
   },
   {
     label: "Nota/ölçü ayrımı",
     keys: [
       "scopeNoteSelected",
-      "scopeMeasureSelected",
+      "scopeTrackBarSelected",
+      "scopeWholeMeasureSelected",
       "noteHidesMeasureVerbs",
-      "measureOffersMeasureVerbs",
+      "noteOffersPaste",
+      "trackBarHidesInsert",
+      "wholeMeasureRunsInsert",
+      "noEmptyDialog",
     ],
   },
   {
@@ -134,11 +147,20 @@ const ROW_KEYS: readonly { readonly label: string; readonly keys: readonly strin
       "measureDeleted",
       "measureAllTracksAligned",
       "measureOtherTrackKept",
+      "moveIntoOccupiedRefused",
+      "noUnhonouredReplace",
     ],
   },
   {
     label: "Çoklu ölçü",
-    keys: ["multiMarked", "multiRepeatOneHistory", "multiUndoByteEqual"],
+    keys: [
+      /* The gesture first: a run that never held two bars proves nothing. */
+      "multiSelectedByDrag",
+      "twoBarsHeld",
+      "multiMarked",
+      "multiRepeatOneHistory",
+      "multiUndoByteEqual",
+    ],
   },
   {
     label: "UI Contract",

@@ -7,7 +7,14 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { judgePhase, type PhaseDiff } from "@/lib/acceptance/editor-steps";
+import {
+  ALL_CHECK_KEYS,
+  EDITOR_STEPS,
+  judgePhase,
+  phaseBlockedBy,
+  type Phase,
+  type PhaseDiff,
+} from "@/lib/acceptance/editor-steps";
 
 const diff = (over: Partial<PhaseDiff> = {}): PhaseDiff => ({
   songBefore: "A",
@@ -113,5 +120,131 @@ describe("undo and redo", () => {
 describe("a phase that asserts nothing", () => {
   it("passes whatever happened, because looking is not an edit", () => {
     expect(judgePhase({ kind: "free" }, diff({ songAfter: "B" }))).toBe(true);
+  });
+});
+
+/**
+ * The false positive the live run produced, and the rules that end it
+ * (2U-B §4, §11).
+ *
+ * `Undo/redo: PASS` was reported for a paste that never happened. Nothing was
+ * lying on purpose: with no write, the bytes marked before the paste and the
+ * bytes marked after it were the same song, so "the song came back to the
+ * before-mark" was satisfied by pressing an inert button — or by pressing
+ * nothing at all.
+ */
+describe("a phase cannot pass on a neighbour's clean state", () => {
+  const SONG_A = '{"a":1}';
+  const SONG_B = '{"b":2}';
+
+  const diff = (
+    after: string,
+    marks: Record<string, string>,
+  ): PhaseDiff => ({
+    songBefore: after,
+    songAfter: after,
+    revisionBefore: 3,
+    revisionAfter: 3,
+    bandBefore: null,
+    bandAfter: null,
+    marks,
+  });
+
+  it("refuses an undo whose two marks are the same song", () => {
+    /* Exactly the live failure: pasteApplied was false, so both marks held
+       the untouched fixture and undo had nothing to undo. */
+    expect(
+      judgePhase(
+        { kind: "returns_to", mark: "beforePaste", distinctFrom: "pasted" },
+        diff(SONG_A, { beforePaste: SONG_A, pasted: SONG_A }),
+      ),
+    ).toBe(false);
+  });
+
+  it("accepts it once the two marks are different music", () => {
+    expect(
+      judgePhase(
+        { kind: "returns_to", mark: "beforePaste", distinctFrom: "pasted" },
+        diff(SONG_A, { beforePaste: SONG_A, pasted: SONG_B }),
+      ),
+    ).toBe(true);
+  });
+
+  it("still refuses when the song did not come back", () => {
+    expect(
+      judgePhase(
+        { kind: "returns_to", mark: "beforePaste", distinctFrom: "pasted" },
+        diff(SONG_B, { beforePaste: SONG_A, pasted: SONG_B }),
+      ),
+    ).toBe(false);
+  });
+
+  it("blocks a phase whose dependency failed", () => {
+    const phase: Phase = {
+      id: "undoByteEqual",
+      text: "",
+      expect: { kind: "returns_to", mark: "beforePaste" },
+      requires: ["pasteApplied"],
+    };
+    expect(phaseBlockedBy(phase, { pasteApplied: false })).toEqual([
+      "pasteApplied",
+    ]);
+  });
+
+  it("blocks it just as firmly when the dependency was never attempted", () => {
+    const phase: Phase = {
+      id: "undoByteEqual",
+      text: "",
+      expect: { kind: "returns_to", mark: "beforePaste" },
+      requires: ["pasteApplied"],
+    };
+    /* "We did not check" is not evidence that it worked. */
+    expect(phaseBlockedBy(phase, { pasteApplied: null })).toEqual([
+      "pasteApplied",
+    ]);
+  });
+
+  it("lets it through when the dependency really passed", () => {
+    const phase: Phase = {
+      id: "undoByteEqual",
+      text: "",
+      expect: { kind: "returns_to", mark: "beforePaste" },
+      requires: ["pasteApplied"],
+    };
+    expect(phaseBlockedBy(phase, { pasteApplied: true })).toEqual([]);
+  });
+
+  it("names every dependency a real phase declares", () => {
+    /*
+     * A `requires` pointing at a key no phase or standing check produces
+     * would block that phase for ever, silently.
+     */
+    const known = new Set(ALL_CHECK_KEYS);
+    for (const step of EDITOR_STEPS) {
+      for (const phase of step.phases) {
+        for (const key of phase.requires ?? []) {
+          expect(known.has(key), `${phase.id} requires ${key}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("ties the undo and redo of the paste to the paste itself", () => {
+    /* The specific binding §4 asks for, asserted on the real step list. */
+    const history = EDITOR_STEPS.find((step) => step.id === "history");
+    const undo = history?.phases.find((phase) => phase.id === "undoByteEqual");
+    const redo = history?.phases.find((phase) => phase.id === "redoByteEqual");
+    expect(undo?.requires).toContain("pasteApplied");
+    expect(redo?.requires).toContain("pasteApplied");
+    expect(undo?.expect).toMatchObject({ distinctFrom: "pasted" });
+  });
+
+  it("ties the multi-measure work to a run of two bars really being held", () => {
+    const measures = EDITOR_STEPS.find((step) => step.id === "measures");
+    const repeat = measures?.phases.find(
+      (phase) => phase.id === "multiRepeatOneHistory",
+    );
+    expect(repeat?.requires).toContain("multiSelectedByDrag");
+    expect(measures?.standingChecks).toContain("twoBarsHeld");
   });
 });
