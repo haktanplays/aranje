@@ -18,6 +18,7 @@ import { projectId } from "@/lib/projects/project-id";
 import { installProjectSession } from "@/lib/projects/project-session";
 import { writeCatalog, writeRecord } from "@/lib/projects/project-storage";
 import { installSettingsStore } from "@/lib/settings/use-settings";
+import type { Song } from "@/lib/song/schema";
 
 /*
  * A real project id, not a descriptive name. `projectKey` refuses anything
@@ -40,9 +41,21 @@ export type AcceptanceSession = {
  * same phone produce byte-identical records and a diff of the storage means
  * something.
  */
-export function startAcceptanceSession(now = 1_700_000_000_000): AcceptanceSession {
+export function startAcceptanceSession(
+  now = 1_700_000_000_000,
+  /*
+   * Which fixture the session is built around (2U-A handoff §3).
+   *
+   * The listening route and the editor route need different music — one has
+   * to make six techniques audible, the other has to make every editor
+   * operation possible — but they need exactly the same isolation. Passing
+   * the song keeps the seam single: there is still one place that installs a
+   * memory storage over the app's, and still only one that can be installed.
+   */
+  song: Song = acceptanceRiff(),
+): AcceptanceSession {
   const storage = createMemoryStorage();
-  const written = writeRecord(storage, ACCEPTANCE_PROJECT_ID, acceptanceRiff(), now);
+  const written = writeRecord(storage, ACCEPTANCE_PROJECT_ID, song, now);
   if (!written.ok) {
     return { ok: false, reason: `fixture yazılamadı: ${written.reason}`, storage };
   }
@@ -72,7 +85,7 @@ export function startAcceptanceSession(now = 1_700_000_000_000): AcceptanceSessi
  */
 let started: AcceptanceSession | null = null;
 
-export function acceptanceSession(): AcceptanceSession {
-  started ??= startAcceptanceSession();
+export function acceptanceSession(song?: Song): AcceptanceSession {
+  started ??= startAcceptanceSession(undefined, song);
   return started;
 }

@@ -46,6 +46,12 @@ describe("backend secrets stay on the backend (spec 12.1)", () => {
         // by itself and carries no secret.
         if (match[0] === "NEXT_PUBLIC_ARANJE_API_BASE") continue;
         if (match[0] === "NEXT_PUBLIC_ARANJE_COPILOT_DEMO") continue;
+        /*
+         * The build's own commit (2U-A handoff §4). It is the opposite of a
+         * secret: it exists so a reader can prove which build is in front of
+         * them, and the acceptance route refuses to run on the wrong one.
+         */
+        if (match[0] === "NEXT_PUBLIC_ARANJE_BUILD_SHA") continue;
         offenders.push(`${file}: ${match[0]}`);
       }
     }
@@ -59,9 +65,12 @@ describe("backend secrets stay on the backend (spec 12.1)", () => {
     // The route handler, which never runs in a browser, and the one module
     // that reads the single public flag. Nothing else touches the environment.
     expect(readers.sort()).toEqual([
+      // The one module that reads the build's own commit, so the acceptance
+      // route can refuse a stale deploy. Carries no secret (2U-A handoff §4).
+      "src/lib/acceptance/build-id.ts",
       "src/app/api/copilot/route.ts",
       "src/lib/copilot/public-env.ts",
-    ]);
+    ].sort());
   });
 
   it("keeps every client component clear of the server modules", () => {
