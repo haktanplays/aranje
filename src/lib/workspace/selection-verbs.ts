@@ -41,6 +41,7 @@ export type SelectionActions = {
   onContinue(): void;
   onCopy(): void;
   onCut(): void;
+  onPaste(): void;
   onDuplicate(): void;
   onRepeat(): void;
   onDelete(): void;
@@ -53,6 +54,16 @@ export const DRAWER_VERBS: readonly {
 }[] = [
   { key: "onCopy", verb: "copy" },
   { key: "onCut", verb: "cut" },
+  /*
+   * "Yapıştır" was missing from this list, and that was the whole of the
+   * founder's clipboard defect (2U-B §3). The capability model had been
+   * offering it correctly all along — a range clipboard on an empty target
+   * answers `available`, deliberately ahead of the "no notes selected" rule —
+   * but the drawer draws this list, so a verb absent here can never appear
+   * however loudly the model offers it. Copying worked, the notice appeared,
+   * and then the one verb that would use it was not on the menu.
+   */
+  { key: "onPaste", verb: "paste" },
   { key: "onDuplicate", verb: "duplicate" },
   { key: "onRepeat", verb: "repeat" },
   { key: "onDelete", verb: "delete" },
@@ -130,6 +141,8 @@ function selectionVerbs(input: CoveredRunInput): SelectionVerbs | null {
     // Reading only: no commit, no write, no undo step.
     onCopy: time.handle.copy,
     onCut: () => time.handle.apply({ kind: "cut_selection" }),
+    /* Stages and previews; the write happens at "Uygula" in the sheet. */
+    onPaste: time.pasteHere,
     onDuplicate: () => time.handle.apply({ kind: "duplicate_selection" }),
     onRepeat: () => time.openSheet("repeat"),
     onDelete: () => time.handle.apply({ kind: "delete_selection" }),

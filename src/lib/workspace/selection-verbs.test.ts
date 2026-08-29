@@ -189,15 +189,57 @@ describe("the drawer offers only what this selection can do", () => {
   });
 
   /*
-   * The drawer's five entries and the model's verbs are named in one place,
-   * so an entry cannot end up drawn from a verb the model never answers for.
+   * The drawer's entries and the model's verbs are named in one place, so an
+   * entry cannot end up drawn from a verb the model never answers for.
    */
   it("names a verb the model answers for, for every drawer entry", () => {
     const offers = offersOf(covering(0, 240));
     const known: readonly SelectionVerb[] = offers.map((offer) => offer.verb);
-    expect(DRAWER_VERBS).toHaveLength(5);
     for (const entry of DRAWER_VERBS) {
       expect(known, entry.verb).toContain(entry.verb);
+    }
+  });
+
+  /*
+   * The other direction, which is the one that was missing (2U-B §3).
+   *
+   * The test above asks "is every drawer entry a real verb" — and it passed
+   * throughout, because the entries that existed were all real. What nothing
+   * asked was the converse: is every verb the model offers actually reachable?
+   * "Yapıştır" was not. The model answered `available` for it on an empty
+   * target with a full clipboard, the drawer had no entry for it, and the
+   * verb was simply undrawable — copy worked, the notice appeared, and the
+   * menu that should have used it did not mention it.
+   *
+   * So: the frozen row plus the drawer must between them reach every verb a
+   * range selection is offered. A verb the model offers and no surface draws
+   * is a promise the product does not keep.
+   */
+  it("leaves no offered verb without a surface to draw it on", () => {
+    /* What UI Contract v1 froze onto the row itself. */
+    const ROW_VERBS: readonly SelectionVerb[] = ["connect", "move_time", "extend"];
+    /*
+     * The eight movements live behind "Taşı" rather than on a verb of their
+     * own (`movement-menu.ts`). Named here rather than waved at, so a verb
+     * that stops being in that sheet stops counting as reachable.
+     */
+    const BEHIND_MOVE: readonly SelectionVerb[] = ["transpose", "restring"];
+    const reachable = new Set<SelectionVerb>([
+      ...ROW_VERBS,
+      ...BEHIND_MOVE,
+      ...DRAWER_VERBS.map((entry) => entry.verb),
+    ]);
+
+    /* Both clipboard states, because paste is only offered in one of them. */
+    for (const hasClipboard of [false, true]) {
+      for (const selection of [covering(0, 48), covering(0, 240), covering(0, 0)]) {
+        for (const offer of offersOf(selection, { hasClipboard })) {
+          expect(
+            reachable.has(offer.verb),
+            `${offer.verb} is offered (${offer.state.kind}) but no surface draws it`,
+          ).toBe(true);
+        }
+      }
     }
   });
 });

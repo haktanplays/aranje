@@ -23,7 +23,7 @@
  */
 import { useCallback, useMemo, useState } from "react";
 
-import { BAR_MESSAGES } from "@/lib/song/bar-messages";
+import { BAR_MESSAGES, needsReplaceConfirmation } from "@/lib/song/bar-messages";
 import {
   applyBarCommand,
   copyBars,
@@ -106,6 +106,30 @@ function summarise(
   return selection.scope === "track"
     ? `${trackName(selection.trackId)} · ${bars}`
     : `Tüm enstrümanlar · ${bars}`;
+}
+
+/**
+ * Which commands can be re-run as an overwrite.
+ *
+ * Exactly the ones whose `BarCommand` carries a `replace` flag the core reads.
+ * Written as a switch on the kind rather than a `"replace" in command` test,
+ * so adding a command that ought to be overwritable is a decision someone
+ * makes here rather than something that happens by the shape of a literal.
+ */
+function withReplace(command: BarCommand): BarCommand | null {
+  switch (command.kind) {
+    case "paste_bar_contents":
+    case "duplicate_bars":
+    case "repeat_bars":
+      return { ...command, replace: true };
+    default:
+      return null;
+  }
+}
+
+/** Whether an overwrite is a thing this command could be asked to do. */
+function acceptsReplace(command: BarCommand): boolean {
+  return withReplace(command) !== null;
 }
 
 /** What a staged command is about to do, in one sentence. */
@@ -258,18 +282,40 @@ export function useBarTransform(
     return {
       ok: false,
       text: BAR_MESSAGES[ghost.error.code],
-      canReplace: ghost.error.code === "target_occupied",
+      /*
+       * Two questions, and both have to say yes (2U-B §7). The core must
+       * consider this collision answerable by an overwrite, *and* the staged
+       * command must be one that carries a `replace` flag for it to answer
+       * with. Asking only the first was the defect: "Yerine koy" appeared on a
+       * move, whose collision no overwrite resolves, and pressing it re-ran
+       * the identical command and produced the identical refusal.
+       */
+      canReplace:
+        needsReplaceConfirmation(ghost.error.code) && acceptsReplace(pending),
     };
   }, [ghost, pending, selection]);
 
   const apply = useCallback(
     (options: { readonly replace?: boolean } = {}): boolean => {
       if (!selection || !pending) return false;
-      const command: BarCommand =
-        options.replace &&
-        (pending.kind === "paste_bar_contents")
-          ? { ...pending, replace: true }
-          : pending;
+      /*
+       * A confirmed overwrite is the same command again with the flag set —
+       * for every command that has one. The old version named a single kind,
+       * so a confirmed duplicate or repeat re-ran unchanged and refused for
+       * the second time (2U-B §7).
+       */
+      const overwriting = options.replace === true ? withReplace(pending) : null;
+      /*
+       * A replace nobody can honour is a bug in whatever offered the control,
+       * not something to swallow: returning quietly here would look exactly
+       * like the silent no-op this round removed.
+       */
+      if (options.replace === true && overwriting === null) {
+        throw new Error(
+          `"Yerine koy" ${pending.kind} için sunulmamalıydı: bu komut üzerine yazmayı desteklemiyor.`,
+        );
+      }
+      const command: BarCommand = overwriting ?? pending;
 
       const result = applyBarCommand(store.getSnapshot().song, selection, command);
       if (!result.ok) {

@@ -21,6 +21,8 @@ export const BAR_MESSAGES: Readonly<Record<BarTransformErrorCode, string>> = {
   wrong_track:
     "Bu sürümde ölçü içeriği yalnız kopyalandığı enstrümana yapıştırılabilir.",
   target_occupied: "Hedefte içerik var.",
+  move_target_occupied:
+    "Taşınacak yerde içerik var. Taşımak onun üzerine yazmaz; önce yer açman gerekiyor.",
   target_grid_incompatible:
     "Kopyalanan ölçü hedef ölçünün ritim aralığına tam oturmuyor.",
   section_would_be_empty: "Bir bölüm en az bir ölçü taşımalı.",
@@ -35,6 +37,14 @@ export const BAR_MESSAGES: Readonly<Record<BarTransformErrorCode, string>> = {
  *
  * Kept apart from the rest because they are not failures — they are questions,
  * and the screen answers them with a confirmation rather than an apology.
+ *
+ * The one authority on whether "Yerine koy" may be drawn (2U-B §7). It used to
+ * be re-derived at the screen as "the code is `target_occupied`", which was
+ * true of three different collisions and honoured by the core for only one of
+ * them: a move refused, re-refused identically when the reader confirmed, and
+ * left the dialog standing with the same sentence rewritten under it. That is
+ * why a move's collision now carries `move_target_occupied` — the two are
+ * different questions, and only this one has an answer.
  */
 export function needsReplaceConfirmation(code: BarTransformErrorCode): boolean {
   return code === "target_occupied";

@@ -21,8 +21,9 @@
  * `Bağla` opens the legato brush's own door — the brush is *used* on a covered
  * run, so it has to be one tap from a selection. `Taşı` opens the eight
  * movements, and `Devam` reaches from the end of what is held. Everything
- * else — copy, cut, duplicate, repeat, delete — lives behind `Daha fazla`,
- * because those are the operations you go looking for rather than reach for.
+ * else — copy, cut, paste, duplicate, repeat, delete — lives behind `Daha
+ * fazla`, because those are the operations you go looking for rather than
+ * reach for.
  *
  * No new command is invented here. Every one of these calls the same handle
  * the tall bar called.
@@ -53,6 +54,7 @@ import {
 const LABELS: Record<string, { readonly label: string; readonly hint: string }> = {
   copy: { label: "Kopyala", hint: "Seçimi panoya alır; şarkı değişmez." },
   cut: { label: "Kes", hint: "Seçimi panoya alır ve yerinden kaldırır." },
+  paste: { label: "Yapıştır", hint: "Panodakini buraya koyar; onaylamadan yazmaz." },
   duplicate: { label: "Çoğalt", hint: "Seçimin bir kopyasını hemen ardına koyar." },
   repeat: { label: "Tekrarla", hint: "Seçimi kaç kez tekrarlayacağını sorar." },
   delete: { label: "Sil", hint: "Seçili notaları kaldırır." },

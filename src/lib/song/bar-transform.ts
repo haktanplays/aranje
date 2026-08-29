@@ -113,12 +113,24 @@ export type BarCommand =
       readonly clipboard: BarClipboard;
       readonly side: "before" | "after";
     }
-  | { readonly kind: "duplicate_bars" }
+  | {
+      readonly kind: "duplicate_bars";
+      /**
+       * Overwrite the bars the copy lands on (2U-B §7).
+       *
+       * Track scope only, and never assumed — in the full scope a duplicate
+       * *inserts* bars rather than writing over any, so there is nothing for
+       * an overwrite to mean there.
+       */
+      readonly replace?: boolean;
+    }
   | {
       readonly kind: "repeat_bars";
       readonly mode:
         | { readonly kind: "count"; readonly count: number }
         | { readonly kind: "fill_to_section_end" };
+      /** As above: the track scope writes into bars that already exist. */
+      readonly replace?: boolean;
     }
   | { readonly kind: "insert_blank_bar_before" }
   | { readonly kind: "insert_blank_bar_after" }
@@ -136,7 +148,19 @@ export type BarTransformErrorCode =
   | "scope_mismatch"
   /** A track clipboard offered to a different track. */
   | "wrong_track"
+  /** Something is already written where this would land, and may be replaced. */
   | "target_occupied"
+  /**
+   * The same collision on a move, which no overwrite answers (2U-B §7).
+   *
+   * A separate code rather than a flag on the one above, because the
+   * difference is what the reader may *do* about it, and a screen that reads
+   * one code and offers a control the core will not honour is exactly how
+   * "Yerine koy" became a button that did nothing. Moving is a nudge; losing
+   * a bar of music to a nudge is not something to confirm, so this refuses
+   * and says why instead.
+   */
+  | "move_target_occupied"
   | "target_grid_incompatible"
   | "section_would_be_empty"
   | "bar_limit_reached"
@@ -504,6 +528,7 @@ function repeatTrack(
   selection: BarSelection & { scope: "track" },
   times: number,
   notice: string | null,
+  replace: boolean,
 ): BarTransformResult {
   const start = selection.startBarIndex;
   const end = selection.endBarIndex;
@@ -516,7 +541,10 @@ function repeatTrack(
       "Bölümün sonunda bu kadar tekrar için yer yok.",
     );
   }
-  if (trackRangeHasContent(section, selection.trackId, at, at + length * times - 1)) {
+  if (
+    !replace &&
+    trackRangeHasContent(section, selection.trackId, at, at + length * times - 1)
+  ) {
     return fail(
       "target_occupied",
       "Hedefte içerik var. Üzerine yazmak için “Yerine koy” gerekiyor.",
@@ -795,7 +823,7 @@ export function applyBarCommand(
     case "duplicate_bars": {
       if (selection.scope === "track") {
         // Content only: the copy lands in the bars that are already there.
-        return repeatTrack(song, section, selection, 1, notice);
+        return repeatTrack(song, section, selection, 1, notice, command.replace === true);
       }
       const refused = limitRefusal(song, section, length);
       if (refused) return refused;
@@ -835,7 +863,7 @@ export function applyBarCommand(
             "Bölümün sonunda tekrar için yer kalmadı.",
           );
         }
-        return repeatTrack(song, section, selection, times, notice);
+        return repeatTrack(song, section, selection, times, notice, command.replace === true);
       }
       if (command.mode.kind === "fill_to_section_end") {
         /*
@@ -893,7 +921,7 @@ export function applyBarCommand(
         const landing = left ? at : end + 1;
         if (trackRangeHasContent(section, selection.trackId, landing, landing)) {
           return fail(
-            "target_occupied",
+            "move_target_occupied",
             "Taşınacak yerde bu enstrümanın içeriği var.",
           );
         }

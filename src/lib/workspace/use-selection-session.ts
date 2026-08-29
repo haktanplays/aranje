@@ -80,6 +80,17 @@ export type TimeSelectionSession = {
   readonly barTicks: number;
   openSheet(kind: TransformSheetKind): void;
   startPasteFlow(): void;
+  /**
+   * Paste into what is already held (2U-B §3).
+   *
+   * The other way in — `startPasteFlow` — asks the reader to long-press a
+   * destination, which is the right question when nothing is selected. Once a
+   * target *is* selected that question has already been answered, and asking
+   * it again is how "Yapıştır" turned into a second gesture the reader had to
+   * discover. Staging only: the ghost is drawn, and nothing is written until
+   * "Uygula".
+   */
+  pasteHere(): void;
   applyStaged(): void;
   closeSheet(): void;
   /** Drop a waiting chain decision and the action behind it. Writes nothing. */
@@ -651,6 +662,18 @@ export function useSelectionSession(options: {
     setPasteAt({ kind: "choosing" });
   }, []);
 
+  /*
+   * The destination is where the selection starts, not where it ends: a paste
+   * writes forward from a point, and a reader who selected an empty bar means
+   * "here", not "somewhere inside here".
+   */
+  const pasteHere = useCallback(() => {
+    const selection = transform.selection;
+    if (!selection || !transform.hasClipboard) return;
+    setPasteAt({ kind: "at", ticks: selection.startTicks });
+    setSheet("paste");
+  }, [transform.hasClipboard, transform.selection]);
+
   return {
     time: {
       handle: transform,
@@ -668,6 +691,7 @@ export function useSelectionSession(options: {
       barTicks: steps.bar,
       openSheet: setSheet,
       startPasteFlow,
+      pasteHere,
       applyStaged,
       closeSheet,
       cancelChainDecision,

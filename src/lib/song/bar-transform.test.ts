@@ -18,6 +18,7 @@ import {
   type TrackBarsClipboard,
 } from "@/lib/song/bar-transform";
 import { expandBarSelection, type BarSelection } from "@/lib/song/bar-selection";
+import { BAR_MESSAGES, needsReplaceConfirmation } from "@/lib/song/bar-messages";
 import { regridMelodic } from "@/lib/song/bar-regrid";
 import {
   drumTrack,
@@ -943,5 +944,116 @@ describe("36. the drum lane is a track like any other", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.code).toBe("target_grid_incompatible");
+  });
+});
+
+/**
+ * The founder pressed "Yerine koy" on a move and nothing happened: the dialog
+ * stayed open and the same warning was written under it again (2U-B §7).
+ *
+ * Three collisions used to answer with one code, and only one of the three was
+ * ever honoured. These fix the boundary in both directions — the overwrite
+ * that must work, and the one that must never be offered.
+ */
+describe("29. an overwrite either works or is never offered", () => {
+  it("refuses a track duplicate onto occupied bars, and names it", () => {
+    const source = song([bar({ gtr: RIFF() }), bar({ gtr: OTHER() })]);
+    const result = applyBarCommand(source, trackSel(0, 0), {
+      kind: "duplicate_bars",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error.code).toBe("target_occupied");
+  });
+
+  it("lets the same duplicate through once the reader confirms", () => {
+    const source = song([bar({ gtr: RIFF() }), bar({ gtr: OTHER() })]);
+    const result = applyBarCommand(source, trackSel(0, 0), {
+      kind: "duplicate_bars",
+      replace: true,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    /* The target now holds the source, and the source is untouched. */
+    expect(slotsOf(result.song, 1, "gtr")).toEqual(RIFF());
+    expect(slotsOf(result.song, 0, "gtr")).toEqual(RIFF());
+    /* And nothing structural happened: a content duplicate keeps the length. */
+    expect(barCount(result.song)).toBe(2);
+  });
+
+  it("lets a confirmed repeat overwrite every bar it covers", () => {
+    const source = song([
+      bar({ gtr: RIFF() }),
+      bar({ gtr: OTHER() }),
+      bar({ gtr: OTHER() }),
+    ]);
+    const result = applyBarCommand(source, trackSel(0, 0), {
+      kind: "repeat_bars",
+      mode: { kind: "count", count: 2 },
+      replace: true,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(slotsOf(result.song, 1, "gtr")).toEqual(RIFF());
+    expect(slotsOf(result.song, 2, "gtr")).toEqual(RIFF());
+  });
+
+  it("leaves the other tracks alone when it overwrites", () => {
+    const source = song([
+      bar({ gtr: RIFF(), gtr2: OTHER() }),
+      bar({ gtr: OTHER(), gtr2: RIFF() }),
+    ]);
+    const result = applyBarCommand(source, trackSel(0, 0), {
+      kind: "duplicate_bars",
+      replace: true,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(slotsOf(result.song, 1, "gtr2")).toEqual(RIFF());
+    expect(slotsOf(result.song, 0, "gtr2")).toEqual(OTHER());
+  });
+
+  it("gives a blocked move its own code, which no overwrite answers", () => {
+    const source = song([bar({ gtr: RIFF() }), bar({ gtr: OTHER() })]);
+    const result = applyBarCommand(source, trackSel(0, 0), {
+      kind: "move_bars_right",
+    });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    /*
+     * Not `target_occupied`. A move that wrote over its neighbour would lose a
+     * bar of music to a gesture that reads like nudging, so the core refuses
+     * it — and the screen must be able to tell that refusal apart from the one
+     * a confirmation resolves, or it draws a button that cannot work.
+     */
+    expect(result.error.code).toBe("move_target_occupied");
+    expect(needsReplaceConfirmation(result.error.code)).toBe(false);
+  });
+
+  it("still moves when the neighbour is free", () => {
+    const source = song([bar({ gtr: RIFF() }), bar({})]);
+    const result = applyBarCommand(source, trackSel(0, 0), {
+      kind: "move_bars_right",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(slotsOf(result.song, 1, "gtr")).toEqual(RIFF());
+  });
+
+  it("refuses without writing: the song it was given is untouched", () => {
+    const source = song([bar({ gtr: RIFF() }), bar({ gtr: OTHER() })]);
+    const before = JSON.stringify(source);
+    applyBarCommand(source, trackSel(0, 0), { kind: "move_bars_right" });
+    applyBarCommand(source, trackSel(0, 0), { kind: "duplicate_bars" });
+    expect(JSON.stringify(source)).toBe(before);
+  });
+
+  it("has a sentence for every code the core can return", () => {
+    /* `Record` makes this a type error, but the move code is new enough to
+       be worth an assertion that its entry says something. */
+    expect(BAR_MESSAGES.move_target_occupied.length).toBeGreaterThan(10);
+    expect(BAR_MESSAGES.move_target_occupied).not.toBe(
+      BAR_MESSAGES.target_occupied,
+    );
   });
 });

@@ -9,12 +9,26 @@
  * two scopes is in play — "Ritim Gitar · 2 ölçü" and "Tüm enstrümanlar · 2
  * ölçü" are different enough operations that guessing is not acceptable.
  *
- * ## Only what works
+ * ## Only what works, and a door only where there is something behind it
  *
  * The "Daha fazla" sheet lists operations valid in the current scope and
  * nothing else. A menu of greyed-out entries is a menu that spends the
  * reader's attention on things they cannot do — and, worse, teaches them that
  * some of this app's controls are decorative.
+ *
+ * Which is why the door itself is conditional (2U-B §6). "Only what works"
+ * used to be true of the sheet and false of the button that opened it: on one
+ * instrument's bar with an empty clipboard every entry was filtered out and
+ * the door still stood there, so the reader was invited into an empty dialog.
+ * Both now read `bar-menu.ts` — one list, so the door cannot promise contents
+ * the sheet does not have.
+ *
+ * ## The verbs are named for the scope they act in
+ *
+ * "Sil" means two different things here. On one instrument's bars it empties
+ * a lane and the section keeps its length; on a whole measure it takes a bar
+ * out of the song. One word for both is how a reader ends up doing the second
+ * while believing they did the first, so each scope says which it is.
  *
  * Every mutation stages rather than commits. The strip below the buttons says
  * what would happen; "Uygula" is the single place a bar operation becomes a
@@ -30,8 +44,15 @@
  */
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
+import {
+  barMoreDoorShown,
+  barMoreEntries,
+  type BarMoreAction,
+} from "@/lib/song/bar-menu";
 import type { BarPreview } from "@/lib/song/use-bar-transform";
 import type { BarSelection } from "@/lib/song/bar-selection";
+
+export type { BarMoreAction };
 
 export type BarAction =
   | "copy"
@@ -42,14 +63,51 @@ export type BarAction =
   | "delete"
   | "more";
 
-const PRIMARY: readonly { readonly action: BarAction; readonly label: string }[] = [
-  { action: "copy", label: "Kopyala" },
-  { action: "cut", label: "Kes" },
-  { action: "duplicate", label: "Çoğalt" },
-  { action: "repeat", label: "Tekrarla" },
-  { action: "move", label: "Taşı" },
-  { action: "delete", label: "Sil" },
-  { action: "more", label: "Daha fazla" },
+/**
+ * What each verb is called, in the scope it is being offered in (2U-B §6).
+ *
+ * The same seven buttons, and deliberately the same seven — but "Sil" means
+ * two different things depending on what is held, and one word for both was
+ * how a reader could empty a guitar lane while believing they had removed a
+ * bar from the song. On one instrument's bars these verbs act on *content*:
+ * the bars stay, the section keeps its length, and no other track notices. On
+ * a whole measure they act on the bar itself.
+ *
+ * Copying and cutting are named once because they mean the same thing in
+ * both: what is taken is what is held, and the summary line above already
+ * says which of the two that is.
+ */
+const SCOPE_LABELS: Readonly<
+  Record<"track" | "full", Readonly<Record<BarAction, string>>>
+> = {
+  track: {
+    copy: "Kopyala",
+    cut: "Kes",
+    duplicate: "İçeriği çoğalt",
+    repeat: "Tekrarla",
+    move: "İçeriği taşı",
+    delete: "İçeriği sil",
+    more: "Daha fazla",
+  },
+  full: {
+    copy: "Kopyala",
+    cut: "Kes",
+    duplicate: "Ölçüyü çoğalt",
+    repeat: "Tekrarla",
+    move: "Ölçüyü taşı",
+    delete: "Ölçüyü kaldır",
+    more: "Daha fazla",
+  },
+};
+
+const PRIMARY: readonly BarAction[] = [
+  "copy",
+  "cut",
+  "duplicate",
+  "repeat",
+  "move",
+  "delete",
+  "more",
 ];
 
 /**
@@ -65,15 +123,6 @@ const REPEAT_COUNTS = [2, 3, 4] as const;
 export type BarRepeatChoice =
   | { readonly kind: "count"; readonly count: number }
   | { readonly kind: "fill_to_section_end" };
-
-export type BarMoreAction =
-  /** Open the meter-and-rhythm sheet for this bar (spec 13.20 §6). */
-  | "timing"
-  | "paste"
-  | "blank_before"
-  | "blank_after"
-  | "insert_before"
-  | "insert_after";
 
 export function BarActionBar({
   selection,
@@ -117,12 +166,20 @@ export function BarActionBar({
   onClear: () => void;
 }) {
   const full = selection.scope === "full";
+  const labels = SCOPE_LABELS[full ? "full" : "track"];
   /*
    * A clipboard from the other scope is not offered at all. The two are never
    * silently converted, so a track clipboard has nothing to say to a full
    * selection and the reader is not asked to find that out by trying.
    */
   const canPaste = hasClipboard && clipboardScope === selection.scope;
+
+  /*
+   * What is behind "Daha fazla" (2U-B §6). The door below and the sheet at
+   * the bottom read this same list, which is what makes an empty dialog
+   * unreachable rather than merely unlikely.
+   */
+  const moreEntries = barMoreEntries(selection.scope, canPaste);
 
   return (
     <div
@@ -228,20 +285,23 @@ export function BarActionBar({
       ) : null}
 
       <div className="grid grid-cols-4 gap-1 p-2">
-        {PRIMARY.map((entry) => (
+        {PRIMARY.filter(
+          /* A door with nothing behind it is not drawn at all (2U-B §6). */
+          (action) => action !== "more" || barMoreDoorShown(selection.scope, canPaste),
+        ).map((action) => (
           <button
-            key={entry.action}
+            key={action}
             type="button"
-            data-bar-action={entry.action}
-            onClick={() => onAction(entry.action)}
-            aria-label={entry.label}
+            data-bar-action={action}
+            onClick={() => onAction(action)}
+            aria-label={labels[action]}
             className="border-app flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight"
             style={{
               minHeight: MIN_TOUCH_TARGET_PX,
               minWidth: MIN_TOUCH_TARGET_PX,
             }}
           >
-            <span className="truncate">{entry.label}</span>
+            <span className="truncate">{labels[action]}</span>
           </button>
         ))}
       </div>
@@ -271,50 +331,26 @@ export function BarActionBar({
 
       <Sheet
         open={moreOpen}
-        title="Ölçü işlemleri"
+        title={full ? "Ölçü işlemleri" : "Bu enstrümanın ölçüsü"}
         onClose={onCloseMore}
         labelledBy="bar-more-title"
       >
         <div className="flex flex-col gap-2">
           {/*
-            How this bar is counted, alongside what can be done to its contents
-            (spec 13.20 §6). It sits first because it is the question a reader
+            "Ölçü ve ritim" sits first because it is the question a reader
             arrives with — "why does this bar have eight cells" — rather than
-            something they go looking for after deciding to edit.
+            something they go looking for after deciding to edit. It is in the
+            list above, in the order the list gives.
           */}
-          {full ? (
-            <SheetButton data-testid="bar-more-timing" onClick={() => onMore("timing")}>
-              Ölçü ve ritim
+          {moreEntries.map((entry) => (
+            <SheetButton
+              key={entry.action}
+              data-testid={`bar-more-${entry.action}`}
+              onClick={() => onMore(entry.action)}
+            >
+              {entry.label}
             </SheetButton>
-          ) : null}
-          {canPaste ? (
-            <SheetButton onClick={() => onMore("paste")}>Buraya yapıştır</SheetButton>
-          ) : null}
-          {/*
-            Structural operations belong to the whole bar. Offering them on a
-            single track's selection would be offering to change every other
-            track without saying so.
-          */}
-          {full ? (
-            <>
-              <SheetButton onClick={() => onMore("blank_before")}>
-                Önüne boş ölçü ekle
-              </SheetButton>
-              <SheetButton onClick={() => onMore("blank_after")}>
-                Arkasına boş ölçü ekle
-              </SheetButton>
-            </>
-          ) : null}
-          {full && canPaste ? (
-            <>
-              <SheetButton onClick={() => onMore("insert_before")}>
-                Kopyalanan ölçüleri önüne ekle
-              </SheetButton>
-              <SheetButton onClick={() => onMore("insert_after")}>
-                Kopyalanan ölçüleri arkasına ekle
-              </SheetButton>
-            </>
-          ) : null}
+          ))}
         </div>
       </Sheet>
 
