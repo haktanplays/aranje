@@ -18,6 +18,12 @@ import { guitarTrack, melodicBar, section, song } from "@/lib/song/fixtures";
 import type { MelodicSlot, Song } from "@/lib/song/schema";
 
 const TRACK = "gtr";
+/*
+ * A second instrument, because "covers every track" is unfalsifiable on a
+ * one-track song: taking the first track and taking all of them give the
+ * same answer, and a mutation that swapped one for the other stayed green.
+ */
+const OTHER = "bass";
 /** One 4/4 bar on a 1/16 grid: sixteen slots of 48 ticks, 768 to the bar. */
 const BAR = 768;
 
@@ -43,12 +49,20 @@ function fixture(): Song {
   const second: MelodicSlot[] = Array.from({ length: 16 }, () => null);
   second[0] = note("B3", 4, 0);
 
+  const bass: MelodicSlot[] = Array.from({ length: 16 }, () => null);
+  bass[0] = note("E1", 0, 0);
+
+  const withBass = (bar: ReturnType<typeof melodicBar>) => ({
+    ...bar,
+    slots: { ...bar.slots, [OTHER]: [...bass] },
+  });
+
   return song(
-    [guitarTrack({ id: TRACK })],
+    [guitarTrack({ id: TRACK }), guitarTrack({ id: OTHER })],
     [
       section([
-        melodicBar(TRACK, first, { resolution: 16 }),
-        melodicBar(TRACK, second, { resolution: 16 }),
+        withBass(melodicBar(TRACK, first, { resolution: 16 })),
+        withBass(melodicBar(TRACK, second, { resolution: 16 })),
       ]),
     ],
   );
@@ -96,6 +110,10 @@ describe("a span of time, described", () => {
 
   it("acts on exactly the one track the span belongs to", () => {
     expect(describeTimeSelection(subject, range(0, BAR))?.trackIds).toEqual([TRACK]);
+    /* The bass is playing in this bar and is deliberately not in the answer. */
+    expect(describeTimeSelection(subject, range(0, BAR))?.trackIds).not.toContain(
+      OTHER,
+    );
   });
 
   it("knows when its edges sit on bar lines and when they do not", () => {
@@ -134,7 +152,8 @@ describe("a run of bars, described", () => {
       endBarIndex: 0,
     });
     expect(found?.scope).toBe("measures");
-    expect(found?.trackIds).toEqual([TRACK]);
+    /* Every track in the bar, which is what `full` means. */
+    expect(found?.trackIds).toEqual([TRACK, OTHER]);
     expect(found?.wholeBars).toBe(true);
     expect(found?.startTicks).toBe(0);
     expect(found?.endTicks).toBe(BAR);
@@ -161,7 +180,8 @@ describe("a run of bars, described", () => {
       endBarIndex: 1,
     });
     expect(barCount(found!)).toBe(2);
-    expect(found?.onsetCount).toBe(4);
+    /* Four guitar onsets and the bass note in each of the two bars. */
+    expect(found?.onsetCount).toBe(6);
   });
 
   it("says nothing about a bar that is not there", () => {

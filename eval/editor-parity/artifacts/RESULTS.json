@@ -1,0 +1,622 @@
+{
+  "results": [
+    {
+      "viewport": "320x700",
+      "step": 1,
+      "name": "the row is the four verbs the contract froze",
+      "pass": true,
+      "detail": "[\"Bağla\",\"Taşı\",\"Devam\"] more=1 h=49"
+    },
+    {
+      "viewport": "320x700",
+      "step": 2,
+      "name": "a press covers a run and says what it holds",
+      "pass": true,
+      "detail": "toolbar=true summary=\"\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 3,
+      "name": "“Bağla” is greyed on one note, with a reason",
+      "pass": true,
+      "detail": "disabled=true label=\"Bağla — Bağlamak için en az iki nota gerekiyor.\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 4,
+      "name": "“Devam” is live and not pressed to begin with",
+      "pass": true,
+      "detail": "disabled=false pressed=false"
+    },
+    {
+      "viewport": "320x700",
+      "step": 5,
+      "name": "“Devam” arms without writing anything",
+      "pass": true,
+      "detail": "pressed=true writes=0 same=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 6,
+      "name": "armed, a press moves the end and leaves the start",
+      "pass": true,
+      "detail": "w 34→238 x 34→34 writes=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 7,
+      "name": "the arm puts itself down after one press",
+      "pass": true,
+      "detail": "pressed=false"
+    },
+    {
+      "viewport": "320x700",
+      "step": 8,
+      "name": "reaching back inside the run shrinks it",
+      "pass": true,
+      "detail": "w 238→102"
+    },
+    {
+      "viewport": "320x700",
+      "step": 9,
+      "name": "a two-note run offers “Bağla”",
+      "pass": true,
+      "detail": "disabled=false"
+    },
+    {
+      "viewport": "320x700",
+      "step": 10,
+      "name": "“Taşı” opens the sheet with its four kinds of motion",
+      "pass": true,
+      "detail": "modes=[1,1,1,1]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 11,
+      "name": "all eight movements are reachable, both ways",
+      "pass": true,
+      "detail": "found=16/16 missing="
+    },
+    {
+      "viewport": "320x700",
+      "step": 12,
+      "name": "a staged movement shows a ghost and writes nothing",
+      "pass": true,
+      "detail": "ghost=\"Uygulanmaya hazır.\" writes=0 same=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 13,
+      "name": "cancelling leaves the song byte-equal, chain question included",
+      "pass": true,
+      "detail": "ghostCancel(writes=0 same=true) asked=true chainCancel(writes=0 same=true)"
+    },
+    {
+      "viewport": "320x700",
+      "step": 14,
+      "name": "applying one movement is one write and one undo step",
+      "pass": true,
+      "detail": "writes=1 changed=true undo=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 15,
+      "name": "“Daha fazla” greys “Yapıştır” with the reason",
+      "pass": true,
+      "detail": "entries=5 paste=false"
+    },
+    {
+      "viewport": "320x700",
+      "step": 16,
+      "name": "the drawer offers no measure verb on a run of notes",
+      "pass": true,
+      "detail": "Seçimle ne yapılsın? | Seçimle ne yapılsın? | Kopyala | Seçimi panoya alır; şarkı değişmez"
+    },
+    {
+      "viewport": "320x700",
+      "step": 17,
+      "name": "copying writes nothing and adds no undo step",
+      "pass": true,
+      "detail": "writes=0 same=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 18,
+      "name": "cutting is exactly one write",
+      "pass": true,
+      "detail": "writes=1 changed=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 19,
+      "name": "a bar header takes the bar, and no time band appears",
+      "pass": true,
+      "detail": "summary=\"Gitar 1 · 1 ölçü\" bands=0 header=sec-1:0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 20,
+      "name": "a header press writes nothing, whatever it selects",
+      "pass": true,
+      "detail": "writes=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 21,
+      "name": "the page never scrolls sideways and targets stay 44px",
+      "pass": true,
+      "detail": "overflow=0 under44=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 22,
+      "name": "nothing threw, and one scheduler was ever built",
+      "pass": true,
+      "detail": "errors=0 contexts=0 "
+    },
+    {
+      "viewport": "390x844",
+      "step": 1,
+      "name": "the row is the four verbs the contract froze",
+      "pass": true,
+      "detail": "[\"Bağla\",\"Taşı\",\"Devam\"] more=1 h=49"
+    },
+    {
+      "viewport": "390x844",
+      "step": 2,
+      "name": "a press covers a run and says what it holds",
+      "pass": true,
+      "detail": "toolbar=true summary=\"\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 3,
+      "name": "“Bağla” is greyed on one note, with a reason",
+      "pass": true,
+      "detail": "disabled=true label=\"Bağla — Bağlamak için en az iki nota gerekiyor.\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 4,
+      "name": "“Devam” is live and not pressed to begin with",
+      "pass": true,
+      "detail": "disabled=false pressed=false"
+    },
+    {
+      "viewport": "390x844",
+      "step": 5,
+      "name": "“Devam” arms without writing anything",
+      "pass": true,
+      "detail": "pressed=true writes=0 same=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 6,
+      "name": "armed, a press moves the end and leaves the start",
+      "pass": true,
+      "detail": "w 34→238 x 34→34 writes=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 7,
+      "name": "the arm puts itself down after one press",
+      "pass": true,
+      "detail": "pressed=false"
+    },
+    {
+      "viewport": "390x844",
+      "step": 8,
+      "name": "reaching back inside the run shrinks it",
+      "pass": true,
+      "detail": "w 238→102"
+    },
+    {
+      "viewport": "390x844",
+      "step": 9,
+      "name": "a two-note run offers “Bağla”",
+      "pass": true,
+      "detail": "disabled=false"
+    },
+    {
+      "viewport": "390x844",
+      "step": 10,
+      "name": "“Taşı” opens the sheet with its four kinds of motion",
+      "pass": true,
+      "detail": "modes=[1,1,1,1]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 11,
+      "name": "all eight movements are reachable, both ways",
+      "pass": true,
+      "detail": "found=16/16 missing="
+    },
+    {
+      "viewport": "390x844",
+      "step": 12,
+      "name": "a staged movement shows a ghost and writes nothing",
+      "pass": true,
+      "detail": "ghost=\"Uygulanmaya hazır.\" writes=0 same=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 13,
+      "name": "cancelling leaves the song byte-equal, chain question included",
+      "pass": true,
+      "detail": "ghostCancel(writes=0 same=true) asked=true chainCancel(writes=0 same=true)"
+    },
+    {
+      "viewport": "390x844",
+      "step": 14,
+      "name": "applying one movement is one write and one undo step",
+      "pass": true,
+      "detail": "writes=1 changed=true undo=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 15,
+      "name": "“Daha fazla” greys “Yapıştır” with the reason",
+      "pass": true,
+      "detail": "entries=5 paste=false"
+    },
+    {
+      "viewport": "390x844",
+      "step": 16,
+      "name": "the drawer offers no measure verb on a run of notes",
+      "pass": true,
+      "detail": "Seçimle ne yapılsın? | Seçimle ne yapılsın? | Kopyala | Seçimi panoya alır; şarkı değişmez"
+    },
+    {
+      "viewport": "390x844",
+      "step": 17,
+      "name": "copying writes nothing and adds no undo step",
+      "pass": true,
+      "detail": "writes=0 same=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 18,
+      "name": "cutting is exactly one write",
+      "pass": true,
+      "detail": "writes=1 changed=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 19,
+      "name": "a bar header takes the bar, and no time band appears",
+      "pass": true,
+      "detail": "summary=\"Gitar 1 · 1 ölçü\" bands=0 header=sec-1:0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 20,
+      "name": "a header press writes nothing, whatever it selects",
+      "pass": true,
+      "detail": "writes=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 21,
+      "name": "the page never scrolls sideways and targets stay 44px",
+      "pass": true,
+      "detail": "overflow=0 under44=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 22,
+      "name": "nothing threw, and one scheduler was ever built",
+      "pass": true,
+      "detail": "errors=0 contexts=0 "
+    },
+    {
+      "viewport": "412x915",
+      "step": 1,
+      "name": "the row is the four verbs the contract froze",
+      "pass": true,
+      "detail": "[\"Bağla\",\"Taşı\",\"Devam\"] more=1 h=49"
+    },
+    {
+      "viewport": "412x915",
+      "step": 2,
+      "name": "a press covers a run and says what it holds",
+      "pass": true,
+      "detail": "toolbar=true summary=\"\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 3,
+      "name": "“Bağla” is greyed on one note, with a reason",
+      "pass": true,
+      "detail": "disabled=true label=\"Bağla — Bağlamak için en az iki nota gerekiyor.\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 4,
+      "name": "“Devam” is live and not pressed to begin with",
+      "pass": true,
+      "detail": "disabled=false pressed=false"
+    },
+    {
+      "viewport": "412x915",
+      "step": 5,
+      "name": "“Devam” arms without writing anything",
+      "pass": true,
+      "detail": "pressed=true writes=0 same=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 6,
+      "name": "armed, a press moves the end and leaves the start",
+      "pass": true,
+      "detail": "w 34→238 x 34→34 writes=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 7,
+      "name": "the arm puts itself down after one press",
+      "pass": true,
+      "detail": "pressed=false"
+    },
+    {
+      "viewport": "412x915",
+      "step": 8,
+      "name": "reaching back inside the run shrinks it",
+      "pass": true,
+      "detail": "w 238→102"
+    },
+    {
+      "viewport": "412x915",
+      "step": 9,
+      "name": "a two-note run offers “Bağla”",
+      "pass": true,
+      "detail": "disabled=false"
+    },
+    {
+      "viewport": "412x915",
+      "step": 10,
+      "name": "“Taşı” opens the sheet with its four kinds of motion",
+      "pass": true,
+      "detail": "modes=[1,1,1,1]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 11,
+      "name": "all eight movements are reachable, both ways",
+      "pass": true,
+      "detail": "found=16/16 missing="
+    },
+    {
+      "viewport": "412x915",
+      "step": 12,
+      "name": "a staged movement shows a ghost and writes nothing",
+      "pass": true,
+      "detail": "ghost=\"Uygulanmaya hazır.\" writes=0 same=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 13,
+      "name": "cancelling leaves the song byte-equal, chain question included",
+      "pass": true,
+      "detail": "ghostCancel(writes=0 same=true) asked=true chainCancel(writes=0 same=true)"
+    },
+    {
+      "viewport": "412x915",
+      "step": 14,
+      "name": "applying one movement is one write and one undo step",
+      "pass": true,
+      "detail": "writes=1 changed=true undo=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 15,
+      "name": "“Daha fazla” greys “Yapıştır” with the reason",
+      "pass": true,
+      "detail": "entries=5 paste=false"
+    },
+    {
+      "viewport": "412x915",
+      "step": 16,
+      "name": "the drawer offers no measure verb on a run of notes",
+      "pass": true,
+      "detail": "Seçimle ne yapılsın? | Seçimle ne yapılsın? | Kopyala | Seçimi panoya alır; şarkı değişmez"
+    },
+    {
+      "viewport": "412x915",
+      "step": 17,
+      "name": "copying writes nothing and adds no undo step",
+      "pass": true,
+      "detail": "writes=0 same=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 18,
+      "name": "cutting is exactly one write",
+      "pass": true,
+      "detail": "writes=1 changed=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 19,
+      "name": "a bar header takes the bar, and no time band appears",
+      "pass": true,
+      "detail": "summary=\"Gitar 1 · 1 ölçü\" bands=0 header=sec-1:0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 20,
+      "name": "a header press writes nothing, whatever it selects",
+      "pass": true,
+      "detail": "writes=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 21,
+      "name": "the page never scrolls sideways and targets stay 44px",
+      "pass": true,
+      "detail": "overflow=0 under44=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 22,
+      "name": "nothing threw, and one scheduler was ever built",
+      "pass": true,
+      "detail": "errors=0 contexts=0 "
+    },
+    {
+      "viewport": "1363x936",
+      "step": 1,
+      "name": "the row is the four verbs the contract froze",
+      "pass": true,
+      "detail": "[\"Bağla\",\"Taşı\",\"Devam\"] more=1 h=49"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 2,
+      "name": "a press covers a run and says what it holds",
+      "pass": true,
+      "detail": "toolbar=true summary=\"\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 3,
+      "name": "“Bağla” is greyed on one note, with a reason",
+      "pass": true,
+      "detail": "disabled=true label=\"Bağla — Bağlamak için en az iki nota gerekiyor.\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 4,
+      "name": "“Devam” is live and not pressed to begin with",
+      "pass": true,
+      "detail": "disabled=false pressed=false"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 5,
+      "name": "“Devam” arms without writing anything",
+      "pass": true,
+      "detail": "pressed=true writes=0 same=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 6,
+      "name": "armed, a press moves the end and leaves the start",
+      "pass": true,
+      "detail": "w 34→238 x 34→34 writes=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 7,
+      "name": "the arm puts itself down after one press",
+      "pass": true,
+      "detail": "pressed=false"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 8,
+      "name": "reaching back inside the run shrinks it",
+      "pass": true,
+      "detail": "w 238→102"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 9,
+      "name": "a two-note run offers “Bağla”",
+      "pass": true,
+      "detail": "disabled=false"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 10,
+      "name": "“Taşı” opens the sheet with its four kinds of motion",
+      "pass": true,
+      "detail": "modes=[1,1,1,1]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 11,
+      "name": "all eight movements are reachable, both ways",
+      "pass": true,
+      "detail": "found=16/16 missing="
+    },
+    {
+      "viewport": "1363x936",
+      "step": 12,
+      "name": "a staged movement shows a ghost and writes nothing",
+      "pass": true,
+      "detail": "ghost=\"Uygulanmaya hazır.\" writes=0 same=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 13,
+      "name": "cancelling leaves the song byte-equal, chain question included",
+      "pass": true,
+      "detail": "ghostCancel(writes=0 same=true) asked=true chainCancel(writes=0 same=true)"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 14,
+      "name": "applying one movement is one write and one undo step",
+      "pass": true,
+      "detail": "writes=1 changed=true undo=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 15,
+      "name": "“Daha fazla” greys “Yapıştır” with the reason",
+      "pass": true,
+      "detail": "entries=5 paste=false"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 16,
+      "name": "the drawer offers no measure verb on a run of notes",
+      "pass": true,
+      "detail": "Seçimle ne yapılsın? | Seçimle ne yapılsın? | Kopyala | Seçimi panoya alır; şarkı değişmez"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 17,
+      "name": "copying writes nothing and adds no undo step",
+      "pass": true,
+      "detail": "writes=0 same=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 18,
+      "name": "cutting is exactly one write",
+      "pass": true,
+      "detail": "writes=1 changed=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 19,
+      "name": "a bar header takes the bar, and no time band appears",
+      "pass": true,
+      "detail": "summary=\"Gitar 1 · 1 ölçü\" bands=0 header=sec-1:0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 20,
+      "name": "a header press writes nothing, whatever it selects",
+      "pass": true,
+      "detail": "writes=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 21,
+      "name": "the page never scrolls sideways and targets stay 44px",
+      "pass": true,
+      "detail": "overflow=0 under44=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 22,
+      "name": "nothing threw, and one scheduler was ever built",
+      "pass": true,
+      "detail": "errors=0 contexts=0 "
+    }
+  ],
+  "failed": 0,
+  "screenshots": 40
+}

@@ -242,14 +242,27 @@ describe("§11 · reaching from one bar to another", () => {
     expect(got.ok && got.selection).toEqual(full(1, 3));
   });
 
-  /* An inside-out range is not a range; the edge stops at the other one. */
-  it("never lets one edge cross the other", () => {
+  /*
+   * An inside-out range is not a range; the edge stops at the other one.
+   * Both edges, because they are two different clamps and a mutation that
+   * removed only the start one went unnoticed while this tested only the end.
+   */
+  it("never lets the end edge cross the start", () => {
     const got = resolveMeasureGesture(
       full(2, 3),
       { kind: "extend", sectionId: "s1", barIndex: 0, edge: "end" },
       BOUNDS,
     );
     expect(got.ok && got.selection).toEqual(full(2, 2));
+  });
+
+  it("never lets the start edge cross the end", () => {
+    const got = resolveMeasureGesture(
+      full(0, 1),
+      { kind: "extend", sectionId: "s1", barIndex: 3, edge: "start" },
+      BOUNDS,
+    );
+    expect(got.ok && got.selection).toEqual(full(1, 1));
   });
 
   it("keeps the scope it was given", () => {

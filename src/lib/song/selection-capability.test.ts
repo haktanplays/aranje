@@ -141,6 +141,25 @@ describe("what a run of notes offers", () => {
     }
   });
 
+  /*
+   * `canRun` is what a surface calls before it acts, so "disabled" has to
+   * read as "no" there and not only in the state. A mutation that let
+   * `canRun` answer yes for a greyed verb stayed green until this existed.
+   */
+  it("answers no to running a verb that is only greyed", () => {
+    const offers = selectionCapabilities(note, context());
+    expect(stateOf(note, "connect")?.kind).toBe("disabled");
+    expect(canRun(offers, "connect")).toBe(false);
+    expect(canRun(offers, "paste")).toBe(false);
+    expect(canRun(selectionCapabilities(measures(0, 0), context()), "move_bar_left")).toBe(
+      false,
+    );
+  });
+
+  it("answers no to a verb that is not offered at all", () => {
+    expect(canRun(selectionCapabilities(base, context()), "delete_bar")).toBe(false);
+  });
+
   it("disables paste with a reason when nothing has been copied", () => {
     expect(stateOf(base, "paste")).toEqual({
       kind: "disabled",

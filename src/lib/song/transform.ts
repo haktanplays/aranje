@@ -375,6 +375,14 @@ function resolveScope(
  * `structuredClone` rather than a hand-written copy of the one nested field:
  * a field added to `NoteEvent` later should be detached by default, not by
  * somebody remembering to come back here.
+ *
+ * On the write side this is defence in depth rather than something a test can
+ * observe: `settle()` deep-clones the song on the way out, so a slot that
+ * shared its notes with the clipboard inside this file shares nothing by the
+ * time a caller holds the result. That makes removing it an equivalent
+ * mutant, which the 2U-A probes say so rather than pretending otherwise — and
+ * it stays, because "the clone downstream happens to save us" is a property
+ * of another function that nobody here would notice losing.
  */
 const detachedNote = (note: NoteEvent): NoteEvent => structuredClone(note);
 

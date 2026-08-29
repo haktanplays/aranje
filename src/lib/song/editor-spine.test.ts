@@ -131,6 +131,39 @@ describe("§4 the clipboard is a snapshot, not a window", () => {
     expect(JSON.stringify(copied.clipboard)).toBe(before);
   });
 
+  /*
+   * Comparing what two pastes wrote cannot see aliasing — the values are
+   * equal either way. The only way to ask "is this the same object?" is to
+   * change one and look at the other.
+   */
+  it("hands the song its own notes, not the clipboard's", () => {
+    const copied = copySelection(fixture(), range(0, 48));
+    expect(copied.ok).toBe(true);
+    if (!copied.ok) return;
+
+    const pasted = applyTransform(fixture(), range(BAR, BAR + 48), {
+      kind: "paste_selection",
+      clipboard: copied.clipboard,
+      atTicks: BAR,
+    });
+    expect(pasted.ok).toBe(true);
+    if (!pasted.ok) return;
+
+    const clipboardBefore = JSON.stringify(copied.clipboard);
+    /* Reach into the written song and move a note somewhere impossible. */
+    for (const section of pasted.song.sections) {
+      for (const bar of section.bars) {
+        for (const slot of Object.values(bar.slots).flat()) {
+          if (!slot || slot === "-" || Array.isArray(slot)) continue;
+          for (const note of slot.notes) {
+            if (note.position) note.position.fret = 21;
+          }
+        }
+      }
+    }
+    expect(JSON.stringify(copied.clipboard)).toBe(clipboardBefore);
+  });
+
   it("gives two pastes of one clipboard notes that do not share a position", () => {
     const copied = copySelection(fixture(), range(0, 48));
     expect(copied.ok).toBe(true);
