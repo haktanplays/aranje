@@ -18,6 +18,7 @@
  * it never covers the string names, and below the playhead so the line saying
  * where the music is stays readable across it.
  */
+import { BAR_HEADER_HEIGHT } from "@/components/workspace/geometry";
 import { SELECTION_HANDLE_WIDTH_PX } from "@/lib/ui/interaction";
 import type { Section } from "@/lib/song/schema";
 import type { TimeSelection } from "@/lib/song/time-selection";
@@ -70,7 +71,7 @@ export function TimeSelectionBand({
           aria-label={edge === "start" ? "Seçim başlangıcını taşı" : "Seçim sonunu taşı"}
           onPointerDown={(event) => onHandleDown?.(edge, event)}
           /*
-           * Anchored to the top of the band, not its middle.
+           * Anchored near the top of the band, not its middle.
            *
            * The band is as tall as the staff — 178px on a six-string track —
            * and on a small phone the tab is not. At 320x700 with the action
@@ -78,9 +79,18 @@ export function TimeSelectionBand({
            * in the band sat below the visible area: laid out, findable by a
            * test, and untouchable by a finger. The top of the band is the one
            * part that is on screen whenever the band is.
+           *
+           * But not the *very* top (2U-B §8). The band covers the bar-header
+           * strip as well as the staff, and these two handles are 44px wide
+           * with half of each hanging outside the band — so on a one-slot
+           * selection they blanketed the header of the bar they were in, and
+           * a press meant to take hold of that measure was answered by a
+           * selection handle instead. The header belongs to the measure
+           * gesture; the handles start below it.
            */
-          className="pointer-events-auto absolute top-0 touch-none"
+          className="pointer-events-auto absolute touch-none"
           style={{
+            top: BAR_HEADER_HEIGHT,
             [edge === "start" ? "left" : "right"]: -SELECTION_HANDLE_WIDTH_PX / 2,
             width: SELECTION_HANDLE_WIDTH_PX,
             height: SELECTION_HANDLE_WIDTH_PX,

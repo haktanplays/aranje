@@ -5,7 +5,11 @@ import { describe, expect, it } from "vitest";
 
 import { guitarTrack, melodicBar, section, song } from "@/lib/song/fixtures";
 import type { MelodicSlot, Song } from "@/lib/song/schema";
-import { canRun, type SelectionVerb } from "@/lib/song/selection-capability";
+import {
+  canRun,
+  refusalFor,
+  type SelectionVerb,
+} from "@/lib/song/selection-capability";
 import { coveredRun, DRAWER_VERBS } from "@/lib/workspace/selection-verbs";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 
@@ -186,6 +190,30 @@ describe("the drawer offers only what this selection can do", () => {
     expect(
       canRun(offersOf(covering(0, 48), { hasClipboard: true }), "paste"),
     ).toBe(true);
+  });
+
+  /*
+   * The founder's target, and the case the other paste test does not reach
+   * (2U-B §3).
+   *
+   * The second bar of the fixture is empty, and an empty selection is exactly
+   * what a reader holds when they have chosen somewhere to paste *into*. Every
+   * other range verb is greyed there with "Seçimde nota yok." — paste must not
+   * be, because it is the one verb whose whole purpose is to put something
+   * where there is nothing.
+   */
+  it("offers paste on an empty target, where the other verbs are greyed", () => {
+    const emptyBar = covering(768, 816);
+    const offers = offersOf(emptyBar, { hasClipboard: true });
+    expect(canRun(offers, "paste")).toBe(true);
+    /* And the neighbours it must not be confused with. */
+    expect(canRun(offers, "copy")).toBe(false);
+    expect(canRun(offers, "delete")).toBe(false);
+    expect(refusalFor(offers, "copy")).toBe("Seçimde nota yok.");
+    /* With nothing copied it is greyed rather than gone. */
+    const withoutClipboard = offersOf(emptyBar);
+    expect(canRun(withoutClipboard, "paste")).toBe(false);
+    expect(refusalFor(withoutClipboard, "paste")).toBe("Panoda bir şey yok.");
   });
 
   /*

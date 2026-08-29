@@ -9,6 +9,8 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  acceptsReplace,
+  withReplace,
   applyBarCommand,
   copyBars,
   isStructuralBarCommand,
@@ -955,6 +957,14 @@ describe("36. the drum lane is a track like any other", () => {
  * ever honoured. These fix the boundary in both directions — the overwrite
  * that must work, and the one that must never be offered.
  */
+const EMPTY_CLIPBOARD = {
+  kind: "track_bars" as const,
+  trackId: "gtr",
+  barCount: 0,
+  widthTicks: 0,
+  bars: [],
+};
+
 describe("29. an overwrite either works or is never offered", () => {
   it("refuses a track duplicate onto occupied bars, and names it", () => {
     const source = song([bar({ gtr: RIFF() }), bar({ gtr: OTHER() })]);
@@ -1046,6 +1056,31 @@ describe("29. an overwrite either works or is never offered", () => {
     applyBarCommand(source, trackSel(0, 0), { kind: "move_bars_right" });
     applyBarCommand(source, trackSel(0, 0), { kind: "duplicate_bars" });
     expect(JSON.stringify(source)).toBe(before);
+  });
+
+  it("names exactly the commands an overwrite can be asked of", () => {
+    /*
+     * The list the screen reads before drawing "Yerine koy". Asserted
+     * command by command rather than by counting, because the failure this
+     * prevents is one *particular* command quietly dropping off the list —
+     * which is what left a confirmed duplicate re-running unchanged.
+     */
+    expect(acceptsReplace({ kind: "paste_bar_contents", clipboard: EMPTY_CLIPBOARD })).toBe(true);
+    expect(acceptsReplace({ kind: "duplicate_bars" })).toBe(true);
+    expect(
+      acceptsReplace({ kind: "repeat_bars", mode: { kind: "count", count: 2 } }),
+    ).toBe(true);
+    /* And the ones no overwrite answers. */
+    expect(acceptsReplace({ kind: "move_bars_left" })).toBe(false);
+    expect(acceptsReplace({ kind: "move_bars_right" })).toBe(false);
+    expect(acceptsReplace({ kind: "delete_bars" })).toBe(false);
+    expect(acceptsReplace({ kind: "insert_blank_bar_after" })).toBe(false);
+  });
+
+  it("sets the flag the core actually reads", () => {
+    const confirmed = withReplace({ kind: "duplicate_bars" });
+    expect(confirmed).toEqual({ kind: "duplicate_bars", replace: true });
+    expect(withReplace({ kind: "move_bars_right" })).toBeNull();
   });
 
   it("has a sentence for every code the core can return", () => {

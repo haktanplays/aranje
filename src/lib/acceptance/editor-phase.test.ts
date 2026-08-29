@@ -247,4 +247,45 @@ describe("a phase cannot pass on a neighbour's clean state", () => {
     expect(repeat?.requires).toContain("multiSelectedByDrag");
     expect(measures?.standingChecks).toContain("twoBarsHeld");
   });
+
+  /*
+   * What each step *claims* about writing, asserted on the step list itself
+   * (2U-B §11).
+   *
+   * `judgePhase` was well tested and the step list was not, so relabelling a
+   * phase — turning the paste's cancel screen from "nothing may be written"
+   * into "nothing is asserted" — changed the meaning of the run without
+   * failing anything. The phases whose whole point is that they write, or
+   * that they must not, are named here.
+   */
+  it("keeps every no-write promise the steps make", () => {
+    const expectations = new Map(
+      EDITOR_STEPS.flatMap((step) =>
+        step.phases.map((phase) => [phase.id, phase.expect.kind] as const),
+      ),
+    );
+    /* Looking, copying and choosing a target must leave the song alone. */
+    for (const id of ["copyNoWrite", "pasteCancelled", "restringRefused",
+      "scopeNoteSelected", "scopeTrackBarSelected", "scopeWholeMeasureSelected",
+      "moveIntoOccupiedRefused"]) {
+      expect(expectations.get(id), id).toBe("no_write");
+    }
+    /* And the ones that are the write must say exactly one. */
+    for (const id of ["pasteApplied", "moveStringThin", "moveStringThick",
+      "measureInserted", "measureDeleted", "multiRepeatOneHistory"]) {
+      expect(expectations.get(id), id).toBe("one_write");
+    }
+  });
+
+  it("leaves no phase without a promise to keep", () => {
+    /*
+     * `free` asserts nothing about the song, so it is the one expectation
+     * that can hide a step doing anything at all. Exactly one screen is
+     * allowed it: the last look around before the result.
+     */
+    const free = EDITOR_STEPS.flatMap((step) =>
+      step.phases.filter((phase) => phase.expect.kind === "free").map((p) => p.id),
+    );
+    expect(free).toEqual(["contractLooked"]);
+  });
 });

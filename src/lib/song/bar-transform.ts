@@ -169,6 +169,35 @@ export type BarTransformErrorCode =
   | "transform_failed";
 
 /**
+ * The same command again, as a confirmed overwrite — or null (2U-B §7).
+ *
+ * Exactly the commands whose `BarCommand` carries a `replace` flag this file
+ * reads. It lives here rather than in the hook that draws the button because
+ * it is a fact about the commands, and because a screen deciding for itself
+ * which refusals an overwrite answers is precisely how "Yerine koy" became a
+ * control that re-ran an identical command and produced an identical refusal.
+ *
+ * A switch rather than a `"replace" in command` test, so making a new command
+ * overwritable is a decision someone takes here instead of something that
+ * happens by the shape of an object literal.
+ */
+export function withReplace(command: BarCommand): BarCommand | null {
+  switch (command.kind) {
+    case "paste_bar_contents":
+    case "duplicate_bars":
+    case "repeat_bars":
+      return { ...command, replace: true };
+    default:
+      return null;
+  }
+}
+
+/** Whether an overwrite is a thing this command could be asked to do. */
+export function acceptsReplace(command: BarCommand): boolean {
+  return withReplace(command) !== null;
+}
+
+/**
  * Does this command change the *shape* of a section?
  *
  * Shape means how many bars the section has and which bar is which. Only a

@@ -294,3 +294,57 @@ describe("what a surface draws", () => {
     expect(notes.some((verb) => bars.includes(verb))).toBe(false);
   });
 });
+
+/**
+ * What one instrument's bars may not be offered (2U-B §6).
+ *
+ * The gap this fills: the suite checked that a *note* selection hides the
+ * measure verbs, and that a measure selection offers them, but never that the
+ * two measure scopes differ. Emptying the full-scope list therefore changed
+ * nothing any test could see — and the list is the whole of the rule that
+ * stops one instrument being handed a way to make the song longer.
+ */
+describe("the two measure scopes are offered different verbs", () => {
+  const measures = (barScope: "track" | "full"): SelectionDescriptor => ({
+    ...base,
+    scope: "measures",
+    wholeBars: true,
+    barScope,
+    barRange: { startBarIndex: 1, endBarIndex: 1 },
+  });
+  const context = {
+    hasClipboard: false,
+    clipboardScope: null,
+    sectionBarCount: 4,
+  };
+
+  it("greys the bar-adding verbs on one instrument's bars", () => {
+    const offers = selectionCapabilities(measures("track"), context);
+    for (const verb of ["insert_bar_before", "insert_bar_after", "timing"] as const) {
+      expect(canRun(offers, verb), verb).toBe(false);
+      expect(refusalFor(offers, verb), verb).toBe(
+        "Bu işlem için ölçünün tamamı seçilmeli.",
+      );
+    }
+  });
+
+  it("offers them on the whole measure", () => {
+    const offers = selectionCapabilities(measures("full"), context);
+    for (const verb of ["insert_bar_before", "insert_bar_after", "timing"] as const) {
+      expect(canRun(offers, verb), verb).toBe(true);
+    }
+  });
+
+  it("still offers the content verbs to one instrument", () => {
+    /*
+     * The other half: emptying a lane, copying it, nudging it are all honest
+     * one-instrument operations, and greying them would be as wrong as
+     * offering the structural ones.
+     */
+    const offers = selectionCapabilities(measures("track"), context);
+    for (const verb of ["delete_bar", "duplicate_bar", "move_bar_right"] as const) {
+      expect(canRun(offers, verb), verb).toBe(true);
+    }
+  });
+});
+

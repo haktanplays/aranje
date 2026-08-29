@@ -25,8 +25,10 @@ import { useCallback, useMemo, useState } from "react";
 
 import { BAR_MESSAGES, needsReplaceConfirmation } from "@/lib/song/bar-messages";
 import {
+  acceptsReplace,
   applyBarCommand,
   copyBars,
+  withReplace,
   type BarClipboard,
   type BarCommand,
 } from "@/lib/song/bar-transform";
@@ -116,22 +118,6 @@ function summarise(
  * so adding a command that ought to be overwritable is a decision someone
  * makes here rather than something that happens by the shape of a literal.
  */
-function withReplace(command: BarCommand): BarCommand | null {
-  switch (command.kind) {
-    case "paste_bar_contents":
-    case "duplicate_bars":
-    case "repeat_bars":
-      return { ...command, replace: true };
-    default:
-      return null;
-  }
-}
-
-/** Whether an overwrite is a thing this command could be asked to do. */
-function acceptsReplace(command: BarCommand): boolean {
-  return withReplace(command) !== null;
-}
-
 /** What a staged command is about to do, in one sentence. */
 function describe(command: BarCommand, selection: BarSelection): string {
   const bars = barSelectionLength(selection);

@@ -56,6 +56,22 @@ import {
 } from "@/lib/ui/bar-range-drag";
 import { LONG_PRESS_MS } from "@/lib/ui/interaction";
 
+/**
+ * How close to the scroller's edge the finger must get before the view
+ * follows it, and how fast it then travels.
+ *
+ * Both matter on a phone and neither does on a desktop. A bar of sixteenth
+ * notes is 578px wide; a 320px screen cannot show two of them, so without the
+ * view following the finger there is no way to reach the neighbouring bar at
+ * all and the whole gesture would be a desktop feature wearing touch clothes.
+ * The band is a thumb's width so it can be found without aiming, and the step
+ * is small enough that a bar takes about a second to cross — fast enough to be
+ * worth doing, slow enough to stop on the bar you meant.
+ */
+const EDGE_BAND_PX = 44;
+const EDGE_STEP_PX = 12;
+const EDGE_TICK_MS = 16;
+
 /** The attributes a surface puts on each bar so the drag can hit-test it. */
 export const BAR_INDEX_ATTRIBUTE = "data-bar-drag-index";
 export const BAR_SECTION_ATTRIBUTE = "data-bar-drag-section";
@@ -117,6 +133,19 @@ export function useBarRangeDrag(input: {
   const { enabled, onPress, onReach } = input;
   const state = useRef<BarRangeDrag>(IDLE);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** The horizontal scroller the drag is happening inside, once it owns. */
+  const scroller = useRef<Element | null>(null);
+  const edgeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  /**
+   * Where the finger was when it last reported in.
+   *
+   * Needed because the finger stops moving long before the gesture ends: a
+   * reader reaching for the next bar puts their thumb at the edge of the
+   * screen and *waits* for the view to come to them. No pointer events are
+   * produced while they wait, so the reach has to be re-read against the
+   * scrolling view from the tick rather than from an event that never comes.
+   */
+  const lastPoint = useRef<{ x: number; y: number } | null>(null);
   /* Mirrored into state only so the surface can draw and test the ownership. */
   const [owning, setOwning] = useState(false);
 
@@ -139,11 +168,76 @@ export function useBarRangeDrag(input: {
     timer.current = null;
   }, []);
 
+  const stopEdgeScroll = useCallback(() => {
+    if (edgeTimer.current !== null) clearInterval(edgeTimer.current);
+    edgeTimer.current = null;
+  }, []);
+
+  /**
+   * Follow the finger when it reaches the edge of the view.
+   *
+   * A repeating tick rather than one nudge per pointermove: a finger parked in
+   * the edge band stops producing move events, and a reader holding still at
+   * the right-hand edge is asking for more bars, not for the scrolling to
+   * stop. The tick ends the moment the finger leaves the band or the drag
+   * lets go, and it can only ever run while the drag owns the pointer.
+   */
+  const edgeScroll = useCallback(
+    (clientX: number) => {
+      const node = scroller.current;
+      if (!node) return;
+      const box = node.getBoundingClientRect();
+      const direction =
+        clientX < box.left + EDGE_BAND_PX
+          ? -1
+          : clientX > box.right - EDGE_BAND_PX
+            ? 1
+            : 0;
+      if (direction === 0) {
+        stopEdgeScroll();
+        return;
+      }
+      if (edgeTimer.current !== null) return;
+      edgeTimer.current = setInterval(() => {
+        if (!ownsPointer(state.current) || !scroller.current) {
+          stopEdgeScroll();
+          return;
+        }
+        scroller.current.scrollLeft += direction * EDGE_STEP_PX;
+        /*
+         * And re-read what is now under the stationary finger. Scrolling
+         * without this moved the picture and left the selection behind: the
+         * next bar slid under the thumb and the range still said one bar,
+         * because nothing had asked again.
+         */
+        const point = lastPoint.current;
+        if (!point) return;
+        const next = moveDrag(
+          state.current,
+          state.current.kind === "idle" ? -1 : state.current.pointerId,
+          point.x,
+          point.y,
+          barAtPoint(point.x, point.y),
+        );
+        if (next === state.current) return;
+        state.current = next;
+        const range = dragRange(next);
+        if (range && next.kind === "owning") {
+          latest.current.onReach(range.startBarIndex, range.endBarIndex, next.sectionId);
+        }
+      }, EDGE_TICK_MS);
+    },
+    [stopEdgeScroll],
+  );
+
   const release = useCallback(() => {
     stopTimer();
+    stopEdgeScroll();
+    scroller.current = null;
+    lastPoint.current = null;
     state.current = releaseDrag();
     setOwning(false);
-  }, [stopTimer]);
+  }, [stopEdgeScroll, stopTimer]);
 
   /*
    * The scroll suppression, alive only while the drag owns the pointer. The
@@ -191,6 +285,7 @@ export function useBarRangeDrag(input: {
             /* A pointer that has already ended cannot be captured; the
                release below is the only thing that had to happen anyway. */
           }
+          scroller.current = target.closest(".overflow-x-auto");
           setOwning(true);
           latest.current.onPress(next.anchorBar, next.sectionId);
         }, LONG_PRESS_MS);
@@ -199,6 +294,8 @@ export function useBarRangeDrag(input: {
       onPointerMove(event) {
         const before = state.current;
         if (before.kind === "idle") return;
+        lastPoint.current = { x: event.clientX, y: event.clientY };
+        if (before.kind === "owning") edgeScroll(event.clientX);
         const next = moveDrag(
           before,
           event.pointerId,
@@ -226,7 +323,7 @@ export function useBarRangeDrag(input: {
       onPointerUp: release,
       onPointerCancel: release,
     }),
-    [enabled, release, stopTimer],
+    [edgeScroll, enabled, release, stopTimer],
   );
 
   return { handlers, owning };
