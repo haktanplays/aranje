@@ -22,6 +22,10 @@ const COMPONENTS = "src/components/workspace";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
+/** Source with its comments taken out, for rules about what the code *does*. */
+const code = (text: string) =>
+  text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
 const sources = readdirSync(COMPONENTS)
   .filter((name) => name.endsWith(".tsx"))
   .map((name) => ({ name, text: read(`${COMPONENTS}/${name}`) }));
@@ -65,20 +69,103 @@ describe("only one selection model answers a hold", () => {
 describe("a spent press does not leave a live click behind", () => {
   it("the hook disowns the click that follows a press it fired", () => {
     const hook = read("src/lib/ui/use-long-press.ts");
-    expect(hook).toContain("swallowNextClick");
-    // The call site, not just the definition: a function nobody calls is not
-    // a fix, and a probe that deletes the call has to be able to turn this red.
+    // The call site, not just the import: a function nobody calls is not a
+    // fix, and a probe that deletes the call has to be able to turn this red.
+    // What the call then *does* is `swallow-click.test.ts`, which can watch it
+    // register and unregister rather than read that it says it will.
+    expect(hook).toContain('from "@/lib/ui/swallow-click"');
     expect(hook).toMatch(/if \(spent\) swallowNextClick\(\);/);
-    // Capture phase, or React's root listener has already handed it on.
-    expect(hook).toMatch(/addEventListener\("click", stop, \{ capture: true/);
-    expect(hook).toContain("stopPropagation");
-    // And it has to expire on its own: a touch does not always click.
-    expect(hook).toContain("removeEventListener");
-    expect(hook).toContain("CLICK_AFTER_PRESS_MS");
   });
 
   it("a cancelled gesture is not treated as a spent one", () => {
     const hook = read("src/lib/ui/use-long-press.ts");
     expect(hook).toMatch(/onPointerCancel: cancel/);
+  });
+});
+
+/**
+ * The declaration that decides the gesture on Android (2U-C §1).
+ *
+ * A wiring property, so no pure test can reach it: `declaredTouchAction` can
+ * be entirely correct while a component writes its own string next to the call
+ * and wins. That is not hypothetical — it is exactly how the header came to
+ * declare `pan-x` while the ownership ranking said the drag owned the pointer.
+ */
+describe("the bar header reserves the axis its gesture needs", () => {
+  const HEADERS = ["FrettedBarBlock.tsx", "DrumBarBlock.tsx"] as const;
+
+  it("asks the ownership ranking rather than writing the value itself", () => {
+    for (const name of HEADERS) {
+      const block = read(`${COMPONENTS}/${name}`);
+      expect(block, name).toContain("declaredTouchAction(headerOwner)");
+      expect(block, name).toContain('from "@/lib/tab/pointer-ownership"');
+    }
+  });
+
+  it("no component hands the horizontal pan away any more", () => {
+    // The regression itself. `pan-x` on a surface this gesture starts from is
+    // the compositor being promised the axis before the page can ask for it.
+    // Comments are stripped first, because the reason it must not come back is
+    // written in one of them and would otherwise fail its own rule.
+    for (const source of sources) {
+      expect(code(source.text), source.name).not.toContain("pan-x");
+    }
+  });
+
+  it("nothing switches scrolling off wholesale", () => {
+    // §2: no global `touch-action: none`. The duration handle declares it on
+    // itself through a Tailwind class on its own 44px grab area; a scroller,
+    // a canvas or a page-level element doing the same would be the blunt fix
+    // this round is not allowed to take.
+    for (const source of sources) {
+      if (source.name === "DurationControl.tsx") continue;
+      expect(code(source.text), source.name).not.toMatch(/touchAction:\s*"none"/);
+    }
+    // The one exception, and it is conditional on the handle owning the drag
+    // rather than declared for the element outright.
+    const handle = read(`${COMPONENTS}/DurationControl.tsx`);
+    expect(handle).toMatch(/stopsPageScroll\(owner\) \? "none" : undefined/);
+    const scroller = read(`${COMPONENTS}/TabCanvas.tsx`);
+    expect(scroller).not.toContain("touch-none");
+  });
+});
+
+/**
+ * The seek a finished drag would otherwise leave behind (2U-C §2).
+ *
+ * A bar block is a `<button>` that seeks, and a touch that ends produces a
+ * click. Holding bar 1 and reaching to bar 3 therefore ended with the playhead
+ * jumping to whatever the finger lifted over, and `open_bar` carrying the view
+ * there — the founder's moving surface, arriving after the gesture rather than
+ * during it, and out of reach of any `touch-action`.
+ */
+describe("a bar-range drag does not seek the bar it ends on", () => {
+  const hook = read("src/lib/ui/use-bar-range-drag.ts");
+
+  it("disowns the click, and only when the drag really took hold", () => {
+    expect(hook).toContain('from "@/lib/ui/swallow-click"');
+    expect(hook).toMatch(/if \(release\(\)\) swallowNextClick\(\);/);
+  });
+
+  it("the two endings are not the same handler", () => {
+    // They differ in what they owe the reader: a lift stands, an interruption
+    // is taken back. Pointing both at one function is how the difference
+    // disappears.
+    expect(hook).toContain("onPointerUp: finish");
+    expect(hook).toContain("onPointerCancel: abandon");
+    expect(hook).toMatch(/if \(release\(\)\) latest\.current\.onCancel\?\.\(\);/);
+  });
+
+  it("a cancelled drag gives back the bars it had selected", () => {
+    const session = read("src/lib/workspace/use-selection-session.ts");
+    expect(session).toMatch(/onCancel: clearBars,/);
+  });
+
+  it("the click hook and the drag share one implementation", () => {
+    // Two copies of a 400ms window is two windows the day one is tuned.
+    const press = read("src/lib/ui/use-long-press.ts");
+    expect(press).toContain('from "@/lib/ui/swallow-click"');
+    expect(press).not.toContain("function swallowNextClick");
+    expect(hook).not.toContain("function swallowNextClick");
   });
 });

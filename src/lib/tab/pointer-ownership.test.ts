@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { pointerOwner, stopsPageScroll } from "@/lib/tab/pointer-ownership";
+import {
+  declaredTouchAction,
+  pointerOwner,
+  stopsPageScroll,
+  type PointerOwner,
+} from "@/lib/tab/pointer-ownership";
 
 describe("pointerOwner", () => {
   it("gives the press to the selection when nothing is held", () => {
@@ -139,5 +144,72 @@ describe("a press on a bar's header", () => {
       "pen",
       "selection",
     ]);
+  });
+});
+
+/**
+ * What each owner promises the compositor before the finger lands (2U-C §1).
+ *
+ * The declaration is the only half of the ownership story that has to be right
+ * *before* anything happens, and it is the half the Android failure turned on:
+ * a header that declared `pan-x` had given the horizontal pan away before the
+ * long press could ask for it, and every `preventDefault` after that was
+ * arguing with a decision already made.
+ */
+describe("what an element declares before the gesture starts", () => {
+  const OWNERS: readonly PointerOwner[] = [
+    "bar_range",
+    "duration",
+    "measure",
+    "pen",
+    "selection",
+    "none",
+  ];
+
+  it("never grants the horizontal pan to a header that wants to own it", () => {
+    // The whole regression, stated as the thing that must not come back: any
+    // value naming `pan-x` hands the compositor this gesture's axis, and
+    // `auto` names both.
+    for (const owner of ["measure", "bar_range"] as const) {
+      expect(declaredTouchAction(owner), owner).toBe("pan-y");
+    }
+  });
+
+  it("keeps the header alive as a vertical scroll surface", () => {
+    // `none` would work for the drag and make a 22px strip across the whole
+    // tab that the page cannot be scrolled from. The narrower promise is the
+    // one that costs the reader nothing.
+    expect(declaredTouchAction("measure")).not.toBe("none");
+  });
+
+  it("reserves both axes for the duration handle alone", () => {
+    expect(declaredTouchAction("duration")).toBe("none");
+    for (const owner of OWNERS) {
+      if (owner === "duration") continue;
+      expect(declaredTouchAction(owner), owner).not.toBe("none");
+    }
+  });
+
+  it("leaves the ordinary staff scrolling exactly as it did", () => {
+    // A pen, a time selection and a surface with neither are all just staff.
+    // If any of them started declaring an axis, this would be the global
+    // `touch-action` §2 forbids, arrived at one element at a time.
+    for (const owner of ["pen", "selection", "none"] as const) {
+      expect(declaredTouchAction(owner), owner).toBe("auto");
+    }
+  });
+
+  it("says the same thing for the whole life of the gesture", () => {
+    // `measure` at pointerdown and `bar_range` half a second later are the
+    // same finger. A declaration that changed between them would be read once
+    // and ignored thereafter, which is how it would fail silently.
+    expect(declaredTouchAction("bar_range")).toBe(declaredTouchAction("measure"));
+  });
+
+  it("agrees with stopsPageScroll about who is holding something", () => {
+    for (const owner of OWNERS) {
+      if (!stopsPageScroll(owner)) continue;
+      expect(declaredTouchAction(owner), owner).not.toBe("auto");
+    }
   });
 });

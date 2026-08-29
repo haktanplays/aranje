@@ -89,19 +89,49 @@ export function pointerOwner(input: {
 /**
  * Whether this element should refuse to let the browser scroll the page.
  *
- * `touch-action: none` is applied to the handle and to nothing else — a page
+ * The reader is holding something and moving it, so a page that moved as well
+ * would be moving the thing they are trying to aim at. It is true of a
+ * duration handle and of a recognised bar range, and of nothing else: a page
  * that cannot be scrolled is a worse product than a handle that occasionally
  * loses a drag, so the smaller hammer is the right one.
- *
- * A recognised bar-range drag says yes too, and for the same reason the
- * handle does: the reader is holding something and moving it, so a page that
- * moved as well would be moving the thing they are trying to aim at. The
- * difference is *when* — the handle knows at pointerdown and can express it as
- * a style, while a bar range only knows half a second in, by which time
- * `touch-action` has already been read. `use-bar-range-drag.ts` therefore
- * suppresses each `touchmove` for the life of the sequence instead. Neither
- * path switches anything off globally.
  */
 export function stopsPageScroll(owner: PointerOwner): boolean {
   return owner === "duration" || owner === "bar_range";
+}
+
+/**
+ * What this element declares to the compositor before the gesture starts
+ * (2U-C §1).
+ *
+ * The one thing that has to be got right on Android, and the one thing the
+ * per-event suppression in `use-bar-range-drag.ts` cannot do on its own.
+ *
+ * `touch-action` is latched when a gesture *begins*. It is a promise made to
+ * the compositor about which pans it may run without waiting to hear from the
+ * page — so a value it names is a pan that happens whether or not the page
+ * later calls `preventDefault`. The bar header used to declare `pan-x`, which
+ * handed away precisely the axis this gesture exists to own: a finger that
+ * started moving sideways on a bar number was the scroller's before the long
+ * press had finished, and the drag then spent its life asking for a sequence
+ * that had already been given to someone else. Measured on a 412x915 Android
+ * Chrome emulation, a sideways swipe from a bar header scrolled the tab 205px
+ * under a gesture that was supposed to be selecting bars.
+ *
+ * So the permission is withdrawn rather than fought. `pan-y` keeps the header
+ * from being a dead strip — the page still scrolls vertically from it — and
+ * reserves only the horizontal axis, and only on the 22px band that exists to
+ * start this gesture. The staff below declares nothing, so it scrolls both
+ * ways exactly as it always did; nothing is switched off globally, and
+ * `touch-action: none` still belongs to the duration handle alone.
+ *
+ * Here rather than in the two bar blocks that spell it out, because a
+ * declaration duplicated in two components is a declaration that will disagree
+ * with itself the day one of them is tuned — which is how it came to be
+ * `pan-x` in the first place.
+ */
+export function declaredTouchAction(
+  owner: PointerOwner,
+): "auto" | "none" | "pan-y" {
+  if (owner === "duration") return "none";
+  return owner === "measure" || owner === "bar_range" ? "pan-y" : "auto";
 }

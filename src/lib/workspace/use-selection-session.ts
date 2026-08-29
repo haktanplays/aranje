@@ -691,8 +691,20 @@ export function useSelectionSession(options: {
     [barTransform, boundsOf, track],
   );
 
+  const clearBars = useCallback(() => {
+    barTransform.clear();
+    setBarSheet(null);
+  }, [barTransform]);
+
   const barRange = useBarRangeDrag({
     enabled: track !== undefined,
+    /*
+     * A cancelled drag takes its own selection back with it (2U-C §2). The
+     * press has already put bars on the screen by the time the platform
+     * interrupts, and leaving them there would hand the reader an action bar
+     * for a range they never finished choosing.
+     */
+    onCancel: clearBars,
     onPress: rangePress,
     onReach: rangeReach,
   });
@@ -766,11 +778,6 @@ export function useSelectionSession(options: {
     },
     [barTransform],
   );
-
-  const clearBars = useCallback(() => {
-    barTransform.clear();
-    setBarSheet(null);
-  }, [barTransform]);
 
   const resetAll = useCallback(() => {
     transform.clear();

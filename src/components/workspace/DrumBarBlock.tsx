@@ -15,6 +15,10 @@ import {
   BAR_SECTION_ATTRIBUTE,
   type BoundBarDrag,
 } from "@/lib/ui/use-bar-range-drag";
+import {
+  declaredTouchAction,
+  pointerOwner,
+} from "@/lib/tab/pointer-ownership";
 import { drumRhythm, type DrumBar } from "@/lib/tab/timeline";
 import type { DrumPiece } from "@/lib/song/schema";
 
@@ -57,6 +61,17 @@ export function DrumBarBlock({
   /* One reading of the bar's rhythm, shared by the strip and the guide. */
   const states = drumRhythm(bar);
   const barPress = barDrag?.handlers;
+  /*
+   * A drum header wants one finger for exactly one reason, so the ranking has
+   * only the drag to weigh — but it is asked anyway, so the axis this header
+   * reserves cannot drift away from the axis the fretted one reserves.
+   */
+  const headerOwner = pointerOwner({
+    barRangeOwning: barDrag?.owning === true,
+    onMeasureHeader: barDrag !== undefined,
+    penArmed: false,
+    selectionAvailable: false,
+  });
 
   return (
     <button
@@ -83,7 +98,11 @@ export function DrumBarBlock({
         }}
         data-tab-bar-header={bar.key}
         className="flex items-center gap-1.5 overflow-hidden px-1.5"
-        style={{ height: BAR_HEADER_HEIGHT, touchAction: "pan-x" }}
+        /* The same declaration the fretted header makes, from the same place. */
+        style={{
+          height: BAR_HEADER_HEIGHT,
+          touchAction: declaredTouchAction(headerOwner),
+        }}
       >
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}

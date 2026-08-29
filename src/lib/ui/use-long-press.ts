@@ -19,40 +19,14 @@
  * Nothing here calls `preventDefault` on the pointer events themselves.
  * Blocking the default would make the tab stop scrolling under a finger that
  * was only ever going to scroll it. The *click* the browser makes afterwards
- * is a different matter — see `swallowNextClick`.
+ * is a different matter — see `swallow-click.ts`, which the bar-range drag
+ * needs for the same reason and therefore no longer lives here.
  */
 import { useCallback, useEffect, useRef } from "react";
 
-import { CLICK_AFTER_PRESS_MS, LONG_PRESS_MS } from "@/lib/ui/interaction";
+import { LONG_PRESS_MS } from "@/lib/ui/interaction";
+import { swallowNextClick } from "@/lib/ui/swallow-click";
 import { movedTo, press, type PressState } from "@/lib/ui/long-press-machine";
-
-/**
- * Throw away the click a finished long press leaves behind.
- *
- * A touch that ends produces a click, and the browser aims that click at
- * whatever is under the finger *when it lands* — not at what was under it when
- * the finger went down. A long press that opens a toolbar therefore hands the
- * toolbar a click on whichever of its buttons happens to appear under the
- * finger. That is not a hypothetical: at 320x700 the selection toolbar puts
- * "Taşı" exactly where a note in the lower half of the tab is, so selecting
- * that note opened the move sheet on its own.
- *
- * The press has already been spent on the selection, so the click means
- * nothing and is stopped in the capture phase, before React's root listener
- * and therefore before any control's handler runs. The window is short and
- * expires on its own, because a click does not always follow a touch.
- */
-function swallowNextClick(): void {
-  if (typeof document === "undefined") return;
-  const stop = (event: MouseEvent) => {
-    event.preventDefault();
-    event.stopPropagation();
-  };
-  document.addEventListener("click", stop, { capture: true, once: true });
-  setTimeout(() => {
-    document.removeEventListener("click", stop, { capture: true });
-  }, CLICK_AFTER_PRESS_MS);
-}
 
 /**
  * The callback for a press that is turned off.

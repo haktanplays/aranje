@@ -28,7 +28,10 @@ import type { GlyphState } from "@/lib/tab/glyph-model";
 import { glyphStateFor, legatoNotes } from "@/lib/tab/glyph-state";
 import { measureGestureWanted } from "@/lib/song/measure-gesture";
 import type { PenGhost } from "@/lib/tab/pen-ghost";
-import { pointerOwner } from "@/lib/tab/pointer-ownership";
+import {
+  declaredTouchAction,
+  pointerOwner,
+} from "@/lib/tab/pointer-ownership";
 import { buildRhythmTail } from "@/lib/tab/rhythm-tail";
 import { rowOffset } from "@/components/workspace/staff";
 import { frettedRhythm, type FrettedBar } from "@/lib/tab/timeline";
@@ -374,13 +377,14 @@ export function FrettedBarBlock({
         data-tab-bar-header={bar.key}
         className="flex items-center gap-1.5 overflow-hidden px-1.5"
         /*
-         * Still `pan-x` (2U-B §8). The page must remain scrollable from a bar
-         * number, because most presses on one are a scroll — the drag takes
-         * the sequence half a second later, by suppressing each `touchmove`
-         * for as long as it owns the pointer, which is the only mechanism that
-         * can express a decision made after the gesture began.
+         * Asked of the ownership ranking rather than written here (2U-C §1).
+         * The header declaring one axis and the ranking believing another is
+         * exactly how this became `pan-x` and cost the founder the gesture.
          */
-        style={{ height: BAR_HEADER_HEIGHT, touchAction: "pan-x" }}
+        style={{
+          height: BAR_HEADER_HEIGHT,
+          touchAction: declaredTouchAction(headerOwner),
+        }}
       >
         <span className="text-muted/70 text-[10px] tabular-nums">
           {bar.barNumber}

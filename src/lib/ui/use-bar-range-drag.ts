@@ -5,24 +5,24 @@
  *
  * The decisions all live in `bar-range-drag.ts`; this holds the timer, keeps
  * the browser out of the sequence once it is ours, and gives it all back
- * afterwards. Three details are worth the words:
+ * afterwards. Four details are worth the words:
  *
- * ## Why a non-passive `touchmove` and not `touch-action: none`
+ * ## Two mechanisms, because one of them cannot arrive in time
  *
- * `touch-action` is read when a gesture *begins*. Setting it after the finger
- * is already down changes nothing — the browser has decided — so it cannot
- * express "this became a selection half a second in". Setting it up front
- * would express the opposite of what §8 asks for: the page must still be
- * scrollable from a bar number, because that is what most presses on a bar
- * number are.
+ * The declaration comes first, and it is the one that matters on a phone.
+ * `declaredTouchAction` puts `pan-y` on the header before any finger lands, so
+ * the compositor never takes the horizontal pan this gesture needs. Without
+ * it there is nothing here to fix: a scroll the compositor has already
+ * started belongs to the compositor, and `preventDefault` arrives to find the
+ * decision made. That was the founder's Android failure (2U-C §1).
  *
- * So the scroll is refused per-event instead, by a `touchmove` listener
- * registered `{ passive: false }` for exactly as long as the drag owns the
- * pointer. It is on `document` because the finger will leave the bar it
- * started on — that is the entire gesture — and a listener bound to the
- * element would stop suppressing the moment the reach began. Nothing global is
- * switched off: the listener exists only between recognition and release, and
- * it asks `ownsPointer` before preventing anything.
+ * The suppression comes second, and covers what a declaration cannot. The
+ * finger leaves the header within a few hundred milliseconds — that is the
+ * entire gesture — and lands on a staff that must stay scrollable when nobody
+ * is dragging. So for exactly as long as the drag owns the pointer, a
+ * `document` listener registered `{ passive: false }` refuses each
+ * `touchmove`. Nothing global is switched off: it exists only between
+ * recognition and release, and asks `ownsPointer` before preventing anything.
  *
  * ## Why `pointercancel` matters more than `pointerup`
  *
@@ -32,6 +32,16 @@
  * into a permanent one. Both paths run the same release, and the listener is
  * torn down by the effect's own cleanup as well, so a component that unmounts
  * mid-drag cannot leave it behind either.
+ *
+ * ## Why the click at the end has to be destroyed
+ *
+ * A bar block is a seek button, and a touch that ends produces a click. So
+ * without `swallowNextClick` the reader holds bar 1, reaches to bar 3, lifts —
+ * and the playhead jumps to whatever they lifted over and drags the view
+ * there. That is the same complaint arriving one frame after the gesture
+ * instead of during it, and no `touch-action` prevents it, because it is not a
+ * scroll. Only a recognised drag spends its click; a press that never became
+ * one is still an ordinary tap on a bar and must still seek.
  *
  * ## Why the bar under the finger comes from `elementFromPoint`
  *
@@ -55,6 +65,7 @@ import {
   type BarRangeDrag,
 } from "@/lib/ui/bar-range-drag";
 import { LONG_PRESS_MS } from "@/lib/ui/interaction";
+import { swallowNextClick } from "@/lib/ui/swallow-click";
 
 /**
  * How close to the scroller's edge the finger must get before the view
@@ -129,8 +140,20 @@ export function useBarRangeDrag(input: {
   onPress(barIndex: number, sectionId: string): void;
   /** The finger reached to another bar: the run is now these two ends. */
   onReach(startBarIndex: number, endBarIndex: number, sectionId: string): void;
+  /**
+   * The platform took a drag that had already been recognised (2U-C §2).
+   *
+   * Separate from release because the two endings mean opposite things.
+   * `pointerup` is the reader saying "these bars"; `pointercancel` is the
+   * reader saying nothing at all, and leaving a range selected on their behalf
+   * would put an action bar over a song they never chose to act on. So the
+   * gesture takes back what it put on the screen. It fires only for a
+   * recognised drag — a press that never became one has selected nothing to
+   * clear.
+   */
+  onCancel?(): void;
 }): BarRangeGesture {
-  const { enabled, onPress, onReach } = input;
+  const { enabled, onCancel, onPress, onReach } = input;
   const state = useRef<BarRangeDrag>(IDLE);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   /** The horizontal scroller the drag is happening inside, once it owns. */
@@ -158,9 +181,9 @@ export function useBarRangeDrag(input: {
    * the only window in which this could be stale, and the effect closes it on
    * every commit within that window.
    */
-  const latest = useRef({ onPress, onReach });
+  const latest = useRef({ onCancel, onPress, onReach });
   useEffect(() => {
-    latest.current = { onPress, onReach };
+    latest.current = { onCancel, onPress, onReach };
   });
 
   const stopTimer = useCallback(() => {
@@ -230,14 +253,35 @@ export function useBarRangeDrag(input: {
     [stopEdgeScroll],
   );
 
-  const release = useCallback(() => {
+  /**
+   * Put everything back, and say whether the gesture had actually taken hold.
+   *
+   * The teardown is identical for both endings — a timer, a tick, a scroller,
+   * a point and the state itself, none of which may outlive the finger — so
+   * there is one function for it. What differs is what the *caller* then owes
+   * the reader, and that is decided from this return value rather than from
+   * the state, which by then has already been cleared.
+   */
+  const release = useCallback((): boolean => {
+    const owned = ownsPointer(state.current);
     stopTimer();
     stopEdgeScroll();
     scroller.current = null;
     lastPoint.current = null;
     state.current = releaseDrag();
     setOwning(false);
+    return owned;
   }, [stopEdgeScroll, stopTimer]);
+
+  /* The finger lifted: the range stands, and the click it leaves is spent. */
+  const finish = useCallback(() => {
+    if (release()) swallowNextClick();
+  }, [release]);
+
+  /* The platform took the gesture: the range was never chosen, so it goes. */
+  const abandon = useCallback(() => {
+    if (release()) latest.current.onCancel?.();
+  }, [release]);
 
   /*
    * The scroll suppression, alive only while the drag owns the pointer. The
@@ -253,7 +297,7 @@ export function useBarRangeDrag(input: {
     return () => document.removeEventListener("touchmove", block);
   }, [owning]);
 
-  useEffect(() => release, [release]);
+  useEffect(() => () => void release(), [release]);
 
   const handlers = useCallback(
     (barIndex: number, sectionId: string): BarRangeDragHandlers => ({
@@ -320,10 +364,10 @@ export function useBarRangeDrag(input: {
         }
       },
 
-      onPointerUp: release,
-      onPointerCancel: release,
+      onPointerUp: finish,
+      onPointerCancel: abandon,
     }),
-    [edgeScroll, enabled, release, stopTimer],
+    [abandon, edgeScroll, enabled, finish, release, stopTimer],
   );
 
   return { handlers, owning };
