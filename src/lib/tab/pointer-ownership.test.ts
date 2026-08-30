@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   declaredTouchAction,
+  declaresBeforeGesture,
   pointerOwner,
   stopsPageScroll,
   type PointerOwner,
@@ -211,5 +212,90 @@ describe("what an element declares before the gesture starts", () => {
       if (!stopsPageScroll(owner)) continue;
       expect(declaredTouchAction(owner), owner).not.toBe("auto");
     }
+  });
+});
+
+/**
+ * One press, one owner, in one order (2U-C §3).
+ *
+ * The brief asks for the ranking to be explicit and in one place, and the two
+ * range drags are what make that non-obvious: they are the only entries that
+ * are not decided at pointerdown.
+ */
+describe("the note range in the ranking", () => {
+  it("keeps its own pointer once it has been recognised", () => {
+    // The reason it sits above every place and every tool: by the time this
+    // is true the reader has held still for half a second and started moving,
+    // and a gesture that lost its pointer then would not be a ranking.
+    expect(
+      pointerOwner({
+        noteRangeOwning: true,
+        onDurationHandle: true,
+        onMeasureHeader: true,
+        penArmed: true,
+        selectionAvailable: true,
+      }),
+    ).toBe("note_range");
+  });
+
+  it("cannot be reached with a pen in hand", () => {
+    // Not by outranking it — by never arming. The staff's press belongs to
+    // the pen, so `noteRangeOwning` is never true while one is up, and the
+    // brief's "pen above note range" is satisfied where it is observable.
+    expect(
+      pointerOwner({ penArmed: true, selectionAvailable: true }),
+    ).toBe("pen");
+  });
+
+  it("stops the page scrolling, like every other held thing", () => {
+    expect(stopsPageScroll("note_range")).toBe(true);
+  });
+
+  it("is the one owner that cannot promise the compositor anything", () => {
+    // Stated rather than hidden. Its gesture starts on the staff body — the
+    // surface every reader scrolls the tab from — so it cannot reserve an
+    // axis before knowing which gesture this is, and falls back on refusing
+    // each touchmove once it owns. That is the half of §1 a browser emulation
+    // cannot settle, and it is what the physical handoff is pointed at.
+    expect(declaresBeforeGesture("note_range")).toBe(false);
+    expect(declaredTouchAction("note_range")).toBe("auto");
+    // The bar range has no such excuse: it starts on a strip that exists for
+    // nothing else.
+    expect(declaresBeforeGesture("bar_range")).toBe(true);
+  });
+
+  it("still gives every combination exactly one owner", () => {
+    const owners = new Set<string>();
+    for (const noteRangeOwning of [true, false]) {
+      for (const barRangeOwning of [true, false]) {
+        for (const onDurationHandle of [true, false]) {
+          for (const onMeasureHeader of [true, false]) {
+            for (const penArmed of [true, false]) {
+              for (const selectionAvailable of [true, false]) {
+                owners.add(
+                  pointerOwner({
+                    noteRangeOwning,
+                    barRangeOwning,
+                    onDurationHandle,
+                    onMeasureHeader,
+                    penArmed,
+                    selectionAvailable,
+                  }),
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+    expect([...owners].sort()).toEqual([
+      "bar_range",
+      "duration",
+      "measure",
+      "none",
+      "note_range",
+      "pen",
+      "selection",
+    ]);
   });
 });

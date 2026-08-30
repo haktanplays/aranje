@@ -11,61 +11,42 @@
  * grew handles for it — and unreachable with the gesture a musician actually
  * tries.
  *
- * ## Why the ownership is staged rather than declared
+ * ## What is here and what is not
  *
- * `pointer-ownership.ts` decides who owns a press *before* it happens, from
- * what the reader is holding. That works for a pen and for a duration handle,
- * because both are known at pointerdown. This one cannot be: at the moment the
- * finger lands, "select bars" and "scroll the tab" are the same event, and
- * committing to either would break the other. The reader has told us nothing
- * yet.
+ * Telling this hold apart from a scroll is `press-drag.ts`, because the note
+ * range is told apart from a scroll in exactly the same way and two copies of
+ * that rule would be two rules. What is left here is the part that is about
+ * bars: which one is the anchor, which one the finger has reached to, and what
+ * run those two describe.
  *
- * So it is decided by *time*, in three states:
- *
- * - **pressing** — the finger is down and it might still be a scroll. Nothing
- *   is owned, nothing is prevented, and the browser may take the gesture at
- *   any moment.
- * - **owning** — the threshold elapsed with the finger still inside the
- *   tolerance. Since it did not move, no scroll has begun, so from here the
- *   sequence can be claimed without ever having interrupted one.
- * - **idle** — nothing in flight.
- *
- * The move tolerance is what makes the middle transition safe: a finger that
- * wandered has already given the gesture to the scroller, and this machine
- * abandons rather than competing for it.
- *
- * ## What it deliberately does not know
- *
- * Not the DOM, not the Song, not the selection. It answers "which bar is the
- * anchor, which bar is the reach, and does this pointer sequence belong to us"
- * — and the surface turns that into a `MeasureGesture` for
- * `resolveMeasureGesture` to answer. Contiguity is not enforced here because
- * it cannot be violated: a range is an anchor and a reach, and every bar
- * between them is in it.
+ * Not the DOM, not the Song, not the selection. The surface turns the answer
+ * into a `MeasureGesture` for `resolveMeasureGesture`. Contiguity is not
+ * enforced because it cannot be violated: a range is an anchor and a reach,
+ * and every bar between them is in it.
  */
-import { LONG_PRESS_MOVE_TOLERANCE_PX } from "@/lib/ui/interaction";
+import {
+  IDLE as PRESS_IDLE,
+  beginPress,
+  holding,
+  ownsPress,
+  recognise,
+  releasePress,
+  wandered,
+  type PressDrag,
+} from "@/lib/ui/press-drag";
 
-export type BarRangeDrag =
-  | { readonly kind: "idle" }
-  | {
-      readonly kind: "pressing";
-      readonly pointerId: number;
-      readonly startX: number;
-      readonly startY: number;
-      readonly barIndex: number;
-      readonly sectionId: string;
-    }
-  | {
-      readonly kind: "owning";
-      readonly pointerId: number;
-      /** The bar the press landed on. It does not move for the whole drag. */
-      readonly anchorBar: number;
-      /** The bar the finger is over now. Either side of the anchor. */
-      readonly reachBar: number;
-      readonly sectionId: string;
-    };
+/** The two ends of the run, as the gesture currently understands them. */
+type BarReach = {
+  /** The bar the press landed on. It does not move for the whole drag. */
+  readonly anchorBar: number;
+  /** The bar the finger is over now. Either side of the anchor. */
+  readonly reachBar: number;
+  readonly sectionId: string;
+};
 
-export const IDLE: BarRangeDrag = { kind: "idle" };
+export type BarRangeDrag = PressDrag<BarReach>;
+
+export const IDLE: BarRangeDrag = PRESS_IDLE;
 
 /** A finger went down on a bar header. Nothing is owned yet. */
 export function pressBar(
@@ -75,20 +56,21 @@ export function pressBar(
   barIndex: number,
   sectionId: string,
 ): BarRangeDrag {
-  return { kind: "pressing", pointerId, startX: x, startY: y, barIndex, sectionId };
+  return beginPress(pointerId, x, y, {
+    anchorBar: barIndex,
+    reachBar: barIndex,
+    sectionId,
+  });
 }
 
 /**
  * The finger moved.
  *
  * While pressing, moving past the tolerance hands the gesture to the scroller
- * for good — a finger that settles again does not get the press back, because
- * by then the page has already moved and the reader is scrolling.
- *
- * While owning, a move is a reach: the range grows or shrinks to wherever the
- * finger is. `barUnderPointer` is null when the finger has left the bars
- * entirely, and the reach simply stays where it was rather than snapping to an
- * edge the reader did not choose.
+ * for good. While owning, a move is a reach: the range grows or shrinks to
+ * wherever the finger is. `barUnderPointer` is null when the finger has left
+ * the bars entirely, and the reach simply stays where it was rather than
+ * snapping to an edge the reader did not choose.
  */
 export function moveDrag(
   state: BarRangeDrag,
@@ -98,13 +80,7 @@ export function moveDrag(
   barUnderPointer: { readonly barIndex: number; readonly sectionId: string } | null,
 ): BarRangeDrag {
   if (state.kind === "idle" || state.pointerId !== pointerId) return state;
-
-  if (state.kind === "pressing") {
-    const wandered =
-      Math.abs(x - state.startX) >= LONG_PRESS_MOVE_TOLERANCE_PX ||
-      Math.abs(y - state.startY) >= LONG_PRESS_MOVE_TOLERANCE_PX;
-    return wandered ? IDLE : state;
-  }
+  if (state.kind === "pressing") return wandered(state, x, y) ? IDLE : state;
 
   if (barUnderPointer === null) return state;
   /*
@@ -114,58 +90,36 @@ export function moveDrag(
    * stays where it was rather than silently naming the wrong bar; the reader
    * sees the range stop at the boundary, which is what the boundary is.
    */
-  if (barUnderPointer.sectionId !== state.sectionId) return state;
-  return barUnderPointer.barIndex === state.reachBar
+  if (barUnderPointer.sectionId !== state.held.sectionId) return state;
+  return barUnderPointer.barIndex === state.held.reachBar
     ? state
-    : { ...state, reachBar: barUnderPointer.barIndex };
+    : holding(state, { ...state.held, reachBar: barUnderPointer.barIndex });
 }
 
-/**
- * The threshold elapsed. This is the moment ownership is taken.
- *
- * Only from `pressing`, and only for the pointer that started it: a timer that
- * outlived its gesture must not claim a sequence that belongs to something
- * else.
- */
+/** The threshold elapsed. This is the moment ownership is taken. */
 export function recogniseDrag(
   state: BarRangeDrag,
   pointerId: number,
 ): BarRangeDrag {
-  if (state.kind !== "pressing" || state.pointerId !== pointerId) return state;
-  return {
-    kind: "owning",
-    pointerId: state.pointerId,
-    anchorBar: state.barIndex,
-    reachBar: state.barIndex,
-    sectionId: state.sectionId,
-  };
+  return recognise(state, pointerId);
 }
 
-/**
- * The finger lifted, or the platform took the gesture.
- *
- * One function for `pointerup` and `pointercancel` alike, because the state
- * that must be left behind is the same: none. A cleanup that only ran on
- * `pointerup` would leave the page unscrollable whenever the browser
- * interrupted a drag, which is exactly the failure mode this is meant to
- * prevent rather than cause.
- */
+/** The finger lifted, or the platform took the gesture. */
 export function releaseDrag(): BarRangeDrag {
-  return IDLE;
+  return releasePress();
 }
 
-/**
- * Does this pointer sequence belong to the bar-range selection?
- *
- * The one question the surface asks before preventing a scroll. False while
- * pressing — on purpose, and this is the whole of item 1 in §8: until the
- * threshold has elapsed the reader may still be scrolling, and a page that
- * refused to move from the instant a finger touched a bar number would be a
- * worse product than one that occasionally loses a drag.
- */
+/** Does this pointer sequence belong to the bar-range selection? */
 export function ownsPointer(state: BarRangeDrag, pointerId?: number): boolean {
-  if (state.kind !== "owning") return false;
-  return pointerId === undefined || state.pointerId === pointerId;
+  return ownsPress(state, pointerId);
+}
+
+/** Which bar the drag took hold of, or null before it took hold of one. */
+export function dragAnchor(
+  state: BarRangeDrag,
+): { readonly barIndex: number; readonly sectionId: string } | null {
+  if (state.kind !== "owning") return null;
+  return { barIndex: state.held.anchorBar, sectionId: state.held.sectionId };
 }
 
 /** The run being held, low index first, whichever way the finger travelled. */
@@ -174,7 +128,7 @@ export function dragRange(
 ): { readonly startBarIndex: number; readonly endBarIndex: number } | null {
   if (state.kind !== "owning") return null;
   return {
-    startBarIndex: Math.min(state.anchorBar, state.reachBar),
-    endBarIndex: Math.max(state.anchorBar, state.reachBar),
+    startBarIndex: Math.min(state.held.anchorBar, state.held.reachBar),
+    endBarIndex: Math.max(state.held.anchorBar, state.held.reachBar),
   };
 }

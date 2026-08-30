@@ -46,20 +46,13 @@
  */
 export type PointerOwner =
   /**
-   * A bar-range drag that has already been recognised (2U-B §8).
+   * A note-range drag already recognised on this pointer (2U-C §3).
    *
-   * The only owner in this list that is not decided at pointerdown. Every
-   * other entry answers "what is the reader holding", which is known before
-   * the finger lands; this one answers "what did this gesture turn out to be",
-   * and it cannot be known until the long-press threshold has elapsed. Until
-   * then the press is an ordinary `measure` press and the page still scrolls,
-   * which is the point — a bar number that could not be scrolled past would be
-   * a worse product than one that occasionally loses a drag.
-   *
-   * It outranks the rest because by the time it is true the reader has held
-   * still for half a second on a bar header, which is not something anyone
-   * does by accident.
+   * Holding a note and reaching across its slots, once the threshold has
+   * elapsed.
    */
+  | "note_range"
+  /** A bar-range drag already recognised on this pointer (2U-B §8). */
   | "bar_range"
   | "duration"
   | "measure"
@@ -67,7 +60,36 @@ export type PointerOwner =
   | "selection"
   | "none";
 
+/**
+ * Who owns this press, in one place and in one order (2U-C §3).
+ *
+ * The order is not the order the brief lists, and the difference is worth
+ * stating rather than quietly resolving, because both orders are right about
+ * different questions.
+ *
+ * **The two recognised drags sit above everything.** `note_range` and
+ * `bar_range` are the only entries that are not decided at pointerdown: they
+ * answer "what did this gesture turn out to be", which cannot be known until
+ * the long-press threshold has elapsed. Once one of them is true the reader
+ * has held still for half a second and started moving, and a gesture that lost
+ * its own pointer at that moment would not be a ranking, it would be a bug.
+ * They cannot both be true — one pointer produces one recognition — but the
+ * order between them is written down anyway, so it is a decision rather than
+ * an accident.
+ *
+ * **Below them the brief's order holds exactly**, arrived at through place
+ * before tool. A duration handle is a thing the finger is *on*, so it wins
+ * over everything a hand might be holding. A bar header is a place too, and it
+ * beats the pen because there is no string under it to write on (K-59.1) —
+ * which is also why putting the pen above it, as a flat reading of the list
+ * would, is wrong. And the pen above both range drags is not a competition at
+ * all: with a pen armed neither drag is offered, so neither can ever be
+ * recognised. The brief's ranking and this one agree everywhere the answer is
+ * observable.
+ */
 export function pointerOwner(input: {
+  /** True once a note-range long press has been recognised on this sequence. */
+  readonly noteRangeOwning?: boolean;
   /** True once a bar-range long press has been recognised on this sequence. */
   readonly barRangeOwning?: boolean;
   /** True when the pointer went down on a duration handle. */
@@ -79,6 +101,7 @@ export function pointerOwner(input: {
   /** True when this surface has a selection gesture to offer at all. */
   readonly selectionAvailable: boolean;
 }): PointerOwner {
+  if (input.noteRangeOwning === true) return "note_range";
   if (input.barRangeOwning === true) return "bar_range";
   if (input.onDurationHandle === true) return "duration";
   if (input.onMeasureHeader === true) return "measure";
@@ -96,7 +119,9 @@ export function pointerOwner(input: {
  * loses a drag, so the smaller hammer is the right one.
  */
 export function stopsPageScroll(owner: PointerOwner): boolean {
-  return owner === "duration" || owner === "bar_range";
+  return (
+    owner === "duration" || owner === "bar_range" || owner === "note_range"
+  );
 }
 
 /**
@@ -134,4 +159,26 @@ export function declaredTouchAction(
 ): "auto" | "none" | "pan-y" {
   if (owner === "duration") return "none";
   return owner === "measure" || owner === "bar_range" ? "pan-y" : "auto";
+}
+
+/**
+ * Whether this owner's element can make that promise before the gesture starts.
+ *
+ * `note_range` cannot, and saying so out loud is the point of this function.
+ * Its gesture begins on the staff body — the surface every reader scrolls the
+ * tab from — so reserving that horizontal axis up front would trade the
+ * gesture everyone uses for the one a few do, which is the global
+ * `touch-action` §2 forbids arrived at from the other direction. It therefore
+ * relies on refusing each `touchmove` once it owns the pointer, which is sound
+ * only because recognition requires the finger to have stayed still for the
+ * whole threshold: a gesture that never moved is one no compositor has started
+ * scrolling. That reasoning is exactly what a browser emulation cannot settle,
+ * so it is what the physical handoff is pointed at (2U-C §7).
+ *
+ * The bar range does not share the limitation: it starts on a 22px header
+ * strip that exists for nothing else, so it declares and does not have to
+ * argue.
+ */
+export function declaresBeforeGesture(owner: PointerOwner): boolean {
+  return declaredTouchAction(owner) !== "auto";
 }

@@ -169,3 +169,47 @@ describe("a bar-range drag does not seek the bar it ends on", () => {
     expect(hook).not.toContain("function swallowNextClick");
   });
 });
+
+/**
+ * The staff's press became a drag (2U-C §3).
+ *
+ * Wiring, so no pure test can see it: the hook can be perfect while the canvas
+ * still spreads the old fire-and-forget long press onto the staff, and the
+ * reader gets a selection that will not grow.
+ */
+describe("holding a note and reaching across its slots", () => {
+  const canvas = read(`${COMPONENTS}/TabCanvas.tsx`);
+
+  it("the staff carries the drag, not a press that forgets", () => {
+    expect(canvas).toContain("noteRange.handlers");
+    expect(canvas).not.toContain("useLongPress");
+  });
+
+  it("the pen still takes the press before the drag can arm", () => {
+    expect(canvas).toMatch(/owner !== "pen"/);
+    expect(canvas).toContain("noteRangeOwning: noteRange?.owning === true");
+  });
+
+  it("the reach is refused unless the press really opened a range", () => {
+    // Mid-paste a press names a destination and with "Devam" armed it moves
+    // an edge; in both the finger is still down with nothing to reach with,
+    // and dragging would resize a selection nobody is holding.
+    const session = read("src/lib/workspace/use-selection-session.ts");
+    expect(session).toMatch(/rangeLive\.current = x !== null && onSlotLongPress\(x\);/);
+    expect(session).toMatch(/if \(!rangeLive\.current\) return;/);
+  });
+
+  it("a cancelled note drag gives back the notes it had selected", () => {
+    const session = read("src/lib/workspace/use-selection-session.ts");
+    expect(session).toMatch(/onCancel: clearTime,/);
+  });
+
+  it("the reach reads the tab's coordinates fresh every time", () => {
+    // The edge follow moves the content under a finger that is not moving, so
+    // a rect measured once at press time names the wrong slot from the second
+    // tick onwards.
+    const session = read("src/lib/workspace/use-selection-session.ts");
+    expect(session).toMatch(/const contentX = useCallback\(/);
+    expect(session).toMatch(/getBoundingClientRect\(\)\.left - GUTTER_WIDTH/);
+  });
+});

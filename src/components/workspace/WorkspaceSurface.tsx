@@ -256,6 +256,11 @@ export function WorkspaceSurface({
           onPendingHandled={navigation.clearPendingScroll}
           scrollRef={navigation.scrollRef}
           onSlotLongPress={selectionEnabled ? time.onSlotLongPress : undefined}
+          /*
+           * The same gate the press has. A staff that offered the reach
+           * without offering the press would be a drag with nothing to drag.
+           */
+          noteRange={selectionEnabled ? time.range : undefined}
           onHandleMove={time.onHandleMove}
           onHandleUp={time.onHandleUp}
           selectionBand={

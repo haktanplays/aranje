@@ -48,8 +48,8 @@ import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
 import { TabGutter } from "@/components/workspace/TabGutter";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
-import { useLongPress } from "@/lib/ui/use-long-press";
 import { pointerOwner } from "@/lib/tab/pointer-ownership";
+import type { NoteRangeGesture } from "@/lib/ui/use-note-range-drag";
 import { xAtTicks } from "@/lib/tab/song-axis";
 import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
@@ -82,6 +82,7 @@ export function TabCanvas({
   scrollRef,
   selectionBand,
   onSlotLongPress,
+  noteRange,
   onHandleMove,
   onHandleUp,
   drumEntry = null,
@@ -138,7 +139,9 @@ export function TabCanvas({
    * A long press landed on a slot. Only fires once the press has outlived the
    * threshold without becoming a drag, so a flick to scroll never reaches it.
    */
-  onSlotLongPress?: (x: number) => void;
+  onSlotLongPress?: (x: number) => boolean;
+  /** Hold a note and reach across its slots in one gesture (2U-C §3). */
+  noteRange?: NoteRangeGesture;
   /** Handle drag, forwarded so the pointer stream has one owner. */
   onHandleMove?: (event: React.PointerEvent) => void;
   onHandleUp?: () => void;
@@ -239,23 +242,17 @@ export function TabCanvas({
    */
   /* A writing pen takes the press; both gestures used to run (K-59.1 §5). */
   const owner = pointerOwner({
+    noteRangeOwning: noteRange?.owning === true,
     penArmed: onPenTarget !== undefined,
     selectionAvailable: onSlotLongPress !== undefined,
   });
-  const longPress = useLongPress(
-    ({ clientX }) => {
-      const element = contentRef.current;
-      if (!element || !onSlotLongPress) return;
-      /*
-       * The content row begins with the sticky gutter, so a position measured
-       * from its left edge is one gutter too far right for the bars. Without
-       * this the finger lands a slot or two before the note it is over, and
-       * the selection quietly picks the wrong music.
-       */
-      onSlotLongPress(clientX - element.getBoundingClientRect().left - GUTTER_WIDTH);
-    },
-    { enabled: owner === "selection" },
-  );
+  /*
+   * The staff's press is the note-range drag now (2U-C §3), not a long press
+   * that fires and forgets. The gesture is the same up to the threshold; what
+   * changed is that the finger is still holding something afterwards, so the
+   * hook keeps the sequence instead of handing it back to the scroller.
+   */
+  const staffPress = noteRange && owner !== "pen" ? noteRange.handlers : null;
 
   if (timeline.kind === "unsupported") {
     if (!pitchedEntry) {
@@ -326,13 +323,13 @@ export function TabCanvas({
           className="relative flex"
           style={{ width: surface.contentWidthPx }}
           ref={contentRef}
-          {...longPress}
+          {...staffPress}
           onPointerMove={(event) => {
-            longPress.onPointerMove(event);
+            staffPress?.onPointerMove(event);
             onHandleMove?.(event);
           }}
-          onPointerUp={() => {
-            longPress.onPointerUp();
+          onPointerUp={(event) => {
+            staffPress?.onPointerUp(event);
             onHandleUp?.();
           }}
         >

@@ -51,6 +51,10 @@ import {
   useBarRangeDrag,
   type BarRangeDragHandlers,
 } from "@/lib/ui/use-bar-range-drag";
+import {
+  useNoteRangeDrag,
+  type NoteRangeGesture,
+} from "@/lib/ui/use-note-range-drag";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { TransformCommand } from "@/lib/song/transform";
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
@@ -112,7 +116,16 @@ export type TimeSelectionSession = {
   readonly extendArmed: boolean;
   /** Arm "Devam", or put it down again. Writes nothing either way. */
   toggleExtend(): void;
-  onSlotLongPress(x: number): void;
+  /** Returns whether the press opened a range the same finger can reach with. */
+  onSlotLongPress(x: number): boolean;
+  /**
+   * Hold a note and reach across its slots in one gesture (2U-C §3).
+   *
+   * The same shape the bar range has, spread onto the staff body. The surface
+   * decides whether to offer it at all — with a pen armed the press belongs to
+   * the pen, and `pointer-ownership.ts` is where that is settled.
+   */
+  readonly range: NoteRangeGesture;
   onHandleDown(edge: "start" | "end", event: ReactPointerEvent): void;
   onHandleMove(event: ReactPointerEvent): void;
   onHandleUp(): void;
@@ -375,6 +388,23 @@ export function useSelectionSession(options: {
     dragEdge.current = null;
   }, []);
 
+  /**
+   * A client x, in the tab's own coordinates.
+   *
+   * The content row begins with the sticky gutter, so a position measured from
+   * its left edge is one gutter too far right for the bars. Read at call time
+   * rather than at press time, because the whole point of the edge follow is
+   * that the content moves while the finger does not.
+   */
+  const contentX = useCallback(
+    (clientX: number): number | null => {
+      const content = scrollRef.current?.querySelector("[data-tab-content]");
+      if (!content) return null;
+      return clientX - content.getBoundingClientRect().left - GUTTER_WIDTH;
+    },
+    [scrollRef],
+  );
+
   /** The paste being confirmed, if any. Built here so its ghost is real. */
   const pasteCommand = useMemo(
     () =>
@@ -462,13 +492,13 @@ export function useSelectionSession(options: {
    * action has been chosen.
    */
   const onSlotLongPress = useCallback(
-    (x: number) => {
-      if (!track) return;
+    (x: number): boolean => {
+      if (!track) return false;
       const hit = slotAtX(timeline.kind === "unsupported" ? [] : timeline.bars, x);
-      if (!hit) return;
+      if (!hit) return false;
       const section = song.sections.find((entry) => entry.id === hit.sectionId);
       const bar = section?.bars[hit.barIndex];
-      if (!section || !bar) return;
+      if (!section || !bar) return false;
 
       // Selecting is an edit gesture, and edits and playback do not share the
       // screen (spec 13.1). Pause rather than tear the engine down.
@@ -482,7 +512,7 @@ export function useSelectionSession(options: {
       if (pasteAt.kind === "choosing") {
         setPasteAt({ kind: "at", ticks: startTicks });
         setSheet("paste");
-        return;
+        return false;
       }
 
       /*
@@ -493,7 +523,7 @@ export function useSelectionSession(options: {
       if (extendArmed) {
         moveEdge("end", x);
         setExtendArmed(false);
-        return;
+        return false;
       }
 
       // The other selection model lets go, for the same reason a bar press
@@ -519,6 +549,12 @@ export function useSelectionSession(options: {
           endTicks: startTicks + step,
         },
       );
+      /*
+       * A range is now open, and the finger is still down. That is what lets
+       * the same gesture keep going as a reach (2U-C §3) instead of ending
+       * here and making the reader find a 44px handle.
+       */
+      return true;
     },
     [
       barTransform,
@@ -532,6 +568,53 @@ export function useSelectionSession(options: {
       transform,
     ],
   );
+
+  /**
+   * Holding a note and reaching across its slots (2U-C §3).
+   *
+   * The same gesture the bar header has, and deliberately the same code path
+   * for everything except the arithmetic: `useNoteRangeDrag` owns the
+   * threshold, the pointer capture, the refused scroll, the edge follow and
+   * the two endings, exactly as the bar range does.
+   *
+   * `live` is what keeps the reach honest. A long press on the staff does not
+   * always open a range — mid-paste it names a destination, and with "Devam"
+   * armed it moves an edge and puts the arm down — and in both cases the
+   * finger is still on the glass with nothing to reach with. Dragging after
+   * one of those would silently resize a selection the reader was not holding.
+   */
+  const rangeLive = useRef(false);
+
+  const notePress = useCallback(
+    (clientX: number) => {
+      const x = contentX(clientX);
+      rangeLive.current = x !== null && onSlotLongPress(x);
+    },
+    [contentX, onSlotLongPress],
+  );
+
+  /*
+   * `y` is deliberately unread. The run is a span of ticks on one track, so a
+   * finger that drifts onto the next string while reaching sideways is still
+   * naming the same music — and a reach that stopped because the reader's
+   * thumb wandered half a row would be a gesture they have to be careful with.
+   */
+  const noteReach = useCallback(
+    (clientX: number) => {
+      if (!rangeLive.current) return;
+      const x = contentX(clientX);
+      if (x !== null) moveEdge("end", x);
+    },
+    [contentX, moveEdge],
+  );
+
+  const noteRange = useNoteRangeDrag({
+    enabled: track !== undefined,
+    onPress: notePress,
+    onReach: noteReach,
+    /* Interrupted means nothing was chosen, so the press takes itself back. */
+    onCancel: clearTime,
+  });
 
   /* ------------------------------------------------------ bar selection */
 
@@ -844,6 +927,7 @@ export function useSelectionSession(options: {
       closeSheet,
       cancelChainDecision,
       onSlotLongPress,
+      range: noteRange,
       extendArmed,
       toggleExtend,
       onHandleDown,
