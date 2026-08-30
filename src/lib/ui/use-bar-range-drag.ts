@@ -67,6 +67,7 @@ import {
 } from "@/lib/ui/bar-range-drag";
 import {
   useEdgeFollow,
+  useGestureEnd,
   useScrollSuppression,
 } from "@/lib/ui/drag-ownership";
 import { LONG_PRESS_MS } from "@/lib/ui/interaction";
@@ -232,6 +233,9 @@ export function useBarRangeDrag(input: {
     teardown.current = release;
   }, [release]);
   useEffect(() => () => void teardown.current(), []);
+
+  /* And the ending is heard even if the element it started on is gone. */
+  useGestureEnd(owning, { onUp: finish, onCancel: abandon });
 
   const handlers = useCallback(
     (barIndex: number, sectionId: string): BarRangeDragHandlers => ({

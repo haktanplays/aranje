@@ -20,12 +20,13 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
  * follows it, and how fast it then travels.
  *
  * Both matter on a phone and neither does on a desktop. A bar of sixteenth
- * notes is 578px wide; a 320px screen cannot show two of them, so without the
- * view following the finger there is no way to reach the neighbouring bar at
- * all and the whole gesture would be a desktop feature wearing touch clothes.
- * The band is a thumb's width so it can be found without aiming, and the step
- * is small enough that a bar takes about a second to cross — fast enough to be
- * worth doing, slow enough to stop on the bar you meant.
+ * notes is 16 slots at 34px, so 544px wide: no phone can show two of them, and
+ * without the view following the finger there is no way to reach the
+ * neighbouring bar at all — the whole gesture would be a desktop feature
+ * wearing touch clothes. The band is a thumb's width so it can be found
+ * without aiming, and the step is small enough that a bar takes about three
+ * quarters of a second to cross — fast enough to be worth doing, slow enough
+ * to stop on the bar you meant.
  *
  * Deliberately a constant step rather than one that grows with how far into
  * the band the finger is: acceleration that depends on a coordinate is
@@ -37,7 +38,7 @@ export const EDGE_STEP_PX = 12;
 export const EDGE_TICK_MS = 16;
 
 /**
- * Refuse the browser its scroll for exactly as long as the drag owns.
+ * Refuse the browser its own gestures for as long as the drag owns.
  *
  * ## Why the listener is registered before it is needed
  *
@@ -64,6 +65,17 @@ export const EDGE_TICK_MS = 16;
  * `document` because the finger will leave the element it started on — that is
  * the entire gesture — and a listener bound to the element would stop
  * suppressing the moment the reach began.
+ *
+ * ## Three gestures, not one
+ *
+ * A scroll is what a touch device takes. A pointer also has two other ways of
+ * being taken away, and both were measured taking it: on a mouse, dragging
+ * sideways across bar numbers starts a native drag-and-drop — `dragstart`,
+ * immediately followed by `pointercancel`, and the range selection died
+ * mid-reach with the reader still holding the button down. Text selection is
+ * the same story with a different name. Neither is anything the reader asked
+ * for: a bar number is a label, and nothing on the staff is a drag payload. So
+ * all three are refused, and only while a recognised drag is in flight.
  */
 export function useScrollSuppression(owning: boolean): void {
   const live = useRef(owning);
@@ -71,12 +83,55 @@ export function useScrollSuppression(owning: boolean): void {
     live.current = owning;
   }, [owning]);
   useEffect(() => {
-    const block = (event: TouchEvent) => {
+    const block = (event: Event) => {
       if (live.current) event.preventDefault();
     };
     document.addEventListener("touchmove", block, { passive: false });
-    return () => document.removeEventListener("touchmove", block);
+    document.addEventListener("dragstart", block);
+    document.addEventListener("selectstart", block);
+    return () => {
+      document.removeEventListener("touchmove", block);
+      document.removeEventListener("dragstart", block);
+      document.removeEventListener("selectstart", block);
+    };
   }, []);
+}
+
+/**
+ * Make sure the gesture hears its own ending (2U-C §4).
+ *
+ * The handlers that end a drag are spread onto the element it started on, and
+ * that element can stop existing mid-gesture: the tab windows horizontally, so
+ * a reach that carries the view three bars along unmounts the bar the finger
+ * went down on. React takes its listeners away with it, the `pointerup` lands
+ * on nothing, and the drag never releases — measured on a 320px run as an
+ * edge-follow interval still ticking after the finger had lifted, which is
+ * exactly the leak §4 forbids.
+ *
+ * So `document` hears the ending as well. The element handlers stay the
+ * primary path and fire first; this is the guarantee behind them, and it is
+ * safe to double-fire because releasing twice is releasing once — the second
+ * call finds nothing owned and does nothing.
+ */
+export function useGestureEnd(
+  owning: boolean,
+  ends: { onUp(): void; onCancel(): void },
+): void {
+  const latest = useRef(ends);
+  useEffect(() => {
+    latest.current = ends;
+  });
+  useEffect(() => {
+    if (!owning) return;
+    const lifted = () => latest.current.onUp();
+    const taken = () => latest.current.onCancel();
+    document.addEventListener("pointerup", lifted);
+    document.addEventListener("pointercancel", taken);
+    return () => {
+      document.removeEventListener("pointerup", lifted);
+      document.removeEventListener("pointercancel", taken);
+    };
+  }, [owning]);
 }
 
 export type EdgeFollow = {
@@ -142,18 +197,7 @@ export function useEdgeFollow(onTick: (x: number, y: number) => void): EdgeFollo
       timer.current = setInterval(() => {
         const node = scroller.current;
         const here = point.current;
-        if (!node || !here) {
-          clear();
-          return;
-        }
-        const box = node.getBoundingClientRect();
-        const direction = edgeDirection(here.x, box.left, box.right);
-        if (direction === 0) {
-          clear();
-          return;
-        }
-        node.scrollLeft += direction * EDGE_STEP_PX;
-        latest.current(here.x, here.y);
+        if (!node || !here || !followTick(node, here, latest.current)) clear();
       }, EDGE_TICK_MS);
     },
     [clear],
@@ -180,6 +224,36 @@ export function useEdgeFollow(onTick: (x: number, y: number) => void): EdgeFollo
    * followed were talking to a gesture that had already let go.
    */
   return useMemo(() => ({ attach, track, stop }), [attach, stop, track]);
+}
+
+/** The least a scroller has to be for one tick to work on it. */
+export type Followable = {
+  scrollLeft: number;
+  getBoundingClientRect(): { readonly left: number; readonly right: number };
+};
+
+/**
+ * One tick of the follow: move the view, then ask again what is under the
+ * finger. Returns false when the finger has left the band and the tick should
+ * stop.
+ *
+ * A function rather than a closure inside the interval, so the *pair* can be
+ * tested. Scrolling without asking again is the failure that matters here and
+ * it is completely invisible from the outside: the picture moves, the next bar
+ * slides under the thumb, and the range still says one bar because nothing
+ * asked. A test that only checked the scroll would pass on exactly that.
+ */
+export function followTick(
+  node: Followable,
+  point: { readonly x: number; readonly y: number },
+  onTick: (x: number, y: number) => void,
+): boolean {
+  const box = node.getBoundingClientRect();
+  const direction = edgeDirection(point.x, box.left, box.right);
+  if (direction === 0) return false;
+  node.scrollLeft += direction * EDGE_STEP_PX;
+  onTick(point.x, point.y);
+  return true;
 }
 
 /**

@@ -1,0 +1,511 @@
+{
+  "kind": "browser emulation — not a physical device",
+  "results": [
+    {
+      "viewport": "320x700",
+      "step": 1,
+      "name": "the editor opens on the tab, writing",
+      "pass": true,
+      "detail": "strings=12 drawnBars=2"
+    },
+    {
+      "viewport": "320x700",
+      "step": 2,
+      "name": "a sideways swipe from a bar number does not slide the tab",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 3,
+      "name": "the staff itself still scrolls, from the staff",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 318"
+    },
+    {
+      "viewport": "320x700",
+      "step": 4,
+      "name": "a long press on bar 1 holds exactly one bar",
+      "pass": true,
+      "detail": "summary=\"Gitar · 1 ölçü\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 5,
+      "name": "the same finger reaches to bar 3 and the run says three",
+      "pass": true,
+      "detail": "held=3 after 1119ms, trace=[\"Gitar · 1 ölçü\",\"Gitar · 2 ölçü\",\"Gitar · 3 ölçü\"], tab scrollLeft 852, takenAway=[]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 6,
+      "name": "coming back leaves two bars, not three",
+      "pass": true,
+      "detail": "held=2, trace=[\"Gitar · 2 ölçü\"]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 7,
+      "name": "lifting fixes the run at two bars",
+      "pass": true,
+      "detail": "summary=\"Gitar · 2 ölçü\" active bar null → null, tab scrollLeft 900"
+    },
+    {
+      "viewport": "320x700",
+      "step": 8,
+      "name": "the page underneath never scrolled vertically",
+      "pass": true,
+      "detail": "worst scrollTop across the document and the tab's ancestors = 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 9,
+      "name": "the gesture took the pointer, and left no work behind",
+      "pass": true,
+      "detail": "captures=1 intervals 1 → 1 (delays [400]), frames 0 → 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 10,
+      "name": "a reach that never touches the edge moves the tab not at all",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 11,
+      "name": "a long press on a note holds one slot",
+      "pass": true,
+      "detail": "slots=1"
+    },
+    {
+      "viewport": "320x700",
+      "step": 12,
+      "name": "reaching right grows the run slot by slot",
+      "pass": true,
+      "detail": "slots=6"
+    },
+    {
+      "viewport": "320x700",
+      "step": 13,
+      "name": "coming back shrinks it again",
+      "pass": true,
+      "detail": "slots 6 → 1"
+    },
+    {
+      "viewport": "320x700",
+      "step": 14,
+      "name": "the staff behind the note drag stood still",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 15,
+      "name": "an interrupted drag gives back what it had selected",
+      "pass": true,
+      "detail": "held=1 afterCancel=\"null\" intervals 1 → 1, frames 0 → 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 16,
+      "name": "and the tab scrolls normally again afterwards",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 323"
+    },
+    {
+      "viewport": "320x700",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "sentinel intact"
+    },
+    {
+      "viewport": "320x700",
+      "step": 18,
+      "name": "nothing was written to the console",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "390x844",
+      "step": 1,
+      "name": "the editor opens on the tab, writing",
+      "pass": true,
+      "detail": "strings=12 drawnBars=2"
+    },
+    {
+      "viewport": "390x844",
+      "step": 2,
+      "name": "a sideways swipe from a bar number does not slide the tab",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 3,
+      "name": "the staff itself still scrolls, from the staff",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 444"
+    },
+    {
+      "viewport": "390x844",
+      "step": 4,
+      "name": "a long press on bar 1 holds exactly one bar",
+      "pass": true,
+      "detail": "summary=\"Gitar · 1 ölçü\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 5,
+      "name": "the same finger reaches to bar 3 and the run says three",
+      "pass": true,
+      "detail": "held=3 after 993ms, trace=[\"Gitar · 1 ölçü\",\"Gitar · 2 ölçü\",\"Gitar · 3 ölçü\"], tab scrollLeft 756, takenAway=[]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 6,
+      "name": "coming back leaves two bars, not three",
+      "pass": true,
+      "detail": "held=2, trace=[\"Gitar · 2 ölçü\"]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 7,
+      "name": "lifting fixes the run at two bars",
+      "pass": true,
+      "detail": "summary=\"Gitar · 2 ölçü\" active bar null → null, tab scrollLeft 864"
+    },
+    {
+      "viewport": "390x844",
+      "step": 8,
+      "name": "the page underneath never scrolled vertically",
+      "pass": true,
+      "detail": "worst scrollTop across the document and the tab's ancestors = 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 9,
+      "name": "the gesture took the pointer, and left no work behind",
+      "pass": true,
+      "detail": "captures=1 intervals 1 → 1 (delays [400]), frames 0 → 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 10,
+      "name": "a reach that never touches the edge moves the tab not at all",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 11,
+      "name": "a long press on a note holds one slot",
+      "pass": true,
+      "detail": "slots=1"
+    },
+    {
+      "viewport": "390x844",
+      "step": 12,
+      "name": "reaching right grows the run slot by slot",
+      "pass": true,
+      "detail": "slots=6"
+    },
+    {
+      "viewport": "390x844",
+      "step": 13,
+      "name": "coming back shrinks it again",
+      "pass": true,
+      "detail": "slots 6 → 1"
+    },
+    {
+      "viewport": "390x844",
+      "step": 14,
+      "name": "the staff behind the note drag stood still",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 15,
+      "name": "an interrupted drag gives back what it had selected",
+      "pass": true,
+      "detail": "held=1 afterCancel=\"null\" intervals 1 → 1, frames 0 → 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 16,
+      "name": "and the tab scrolls normally again afterwards",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 456"
+    },
+    {
+      "viewport": "390x844",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "sentinel intact"
+    },
+    {
+      "viewport": "390x844",
+      "step": 18,
+      "name": "nothing was written to the console",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "412x915",
+      "step": 1,
+      "name": "the editor opens on the tab, writing",
+      "pass": true,
+      "detail": "strings=12 drawnBars=2"
+    },
+    {
+      "viewport": "412x915",
+      "step": 2,
+      "name": "a sideways swipe from a bar number does not slide the tab",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 3,
+      "name": "the staff itself still scrolls, from the staff",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 490"
+    },
+    {
+      "viewport": "412x915",
+      "step": 4,
+      "name": "a long press on bar 1 holds exactly one bar",
+      "pass": true,
+      "detail": "summary=\"Gitar · 1 ölçü\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 5,
+      "name": "the same finger reaches to bar 3 and the run says three",
+      "pass": true,
+      "detail": "held=3 after 991ms, trace=[\"Gitar · 1 ölçü\",\"Gitar · 2 ölçü\",\"Gitar · 3 ölçü\"], tab scrollLeft 756, takenAway=[]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 6,
+      "name": "coming back leaves two bars, not three",
+      "pass": true,
+      "detail": "held=2, trace=[\"Gitar · 2 ölçü\"]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 7,
+      "name": "lifting fixes the run at two bars",
+      "pass": true,
+      "detail": "summary=\"Gitar · 2 ölçü\" active bar null → null, tab scrollLeft 864"
+    },
+    {
+      "viewport": "412x915",
+      "step": 8,
+      "name": "the page underneath never scrolled vertically",
+      "pass": true,
+      "detail": "worst scrollTop across the document and the tab's ancestors = 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 9,
+      "name": "the gesture took the pointer, and left no work behind",
+      "pass": true,
+      "detail": "captures=1 intervals 1 → 1 (delays [400]), frames 0 → 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 10,
+      "name": "a reach that never touches the edge moves the tab not at all",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 11,
+      "name": "a long press on a note holds one slot",
+      "pass": true,
+      "detail": "slots=1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 12,
+      "name": "reaching right grows the run slot by slot",
+      "pass": true,
+      "detail": "slots=6"
+    },
+    {
+      "viewport": "412x915",
+      "step": 13,
+      "name": "coming back shrinks it again",
+      "pass": true,
+      "detail": "slots 6 → 1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 14,
+      "name": "the staff behind the note drag stood still",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 15,
+      "name": "an interrupted drag gives back what it had selected",
+      "pass": true,
+      "detail": "held=1 afterCancel=\"null\" intervals 1 → 1, frames 0 → 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 16,
+      "name": "and the tab scrolls normally again afterwards",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 498"
+    },
+    {
+      "viewport": "412x915",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "sentinel intact"
+    },
+    {
+      "viewport": "412x915",
+      "step": 18,
+      "name": "nothing was written to the console",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 1,
+      "name": "the editor opens on the tab, writing",
+      "pass": true,
+      "detail": "strings=24 drawnBars=4"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 2,
+      "name": "a sideways swipe from a bar number does not slide the tab",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 3,
+      "name": "the staff itself still scrolls, from the staff",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 320"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 4,
+      "name": "a long press on bar 1 holds exactly one bar",
+      "pass": true,
+      "detail": "summary=\"Gitar · 1 ölçü\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 5,
+      "name": "the same finger reaches to bar 3 and the run says three",
+      "pass": true,
+      "detail": "held=3 after 1ms, trace=[\"Gitar · 3 ölçü\"], tab scrollLeft 0, takenAway=[]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 6,
+      "name": "coming back leaves two bars, not three",
+      "pass": true,
+      "detail": "held=2, trace=[\"Gitar · 2 ölçü\"]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 7,
+      "name": "lifting fixes the run at two bars",
+      "pass": true,
+      "detail": "summary=\"Gitar · 2 ölçü\" active bar null → null, tab scrollLeft 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 8,
+      "name": "the page underneath never scrolled vertically",
+      "pass": true,
+      "detail": "worst scrollTop across the document and the tab's ancestors = 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 9,
+      "name": "the gesture took the pointer, and left no work behind",
+      "pass": true,
+      "detail": "captures=1 intervals 1 → 1 (delays [400]), frames 0 → 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 10,
+      "name": "a reach that never touches the edge moves the tab not at all",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 11,
+      "name": "a long press on a note holds one slot",
+      "pass": true,
+      "detail": "slots=1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 12,
+      "name": "reaching right grows the run slot by slot",
+      "pass": true,
+      "detail": "slots=6"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 13,
+      "name": "coming back shrinks it again",
+      "pass": true,
+      "detail": "slots 6 → 1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 14,
+      "name": "the staff behind the note drag stood still",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 15,
+      "name": "an interrupted drag gives back what it had selected",
+      "pass": true,
+      "detail": "held=1 afterCancel=\"null\" intervals 1 → 1, frames 0 → 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 16,
+      "name": "and the tab scrolls normally again afterwards",
+      "pass": true,
+      "detail": "tab scrollLeft 0 → 320"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "sentinel intact"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 18,
+      "name": "nothing was written to the console",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": 0,
+  "screenshots": 16
+}

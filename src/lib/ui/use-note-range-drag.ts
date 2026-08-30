@@ -44,7 +44,11 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useEdgeFollow, useScrollSuppression } from "@/lib/ui/drag-ownership";
+import {
+  useEdgeFollow,
+  useGestureEnd,
+  useScrollSuppression,
+} from "@/lib/ui/drag-ownership";
 import { LONG_PRESS_MS } from "@/lib/ui/interaction";
 import {
   IDLE,
@@ -142,6 +146,9 @@ export function useNoteRangeDrag(input: {
     teardown.current = release;
   }, [release]);
   useEffect(() => () => void teardown.current(), []);
+
+  /* And the ending is heard even if the element it started on is gone. */
+  useGestureEnd(owning, { onUp: finish, onCancel: abandon });
 
   const onPointerDown = useCallback(
     (event: React.PointerEvent) => {
