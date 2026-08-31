@@ -33,6 +33,7 @@
  * commands themselves still decide what actually happens, and they still
  * refuse for reasons this file cannot know (a collision, a chain, a grid).
  */
+import { NO_AUDIBLE_NOTES } from "@/lib/playback/selection-playback";
 import { barCount, type SelectionDescriptor } from "@/lib/song/selection-descriptor";
 
 /**
@@ -57,6 +58,11 @@ export type SelectionVerb =
   /* -------------------------------------------------------- the runs */
   | "connect"
   | "extend"
+  /* ------------------------------------------------------- listening */
+  /** Hear the selection once, and stop where it stops (2V-A §3). */
+  | "audition"
+  /** Keep coming back to the start of it until told otherwise (§4). */
+  | "loop_selection"
   /* ------------------------------------------------ what a chord is */
   | "to_arpeggio"
   | "to_chord"
@@ -103,11 +109,45 @@ export type CapabilityContext = {
   readonly clipboardScope: "range" | "measures" | null;
   /** How many bars the section has. Needed to know where the edges are. */
   readonly sectionBarCount: number;
+  /**
+   * Whether the selection holds anything that would make a sound (2V-A §2).
+   *
+   * A fact the descriptor cannot carry: its `onsetCount` is melodic, because
+   * the slot stream it is built from serves the editing commands and those
+   * cannot write into a drum slot. So a bar of drums counts zero onsets and
+   * is nonetheless full of music. The caller works this out with
+   * `hasAudibleNotes`, which asks the same schedule the engine will play, and
+   * hands the answer in here — keeping this function's promise not to take
+   * the Song and not to start deciding whether a command would succeed.
+   */
+  readonly hasAudibleNotes: boolean;
 };
 
 const available: VerbState = { kind: "available" };
 const hidden: VerbState = { kind: "hidden" };
 const disabled = (reason: string): VerbState => ({ kind: "disabled", reason });
+
+/**
+ * Verbs that only ask whether there is something to hear (2V-A §2).
+ *
+ * Their own list rather than a branch inside the range verbs, because they
+ * are the only two offered on *every* kind of selection — a note, a chord, a
+ * range and a run of whole bars are all things a reader may want to listen
+ * to, and a measure selection hides every other range verb. What they need is
+ * not a clipboard, a neighbour or a second onset; it is a struck note.
+ */
+const LISTEN_VERBS: readonly SelectionVerb[] = ["audition", "loop_selection"];
+
+/**
+ * What the reader is told when the thing they held has nothing in it.
+ *
+ * The same sentence `selection-playback.ts` returns for `no_audible_notes`,
+ * and deliberately imported from there rather than written twice: the drawer
+ * greys the control with this before the press and the plan refuses with it
+ * after, and two copies of one sentence are two sentences the day one is
+ * reworded.
+ */
+export const NOTHING_TO_HEAR = NO_AUDIBLE_NOTES;
 
 /** Verbs that act on notes inside a range, whatever the range holds. */
 const RANGE_VERBS: readonly SelectionVerb[] = [
@@ -171,6 +211,7 @@ export const ALL_VERBS: readonly SelectionVerb[] = [
   ...RANGE_VERBS,
   ...CHORD_VERBS,
   ...MEASURE_VERBS,
+  ...LISTEN_VERBS,
 ];
 
 /**
@@ -193,6 +234,21 @@ export function selectionCapabilities(
   const lastBar = bars?.endBarIndex ?? 0;
 
   const stateOf = (verb: SelectionVerb): VerbState => {
+    /* ------------------------------------------------- the listening */
+    /*
+     * Asked first, and of every scope. Whether a selection can be heard is
+     * not a question about clipboards or bar edges, and answering it after
+     * the measure branch has already hidden everything would have made these
+     * two invisible on exactly the selection — a run of whole bars — that a
+     * reader most wants to hear.
+     *
+     * `onsetCount` rather than `eventIds`, because a drum has no string and
+     * therefore no event id, and a bar of drums is a bar with plenty to hear.
+     */
+    if (LISTEN_VERBS.includes(verb)) {
+      return context.hasAudibleNotes ? available : disabled(NOTHING_TO_HEAR);
+    }
+
     /* ------------------------------------------------ the note verbs */
     if (RANGE_VERBS.includes(verb)) {
       if (verb === "paste") {

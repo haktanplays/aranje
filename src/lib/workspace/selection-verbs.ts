@@ -16,6 +16,8 @@ import {
   type SelectionVerb,
   type VerbOffer,
 } from "@/lib/song/selection-capability";
+import { hasAudibleNotes } from "@/lib/playback/selection-playback";
+import type { SelectionListening } from "@/lib/workspace/use-selection-listening";
 import { describeTimeSelection } from "@/lib/song/selection-descriptor";
 import type { Song } from "@/lib/song/schema";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
@@ -45,6 +47,18 @@ export type SelectionActions = {
   onDuplicate(): void;
   onRepeat(): void;
   onDelete(): void;
+  /** Hear the selection once (2V-A §3). Writes nothing. */
+  onAudition(): void;
+  /** Loop it, or stop the loop that is already running on it (§4). */
+  onLoopSelection(): void;
+  /**
+   * True while this selection is the one looping.
+   *
+   * The drawer draws it as the *label* of the control it already has, not as
+   * a badge or a chip (§9): the reader learns that pressing it again stops
+   * the loop from the words on the thing they would press.
+   */
+  readonly loopingSelection: boolean;
 };
 
 /** Which verb each drawer entry runs, so the two lists cannot drift apart. */
@@ -67,6 +81,14 @@ export const DRAWER_VERBS: readonly {
   { key: "onDuplicate", verb: "duplicate" },
   { key: "onRepeat", verb: "repeat" },
   { key: "onDelete", verb: "delete" },
+  /*
+   * The two listening verbs (2V-A §2), and in the drawer rather than the
+   * toolbar: UI Contract v1 froze the row at four verbs plus the door, and
+   * hearing a selection is a thing a reader does occasionally, not one of the
+   * four they do constantly.
+   */
+  { key: "onAudition", verb: "audition" },
+  { key: "onLoopSelection", verb: "loop_selection" },
 ];
 
 /** The one line the edit header says about a covered run, and its way out. */
@@ -94,6 +116,8 @@ export type CoveredRunInput = {
   readonly time: SelectionSession["time"];
   /** Read to describe the selection; never written through. */
   readonly song: Song;
+  /** The two listening intents, already bound to the transport (2V-A §3). */
+  readonly listening: SelectionListening;
 };
 
 export function coveredRun(input: CoveredRunInput): CoveredRun | null {
@@ -117,6 +141,11 @@ function selectionVerbs(input: CoveredRunInput): SelectionVerbs | null {
           /* The time clipboard only ever holds a run of notes. */
           clipboardScope: time.handle.hasClipboard ? "range" : null,
           sectionBarCount: section?.bars.length ?? 0,
+          /*
+           * Asked of the same schedule the engine will play (2V-A §2), so the
+           * drawer cannot offer a listen the plan then refuses.
+           */
+          hasAudibleNotes: hasAudibleNotes(input.song, descriptor),
         }),
       )
     : [];
@@ -146,5 +175,9 @@ function selectionVerbs(input: CoveredRunInput): SelectionVerbs | null {
     onDuplicate: () => time.handle.apply({ kind: "duplicate_selection" }),
     onRepeat: () => time.openSheet("repeat"),
     onDelete: () => time.handle.apply({ kind: "delete_selection" }),
+    /* Ephemeral, both of them: they schedule sound and produce no command. */
+    onAudition: input.listening.audition,
+    onLoopSelection: input.listening.toggleLoop,
+    loopingSelection: input.listening.looping,
   };
 }

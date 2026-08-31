@@ -43,11 +43,33 @@ export type PracticeRange = {
   readonly endBarKey: string;
 };
 
-/** Where a loop's bounds come from, named so the two can never be confused. */
+export type LoopBounds = {
+  /** Inclusive: the first tick that plays. */
+  readonly startTicks: number;
+  /** Exclusive: the first tick that does not. */
+  readonly endTicks: number;
+};
+
+/** Where a loop's bounds come from, named so they can never be confused. */
 export type PlaybackLoop =
   | { readonly kind: "none" }
   | { readonly kind: "section"; readonly sectionId: string }
-  | { readonly kind: "practice_range"; readonly range: PracticeRange };
+  | { readonly kind: "practice_range"; readonly range: PracticeRange }
+  /**
+   * A run of ticks a reader is listening to right now (2V-A §4).
+   *
+   * The third kind, and it carries its bounds rather than a name to resolve.
+   * A practice range and a section are both *shapes of the song* that the plan
+   * can be asked about; a selection loop is a pair of ticks the reader drew,
+   * and it may sit inside a bar. Resolving it through bar keys would round it
+   * to bar lines, which is precisely the thing a note-range selection is not.
+   *
+   * Sharing the type rather than adding a second loop field is the whole
+   * point: §4 asks that two loop authorities never run at once, and one
+   * `PlaybackLoop` on one transport is how that is made impossible rather
+   * than merely avoided.
+   */
+  | { readonly kind: "selection"; readonly bounds: LoopBounds };
 
 export const NO_LOOP: PlaybackLoop = { kind: "none" };
 
@@ -167,13 +189,6 @@ export function rangeIsLive(song: Song, range: PracticeRange): boolean {
   );
 }
 
-export type LoopBounds = {
-  /** Inclusive: the first tick that plays. */
-  readonly startTicks: number;
-  /** Exclusive: the first tick that does not. */
-  readonly endTicks: number;
-};
-
 const markerFor = (plan: SongPlan, barKey: string): BarMarker | undefined =>
   plan.bars.find((bar) => bar.barKey === barKey);
 
@@ -215,6 +230,9 @@ export function sectionBounds(plan: SongPlan, sectionId: string): LoopBounds | n
 export function loopBounds(plan: SongPlan, loop: PlaybackLoop): LoopBounds | null {
   if (loop.kind === "none") return null;
   if (loop.kind === "section") return sectionBounds(plan, loop.sectionId);
+  /* Already ticks: the reader drew them, and rounding them to bar lines
+     would be answering a different question from the one they asked. */
+  if (loop.kind === "selection") return loop.bounds;
   return rangeLoopBounds(plan, loop.range);
 }
 

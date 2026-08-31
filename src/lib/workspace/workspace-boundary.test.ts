@@ -63,6 +63,10 @@ const COMPOSITION_HOOKS = new Set([
   // arithmetic. It calls both and remembers neither, which the test below
   // is what keeps true.
   "src/lib/workspace/use-armed-grid-row.ts",
+  // 2V-A §7: what a covered run says, offers and lets the reader hear. Three
+  // calls and no state of its own — it exists so the root does not have to
+  // spell the same relationship out in six lines.
+  "src/lib/workspace/use-covered-run.ts",
 ]);
 
 describe("38. the composition root stays a composition root", () => {

@@ -32,6 +32,7 @@ import { WorkspaceSurface } from "@/components/workspace/WorkspaceSurface";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
 import { availableSkills } from "@/lib/copilot/ui-options";
+import { copilotGates } from "@/lib/copilot/gates";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
 import { useSong } from "@/lib/song/use-song";
 import { useSessionGround } from "@/lib/workspace/use-session-ground";
@@ -42,7 +43,7 @@ import { useArrangementModels } from "@/lib/workspace/use-arrangement-models";
 import { useLifecycle } from "@/lib/workspace/use-lifecycle";
 import { mixerAudioOf } from "@/lib/workspace/mixer-audio";
 import { useEventEntry } from "@/lib/workspace/use-event-entry";
-import { coveredRun } from "@/lib/workspace/selection-verbs";
+import { useCoveredRun } from "@/lib/workspace/use-covered-run";
 import { useTransportHandles } from "@/lib/workspace/use-transport-handles";
 import { usePracticeSession } from "@/lib/workspace/use-practice-session";
 import { useMultiTrackView } from "@/lib/workspace/use-multitrack-session";
@@ -146,21 +147,12 @@ export function Workspace() {
     practicePercent: state.practicePercent,
   });
   /*
-   * Pulled out so the undo path can depend on it.
-   *
-   * `copilot` is rebuilt every render, so a callback depending on the whole
-   * handle would be rebuilt too — and the keyboard listener behind it
-   * resubscribed on every keystroke, scroll and animation frame.
+   * Pulled out so the undo path can depend on it. `copilot` is rebuilt every
+   * render, so a callback depending on the whole handle would be rebuilt too —
+   * and the keyboard listener behind it resubscribed on every keystroke.
    */
   const closeCopilot = copilot.close;
-  const previewOpen =
-    copilot.state.status === "preview_ready" ||
-    copilot.state.status === "preview_playing" ||
-    copilot.state.status === "applying";
-  const arrangeOpen =
-    copilot.state.status === "editing_request" ||
-    copilot.state.status === "submitting" ||
-    copilot.state.status === "error";
+  const { previewOpen, arrangeOpen } = copilotGates(copilot.state.status);
 
   const skills = useMemo(() => availableSkills(song), [song]);
 
@@ -253,8 +245,14 @@ export function Workspace() {
     previewSong: session.bars.handle.previewSong,
   });
 
-  /* What a covered run says and offers while writing (K-59 §3, §4). */
-  const covered = coveredRun({ editing: noteEditing.editing, time: session.time, song });
+  /* What a covered run says, offers and lets you hear (K-59 §3, 2V-A §3). */
+  const covered = useCoveredRun({
+    song,
+    controller,
+    session,
+    editing: noteEditing.editing,
+    listenable: noteEditing.editing && navigation.view === "tab" && canPersist,
+  });
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">

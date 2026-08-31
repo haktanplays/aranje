@@ -63,6 +63,13 @@ const context = (over: Partial<CapabilityContext> = {}): CapabilityContext => ({
   hasClipboard: false,
   clipboardScope: null,
   sectionBarCount: 4,
+  /*
+   * True by default: these fixtures are descriptors with notes in them, and
+   * the two listening verbs ask nothing else. The false case has its own
+   * tests below, where it is the thing being measured rather than a
+   * background condition.
+   */
+  hasAudibleNotes: true,
   ...over,
 });
 
@@ -291,7 +298,16 @@ describe("what a surface draws", () => {
       (offer) => offer.verb,
     );
     expect(notes).not.toEqual(bars);
-    expect(notes.some((verb) => bars.includes(verb))).toBe(false);
+    /*
+     * Disjoint apart from listening, and listening is the exception on
+     * purpose (2V-A §2). Every editing verb belongs to one scope or the
+     * other — pasting a run of notes over a run of bars is the confusion the
+     * two clipboards exist to prevent — but "hear this" is the same question
+     * whatever is held, and answering it differently by scope would be the
+     * app being clever at the reader's expense.
+     */
+    const shared = notes.filter((verb) => bars.includes(verb));
+    expect(shared.sort()).toEqual(["audition", "loop_selection"]);
   });
 });
 
@@ -316,6 +332,7 @@ describe("the two measure scopes are offered different verbs", () => {
     hasClipboard: false,
     clipboardScope: null,
     sectionBarCount: 4,
+    hasAudibleNotes: true,
   };
 
   it("greys the bar-adding verbs on one instrument's bars", () => {
@@ -348,3 +365,56 @@ describe("the two measure scopes are offered different verbs", () => {
   });
 });
 
+/**
+ * Hearing a selection is offered on every kind of one (2V-A §2).
+ *
+ * The measure branch hides every range verb, which is right for a clipboard
+ * and wrong for an ear: a run of whole bars is exactly what a reader most
+ * wants to listen to. So these two are asked before the scope branches at all,
+ * and this is where that ordering is pinned.
+ */
+describe("listening to what is held", () => {
+  const LISTEN = ["audition", "loop_selection"] as const;
+
+  it("is offered on notes, chords, ranges and whole bars alike", () => {
+    for (const descriptor of [base, chord, measures(1, 1)]) {
+      for (const verb of LISTEN) {
+        expect(canRun(selectionCapabilities(descriptor, context()), verb), verb).toBe(
+          true,
+        );
+      }
+    }
+  });
+
+  it("is greyed rather than hidden when there is nothing to hear", () => {
+    for (const verb of LISTEN) {
+      const state = stateOf(base, verb, { hasAudibleNotes: false });
+      expect(state?.kind, verb).toBe("disabled");
+      expect(state?.kind === "disabled" ? state.reason : null, verb).toBe(
+        "Bu seçimde dinlenecek nota yok.",
+      );
+    }
+  });
+
+  it("does not ask the clipboard, the neighbours or the second onset", () => {
+    /*
+     * The three things every other verb in the drawer depends on. A listen
+     * that quietly inherited one of them would be greyed on a first bar, or
+     * on a single note, for a reason that has nothing to do with sound.
+     */
+    const lonely = { ...base, onsetCount: 1, eventIds: [base.eventIds[0] ?? "x"] };
+    for (const verb of LISTEN) {
+      expect(
+        canRun(
+          selectionCapabilities(lonely, context({ hasClipboard: false })),
+          verb,
+        ),
+        verb,
+      ).toBe(true);
+      expect(
+        canRun(selectionCapabilities(measures(0, 0), context()), verb),
+        verb,
+      ).toBe(true);
+    }
+  });
+});

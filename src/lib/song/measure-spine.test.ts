@@ -90,6 +90,7 @@ const capabilities = (selection: BarSelection, sectionBarCount = 4) =>
     hasClipboard: false,
     clipboardScope: null,
     sectionBarCount,
+    hasAudibleNotes: true,
   });
 
 /** Run a command the way the app does: onto a history, as one step. */

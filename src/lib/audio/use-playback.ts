@@ -63,7 +63,15 @@ function carriedController(
         ? song.sections.some(
             (section) => section.id === loop.sectionId && section.bars.length > 0,
           )
-        : rangeIsLive(song, loop.range);
+        : /*
+           * A selection loop never survives a change of song (2V-A §5). It is
+           * a pair of ticks the reader drew on music that no longer exists in
+           * that shape, and carrying it across would loop whatever now sits at
+           * those ticks — the same failure a stale practice range has, with no
+           * bar keys to detect it by. Ephemeral by design: the reader still
+           * has their selection and can ask again.
+           */
+          loop.kind === "practice_range" && rangeIsLive(song, loop.range);
   if (survives) next.setLoop(loop);
 
   return next;

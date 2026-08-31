@@ -58,6 +58,26 @@ const LABELS: Record<string, { readonly label: string; readonly hint: string }> 
   duplicate: { label: "Çoğalt", hint: "Seçimin bir kopyasını hemen ardına koyar." },
   repeat: { label: "Tekrarla", hint: "Seçimi kaç kez tekrarlayacağını sorar." },
   delete: { label: "Sil", hint: "Seçili notaları kaldırır." },
+  audition: {
+    label: "Seçimi dinle",
+    hint: "Seçili yeri bir kez çalar; şarkı değişmez.",
+  },
+  loop_selection: {
+    label: "Seçimden döngü",
+    hint: "Seçili yeri baştan sona tekrar eder.",
+  },
+};
+
+/**
+ * The loop control says what pressing it would do (2V-A §4, §9).
+ *
+ * A label rather than a badge beside one: the reader is told that this is the
+ * way out of the loop by the words on the thing they would press, which is
+ * one control doing one job instead of two controls describing one state.
+ */
+const LOOP_RUNNING = {
+  label: "Seçim döngüsünü kapat",
+  hint: "Döngüyü durdurur ve seçim yerinde kalır.",
 };
 
 export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
@@ -81,7 +101,9 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
     actions.offers.find((offer) => offer.verb === verb)?.state ?? null;
   const drawer = DRAWER_VERBS.map((entry) => ({
     ...entry,
-    ...LABELS[entry.verb]!,
+    ...(entry.verb === "loop_selection" && actions.loopingSelection
+      ? LOOP_RUNNING
+      : LABELS[entry.verb]!),
     state: stateOf(entry.verb),
   })).filter((entry) => entry.state !== null);
 

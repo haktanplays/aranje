@@ -1,6 +1,8 @@
 /**
  * What a covered run offers while the reader is writing (K-59 §3, 2U-A §3).
  */
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { guitarTrack, melodicBar, section, song } from "@/lib/song/fixtures";
@@ -66,28 +68,67 @@ function fakeTime(
   return { time, calls };
 }
 
+/**
+ * The two listening intents, recorded rather than performed.
+ *
+ * They reach the transport in the app; here what matters is that the drawer
+ * calls them and that they are offered on the same terms as everything else.
+ */
+const fakeListening = (calls: string[], looping = false) => ({
+  audition: () => calls.push("audition"),
+  toggleLoop: () => calls.push("loop"),
+  stop: () => calls.push("stop-listening"),
+  looping,
+});
+
+const cover = (
+  selection: unknown,
+  editing: boolean,
+  calls: string[] = [],
+  looping = false,
+) => {
+  const { time } = fakeTime(selection);
+  return coveredRun({
+    editing,
+    time,
+    song: subject(),
+    listening: fakeListening(calls, looping),
+  });
+};
+
 const run = (
   selection: unknown,
-  over: { hasClipboard?: boolean; extendArmed?: boolean } = {},
+  over: { hasClipboard?: boolean; extendArmed?: boolean; looping?: boolean } = {},
 ) => {
   const { time, calls } = fakeTime(selection, over);
-  return { run: coveredRun({ editing: true, time, song: subject() }), calls };
+  return {
+    run: coveredRun({
+      editing: true,
+      time,
+      song: subject(),
+      listening: fakeListening(calls, over.looping ?? false),
+    }),
+    calls,
+  };
 };
 
 describe("the selection row is offered only when there is one", () => {
   it("offers nothing while the reader is not writing", () => {
-    const { time } = fakeTime(covering(0, 48));
-    expect(coveredRun({ editing: false, time, song: subject() })).toBeNull();
+    expect(cover(covering(0, 48), false)).toBeNull();
   });
 
   it("offers nothing while nothing is covered", () => {
-    const { time } = fakeTime(null);
-    expect(coveredRun({ editing: true, time, song: subject() })).toBeNull();
+    expect(cover(null, true)).toBeNull();
   });
 
   it("says the run in the header and gives it a way out", () => {
     const { time, calls } = fakeTime(covering(0, 48));
-    const found = coveredRun({ editing: true, time, song: subject() });
+    const found = coveredRun({
+      editing: true,
+      time,
+      song: subject(),
+      listening: fakeListening(calls),
+    });
     expect(found?.header.summary).toBe("5 nota · 1 ölçü");
     found?.header.onCancel();
     expect(calls).toEqual(["clear"]);
@@ -118,7 +159,12 @@ describe("every verb is a handle that already existed", () => {
     const handle = (time as unknown as { handle: Record<string, unknown> }).handle;
     handle.notice = "Bağlantı korundu.";
     handle.error = "Bu seçim taşınamıyor.";
-    const found = coveredRun({ editing: true, time, song: subject() });
+    const found = coveredRun({
+      editing: true,
+      time,
+      song: subject(),
+      listening: fakeListening([]),
+    });
     expect(found?.verbs.notice).toBe("Bağlantı korundu.");
     expect(found?.verbs.error).toBe("Bu seçim taşınamıyor.");
   });
@@ -269,5 +315,78 @@ describe("the drawer offers only what this selection can do", () => {
         }
       }
     }
+  });
+});
+
+// -------------------------------------------------------------------- 2V-A
+
+describe("hearing what is held", () => {
+  it("puts both actions in the drawer, not in the frozen row", () => {
+    /*
+     * UI Contract v1 froze the toolbar at four verbs and a door (§9). These
+     * two are things a reader does occasionally, so they live behind the
+     * door — and the row is asserted to be exactly what it was.
+     */
+    const drawn = DRAWER_VERBS.map((entry) => entry.verb);
+    expect(drawn).toContain("audition");
+    expect(drawn).toContain("loop_selection");
+
+    const toolbar = readFileSync(
+      "src/components/workspace/SelectionToolbar.tsx",
+      "utf8",
+    );
+    const row = toolbar.slice(
+      toolbar.indexOf('aria-label="Seçim işlemleri"'),
+      toolbar.indexOf("Daha fazla"),
+    );
+    expect(row).not.toContain("audition");
+    expect(row).not.toContain("loop_selection");
+  });
+
+  it("runs the audition and closes the drawer behind it", () => {
+    const { run: found, calls } = run(covering(0, 240));
+    found?.verbs.onAudition();
+    expect(calls).toEqual(["audition"]);
+  });
+
+  it("asks the loop to start, or to stop when it is already running", () => {
+    const { run: found, calls } = run(covering(0, 240));
+    found?.verbs.onLoopSelection();
+    expect(calls).toEqual(["loop"]);
+  });
+
+  it("reports whether this selection is the one looping", () => {
+    expect(run(covering(0, 240)).run?.verbs.loopingSelection).toBe(false);
+    expect(
+      run(covering(0, 240), { looping: true }).run?.verbs.loopingSelection,
+    ).toBe(true);
+  });
+
+  it("neither of them stages, previews or applies anything", () => {
+    /*
+     * §6: the two are entirely ephemeral. The fake session records every
+     * command it is asked for, so a listen that quietly staged one would
+     * show up as an extra call rather than as a silent write.
+     */
+    const { run: found, calls } = run(covering(0, 240));
+    found?.verbs.onAudition();
+    found?.verbs.onLoopSelection();
+    expect(calls.filter((call) => call.startsWith("apply:"))).toEqual([]);
+    expect(calls.filter((call) => call.startsWith("sheet:"))).toEqual([]);
+    expect(calls).not.toContain("copy");
+  });
+
+  it("says both labels in full Turkish, and the loop says its way out", () => {
+    const toolbar = readFileSync(
+      "src/components/workspace/SelectionToolbar.tsx",
+      "utf8",
+    );
+    expect(toolbar).toContain('label: "Seçimi dinle"');
+    expect(toolbar).toContain('label: "Seçimden döngü"');
+    expect(toolbar).toContain('label: "Seçim döngüsünü kapat"');
+    /* The running label is the control's own, not a badge beside it (§9). */
+    expect(toolbar).toMatch(
+      /actions\.loopingSelection\s*\?\s*LOOP_RUNNING/,
+    );
   });
 });

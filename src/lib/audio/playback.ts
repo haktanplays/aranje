@@ -62,6 +62,7 @@ import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { silentTrackNotice } from "@/lib/audio/preset-availability";
 import type { PreviewBankSession } from "@/lib/audio/preview-bank";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
+import type { SelectionPlaybackPlan } from "@/lib/playback/selection-playback";
 import type { Bar, Song } from "@/lib/song/schema";
 
 export type PlaybackStatus =
@@ -589,6 +590,186 @@ export class PlaybackController {
     if (key !== null) this.seekToBar(key);
   }
 
+  /* ----------------------------------------- listening to a selection */
+
+  /**
+   * The selection currently being heard, or null (2V-A §3, §4).
+   *
+   * Held rather than derived, because the drawer has to be able to say
+   * "Seçim döngüsünü kapat" and a loop's bounds alone cannot tell a reader
+   * whether the run they are looking at is the one that is sounding.
+   */
+  private selectionPlayback: SelectionPlaybackPlan | null = null;
+
+  /** A run already being started, so a double press cannot start two. */
+  private selectionStart: Promise<void> | null = null;
+
+  /**
+   * Which start is still wanted (2V-A §5).
+   *
+   * The engine build is asynchronous, and everything that cancels a run —
+   * leaving the view, cancelling the selection, unmounting — happens
+   * synchronously while that build is still in the air. Without a token the
+   * cancelled start comes back a moment later and begins playing something
+   * the reader has already dismissed.
+   */
+  private selectionToken: object | null = null;
+
+  getSelectionPlayback(): SelectionPlaybackPlan | null {
+    return this.selectionPlayback;
+  }
+
+  /**
+   * Hear this selection, once or in a loop.
+   *
+   * Everything about it is ephemeral: no command is produced, nothing is
+   * written, and the Song is not read except to be scheduled. The engine is
+   * the one that plays the whole song — rescheduled with a window, which is
+   * the only difference between this and pressing play.
+   *
+   * A second press while the first is still starting is the same press. The
+   * engine build is asynchronous, so without this a reader who taps twice
+   * gets two schedules on one transport and hears the selection played over
+   * itself (§5).
+   */
+  async playSelection(plan: SelectionPlaybackPlan): Promise<void> {
+    if (this.selectionStart) {
+      await this.selectionStart;
+      /* The run that arrived first is the one that stands, unless this press
+         asked for different music. */
+      if (
+        this.selectionPlayback &&
+        this.selectionPlayback.startTicks === plan.startTicks &&
+        this.selectionPlayback.endTicks === plan.endTicks &&
+        this.selectionPlayback.mode === plan.mode
+      ) {
+        return;
+      }
+    }
+    const run = this.startSelection(plan);
+    this.selectionStart = run;
+    try {
+      await run;
+    } finally {
+      if (this.selectionStart === run) this.selectionStart = null;
+    }
+  }
+
+  private async startSelection(plan: SelectionPlaybackPlan): Promise<void> {
+    const token = {};
+    this.selectionToken = token;
+
+    /*
+     * Whatever was playing stops first, and stops *completely*: a transport
+     * left running under a new schedule is the second voice §5 forbids.
+     */
+    this.cancelCountIn();
+    this.engine?.context.transport.pause();
+    this.engine?.expression.stopAll();
+
+    try {
+      const engine = await this.ensureEngine();
+      /* Abandoned while the engine was being built: nothing to start. */
+      if (this.disposed || this.selectionToken !== token) return;
+
+      this.selectionPlayback = plan;
+      this.rescheduleForSelection(engine, plan);
+
+      /*
+       * The loop is the one loop. Setting it here replaces a section or a
+       * practice range rather than running beside it (§4), and clearing it
+       * for a one-shot is the same single authority saying "nothing".
+       */
+      this.setLoop(
+        plan.mode === "loop"
+          ? {
+              kind: "selection",
+              bounds: { startTicks: plan.startTicks, endTicks: plan.endTicks },
+            }
+          : NO_LOOP,
+      );
+
+      engine.context.transport.ticks = plan.startTicks;
+      engine.context.transport.start();
+      this.set({ status: "playing", error: null, countingIn: false });
+    } catch (error) {
+      /*
+       * The audio failed. Nothing is sounding and nothing is held, so the
+       * reader sees the ordinary playback error rather than a drawer that
+       * says a loop is running (§5). The caller does not have to catch: the
+       * two intents are `void`-called from a press handler.
+       */
+      if (this.selectionToken === token) this.selectionToken = null;
+      this.selectionPlayback = null;
+      this.fail(error);
+    }
+  }
+
+  /**
+   * Stop listening, and put everything back where it was.
+   *
+   * Safe to call when nothing is running, because that is what every cleanup
+   * path in §5 needs: leaving a view, changing a track, cancelling the
+   * selection and unmounting all arrive here without first checking.
+   */
+  stopSelection(): void {
+    const plan = this.selectionPlayback;
+    this.cancelCountIn();
+    /* Also cancels a start still in the air, which is what an abort is. */
+    this.selectionToken = null;
+    this.selectionPlayback = null;
+
+    const engine = this.engine;
+    if (!engine) return;
+
+    engine.context.transport.pause();
+    engine.expression.stopAll();
+    this.setLoop(NO_LOOP);
+    /* The whole song again, so the next ordinary play is not still bounded. */
+    this.scheduleWholeSong(engine);
+    if (plan) engine.context.transport.ticks = plan.startTicks;
+    if (this.state.status === "playing") this.set({ status: "paused" });
+  }
+
+  /**
+   * A one-shot audition reached the end of the selection.
+   *
+   * Back to where it started rather than on into the next bar: the reader
+   * asked to hear this much, and leaving the playhead past the end would make
+   * pressing again play something else (§3).
+   */
+  handleSelectionEnded(): void {
+    const plan = this.selectionPlayback;
+    if (!plan || plan.mode !== "once") return;
+    const transport = this.engine?.context.transport;
+    this.engine?.expression.stopAll();
+    if (transport) {
+      transport.pause();
+      transport.ticks = plan.startTicks;
+    }
+    this.selectionPlayback = null;
+    this.set({ status: "paused" });
+  }
+
+  private rescheduleForSelection(engine: Engine, plan: SelectionPlaybackPlan) {
+    scheduleSong(engine, this.tempoMap(), {
+      metronomeEnabled: () => this.state.metronome,
+      onEnded: () => this.handleSelectionEnded(),
+      window: {
+        startTicks: plan.startTicks,
+        endTicks: plan.endTicks,
+        trackIds: plan.trackIds,
+      },
+    });
+  }
+
+  private scheduleWholeSong(engine: Engine) {
+    scheduleSong(engine, this.tempoMap(), {
+      metronomeEnabled: () => this.state.metronome,
+      onEnded: () => this.handleEnded(),
+    });
+  }
+
   setLoopSection(sectionId: string | null): void {
     this.setLoop(sectionId === null ? NO_LOOP : { kind: "section", sectionId });
   }
@@ -758,6 +939,9 @@ export class PlaybackController {
     // transport start, and a disposed controller must not produce one (§VIII).
     this.cancelCountIn();
     this.disposed = true;
+    this.selectionPlayback = null;
+    this.selectionStart = null;
+    this.selectionToken = null;
     this.engine?.expression.dispose();
     const transport = this.engine?.context.transport;
     if (transport) {
