@@ -304,6 +304,32 @@ function observeScreen(previous: StandingObservations): StandingObservations {
   return unchanged ? previous : next;
 }
 
+/**
+ * A reading handle for a browser harness (2V-A §10).
+ *
+ * The same two numbers this hook already keeps — the song's bytes and the
+ * record's revision — put where a Playwright run can see them. Nothing here
+ * can drive anything: there is no press, no seek and no playback behind it,
+ * which is the line §10 draws when it forbids a test-only playback control.
+ *
+ * It exists because the alternative is worse. A harness that wrapped
+ * `setItem` to count writes would be watching a store this route does not
+ * use — the page owns a storage made of a `Map` — and would report a
+ * structural zero as a proof, which is exactly the vacuity 2U-C was caught by.
+ */
+export type AcceptanceReading = {
+  /** The stored Song, byte for byte, as the page's own storage holds it. */
+  bytes(): string;
+  /** One per committed edit: a revision that moved is a command that ran. */
+  revision(): number;
+};
+
+declare global {
+  interface Window {
+    __aranjeAcceptance?: AcceptanceReading;
+  }
+}
+
 export function useEditorWatch(storage: MemoryStorage): {
   readonly standing: StandingObservations;
   readonly consoleErrors: readonly string[];
@@ -352,6 +378,17 @@ export function useEditorWatch(storage: MemoryStorage): {
   const snapshot = useCallback((): EditorSnapshot => {
     const reading = readFixture(storage);
     return { song: reading.song, revision: reading.revision, band: bandWidth() };
+  }, [storage]);
+
+  useEffect(() => {
+    const reading: AcceptanceReading = {
+      bytes: () => JSON.stringify(readFixture(storage).song),
+      revision: () => readFixture(storage).revision,
+    };
+    window.__aranjeAcceptance = reading;
+    return () => {
+      if (window.__aranjeAcceptance === reading) delete window.__aranjeAcceptance;
+    };
   }, [storage]);
 
   return {

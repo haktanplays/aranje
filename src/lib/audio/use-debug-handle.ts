@@ -24,6 +24,22 @@ export type AranjeDebug = {
   position: () => { barKey: string | null; barIndex: number; slotIndex: number };
   loop: () => { on: boolean; startTicks: number; endTicks: number } | null;
   totalTicks: () => number;
+  /**
+   * The selection being heard, or null (2V-A §10).
+   *
+   * Reading, like everything else here. A harness cannot ask the screen where
+   * an audition started and ended — the drawer closes when it starts, and the
+   * band on the staff is where the *selection* is, not where the sound is —
+   * so the bounds have to be readable or the acceptance run would be checking
+   * that a button was pressed rather than that the right music was played.
+   */
+  selection: () => {
+    startTicks: number;
+    endTicks: number;
+    trackIds: string[];
+    mode: string;
+    onsetCount: number;
+  } | null;
 };
 
 declare global {
@@ -58,6 +74,17 @@ export function useDebugHandle(controller: PlaybackController): void {
       },
       loop: () => controller.getLoopBounds(),
       totalTicks: () => controller.getPlan().totalTicks,
+      selection: () => {
+        const plan = controller.getSelectionPlayback();
+        if (!plan) return null;
+        return {
+          startTicks: plan.startTicks,
+          endTicks: plan.endTicks,
+          trackIds: [...plan.trackIds],
+          mode: plan.mode,
+          onsetCount: plan.onsetCount,
+        };
+      },
     };
 
     window.__aranjeDebug = handle;

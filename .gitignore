@@ -26,3 +26,8 @@ eval/intent-composer/.render/
 
 # Probe protokolünün geçici yedeği (2Q-B §17). Asla commit edilmez.
 *.probebak
+
+# 2V-A §10: the last run's readout and its founder screenshots are committed;
+# the per-run copies of the ten-run sweep are summarised in RUNS.json instead
+eval/editor-2va/artifacts/RESULTS-run*.json
+eval/editor-2va/artifacts/failed-*.png

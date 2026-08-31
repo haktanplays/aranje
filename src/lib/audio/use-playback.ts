@@ -37,7 +37,7 @@ const SERVER_STATE: PlaybackState = {
  * for. No graph is built here: a seek on an engine-less controller is a
  * remembered tick and nothing else.
  */
-function carriedController(
+export function carriedController(
   previous: PlaybackController,
   song: Song,
 ): PlaybackController {

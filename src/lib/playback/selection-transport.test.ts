@@ -8,6 +8,7 @@
 import { describe, expect, it } from "vitest";
 
 import { PlaybackController } from "@/lib/audio/playback";
+import { carriedController } from "@/lib/audio/use-playback";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { planSelectionPlayback } from "@/lib/playback/selection-playback";
@@ -258,11 +259,57 @@ describe("turning it off", () => {
     expect(rig.transport.loop).toBe(false);
   });
 
+  it("gives the whole song back to the scheduler", async () => {
+    /*
+     * Not only "the loop is off". The engine is scheduled once and never
+     * again by play or pause (K-25), so a controller that stopped listening
+     * without rescheduling would leave every later press of play bounded to a
+     * selection the reader let go of — silence from the second bar on, with
+     * nothing on screen to explain it.
+     */
+    const rig = harness();
+    await rig.controller.playSelection(planFor(rig.source, 0, BAR, "once"));
+    /* Strictly past the end: the callback that ends the run sits *on* it. */
+    const windowed = rig.transport.scheduled.filter((at) => at > BAR).length;
+    expect(windowed).toBe(0);
+
+    rig.controller.stopSelection();
+    const whole = rig.transport.scheduled.filter((at) => at > BAR).length;
+    expect(whole).toBeGreaterThan(0);
+  });
+
   it("says nothing is running before anything has been asked for", () => {
     const rig = harness();
     expect(rig.controller.getSelectionPlayback()).toBeNull();
     /* And stopping nothing is not an error, so a cleanup can always run. */
     expect(() => rig.controller.stopSelection()).not.toThrow();
+  });
+});
+
+describe("the callback that ends a one-shot", () => {
+  /*
+   * `onEnded` is scheduled at the window's end for both modes, because the
+   * schedule does not know which one it is. A loop reaching that tick is the
+   * loop working; treating it as the end of the run would stop the music the
+   * reader asked to keep hearing, one pass in.
+   */
+  it("leaves a loop running when it reaches the same tick", async () => {
+    const rig = harness();
+    await rig.controller.playSelection(planFor(rig.source, 0, BAR, "loop"));
+    rig.controller.handleSelectionEnded();
+
+    expect(rig.controller.getSelectionPlayback()?.mode).toBe("loop");
+    expect(rig.controller.getState().status).toBe("playing");
+    expect(rig.transport.loop).toBe(true);
+  });
+
+  it("does end a one-shot at it", async () => {
+    const rig = harness();
+    await rig.controller.playSelection(planFor(rig.source, 0, BAR, "once"));
+    rig.controller.handleSelectionEnded();
+
+    expect(rig.controller.getSelectionPlayback()).toBeNull();
+    expect(rig.controller.getState().status).toBe("paused");
   });
 });
 
@@ -333,3 +380,31 @@ describe("a disposed controller", () => {
     expect(rig.controller.getSelectionPlayback()).toBeNull();
   });
 })
+
+describe("when the song itself changes underneath", () => {
+  /*
+   * A selection loop is a pair of ticks the reader drew on music that has
+   * just stopped existing in that shape. §5 lists this beside cancelling the
+   * selection, and it is the one cleanup path the hook cannot do — the whole
+   * controller is replaced — so `carriedController` has to refuse it.
+   */
+  it("does not carry a selection loop over to the new song", async () => {
+    const { controller, source } = harness();
+    await controller.playSelection(planFor(source, 0, BAR, "loop"));
+    expect(controller.getLoopBounds()?.on).toBe(true);
+
+    const next = carriedController(controller, twoBarSong());
+    expect(next.getLoopBounds()).toBeNull();
+    expect(next.getSelectionPlayback()).toBeNull();
+  });
+
+  it("still carries a section loop, which is named music and survives", async () => {
+    /* The contrast that makes the refusal above a decision, not an accident. */
+    const { controller, source } = harness();
+    controller.setLoopSection("s1");
+    expect(controller.getLoopBounds()?.on).toBe(true);
+
+    const next = carriedController(controller, source);
+    expect(next.getLoopBounds()?.on).toBe(true);
+  });
+});
