@@ -1,0 +1,238 @@
+{
+  "kind": "browser emulation — not a physical device",
+  "note": "Ten consecutive four-viewport runs of eval/editor-2va/verify.mjs. Each run is 4 contexts x 20 checks. Screenshots and the last run’s full readout are beside this file; the per-run readouts are summarised here rather than committed ten times over.",
+  "runs": [
+    {
+      "run": 1,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 2,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 3,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 4,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 5,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 6,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 7,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 8,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 9,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    },
+    {
+      "run": 10,
+      "passed": 80,
+      "total": 80,
+      "byViewport": {
+        "320x700": {
+          "passed": 20,
+          "total": 20
+        },
+        "390x844": {
+          "passed": 20,
+          "total": 20
+        },
+        "412x915": {
+          "passed": 20,
+          "total": 20
+        },
+        "1363x936": {
+          "passed": 20,
+          "total": 20
+        }
+      }
+    }
+  ],
+  "everyRunGreen": true,
+  "totalChecks": 800
+}
