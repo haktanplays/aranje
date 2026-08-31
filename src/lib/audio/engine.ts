@@ -43,6 +43,11 @@ import {
 } from "@/lib/audio/expressive-voice";
 import { metronomeClicks } from "@/lib/audio/position";
 import { sampleEntries, type SampleEntry } from "@/lib/audio/sample-map";
+import {
+  clipToWindow,
+  inWindow,
+  type PlaybackWindow,
+} from "@/lib/playback/selection-playback";
 import { buildSongPlan, ticks, type SongPlan } from "@/lib/audio/schedule";
 import type { DrumPiece, Song, Track } from "@/lib/song/schema";
 import type { TempoMap } from "@/lib/audio/tempo";
@@ -567,6 +572,20 @@ export type ScheduleOptions = {
   metronomeEnabled?: () => boolean;
   /** Fired on the drawing clock when the transport reaches the last bar line. */
   onEnded?: () => void;
+  /**
+   * Play only this part of the song, and only these tracks (2V-A §3, §7).
+   *
+   * The whole of "listen to the selection". There is no second scheduler and
+   * no preview synth: the same plan, the same chains, the same expressive
+   * voices and the same metronome, with a predicate in front of them. A note
+   * outside the window is not scheduled at all — not scheduled and skipped, so
+   * a track the reader did not select cannot sound however the transport is
+   * driven — and a note that rings past the end has its tail cut here and
+   * nowhere else.
+   *
+   * Absent means the whole song, which is what every other caller wants.
+   */
+  window?: PlaybackWindow;
 };
 
 /**
@@ -622,6 +641,15 @@ export function scheduleSong(
   const plan = engine.expression.getPlan();
 
   /*
+   * The window, as one predicate every loop below asks. Written once so a
+   * chain, a note, a drum and a click cannot end up with four slightly
+   * different ideas of what "inside the selection" means.
+   */
+  const bounds = options.window;
+  const inside = (trackId: string, time: number) =>
+    bounds === undefined || inWindow(bounds, { trackId, time });
+
+  /*
    * A legato chain is one voice, so it is scheduled once, at the note that is
    * actually struck. Its targets are still notes of the song and still in the
    * plan; they are simply not struck again (spec 8.5, K-22).
@@ -629,6 +657,7 @@ export function scheduleSong(
   for (const chain of plan.chains) {
     const voice = engine.voices.get(chain.trackId);
     if (!voice || voice.kind !== "sampler") continue;
+    if (!inside(chain.trackId, chain.startTicks)) continue;
     const chainId = chain.chainId;
 
     transport.schedule((time) => {
@@ -645,9 +674,17 @@ export function scheduleSong(
 
     const voice = engine.voices.get(note.trackId);
     if (!voice || voice.kind !== "sampler") continue;
+    if (!inside(note.trackId, note.timeTicks)) continue;
 
     const { sampler } = voice;
-    const duration = ticks(note.durationTicks);
+    const duration = ticks(
+      bounds === undefined
+        ? note.durationTicks
+        : clipToWindow(
+            { time: note.timeTicks, durationTicks: note.durationTicks },
+            bounds,
+          ),
+    );
     const noteId = note.id;
 
     transport.schedule((time) => {
@@ -681,6 +718,7 @@ export function scheduleSong(
     if (event.kind !== "drum") continue;
     const voice = engine.voices.get(event.trackId);
     if (!voice || voice.kind !== "drums") continue;
+    if (!inside(event.trackId, event.time)) continue;
 
     const { drums } = voice;
     transport.schedule((time) => {
@@ -692,11 +730,27 @@ export function scheduleSong(
   // music, so it cannot drift away from it.
   const { click } = engine.metronome;
   for (const beat of metronomeClicks(engine.plan)) {
+    /*
+     * The metronome belongs to the session, not to a track, so it is bounded
+     * by time alone. Whether it clicks at all is still the reader's standing
+     * preference, read at click time exactly as it is for the whole song.
+     */
+    if (bounds !== undefined && (beat.time < bounds.startTicks || beat.time >= bounds.endTicks)) {
+      continue;
+    }
     transport.schedule((time) => {
       if (!options.metronomeEnabled?.()) return;
       click.triggerAttackRelease(0.02, time, beat.downbeat ? 1 : 0.55);
     }, ticks(beat.time));
   }
+
+  /*
+   * Where "the end" is. For a selection that is the end of the *selection* —
+   * a one-shot audition that reported itself finished at the end of the song
+   * would leave the transport running through music the reader did not ask
+   * for, silently, for as long as the song lasts.
+   */
+  const endTicks = bounds?.endTicks ?? engine.plan.totalTicks;
 
   if (options.onEnded) {
     const notify = options.onEnded;
@@ -704,10 +758,10 @@ export function scheduleSong(
       // Drawn on the visual clock, so the state flips when the listener hears
       // the end rather than at the scheduler's look-ahead.
       engine.context.draw.schedule(() => notify(), time);
-    }, ticks(engine.plan.totalTicks));
+    }, ticks(endTicks));
   }
 
-  return engine.plan.totalTicks;
+  return endTicks;
 }
 
 /** Maps a drum piece onto the synthesised voices. */
