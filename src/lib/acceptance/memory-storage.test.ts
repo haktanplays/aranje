@@ -60,6 +60,27 @@ describe("createMemoryStorage", () => {
     expect(before).toEqual({ a: "1" });
     expect(storage.snapshot()).toEqual({ a: "1", b: "2" });
   });
+
+  it("journals physical writes even when bytes are restored", () => {
+    const storage = createMemoryStorage({ a: "1" });
+    storage.setItem("a", "2");
+    storage.setItem("a", "1");
+    expect(storage.snapshot()).toEqual({ a: "1" });
+    expect(storage.journal()).toEqual([
+      { kind: "set", key: "a", before: "1", after: "2" },
+      { kind: "set", key: "a", before: "2", after: "1" },
+    ]);
+  });
+
+  it("restores a disposable checkpoint without inventing a production write", () => {
+    const storage = createMemoryStorage({ a: "1", b: "2" });
+    const checkpoint = storage.snapshot();
+    storage.setItem("a", "changed");
+    const writes = storage.journal().length;
+    storage.restore(checkpoint);
+    expect(storage.snapshot()).toEqual(checkpoint);
+    expect(storage.journal()).toHaveLength(writes);
+  });
 });
 
 describe("deviceStorageSnapshot", () => {

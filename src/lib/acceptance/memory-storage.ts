@@ -19,18 +19,46 @@ export type MemoryStorage = {
   key(index: number): string | null;
   /** What the page wrote, for the acceptance run to report. */
   snapshot(): Record<string, string>;
+  /** Every physical mutation, in order. Reads and equal-value writes are not hidden. */
+  journal(): readonly MemoryStorageMutation[];
+  /**
+   * Return the disposable fixture to an exact checkpoint without pretending
+   * the cleanup was a production Song write.
+   */
+  restore(snapshot: Readonly<Record<string, string>>): void;
+};
+
+export type MemoryStorageMutation = {
+  readonly kind: "set" | "remove";
+  readonly key: string;
+  readonly before: string | null;
+  readonly after: string | null;
 };
 
 export function createMemoryStorage(
   seed: Readonly<Record<string, string>> = {},
 ): MemoryStorage {
   const entries = new Map<string, string>(Object.entries(seed));
+  const mutations: MemoryStorageMutation[] = [];
   return {
     getItem: (key) => entries.get(key) ?? null,
     setItem: (key, value) => {
-      entries.set(key, String(value));
+      const next = String(value);
+      mutations.push({
+        kind: "set",
+        key,
+        before: entries.get(key) ?? null,
+        after: next,
+      });
+      entries.set(key, next);
     },
     removeItem: (key) => {
+      mutations.push({
+        kind: "remove",
+        key,
+        before: entries.get(key) ?? null,
+        after: null,
+      });
       entries.delete(key);
     },
     get length() {
@@ -38,5 +66,10 @@ export function createMemoryStorage(
     },
     key: (index) => [...entries.keys()][index] ?? null,
     snapshot: () => Object.fromEntries(entries),
+    journal: () => mutations.map((entry) => ({ ...entry })),
+    restore: (snapshot) => {
+      entries.clear();
+      for (const [key, value] of Object.entries(snapshot)) entries.set(key, value);
+    },
   };
 }
