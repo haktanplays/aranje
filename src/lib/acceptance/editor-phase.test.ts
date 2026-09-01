@@ -23,6 +23,7 @@ const diff = (over: Partial<PhaseDiff> = {}): PhaseDiff => ({
   revisionAfter: 3,
   bandBefore: null,
   bandAfter: null,
+  armedAfter: false,
   marks: {},
   ...over,
 });
@@ -147,6 +148,7 @@ describe("a phase cannot pass on a neighbour's clean state", () => {
     revisionAfter: 3,
     bandBefore: null,
     bandAfter: null,
+    armedAfter: false,
     marks,
   });
 
@@ -287,5 +289,49 @@ describe("a phase cannot pass on a neighbour's clean state", () => {
       step.phases.filter((phase) => phase.expect.kind === "free").map((p) => p.id),
     );
     expect(free).toEqual(["contractLooked"]);
+  });
+});
+
+describe("the phase the founder could not complete (2V-A.1 §6)", () => {
+  const armPhase = EDITOR_STEPS[0]!.phases[1]!;
+
+  it("is the one that asks for «Devam»", () => {
+    expect(armPhase.text).toContain("«Devam»");
+  });
+
+  it("does not pass for a reader who pressed nothing", () => {
+    /*
+     * The whole point. Under `no_write` this phase passed by default —
+     * pressing "Yaptım" without touching anything writes nothing — so a guide
+     * could certify a control that was not on the screen at all. That is what
+     * happened: the live run reached 2/36 with no "Devam" to press.
+     */
+    expect(judgePhase(armPhase.expect, diff())).toBe(false);
+  });
+
+  it("passes when the reach is actually waiting for a target", () => {
+    expect(judgePhase(armPhase.expect, diff({ armedAfter: true }))).toBe(true);
+  });
+
+  it("still fails if arming somehow wrote to the song", () => {
+    expect(
+      judgePhase(armPhase.expect, diff({ armedAfter: true, songAfter: "B" })),
+    ).toBe(false);
+    expect(
+      judgePhase(armPhase.expect, diff({ armedAfter: true, revisionAfter: 4 })),
+    ).toBe(false);
+  });
+
+  it("keeps asking for the reach to grow the selection afterwards", () => {
+    /* The step is not "the button exists": 3/36 measures the band widening,
+       and 4/36 measures it narrowing again. */
+    const grew = EDITOR_STEPS[0]!.phases[2]!;
+    expect(grew.expect).toEqual({ kind: "selection_only", band: "wider" });
+    expect(judgePhase(grew.expect, diff({ bandBefore: 34, bandAfter: 34 }))).toBe(
+      false,
+    );
+    expect(judgePhase(grew.expect, diff({ bandBefore: 34, bandAfter: 170 }))).toBe(
+      true,
+    );
   });
 });

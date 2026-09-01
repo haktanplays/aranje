@@ -31,3 +31,8 @@ eval/intent-composer/.render/
 # the per-run copies of the ten-run sweep are summarised in RUNS.json instead
 eval/editor-2va/artifacts/RESULTS-run*.json
 eval/editor-2va/artifacts/failed-*.png
+
+# 2V-A.1: the last run's readout and its founder screenshots are committed;
+# per-run copies of the ten-run sweeps are summarised in RUNS.json instead
+eval/editor-2va1/artifacts/*-run*.json
+eval/editor-2va1/artifacts/failed-*.png

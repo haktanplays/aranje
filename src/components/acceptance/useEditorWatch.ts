@@ -56,6 +56,14 @@ export type EditorSnapshot = {
   readonly revision: number;
   /** Width of the time-selection band, or null when nothing is selected. */
   readonly band: number | null;
+  /**
+   * Whether "Devam" is waiting for a target (2V-A.1 §6).
+   *
+   * Read from the control itself, like the band is read from the band: the
+   * page asks the screen what state the reader put it in, rather than
+   * reaching into the workspace's own hooks for a field it could not see.
+   */
+  readonly armed: boolean;
 };
 
 export type StandingObservations = {
@@ -110,6 +118,16 @@ const EMPTY_STANDING: StandingObservations = {
   noStaffScroller: null,
   noTruncatedLabel: null,
   allTargets44: null,
+};
+
+/** The reach's own control, by the name a reader reads. */
+const extendArmed = (): boolean => {
+  const node = [...document.querySelectorAll("button")].find(
+    (button) =>
+      (button.getAttribute("aria-label") ?? button.textContent ?? "").trim() ===
+      "Devam",
+  );
+  return node?.getAttribute("aria-pressed") === "true";
 };
 
 const bandWidth = (): number | null => {
@@ -377,7 +395,12 @@ export function useEditorWatch(storage: MemoryStorage): {
    */
   const snapshot = useCallback((): EditorSnapshot => {
     const reading = readFixture(storage);
-    return { song: reading.song, revision: reading.revision, band: bandWidth() };
+    return {
+      song: reading.song,
+      revision: reading.revision,
+      band: bandWidth(),
+      armed: extendArmed(),
+    };
   }, [storage]);
 
   useEffect(() => {

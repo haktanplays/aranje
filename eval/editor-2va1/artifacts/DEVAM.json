@@ -1,0 +1,106 @@
+{
+  "kind": "browser emulation — not a physical device",
+  "reproduces": "384x740 · Android UA · «1 power chord · 3 nota» · 2/36",
+  "results": [
+    {
+      "viewport": "384x740",
+      "step": 1,
+      "name": "the fixture opens on the tab, reading",
+      "pass": true,
+      "detail": "strings=12 guide=\"1 · Seçim ve Devam · 1/36\""
+    },
+    {
+      "viewport": "384x740",
+      "step": 2,
+      "name": "a long press on the first chord opens a selection",
+      "pass": true,
+      "detail": "summary=\"1 power chord · 3 nota\" band={\"left\":34,\"width\":34}"
+    },
+    {
+      "viewport": "384x740",
+      "step": 3,
+      "name": "the selection is the power chord the guide names",
+      "pass": true,
+      "detail": "summary=\"1 power chord · 3 nota\""
+    },
+    {
+      "viewport": "384x740",
+      "step": 4,
+      "name": "«Devam» is on the bar in front of the reader",
+      "pass": true,
+      "detail": "actions=[\"1 power chord · 3 notaİptalKopyalaKesÇoğaltTekrarlaTaşıDevamSilDaha fazla\",\"Kopyala\",\"Kes\",\"Çoğalt\",\"Tekrarla\",\"Taşı\",\"Devam\",\"Sil\",\"Daha fazla\"] disabled=false"
+    },
+    {
+      "viewport": "384x740",
+      "step": 5,
+      "name": "it is a real target, and its name is not cut",
+      "pass": true,
+      "detail": "89×44 truncated=false"
+    },
+    {
+      "viewport": "384x740",
+      "step": 6,
+      "name": "pressing it arms the reach rather than writing",
+      "pass": true,
+      "detail": "aria-pressed=true revision 1 → 1"
+    },
+    {
+      "viewport": "384x740",
+      "step": 7,
+      "name": "the next press grows the run from its own start",
+      "pass": true,
+      "detail": "reached slot 8: band {\"left\":34,\"width\":34} → {\"left\":34,\"width\":306}, summary=\"5 nota · 1 ölçü\""
+    },
+    {
+      "viewport": "384x740",
+      "step": 8,
+      "name": "the guide's own judgement moves 2/36 to 3/36",
+      "pass": true,
+      "detail": "\"1 · Seçim ve Devam · 2/36\" → \"1 · Seçim ve Devam · 3/36\" · extendSelected=true extendArmed=true · task=\"Motifin son notasına basılı tut. Seçim oraya kadar uzasın.\""
+    },
+    {
+      "viewport": "384x740",
+      "step": 9,
+      "name": "the song is byte-identical to before any of it",
+      "pass": true,
+      "detail": "2356 bytes, identical=true"
+    },
+    {
+      "viewport": "384x740",
+      "step": 10,
+      "name": "no history step and no storage write happened",
+      "pass": true,
+      "detail": "revision 1 → 1 (one per committed edit)"
+    },
+    {
+      "viewport": "384x740",
+      "step": 11,
+      "name": "and the same reading would have seen a real edit",
+      "pass": true,
+      "detail": "bytes moved=true, revision 1 → 2, restored=true"
+    },
+    {
+      "viewport": "384x740",
+      "step": 12,
+      "name": "the staff is where it was, and nothing behind it drifted",
+      "pass": true,
+      "detail": "scrollLeft 0 → 0 (a nudge reads 120); behind it 0 → 0"
+    },
+    {
+      "viewport": "384x740",
+      "step": 13,
+      "name": "no control shrank, and nothing overflowed",
+      "pass": true,
+      "detail": "under44=[] overflow=0"
+    },
+    {
+      "viewport": "384x740",
+      "step": 14,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "failed": 0,
+  "screenshots": 4
+}

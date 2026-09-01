@@ -212,6 +212,7 @@ export function EditorAcceptance() {
         revisionAfter: after.revision,
         bandBefore: start.band,
         bandAfter: after.band,
+        armedAfter: after.armed,
         marks,
       });
     /*
@@ -334,6 +335,14 @@ export function EditorAcceptance() {
       */}
       <section
         data-acceptance-guide
+        /*
+         * The page's own verdict on each phase, for a browser run to read
+         * (2V-A.1 §6). Without it a harness can see that the counter moved
+         * from 2/36 to 3/36 — which it does whether the phase passed or
+         * failed — and would have to re-derive the judgement itself, which is
+         * marking your own homework. This is the answer the app recorded.
+         */
+        data-acceptance-checks={JSON.stringify(observations.checks)}
         className="border-line bg-panel max-h-[58dvh] shrink-0 space-y-2 overflow-y-auto border-t px-3 py-2"
       >
         {done ? (

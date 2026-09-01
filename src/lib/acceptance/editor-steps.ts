@@ -58,6 +58,15 @@ export type StepId =
 export type PhaseExpectation =
   /** Nothing may be written: same song bytes, same revision. */
   | { readonly kind: "no_write" }
+  /**
+   * The reach is armed, and nothing was written arming it (2V-A.1 §6).
+   *
+   * `no_write` alone would pass this phase for a reader who pressed "Yaptım"
+   * without pressing anything else, because doing nothing writes nothing —
+   * which is exactly how a guide comes to certify a control that is not on
+   * screen. This asks the app what state the press left behind.
+   */
+  | { readonly kind: "armed" }
   /** Exactly one edit: the song changed and the revision moved by one. */
   | { readonly kind: "one_write" }
   /** A selection moved and nothing was written. */
@@ -137,7 +146,13 @@ export const EDITOR_STEPS: readonly EditorStep[] = [
       {
         id: "extendArmed",
         text: "«Devam»a dokun.",
-        expect: { kind: "no_write" },
+        /*
+         * Armed, not merely "nothing broke" (2V-A.1 §6). This is the phase the
+         * founder could not complete — there was no "Devam" on the bar in
+         * front of them — and a phase that passes when nothing was pressed
+         * could never have told anyone that.
+         */
+        expect: { kind: "armed" },
       },
       {
         id: "extendGrew",
@@ -538,6 +553,14 @@ export type PhaseDiff = {
   /** The selection band's width, or null when nothing was selected. */
   readonly bandBefore: number | null;
   readonly bandAfter: number | null;
+  /**
+   * Whether "Devam" is waiting for a target, read from the control itself.
+   *
+   * From `aria-pressed` on the button a reader would press, so the phase is
+   * answered by the same thing the reader is looking at rather than by a
+   * field the page keeps for itself.
+   */
+  readonly armedAfter: boolean;
   /** Bytes remembered under a name by an earlier `mark` phase. */
   readonly marks: Readonly<Record<string, string>>;
 };
@@ -561,6 +584,8 @@ export function judgePhase(expect: PhaseExpectation, diff: PhaseDiff): boolean {
     case "mark":
     case "no_write":
       return !changed && revisionMoved === 0;
+    case "armed":
+      return !changed && revisionMoved === 0 && diff.armedAfter;
     case "one_write":
       return changed && revisionMoved === 1;
     case "selection_only": {
