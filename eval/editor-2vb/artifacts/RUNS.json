@@ -1,0 +1,77 @@
+{
+  "kind": "browser emulation \u2014 not a physical device",
+  "runs": 10,
+  "everyRunGreen": true,
+  "rows": [
+    {
+      "run": 1,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 2,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 3,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 4,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 5,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 6,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 7,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 8,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 9,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    },
+    {
+      "run": 10,
+      "actions": "85/85 \u00b7 failed=0",
+      "actionsExit": 0,
+      "functional": "70/70 \u00b7 failed=0",
+      "functionalExit": 0
+    }
+  ]
+}

@@ -10,9 +10,22 @@ Aşağıdaki 25 madde **yalnız bu turun deltasıdır.**
 - `febc76a` — canon + matris testleri + canlı FAIL baseline'ı
 - `5d516c5` — bütün production seçim yüzeylerinin canon'a bağlanması
 - `ee7a77c` — `/eval/editor-action-batch` + reachability + iki tarayıcı harness'ı
-- Final: bu commit (probe'lar, spec §13.33 + K-63, rapor)
+- `51b5166` — probe'lar, spec §13.33 + K-63, rapor
 
-Dört ileri commit. Amend, rebase, force-push yok.
+Amend, rebase, force-push yok.
+
+**Bir düzeltme, adıyla:** `51b5166` ile push edilen K-63 satırı tarayıcı
+kabulü için «10 ardışık koşu» yazıyordu — o koşu henüz bitmemişti, yani
+ölçülmemiş bir sayıyı commit ettim. Satır düzeltildi: artık yalnız ölçülmüş
+olanı (`85/85` ve `70/70`) söylüyor ve on koşunun kararını
+`artifacts/RUNS.json` içindeki `everyRunGreen` satırına havale ediyor.
+
+**Plandan bir sapma, adıyla:** §16 en fazla dört ileri commit istiyor ve dördü
+de kullanıldı. On ardışık tarayıcı koşusu final HEAD üzerinde yeniden
+başlatıldığı için serinin artefaktı (`artifacts/RUNS.json`) ve §18'in sayıları
+ancak koşu bitince yazılabiliyor — bu da beşinci bir commit demek. Efemer bir
+sandbox'ta saatlerce doğrulanmış işi commit'siz tutmak, commit sayısını
+tutturmaktan daha kötü bir risk; sapma gizlenmiyor, burada yazıyor.
 
 ### 2 · Yeni LIVE FAIL baseline'ı
 
@@ -138,6 +151,16 @@ ve bölümün son slot'unda «Uzatılacak yer kalmadı.» ile grileşir.
 - Pano bir ölçü seçiminden gelmişse bir nota seçimine hiç sunulmaz.
 - «Yapıştır» stage eder: `Uygula`'ya kadar revizyon kımıldamaz.
 
+**Bir yan sonuç, adıyla ve kapatılmadan:** okuma sheet'i artık her yüzeyle
+aynı kolu (`pasteHere`) çağırdığı için, «okuyucudan hedef seçmesini iste»
+varyantı (`startPasteFlow` ve `pasteAt.kind === "choosing"`) tek çağrısını
+kaybetti ve şu an **ulaşılamaz durumda**. Davranış kaybı yok — sheet zaten
+yalnız bir seçim varken açılır, ve orada doğru soru 2U-B §3'ün söylediği gibi
+`pasteHere`'dir — ama kod ölü. Bu turda kaldırılmadı: `use-selection-session`
+paste durum makinesine dokunmak, turun son adımında ve §14'ün «seçim gesture
+redesign yapma» sınırına komşu bir iş. Sıradaki turun sahiplenmesi gereken
+bilinen bir borç olarak buraya yazılıyor.
+
 ### 12 · Yazan eylemlerin atomic history/storage sonucu
 
 `functional.mjs`, beş bağlamda, proje kaydının kendi baytları ve revizyonu
@@ -217,12 +240,17 @@ kayması `0`, konsol hatası `0`.
 yazar; `everyRunGreen` tek satırlık karardır — on koşunun biri kırmızıysa seri
 kırmızıdır.
 
-Seri, üretim kodu final HEAD ile **birebir aynı** olan `ee7a77c` build'i
-üzerinde alındı: bu turun son commit'i test, probe, spec ve rapor ekler, ve
-production tarafında yalnız bir doküman yorumunu yeniden yazar
-(`useAcceptanceReading.ts` — §20). Rotanın davranışı değişmez.
+Seri **final HEAD `51b5166`'nın taze build'i** üzerinde alındı. İlk kez
+`ee7a77c` üzerinde başlatılmıştı; «üretim kodu zaten aynı» demek yerine
+durdurulup final build'de baştan koşuldu, çünkü §17 final HEAD istiyor ve
+«neredeyse aynı» bu turun ortadan kaldırmak için var olduğu türden bir
+kelimedir. (Rota sayfası kendi build sha'sını gösterir: `51b5166`.)
 
-_(seri bitince sayıları buraya yazılır; koşu sırasında rapor edilmez)_
+**On koşunun onu da tam yeşil:** her koşuda `actions 85/85` ve
+`functional 70/70`, ikisi de `exit 0`. `everyRunGreen: true`.
+
+Toplam **1.550 kontrol** (10 × 155), beş bağlamda, gerçek gesture'larla ve
+gerçek üretim DOM'u üzerinde.
 
 ### 19 · Mutation probe'ları
 
@@ -305,7 +333,7 @@ onaylanmadı.
 ### 25 · Founder linki
 
 ```
-https://<public-host>/eval/editor-action-batch?sha=<FINAL_SHA>
+https://<public-host>/eval/editor-action-batch?sha=51b5166
 ```
 
 Eski `/eval/editor-acceptance` ve `/eval/selection-playback` rotaları

@@ -289,6 +289,209 @@
       "name": "switching the measure scope writes nothing",
       "pass": true,
       "detail": "held=true scopes=full,track revision 1→1"
+    },
+    {
+      "viewport": "390x844",
+      "step": 14,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 1,
+      "name": "the record is readable before anything is pressed",
+      "pass": true,
+      "detail": "revision=1 bytes=2356"
+    },
+    {
+      "viewport": "412x915",
+      "step": 2,
+      "name": "«Çoğalt» is one atomic write, and undo/redo is byte-exact",
+      "pass": true,
+      "detail": "revision 1→2 · undo byte-equal · redo byte-equal"
+    },
+    {
+      "viewport": "412x915",
+      "step": 3,
+      "name": "«Sil» is one atomic write, and undo/redo is byte-exact",
+      "pass": true,
+      "detail": "revision 1→2 · undo byte-equal · redo byte-equal"
+    },
+    {
+      "viewport": "412x915",
+      "step": 4,
+      "name": "«Kes» is one atomic write, and undo/redo is byte-exact",
+      "pass": true,
+      "detail": "revision 1→2 · undo byte-equal · redo byte-equal"
+    },
+    {
+      "viewport": "412x915",
+      "step": 5,
+      "name": "«Taşı» stages, «Uygula» writes once, «Geri al» undoes it",
+      "pass": true,
+      "detail": "held=true staged 1→1 · applied →2 · undo byte-equal"
+    },
+    {
+      "viewport": "412x915",
+      "step": 6,
+      "name": "«Tekrarla» stages, «Uygula» writes once, «Geri al» undoes it",
+      "pass": true,
+      "detail": "held=true staged 1→1 · applied →2 · undo byte-equal"
+    },
+    {
+      "viewport": "412x915",
+      "step": 7,
+      "name": "«Yapıştır» stages from the clipboard and writes once",
+      "pass": true,
+      "detail": "offered=true preview=\"Uygulanmaya hazır.\" revision 2→2→3 · undo byte-equal"
+    },
+    {
+      "viewport": "412x915",
+      "step": 8,
+      "name": "the clipboard holds a copy, not a view of the song",
+      "pass": true,
+      "detail": "deleted then pasted back: byte-identical to the copy · revision 1→2→3"
+    },
+    {
+      "viewport": "412x915",
+      "step": 9,
+      "name": "«Kopyala» writes nothing at all",
+      "pass": true,
+      "detail": "revision 1→1 · paste enabled=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 10,
+      "name": "«Devam» arms the reach and writes nothing",
+      "pass": true,
+      "detail": "armed=true revision 1→1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 11,
+      "name": "both listening actions write nothing, and the loop closes",
+      "pass": true,
+      "detail": "revision 1→1 · \"Seçimden döngü\" then \"Seçim döngüsünü kapat\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 12,
+      "name": "cancelling a selection writes nothing",
+      "pass": true,
+      "detail": "cleared=true revision 1→1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 13,
+      "name": "switching the measure scope writes nothing",
+      "pass": true,
+      "detail": "held=true scopes=full,track revision 1→1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 14,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 1,
+      "name": "the record is readable before anything is pressed",
+      "pass": true,
+      "detail": "revision=1 bytes=2356"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 2,
+      "name": "«Çoğalt» is one atomic write, and undo/redo is byte-exact",
+      "pass": true,
+      "detail": "revision 1→2 · undo byte-equal · redo byte-equal"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 3,
+      "name": "«Sil» is one atomic write, and undo/redo is byte-exact",
+      "pass": true,
+      "detail": "revision 1→2 · undo byte-equal · redo byte-equal"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 4,
+      "name": "«Kes» is one atomic write, and undo/redo is byte-exact",
+      "pass": true,
+      "detail": "revision 1→2 · undo byte-equal · redo byte-equal"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 5,
+      "name": "«Taşı» stages, «Uygula» writes once, «Geri al» undoes it",
+      "pass": true,
+      "detail": "held=true staged 1→1 · applied →2 · undo byte-equal"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 6,
+      "name": "«Tekrarla» stages, «Uygula» writes once, «Geri al» undoes it",
+      "pass": true,
+      "detail": "held=true staged 1→1 · applied →2 · undo byte-equal"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 7,
+      "name": "«Yapıştır» stages from the clipboard and writes once",
+      "pass": true,
+      "detail": "offered=true preview=\"Uygulanmaya hazır.\" revision 2→2→3 · undo byte-equal"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 8,
+      "name": "the clipboard holds a copy, not a view of the song",
+      "pass": true,
+      "detail": "deleted then pasted back: byte-identical to the copy · revision 1→2→3"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 9,
+      "name": "«Kopyala» writes nothing at all",
+      "pass": true,
+      "detail": "revision 1→1 · paste enabled=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 10,
+      "name": "«Devam» arms the reach and writes nothing",
+      "pass": true,
+      "detail": "armed=true revision 1→1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 11,
+      "name": "both listening actions write nothing, and the loop closes",
+      "pass": true,
+      "detail": "revision 1→1 · \"Seçimden döngü\" then \"Seçim döngüsünü kapat\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 12,
+      "name": "cancelling a selection writes nothing",
+      "pass": true,
+      "detail": "cleared=true revision 1→1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 13,
+      "name": "switching the measure scope writes nothing",
+      "pass": true,
+      "detail": "held=true scopes=full,track revision 1→1"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 14,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
     }
   ],
   "failed": 0
