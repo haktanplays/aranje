@@ -3,9 +3,9 @@
 /**
  * What you can do with a selection (spec 13.1).
  *
- * Seven primary actions, fixed, plus a "Daha fazla" sheet for the rest.
+ * Eight primary targets, plus a "Daha fazla" sheet for the rest.
  *
- * Four columns, so the seven wrap to two rows. One row was the first attempt
+ * Four columns, so the eight wrap to two rows. One row was the first attempt
  * and it does not survive arithmetic: seven 44px targets with gaps and padding
  * need 348px, and the narrowest screen this pilot supports is 320. The row did
  * fit — by letting every button shrink to 40px wide, which is under the
@@ -15,78 +15,48 @@
  *
  * The column count does not change with the viewport. A toolbar that reflows
  * between phones is a toolbar whose buttons are somewhere else on a friend's
- * screen, and these seven are meant to be found without looking.
+ * screen, and these are meant to be found without looking.
  *
  * Every control is a real button with a real name. Nothing here is a bare icon
  * with a tooltip, because a tooltip is not available to a finger.
  *
- * ## Why "Devam" is here, and was not (2V-A.1 §2)
+ * ## Why the list is not in this file (2V-B §2)
  *
- * A founder on a real phone held a power chord, was told to press "Devam",
- * and had seven buttons in front of them that did not include it. The
- * capability model had been offering `extend` all along; the compact toolbar
- * had been drawing it since K-59. This bar had not, because its verbs were a
- * hard-coded list that asked the model nothing — the same shape as the 2U-B
- * clipboard defect, where "Yapıştır" was offered by the model and absent from
- * the list that draws.
+ * It was, and twice a verb the capability model offered never reached the
+ * screen because of it: "Yapıştır" in 2U-B and "Devam" in 2V-A.1. Both were
+ * found by a person holding a phone, and both were fixed by adding one entry
+ * to this one list — which is not a fix, it is the next one waiting.
  *
- * So the list is eight now, and every entry's state comes from the model:
- * offered and live, or greyed with the model's own sentence. Eight targets in
- * a four-column grid is the same two rows seven made, so nothing below moved
- * and no string was lost to it.
+ * So the entries come from `selection-action-canon.ts` now, already placed,
+ * already labelled and already carrying the model's answer. This file draws
+ * eight targets in four columns and knows nothing about which eight.
  */
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
-import type { SelectionVerb, VerbOffer } from "@/lib/song/selection-capability";
-
-export type SelectionAction =
-  | "copy"
-  | "cut"
-  | "duplicate"
-  | "repeat"
-  | "move"
-  | "extend"
-  | "delete"
-  | "more";
+import type {
+  SelectionActionId,
+  SelectionActionOffer,
+} from "@/lib/song/selection-action-canon";
 
 /**
- * The eight, in the order a finger finds them.
+ * What a press means, for the area that wires them.
  *
- * "Devam" sits beside "Taşı" because the two are the reaches — one moves what
- * is held, the other grows it — and "Daha fazla" stays last, a door after the
- * verbs rather than one of them.
- *
- * `verb` is how each control asks the capability model what it may do. "Daha
- * fazla" has none: a door is not a verb, and it opens whatever the drawer has
- * left to offer.
+ * The same ids the canon uses, so a control this bar draws and a handler the
+ * area runs cannot be named differently.
  */
-const PRIMARY: readonly {
-  readonly action: SelectionAction;
-  readonly label: string;
-  readonly verb: SelectionVerb | null;
-}[] = [
-  { action: "copy", label: "Kopyala", verb: "copy" },
-  { action: "cut", label: "Kes", verb: "cut" },
-  { action: "duplicate", label: "Çoğalt", verb: "duplicate" },
-  { action: "repeat", label: "Tekrarla", verb: "repeat" },
-  { action: "move", label: "Taşı", verb: "move_time" },
-  { action: "extend", label: "Devam", verb: "extend" },
-  { action: "delete", label: "Sil", verb: "delete" },
-  { action: "more", label: "Daha fazla", verb: null },
-];
+export type SelectionAction = SelectionActionId;
 
 export type SelectionActionBarProps = {
   readonly summary: string;
   readonly notice?: string | null;
   readonly error?: string | null;
   /**
-   * What this selection may be asked to do (2U-A §3).
+   * The eight, already placed on this surface by the canon (2V-B §3).
    *
-   * Empty means "nothing has been computed", and every control stays live —
-   * the state this bar was always in before the model reached it. A verb the
-   * model greys is drawn greyed here, with the model's own sentence, so the
-   * reader learns the rule from the control rather than from a refusal.
+   * Empty means nothing is held. A verb the model greys arrives greyed, with
+   * the model's own sentence, so the reader learns the rule from the control
+   * rather than from a refusal.
    */
-  readonly offers?: readonly VerbOffer[];
+  readonly actions: readonly SelectionActionOffer[];
   /** True while "Devam" is waiting for the reader to say where to reach to. */
   readonly extendArmed?: boolean;
   readonly onAction: (action: SelectionAction) => void;
@@ -97,13 +67,11 @@ export function SelectionActionBar({
   summary,
   notice,
   error,
-  offers,
+  actions,
   extendArmed = false,
   onAction,
   onCancel,
 }: SelectionActionBarProps) {
-  const stateOf = (verb: SelectionVerb | null) =>
-    verb === null ? null : (offers?.find((offer) => offer.verb === verb)?.state ?? null);
   return (
     <div
       data-testid="selection-action-bar"
@@ -142,16 +110,15 @@ export function SelectionActionBar({
       ) : null}
 
       <div className="grid grid-cols-4 gap-1 p-2">
-        {PRIMARY.map((entry) => {
-          const state = stateOf(entry.verb);
-          const off = state?.kind === "disabled";
-          const armed = entry.action === "extend" && extendArmed;
+        {actions.map((entry) => {
+          const off = entry.availability === "disabled";
+          const armed = entry.id === "extend" && extendArmed;
           return (
             <button
-              key={entry.action}
+              key={entry.id}
               type="button"
-              data-testid={`selection-action-${entry.action}`}
-              onClick={() => onAction(entry.action)}
+              data-testid={`selection-action-${entry.id}`}
+              onClick={() => onAction(entry.id)}
               disabled={off}
               /*
                * The reason travels with the control rather than waiting for a
@@ -159,12 +126,13 @@ export function SelectionActionBar({
                * button and nothing at all from one that looks live and refuses.
                *
                * The accessible name stays the verb when the control is live,
-               * which is what §5 asks for — "Devam", not "Devam — …".
+               * which is what UI Contract v1 asks for — "Devam", not
+               * "Devam — …".
                */
-              title={off ? state.reason : undefined}
-              aria-label={off ? `${entry.label} — ${state.reason}` : entry.label}
+              title={off ? entry.reason : undefined}
+              aria-label={off ? `${entry.label} — ${entry.reason}` : entry.label}
               /* "Devam" is armed or not; nothing else here is a toggle. */
-              aria-pressed={entry.action === "extend" ? extendArmed : undefined}
+              aria-pressed={entry.id === "extend" ? extendArmed : undefined}
               className={`flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight ${
                 off
                   ? "border-app/50 text-muted/40"

@@ -38,6 +38,11 @@ import {
   offeredVerbs,
 } from "@/lib/song/selection-capability";
 import { hasExtendTarget } from "@/lib/song/selection-extend";
+import {
+  onSurface,
+  selectionActionCanon,
+} from "@/lib/song/selection-action-canon";
+import { EDIT_HANDLERS, READ_HANDLERS } from "@/lib/workspace/selection-verbs";
 import type { MelodicSlot, Song } from "@/lib/song/schema";
 
 const TRACK = "gtr";
@@ -212,39 +217,52 @@ describe("the capability matrix «Devam» has to satisfy (§4)", () => {
 
 describe("the surface the founder was looking at", () => {
   /*
-   * Read from disk, because this is a fact about which list draws which verb
-   * and that is exactly the kind of fact that decays when someone adds an
-   * eighth action somewhere else. The compact toolbar is checked the same way
-   * so the two rows can never drift into offering different things.
+   * Asked of the canon rather than grepped out of a component, because since
+   * 2V-B there is no list in a component to grep. What these pinned is still
+   * pinned — which row draws "Devam", where the door sits, how many targets
+   * the grid holds — it is just asked of the thing that decides.
    */
   const tall = readFileSync("src/components/workspace/SelectionActionBar.tsx", "utf8");
-  const compact = readFileSync("src/components/workspace/SelectionToolbar.tsx", "utf8");
+  const canon = readFileSync("src/lib/song/selection-action-canon.ts", "utf8");
+
+  const drawn = (mode: "read" | "edit") =>
+    selectionActionCanon({
+      mode,
+      offers: selectionCapabilities(held(riff(), 0, SLOT), context(riff())),
+      handlers: mode === "read" ? READ_HANDLERS : EDIT_HANDLERS,
+    });
 
   it("draws «Devam» on the reading surface's own bar", () => {
-    expect(tall).toContain('label: "Devam"');
+    const labels = onSurface(drawn("read"), "read_primary").map((entry) => entry.label);
+    expect(labels).toContain("Devam");
   });
 
   it("draws it in the main grid rather than behind «Daha fazla»", () => {
     /* "Daha fazla" stays last: a door after the verbs, not among them. */
-    const labels = [...tall.matchAll(/label: "([^"]+)"/g)].map((match) => match[1]);
-    expect(labels).toContain("Devam");
+    const labels = onSurface(drawn("read"), "read_primary").map((entry) => entry.label);
     expect(labels.at(-1)).toBe("Daha fazla");
     expect(labels.indexOf("Devam")).toBeLessThan(labels.indexOf("Daha fazla"));
+    expect(
+      onSurface(drawn("read"), "more_sheet").some((entry) => entry.id === "extend"),
+    ).toBe(false);
   });
 
   it("keeps the grid at four columns, so no third row appears", () => {
     /* Eight targets in a four-column grid is two rows, which is what it was. */
-    const labels = [...tall.matchAll(/label: "([^"]+)"/g)].map((match) => match[1]);
     expect(tall).toContain("grid-cols-4");
-    expect(labels).toHaveLength(8);
+    expect(onSurface(drawn("read"), "read_primary")).toHaveLength(8);
   });
 
   it("asks the capability model rather than deciding for itself", () => {
-    expect(tall).toContain("selection-capability");
+    /* The bar draws the canon's answer, and the canon reads the model. */
+    expect(tall).toContain("selection-action-canon");
+    expect(tall).not.toContain("selection-capability");
+    expect(canon).toContain("selection-capability");
   });
 
   it("still carries it on the compact toolbar too", () => {
-    expect(compact).toContain('label: "Devam"');
+    const labels = onSurface(drawn("edit"), "edit_primary").map((entry) => entry.label);
+    expect(labels).toEqual(["Bağla", "Taşı", "Devam", "Daha fazla"]);
   });
 
   it("keeps every target a finger can hit", () => {
@@ -265,7 +283,9 @@ describe("the surface the founder was looking at", () => {
      * plus the model's reason when it is not. A test id in that slot would
      * leave a reader who cannot see the row with nothing to go on.
      */
-    expect(tall).toContain("aria-label={off ? `${entry.label} — ${state.reason}` : entry.label}");
+    expect(tall).toContain(
+      "aria-label={off ? `${entry.label} — ${entry.reason}` : entry.label}",
+    );
   });
 });
 
@@ -275,7 +295,7 @@ describe("what the reach costs the project", () => {
    * reach is allowed to touch, and that is exactly the kind of fact that
    * decays the first time somebody needs it to remember something.
    */
-  const area = readFileSync("src/components/workspace/SelectionActionArea.tsx", "utf8");
+  const runner = readFileSync("src/lib/workspace/selection-verbs.ts", "utf8");
   const session = readFileSync("src/lib/workspace/use-selection-session.ts", "utf8");
   const core = readFileSync("src/lib/song/selection-extend.ts", "utf8");
 
@@ -285,7 +305,7 @@ describe("what the reach costs the project", () => {
      * which is the same handle the focused row calls — there is one arm, and
      * the next long press is what moves the edge.
      */
-    expect(area).toContain("time.toggleExtend()");
+    expect(runner).toContain("time.toggleExtend()");
     expect(session).toContain('moveEdge("end", x)');
   });
 
@@ -309,8 +329,14 @@ describe("what the reach costs the project", () => {
   });
 
   it("names no command, clipboard, history or storage on the way", () => {
-    const reach = area.slice(area.indexOf('if (action === "extend")'));
-    const branch = reach.slice(0, reach.indexOf("}"));
+    /*
+     * Sliced to the reach's own case rather than searched for in the whole
+     * runner: the case above it calls `time.handle.copy()`, so a file-wide
+     * search for "copy" would fail on a branch that is innocent, and a
+     * file-wide search for "apply(" would pass on one that is not.
+     */
+    const reach = runner.slice(runner.indexOf('case "extend":'));
+    const branch = reach.slice(0, reach.indexOf("return;"));
     for (const forbidden of ["apply(", "commit", "copy", "stage", "localStorage"]) {
       expect(branch, forbidden).not.toContain(forbidden);
     }

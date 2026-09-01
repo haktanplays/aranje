@@ -15,18 +15,26 @@ import {
 } from "@/components/workspace/BarActionBar";
 import { ChainDecisionSheet } from "@/components/workspace/ChainDecisionSheet";
 import { SelectionActionBar } from "@/components/workspace/SelectionActionBar";
+import { SelectionMoreSheet } from "@/components/workspace/SelectionMoreSheet";
 import { TransformSheet } from "@/components/workspace/TransformSheet";
 import { PRACTICE_FROM_SELECTION_LABEL } from "@/lib/practice/messages";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
-import { selectionOffers } from "@/lib/workspace/selection-verbs";
+import { onSurface } from "@/lib/song/selection-action-canon";
+import {
+  measureActions,
+  selectionActions,
+  selectionRunner,
+} from "@/lib/workspace/selection-verbs";
 import type { Song } from "@/lib/song/schema";
 import type { PracticeSession } from "@/lib/workspace/use-practice-session";
+import type { SelectionListening } from "@/lib/workspace/use-selection-listening";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { TimingTarget } from "@/lib/workspace/use-timing-change";
 
 export function SelectionActionArea({
   session,
   song,
+  listening,
   practice,
   compact,
   onOpenTiming,
@@ -39,6 +47,15 @@ export function SelectionActionArea({
    * focused row does — one answer, two surfaces (2V-A.1 §2).
    */
   song: Song;
+  /**
+   * The two listening intents, bound to the transport (2V-A §3, 2V-B §1).
+   *
+   * Here, and not only in edit mode. A reader who is reading may want to hear
+   * what they are holding at least as much as one who is writing, and the
+   * founder was told to — the guide's step 2 asks for "Seçimi dinle" and the
+   * reading surface's sheet had no such thing in it.
+   */
+  listening: SelectionListening;
   /**
    * True while the reader is writing (K-59 §3).
    *
@@ -62,6 +79,21 @@ export function SelectionActionArea({
    * be an action that appears and then refuses.
    */
   const selection = time.handle.selection;
+  /*
+   * One answer, asked once, for the grid and the sheet behind it. Two
+   * derivations here would be two lists again, which is the defect (§2).
+   */
+  const read = selectionActions({
+    song,
+    time,
+    mode: "read",
+    looping: listening.looping,
+  });
+  const runRead = selectionRunner({
+    time,
+    listening,
+    openMore: () => time.openSheet("more"),
+  });
   const offersPractice =
     !compact && selection !== null && practice.offersFromSelection(selection);
 
@@ -80,6 +112,7 @@ export function SelectionActionArea({
       {bars.handle.selection ? (
         <BarActionBar
           selection={bars.handle.selection}
+          actions={measureActions({ song, bars, looping: listening.looping })}
           summary={bars.handle.summary ?? "Ölçü seçimi"}
           notice={bars.handle.notice}
           preview={bars.handle.preview}
@@ -93,6 +126,18 @@ export function SelectionActionArea({
               case "copy":
                 // Reading only: no commit, no write, no undo step.
                 bars.handle.copy();
+                return;
+              /*
+               * Ephemeral, both: they schedule sound and produce no command.
+               * The plan is built from the bar selection's own descriptor, so
+               * "Bu enstrüman" plays one track and "Tüm enstrümanlar" plays
+               * every one (2V-B §6).
+               */
+              case "listen_once":
+                listening.audition();
+                return;
+              case "listen_loop":
+                listening.toggleLoop();
                 return;
               case "cut":
                 bars.stage({ kind: "cut_bars" });
@@ -111,6 +156,9 @@ export function SelectionActionArea({
                 return;
               case "more":
                 bars.setSheet("more");
+                return;
+              default:
+                /* The canon draws nothing else on this row. */
                 return;
             }
           }}
@@ -184,7 +232,7 @@ export function SelectionActionArea({
 
       {time.handle.selection && !compact ? (
         <SelectionActionBar
-          offers={selectionOffers(song, time)}
+          actions={onSurface(read, "read_primary")}
           extendArmed={time.extendArmed}
           summary={
             time.pasteAt.kind === "choosing"
@@ -194,39 +242,22 @@ export function SelectionActionArea({
           notice={time.handle.notice}
           error={time.handle.error}
           onCancel={time.clear}
-          onAction={(action) => {
-            if (action === "copy") {
-              // Reading only: no commit, no write, no undo step.
-              time.handle.copy();
-              return;
-            }
-            if (action === "cut") {
-              time.handle.apply({ kind: "cut_selection" });
-              return;
-            }
-            if (action === "duplicate") {
-              time.handle.apply({ kind: "duplicate_selection" });
-              return;
-            }
-            if (action === "delete") {
-              time.handle.apply({ kind: "delete_selection" });
-              return;
-            }
-            /*
-             * The same authority the focused row reaches for (2V-A.1 §3): the
-             * session arms the reach and the next long press says where to.
-             * No second extension algorithm, and nothing written either way.
-             */
-            if (action === "extend") {
-              time.toggleExtend();
-              return;
-            }
-            time.openSheet(
-              action === "repeat" ? "repeat" : action === "move" ? "move" : "more",
-            );
-          }}
+          onAction={runRead}
         />
       ) : null}
+
+      {/*
+        What did not fit on the grid (2V-B §1). The same sheet the compact row
+        opens, drawing the same canon — which is the whole of the fix: this
+        door used to lead to a hard-coded pair with "Seçimi sil" in it, and
+        "Sil" is already on the grid the reader pressed it from.
+      */}
+      <SelectionMoreSheet
+        open={time.sheet === "more"}
+        actions={onSurface(read, "more_sheet")}
+        onRun={runRead}
+        onClose={() => time.closeSheet()}
+      />
 
       <TransformSheet
         kind={time.sheet}
@@ -236,8 +267,6 @@ export function SelectionActionArea({
         pending={time.pasteCommand ?? time.handle.pending}
         preview={time.pastePreview ?? time.handle.preview}
         previewText={time.previewText}
-        canPaste={time.handle.hasClipboard}
-        onStartPaste={time.startPasteFlow}
         onStage={time.handle.stage}
         onApply={time.applyStaged}
         onClose={time.closeSheet}

@@ -152,9 +152,6 @@ export type TransformSheetProps = {
   readonly preview: Preview | null;
   readonly previewText: string | null;
   readonly onStage: (command: TransformCommand | null) => void;
-  /** Offered only when there is something on the clipboard. */
-  readonly onStartPaste?: () => void;
-  readonly canPaste?: boolean;
   readonly onApply: () => void;
   readonly onClose: () => void;
 };
@@ -178,15 +175,20 @@ export function TransformSheet({
   preview,
   previewText,
   onStage,
-  onStartPaste,
-  canPaste = false,
   onApply,
   onClose,
 }: TransformSheetProps) {
   const [customCount, setCustomCount] = useState("2");
   const [mode, setMode] = useState<MoveMode>("time");
 
-  if (kind === null) return null;
+  /*
+   * "Daha fazla" is not one of these (2V-B §6). It used to be, with a
+   * hard-coded pair inside it — "Seçimi sil" and sometimes "Yapıştır" — which
+   * is the sheet the founder opened and found a verb already on the grid
+   * behind it and nothing else. It is `SelectionMoreSheet` now, drawing what
+   * the canon placed there.
+   */
+  if (kind === null || kind === "more") return null;
 
   /* Nudges accumulate into the one pending command rather than replacing it,
    * so five taps move five steps and still land as one commit. */
@@ -197,13 +199,7 @@ export function TransformSheet({
   };
 
   const title =
-    kind === "move"
-      ? "Taşı"
-      : kind === "repeat"
-        ? "Tekrarla"
-        : kind === "paste"
-          ? "Yapıştır"
-          : "Daha fazla";
+    kind === "move" ? "Taşı" : kind === "repeat" ? "Tekrarla" : "Yapıştır";
 
   return (
     <Sheet
@@ -394,17 +390,6 @@ export function TransformSheet({
             >
               Bölüm sonuna kadar
             </button>
-          </Row>
-        ) : null}
-
-        {kind === "more" ? (
-          <Row title="Daha fazla">
-            <SheetButton onClick={() => onStage({ kind: "delete_selection" })}>
-              Seçimi sil
-            </SheetButton>
-            {canPaste ? (
-              <SheetButton onClick={() => onStartPaste?.()}>Yapıştır</SheetButton>
-            ) : null}
           </Row>
         ) : null}
 

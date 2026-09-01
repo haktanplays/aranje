@@ -12,8 +12,12 @@
  */
 import { coveredRun, type CoveredRun } from "@/lib/workspace/selection-verbs";
 import { useSelectionListening } from "@/lib/workspace/use-selection-listening";
-import { describeTimeSelection } from "@/lib/song/selection-descriptor";
+import {
+  describeBarSelection,
+  describeTimeSelection,
+} from "@/lib/song/selection-descriptor";
 import type { PlaybackController } from "@/lib/audio/playback";
+import type { SelectionListening } from "@/lib/workspace/use-selection-listening";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { Song } from "@/lib/song/schema";
 
@@ -30,16 +34,36 @@ export function useCoveredRun(input: {
    * still has their selection, and the sound still has to stop (2V-A §5).
    */
   readonly listenable: boolean;
-}): CoveredRun | null {
+}): { readonly covered: CoveredRun | null; readonly listening: SelectionListening } {
   const { controller, editing, listenable, session, song } = input;
   const selection = session.time.handle.selection;
+  /*
+   * Whichever of the two is held (2V-B §6). Taking hold of bars lets the time
+   * selection go, so there is never a choice to make — and a run of whole bars
+   * is very much a thing to listen to. `describeBarSelection` carries one
+   * track id in the "Bu enstrüman" scope and every one in "Tüm enstrümanlar",
+   * so the plan honours the scope without this file knowing about scopes.
+   */
+  const bars = session.bars.handle.selection;
+  const descriptor = bars
+    ? describeBarSelection(song, bars)
+    : selection
+      ? describeTimeSelection(song, selection)
+      : null;
 
   const listening = useSelectionListening({
     song,
     controller,
-    descriptor: selection ? describeTimeSelection(song, selection) : null,
+    descriptor,
     enabled: listenable,
   });
 
-  return coveredRun({ editing, time: session.time, song, listening });
+  /*
+   * Both, because the reading surface needs the listening intents too
+   * (2V-B §1). `coveredRun` is still null unless the reader is writing — it is
+   * the compact row's own answer — but the sound belongs to the selection, not
+   * to the mode, and returning it only alongside a covered run is how the read
+   * surface came to have no way to hear anything at all.
+   */
+  return { covered: coveredRun({ editing, time: session.time, song, listening }), listening };
 }

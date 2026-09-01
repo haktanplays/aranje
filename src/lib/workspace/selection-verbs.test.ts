@@ -1,5 +1,12 @@
 /**
- * What a covered run offers while the reader is writing (K-59 §3, 2U-A §3).
+ * What a covered run offers, and where it is drawn (K-59 §3, 2U-A §3, 2V-B §2).
+ *
+ * The tests below kept their shape through the canon: they still ask whether
+ * a verb is offered, whether the handle it calls is one that already existed,
+ * and whether anything the model offers has nowhere to appear. What changed is
+ * that the last of those is now asked of *both* surfaces, because the defect
+ * that closed this round was a verb reachable on one row and nowhere on the
+ * other.
  */
 import { readFileSync } from "node:fs";
 
@@ -12,7 +19,13 @@ import {
   refusalFor,
   type SelectionVerb,
 } from "@/lib/song/selection-capability";
-import { coveredRun, DRAWER_VERBS } from "@/lib/workspace/selection-verbs";
+import { onSurface } from "@/lib/song/selection-action-canon";
+import {
+  coveredRun,
+  selectionActions,
+  selectionOffers,
+  selectionRunner,
+} from "@/lib/workspace/selection-verbs";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 
 type Time = SelectionSession["time"];
@@ -63,6 +76,8 @@ function fakeTime(
     extendArmed: over.extendArmed ?? false,
     toggleExtend: () => calls.push("extend"),
     openSheet: (kind: string) => calls.push(`sheet:${kind}`),
+    closeSheet: () => calls.push("close-sheet"),
+    pasteHere: () => calls.push("paste"),
     clear: () => calls.push("clear"),
   } as unknown as Time;
   return { time, calls };
@@ -71,8 +86,8 @@ function fakeTime(
 /**
  * The two listening intents, recorded rather than performed.
  *
- * They reach the transport in the app; here what matters is that the drawer
- * calls them and that they are offered on the same terms as everything else.
+ * They reach the transport in the app; here what matters is that the surfaces
+ * call them and that they are offered on the same terms as everything else.
  */
 const fakeListening = (calls: string[], looping = false) => ({
   audition: () => calls.push("audition"),
@@ -112,6 +127,23 @@ const run = (
   };
 };
 
+/** What the model says about a selection, without any surface in the way. */
+const offersOf = (selection: unknown, over: { hasClipboard?: boolean } = {}) =>
+  selectionOffers(subject(), fakeTime(selection, over).time);
+
+/** What one surface would draw for it. */
+const drawnOn = (
+  selection: unknown,
+  mode: "read" | "edit",
+  over: { hasClipboard?: boolean; looping?: boolean } = {},
+) =>
+  selectionActions({
+    song: subject(),
+    time: fakeTime(selection, over).time,
+    mode,
+    looping: over.looping ?? false,
+  });
+
 describe("the selection row is offered only when there is one", () => {
   it("offers nothing while the reader is not writing", () => {
     expect(cover(covering(0, 48), false)).toBeNull();
@@ -133,17 +165,31 @@ describe("the selection row is offered only when there is one", () => {
     found?.header.onCancel();
     expect(calls).toEqual(["clear"]);
   });
+
+  it("still draws the tall reading bar when nobody is writing", () => {
+    /*
+     * The other half of the same rule (2V-B §2). `coveredRun` is null in read
+     * mode — that is the compact row's own answer — and the reading surface
+     * asks the canon directly, so a reader who never presses "Düzenle" is not
+     * a reader with no actions.
+     */
+    const read = drawnOn(covering(0, 240), "read");
+    expect(read.length).toBeGreaterThan(0);
+    expect(onSurface(read, "read_primary").length).toBe(8);
+  });
 });
 
-describe("every verb is a handle that already existed", () => {
-  it("calls the same command the tall reading bar called", () => {
-    const { run: found, calls } = run(covering(0, 240));
-    found?.verbs.onCopy();
-    found?.verbs.onCut();
-    found?.verbs.onDuplicate();
-    found?.verbs.onDelete();
-    found?.verbs.onMove();
-    found?.verbs.onRepeat();
+describe("every action is a handle that already existed", () => {
+  it("calls the same command whichever surface asked", () => {
+    const { time, calls } = fakeTime(covering(0, 240));
+    const runner = selectionRunner({
+      time,
+      listening: fakeListening(calls),
+      openMore: () => calls.push("open-more"),
+    });
+    for (const id of ["copy", "cut", "duplicate", "delete", "move", "repeat"] as const) {
+      runner(id);
+    }
     expect(calls).toEqual([
       "copy",
       "apply:cut_selection",
@@ -152,6 +198,13 @@ describe("every verb is a handle that already existed", () => {
       "sheet:move",
       "sheet:repeat",
     ]);
+  });
+
+  it("is the same runner behind the compact row", () => {
+    const { run: found, calls } = run(covering(0, 240));
+    found?.verbs.run("copy");
+    found?.verbs.run("cut");
+    expect(calls).toEqual(["copy", "apply:cut_selection"]);
   });
 
   it("carries the selection's own notice and refusal, unchanged", () => {
@@ -180,7 +233,7 @@ describe("“Devam” reaches from the end of what is held", () => {
    */
   it("arms the reach rather than staging anything", () => {
     const { run: found, calls } = run(covering(0, 240));
-    found?.verbs.onContinue();
+    found?.verbs.run("extend");
     expect(calls).toEqual(["extend"]);
   });
 
@@ -190,14 +243,19 @@ describe("“Devam” reaches from the end of what is held", () => {
       run(covering(0, 240), { extendArmed: true }).run?.verbs.extendArmed,
     ).toBe(true);
   });
+
+  it("is on both primary rows, not behind a door on either", () => {
+    for (const mode of ["read", "edit"] as const) {
+      const primary = onSurface(
+        drawnOn(covering(0, 240), mode),
+        mode === "read" ? "read_primary" : "edit_primary",
+      );
+      expect(primary.some((entry) => entry.id === "extend"), mode).toBe(true);
+    }
+  });
 });
 
-describe("the drawer offers only what this selection can do", () => {
-  const offersOf = (
-    selection: unknown,
-    over: { hasClipboard?: boolean } = {},
-  ) => run(selection, over).run?.verbs.offers ?? [];
-
+describe("the surfaces offer only what this selection can do", () => {
   it("never offers a verb that is hidden for this kind of selection", () => {
     const offers = offersOf(covering(0, 48));
     expect(offers.length).toBeGreaterThan(0);
@@ -215,9 +273,7 @@ describe("the drawer offers only what this selection can do", () => {
   it("greys “Bağla” on one note and offers it on two", () => {
     const one = offersOf(covering(0, 48));
     expect(canRun(one, "connect")).toBe(false);
-    expect(
-      one.find((offer) => offer.verb === "connect")?.state,
-    ).toEqual({
+    expect(one.find((offer) => offer.verb === "connect")?.state).toEqual({
       kind: "disabled",
       reason: "Bağlamak için en az iki nota gerekiyor.",
     });
@@ -263,55 +319,37 @@ describe("the drawer offers only what this selection can do", () => {
   });
 
   /*
-   * The drawer's entries and the model's verbs are named in one place, so an
-   * entry cannot end up drawn from a verb the model never answers for.
-   */
-  it("names a verb the model answers for, for every drawer entry", () => {
-    const offers = offersOf(covering(0, 240));
-    const known: readonly SelectionVerb[] = offers.map((offer) => offer.verb);
-    for (const entry of DRAWER_VERBS) {
-      expect(known, entry.verb).toContain(entry.verb);
-    }
-  });
-
-  /*
-   * The other direction, which is the one that was missing (2U-B §3).
+   * The rule that was missing, now asked of every surface (2U-B §3, 2V-B §4).
    *
-   * The test above asks "is every drawer entry a real verb" — and it passed
-   * throughout, because the entries that existed were all real. What nothing
-   * asked was the converse: is every verb the model offers actually reachable?
-   * "Yapıştır" was not. The model answered `available` for it on an empty
-   * target with a full clipboard, the drawer had no entry for it, and the
-   * verb was simply undrawable — copy worked, the notice appeared, and the
-   * menu that should have used it did not mention it.
-   *
-   * So: the frozen row plus the drawer must between them reach every verb a
-   * range selection is offered. A verb the model offers and no surface draws
-   * is a promise the product does not keep.
+   * "Yapıştır" was offered by the model and undrawable, then "Devam" was, then
+   * both listening verbs were — each time on one surface while another drew
+   * them fine. So the sweep runs per mode: whatever the model offers must be
+   * reachable on the row *that mode* draws, or in the sheet behind it.
    */
-  it("leaves no offered verb without a surface to draw it on", () => {
-    /* What UI Contract v1 froze onto the row itself. */
-    const ROW_VERBS: readonly SelectionVerb[] = ["connect", "move_time", "extend"];
+  it("leaves no offered verb without a surface to draw it on, in either mode", () => {
     /*
-     * The eight movements live behind "Taşı" rather than on a verb of their
+     * The eight movements live behind "Taşı" rather than on verbs of their
      * own (`movement-menu.ts`). Named here rather than waved at, so a verb
      * that stops being in that sheet stops counting as reachable.
      */
     const BEHIND_MOVE: readonly SelectionVerb[] = ["transpose", "restring"];
-    const reachable = new Set<SelectionVerb>([
-      ...ROW_VERBS,
-      ...BEHIND_MOVE,
-      ...DRAWER_VERBS.map((entry) => entry.verb),
-    ]);
-
-    /* Both clipboard states, because paste is only offered in one of them. */
-    for (const hasClipboard of [false, true]) {
-      for (const selection of [covering(0, 48), covering(0, 240), covering(0, 0)]) {
-        for (const offer of offersOf(selection, { hasClipboard })) {
-          expect(
-            reachable.has(offer.verb),
-            `${offer.verb} is offered (${offer.state.kind}) but no surface draws it`,
-          ).toBe(true);
+    for (const mode of ["read", "edit"] as const) {
+      for (const hasClipboard of [false, true]) {
+        for (const selection of [covering(0, 48), covering(0, 240), covering(0, 0)]) {
+          const drawn = new Set<SelectionVerb>([
+            ...BEHIND_MOVE,
+            ...drawnOn(selection, mode, { hasClipboard })
+              .map((entry) => entry.verb)
+              .filter((verb): verb is SelectionVerb => verb !== null),
+          ]);
+          for (const offer of offersOf(selection, { hasClipboard })) {
+            /* "Bağla" is the edit surface's door; read mode has no brush. */
+            if (mode === "read" && offer.verb === "connect") continue;
+            expect(
+              drawn.has(offer.verb),
+              `${mode}: ${offer.verb} is offered (${offer.state.kind}) but no surface draws it`,
+            ).toBe(true);
+          }
         }
       }
     }
@@ -321,45 +359,47 @@ describe("the drawer offers only what this selection can do", () => {
 // -------------------------------------------------------------------- 2V-A
 
 describe("hearing what is held", () => {
-  it("puts both actions in the drawer, not in the frozen row", () => {
+  it("is behind the door on both surfaces, never on a frozen row", () => {
     /*
-     * UI Contract v1 froze the toolbar at four verbs and a door (§9). These
-     * two are things a reader does occasionally, so they live behind the
-     * door — and the row is asserted to be exactly what it was.
+     * UI Contract v1 froze the compact toolbar at four verbs and a door, and
+     * the reading grid at eight targets (§9, 2V-A.1 §5). These two are things
+     * a reader does occasionally, so they live behind the door on both.
      */
-    const drawn = DRAWER_VERBS.map((entry) => entry.verb);
-    expect(drawn).toContain("audition");
-    expect(drawn).toContain("loop_selection");
-
-    const toolbar = readFileSync(
-      "src/components/workspace/SelectionToolbar.tsx",
-      "utf8",
-    );
-    const row = toolbar.slice(
-      toolbar.indexOf('aria-label="Seçim işlemleri"'),
-      toolbar.indexOf("Daha fazla"),
-    );
-    expect(row).not.toContain("audition");
-    expect(row).not.toContain("loop_selection");
+    for (const mode of ["read", "edit"] as const) {
+      const drawn = drawnOn(covering(0, 240), mode);
+      const sheet = onSurface(drawn, "more_sheet").map((entry) => entry.id);
+      expect(sheet, mode).toContain("listen_once");
+      expect(sheet, mode).toContain("listen_loop");
+      const primary = onSurface(
+        drawn,
+        mode === "read" ? "read_primary" : "edit_primary",
+      ).map((entry) => entry.id);
+      expect(primary, mode).not.toContain("listen_once");
+      expect(primary, mode).not.toContain("listen_loop");
+    }
   });
 
-  it("runs the audition and closes the drawer behind it", () => {
+  it("runs the audition, from either surface's runner", () => {
     const { run: found, calls } = run(covering(0, 240));
-    found?.verbs.onAudition();
+    found?.verbs.run("listen_once");
     expect(calls).toEqual(["audition"]);
   });
 
   it("asks the loop to start, or to stop when it is already running", () => {
     const { run: found, calls } = run(covering(0, 240));
-    found?.verbs.onLoopSelection();
+    found?.verbs.run("listen_loop");
     expect(calls).toEqual(["loop"]);
   });
 
-  it("reports whether this selection is the one looping", () => {
-    expect(run(covering(0, 240)).run?.verbs.loopingSelection).toBe(false);
-    expect(
-      run(covering(0, 240), { looping: true }).run?.verbs.loopingSelection,
-    ).toBe(true);
+  it("says its own way out while it is running", () => {
+    const quiet = drawnOn(covering(0, 240), "edit").find(
+      (entry) => entry.id === "listen_loop",
+    );
+    const running = drawnOn(covering(0, 240), "edit", { looping: true }).find(
+      (entry) => entry.id === "listen_loop",
+    );
+    expect(quiet?.label).toBe("Seçimden döngü");
+    expect(running?.label).toBe("Seçim döngüsünü kapat");
   });
 
   it("neither of them stages, previews or applies anything", () => {
@@ -369,24 +409,106 @@ describe("hearing what is held", () => {
      * show up as an extra call rather than as a silent write.
      */
     const { run: found, calls } = run(covering(0, 240));
-    found?.verbs.onAudition();
-    found?.verbs.onLoopSelection();
+    found?.verbs.run("listen_once");
+    found?.verbs.run("listen_loop");
     expect(calls.filter((call) => call.startsWith("apply:"))).toEqual([]);
     expect(calls.filter((call) => call.startsWith("sheet:"))).toEqual([]);
     expect(calls).not.toContain("copy");
   });
+});
 
-  it("says both labels in full Turkish, and the loop says its way out", () => {
+// -------------------------------------------------------------------- 2V-B
+
+describe("no surface carries a list of its own", () => {
+  /*
+   * The four that draw selection actions. `TransformSheet` is not among them
+   * any more, which is the point of the third test below — it draws the move,
+   * repeat and paste sheets, and their titles echo the verb that opened them
+   * rather than listing verbs of their own.
+   */
+  const SURFACES = [
+    "src/components/workspace/SelectionActionBar.tsx",
+    "src/components/workspace/SelectionToolbar.tsx",
+    "src/components/workspace/SelectionMoreSheet.tsx",
+    "src/components/workspace/BarActionBar.tsx",
+  ] as const;
+
+  it("names no action label in any component that draws one", () => {
+    /*
+     * The defect, expressed as a rule. Every one of these files used to spell
+     * out its own verbs, and every time one was added to the model somebody
+     * had to remember which of them to edit. The words live in the canon now;
+     * a component that writes "Seçimi dinle" is a component that has started
+     * deciding again.
+     */
+    const LABELS = [
+      "Kopyala",
+      "Kes",
+      "Çoğalt",
+      "Tekrarla",
+      "Devam",
+      "Bağla",
+      "Yapıştır",
+      "Seçimi dinle",
+      "Seçimden döngü",
+      "Seçimi sil",
+      "Ölçüyü kaldır",
+      "İçeriği sil",
+    ];
+    for (const file of SURFACES) {
+      const source = readFileSync(file, "utf8");
+      /* Comments explain the history; only code may not name a verb. */
+      const code = source
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/^\s*\/\/.*$/gm, "");
+      for (const word of LABELS) {
+        expect(code, `${file} names "${word}"`).not.toContain(`"${word}"`);
+      }
+    }
+  });
+
+  it("draws whatever the canon placed, in the canon's order", () => {
+    const bar = readFileSync("src/components/workspace/SelectionActionBar.tsx", "utf8");
+    expect(bar).toContain("actions.map((entry)");
+    expect(bar).toContain('data-testid={`selection-action-${entry.id}`}');
     const toolbar = readFileSync(
       "src/components/workspace/SelectionToolbar.tsx",
       "utf8",
     );
-    expect(toolbar).toContain('label: "Seçimi dinle"');
-    expect(toolbar).toContain('label: "Seçimden döngü"');
-    expect(toolbar).toContain('label: "Seçim döngüsünü kapat"');
-    /* The running label is the control's own, not a badge beside it (§9). */
-    expect(toolbar).toMatch(
-      /actions\.loopingSelection\s*\?\s*LOOP_RUNNING/,
+    expect(toolbar).toContain('onSurface(actions.actions, "edit_primary")');
+    expect(toolbar).toContain('onSurface(actions.actions, "more_sheet")');
+  });
+
+  it("gives the reading surface's door the canon's sheet, not a pair of its own", () => {
+    /*
+     * The live FAIL of §1. The read "Daha fazla" used to be a branch inside
+     * `TransformSheet` with "Seçimi sil" and, sometimes, "Yapıştır" in it —
+     * one of which is already on the grid the reader pressed the door from.
+     */
+    const transform = readFileSync(
+      "src/components/workspace/TransformSheet.tsx",
+      "utf8",
     );
+    expect(transform).toContain('kind === "more") return null');
+    expect(transform).not.toContain('kind === "more" ? (');
+
+    const area = readFileSync(
+      "src/components/workspace/SelectionActionArea.tsx",
+      "utf8",
+    );
+    expect(area).toContain("<SelectionMoreSheet");
+    expect(area).toContain('onSurface(read, "more_sheet")');
+    expect(area).toContain('onSurface(read, "read_primary")');
+  });
+
+  it("hands the measure bar the canon too", () => {
+    const area = readFileSync(
+      "src/components/workspace/SelectionActionArea.tsx",
+      "utf8",
+    );
+    expect(area).toContain("measureActions({ song, bars, looping: listening.looping })");
+    const bar = readFileSync("src/components/workspace/BarActionBar.tsx", "utf8");
+    expect(bar).toContain('onSurface(actions, "measure_primary")');
+    expect(bar).toContain('onSurface(actions, "more_sheet")');
   });
 });

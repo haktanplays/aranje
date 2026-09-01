@@ -21,91 +21,48 @@
  * `Bağla` opens the legato brush's own door — the brush is *used* on a covered
  * run, so it has to be one tap from a selection. `Taşı` opens the eight
  * movements, and `Devam` reaches from the end of what is held. Everything
- * else — copy, cut, paste, duplicate, repeat, delete — lives behind `Daha
- * fazla`, because those are the operations you go looking for rather than
- * reach for.
+ * else — copy, cut, paste, duplicate, repeat, delete, and the two listening
+ * intents — lives behind `Daha fazla`, because those are the operations you go
+ * looking for rather than reach for.
  *
  * No new command is invented here. Every one of these calls the same handle
- * the tall bar called.
+ * the tall bar called — the *same* handle, through the same runner, since
+ * 2V-B.
  *
- * ## What is drawn, and what is greyed (2U-A §3)
+ * ## Neither list is in this file (2V-B §2)
  *
- * The row itself is frozen at these four — UI Contract v1 — so a verb that
- * does not apply cannot be dropped to make space; it is greyed instead, with
- * the reason the capability model gave, on the control rather than after the
- * press. The drawer may drop an entry, because a sheet has room to be shorter.
+ * Which verbs apply is a musical question — is this one onset or several, is
+ * there a bar to the left, is there anything on the clipboard — and it is
+ * answered in `selection-capability.ts`. *Where* each answer is drawn is
+ * answered in `selection-action-canon.ts`. This file draws one 44px row and a
+ * sheet, and knows what is in neither.
  *
- * Neither list decides anything for itself. Which verbs apply is a musical
- * question — is this one onset or several, is there a bar to the left, is
- * there anything on the clipboard — and it is answered once, in
- * `selection-capability.ts`, so that the three places a selection appears
- * cannot answer it three ways.
+ * The row is still frozen at four — UI Contract v1 — so a verb that does not
+ * apply cannot be dropped to make space; it is greyed instead, with the reason
+ * the model gave, on the control rather than after the press. The sheet may
+ * drop an entry, because a sheet has room to be shorter.
  */
 import { useState } from "react";
 
-import { Sheet } from "@/components/workspace/Sheet";
+import { SelectionMoreSheet } from "@/components/workspace/SelectionMoreSheet";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
-import type { SelectionVerb, VerbState } from "@/lib/song/selection-capability";
-import {
-  DRAWER_VERBS,
-  type SelectionActions,
-} from "@/lib/workspace/selection-verbs";
-
-const LABELS: Record<string, { readonly label: string; readonly hint: string }> = {
-  copy: { label: "Kopyala", hint: "Seçimi panoya alır; şarkı değişmez." },
-  cut: { label: "Kes", hint: "Seçimi panoya alır ve yerinden kaldırır." },
-  paste: { label: "Yapıştır", hint: "Panodakini buraya koyar; onaylamadan yazmaz." },
-  duplicate: { label: "Çoğalt", hint: "Seçimin bir kopyasını hemen ardına koyar." },
-  repeat: { label: "Tekrarla", hint: "Seçimi kaç kez tekrarlayacağını sorar." },
-  delete: { label: "Sil", hint: "Seçili notaları kaldırır." },
-  audition: {
-    label: "Seçimi dinle",
-    hint: "Seçili yeri bir kez çalar; şarkı değişmez.",
-  },
-  loop_selection: {
-    label: "Seçimden döngü",
-    hint: "Seçili yeri baştan sona tekrar eder.",
-  },
-};
-
-/**
- * The loop control says what pressing it would do (2V-A §4, §9).
- *
- * A label rather than a badge beside one: the reader is told that this is the
- * way out of the loop by the words on the thing they would press, which is
- * one control doing one job instead of two controls describing one state.
- */
-const LOOP_RUNNING = {
-  label: "Seçim döngüsünü kapat",
-  hint: "Döngüyü durdurur ve seçim yerinde kalır.",
-};
+import { onSurface, type SelectionActionId } from "@/lib/song/selection-action-canon";
+import type { SelectionActions } from "@/lib/workspace/selection-verbs";
 
 export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
   const [more, setMore] = useState(false);
 
-  const run = (key: keyof SelectionActions) => {
-    const action = actions[key];
-    if (typeof action === "function") action();
+  const run = (id: SelectionActionId) => {
+    if (id === "more") {
+      setMore(true);
+      return;
+    }
+    actions.run(id);
     setMore(false);
   };
 
-  /*
-   * What the drawer draws (2U-A §3).
-   *
-   * Every entry is asked of the capability model rather than decided here: a
-   * verb is offered and works, or greyed with the model's own sentence, or
-   * absent because it does not belong to this kind of selection at all. What
-   * must never happen is the fourth thing — drawn, pressed, and refused.
-   */
-  const stateOf = (verb: SelectionVerb): VerbState | null =>
-    actions.offers.find((offer) => offer.verb === verb)?.state ?? null;
-  const drawer = DRAWER_VERBS.map((entry) => ({
-    ...entry,
-    ...(entry.verb === "loop_selection" && actions.loopingSelection
-      ? LOOP_RUNNING
-      : LABELS[entry.verb]!),
-    state: stateOf(entry.verb),
-  })).filter((entry) => entry.state !== null);
+  const row = onSurface(actions.actions, "edit_primary");
+  const drawer = onSurface(actions.actions, "more_sheet");
 
   return (
     <>
@@ -140,45 +97,42 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
         aria-label="Seçim işlemleri"
         className="border-line flex items-center gap-1.5 border-t px-3 py-0.5"
       >
-        {[
-          { key: "onConnect" as const, label: "Bağla", verb: "connect" as const },
-          { key: "onMove" as const, label: "Taşı", verb: "move_time" as const },
-          { key: "onContinue" as const, label: "Devam", verb: "extend" as const },
-        ].map((entry) => {
-          const state = stateOf(entry.verb);
-          const off = state?.kind === "disabled";
-          return (
-            <button
-              key={entry.key}
-              type="button"
-              data-selection-verb={entry.label}
-              onClick={() => run(entry.key)}
-              disabled={off}
-              /*
-               * The reason travels with the control rather than waiting for a
-               * press. A reader learns "Bağlamak için en az iki nota
-               * gerekiyor." from a grey button; they learn nothing from one
-               * that looks live and then says no.
-               */
-              title={off ? state.reason : undefined}
-              aria-label={off ? `${entry.label} — ${state.reason}` : undefined}
-              /* "Devam" is armed or not; the other two are not toggles. */
-              aria-pressed={
-                entry.key === "onContinue" ? actions.extendArmed : undefined
-              }
-              className={`min-w-0 flex-1 rounded-lg border px-1.5 text-sm whitespace-nowrap ${
-                off
-                  ? "border-line/50 text-muted/40"
-                  : entry.key === "onContinue" && actions.extendArmed
-                    ? "border-accent bg-accent/10 text-text"
-                    : "border-line text-muted"
-              }`}
-              style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 48 }}
-            >
-              {entry.label}
-            </button>
-          );
-        })}
+        {row
+          .filter((entry) => entry.id !== "more")
+          .map((entry) => {
+            const off = entry.availability === "disabled";
+            const armed = entry.id === "extend" && actions.extendArmed;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                data-selection-verb={entry.label}
+                data-selection-action-id={entry.id}
+                onClick={() => run(entry.id)}
+                disabled={off}
+                /*
+                 * The reason travels with the control rather than waiting for
+                 * a press. A reader learns "Bağlamak için en az iki nota
+                 * gerekiyor." from a grey button; they learn nothing from one
+                 * that looks live and then says no.
+                 */
+                title={off ? entry.reason : undefined}
+                aria-label={off ? `${entry.label} — ${entry.reason}` : undefined}
+                /* "Devam" is armed or not; the other two are not toggles. */
+                aria-pressed={entry.id === "extend" ? actions.extendArmed : undefined}
+                className={`min-w-0 flex-1 rounded-lg border px-1.5 text-sm whitespace-nowrap ${
+                  off
+                    ? "border-line/50 text-muted/40"
+                    : armed
+                      ? "border-accent bg-accent/10 text-text"
+                      : "border-line text-muted"
+                }`}
+                style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 48 }}
+              >
+                {entry.label}
+              </button>
+            );
+          })}
         <button
           type="button"
           data-selection-more
@@ -198,45 +152,12 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
         </button>
       </div>
 
-      <Sheet
+      <SelectionMoreSheet
         open={more}
-        title="Seçimle ne yapılsın?"
+        actions={drawer}
+        onRun={run}
         onClose={() => setMore(false)}
-        labelledBy="selection-more-title"
-      >
-        <h2 id="selection-more-title" className="sr-only">
-          Seçimle ne yapılsın?
-        </h2>
-        <div className="flex flex-col gap-2">
-          {drawer.map((entry) => {
-            const off = entry.state?.kind === "disabled";
-            return (
-              <button
-                key={entry.key}
-                type="button"
-                data-selection-action={entry.label}
-                onClick={() => run(entry.key)}
-                disabled={off}
-                className={`rounded-lg border px-3 py-2 text-left ${
-                  off ? "border-line/50" : "border-line"
-                }`}
-                style={{ minHeight: MIN_TOUCH_TARGET_PX }}
-              >
-                <span
-                  className={`block text-sm ${off ? "text-muted/40" : "text-text"}`}
-                >
-                  {entry.label}
-                </span>
-                <span className="text-muted block text-[11px]">
-                  {off && entry.state?.kind === "disabled"
-                    ? entry.state.reason
-                    : entry.hint}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Sheet>
+      />
     </>
   );
 }

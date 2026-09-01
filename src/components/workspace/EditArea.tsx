@@ -18,7 +18,7 @@ import { ComposerArea } from "@/components/workspace/ComposerArea";
 import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { SelectionToolbar } from "@/components/workspace/SelectionToolbar";
-import type { SelectionVerbs } from "@/lib/workspace/selection-verbs";
+import type { SelectionActions } from "@/lib/workspace/selection-verbs";
 import type { ComposerDoor } from "@/lib/workspace/composer-tool";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
@@ -47,7 +47,7 @@ export function EditArea({
    * Null is what makes the doors visible: the two rows are one line of the
    * screen, and which of them is on it is a question about the selection.
    */
-  selectionActions: SelectionVerbs | null;
+  selectionActions: SelectionActions | null;
   onOpenChordBuilder: ((power: boolean) => void) | null;
   onOpenRhythm: (() => void) | null;
   /** Everything the toolbar needs, passed through unchanged. */
@@ -74,8 +74,11 @@ export function EditArea({
             <SelectionToolbar
               actions={{
                 ...selectionActions,
-                // The brush's own door, one tap from a covered run.
-                onConnect: () => setDoor("connect"),
+                run: (id) =>
+                  id === "connect"
+                    ? // The brush's own door, one tap from a covered run.
+                      setDoor("connect")
+                    : selectionActions.run(id),
               }}
             />
           ) : null}

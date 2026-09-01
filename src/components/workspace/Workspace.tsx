@@ -246,12 +246,13 @@ export function Workspace() {
   });
 
   /* What a covered run says, offers and lets you hear (K-59 §3, 2V-A §3). */
-  const covered = useCoveredRun({
+  const { covered, listening } = useCoveredRun({
     song,
     controller,
     session,
     editing: noteEditing.editing,
-    listenable: noteEditing.editing && navigation.view === "tab" && canPersist,
+    /* Reading counts too (2V-B §1); the Copilot's screens still do not. */
+    listenable: canPersist && !previewOpen && !arrangeOpen,
   });
 
   return (
@@ -293,7 +294,7 @@ export function Workspace() {
         copilotOwnsScreen={previewOpen || arrangeOpen}
       />
 
-      <SelectionActionArea session={session} song={song} practice={practice} compact={covered !== null} onOpenTiming={timing.open} />
+      <SelectionActionArea session={session} song={song} listening={listening} practice={practice} compact={covered !== null} onOpenTiming={timing.open} />
 
       {/* Both notation surfaces; the multi view needs this door too (§8). */}
       {navigation.view !== "arrange" ? (

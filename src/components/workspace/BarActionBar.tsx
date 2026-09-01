@@ -45,6 +45,11 @@
 import { Sheet, SheetButton } from "@/components/workspace/Sheet";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import {
+  onSurface,
+  type SelectionActionId,
+  type SelectionActionOffer,
+} from "@/lib/song/selection-action-canon";
+import {
   barMoreDoorShown,
   barMoreEntries,
   type BarMoreAction,
@@ -54,61 +59,11 @@ import type { BarSelection } from "@/lib/song/bar-selection";
 
 export type { BarMoreAction };
 
-export type BarAction =
-  | "copy"
-  | "cut"
-  | "duplicate"
-  | "repeat"
-  | "move"
-  | "delete"
-  | "more";
-
 /**
- * What each verb is called, in the scope it is being offered in (2U-B §6).
- *
- * The same seven buttons, and deliberately the same seven — but "Sil" means
- * two different things depending on what is held, and one word for both was
- * how a reader could empty a guitar lane while believing they had removed a
- * bar from the song. On one instrument's bars these verbs act on *content*:
- * the bars stay, the section keeps its length, and no other track notices. On
- * a whole measure they act on the bar itself.
- *
- * Copying and cutting are named once because they mean the same thing in
- * both: what is taken is what is held, and the summary line above already
- * says which of the two that is.
+ * What a press means. The canon's ids, so this row and the area that wires it
+ * cannot name the same control two ways (2V-B §3).
  */
-const SCOPE_LABELS: Readonly<
-  Record<"track" | "full", Readonly<Record<BarAction, string>>>
-> = {
-  track: {
-    copy: "Kopyala",
-    cut: "Kes",
-    duplicate: "İçeriği çoğalt",
-    repeat: "Tekrarla",
-    move: "İçeriği taşı",
-    delete: "İçeriği sil",
-    more: "Daha fazla",
-  },
-  full: {
-    copy: "Kopyala",
-    cut: "Kes",
-    duplicate: "Ölçüyü çoğalt",
-    repeat: "Tekrarla",
-    move: "Ölçüyü taşı",
-    delete: "Ölçüyü kaldır",
-    more: "Daha fazla",
-  },
-};
-
-const PRIMARY: readonly BarAction[] = [
-  "copy",
-  "cut",
-  "duplicate",
-  "repeat",
-  "move",
-  "delete",
-  "more",
-];
+export type BarAction = SelectionActionId;
 
 /**
  * How many times "Tekrarla" repeats.
@@ -126,6 +81,7 @@ export type BarRepeatChoice =
 
 export function BarActionBar({
   selection,
+  actions,
   summary,
   notice,
   preview,
@@ -147,6 +103,16 @@ export function BarActionBar({
   onScope,
 }: {
   selection: BarSelection;
+  /**
+   * What this run of bars offers, placed and labelled by the canon (§3).
+   *
+   * The seven buttons here used to be a hard-coded list with three verbs and
+   * four blanks behind it — nothing asked the model whether "Taşı" had
+   * anywhere to go, so on a one-bar section it stood live and opened two dead
+   * arrows. They are drawn from the model's answer now, in the scope's own
+   * words, and greyed with the model's own sentence.
+   */
+  actions: readonly SelectionActionOffer[];
   summary: string;
   notice: string | null;
   preview: BarPreview | null;
@@ -169,7 +135,6 @@ export function BarActionBar({
   onScope: (scope: "track" | "full") => void;
 }) {
   const full = selection.scope === "full";
-  const labels = SCOPE_LABELS[full ? "full" : "track"];
   /*
    * A clipboard from the other scope is not offered at all. The two are never
    * silently converted, so a track clipboard has nothing to say to a full
@@ -183,6 +148,14 @@ export function BarActionBar({
    * unreachable rather than merely unlikely.
    */
   const moreEntries = barMoreEntries(selection.scope, canPaste);
+  /*
+   * And the two listening intents, which are selection actions rather than
+   * bar-structure ones and so come from the canon (2V-B §6). The capability
+   * model has offered them on a run of bars since 2V-A; until now no surface
+   * drew them, which is the "available but hidden" state §4 forbids.
+   */
+  const listen = onSurface(actions, "more_sheet");
+  const primary = onSurface(actions, "measure_primary");
 
   return (
     <div
@@ -333,25 +306,37 @@ export function BarActionBar({
       ) : null}
 
       <div className="grid grid-cols-4 gap-1 p-2">
-        {PRIMARY.filter(
-          /* A door with nothing behind it is not drawn at all (2U-B §6). */
-          (action) => action !== "more" || barMoreDoorShown(selection.scope, canPaste),
-        ).map((action) => (
-          <button
-            key={action}
-            type="button"
-            data-bar-action={action}
-            onClick={() => onAction(action)}
-            aria-label={labels[action]}
-            className="border-app flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight"
-            style={{
-              minHeight: MIN_TOUCH_TARGET_PX,
-              minWidth: MIN_TOUCH_TARGET_PX,
-            }}
-          >
-            <span className="truncate">{labels[action]}</span>
-          </button>
-        ))}
+        {primary
+          .filter(
+            /* A door with nothing behind it is not drawn at all (2U-B §6). */
+            (entry) =>
+              entry.id !== "more" ||
+              barMoreDoorShown(selection.scope, canPaste) ||
+              listen.length > 0,
+          )
+          .map((entry) => {
+            const off = entry.availability === "disabled";
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                data-bar-action={entry.id}
+                onClick={() => onAction(entry.id)}
+                disabled={off}
+                title={off ? entry.reason : undefined}
+                aria-label={off ? `${entry.label} — ${entry.reason}` : entry.label}
+                className={`flex flex-col items-center justify-center rounded-md border px-0.5 text-[10px] leading-tight ${
+                  off ? "border-app/50 text-muted/40" : "border-app"
+                }`}
+                style={{
+                  minHeight: MIN_TOUCH_TARGET_PX,
+                  minWidth: MIN_TOUCH_TARGET_PX,
+                }}
+              >
+                <span className="truncate">{entry.label}</span>
+              </button>
+            );
+          })}
       </div>
 
       <Sheet
@@ -399,6 +384,19 @@ export function BarActionBar({
               {entry.label}
             </SheetButton>
           ))}
+          {listen.map((entry) => {
+            const off = entry.availability === "disabled";
+            return (
+              <SheetButton
+                key={entry.id}
+                data-testid={`bar-more-${entry.id}`}
+                disabled={off}
+                onClick={() => onAction(entry.id)}
+              >
+                {entry.label}
+              </SheetButton>
+            );
+          })}
         </div>
       </Sheet>
 

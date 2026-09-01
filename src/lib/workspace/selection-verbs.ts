@@ -1,96 +1,98 @@
 /**
- * What a covered run offers while the reader is writing (K-59 §3).
+ * What a selection offers, bound to the handles that run it (2V-B §3).
  *
- * The compact selection toolbar shows four verbs and keeps the rest behind a
- * drawer. Which handle each verb calls is a fact about the selection session,
- * not about the row that draws them — and the composition root is not the
- * place to spell nine callbacks out, because that is exactly how a root grows
- * back into the file everything lived in (K-47).
+ * Which handle each action calls is a fact about the selection session, not
+ * about the row that draws it — and the composition root is not the place to
+ * spell a dozen callbacks out, because that is exactly how a root grows back
+ * into the file everything lived in (K-47).
  *
- * Every verb here is a handle that already existed. Nothing new is staged, no
- * command is invented, and this file writes nothing: it names the calls.
+ * Nothing new is staged, no command is invented, and this file writes
+ * nothing: it names the calls, and asks `selection-action-canon.ts` which of
+ * them belong on which surface.
  */
+import {
+  selectionActionCanon,
+  type SelectionActionId,
+  type SelectionActionOffer,
+  type SelectionMode,
+} from "@/lib/song/selection-action-canon";
 import {
   offeredVerbs,
   selectionCapabilities,
-  type SelectionVerb,
   type VerbOffer,
 } from "@/lib/song/selection-capability";
 import { hasAudibleNotes } from "@/lib/playback/selection-playback";
 import { hasExtendTarget } from "@/lib/song/selection-extend";
 import type { SelectionListening } from "@/lib/workspace/use-selection-listening";
-import { describeTimeSelection } from "@/lib/song/selection-descriptor";
+import {
+  describeBarSelection,
+  describeTimeSelection,
+} from "@/lib/song/selection-descriptor";
 import type { Song } from "@/lib/song/schema";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
+
+/**
+ * Which actions each surface has a production handler wired for (§4).
+ *
+ * Named here rather than counted at the call site, because "is there a
+ * handler" is the question the canon uses to decide whether to draw at all,
+ * and the matrix test asserts the other half of the rule against these very
+ * sets: a handler set that fails to cover an available capability is a defect
+ * in the wiring, not a licence to hide the verb quietly.
+ */
+export const READ_HANDLERS: ReadonlySet<SelectionActionId> = new Set<SelectionActionId>([
+  "copy",
+  "cut",
+  "duplicate",
+  "repeat",
+  "move",
+  "delete",
+  "extend",
+  "paste",
+  "listen_once",
+  "listen_loop",
+  "more",
+]);
+
+/** The same, plus the legato brush's door, which only the edit area owns. */
+export const EDIT_HANDLERS: ReadonlySet<SelectionActionId> = new Set<SelectionActionId>([
+  ...READ_HANDLERS,
+  "connect",
+]);
+
+/** A run of bars: the bar commands, and the two listening intents. */
+export const MEASURE_HANDLERS: ReadonlySet<SelectionActionId> =
+  new Set<SelectionActionId>([
+    "copy",
+    "cut",
+    "duplicate",
+    "repeat",
+    "move",
+    "delete",
+    "listen_once",
+    "listen_loop",
+    "more",
+  ]);
 
 /** Everything the selection toolbar can ask for. */
 export type SelectionActions = {
   readonly notice: string | null;
   readonly error: string | null;
   /**
-   * What this selection may be asked to do, computed once (2U-A §3).
+   * What this selection may be asked to do, computed once (2U-A §3, 2V-B §3).
    *
-   * The drawer draws what is offered and greys what is disabled, with the
-   * reason the model gave. It does not decide for itself — a screen that
-   * works out whether a run can be joined by counting notes will offer
-   * "Bağla" on one note the day the counting is off by one.
+   * The row draws what the canon placed on it and the drawer draws the rest,
+   * greying what is disabled with the reason the model gave. Neither decides
+   * for itself — a screen that works out whether a run can be joined by
+   * counting notes will offer "Bağla" on one note the day the counting is off
+   * by one.
    */
-  readonly offers: readonly VerbOffer[];
+  readonly actions: readonly SelectionActionOffer[];
   /** True while "Devam" is waiting for the reader to say where to reach to. */
   readonly extendArmed: boolean;
-  /** The legato brush's own door; owned by the edit area, which has it open. */
-  onConnect(): void;
-  onMove(): void;
-  onContinue(): void;
-  onCopy(): void;
-  onCut(): void;
-  onPaste(): void;
-  onDuplicate(): void;
-  onRepeat(): void;
-  onDelete(): void;
-  /** Hear the selection once (2V-A §3). Writes nothing. */
-  onAudition(): void;
-  /** Loop it, or stop the loop that is already running on it (§4). */
-  onLoopSelection(): void;
-  /**
-   * True while this selection is the one looping.
-   *
-   * The drawer draws it as the *label* of the control it already has, not as
-   * a badge or a chip (§9): the reader learns that pressing it again stops
-   * the loop from the words on the thing they would press.
-   */
-  readonly loopingSelection: boolean;
+  /** Run one of them. Every id the canon drew has a case here. */
+  run(id: SelectionActionId): void;
 };
-
-/** Which verb each drawer entry runs, so the two lists cannot drift apart. */
-export const DRAWER_VERBS: readonly {
-  readonly key: keyof SelectionActions;
-  readonly verb: SelectionVerb;
-}[] = [
-  { key: "onCopy", verb: "copy" },
-  { key: "onCut", verb: "cut" },
-  /*
-   * "Yapıştır" was missing from this list, and that was the whole of the
-   * founder's clipboard defect (2U-B §3). The capability model had been
-   * offering it correctly all along — a range clipboard on an empty target
-   * answers `available`, deliberately ahead of the "no notes selected" rule —
-   * but the drawer draws this list, so a verb absent here can never appear
-   * however loudly the model offers it. Copying worked, the notice appeared,
-   * and then the one verb that would use it was not on the menu.
-   */
-  { key: "onPaste", verb: "paste" },
-  { key: "onDuplicate", verb: "duplicate" },
-  { key: "onRepeat", verb: "repeat" },
-  { key: "onDelete", verb: "delete" },
-  /*
-   * The two listening verbs (2V-A §2), and in the drawer rather than the
-   * toolbar: UI Contract v1 froze the row at four verbs plus the door, and
-   * hearing a selection is a thing a reader does occasionally, not one of the
-   * four they do constantly.
-   */
-  { key: "onAudition", verb: "audition" },
-  { key: "onLoopSelection", verb: "loop_selection" },
-];
 
 /** The one line the edit header says about a covered run, and its way out. */
 export type SelectionHeader = { readonly summary: string; onCancel(): void };
@@ -103,13 +105,10 @@ function selectionHeader(input: CoveredRunInput): SelectionHeader | null {
   };
 }
 
-/** All of it except the door, which only the edit area can open. */
-export type SelectionVerbs = Omit<SelectionActions, "onConnect">;
-
 /** One answer for both places a covered run appears while writing. */
 export type CoveredRun = {
   readonly header: SelectionHeader;
-  readonly verbs: SelectionVerbs;
+  readonly verbs: SelectionActions;
 };
 
 export type CoveredRunInput = {
@@ -128,14 +127,12 @@ export function coveredRun(input: CoveredRunInput): CoveredRun | null {
 }
 
 /**
- * What this selection may be asked to do — for either row that draws it.
+ * What the capability model says about what is held — for any surface.
  *
  * Exported, and computed without asking whether the reader is writing
  * (2V-A.1 §2). "What may be done to this run" is a musical question, and it
  * has the same answer whether the reading surface's tall bar or the focused
- * row is the thing on screen. Tying it to edit mode is how "Devam" came to be
- * offered by the model, drawn by one bar, and missing from the other — which
- * is the fourth state §3 of 2U-A forbids, arrived at from the far side.
+ * row is the thing on screen.
  */
 export function selectionOffers(
   song: Song,
@@ -166,40 +163,151 @@ export function selectionOffers(
   );
 }
 
-function selectionVerbs(input: CoveredRunInput): SelectionVerbs | null {
+/** What a note selection offers on one row, in that row's own order. */
+export function selectionActions(input: {
+  readonly song: Song;
+  readonly time: SelectionSession["time"];
+  readonly mode: Extract<SelectionMode, "read" | "edit">;
+  readonly looping: boolean;
+}): readonly SelectionActionOffer[] {
+  return selectionActionCanon({
+    mode: input.mode,
+    offers: selectionOffers(input.song, input.time),
+    handlers: input.mode === "read" ? READ_HANDLERS : EDIT_HANDLERS,
+    looping: input.looping,
+  });
+}
+
+/** What a run of whole bars offers, in the same canon (2V-B §6). */
+export function measureActions(input: {
+  readonly song: Song;
+  readonly bars: SelectionSession["bars"];
+  readonly looping: boolean;
+}): readonly SelectionActionOffer[] {
+  const selection = input.bars.handle.selection;
+  if (!selection) return [];
+  const descriptor = describeBarSelection(input.song, selection);
+  if (!descriptor) return [];
+  const section = input.song.sections.find((entry) => entry.id === selection.sectionId);
+  /*
+   * A clipboard from the other scope is not offered at all: the two are never
+   * silently converted, so a track clipboard has nothing to say to a whole
+   * measure and the reader is not asked to find that out by trying.
+   */
+  const usable =
+    input.bars.handle.hasClipboard &&
+    input.bars.handle.clipboardScope === selection.scope;
+  return selectionActionCanon({
+    mode: "measure",
+    offers: offeredVerbs(
+      selectionCapabilities(descriptor, {
+        hasClipboard: usable,
+        clipboardScope: usable ? "measures" : null,
+        sectionBarCount: section?.bars.length ?? 0,
+        hasAudibleNotes: hasAudibleNotes(input.song, descriptor),
+        /* Bars are not reached forward from; the model hides "Devam" here. */
+        hasExtendTarget: false,
+      }),
+    ),
+    handlers: MEASURE_HANDLERS,
+    looping: input.looping,
+    barScope: descriptor.barScope,
+  });
+}
+
+/**
+ * Every handle a note selection's actions reach for, by canon id.
+ *
+ * One map for both rows. The read bar and the compact row differ in which of
+ * these the canon puts in front of the reader, never in what pressing one
+ * does — "Kes" cuts the same way whichever surface asked.
+ *
+ * `connect` is absent on purpose: the legato brush's door belongs to the edit
+ * area, which is the only place that can open it, and it wraps this.
+ */
+export function selectionRunner(input: {
+  readonly time: SelectionSession["time"];
+  readonly listening: SelectionListening;
+  readonly openMore: () => void;
+}): (id: SelectionActionId) => void {
+  const { listening, openMore, time } = input;
+  return (id) => {
+    switch (id) {
+      /* Reading only: no commit, no write, no undo step. */
+      case "copy":
+        time.handle.copy();
+        return;
+      case "cut":
+        time.handle.apply({ kind: "cut_selection" });
+        return;
+      case "duplicate":
+        time.handle.apply({ kind: "duplicate_selection" });
+        return;
+      case "delete":
+        time.handle.apply({ kind: "delete_selection" });
+        return;
+      case "move":
+        time.openSheet("move");
+        return;
+      case "repeat":
+        time.openSheet("repeat");
+        return;
+      /*
+       * Stages and previews; the write happens at "Uygula" in the sheet.
+       *
+       * `pasteHere` on both surfaces now (2V-B §2). The reading sheet used to
+       * call `startPasteFlow`, which asks the reader to long-press a
+       * destination — the right question when nothing is held, and the wrong
+       * one inside a sheet that only opens on a selection, where the question
+       * has already been answered (2U-B §3).
+       */
+      case "paste":
+        time.pasteHere();
+        return;
+      /*
+       * "Devam" reaches from the end of what is held (2U-A §3). The session
+       * arms the reach and the next long press says where to; no second
+       * extension algorithm, and nothing written either way.
+       */
+      case "extend":
+        time.toggleExtend();
+        return;
+      /* Ephemeral, both of them: they schedule sound and produce no command. */
+      case "listen_once":
+        listening.audition();
+        return;
+      case "listen_loop":
+        listening.toggleLoop();
+        return;
+      case "more":
+        openMore();
+        return;
+      case "connect":
+        /* Owned by the edit area; see `selectionRunner`'s note above. */
+        return;
+    }
+  };
+}
+
+function selectionVerbs(input: CoveredRunInput): SelectionActions | null {
   const { time } = input;
   if (!input.editing || !time.handle.selection) return null;
-
-  const offers = selectionOffers(input.song, time);
 
   return {
     notice: time.handle.notice ?? null,
     error: time.handle.error ?? null,
-    offers,
+    actions: selectionActions({
+      song: input.song,
+      time,
+      mode: "edit",
+      looping: input.listening.looping,
+    }),
     extendArmed: time.extendArmed,
-    onMove: () => time.openSheet("move"),
-    /*
-     * "Devam" reaches from the end of what is held (2U-A §3).
-     *
-     * It used to pick up the pattern-continuation composer tool. That tool is
-     * not lost — it is one tap away behind the Ritim door, where it has been
-     * since K-59 — but a verb sitting on a selection toolbar should do
-     * something to the selection, and "carry on from here" is the one reach a
-     * covered run needs that its two handles cannot give it: on a one-slot
-     * selection they are 34px apart and a finger cannot pick between them.
-     */
-    onContinue: time.toggleExtend,
-    // Reading only: no commit, no write, no undo step.
-    onCopy: time.handle.copy,
-    onCut: () => time.handle.apply({ kind: "cut_selection" }),
-    /* Stages and previews; the write happens at "Uygula" in the sheet. */
-    onPaste: time.pasteHere,
-    onDuplicate: () => time.handle.apply({ kind: "duplicate_selection" }),
-    onRepeat: () => time.openSheet("repeat"),
-    onDelete: () => time.handle.apply({ kind: "delete_selection" }),
-    /* Ephemeral, both of them: they schedule sound and produce no command. */
-    onAudition: input.listening.audition,
-    onLoopSelection: input.listening.toggleLoop,
-    loopingSelection: input.listening.looping,
+    run: selectionRunner({
+      time,
+      listening: input.listening,
+      /* The compact row's drawer is the toolbar's own state, not a sheet. */
+      openMore: () => {},
+    }),
   };
 }
