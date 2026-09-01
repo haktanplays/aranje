@@ -70,6 +70,11 @@ const context = (over: Partial<CapabilityContext> = {}): CapabilityContext => ({
    * background condition.
    */
   hasAudibleNotes: true,
+  /*
+   * True by default for the same reason: almost every selection has room to
+   * reach into, and the one that does not is measured on its own below.
+   */
+  hasExtendTarget: true,
   ...over,
 });
 
@@ -333,6 +338,7 @@ describe("the two measure scopes are offered different verbs", () => {
     clipboardScope: null,
     sectionBarCount: 4,
     hasAudibleNotes: true,
+    hasExtendTarget: true,
   };
 
   it("greys the bar-adding verbs on one instrument's bars", () => {

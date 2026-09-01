@@ -9,6 +9,7 @@
 import { describe, expect, it } from "vitest";
 
 import { describeTimeSelection } from "@/lib/song/selection-descriptor";
+import { hasExtendTarget } from "@/lib/song/selection-extend";
 import {
   canRun,
   refusalFor,
@@ -79,6 +80,8 @@ describe("the drawer and the engine give the same answer", () => {
     clipboardScope: null,
     sectionBarCount: 1,
     hasAudibleNotes: hasAudibleNotes(source, descriptor),
+    /* Asked of the same section, so the sweep below covers the real answer. */
+    hasExtendTarget: hasExtendTarget(source, descriptor),
   });
 
   it("agrees on a selection with notes in it", () => {

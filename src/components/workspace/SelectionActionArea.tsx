@@ -18,17 +18,27 @@ import { SelectionActionBar } from "@/components/workspace/SelectionActionBar";
 import { TransformSheet } from "@/components/workspace/TransformSheet";
 import { PRACTICE_FROM_SELECTION_LABEL } from "@/lib/practice/messages";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
+import { selectionOffers } from "@/lib/workspace/selection-verbs";
+import type { Song } from "@/lib/song/schema";
 import type { PracticeSession } from "@/lib/workspace/use-practice-session";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { TimingTarget } from "@/lib/workspace/use-timing-change";
 
 export function SelectionActionArea({
   session,
+  song,
   practice,
   compact,
   onOpenTiming,
 }: {
   session: SelectionSession;
+  /**
+   * Read to ask what the selection offers, never written through.
+   *
+   * The bar below draws whatever the capability model says, the way the
+   * focused row does — one answer, two surfaces (2V-A.1 §2).
+   */
+  song: Song;
   /**
    * True while the reader is writing (K-59 §3).
    *
@@ -174,6 +184,8 @@ export function SelectionActionArea({
 
       {time.handle.selection && !compact ? (
         <SelectionActionBar
+          offers={selectionOffers(song, time)}
+          extendArmed={time.extendArmed}
           summary={
             time.pasteAt.kind === "choosing"
               ? "Yapıştırılacak yere uzun bas."
@@ -198,6 +210,15 @@ export function SelectionActionArea({
             }
             if (action === "delete") {
               time.handle.apply({ kind: "delete_selection" });
+              return;
+            }
+            /*
+             * The same authority the focused row reaches for (2V-A.1 §3): the
+             * session arms the reach and the next long press says where to.
+             * No second extension algorithm, and nothing written either way.
+             */
+            if (action === "extend") {
+              time.toggleExtend();
               return;
             }
             time.openSheet(

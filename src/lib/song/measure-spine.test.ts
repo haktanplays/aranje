@@ -90,6 +90,8 @@ const capabilities = (selection: BarSelection, sectionBarCount = 4) =>
     hasClipboard: false,
     clipboardScope: null,
     sectionBarCount,
+    /* A run of whole bars hides "Devam" outright, so the reach never asks. */
+    hasExtendTarget: true,
     hasAudibleNotes: true,
   });
 

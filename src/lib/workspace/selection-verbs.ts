@@ -17,6 +17,7 @@ import {
   type VerbOffer,
 } from "@/lib/song/selection-capability";
 import { hasAudibleNotes } from "@/lib/playback/selection-playback";
+import { hasExtendTarget } from "@/lib/song/selection-extend";
 import type { SelectionListening } from "@/lib/workspace/use-selection-listening";
 import { describeTimeSelection } from "@/lib/song/selection-descriptor";
 import type { Song } from "@/lib/song/schema";
@@ -126,29 +127,50 @@ export function coveredRun(input: CoveredRunInput): CoveredRun | null {
   return header && verbs ? { header, verbs } : null;
 }
 
+/**
+ * What this selection may be asked to do — for either row that draws it.
+ *
+ * Exported, and computed without asking whether the reader is writing
+ * (2V-A.1 §2). "What may be done to this run" is a musical question, and it
+ * has the same answer whether the reading surface's tall bar or the focused
+ * row is the thing on screen. Tying it to edit mode is how "Devam" came to be
+ * offered by the model, drawn by one bar, and missing from the other — which
+ * is the fourth state §3 of 2U-A forbids, arrived at from the far side.
+ */
+export function selectionOffers(
+  song: Song,
+  time: SelectionSession["time"],
+): readonly VerbOffer[] {
+  const selection = time.handle.selection;
+  if (!selection) return [];
+  const descriptor = describeTimeSelection(song, selection);
+  if (!descriptor) return [];
+  const section = song.sections.find((entry) => entry.id === selection.sectionId);
+  return offeredVerbs(
+    selectionCapabilities(descriptor, {
+      hasClipboard: time.handle.hasClipboard,
+      /* The time clipboard only ever holds a run of notes. */
+      clipboardScope: time.handle.hasClipboard ? "range" : null,
+      sectionBarCount: section?.bars.length ?? 0,
+      /*
+       * Asked of the same schedule the engine will play (2V-A §2), so the
+       * drawer cannot offer a listen the plan then refuses.
+       */
+      hasAudibleNotes: hasAudibleNotes(song, descriptor),
+      /*
+       * And of the same section the reach would move the edge across
+       * (2V-A.1 §4), so "Devam" cannot light up with nowhere to go.
+       */
+      hasExtendTarget: hasExtendTarget(song, descriptor),
+    }),
+  );
+}
+
 function selectionVerbs(input: CoveredRunInput): SelectionVerbs | null {
   const { time } = input;
   if (!input.editing || !time.handle.selection) return null;
 
-  const descriptor = describeTimeSelection(input.song, time.handle.selection);
-  const section = input.song.sections.find(
-    (entry) => entry.id === time.handle.selection?.sectionId,
-  );
-  const offers = descriptor
-    ? offeredVerbs(
-        selectionCapabilities(descriptor, {
-          hasClipboard: time.handle.hasClipboard,
-          /* The time clipboard only ever holds a run of notes. */
-          clipboardScope: time.handle.hasClipboard ? "range" : null,
-          sectionBarCount: section?.bars.length ?? 0,
-          /*
-           * Asked of the same schedule the engine will play (2V-A §2), so the
-           * drawer cannot offer a listen the plan then refuses.
-           */
-          hasAudibleNotes: hasAudibleNotes(input.song, descriptor),
-        }),
-      )
-    : [];
+  const offers = selectionOffers(input.song, time);
 
   return {
     notice: time.handle.notice ?? null,

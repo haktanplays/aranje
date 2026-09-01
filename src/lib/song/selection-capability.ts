@@ -34,6 +34,7 @@
  * refuse for reasons this file cannot know (a collision, a chain, a grid).
  */
 import { NO_AUDIBLE_NOTES } from "@/lib/playback/selection-playback";
+import { NOTHING_TO_EXTEND } from "@/lib/song/selection-extend";
 import { barCount, type SelectionDescriptor } from "@/lib/song/selection-descriptor";
 
 /**
@@ -121,6 +122,19 @@ export type CapabilityContext = {
    * the Song and not to start deciding whether a command would succeed.
    */
   readonly hasAudibleNotes: boolean;
+  /**
+   * Whether the reach has a second place to put the run's end (2V-A.1 §4).
+   *
+   * The same shape of fact as `hasAudibleNotes`, and here for the same
+   * reason: working it out needs the section's slots, and this function does
+   * not take the Song. `hasExtendTarget` in `selection-extend.ts` answers it.
+   *
+   * Without it "Devam" was unconditionally available, which is fine almost
+   * everywhere and wrong on the one selection that has nowhere to go — a
+   * single slot on the section's last slot, where the arm would light up and
+   * then have nothing to do.
+   */
+  readonly hasExtendTarget: boolean;
 };
 
 const available: VerbState = { kind: "available" };
@@ -267,7 +281,18 @@ export function selectionCapabilities(
        * under the measure verbs below so the two can never be confused.
        */
       if (isMeasures) return hidden;
-      if (verb === "extend") return available;
+      if (verb === "extend") {
+        /*
+         * Asked before the "no notes" rule, deliberately. "Devam" is a reach
+         * rather than an edit, and a caret sitting in silence is a perfectly
+         * good place to reach forward from — refusing it there would tell a
+         * reader that they have to select a note before they may extend to
+         * one, which is the opposite of what the verb is for.
+         */
+        return context.hasExtendTarget
+          ? available
+          : disabled(NOTHING_TO_EXTEND);
+      }
       if (empty) {
         return disabled("Seçimde nota yok.");
       }

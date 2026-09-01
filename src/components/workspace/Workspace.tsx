@@ -293,7 +293,7 @@ export function Workspace() {
         copilotOwnsScreen={previewOpen || arrangeOpen}
       />
 
-      <SelectionActionArea session={session} practice={practice} compact={covered !== null} onOpenTiming={timing.open} />
+      <SelectionActionArea session={session} song={song} practice={practice} compact={covered !== null} onOpenTiming={timing.open} />
 
       {/* Both notation surfaces; the multi view needs this door too (§8). */}
       {navigation.view !== "arrange" ? (
