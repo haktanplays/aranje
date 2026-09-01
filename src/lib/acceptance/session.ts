@@ -24,8 +24,16 @@ import type { Song } from "@/lib/song/schema";
  * A real project id, not a descriptive name. `projectKey` refuses anything
  * outside `project-<n>`, so a friendlier-looking id would have failed the very
  * first write and left the route showing the sample song instead of the riff.
+ *
+ * The number is deliberately far out of reach (2V-B.1 §4). It used to be `1`,
+ * which is the id a first-time reader's own project gets — so the fixture and
+ * the reader's first song shared a storage key, and any write that ever
+ * escaped the memory storage would have landed on their music rather than
+ * beside it. Nothing was measured escaping; the collision is closed anyway,
+ * because "it cannot leak" and "if it leaks it destroys their first song" are
+ * two different risks and only one of them is cheap to remove.
  */
-export const ACCEPTANCE_PROJECT_ID = projectId(1);
+export const ACCEPTANCE_PROJECT_ID = projectId(999_001);
 
 export type AcceptanceSession = {
   readonly ok: boolean;
@@ -70,7 +78,23 @@ export function startAcceptanceSession(
       storage,
     };
   }
-  return { ok: true, reason: settings ? null : "ayarlar deposu zaten kurulmuştu", storage };
+  if (!settings) {
+    /*
+     * A refusal here used to be a *note* on a session that started anyway
+     * (2V-B.1 §4). It is not a note: the settings store is built lazily from
+     * the device's own storage the first time anything asks for it, so a
+     * refused install means every speed change this test makes is written to
+     * the reader's real settings — and the route would still promise, in its
+     * own header, that it changes nothing.
+     */
+    return {
+      ok: false,
+      reason:
+        "ayarlar deposu zaten kurulmuş; test kendi deposunu kuramadı ve senin ayarlarına yazardı",
+      storage,
+    };
+  }
+  return { ok: true, reason: null, storage };
 }
 
 /**

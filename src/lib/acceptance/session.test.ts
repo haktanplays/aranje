@@ -1,10 +1,12 @@
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
   ACCEPTANCE_PROJECT_ID,
   startAcceptanceSession,
 } from "@/lib/acceptance/session";
-import { isProjectId } from "@/lib/projects/project-id";
+import { isProjectId, projectNumber } from "@/lib/projects/project-id";
 import { readCatalog, readRecord } from "@/lib/projects/project-storage";
 import { songSchema } from "@/lib/song/schema";
 
@@ -65,5 +67,37 @@ describe("startAcceptanceSession", () => {
     const second = startAcceptanceSession();
     expect(second.ok).toBe(false);
     expect(second.reason).toMatch(/zaten kurulmuş/);
+  });
+});
+
+/**
+ * What the session refuses to start without (2V-B.1 §4).
+ *
+ * Both of these were live hazards on `26bd505`. Neither was measured leaking,
+ * and both are closed anyway: the first because a collision that only matters
+ * when something else goes wrong is still a collision, and the second because
+ * the route was willing to run — and to print "Bu test gerçek projeni
+ * değiştirmez." — while writing the reader's real settings.
+ */
+describe("the acceptance session cannot reach the reader's own music", () => {
+  it("keeps the fixture off the id a first project gets", () => {
+    expect(ACCEPTANCE_PROJECT_ID).not.toBe("project-1");
+    expect(isProjectId(ACCEPTANCE_PROJECT_ID)).toBe(true);
+    const number = projectNumber(ACCEPTANCE_PROJECT_ID);
+    expect(number).not.toBeNull();
+    /* Far past anything a reader reaches by making projects one at a time. */
+    expect(number!).toBeGreaterThan(1000);
+  });
+
+  it("refuses to start when it cannot own the settings store", () => {
+    /*
+     * The settings store is built lazily from the device's own storage the
+     * first time anything asks for it. If that has already happened, the
+     * install is refused — and a session that started anyway would write the
+     * reader's real settings while promising it changed nothing.
+     */
+    const source = readFileSync("src/lib/acceptance/session.ts", "utf8");
+    const branch = source.slice(source.indexOf("if (!settings)"));
+    expect(branch.slice(0, 900)).toContain("ok: false");
   });
 });
