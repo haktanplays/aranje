@@ -27,14 +27,14 @@
       "step": 4,
       "name": "the one-shot starts at the selection's first tick",
       "pass": true,
-      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=57"
+      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=61"
     },
     {
       "viewport": "320x700",
       "step": 5,
       "name": "it stops once, at the end, and comes back to the start",
       "pass": true,
-      "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=331 end=336 overrun=-5 rested at 48, want 48"
+      "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=365 end=336 overrun=29 rested at 48, want 48"
     },
     {
       "viewport": "320x700",
@@ -167,14 +167,14 @@
       "step": 4,
       "name": "the one-shot starts at the selection's first tick",
       "pass": true,
-      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=70"
+      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=65"
     },
     {
       "viewport": "390x844",
       "step": 5,
       "name": "it stops once, at the end, and comes back to the start",
       "pass": true,
-      "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=341 end=336 overrun=5 rested at 48, want 48"
+      "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=365 end=336 overrun=29 rested at 48, want 48"
     },
     {
       "viewport": "390x844",
@@ -307,154 +307,154 @@
       "step": 4,
       "name": "the one-shot starts at the selection's first tick",
       "pass": true,
-      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=66"
+      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=65"
     },
     {
       "viewport": "412x915",
-      "step": 5,
-      "name": "it stops once, at the end, and comes back to the start",
-      "pass": true,
-      "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=334 end=336 overrun=-2 rested at 48, want 48"
-    },
-    {
-      "viewport": "412x915",
-      "step": 6,
-      "name": "the selection is still on the screen afterwards",
-      "pass": true,
-      "detail": "slots=6"
-    },
-    {
-      "viewport": "412x915",
-      "step": 7,
-      "name": "nothing outside the selection was played",
-      "pass": true,
-      "detail": "ticksBeforeStart=0 ticksPastEnd=0 tracks=[\"gtr\"] range=[48,336)"
-    },
-    {
-      "viewport": "412x915",
-      "step": 8,
-      "name": "\"Seçimden döngü\" starts a loop on the same music",
-      "pass": true,
-      "detail": "{\"sel\":{\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"loop\",\"onsetCount\":1},\"loop\":{\"on\":true,\"startTicks\":48,\"endTicks\":336},\"status\":\"playing\"}"
-    },
-    {
-      "viewport": "412x915",
-      "step": 9,
-      "name": "the loop's boundaries do not move over three turns",
-      "pass": true,
-      "detail": "wraps=3 distinct bounds=[\"48-336\"]"
-    },
-    {
-      "viewport": "412x915",
-      "step": 10,
-      "name": "pause and resume keep the loop and its bounds",
-      "pass": true,
-      "detail": "paused → playing, bounds {\"on\":true,\"startTicks\":48,\"endTicks\":336} → {\"on\":true,\"startTicks\":48,\"endTicks\":336}"
-    },
-    {
-      "viewport": "412x915",
-      "step": 11,
-      "name": "the drawer offers to close the loop, and closing cleans up",
-      "pass": true,
-      "detail": "{\"sel\":null,\"loop\":null,\"status\":\"paused\",\"ticks\":48} band slots=6"
-    },
-    {
-      "viewport": "412x915",
-      "step": 12,
-      "name": "a new selection leaves no old loop running",
-      "pass": true,
-      "detail": "was {\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"loop\",\"onsetCount\":1}, now {\"sel\":null,\"loop\":null,\"status\":\"paused\"}"
-    },
-    {
-      "viewport": "412x915",
-      "step": 13,
-      "name": "the song is byte-identical to before any of it",
-      "pass": true,
-      "detail": "2356 bytes, identical=true"
-    },
-    {
-      "viewport": "412x915",
-      "step": 14,
-      "name": "the project record's revision never moved",
-      "pass": true,
-      "detail": "revision 1 → 1"
-    },
-    {
-      "viewport": "412x915",
-      "step": 15,
-      "name": "and the same instruments would have seen a real edit",
-      "pass": true,
-      "detail": "bytes moved=true revision 1 → 2, undo \"Geri al: Seçimi silme\" disabled=false, restored=true"
-    },
-    {
-      "viewport": "412x915",
-      "step": 16,
-      "name": "the undo stack was where it started before that edit",
-      "pass": true,
-      "detail": "before any listening: \"Geri al\" disabled=true"
-    },
-    {
-      "viewport": "412x915",
-      "step": 17,
-      "name": "the staff is where it was before any of it",
-      "pass": true,
-      "detail": "staff scrollLeft 0 → 0 (a nudge reads 120, so the instrument moves); vertically 0 → 0 across 0 scrollable boxes behind it"
-    },
-    {
-      "viewport": "412x915",
-      "step": 18,
-      "name": "every control a reader presses is still at least 44px",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "viewport": "412x915",
-      "step": 19,
-      "name": "no label is cut off, and the body does not overflow",
-      "pass": true,
-      "detail": "overflow=0 truncated=[]"
-    },
-    {
-      "viewport": "412x915",
-      "step": 20,
-      "name": "the app wrote nothing to the console",
-      "pass": true,
-      "detail": ""
-    },
-    {
-      "viewport": "1363x936",
-      "step": 1,
-      "name": "a run of notes can be selected in the editor",
-      "pass": true,
-      "detail": "slots=6"
-    },
-    {
-      "viewport": "1363x936",
-      "step": 2,
-      "name": "\"Daha fazla\" opens on that selection",
-      "pass": true,
-      "detail": "opened=true listening rows=4"
-    },
-    {
-      "viewport": "1363x936",
-      "step": 3,
-      "name": "\"Seçimi dinle\" is reachable and offered, not refused",
-      "pass": true,
-      "detail": "count=1 disabled=false height=55"
-    },
-    {
-      "viewport": "1363x936",
-      "step": 4,
-      "name": "the one-shot starts at the selection's first tick",
-      "pass": true,
-      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=64"
-    },
-    {
-      "viewport": "1363x936",
       "step": 5,
       "name": "it stops once, at the end, and comes back to the start",
       "pass": true,
       "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=328 end=336 overrun=-8 rested at 48, want 48"
+    },
+    {
+      "viewport": "412x915",
+      "step": 6,
+      "name": "the selection is still on the screen afterwards",
+      "pass": true,
+      "detail": "slots=6"
+    },
+    {
+      "viewport": "412x915",
+      "step": 7,
+      "name": "nothing outside the selection was played",
+      "pass": true,
+      "detail": "ticksBeforeStart=0 ticksPastEnd=0 tracks=[\"gtr\"] range=[48,336)"
+    },
+    {
+      "viewport": "412x915",
+      "step": 8,
+      "name": "\"Seçimden döngü\" starts a loop on the same music",
+      "pass": true,
+      "detail": "{\"sel\":{\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"loop\",\"onsetCount\":1},\"loop\":{\"on\":true,\"startTicks\":48,\"endTicks\":336},\"status\":\"playing\"}"
+    },
+    {
+      "viewport": "412x915",
+      "step": 9,
+      "name": "the loop's boundaries do not move over three turns",
+      "pass": true,
+      "detail": "wraps=3 distinct bounds=[\"48-336\"]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 10,
+      "name": "pause and resume keep the loop and its bounds",
+      "pass": true,
+      "detail": "paused → playing, bounds {\"on\":true,\"startTicks\":48,\"endTicks\":336} → {\"on\":true,\"startTicks\":48,\"endTicks\":336}"
+    },
+    {
+      "viewport": "412x915",
+      "step": 11,
+      "name": "the drawer offers to close the loop, and closing cleans up",
+      "pass": true,
+      "detail": "{\"sel\":null,\"loop\":null,\"status\":\"paused\",\"ticks\":48} band slots=6"
+    },
+    {
+      "viewport": "412x915",
+      "step": 12,
+      "name": "a new selection leaves no old loop running",
+      "pass": true,
+      "detail": "was {\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"loop\",\"onsetCount\":1}, now {\"sel\":null,\"loop\":null,\"status\":\"paused\"}"
+    },
+    {
+      "viewport": "412x915",
+      "step": 13,
+      "name": "the song is byte-identical to before any of it",
+      "pass": true,
+      "detail": "2356 bytes, identical=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 14,
+      "name": "the project record's revision never moved",
+      "pass": true,
+      "detail": "revision 1 → 1"
+    },
+    {
+      "viewport": "412x915",
+      "step": 15,
+      "name": "and the same instruments would have seen a real edit",
+      "pass": true,
+      "detail": "bytes moved=true revision 1 → 2, undo \"Geri al: Seçimi silme\" disabled=false, restored=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 16,
+      "name": "the undo stack was where it started before that edit",
+      "pass": true,
+      "detail": "before any listening: \"Geri al\" disabled=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 17,
+      "name": "the staff is where it was before any of it",
+      "pass": true,
+      "detail": "staff scrollLeft 0 → 0 (a nudge reads 120, so the instrument moves); vertically 0 → 0 across 0 scrollable boxes behind it"
+    },
+    {
+      "viewport": "412x915",
+      "step": 18,
+      "name": "every control a reader presses is still at least 44px",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "412x915",
+      "step": 19,
+      "name": "no label is cut off, and the body does not overflow",
+      "pass": true,
+      "detail": "overflow=0 truncated=[]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 20,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 1,
+      "name": "a run of notes can be selected in the editor",
+      "pass": true,
+      "detail": "slots=6"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 2,
+      "name": "\"Daha fazla\" opens on that selection",
+      "pass": true,
+      "detail": "opened=true listening rows=4"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 3,
+      "name": "\"Seçimi dinle\" is reachable and offered, not refused",
+      "pass": true,
+      "detail": "count=1 disabled=false height=55"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 4,
+      "name": "the one-shot starts at the selection's first tick",
+      "pass": true,
+      "detail": "plan={\"startTicks\":48,\"endTicks\":336,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":1} firstTickSeen=61"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 5,
+      "name": "it stops once, at the end, and comes back to the start",
+      "pass": true,
+      "detail": "statuses=[\"loading\",\"playing\",\"paused\"] furthest=365 end=336 overrun=29 rested at 48, want 48"
     },
     {
       "viewport": "1363x936",

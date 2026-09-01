@@ -87,6 +87,16 @@ export type SelectionActionOffer = {
   readonly availability: "available" | "disabled";
   /** The model's own sentence, present exactly when `disabled`. */
   readonly reason?: string;
+  /**
+   * Whether pressing this opens another sheet, or acts at once.
+   *
+   * A fact about the action, so the surfaces do not each keep a list of which
+   * ones to stay open for. The sheet that drew "Yapıştır" used to close itself
+   * on every press — including the press that had just opened the paste sheet
+   * behind it, which closed that too and left a reader who had pressed
+   * "Yapıştır" with nothing at all.
+   */
+  readonly opens: "sheet" | "immediate";
 };
 
 /* ------------------------------------------------------------ the words */
@@ -165,6 +175,17 @@ const MEASURE_WORDS: Readonly<
  * take the last bar out of a song. The model has always kept them apart; this
  * is where the two rows say which of the two they are asking about.
  */
+/**
+ * The ones that ask a question before they do anything.
+ *
+ * "Taşı" opens the eight movements, "Tekrarla" asks how many times,
+ * "Yapıştır" stages and previews, and "Daha fazla" is a door. Each replaces
+ * the sheet it was pressed from rather than closing it — a fact about the
+ * action, so no surface has to keep its own list of which ones to stay open
+ * for.
+ */
+const OPENS_SHEET: readonly SelectionActionId[] = ["move", "repeat", "paste", "more"];
+
 const VERB_OF: Readonly<Record<SelectionActionId, SelectionVerb | null>> = {
   copy: "copy",
   cut: "cut",
@@ -341,8 +362,16 @@ export function selectionActionCanon(
      * caller knows that — so it is offered here and the surface drops it when
      * the sheet came back empty, the way `bar-menu.ts` already does.
      */
+    const opens = OPENS_SHEET.includes(id) ? ("sheet" as const) : ("immediate" as const);
     if (verb === null) {
-      built.push({ id, ...wordsFor(id), verb: null, placement, availability: "available" });
+      built.push({
+        id,
+        ...wordsFor(id),
+        verb: null,
+        placement,
+        availability: "available",
+        opens,
+      });
       continue;
     }
 
@@ -354,6 +383,7 @@ export function selectionActionCanon(
       ...wordsFor(id),
       verb,
       placement,
+      opens,
       ...(state.kind === "disabled"
         ? { availability: "disabled" as const, reason: state.reason }
         : { availability: "available" as const }),

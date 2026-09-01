@@ -55,7 +55,12 @@ export function SelectionMoreSheet({
               data-selection-action-id={action.id}
               onClick={() => {
                 onRun(action.id);
-                onClose();
+                /*
+                 * Only when nothing else opened. "Yapıştır" stages and opens
+                 * the paste sheet; closing this one on the way out closed that
+                 * one too, and a reader who pressed it got nothing at all.
+                 */
+                if (action.opens === "immediate") onClose();
               }}
               disabled={off}
               /*

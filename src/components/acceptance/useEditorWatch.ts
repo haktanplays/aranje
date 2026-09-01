@@ -27,6 +27,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 
+import { useAcceptanceReading } from "@/components/acceptance/useAcceptanceReading";
 import { deviceStorageSnapshot } from "@/lib/acceptance/device-storage";
 import { readFixture } from "@/lib/acceptance/fixture-read";
 import type { MemoryStorage } from "@/lib/acceptance/memory-storage";
@@ -335,19 +336,6 @@ function observeScreen(previous: StandingObservations): StandingObservations {
  * use — the page owns a storage made of a `Map` — and would report a
  * structural zero as a proof, which is exactly the vacuity 2U-C was caught by.
  */
-export type AcceptanceReading = {
-  /** The stored Song, byte for byte, as the page's own storage holds it. */
-  bytes(): string;
-  /** One per committed edit: a revision that moved is a command that ran. */
-  revision(): number;
-};
-
-declare global {
-  interface Window {
-    __aranjeAcceptance?: AcceptanceReading;
-  }
-}
-
 export function useEditorWatch(storage: MemoryStorage): {
   readonly standing: StandingObservations;
   readonly consoleErrors: readonly string[];
@@ -403,16 +391,8 @@ export function useEditorWatch(storage: MemoryStorage): {
     };
   }, [storage]);
 
-  useEffect(() => {
-    const reading: AcceptanceReading = {
-      bytes: () => JSON.stringify(readFixture(storage).song),
-      revision: () => readFixture(storage).revision,
-    };
-    window.__aranjeAcceptance = reading;
-    return () => {
-      if (window.__aranjeAcceptance === reading) delete window.__aranjeAcceptance;
-    };
-  }, [storage]);
+  /* The same read-only window the batched route installs (2V-B §8). */
+  useAcceptanceReading(storage);
 
   return {
     standing,

@@ -321,6 +321,8 @@ export function BarActionBar({
                 key={entry.id}
                 type="button"
                 data-bar-action={entry.id}
+                /* The canon's id, on every surface that draws one (§10). */
+                data-selection-action-id={entry.id}
                 onClick={() => onAction(entry.id)}
                 disabled={off}
                 title={off ? entry.reason : undefined}
@@ -390,6 +392,7 @@ export function BarActionBar({
               <SheetButton
                 key={entry.id}
                 data-testid={`bar-more-${entry.id}`}
+                data-selection-action-id={entry.id}
                 disabled={off}
                 onClick={() => onAction(entry.id)}
               >

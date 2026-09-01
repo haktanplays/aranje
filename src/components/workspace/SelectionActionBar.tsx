@@ -118,6 +118,8 @@ export function SelectionActionBar({
               key={entry.id}
               type="button"
               data-testid={`selection-action-${entry.id}`}
+              /* The canon's id, on every surface that draws one (2V-B §10). */
+              data-selection-action-id={entry.id}
               onClick={() => onAction(entry.id)}
               disabled={off}
               /*

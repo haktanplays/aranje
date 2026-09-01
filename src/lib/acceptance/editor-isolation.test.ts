@@ -165,3 +165,94 @@ describe("the listening route reaches for nothing of the reader's", () => {
     expect(page).toContain('.get("sha")');
   });
 });
+
+/**
+ * The batched round's route, held to the same rules (2V-B §9).
+ *
+ * Same promises as the listening route, plus one this one needs on its own:
+ * it *measures* whether the reader's edits wrote, so it must read the record
+ * and never write it. A page that could stage a command would be a page whose
+ * measurements are partly of itself.
+ */
+const BATCH_FILES = [
+  "src/app/eval/editor-action-batch/page.tsx",
+  "src/components/acceptance/EditorActionBatch.tsx",
+];
+
+describe("the batched action route reaches for nothing of the reader's", () => {
+  it("names no storage API of its own", () => {
+    for (const path of BATCH_FILES) {
+      expect(read(path), path).not.toMatch(/localStorage|sessionStorage|indexedDB/);
+    }
+  });
+
+  it("builds no storage key of its own", () => {
+    for (const path of BATCH_FILES) {
+      expect(read(path), path).not.toMatch(/aranje\.project|aranje\.projects/);
+    }
+  });
+
+  it("asks nothing of the network or the device", () => {
+    for (const path of BATCH_FILES) {
+      const text = read(path);
+      expect(text, path).not.toMatch(/\bfetch\(|XMLHttpRequest|navigator\.mediaDevices/);
+      expect(text, path).not.toMatch(/getUserMedia|Notification\.requestPermission/);
+      expect(text, path).not.toMatch(/analytics|gtag|posthog|sentry/i);
+    }
+  });
+
+  it("is not linked from the product", () => {
+    expect(read("src/app/page.tsx")).not.toContain("editor-action-batch");
+  });
+
+  it("tells search engines to leave it alone", () => {
+    expect(read("src/app/eval/editor-action-batch/page.tsx")).toContain("index: false");
+  });
+
+  it("starts no sound and stages no command of its own", () => {
+    /*
+     * §9: no test control that mimics a production one. Every note this page
+     * causes and every byte it sees change came from the app's own controls.
+     */
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    expect(page).not.toMatch(/playSelection|stopSelection|PlaybackController|\.play\(/);
+    expect(page).not.toMatch(/\bapply\(|\bstage\(|toggleExtend|pasteHere|commit\(/);
+    for (const label of [
+      "Seçimi dinle",
+      "Seçimden döngü",
+      "Kopyala",
+      "Yapıştır",
+      "Çoğalt",
+      "Sil",
+    ]) {
+      const inButton = new RegExp(`<button[^>]*>[^<]*${label}`);
+      expect(page, label).not.toMatch(inButton);
+    }
+    expect(page).not.toContain("data-selection-action");
+  });
+
+  it("reads the record it measures, and never writes it", () => {
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    expect(page).toContain("readFixture");
+    expect(page).not.toContain("writeRecord");
+    /*
+     * Calls, not the word: the page satisfies `StorageLike` with a no-op
+     * `setItem` for the moment before the session exists, and a rule against
+     * the identifier would forbid the stand-in that guarantees no write.
+     */
+    expect(page).not.toMatch(/\.setItem\(/);
+  });
+
+  it("runs the production workspace rather than a stand-in", () => {
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    expect(page).toContain('from "@/components/workspace/Workspace"');
+    expect(page).toContain("<Workspace />");
+  });
+
+  it("refuses to start on a build the link did not ask for", () => {
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    expect(page).toContain("versionGate");
+    expect(page).toContain("mayStart(gate)");
+    expect(page).toContain('.get("sha")');
+  });
+});

@@ -25,6 +25,11 @@ const BASE = process.env.BASE ?? "http://127.0.0.1:3114";
 const SHA = process.env.SHA ?? "4d4deb3";
 const ROUTE = `${BASE}/eval/selection-playback?sha=${SHA}`;
 const OUT = new URL("./artifacts/", import.meta.url).pathname;
+/*
+ * The red run's artefact is evidence and must not be overwritten by the green
+ * one that follows it. `OUT_NAME=AFTER` writes the confirmation beside it.
+ */
+const NAME = process.env.OUT_NAME ?? "BASELINE";
 mkdirSync(OUT, { recursive: true });
 
 const ANDROID =
@@ -110,7 +115,7 @@ const main = async () => {
   }
 
   const labels = await sheetLabels(page);
-  await page.screenshot({ path: `${OUT}/baseline-more-sheet.png` });
+  await page.screenshot({ path: `${OUT}/${NAME.toLowerCase()}-more-sheet.png` });
 
   const has = (name) => (labels ?? []).filter((text) => text.startsWith(name)).length;
   const once = has("Seçimi dinle");
@@ -129,7 +134,7 @@ const main = async () => {
 
   const failed = results.filter((entry) => !entry.pass).length;
   writeFileSync(
-    `${OUT}/BASELINE.json`,
+    `${OUT}/${NAME}.json`,
     `${JSON.stringify(
       {
         kind: "browser emulation — not a physical device",

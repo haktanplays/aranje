@@ -58,7 +58,9 @@ export function SelectionToolbar({ actions }: { actions: SelectionActions }) {
       return;
     }
     actions.run(id);
-    setMore(false);
+    /* The drawer stays open behind a sheet it just opened (2V-B §6). */
+    const entry = actions.actions.find((action) => action.id === id);
+    if (entry?.opens !== "sheet") setMore(false);
   };
 
   const row = onSurface(actions.actions, "edit_primary");

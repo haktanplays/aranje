@@ -1,0 +1,603 @@
+{
+  "kind": "browser emulation — not a physical device",
+  "route": "/eval/editor-action-batch",
+  "results": [
+    {
+      "viewport": "320x700",
+      "step": 1,
+      "name": "the batched route opens on the real workspace",
+      "pass": true,
+      "detail": "strings=12 · \"Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "320x700",
+      "step": 2,
+      "name": "the reading grid draws the eight, none of them clipped",
+      "pass": true,
+      "detail": "ids=[\"copy\",\"cut\",\"duplicate\",\"repeat\",\"move\",\"extend\",\"delete\",\"more\"] small=0 clipped=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 3,
+      "name": "«Devam» is on the grid and enabled",
+      "pass": true,
+      "detail": "rendered=1 enabled=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 4,
+      "name": "the sheet behind «Daha fazla» holds both listening actions",
+      "pass": true,
+      "detail": "opened=true listen=1 loop=1 · [\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 5,
+      "name": "the sheet does not repeat what the grid already has",
+      "pass": true,
+      "detail": "overlap=[] sheet=[\"Kapat\",\"Yapıştır\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 6,
+      "name": "the clipboard action is reachable and says why it is greyed",
+      "pass": true,
+      "detail": "paste=\"Yapıştır — Panoda bir şey yok.\" enabled=false copy=true"
+    },
+    {
+      "viewport": "320x700",
+      "step": 7,
+      "name": "no action is drawn twice in one context",
+      "pass": true,
+      "detail": "drawn=12 duplicates=[]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 8,
+      "name": "every drawn action is pressable or greyed with a reason",
+      "pass": true,
+      "detail": "silent=[]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 9,
+      "name": "the measure bar draws its verbs in the scope's own words",
+      "pass": true,
+      "detail": "labels=[\"Kopyala\",\"Kes\",\"İçeriği çoğalt\",\"Tekrarla\",\"İçeriği taşı\",\"İçeriği sil\",\"Daha fazla\"]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 10,
+      "name": "and offers listening on a run of bars, in both scopes",
+      "pass": true,
+      "detail": "{\"track\":{\"once\":1,\"loop\":1},\"full\":{\"once\":1,\"loop\":1}}"
+    },
+    {
+      "viewport": "320x700",
+      "step": 11,
+      "name": "the geometry the UI contract froze is intact",
+      "pass": true,
+      "detail": "{\"tooSmall\":0,\"truncated\":0,\"bodyOverflow\":0,\"strings\":12,\"toolbarRows\":2}"
+    },
+    {
+      "viewport": "320x700",
+      "step": 12,
+      "name": "background scroll never drifts while the sheets open",
+      "pass": true,
+      "detail": "opened=true · 0 → 0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 13,
+      "name": "the guide runs cold-start to a complete result block",
+      "pass": true,
+      "detail": "first=\"1 · Power chord seç, «Devam»a dokun · 1/12\" screens=12 block=1617"
+    },
+    {
+      "viewport": "320x700",
+      "step": 14,
+      "name": "a run that pressed nothing is never a PASS",
+      "pass": true,
+      "detail": "verdict=FAIL failedSteps=5"
+    },
+    {
+      "viewport": "320x700",
+      "step": 15,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "320x700",
+      "step": 16,
+      "name": "a link for another build refuses to start the test",
+      "pass": true,
+      "detail": "refusal=1 staff drawn=0"
+    },
+    {
+      "viewport": "320x700",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "{\"sentinel\":\"kept\",\"keys\":[\"aranje.sentinel\"]}"
+    },
+    {
+      "viewport": "384x740",
+      "step": 1,
+      "name": "the batched route opens on the real workspace",
+      "pass": true,
+      "detail": "strings=12 · \"Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "384x740",
+      "step": 2,
+      "name": "the reading grid draws the eight, none of them clipped",
+      "pass": true,
+      "detail": "ids=[\"copy\",\"cut\",\"duplicate\",\"repeat\",\"move\",\"extend\",\"delete\",\"more\"] small=0 clipped=0"
+    },
+    {
+      "viewport": "384x740",
+      "step": 3,
+      "name": "«Devam» is on the grid and enabled",
+      "pass": true,
+      "detail": "rendered=1 enabled=true"
+    },
+    {
+      "viewport": "384x740",
+      "step": 4,
+      "name": "the sheet behind «Daha fazla» holds both listening actions",
+      "pass": true,
+      "detail": "opened=true listen=1 loop=1 · [\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "384x740",
+      "step": 5,
+      "name": "the sheet does not repeat what the grid already has",
+      "pass": true,
+      "detail": "overlap=[] sheet=[\"Kapat\",\"Yapıştır\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "384x740",
+      "step": 6,
+      "name": "the clipboard action is reachable and says why it is greyed",
+      "pass": true,
+      "detail": "paste=\"Yapıştır — Panoda bir şey yok.\" enabled=false copy=true"
+    },
+    {
+      "viewport": "384x740",
+      "step": 7,
+      "name": "no action is drawn twice in one context",
+      "pass": true,
+      "detail": "drawn=12 duplicates=[]"
+    },
+    {
+      "viewport": "384x740",
+      "step": 8,
+      "name": "every drawn action is pressable or greyed with a reason",
+      "pass": true,
+      "detail": "silent=[]"
+    },
+    {
+      "viewport": "384x740",
+      "step": 9,
+      "name": "the measure bar draws its verbs in the scope's own words",
+      "pass": true,
+      "detail": "labels=[\"Kopyala\",\"Kes\",\"İçeriği çoğalt\",\"Tekrarla\",\"İçeriği taşı\",\"İçeriği sil\",\"Daha fazla\"]"
+    },
+    {
+      "viewport": "384x740",
+      "step": 10,
+      "name": "and offers listening on a run of bars, in both scopes",
+      "pass": true,
+      "detail": "{\"track\":{\"once\":1,\"loop\":1},\"full\":{\"once\":1,\"loop\":1}}"
+    },
+    {
+      "viewport": "384x740",
+      "step": 11,
+      "name": "the geometry the UI contract froze is intact",
+      "pass": true,
+      "detail": "{\"tooSmall\":0,\"truncated\":0,\"bodyOverflow\":0,\"strings\":12,\"toolbarRows\":2}"
+    },
+    {
+      "viewport": "384x740",
+      "step": 12,
+      "name": "background scroll never drifts while the sheets open",
+      "pass": true,
+      "detail": "opened=true · 0 → 0"
+    },
+    {
+      "viewport": "384x740",
+      "step": 13,
+      "name": "the guide runs cold-start to a complete result block",
+      "pass": true,
+      "detail": "first=\"1 · Power chord seç, «Devam»a dokun · 1/12\" screens=12 block=1617"
+    },
+    {
+      "viewport": "384x740",
+      "step": 14,
+      "name": "a run that pressed nothing is never a PASS",
+      "pass": true,
+      "detail": "verdict=FAIL failedSteps=5"
+    },
+    {
+      "viewport": "384x740",
+      "step": 15,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "384x740",
+      "step": 16,
+      "name": "a link for another build refuses to start the test",
+      "pass": true,
+      "detail": "refusal=1 staff drawn=0"
+    },
+    {
+      "viewport": "384x740",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "{\"sentinel\":\"kept\",\"keys\":[\"aranje.sentinel\"]}"
+    },
+    {
+      "viewport": "390x844",
+      "step": 1,
+      "name": "the batched route opens on the real workspace",
+      "pass": true,
+      "detail": "strings=12 · \"Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "390x844",
+      "step": 2,
+      "name": "the reading grid draws the eight, none of them clipped",
+      "pass": true,
+      "detail": "ids=[\"copy\",\"cut\",\"duplicate\",\"repeat\",\"move\",\"extend\",\"delete\",\"more\"] small=0 clipped=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 3,
+      "name": "«Devam» is on the grid and enabled",
+      "pass": true,
+      "detail": "rendered=1 enabled=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 4,
+      "name": "the sheet behind «Daha fazla» holds both listening actions",
+      "pass": true,
+      "detail": "opened=true listen=1 loop=1 · [\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 5,
+      "name": "the sheet does not repeat what the grid already has",
+      "pass": true,
+      "detail": "overlap=[] sheet=[\"Kapat\",\"Yapıştır\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 6,
+      "name": "the clipboard action is reachable and says why it is greyed",
+      "pass": true,
+      "detail": "paste=\"Yapıştır — Panoda bir şey yok.\" enabled=false copy=true"
+    },
+    {
+      "viewport": "390x844",
+      "step": 7,
+      "name": "no action is drawn twice in one context",
+      "pass": true,
+      "detail": "drawn=12 duplicates=[]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 8,
+      "name": "every drawn action is pressable or greyed with a reason",
+      "pass": true,
+      "detail": "silent=[]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 9,
+      "name": "the measure bar draws its verbs in the scope's own words",
+      "pass": true,
+      "detail": "labels=[\"Kopyala\",\"Kes\",\"İçeriği çoğalt\",\"Tekrarla\",\"İçeriği taşı\",\"İçeriği sil\",\"Daha fazla\"]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 10,
+      "name": "and offers listening on a run of bars, in both scopes",
+      "pass": true,
+      "detail": "{\"track\":{\"once\":1,\"loop\":1},\"full\":{\"once\":1,\"loop\":1}}"
+    },
+    {
+      "viewport": "390x844",
+      "step": 11,
+      "name": "the geometry the UI contract froze is intact",
+      "pass": true,
+      "detail": "{\"tooSmall\":0,\"truncated\":0,\"bodyOverflow\":0,\"strings\":12,\"toolbarRows\":2}"
+    },
+    {
+      "viewport": "390x844",
+      "step": 12,
+      "name": "background scroll never drifts while the sheets open",
+      "pass": true,
+      "detail": "opened=true · 0 → 0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 13,
+      "name": "the guide runs cold-start to a complete result block",
+      "pass": true,
+      "detail": "first=\"1 · Power chord seç, «Devam»a dokun · 1/12\" screens=12 block=1617"
+    },
+    {
+      "viewport": "390x844",
+      "step": 14,
+      "name": "a run that pressed nothing is never a PASS",
+      "pass": true,
+      "detail": "verdict=FAIL failedSteps=5"
+    },
+    {
+      "viewport": "390x844",
+      "step": 15,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "390x844",
+      "step": 16,
+      "name": "a link for another build refuses to start the test",
+      "pass": true,
+      "detail": "refusal=1 staff drawn=0"
+    },
+    {
+      "viewport": "390x844",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "{\"sentinel\":\"kept\",\"keys\":[\"aranje.sentinel\"]}"
+    },
+    {
+      "viewport": "412x915",
+      "step": 1,
+      "name": "the batched route opens on the real workspace",
+      "pass": true,
+      "detail": "strings=12 · \"Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "412x915",
+      "step": 2,
+      "name": "the reading grid draws the eight, none of them clipped",
+      "pass": true,
+      "detail": "ids=[\"copy\",\"cut\",\"duplicate\",\"repeat\",\"move\",\"extend\",\"delete\",\"more\"] small=0 clipped=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 3,
+      "name": "«Devam» is on the grid and enabled",
+      "pass": true,
+      "detail": "rendered=1 enabled=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 4,
+      "name": "the sheet behind «Daha fazla» holds both listening actions",
+      "pass": true,
+      "detail": "opened=true listen=1 loop=1 · [\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 5,
+      "name": "the sheet does not repeat what the grid already has",
+      "pass": true,
+      "detail": "overlap=[] sheet=[\"Kapat\",\"Yapıştır\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 6,
+      "name": "the clipboard action is reachable and says why it is greyed",
+      "pass": true,
+      "detail": "paste=\"Yapıştır — Panoda bir şey yok.\" enabled=false copy=true"
+    },
+    {
+      "viewport": "412x915",
+      "step": 7,
+      "name": "no action is drawn twice in one context",
+      "pass": true,
+      "detail": "drawn=12 duplicates=[]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 8,
+      "name": "every drawn action is pressable or greyed with a reason",
+      "pass": true,
+      "detail": "silent=[]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 9,
+      "name": "the measure bar draws its verbs in the scope's own words",
+      "pass": true,
+      "detail": "labels=[\"Kopyala\",\"Kes\",\"İçeriği çoğalt\",\"Tekrarla\",\"İçeriği taşı\",\"İçeriği sil\",\"Daha fazla\"]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 10,
+      "name": "and offers listening on a run of bars, in both scopes",
+      "pass": true,
+      "detail": "{\"track\":{\"once\":1,\"loop\":1},\"full\":{\"once\":1,\"loop\":1}}"
+    },
+    {
+      "viewport": "412x915",
+      "step": 11,
+      "name": "the geometry the UI contract froze is intact",
+      "pass": true,
+      "detail": "{\"tooSmall\":0,\"truncated\":0,\"bodyOverflow\":0,\"strings\":12,\"toolbarRows\":2}"
+    },
+    {
+      "viewport": "412x915",
+      "step": 12,
+      "name": "background scroll never drifts while the sheets open",
+      "pass": true,
+      "detail": "opened=true · 0 → 0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 13,
+      "name": "the guide runs cold-start to a complete result block",
+      "pass": true,
+      "detail": "first=\"1 · Power chord seç, «Devam»a dokun · 1/12\" screens=12 block=1617"
+    },
+    {
+      "viewport": "412x915",
+      "step": 14,
+      "name": "a run that pressed nothing is never a PASS",
+      "pass": true,
+      "detail": "verdict=FAIL failedSteps=5"
+    },
+    {
+      "viewport": "412x915",
+      "step": 15,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "412x915",
+      "step": 16,
+      "name": "a link for another build refuses to start the test",
+      "pass": true,
+      "detail": "refusal=1 staff drawn=0"
+    },
+    {
+      "viewport": "412x915",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "{\"sentinel\":\"kept\",\"keys\":[\"aranje.sentinel\"]}"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 1,
+      "name": "the batched route opens on the real workspace",
+      "pass": true,
+      "detail": "strings=24 · \"Bu test gerçek projeni değiştirmez.\""
+    },
+    {
+      "viewport": "1363x936",
+      "step": 2,
+      "name": "the reading grid draws the eight, none of them clipped",
+      "pass": true,
+      "detail": "ids=[\"copy\",\"cut\",\"duplicate\",\"repeat\",\"move\",\"extend\",\"delete\",\"more\"] small=0 clipped=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 3,
+      "name": "«Devam» is on the grid and enabled",
+      "pass": true,
+      "detail": "rendered=1 enabled=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 4,
+      "name": "the sheet behind «Daha fazla» holds both listening actions",
+      "pass": true,
+      "detail": "opened=true listen=1 loop=1 · [\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 5,
+      "name": "the sheet does not repeat what the grid already has",
+      "pass": true,
+      "detail": "overlap=[] sheet=[\"Kapat\",\"Yapıştır\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 6,
+      "name": "the clipboard action is reachable and says why it is greyed",
+      "pass": true,
+      "detail": "paste=\"Yapıştır — Panoda bir şey yok.\" enabled=false copy=true"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 7,
+      "name": "no action is drawn twice in one context",
+      "pass": true,
+      "detail": "drawn=12 duplicates=[]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 8,
+      "name": "every drawn action is pressable or greyed with a reason",
+      "pass": true,
+      "detail": "silent=[]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 9,
+      "name": "the measure bar draws its verbs in the scope's own words",
+      "pass": true,
+      "detail": "labels=[\"Kopyala\",\"Kes\",\"İçeriği çoğalt\",\"Tekrarla\",\"İçeriği taşı\",\"İçeriği sil\",\"Daha fazla\"]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 10,
+      "name": "and offers listening on a run of bars, in both scopes",
+      "pass": true,
+      "detail": "{\"track\":{\"once\":1,\"loop\":1},\"full\":{\"once\":1,\"loop\":1}}"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 11,
+      "name": "the geometry the UI contract froze is intact",
+      "pass": true,
+      "detail": "{\"tooSmall\":0,\"truncated\":0,\"bodyOverflow\":0,\"strings\":24,\"toolbarRows\":2}"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 12,
+      "name": "background scroll never drifts while the sheets open",
+      "pass": true,
+      "detail": "opened=true · 0 → 0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 13,
+      "name": "the guide runs cold-start to a complete result block",
+      "pass": true,
+      "detail": "first=\"1 · Power chord seç, «Devam»a dokun · 1/12\" screens=12 block=1652"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 14,
+      "name": "a run that pressed nothing is never a PASS",
+      "pass": true,
+      "detail": "verdict=FAIL failedSteps=5"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 15,
+      "name": "the app wrote nothing to the console",
+      "pass": true,
+      "detail": "[]"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 16,
+      "name": "a link for another build refuses to start the test",
+      "pass": true,
+      "detail": "refusal=1 staff drawn=0"
+    },
+    {
+      "viewport": "1363x936",
+      "step": 17,
+      "name": "the reader's own project was never written to",
+      "pass": true,
+      "detail": "{\"sentinel\":\"kept\",\"keys\":[\"aranje.sentinel\"]}"
+    }
+  ],
+  "failed": 0,
+  "screenshots": 35
+}

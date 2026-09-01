@@ -14,7 +14,7 @@
       "step": 2,
       "name": "it says which build and which device it is on",
       "pass": true,
-      "detail": "{\"sha\":\"a0c05c8\",\"viewport\":\"320×700\",\"touch\":\"dokunma 1\"}"
+      "detail": "{\"sha\":\"5d516c5\",\"viewport\":\"320×700\",\"touch\":\"dokunma 1\"}"
     },
     {
       "viewport": "320x700",
@@ -91,7 +91,7 @@
       "step": 13,
       "name": "and the right build's link starts it",
       "pass": true,
-      "detail": "sha=a0c05c8 refusal=0 strings=12"
+      "detail": "sha=5d516c5 refusal=0 strings=12"
     },
     {
       "viewport": "320x700",
@@ -112,7 +112,7 @@
       "step": 2,
       "name": "it says which build and which device it is on",
       "pass": true,
-      "detail": "{\"sha\":\"a0c05c8\",\"viewport\":\"384×740\",\"touch\":\"dokunma 1\"}"
+      "detail": "{\"sha\":\"5d516c5\",\"viewport\":\"384×740\",\"touch\":\"dokunma 1\"}"
     },
     {
       "viewport": "384x740",
@@ -189,7 +189,7 @@
       "step": 13,
       "name": "and the right build's link starts it",
       "pass": true,
-      "detail": "sha=a0c05c8 refusal=0 strings=12"
+      "detail": "sha=5d516c5 refusal=0 strings=12"
     },
     {
       "viewport": "384x740",
@@ -210,7 +210,7 @@
       "step": 2,
       "name": "it says which build and which device it is on",
       "pass": true,
-      "detail": "{\"sha\":\"a0c05c8\",\"viewport\":\"390×844\",\"touch\":\"dokunma 1\"}"
+      "detail": "{\"sha\":\"5d516c5\",\"viewport\":\"390×844\",\"touch\":\"dokunma 1\"}"
     },
     {
       "viewport": "390x844",
@@ -287,7 +287,7 @@
       "step": 13,
       "name": "and the right build's link starts it",
       "pass": true,
-      "detail": "sha=a0c05c8 refusal=0 strings=12"
+      "detail": "sha=5d516c5 refusal=0 strings=12"
     },
     {
       "viewport": "390x844",
@@ -308,7 +308,7 @@
       "step": 2,
       "name": "it says which build and which device it is on",
       "pass": true,
-      "detail": "{\"sha\":\"a0c05c8\",\"viewport\":\"412×915\",\"touch\":\"dokunma 1\"}"
+      "detail": "{\"sha\":\"5d516c5\",\"viewport\":\"412×915\",\"touch\":\"dokunma 1\"}"
     },
     {
       "viewport": "412x915",
@@ -385,7 +385,7 @@
       "step": 13,
       "name": "and the right build's link starts it",
       "pass": true,
-      "detail": "sha=a0c05c8 refusal=0 strings=12"
+      "detail": "sha=5d516c5 refusal=0 strings=12"
     },
     {
       "viewport": "412x915",
@@ -406,7 +406,7 @@
       "step": 2,
       "name": "it says which build and which device it is on",
       "pass": true,
-      "detail": "{\"sha\":\"a0c05c8\",\"viewport\":\"1363×936\",\"touch\":\"dokunma 0\"}"
+      "detail": "{\"sha\":\"5d516c5\",\"viewport\":\"1363×936\",\"touch\":\"dokunma 0\"}"
     },
     {
       "viewport": "1363x936",
@@ -483,7 +483,7 @@
       "step": 13,
       "name": "and the right build's link starts it",
       "pass": true,
-      "detail": "sha=a0c05c8 refusal=0 strings=24"
+      "detail": "sha=5d516c5 refusal=0 strings=24"
     },
     {
       "viewport": "1363x936",

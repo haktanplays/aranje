@@ -1,0 +1,36 @@
+{
+  "kind": "browser emulation — not a physical device",
+  "route": "/eval/selection-playback",
+  "sha": "5d516c5",
+  "viewport": "384x740 + Android Chrome UA",
+  "method": "real pointer long-press drag on the production staff, then the visible «Daha fazla»",
+  "sheet": [
+    "Kapat",
+    "Yapıştır — Panoda bir şey yok.",
+    "Seçimi dinle",
+    "Seçimden döngü"
+  ],
+  "results": [
+    {
+      "name": "a real pointer selection exists",
+      "pass": true,
+      "detail": "4 nota · 1 ölçü"
+    },
+    {
+      "name": "the production «Daha fazla» is visible",
+      "pass": true,
+      "detail": "count=1"
+    },
+    {
+      "name": "listen_once rendered count === 1 in the sheet the founder opened",
+      "pass": true,
+      "detail": "rendered=1 · sheet=[\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    },
+    {
+      "name": "listen_loop rendered count === 1 in the sheet the founder opened",
+      "pass": true,
+      "detail": "rendered=1 · sheet=[\"Kapat\",\"Yapıştır — Panoda bir şey yok.\",\"Seçimi dinle\",\"Seçimden döngü\"]"
+    }
+  ],
+  "failed": 0
+}
