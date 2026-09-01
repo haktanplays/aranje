@@ -89,3 +89,79 @@ describe("the session it runs in", () => {
     expect(createMemoryStorage()).not.toBe(createMemoryStorage());
   });
 });
+
+/**
+ * The listening route makes the same promise, and it is the same promise
+ * (2V-A.1 §7).
+ *
+ * A second guided route is a second chance to reach for the reader's own
+ * music, and the reason to check it here rather than in a file of its own is
+ * that these are one rule: a route that runs the real workspace on a phone
+ * that holds everything somebody has written may not touch a byte of it.
+ */
+const LISTENING_FILES = [
+  "src/app/eval/selection-playback/page.tsx",
+  "src/components/acceptance/SelectionPlaybackAcceptance.tsx",
+];
+
+describe("the listening route reaches for nothing of the reader's", () => {
+  it("names no storage API of its own", () => {
+    for (const path of LISTENING_FILES) {
+      /* `device-storage.ts` is the one module allowed to touch the real
+         store, and it only reads. */
+      expect(read(path), path).not.toMatch(/localStorage|sessionStorage|indexedDB/);
+    }
+  });
+
+  it("builds no storage key of its own", () => {
+    for (const path of LISTENING_FILES) {
+      expect(read(path), path).not.toMatch(/aranje\.project|aranje\.projects/);
+    }
+  });
+
+  it("asks nothing of the network or the device", () => {
+    for (const path of LISTENING_FILES) {
+      const text = read(path);
+      expect(text, path).not.toMatch(/\bfetch\(|XMLHttpRequest|navigator\.mediaDevices/);
+      expect(text, path).not.toMatch(/getUserMedia|Notification\.requestPermission/);
+      expect(text, path).not.toMatch(/analytics|gtag|posthog|sentry/i);
+    }
+  });
+
+  it("is not linked from the product", () => {
+    expect(read("src/app/page.tsx")).not.toContain("selection-playback");
+  });
+
+  it("starts no sound of its own", () => {
+    /*
+     * §7: the first sound comes from the reader's touch. This page may not
+     * reach into the transport, and it may not carry a playback control of
+     * its own — every note it causes is one the production drawer played.
+     */
+    const page = read("src/components/acceptance/SelectionPlaybackAcceptance.tsx");
+    expect(page).not.toMatch(/playSelection|stopSelection|PlaybackController|\.play\(/);
+    /*
+     * And no control of its own that would play something. Named as buttons
+     * rather than as words, because the page's own heading says what the test
+     * is about and a rule that forbade the phrase would forbid saying so.
+     */
+    for (const label of ["Seçimi dinle", "Seçimden döngü"]) {
+      const inButton = new RegExp(`<button[^>]*>[^<]*${label}`);
+      expect(page, label).not.toMatch(inButton);
+    }
+    expect(page).not.toContain("data-selection-action");
+  });
+
+  it("runs the production workspace rather than a stand-in", () => {
+    const page = read("src/components/acceptance/SelectionPlaybackAcceptance.tsx");
+    expect(page).toContain('from "@/components/workspace/Workspace"');
+    expect(page).toContain("<Workspace />");
+  });
+
+  it("refuses to start on a build the link did not ask for", () => {
+    const page = read("src/components/acceptance/SelectionPlaybackAcceptance.tsx");
+    expect(page).toContain("versionGate");
+    expect(page).toContain("mayStart(gate)");
+    expect(page).toContain('.get("sha")');
+  });
+});
