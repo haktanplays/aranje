@@ -70,6 +70,20 @@ export type SelectionVerb =
   | "strum"
   | "retune"
   /* ----------------------------------------------------- whole bars */
+  /*
+   * The four the measure bar has always drawn and the model has never been
+   * asked about (2V-B §4). `copy`, `cut`, `repeat` and `move_time` are hidden
+   * on a run of bars — deliberately, because copying bars is a different
+   * command from copying notes — and the consequence was that the seven
+   * buttons on the measure bar were backed by three verbs and four blanks.
+   * A control with no capability behind it cannot be greyed for a reason, so
+   * "Taşı" stood live on a one-bar section and opened a sheet with two dead
+   * arrows in it.
+   */
+  | "copy_bar"
+  | "cut_bar"
+  | "repeat_bar"
+  | "move_bars"
   | "timing"
   | "insert_bar_before"
   | "insert_bar_after"
@@ -188,6 +202,10 @@ const CHORD_VERBS: readonly SelectionVerb[] = [
 
 /** Verbs that act on bars as objects, with every track in them. */
 const MEASURE_VERBS: readonly SelectionVerb[] = [
+  "copy_bar",
+  "cut_bar",
+  "repeat_bar",
+  "move_bars",
   "timing",
   "insert_bar_before",
   "insert_bar_after",
@@ -340,6 +358,16 @@ export function selectionCapabilities(
       return context.sectionBarCount > barCount(descriptor)
         ? available
         : disabled("Şarkıda en az bir ölçü kalmalı.");
+    }
+    if (verb === "move_bars") {
+      /*
+       * The door to the two arrows, greyed when neither of them could move.
+       * A section of one bar has nowhere to put it, and the reader learns
+       * that from the button rather than from a sheet that does nothing.
+       */
+      return firstBar > 0 || lastBar < context.sectionBarCount - 1
+        ? available
+        : disabled("Taşınacak yer yok.");
     }
     if (verb === "move_bar_left") {
       return firstBar > 0 ? available : disabled("Bu ilk ölçü.");
