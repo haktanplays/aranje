@@ -18,6 +18,10 @@
  */
 import type * as Tone from "tone";
 
+import type {
+  ContinuationPlan,
+  ContinuationVoice,
+} from "@/lib/audio/active-voices";
 import { expressionPresets } from "@/lib/audio/expression";
 import type { ExpressiveNotePlan } from "@/lib/audio/expression-plan";
 import type { LegatoChain, LegatoTransition } from "@/lib/audio/legato-chain";
@@ -50,8 +54,11 @@ type Voice = {
   ended: boolean;
   /** Its nodes have been freed. */
   disposed: boolean;
-  /** A note or a whole chain, or the short click of a pull-off. */
-  kind: "primary" | "auxiliary";
+  /**
+   * A struck note or chain, the short click of a pull-off, or the rest of a
+   * sound that a pause interrupted (2V-B.1 §7).
+   */
+  kind: "primary" | "auxiliary" | "continuation";
 };
 
 export type VoicePoolCounts = {
@@ -60,10 +67,19 @@ export type VoicePoolCounts = {
   /** Every voice ever started, so a leak shows up as a rising floor. */
   started: number;
   disposed: number;
-  /** Sources that carry a note or a whole legato chain (spec 8.5, K-22). */
+  /** Sources **struck** to carry a note or a whole legato chain (spec 8.5, K-22). */
   primary: number;
   /** Short pull-off clicks. Counted apart so they are never mistaken for one. */
   auxiliaryTransient: number;
+  /**
+   * Voices put back after a pause (2V-B.1 §7).
+   *
+   * Its own number, and not folded into `primary`, because the claim the
+   * round has to be able to make is "the hammer-on came back as one
+   * continuing voice and gained no attack" — which is `resumed` up by one
+   * with `auxiliaryTransient` unchanged. One counter cannot say that.
+   */
+  resumed: number;
 };
 
 /**
@@ -89,6 +105,7 @@ export class ExpressiveVoicePool {
   private disposedCount = 0;
   private primaryCount = 0;
   private auxiliaryCount = 0;
+  private resumedCount = 0;
   private closed = false;
 
   constructor(
@@ -104,6 +121,7 @@ export class ExpressiveVoicePool {
       disposed: this.disposedCount,
       primary: this.primaryCount,
       auxiliaryTransient: this.auxiliaryCount,
+      resumed: this.resumedCount,
     };
   }
 
@@ -332,6 +350,136 @@ export class ExpressiveVoicePool {
     this.voices.add(voice);
     this.started += 1;
     this.auxiliaryCount += 1;
+  }
+
+  /**
+   * Put back what a pause left in the air (2V-B.1 §7).
+   *
+   * The plan comes from `activeVoicesAt`, which has already worked out which
+   * sounds were mid-flight and exactly where each one had got to. This turns
+   * that into audio, and it does so **through this pool** — the same context,
+   * the same decoded buffers, the same per-track destination. There is no
+   * second synth and no preview engine here; a continuation that went through
+   * its own graph would be a different instrument playing the second half of
+   * the note.
+   *
+   * Two things it deliberately does not do:
+   *
+   * - It never starts the buffer at zero. The offset is where the sound had
+   *   reached in its own sample, so what comes back is the tail of a note
+   *   rather than a fresh pick attack on the same pitch.
+   * - It never produces an auxiliary transient. A resumed hammer-on is one
+   *   continuing voice; the click of the finger belongs to the moment the
+   *   finger moved, which is behind the playhead.
+   *
+   * Returns how many voices actually came back, so a caller can report a
+   * number it measured rather than the number it hoped for.
+   */
+  resume(plan: ContinuationPlan, time: number): number {
+    if (this.closed) return 0;
+    let restored = 0;
+    for (const voice of plan.voices) {
+      if (this.resumeOne(voice, time)) restored += 1;
+    }
+    return restored;
+  }
+
+  private resumeOne(continuation: ContinuationVoice, time: number): boolean {
+    const host = this.hosts.get(continuation.trackId);
+    if (!host) return false;
+
+    const targetMidi = pitchToMidi(continuation.sourcePitch);
+    if (targetMidi === null) return false;
+
+    const sample = nearestSample(host.entries, targetMidi);
+    if (!sample || !host.buffers.has(sample.note)) return false;
+
+    const baseRate = playbackRateFor(sample.midi, targetMidi);
+    /*
+     * How far into the buffer the sound had got. Approximated at the base
+     * rate rather than integrated over the pitch automation: a bend moves the
+     * rate by a fraction of a percent over a note, and integrating it would
+     * be arithmetic nobody can check against a number that matters. What
+     * matters is that this is not zero.
+     */
+    const offset = continuation.elapsedSeconds * baseRate;
+    const buffer = host.buffers.get(sample.note) as { duration?: number };
+    const bufferSeconds =
+      typeof buffer.duration === "number" ? buffer.duration : Number.POSITIVE_INFINITY;
+    /* The sample ran out while the transport was stopped; there is no sound
+       left to continue, and inventing one would be a note nobody played. */
+    if (offset >= bufferSeconds) return false;
+    if (continuation.remainingSeconds <= 0) return false;
+
+    const level = host.trimGain;
+    const gain = new this.tone.Gain({ context: this.context, gain: 0 });
+    gain.connect(host.destination);
+
+    let filter: Tone.Filter | null = null;
+    if (continuation.filterPreset !== undefined) {
+      const preset =
+        continuation.filterPreset === "dead"
+          ? expressionPresets.dead
+          : expressionPresets.palmMute;
+      filter = new this.tone.Filter({
+        context: this.context,
+        type: "lowpass",
+        frequency: preset.filterHz,
+        Q: preset.filterQ,
+      });
+      filter.connect(gain);
+    }
+
+    const source = new this.tone.ToneBufferSource({
+      context: this.context,
+      url: host.buffers.get(sample.note),
+      playbackRate: playbackRateFor(sample.midi, targetMidi, continuation.currentCents),
+    });
+    source.connect(filter ?? gain);
+
+    const voice: Voice = {
+      source,
+      gain,
+      filter,
+      ended: false,
+      disposed: false,
+      kind: "continuation",
+    };
+
+    /* The pitch it had, then the travel it had not finished. Point zero is
+       the current value, written by `activeVoicesAt`, so a slide picks up
+       from where the hand actually was. */
+    continuation.pitchAutomation.forEach((point, index) => {
+      const rate = playbackRateFor(sample.midi, targetMidi, point.cents);
+      const at = time + point.timeSeconds;
+      if (index === 0 || point.curve === "step") {
+        source.playbackRate.setValueAtTime(rate, at);
+      } else {
+        source.playbackRate.linearRampToValueAtTime(rate, at);
+      }
+    });
+
+    /*
+     * The seam. A buffer opened mid-sample at full level clicks, so the level
+     * is reached over a ramp far shorter than any attack in the pack. This is
+     * a splice, not a shape: it says nothing about how the resume sounds, and
+     * nothing in this repository has listened to it.
+     */
+    const fade = expressionPresets.resume.fadeSeconds;
+    gain.gain.setValueAtTime(0, time);
+    gain.gain.linearRampToValueAtTime(continuation.currentGain * level, time + fade);
+    for (const point of continuation.gainEnvelope) {
+      if (point.timeSeconds <= fade) continue;
+      gain.gain.linearRampToValueAtTime(point.value * level, time + point.timeSeconds);
+    }
+
+    source.onended = () => this.finish(voice);
+    source.start(time, offset, continuation.remainingSeconds);
+
+    this.voices.add(voice);
+    this.started += 1;
+    this.resumedCount += 1;
+    return true;
   }
 
   /** Everything currently sounding, gone. Safe to call when there is nothing. */

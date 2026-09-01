@@ -232,15 +232,48 @@ describe("the batched action route reaches for nothing of the reader's", () => {
   });
 
   it("reads the record it measures, and never writes it", () => {
-    const page = read("src/components/acceptance/EditorActionBatch.tsx");
-    expect(page).toContain("readFixture");
-    expect(page).not.toContain("writeRecord");
     /*
-     * Calls, not the word: the page satisfies `StorageLike` with a no-op
-     * `setItem` for the moment before the session exists, and a rule against
-     * the identifier would forbid the stand-in that guarantees no write.
+     * Two files since 2V-B.1 §11: the route draws and the round decides, so
+     * the reading moved into the hook. Both are audited, because the rule is
+     * about the *feature* rather than about one file — a page that wrote
+     * through a hook would be exactly as wrong.
      */
-    expect(page).not.toMatch(/\.setItem\(/);
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    const round = read("src/components/acceptance/useAcceptanceRound.ts");
+    expect(round).toContain("readFixture");
+    for (const source of [page, round]) {
+      expect(source).not.toContain("writeRecord");
+      /*
+       * Calls, not the word: the page satisfies `StorageLike` with a no-op
+       * `setItem` for the moment before the session exists, and a rule
+       * against the identifier would forbid the stand-in that guarantees no
+       * write.
+       */
+      expect(source).not.toMatch(/\.setItem\(/);
+    }
+  });
+
+  it("keeps the workspace out of the question screen entirely (§11)", () => {
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    /*
+     * The guide is not a panel any more. There is no fixed or absolute
+     * container in this route at all, so nothing it draws can sit over a
+     * production control or own a pointer that belongs to the staff.
+     */
+    expect(page).not.toMatch(/className="[^"]*\bfixed\b/);
+    expect(page).not.toMatch(/className="[^"]*\babsolute\b/);
+    expect(page).not.toContain("data-batch-guide");
+    /* And the workspace is taken out of layout rather than drawn behind. */
+    expect(page).toContain('data-acceptance-stage="song"');
+    expect(page).toContain("hidden={!onSong}");
+  });
+
+  it("never completes a step from a press (§13)", () => {
+    const page = read("src/components/acceptance/EditorActionBatch.tsx");
+    /* "Yaptım" is gone, and the advance control is drawn disabled until the
+       production evidence and the answer are both in. */
+    expect(page).not.toContain("Yaptım");
+    expect(page).toContain("disabled={!round.mayAdvance}");
   });
 
   it("runs the production workspace rather than a stand-in", () => {

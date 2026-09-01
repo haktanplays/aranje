@@ -10,6 +10,7 @@ import { describe, expect, it } from "vitest";
 import { scheduleSong, type Engine } from "@/lib/audio/engine";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { PlaybackController } from "@/lib/audio/playback";
+import { fakeExpressionRuntime } from "@/test/engine-fakes";
 import { sectionLoopBounds } from "@/lib/audio/position";
 import { effectiveBpm } from "@/lib/audio/practice-rate";
 import { buildSongPlan } from "@/lib/audio/schedule";
@@ -40,12 +41,15 @@ type FakeTransport = {
   scheduled: number[];
   callbacks: ((time: number) => void)[];
   listeners: string[];
+  loopCallbacks: (() => void)[];
   cancels: number;
   starts: number;
+  /** Every moment the transport was told to start at, in order. */
+  startedAt: unknown[];
   pauses: number;
   schedule(callback: (time: number) => void, time: unknown): number;
   on(event: string, callback: () => void): void;
-  start(): void;
+  start(at?: unknown): void;
   pause(): void;
   stop(): void;
   cancel(): void;
@@ -72,19 +76,23 @@ function fakeTransport(): FakeTransport {
     scheduled: [],
     callbacks: [],
     listeners: [],
+    loopCallbacks: [],
     cancels: 0,
     starts: 0,
+    startedAt: [],
     pauses: 0,
     schedule(callback) {
       transport.scheduled.push(transport.scheduled.length);
       transport.callbacks.push(callback);
       return transport.scheduled.length;
     },
-    on(event) {
+    on(event, callback) {
       transport.listeners.push(event);
+      if (event === "loop") transport.loopCallbacks.push(callback);
     },
-    start() {
+    start(at) {
       transport.starts += 1;
+      transport.startedAt.push(at);
     },
     pause() {
       transport.pauses += 1;
@@ -98,38 +106,19 @@ function fakeTransport(): FakeTransport {
   return transport;
 }
 
-/** The expressive layer, without any audio in it, counting what it was asked. */
-function fakeExpression() {
-  let plan = buildExpressionPlan(SAMPLE_SONG);
-  const log = { stops: 0, plans: 0, disposals: 0 };
-  return {
-    log,
-    setPlan: (next: typeof plan) => {
-      plan = next;
-      log.plans += 1;
-    },
-    getPlan: () => plan,
-    play: () => false,
-    playChain: () => false,
-    stopAll: () => {
-      log.stops += 1;
-    },
-    counts: { active: 0, started: 0, disposed: 0 },
-    fetchedUrls: 0,
-    dispose: () => {
-      log.disposals += 1;
-    },
-  };
-}
 
 function harness(options: { practicePercent?: number; song?: Song } = {}) {
   const song = options.song ?? SAMPLE_SONG;
   const transport = fakeTransport();
   let builds = 0;
-  const expression = fakeExpression();
+  const expression = fakeExpressionRuntime(song);
 
+  /* A clock the controller can ask for the resume moment. Fixed, so the
+     moment the transport is started at and the moment the voices come back
+     at can be compared exactly. */
+  let clock = 100;
   const engine = {
-    context: { transport },
+    context: { transport, now: () => clock },
     master: {},
     metronome: { click: { triggerAttackRelease: () => {} }, filter: {} },
     voices: new Map(),
@@ -154,7 +143,16 @@ function harness(options: { practicePercent?: number; song?: Song } = {}) {
     },
   });
 
-  return { controller, transport, engine, expression, builds: () => builds };
+  return {
+    controller,
+    transport,
+    engine,
+    expression,
+    builds: () => builds,
+    setClock: (value: number) => {
+      clock = value;
+    },
+  };
 }
 
 /** A harness whose engine has been built, so the transport carries the tempo. */
@@ -329,7 +327,7 @@ describe("the scheduler itself", () => {
       metronome: { click: { triggerAttackRelease: () => {} } },
       voices: new Map(),
       plan: buildSongPlan(SAMPLE_SONG),
-      expression: fakeExpression(),
+      expression: fakeExpressionRuntime(SAMPLE_SONG),
     } as unknown as Engine;
 
     scheduleSong(engine, buildTempoMap(SAMPLE_SONG, 75));
@@ -413,17 +411,12 @@ describe("what the scheduler does with a legato chain (spec 8.5, K-22)", () => {
       ]),
       plan: buildSongPlan(fixture),
       expression: {
+        ...fakeExpressionRuntime(fixture),
         getPlan: () => plan,
-        setPlan: () => {},
-        play: () => false,
         playChain: (chain: { chainId: string }) => {
           chained.push(chain.chainId);
           return true;
         },
-        stopAll: () => {},
-        counts: { active: 0, started: 0, disposed: 0, primary: 0, auxiliaryTransient: 0 },
-        fetchedUrls: 0,
-        dispose: () => {},
       },
     } as unknown as Engine;
 

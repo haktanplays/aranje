@@ -57,7 +57,26 @@ describe("one bus per track", () => {
     // The expressive voices: primary, auxiliary and filtered alike, all
     // through the host's destination, which is the track's channel.
     expect(engine).toContain("destination: voice.channel");
-    expect(voice.match(/gain\.connect\(host\.destination\)/g) ?? []).toHaveLength(3);
+    /*
+     * Four sites since 2V-B.1 §7, and it is worth naming which four so the
+     * next reader does not have to count them: the struck note (`play`), the
+     * struck legato chain (`playChain`), the finger's own click
+     * (`playAuxiliary`), and the tail of a sound a pause interrupted
+     * (`resumeOne`). The fourth is a real voice — it opens a buffer source,
+     * it makes sound, and it therefore has to reach the track's channel like
+     * the other three.
+     */
+    expect(voice.match(/gain\.connect\(host\.destination\)/g) ?? []).toHaveLength(4);
+    /*
+     * And the invariant itself, said directly rather than through a count.
+     * A fifth voice added tomorrow may raise the number above; what it may
+     * not do is send a gain anywhere other than the host's destination,
+     * because that would be a second bus for one track.
+     */
+    const everyGainConnect = voice.match(/gain\.connect\([^)]*\)/g) ?? [];
+    expect(everyGainConnect).toEqual(
+      everyGainConnect.map(() => "gain.connect(host.destination)"),
+    );
   });
 
   it("never pans a single note", () => {

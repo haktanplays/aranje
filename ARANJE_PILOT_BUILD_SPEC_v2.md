@@ -4147,6 +4147,128 @@ raporlanmıştı — burada imkânsızdır.
 kuralıdır.
 
 
+### §13.34 Çalma sürekliliği, üretim kanıtı ve tam ekran kabul (2V-B.1)
+
+#### §13.34.1 Duraklat, sesi silmek değildir
+
+Duraklatma `stopAll()` idi, devam etme `transport.start()`. Aradaki iki satırda
+tutulan bir akor, bir vibrato ve bir slide **var olmayı bırakıyordu:** transport
+playhead'in gerisindeki bir olayı bir daha ateşlemez, dolayısıyla duraklamadan
+önce başlamış her şey sessizlik olarak geri geliyordu.
+
+Cevap, **saf bir katman**dır: `activeVoicesAt(plan, tempoMap, ticks, window?)`.
+Tone yok, context yok, scheduler yok — motorun zaten çaldığı plan ve zaten
+üzerinde olduğu tempo çizgisi girer, mid-flight seslerin listesi çıkar. Aynı
+sayılar üç yerde doğru olmak zorundadır (canlı motor, offline render, ikisi de
+olmayan bir test) ve «slide ulaştığı perdeden devam etti» bir düğüm hakkında
+değil bir sayı hakkında iddiadır.
+
+İki kural fonksiyonun kendisinde uygulanır, çağırana bırakılmaz:
+
+- **Tam devam tick'indeki bir onset dışarıdadır.** Transport onu kendisi
+  ateşleyecektir; ona bir devam sesi üretmek aynı notaya ikinci bir atak olur.
+- **Hiçbir auxiliary transient üretilmez.** Parmağın telden çıkarken çıkardığı
+  ses, parmağın çıktığı ana aittir; devam anında üretilen bir tanesi hiç
+  durmamış bir notanın ortasına pena atağı koyar — legato zincirinin var olma
+  sebebi tam olarak bundan kaçınmaktır. Mid-flight bir hammer-on zinciri
+  dolayısıyla **tek bir primary ses**tir. İleride kalan parmak inişleri de
+  yeniden üretilmez; bu bildirilen bir sınırdır, gözden kaçmış bir şey değil.
+
+Sesi yapan tek yer `ExpressiveVoicePool.resume`'dur: **aynı** context, **aynı**
+çözülmüş buffer'lar, **aynı** track hedefi. İkinci bir synth, ikinci bir
+scheduler ve component'e ait bir ses yolu yoktur. Buffer sıfırdan değil, sesin
+kendi örneğinde ulaştığı yerden açılır. `pan.test.ts`'in «track başına tek bus»
+denetimi üç yerine dört `gain.connect(host.destination)` sayar ve dördüncünün
+ne olduğunu adıyla söyler; değişmez zayıflatılmadı, aksine her `gain.connect`'in
+hedefinin `host.destination` olduğu doğrudan iddia edilerek güçlendirildi.
+
+`PlaybackController` duraklarken tick'i **her şeyden önce** okur ve tutar; devam
+ederken transport'un hâlâ orada olduğunu doğrular, aynı ses-saati anını hem
+transport'a hem `resumeAt`'e verir, ve tutulan tick'i **karardan sonra** temizler.
+Arama, başa dönme, seçim değişimi, bitiş, iptal, Song değişimi ve dispose onu
+temizler; bir de transport'un yerinde olup olmadığı ayrıca sorulur, çünkü yarın
+eklenecek bir yol temizlemeyi unutabilir.
+
+#### §13.34.2 Kapatılan döngü, kapanmış sayılır
+
+Bir wrap bildirimi ses iş parçacığında kuyruğa girer ve sonradan teslim edilir —
+yani okuyucu döngüyü kapattıktan *sonra* gelebilir. O anda hareket etmek üç
+görünür yanlış yapar: hâlâ meşru biçimde duyulan turu susturur, kademeli hıza
+«bir tur bitti» der, ve seçim döngüsünde okuyucunun bıraktığı müziği yeniden
+başlatır. Wrap artık **iki otoriteye birden** sorar: controller'ın kendi
+durumuna (okuyucunun bastığı şey) ve transport'un bayrağına (ses saatinin
+gerçekten yaptığı şey). İkisi de hâlâ döngü diyorsa wrap gerçektir.
+
+Dispose edilmiş bir controller'a gelen bir «Çal» hiçbir şey yapmaz: motor
+kurmaz, ses çıkarmaz ve — en önemlisi — okuyucunun sonra açtığı ekranda
+görebileceği bir hata **kurmaz**.
+
+#### §13.34.3 Bir adımı düğme değil, üretim olayı tamamlar
+
+`workspace-events.ts` üretim tarafında tek bir kanaldır ve **hiçbir çağrı
+yerinde «test çalışıyor mu» dalı yoktur**. Kimse dinlemiyorken yayınlamak boş
+bir kümede yürümektir. Gözlemci ne yapıldığını duyar; ne zaman yapıldığını
+değil bir düğmeye basıldığını. «Yaptım» kaldırıldı: yazan bir adımın «Sonraki
+adım» kontrolü, adımın istediği olay gelene **ve** soru cevaplanana kadar
+disabled çizilir, ve ekran hangisinin eksik olduğunu cümleyle söyler.
+
+Olay **kabul edilmediyse ize girmez.** Yanlış build, yanlış oturum, yanlış Song,
+yanlış adım, yanlış track, yanlış ölçü ve eskimiş revizyon tipli birer retle
+reddedilir; reddedilenler founder'a gösterilir ama hiçbir adımı geçirmez.
+
+Song parmak izi **zincir**dir: kabul edilen bir eylem bir sonraki halkayı üretir
+ve sıradaki görev ona bağlanır, böylece iki düzenleme önceki bir Song hakkındaki
+olay bir adımı geçiremez. Parmak izi kanonik sıralanmış baytlar üzerinden
+alınır — aynı müzik iki yere iki farklı anahtar sırasıyla ulaşır (store şema
+sırasını, kayıt yazılış sırasını taşır) ve sıralamayan bir parmak izi aynı
+şarkıya `wrong_song` der; bu turda ölçüldü.
+
+#### §13.34.4 Görev, ekrandaki şarkıdan üretilir
+
+`song-support.ts` Song'u **motorun çalacağı planla** okur: planlayıcının
+geri düştüğü bir teknik destek değil, bir glif'tir. Bulunanlar — tutulan power
+chord, gerçekten hareket eden vibrato, zincire bağlanmış slide ve legato, iki
+enstrümanın birlikte vurulduğu ölçü — görev tarifine dönüşür; bulunamayan
+**sorulmaz** ve tipli bir «bu şarkı bu adımı taşımıyor» sonucu verir. Talimatın
+kendisi descriptor'ın alanlarından yazılır, yanına elle yazılmaz.
+
+#### §13.34.5 İki tam ekran, sıfır overlay
+
+Rehber panelin altında değil, **kendi ekranındadır**. Şarkı ekranında production
+Workspace tam yükseklik çalışır: soru yok, cevap listesi yok, sheet yok,
+görünmez kabul katmanı yok, ve bu rotanın çizdiği hiçbir `fixed`/`absolute`
+kutu yok. Tek eklenen şey normal akıştaki ince bir şerit ve tam olarak
+«Teste dön» yazan bir kontroldür. Soru ekranında Workspace `hidden`'dır —
+layout dışında, hit test dışında, pointer sahipliği dışında — ama sökülmez,
+çünkü «Şarkıya geç» **aynı canlı göreve** dönmelidir.
+
+Bu turda ölçülen ve kapatılan gerçek kusur şudur: Workspace'in kökü `h-dvh`'dir,
+yani kendisine verilen kutu ne olursa olsun tam viewport çizer. `384×692`'de
+sahne `556 px`, Workspace `761 px` yerleşti ve **bütün transport çubuğu ile
+besteci kapı satırı ekran dışında ve dokunulamaz** kaldı. Founder'ın «kontroller
+yoktu» raporu tam olarak budur. Çağrı yerinde `[&>div]:h-full` — conductor
+rotasının zaten kullandığı çözüm — üç kabul rotasına birden verildi.
+
+#### §13.34.6 Dört durum alanı, dört ayrı cevap
+
+«Proje değişmedi» tek cümlesi dört soruyu birden temsil ediyordu. Artık dördü
+ayrı ölçülür ve ayrı raporlanır: cihazın kendi müziği (bayt-eş **ve** sıfır
+yazma), tek kullanımlık kopya (değişmesi beklenir, geri gelmesi gerekir), kayıt
+ve geçmiş (bir düzenleme = bir revizyon = bir adım), ve rehberin kendi ekran
+durumu. Cihaz ve kopya hash'leri farklı ön ekler taşır (`device:` / `fixture:`),
+çünkü telefonda yan yana duran iki isimsiz dizeyi yorgun bir okuyucu ters
+sırada karşılaştırır. Cihazın anlık görüntüsünde fixture'ın anahtarının
+bulunması ayrı bir hata adıdır: ya kopya sızdı ya **izleyici yanlış depoyu
+okuyor** — ve ikincisi tehlikelidir, çünkü üstündeki bütün sıfırlar kopyayı
+ölçüp cihaz diye rapor eder.
+
+İşlem defteri hiçbir kusuru «KALDI»ya indirmez: `history_delta_expected_1_received_2`,
+`undo_hash_mismatch`, `move_exposed_partial_song`, `refusal_wrote_storage_1`
+gibi adlar taşır. Kopyanın okuma-yalnız oluşu iki sayaçla söylenir — bir üretim
+olayı, sıfır yazan komut — çünkü tek sayaç ya kopyayı «hiçbir şey değiştirmeyen
+komut» ya da «komut değil» saymak zorunda kalır ve ikisi de doğru değildir.
+
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)
@@ -4493,6 +4615,7 @@ maliyettir** (§11.2/7).
 
 | **K-62** | **Kayıp «Devam» ve gerçek dinleme rotası (§13.32, 2V-A.1).** Founder'ın gerçek Android cihazındaki canlı sonucu otorite kabul edildi: `384×740`, `dokunma 5`, rehber «2/36 · «Devam»a dokun.», production seçimi «1 power chord · 3 nota», ekrandaki eylemler `Kopyala · Kes · Çoğalt · Tekrarla · Taşı · Sil · Daha fazla` — **«Devam» yok.** **Kök neden ölçülerek bulundu ve bariz şüphelilerin hepsi masumdu:** yetenek modeli power chord için `extend`'i zaten `available` yanıtlıyordu ve compact toolbar onu K-59'dan beri çiziyordu. O yedi fiillik liste `SelectionActionBar`'dır — **okuma** yüzeyinin çubuğu — ve fiilleri modele hiçbir şey sormayan sabit bir listeydi; compact satır ise yalnız «Düzenle»ye basıldıktan sonra var olur ve rehber bunu istemez. Yani 2U-B pano kusurunun aynısı: model sunuyor, çizen liste taşımıyor. **Derin düzeltme sekizinci bir satır değil**, iki çubuğun artık aynı fonksiyona sorması oldu (`selectionOffers`), ve o fonksiyon okuyucunun yazıp yazmadığını sormuyor — «bu koşuya ne yapılabilir» müzikal bir sorudur, düzenleme modu cevabın parçası değildir. Dört sütunlu ızgarada sekiz hedef yedinin yaptığı iki satırın aynısıdır; **üçüncü satır yok, hiçbir tel kaybedilmedi**, «Devam» «Taşı»nın yanında, «Daha fazla» sonda. **Model düzgün sorgulanınca bir soruyu özensiz yanıtladığı görüldü:** `extend` koşulsuz `available` idi, bu neredeyse her yerde doğru ve bölümün son slot'undaki tek slotluk bir seçimde yanlıştır — kol yanar, gidecek yer yoktur. `hasExtendTarget` bunu bölümün kendi slot'larından yanıtlar ve kontrol «Uzatılacak yer kalmadı.» ile grileşir; yetenek modeli Song'u almama sözünü korur. **İkinci extension algoritması yazılmadı:** çubuk odaklı satırın çağırdığı `toggleExtend`'i çağırır, sonraki uzun basış bitiş kenarını taşır, kolu kurmak ve uzatmak hiçbir şey yazmaz. **Rehber, ekranda olmayan bir düğmeyi onaylayamaz hâle getirildi:** «Devam» adımı `no_write` bekliyordu ve hiçbir şeye dokunmadan «Yaptım»a basmak da hiçbir şey yazmaz — adım artık `armed` bekler ve cevabı okuyucunun bastığı kontrolün `aria-pressed`'inden alır. **2V-A için gerçek founder rotası açıldı:** `/eval/selection-playback` (`noindex`, `?sha=` kapısı, izole bellek deposu, production Workspace + çekmece + audio engine, sekiz adım, teknik terim yok, **sayfanın kendi playback kontrolü yok**). Eski editör rotası 2V-A dinleme sonucu olarak yeniden verilmedi. **`touch=0` fiziksel PASS üretemez** ve bu bir dipnot değil bir fonksiyondur: `listeningVerdict` dokunmasız ortamda en fazla `PARTIAL` döner, sonuç bloğu hangi ortamın cevapladığını kendi satırında söyler. **Doğrulama:** hedefli paket **10 ardışık yeşil**; tam paket **4.393 test / 270 dosya, 4 ardışık yeşil**; iki tarayıcı kabulü × 5 bağlam = **70/70 ve 70/70, 10 ardışık koşu**; **32 mutasyon probe'u, hepsi adıyla kırmızı, 0 vacuous, 0 invalid**. Devam harness'ı, sekizinci giriş çıkarılmış bir build'e karşı **10/14** verir ve kırmızı adımlar 4, 5, 6, 7'dir — canlı FAIL'in kendisi. **Probe'lar iki gerçek boşluk buldu, ikisi de benim testlerimdeydi** (dosya geneli arama, kollu dalın *yakın* kenarı taşımasıyla yeşil kalıyordu; rehberin kolu nereden okuduğu hiç sınanmamıştı) ve iki harness adımı kendini tarif ediyordu (uzatmadan sonra özetin hâlâ «power chord» diyeceği varsayımı — uygulama haklı; ve 320×700'de eylem çubuğunun altında kalan bir noktaya nişan almak). **Satır bütçeleri yükseltilmedi:** `Workspace.tsx` `375/379`, `TabCanvas.tsx` `456/472`, `ArrangementCanvas.tsx` `470/470`. **Bu turda kimse dinlemedi** — fiziksel edit–dinle kabulü `/eval/selection-playback` üzerinden ayrıca yürütülecektir; 2U-C fiziksel sürükleme kapısı açılmadı ve K-61 kendiliğinden onaylanmadı. | **Haktan 2V-A fiziksel edit–dinle kabulünü bekliyor** |
 | **K-63** | **Selection Action Canon (§13.33, 2V-B).** Founder `/eval/selection-playback?sha=4d4deb3` üzerinde adım 1'i tamamladı, «Daha fazla»yı açtı ve arkasında **yalnız «Seçimi sil»** buldu; rehberin adım 2'si gerçekleştirilemedi. **Canlı FAIL, üretim rotasında, gerçek pointer seçimi ve görünen gerçek kapıyla yeniden üretildi:** sheet `["Kapat","Seçimi sil","Vazgeç","Uygula"]`, iki dinleme eyleminin de `rendered=0` (`eval/editor-2vb/artifacts/BASELINE.json`). **Önceki 70/70 neden yanlış yeşildi:** 2V-A koşusu `toEditor()` içinde önce «Düzenle»ye basıyordu, yani ölçtüğü sheet compact satırın çekmecesiydi; 2V-A.1 koşusu kapının *varlığını* saydı, içeriğini hiç açmadı. İkisi de founder'ın açtığı yüzeyi hiç görmedi. **Bulunan bütün sabit eylem yüzeyleri:** okuma ızgarası (`SelectionActionBar`), okuma «Daha fazla» (`TransformSheet` içindeki `kind === "more"` dalı), compact satır ve çekmecesi (`SelectionToolbar` + `DRAWER_VERBS`), ölçü satırı (`BarActionBar` + `SCOPE_LABELS`/`PRIMARY`). Beşi de artık `selection-action-canon.ts`'in yerleştirdiğini çizer; hiçbir bileşen kendi listesini taşımaz ve bir sınır testi eylem etiketlerini bileşen kodunda adıyla yasaklar. **İkinci gerçek kusur modelde çıktı:** ölçü satırının yedi düğmesinin arkasında üç fiil ve dört boşluk vardı — ölçü kopyalamak/kesmek/tekrarlamak/taşımak aynı adlı nota fiillerinden başka komutlardır — `copy_bar`, `cut_bar`, `repeat_bar`, `move_bars` eklendi ve «Taşı» tek ölçülük bölümde «Taşınacak yer yok.» ile grileşti. **Üçüncüsü dinlemedeydi:** yetenek modeli 2V-A'dan beri bir ölçü aralığında `audition` sunuyordu ve hiçbir yüzey çizmiyordu; `useCoveredRun` artık hangi seçim tutuluyorsa onu tarif eder, «Bu enstrüman» plana tek track id, «Tüm enstrümanlar» hepsini taşır. **Dördüncüsünü kendi harness'ım buldu:** paylaşılan More sheet her basıştan sonra kendini kapatıyordu — «Yapıştır»ın az önce açtığı sheet dâhil — canon artık hangi eylemin sheet açtığını söyler. **Reachability denetimi testlerden üretilir:** 404 satır, on seçim türü × üç mod × iki pano durumu; gizli-ama-available `0`, çift render `0`, handler'sız render `0`. **Founder'a tek toplu rota verildi:** `/eval/editor-action-batch?sha=<sha>` — on iki ekran, founder yalnız işitsel ve kullanım sorularını yanıtlar, bayt/history/storage'ı sayfa proje kaydının izinden kendisi ölçer; hiçbir şey yapmadan «Sonraki»ye basmak yazan adımlarda düşer. **Doğrulama:** iki tarayıcı harness'ı × 5 bağlam = **85/85 ve 70/70**, **10 ardışık koşu** (`everyRunGreen: true`, 1.550 kontrol, `eval/editor-2vb/artifacts/RUNS.json`); **52 mutasyon probe'u, hepsi adıyla kırmızı, 0 vacuous, 0 invalid**; tam paket temiz. **Satır bütçeleri yükseltilmedi.** **Bu turda kimse bu sesi dinlemedi** — ölçülen şey erişilebilirlik ve yazma davranışıdır; kabul koşuları masaüstü Chromium'dur ve `touch=0` fiziksel kanıt sayılmaz. 2U-C fiziksel sürükleme kapısı açılmadı; K-61 ve K-62 kendiliğinden onaylanmadı. | **Haktan tek toplu editor-action kabulünü bekliyor** |
+| **K-64** | **Çalma sürekliliği, üretim kanıtı ve tam ekran kabul (§13.34, 2V-B.1).** Founder'ın `26bd505` üzerindeki gerçek Android koşusu otorite kabul edildi ve **kendi viewport'unda yeniden üretildi**: `384×692`, Android UA, dokunma 1 — rehber ekranın **348/692 pikselini** (%50) kaplıyordu ve on iki adımın altısı düştü. Aynı koşuda cihazın kendi deposu yenileme dahil **bayt-eş** ölçüldü, yani «Proje değişmedi: HAYIR» yeniden üretilemedi ve o cümle bir teşhis olarak değil yalnız daha dar bir sonuç olarak bırakıldı. **Ölçülerek bulunan asıl geometri kusuru başkaydı:** Workspace'in kökü `h-dvh`, yani verilen kutu ne olursa olsun tam viewport çizer; kabul sahnesi `556 px` iken Workspace `761 px` yerleşti ve **bütün transport çubuğu ile besteci kapı satırı `overflow-hidden` tarafından kesilip dokunulamaz hâle geldi** — founder'ın «kontroller yoktu» raporunun ölçülmüş karşılığı. Çağrı yerinde `[&>div]:h-full` üç kabul rotasına birden verildi. **Rehber artık iki tam ekrandır:** şarkı ekranında sıfır overlay, sıfır çalınmış production hedefi, sıfır gizli pointer sahibi, altı tel görünür; soru ekranında Workspace layout ve hit testing dışındadır. **Bir adımı üretim olayı tamamlar, düğme değil:** «Yaptım» kaldırıldı, `workspace-events.ts` üretim tarafında tek kanaldır ve hiçbir çağrı yerinde «test çalışıyor mu» dalı yoktur; kabul edilmeyen olay ize girmez ve yanlış build/oturum/Song/adım/track/ölçü/revizyon tipli birer retle reddedilir. **Duraklat/devam et gerçek oldu:** saf `activeVoicesAt` mid-flight sesleri, ulaşılmış perdeyi ve kalan süreyi verir; `ExpressiveVoicePool.resume` onları **aynı** motorda geri koyar, buffer'ı sıfırdan değil ulaştığı yerden açar ve **hiçbir auxiliary transient üretmez**. `pan.test.ts` üç yerine dört bus bağlantısı sayar ve dördüncüyü adıyla açıklar; değişmez zayıflatılmadı, güçlendirildi. **Kapatılan döngü kapanmış sayılır:** kuyruğa girmiş bir wrap hem controller durumuna hem transport bayrağına sorar; dispose edilmiş controller'a gelen «Çal» hata bile kurmaz. **Fixture yükseltildi:** tutulan power chord, gerçek 5→7 Re-teli slide'ı, hareket eden vibrato, tek zincirde hammer-on + pull-off, aynı ölçüde iki duyulur enstrüman, es/bağ/artikülasyon/let-ring/strum/polifoni. **Doğrulama:** geometri 26 kontrol × 5 bağlam = **130/130**; tarayıcı kabulü **34/34** ve on üç adımın hepsi üretim kanıtıyla ilerledi; **34 mutasyon probe'u, hepsi adıyla kırmızı, 0 vacuous, 0 invalid** — üçü ilk turda yeşil geldi ve **üçü de probe'un kendi kusuruydu** (basın bası susturmayan bir mutasyon, iki katmanlı bir korumanın yalnız bir katmanını kaldırmak, ve dosyayı ayrıştırılamaz hâle getiren bir kesme). **Hiç kimse bu sesi dinlemedi.** Ölçülen şey plan, zamanlama, kanıt ve piksel; kabul koşusu masaüstü Chromium'dur ve `touch=0` fiziksel kanıt sayılmaz. **K-61, K-62 ve K-63 kendiliğinden onaylanmadı** ve hâlâ founder'ı bekliyor. | **Haktan tam ekran fiziksel edit–dinle kabulünü bekliyor** |
 
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler

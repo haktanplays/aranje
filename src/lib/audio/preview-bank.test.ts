@@ -17,9 +17,9 @@ import { PlaybackController } from "@/lib/audio/playback";
 import { PreviewBankSession } from "@/lib/audio/preview-bank";
 import type { Engine } from "@/lib/audio/engine";
 import type { SamplePack } from "@/lib/audio/packs";
-import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { fakeExpressionRuntime } from "@/test/engine-fakes";
 
 const PACK: SamplePack = {
   id: "electric_guitar/high_gain",
@@ -85,19 +85,7 @@ function fakeTransport() {
 
 /** The expressive layer, without any audio in it. */
 function fakeExpression() {
-  let plan = buildExpressionPlan(SAMPLE_SONG);
-  return {
-    setPlan: (next: typeof plan) => {
-      plan = next;
-    },
-    getPlan: () => plan,
-    play: () => false,
-    playChain: () => false,
-    stopAll: () => {},
-    counts: { active: 0, started: 0, disposed: 0 },
-    fetchedUrls: 7,
-    dispose: () => {},
-  };
+  return { ...fakeExpressionRuntime(SAMPLE_SONG), fetchedUrls: 7 };
 }
 
 /**

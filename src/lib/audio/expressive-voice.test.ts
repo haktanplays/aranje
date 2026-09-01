@@ -8,10 +8,13 @@
  */
 import { describe, expect, it } from "vitest";
 
+import { activeVoicesAt } from "@/lib/audio/active-voices";
+import { expressionPresets } from "@/lib/audio/expression";
 import { ExpressiveVoicePool, type VoiceHost } from "@/lib/audio/expressive-voice";
 import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
 import type { LegatoChain } from "@/lib/audio/legato-chain";
 import { sampleEntries } from "@/lib/audio/sample-map";
+import { buildTempoMap } from "@/lib/audio/tempo";
 import { TIE, bar, note, slots, song } from "@/test/expression-fixtures";
 
 type Call = { kind: "set" | "ramp"; value: number; time: number };
@@ -543,5 +546,161 @@ describe("a legato chain is one voice", () => {
     expect(pool.playChain(chainOf(song([bar(slots([G3(), B3("hammer_on")]))])), 0)).toBe(
       false,
     );
+  });
+});
+
+/**
+ * Coming back from a pause, through this pool and no other (2V-B.1 §7).
+ *
+ * Every claim below is about a node the pool actually built: which buffer it
+ * opened, where in that buffer it started, and what it did *not* build.
+ */
+describe("resuming what a pause interrupted", () => {
+  /** A hammer-on chain, paused halfway through. */
+  function paused(target: ReturnType<typeof song>, fraction = 0.5) {
+    const plan = buildExpressionPlan(target);
+    const tempo = buildTempoMap(target);
+    const ticks = Math.round(tempo.totalTicks * fraction);
+    return { plan, tempo, ticks, continuation: activeVoicesAt(plan, tempo, ticks) };
+  }
+
+  const legato = () =>
+    song([bar(slots([note("G3", 1, 10), note("B3", 1, 14, "hammer_on"), TIE, TIE]))]);
+
+  it("opens the buffer where the sound had got to, not at the start", () => {
+    const { pool, sources } = harness();
+    const { continuation } = paused(legato(), 0.25);
+    expect(continuation.voices).toHaveLength(1);
+
+    expect(pool.resume(continuation, 9)).toBe(1);
+    expect(sources).toHaveLength(1);
+    expect(sources[0]?.started?.time).toBe(9);
+    /* The whole point: a continuation that opened at zero would give back
+       the pick attack the pause was supposed to have left behind. */
+    expect(sources[0]?.started?.offset).toBeGreaterThan(0);
+    expect(sources[0]?.started?.duration).toBeCloseTo(
+      continuation.voices[0]!.remainingSeconds,
+      10,
+    );
+  });
+
+  it("counts a resumed voice apart from a struck one", () => {
+    const { pool } = harness();
+    const { continuation } = paused(legato(), 0.25);
+    pool.resume(continuation, 0);
+
+    expect(pool.counts.resumed).toBe(1);
+    expect(pool.counts.started).toBe(1);
+    /* Not struck, and above all not a finger landing. */
+    expect(pool.counts.primary).toBe(0);
+    expect(pool.counts.auxiliaryTransient).toBe(0);
+  });
+
+  it("gives a hammer-on back as one voice with no auxiliary attack", () => {
+    const { pool, sources } = harness();
+    const target = legato();
+    const chain = buildExpressionPlan(target).chains[0];
+    /* The written chain does carry a finger landing, so what follows is a
+       property of the resume rather than of the fixture. */
+    expect(chain?.transitions[0]?.auxiliary).toBeDefined();
+
+    /* Struck, for comparison: two sources, one of them the click. */
+    pool.playChain(chain!, 0);
+    expect(sources).toHaveLength(2);
+    expect(pool.counts.auxiliaryTransient).toBe(1);
+    pool.stopAll();
+
+    const before = pool.counts.auxiliaryTransient;
+    const { continuation } = paused(target, 0.35);
+    expect(pool.resume(continuation, 0)).toBe(1);
+    /* One more source, and it is not a click. */
+    expect(sources).toHaveLength(3);
+    expect(pool.counts.auxiliaryTransient).toBe(before);
+  });
+
+  it("ramps in over the splice rather than opening at full level", () => {
+    const { pool, gains } = harness();
+    const { continuation } = paused(legato(), 0.25);
+    pool.resume(continuation, 2);
+
+    const calls = gains[0]?.calls ?? [];
+    expect(calls[0]).toEqual({ kind: "set", value: 0, time: 2 });
+    expect(calls[1]).toMatchObject({
+      kind: "ramp",
+      time: 2 + expressionPresets.resume.fadeSeconds,
+    });
+    expect(calls[1]?.value).toBeCloseTo(continuation.voices[0]!.currentGain, 10);
+  });
+
+  it("starts the source at the pitch it had reached", () => {
+    const { pool, sources } = harness();
+    const { continuation } = paused(
+      song([
+        bar(
+          slots([
+            note("G3", 1, 10),
+            TIE,
+            TIE,
+            note("B3", 1, 14, "slide"),
+            TIE,
+            TIE,
+            TIE,
+            TIE,
+          ]),
+        ),
+      ]),
+      0.6,
+    );
+    expect(continuation.voices).toHaveLength(1);
+    pool.resume(continuation, 0);
+
+    const first = sources[0]?.playbackRate.calls[0];
+    expect(first?.kind).toBe("set");
+    expect(first?.time).toBe(0);
+    /* Not the source pitch's own rate: the hand had already moved. */
+    expect(first?.value).not.toBe(1);
+  });
+
+  it("restores nothing for a track this pool does not host", () => {
+    const { pool, sources } = harness();
+    const { continuation } = paused(legato(), 0.25);
+    const elsewhere = {
+      ...continuation,
+      voices: continuation.voices.map((voice) => ({ ...voice, trackId: "bass" })),
+    };
+    expect(pool.resume(elsewhere, 0)).toBe(0);
+    expect(sources).toHaveLength(0);
+  });
+
+  it("restores nothing once the pool has been disposed", () => {
+    const { pool, sources } = harness();
+    const { continuation } = paused(legato(), 0.25);
+    pool.dispose();
+    expect(pool.resume(continuation, 0)).toBe(0);
+    expect(sources).toHaveLength(0);
+  });
+
+  it("refuses a voice whose sample has already run out", () => {
+    const { tone, sources } = fakeTone();
+    const shortHost: VoiceHost = {
+      buffers: {
+        has: () => true,
+        /* A quarter of a second of audio, which any paused note outlives. */
+        get: (name: string) => ({ name, duration: 0.25 }),
+      } as unknown as VoiceHost["buffers"],
+      entries: sampleEntries(NOTES),
+      destination: {} as VoiceHost["destination"],
+      trimGain: 1,
+    };
+    const pool = new ExpressiveVoicePool(
+      tone as never,
+      { isOffline: false } as never,
+      new Map([["gtr", shortHost]]),
+    );
+
+    const { continuation } = paused(legato(), 0.4);
+    expect(continuation.voices[0]!.elapsedSeconds).toBeGreaterThan(0.25);
+    expect(pool.resume(continuation, 0)).toBe(0);
+    expect(sources).toHaveLength(0);
   });
 });

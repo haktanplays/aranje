@@ -166,6 +166,18 @@ export class PlaybackController {
    * for last is where they want to be.
    */
   private pendingSeekTicks: number | null = null;
+  /**
+   * The exact transport tick the reader paused on (2V-B.1 §8).
+   *
+   * Held rather than re-read, and read *before* anything else moves in
+   * `pause`. A pause touches the transport, the playhead and the voice pool,
+   * and a tick sampled after those is a tick that may already have been
+   * nudged — which would resume the music somewhere the reader did not stop
+   * it. Null means there is nothing to come back to: cleared by every seek,
+   * rewind, end, abort, selection change and dispose, so a resume can never
+   * restore voices belonging to a moment the reader has left.
+   */
+  private heldResumeTicks: number | null = null;
   private listeners = new Set<() => void>();
   private disposed = false;
   private state: PlaybackState;
@@ -252,6 +264,11 @@ export class PlaybackController {
   private set(patch: Partial<PlaybackState>) {
     this.state = { ...this.state, ...patch };
     for (const listener of this.listeners) listener();
+  }
+
+  /** The tick a pause is holding, or null. Evidence, and the §8 tests. */
+  getHeldResumeTicks(): number | null {
+    return this.heldResumeTicks;
   }
 
   /** Raw transport clock, for the debug surface. */
@@ -350,6 +367,26 @@ export class PlaybackController {
     // A loop wrap starts the section again, so nothing from the previous pass
     // may still be ringing over the top of it (spec 8.5).
     engine.context.transport.on("loop", () => {
+      /*
+       * Whether there is still a loop, asked now (2V-B.1 §9).
+       *
+       * A wrap notification is queued on the audio thread and delivered
+       * afterwards, so one can arrive *after* the reader has turned the loop
+       * off. Acting on it then does three visible wrong things: it silences
+       * the pass that is still legitimately sounding, it tells the
+       * progressive rate that a pass completed when the reader has stopped
+       * practising, and on a selection loop it restarts music the reader has
+       * dismissed.
+       *
+       * Both authorities are consulted, because they can disagree for one
+       * frame: this controller's own state is what the reader pressed, and
+       * the transport's flag is what the audio clock is actually doing.
+       * A wrap is only real when both still say a loop is running.
+       */
+      if (this.disposed) return;
+      if (this.state.loop.kind === "none") return;
+      if (!engine.context.transport.loop) return;
+
       engine.expression.stopAll();
       /*
        * And the pass is announced. This is the *only* signal the progressive
@@ -405,20 +442,34 @@ export class PlaybackController {
   private handleEnded() {
     const transport = this.engine?.context.transport;
     if (!transport) return;
+    /* The song is over; there is no held moment to come back to. */
+    this.heldResumeTicks = null;
     transport.pause();
     transport.ticks = this.plan.totalTicks;
     this.set({ status: "ended" });
   }
 
   async play(): Promise<void> {
+    /*
+     * A disposed controller is not a broken one (2V-B.1 §9). A press that
+     * arrives after the screen has gone — a queued handler, a stale closure
+     * in a component that has already unmounted — must build nothing, sound
+     * nothing and, above all, not set an error the reader would be shown on
+     * whatever they opened next.
+     */
+    if (this.disposed) return;
     if (this.state.status === "loading") return;
 
     try {
       const engine = await this.ensureEngine();
       const transport = engine.context.transport;
 
-      // Playing again after the end starts from the top.
-      if (this.state.status === "ended") transport.ticks = 0;
+      // Playing again after the end starts from the top, and from the top
+      // there is nothing left over to continue.
+      if (this.state.status === "ended") {
+        transport.ticks = 0;
+        this.heldResumeTicks = null;
+      }
 
       /*
        * The count-in lives here and nowhere else: it is clicks on the audio
@@ -463,6 +514,9 @@ export class PlaybackController {
           );
         }
         transport.start(now + wait);
+        /* The same audio-clock moment the transport is given, so what was
+           sounding comes back exactly when the music does (§8). */
+        this.resumeHeldVoices(engine, now + wait);
         this.set({ status: "playing", error: null, countingIn: true });
         engine.context.draw.schedule(() => {
           if (this.countInToken !== token) return;
@@ -472,7 +526,14 @@ export class PlaybackController {
         return;
       }
 
-      transport.start();
+      /*
+       * One moment, given to both. Nothing is rescheduled and no engine is
+       * rebuilt: the events are still on the transport where they were put,
+       * and the only thing added is the tail of what the pause cut off.
+       */
+      const at = engine.context.now();
+      transport.start(at);
+      this.resumeHeldVoices(engine, at);
       this.set({ status: "playing", error: null, countingIn: false });
     } catch (error) {
       this.fail(error);
@@ -535,14 +596,61 @@ export class PlaybackController {
     this.cancelCountIn();
     const transport = this.engine?.context.transport;
     if (!transport) return;
+    /*
+     * The tick, before anything moves. Everything below this line touches
+     * something the transport owns, and the number the resume needs is the
+     * one that was true when the reader pressed the button (§8).
+     */
+    const at = transport.ticks;
     // pause() keeps the tick position, unlike stop().
     transport.pause();
+    /* Said again, explicitly. A cancelled count-in inside `cancelCountIn`
+       calls `stop()`, and the playhead the reader is looking at has to be the
+       tick they paused on rather than wherever the teardown left it. */
+    transport.ticks = at;
+    this.heldResumeTicks = at;
     // A per-note voice is not on the transport's clock once it has started, so
     // pausing has to end it explicitly (spec 8.5).
     this.engine?.expression.stopAll();
     if (this.state.status === "playing") {
       this.set({ status: "paused", countingIn: false });
     }
+  }
+
+  /**
+   * Put back what the pause left in the air, at the moment playback resumes.
+   *
+   * The held tick is cleared **after** the decision, not before it: "should
+   * this resume restore anything" and "there is nothing left to restore" are
+   * two different states, and collapsing them is how a second press ends up
+   * restoring the same voices twice.
+   *
+   * The transport is asked where it is rather than trusted. Every path that
+   * moves the playhead clears the held tick itself; this is the belt to that
+   * suspender, and it is what makes "seek does not restore stale voices" true
+   * even if a new path is added tomorrow and forgets.
+   */
+  private resumeHeldVoices(engine: Engine, at: number): void {
+    const held = this.heldResumeTicks;
+    this.heldResumeTicks = null;
+    if (held === null) return;
+    if (engine.context.transport.ticks !== held) return;
+
+    /* Inside a selection, the resume is bounded by the same window the
+       audition was scheduled with: a continuation from another track, or
+       from outside the chosen bars, is music the reader asked not to hear. */
+    const plan = this.selectionPlayback;
+    engine.expression.resumeAt(
+      held,
+      at,
+      plan === null
+        ? null
+        : {
+            startTicks: plan.startTicks,
+            endTicks: plan.endTicks,
+            trackIds: plan.trackIds,
+          },
+    );
   }
 
   toggle(): void {
@@ -554,6 +662,9 @@ export class PlaybackController {
   rewind(): void {
     this.cancelCountIn();
     const transport = this.engine?.context.transport;
+    /* Somewhere else entirely: a voice from the old position would be a
+       sound the reader left behind (§8). */
+    this.heldResumeTicks = null;
     this.engine?.expression.stopAll();
     if (transport) {
       transport.ticks = loopBounds(this.plan, this.state.loop)?.startTicks ?? 0;
@@ -566,6 +677,7 @@ export class PlaybackController {
     const start = barStartTicks(this.plan, barKey);
     if (start === null) return;
     // Jumping somewhere else leaves anything that was sounding behind.
+    this.heldResumeTicks = null;
     this.engine?.expression.stopAll();
     const transport = this.engine?.context.transport;
     if (transport) {
@@ -633,6 +745,7 @@ export class PlaybackController {
    * itself (§5).
    */
   async playSelection(plan: SelectionPlaybackPlan): Promise<void> {
+    if (this.disposed) return;
     if (this.selectionStart) {
       await this.selectionStart;
       /* The run that arrived first is the one that stands, unless this press
@@ -664,6 +777,7 @@ export class PlaybackController {
      * left running under a new schedule is the second voice §5 forbids.
      */
     this.cancelCountIn();
+    this.heldResumeTicks = null;
     this.engine?.context.transport.pause();
     this.engine?.expression.stopAll();
 
@@ -718,6 +832,7 @@ export class PlaybackController {
     /* Also cancels a start still in the air, which is what an abort is. */
     this.selectionToken = null;
     this.selectionPlayback = null;
+    this.heldResumeTicks = null;
 
     const engine = this.engine;
     if (!engine) return;
@@ -742,6 +857,7 @@ export class PlaybackController {
     const plan = this.selectionPlayback;
     if (!plan || plan.mode !== "once") return;
     const transport = this.engine?.context.transport;
+    this.heldResumeTicks = null;
     this.engine?.expression.stopAll();
     if (transport) {
       transport.pause();
@@ -857,6 +973,9 @@ export class PlaybackController {
    */
   applyMixOnly(next: Song): void {
     this.song = next;
+    /* A replaced Song, even one that only changed levels. Nothing held may
+       outlive the object it was measured against (§8). */
+    this.heldResumeTicks = null;
     this.mixOverrides.clear();
     if (!this.engine) return;
     for (const track of next.tracks) {
@@ -890,8 +1009,15 @@ export class PlaybackController {
     // speed and anything already sounding on the old timing is cancelled. The
     // engine itself is untouched: no graph, no samples, no rescheduling.
     this.engine?.expression.stopAll();
+    /*
+     * The plan and the timeline it was built on, together (§8). Only the
+     * expressive layer is touched: the sampler's and the drums' voices are
+     * on the transport's own clock and go on sounding, because a speed
+     * change is not a reason to silence the music that is playing.
+     */
     this.engine?.expression.setPlan(
       buildExpressionPlan(this.song, { practicePercent }),
+      this.tempoMap(practicePercent),
     );
     this.set({ practicePercent, bpm, activeBpm: this.activeBpm(practicePercent) });
   }
@@ -939,6 +1065,7 @@ export class PlaybackController {
     // transport start, and a disposed controller must not produce one (§VIII).
     this.cancelCountIn();
     this.disposed = true;
+    this.heldResumeTicks = null;
     this.selectionPlayback = null;
     this.selectionStart = null;
     this.selectionToken = null;

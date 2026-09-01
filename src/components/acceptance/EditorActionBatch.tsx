@@ -1,38 +1,51 @@
 "use client";
 
 /**
- * The single batched founder round (2V-B §9).
+ * One acceptance session, two full-screen states (2V-B.1 §11).
  *
- * Twelve screens over the **real** workspace, on a fixture in a storage this
- * page owns. It presses nothing on the reader's behalf and it has no control
- * of its own that does what a production control does: the only way to hear
- * anything, or to change anything, is the app.
+ * ## The defect this replaces
  *
- * ## The division of labour
+ * The previous version put the guide in a panel under the workspace. On the
+ * founder's phone that panel measured **348 px of a 692 px viewport** — half
+ * the screen — and the run failed on six of twelve steps. The diagnosis was
+ * one cause with six symptoms: a workspace squeezed into 344 px is a
+ * workspace you cannot select notes in, so the founder did the work
+ * somewhere else, and every step's trace came back single-state.
  *
- * The founder answers what only a person can. The page measures what only a
- * machine can: while a step is on screen it samples the project record — its
- * bytes and its revision — and keeps the sequence of distinct states. That
- * trace is what "one atomic write" and "undo came back byte-identical" are
- * judged against, in `batch-steps.ts`, and a founder who presses "Sonraki"
- * without doing the step leaves a trace of one state, which fails.
+ * A popup is not a smaller version of the right answer. The reader is either
+ * playing with the song or answering a question about it, and those are two
+ * whole screens:
+ *
+ * - **Song.** The production workspace, full height, with nothing over it.
+ *   No question, no answer list, no sheet, no invisible acceptance layer. The
+ *   only thing this route adds is a thin normal-flow strip carrying the
+ *   session line and one control labelled exactly "Teste dön". It is in the
+ *   flex column, not on top of it, so it cannot overlap a production target
+ *   or own a pointer that belongs to the staff.
+ * - **Task.** The one current question and its answers, and "Şarkıya geç".
+ *   The workspace is `hidden` — out of layout, out of hit testing, out of
+ *   pointer ownership — rather than unmounted, because §11 also asks that
+ *   coming back lands on the *same live task state*, and a remount would
+ *   throw away the selection and rebuild the audio engine every time the
+ *   reader looked at a question.
+ *
+ * ## What completes a step
+ *
+ * Not this component. A step that changes the music is completed by a
+ * production workspace event; "Sonraki adım" is drawn disabled until that
+ * event has arrived and the question has been answered, and the screen says
+ * which of the two is missing (§13).
  */
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { useAcceptanceReading } from "@/components/acceptance/useAcceptanceReading";
+import { useAcceptanceRound } from "@/components/acceptance/useAcceptanceRound";
 import { Workspace } from "@/components/workspace/Workspace";
 import { BUILD_SHA, mayStart, shortSha, versionGate } from "@/lib/acceptance/build-id";
-import {
-  BATCH_STEPS,
-  batchVerdict,
-  judgeBatchStep,
-  type BatchAnswers,
-  type BatchTrace,
-} from "@/lib/acceptance/batch-steps";
+import { BATCH_STEPS, batchVerdict } from "@/lib/acceptance/batch-steps";
 import { formatBatchResult } from "@/lib/acceptance/batch-report";
 import { deviceStorageSnapshot } from "@/lib/acceptance/device-storage";
 import { editorFixture } from "@/lib/acceptance/editor-fixture";
-import { readFixture } from "@/lib/acceptance/fixture-read";
 import { acceptanceSession, type AcceptanceSession } from "@/lib/acceptance/session";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 import type { StorageLike } from "@/lib/song/storage";
@@ -70,22 +83,27 @@ function Big({
   onClick,
   tone = "primary",
   testId,
+  disabled = false,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   tone?: "primary" | "plain";
   testId?: string;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       data-batch-action={testId}
       onClick={onClick}
+      disabled={disabled}
       style={{ minHeight: MIN_TOUCH_TARGET_PX }}
       className={`w-full rounded-lg border px-3 text-sm font-medium ${
-        tone === "primary"
-          ? "border-bronze bg-bronze/15 text-bronze"
-          : "border-line text-muted"
+        disabled
+          ? "border-line text-muted opacity-50"
+          : tone === "primary"
+            ? "border-bronze bg-bronze/15 text-bronze"
+            : "border-line text-muted"
       }`}
     >
       {children}
@@ -97,6 +115,17 @@ function Shell({ children }: { children: React.ReactNode }) {
   return <div className="space-y-3 p-4">{children}</div>;
 }
 
+/** Why a step will not pass yet, in a sentence rather than a code. */
+const SHORTFALL_TEXT: Readonly<Record<string, string>> = {
+  no_production_event: "Editörden henüz bir işlem gelmedi.",
+  wrong_action: "Gelen işlem bu adımın istediği işlem değil.",
+  no_write_expected: "Bu adımda hiçbir şey yazılmamalıydı; bir şey yazıldı.",
+  write_not_atomic: "Tek bir kayıt bekleniyordu; sayı tutmadı.",
+  undo_did_not_restore: "«Geri al» eski hâline dönmedi.",
+  redo_did_not_return: "«İleri al» yazılan hâle dönmedi.",
+  unanswered: "Sorunun cevabı verilmedi.",
+};
+
 export function EditorActionBatch() {
   const session = useSyncExternalStore<AcceptanceSession | null>(
     () => () => {},
@@ -105,6 +134,7 @@ export function EditorActionBatch() {
   );
 
   const [startedAt] = useState(() => new Date().toISOString());
+  const [fixture] = useState(() => editorFixture());
   const [expected] = useState<string | null>(() => {
     if (typeof window === "undefined") return null;
     return new URLSearchParams(window.location.search).get("sha");
@@ -127,77 +157,56 @@ export function EditorActionBatch() {
    */
   useAcceptanceReading(session?.storage ?? EMPTY_STORAGE);
 
-  const [screen, setScreen] = useState(0);
-  const [answers, setAnswers] = useState<BatchAnswers>({});
+  const round = useAcceptanceRound(session, fixture);
   const [note, setNote] = useState("");
   const [copied, setCopied] = useState(false);
-  const [measured, setMeasured] = useState<Record<string, boolean | null>>({});
-
-  /*
-   * Errors are collected rather than sampled. A render that threw and
-   * recovered still threw, and a report that only looked at the end would
-   * miss it.
-   */
-  const [consoleErrors, setConsoleErrors] = useState<readonly string[]>([]);
-  useEffect(() => {
-    const onError = (event: ErrorEvent) =>
-      setConsoleErrors((all) => [...all, event.message].slice(0, 20));
-    const onRejection = (event: PromiseRejectionEvent) =>
-      setConsoleErrors((all) => [...all, String(event.reason)].slice(0, 20));
-    window.addEventListener("error", onError);
-    window.addEventListener("unhandledrejection", onRejection);
-    return () => {
-      window.removeEventListener("error", onError);
-      window.removeEventListener("unhandledrejection", onRejection);
-    };
-  }, []);
-
   const [storageBefore] = useState(() => deviceStorageSnapshot());
-  const [storageAfter, setStorageAfter] = useState<string | null>(null);
-
-  const current = BATCH_STEPS[screen];
-  const done = screen >= BATCH_STEPS.length;
+  /*
+   * The whole device store, before and after — the coarse check that sits
+   * beside the four measured domains. Read at the moment the result block is
+   * drawn rather than stashed by an effect: reading storage is a read, and a
+   * value cached in state is a value that can be cached at the wrong time.
+   */
+  const storageAfter = round.done ? deviceStorageSnapshot() : storageBefore;
 
   /*
-   * The record's own trace while this step is on screen.
+   * What the two listening scopes actually asked the engine for (§14).
    *
-   * A ref, sampled by an interval: nothing draws it, and putting it in state
-   * would re-render the real workspace several times a second forever — a
-   * mistake the previous route made once and found only because no button
-   * ever stood still long enough to be pressed.
+   * Read off the same read-only debug handle the browser harness uses, while
+   * the step is on screen. The founder cannot tell "one track" from "two
+   * tracks that happen to sound alike"; this can.
    */
-  const trace = useRef<{ states: string[]; revisions: number[] }>({
-    states: [],
-    revisions: [],
-  });
-
-  const sample = useCallback(() => {
-    const reading = readFixture(session?.storage ?? EMPTY_STORAGE);
-    const states = trace.current.states;
-    if (states[states.length - 1] !== reading.song) {
-      states.push(reading.song);
-      trace.current.revisions.push(reading.revision);
-    }
-  }, [session?.storage]);
-
-  /* A fresh trace as each step is entered, and a first reading straight away. */
+  const stepId = round.step?.id ?? "";
   useEffect(() => {
-    if (!session?.ok || done) return;
-    trace.current = { states: [], revisions: [] };
-    sample();
-    const timer = window.setInterval(sample, 300);
+    if (stepId !== "trackScope" && stepId !== "measureScope") return;
+    const timer = window.setInterval(() => {
+      const plan = window.__aranjeDebug?.selection();
+      if (plan) round.recordScopeFilter(stepId, plan.trackIds);
+    }, 200);
     return () => window.clearInterval(timer);
-  }, [screen, session?.ok, done, sample]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepId]);
 
   const environment = useMemo(
     () => ({
       touchPoints: client.touchPoints,
-      consoleErrors,
+      consoleErrors: round.consoleErrors,
       userStorageBefore: storageBefore,
-      userStorageAfter: storageAfter ?? storageBefore,
-      measured,
+      userStorageAfter: storageAfter,
+      measured: round.measured,
+      trackScopeFilter: round.scopeFilters.trackScope ?? null,
+      measureScopeFilter: round.scopeFilters.measureScope ?? null,
+      secondTrackAudible: (round.support?.sharedBar?.trackIds.length ?? 0) >= 2,
     }),
-    [client.touchPoints, consoleErrors, storageBefore, storageAfter, measured],
+    [
+      client.touchPoints,
+      round.consoleErrors,
+      round.measured,
+      round.scopeFilters,
+      round.support,
+      storageBefore,
+      storageAfter,
+    ],
   );
 
   const result = () =>
@@ -211,8 +220,10 @@ export function EditorActionBatch() {
         userAgent: navigator.userAgent,
       },
       environment,
-      answers,
+      answers: round.answers,
       note,
+      isolation: round.isolation,
+      ledgers: round.ledgers,
     });
 
   if (session !== null && !session.ok) {
@@ -239,23 +250,16 @@ export function EditorActionBatch() {
     );
   }
 
-  const finishStep = () => {
-    if (!current) return;
-    sample();
-    const seen: BatchTrace = {
-      states: [...trace.current.states],
-      revisions: [...trace.current.revisions],
-    };
-    setMeasured((all) => ({
-      ...all,
-      [current.id]: judgeBatchStep(current.expect, seen),
-    }));
-    if (screen === BATCH_STEPS.length - 1) setStorageAfter(deviceStorageSnapshot());
-    setScreen(screen + 1);
-  };
+  const onSong = round.screen === "song" && !round.done;
+  const descriptor = round.envelope?.ok === true ? round.envelope.descriptor : null;
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
+      {/*
+        The session line. Normal flow, `shrink-0`, above the workspace rather
+        than over it — so it cannot cover a production control and nothing
+        under it can be pressed through it.
+      */}
       <header
         data-batch-header
         className="border-line text-muted shrink-0 border-b px-3 py-1 text-[11px]"
@@ -264,126 +268,203 @@ export function EditorActionBatch() {
         {" · "}
         <span data-batch-sha>{shortSha(BUILD_SHA)}</span>
         {" · "}
+        <span data-batch-session>{round.sessionId}</span>
+        {" · "}
         <span data-batch-viewport>{client.viewport}</span>
         {" · "}
         <span data-batch-touch>dokunma {client.touchPoints}</span>
+        <br />
+        <span data-batch-song>{round.support?.title ?? "—"}</span>
+        {" · "}
+        <span data-batch-fingerprint>{descriptor?.songFingerprint ?? "—"}</span>
         <br />
         <span data-batch-safety>Bu test gerçek projeni değiştirmez.</span>
       </header>
 
       {/*
-        The real workspace, on the fixture, in this page's own storage.
-
-        `overflow-hidden` for the reason the editor route learned it: without
-        it the workspace's own bottom chrome paints over the guide, and every
-        press on the guide's controls lands on a toolbar button underneath.
+        The workspace. Hidden — not unmounted — on the task screen, so it is
+        out of layout, out of hit testing and out of pointer ownership while
+        keeping the live task state §11 asks to come back to.
       */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+        {/*
+          `[&>div]:h-full` — the workspace's own root is `h-dvh`, so without
+          this it renders a full viewport of content inside a box that is
+          shorter than one and `overflow-hidden` silently clips the bottom
+          (2V-B.1 §15). Measured at 384×692: the stage was 556 px, the
+          workspace laid out 761 px, and the whole transport bar and the
+          composer door row were off screen and unhittable. The founder's run
+          reported exactly that as "the controls were not there".
+
+          The same arbitrary variant the conductor route already uses, for the
+          same reason it uses it: a component that hard-codes the viewport
+          height cannot be composed, and the honest fix at the call site is to
+          hand it the room there actually is.
+        */}
+      <div
+        data-acceptance-stage="song"
+        hidden={!onSong}
+        className="min-h-0 flex-1 overflow-hidden [&>div]:h-full"
+      >
         {session?.ok ? <Workspace /> : null}
       </div>
 
-      <section
-        data-batch-guide
-        className="border-line bg-panel max-h-[58dvh] shrink-0 space-y-2 overflow-y-auto border-t px-3 py-2"
-      >
-        {done ? (
-          <>
-            <h2 className="text-text text-sm font-medium">Sonuç</h2>
-            <pre
-              data-batch-result
-              className="border-line text-muted max-h-48 overflow-auto rounded border p-2 text-[10px] whitespace-pre-wrap"
-            >
-              {result()}
-            </pre>
-            <Big
-              testId="copy"
-              onClick={() => {
-                void navigator.clipboard?.writeText(result()).then(
-                  () => setCopied(true),
-                  () => setCopied(false),
-                );
-              }}
-            >
-              {copied ? "Kopyalandı" : "Sonucu kopyala"}
-            </Big>
-            <Big testId="restart" tone="plain" onClick={() => setScreen(0)}>
-              Baştan başla
-            </Big>
-          </>
-        ) : current ? (
-          <>
-            <p data-batch-step className="text-muted text-[11px]">
-              {current.title} · {screen + 1}/{BATCH_STEPS.length}
-            </p>
-            <p data-batch-task className="text-text text-sm">
-              {current.task}
-            </p>
-            {current.watchFor === "" ? null : (
-              <p data-batch-for className="text-muted text-xs">
-                {current.watchFor}
-              </p>
-            )}
-
-            {current.questions.map((question) => (
-              <div key={question.id} className="space-y-1">
-                <p className="text-muted text-xs">{question.prompt}</p>
-                <div className="flex gap-2">
-                  {question.options.map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      data-batch-answer={`${question.id}:${option}`}
-                      aria-pressed={answers[question.id] === option}
-                      onClick={() =>
-                        setAnswers((all) => ({ ...all, [question.id]: option }))
-                      }
-                      style={{ minHeight: MIN_TOUCH_TARGET_PX }}
-                      className={`min-w-0 flex-1 rounded-lg border px-2 text-xs whitespace-nowrap ${
-                        answers[question.id] === option
-                          ? "border-bronze text-bronze"
-                          : "border-line text-muted"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-
-            {current.id === "finish" ? (
-              <textarea
-                data-batch-note
-                value={note}
-                onChange={(event) => setNote(event.target.value)}
-                placeholder="Eklemek istediğin bir şey var mı?"
-                className="border-line text-text w-full rounded border bg-transparent p-2 text-xs"
-                rows={2}
-              />
-            ) : null}
-
-            <div className="flex gap-2">
-              {screen > 0 ? (
-                <Big testId="back" tone="plain" onClick={() => setScreen(screen - 1)}>
-                  Geri
-                </Big>
-              ) : null}
-              <Big testId="next" onClick={finishStep}>
-                {screen === BATCH_STEPS.length - 1 ? "Bitir" : "Sonraki"}
+      {onSong ? (
+        <div
+          data-acceptance-return
+          className="border-line shrink-0 border-t px-3 py-2"
+        >
+          <Big testId="to-task" onClick={round.goToTask}>
+            Teste dön
+          </Big>
+        </div>
+      ) : (
+        <section
+          data-acceptance-stage="task"
+          className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-3"
+        >
+          {round.done ? (
+            <>
+              <h2 className="text-text text-sm font-medium">Sonuç</h2>
+              <pre
+                data-batch-result
+                className="border-line text-muted max-h-[55dvh] overflow-auto rounded border p-2 text-[10px] whitespace-pre-wrap"
+              >
+                {result()}
+              </pre>
+              <Big
+                testId="copy"
+                onClick={() => {
+                  void navigator.clipboard?.writeText(result()).then(
+                    () => setCopied(true),
+                    () => setCopied(false),
+                  );
+                }}
+              >
+                {copied ? "Kopyalandı" : "Sonucu kopyala"}
               </Big>
-            </div>
-            <p data-batch-verdict className="text-muted text-[10px]">
-              Şu anki durum: {batchVerdict(environment, answers)}
-            </p>
-            <p
-              data-batch-measured={JSON.stringify(measured)}
-              className="text-muted text-[10px]"
-            >
-              Ölçülen adım: {Object.keys(measured).length}/{BATCH_STEPS.length}
-            </p>
-          </>
-        ) : null}
-      </section>
+              <Big testId="restart" tone="plain" onClick={round.restart}>
+                Baştan başla
+              </Big>
+            </>
+          ) : round.envelope?.ok === false ? (
+            /*
+             * The Song cannot carry this step. Not a question, and not a pass
+             * (§12): a typed refusal the founder can send back.
+             */
+            <>
+              <p data-batch-step className="text-muted text-[11px]">
+                {round.step?.title} · {round.stepIndex + 1}/{BATCH_STEPS.length}
+              </p>
+              <p data-batch-unsupported className="text-reject text-sm">
+                Bu şarkı bu adımı taşımıyor: {round.envelope.reason}
+              </p>
+              <Big testId="to-song" tone="plain" onClick={round.goToSong}>
+                Şarkıya geç
+              </Big>
+            </>
+          ) : descriptor && round.step ? (
+            <>
+              <p data-batch-step className="text-muted text-[11px]">
+                {round.step.title} · {round.stepIndex + 1}/{BATCH_STEPS.length}
+              </p>
+              <p data-batch-task className="text-text text-sm">
+                {descriptor.task}
+              </p>
+              {round.step.watchFor === "" ? null : (
+                <p data-batch-for className="text-muted text-xs">
+                  {round.step.watchFor}
+                </p>
+              )}
+
+              {/*
+                What is still missing, said plainly. A founder may stand here
+                before the task is done; what they may not do is pass it.
+              */}
+              <p
+                data-batch-evidence={round.judgement.passed ? "ready" : "missing"}
+                className={`text-xs ${round.judgement.passed ? "text-muted" : "text-reject"}`}
+              >
+                {round.judgement.passed
+                  ? "Editör kanıtı geldi."
+                  : round.judgement.shortfalls
+                      .map((name) => SHORTFALL_TEXT[name] ?? name)
+                      .join(" ")}
+              </p>
+              {round.evidence.refused.length > 0 ? (
+                <p data-batch-refused className="text-muted text-[10px]">
+                  Reddedilen olay: {round.evidence.refused.map((entry) => entry.refusal).join(", ")}
+                </p>
+              ) : null}
+
+              {round.step.questions.map((question) => (
+                <div key={question.id} className="space-y-1">
+                  <p className="text-muted text-xs">{question.prompt}</p>
+                  <div className="flex gap-2">
+                    {question.options.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        data-batch-answer={`${question.id}:${option}`}
+                        aria-pressed={round.answers[question.id] === option}
+                        onClick={() => round.answer(question.id, option)}
+                        style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+                        className={`min-w-0 flex-1 rounded-lg border px-2 text-xs whitespace-nowrap ${
+                          round.answers[question.id] === option
+                            ? "border-bronze text-bronze"
+                            : "border-line text-muted"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              {round.step.id === "finish" ? (
+                <textarea
+                  data-batch-note
+                  value={note}
+                  onChange={(event) => setNote(event.target.value)}
+                  placeholder="Eklemek istediğin bir şey var mı?"
+                  className="border-line text-text w-full rounded border bg-transparent p-2 text-xs"
+                  rows={2}
+                />
+              ) : null}
+
+              <Big testId="to-song" onClick={round.goToSong}>
+                Şarkıya geç
+              </Big>
+              <div className="flex gap-2">
+                {round.stepIndex > 0 ? (
+                  <Big testId="back" tone="plain" onClick={round.back}>
+                    Geri
+                  </Big>
+                ) : null}
+                <Big
+                  testId="next"
+                  tone="plain"
+                  disabled={!round.mayAdvance}
+                  onClick={round.next}
+                >
+                  {round.stepIndex === BATCH_STEPS.length - 1
+                    ? "Bitir"
+                    : "Sonraki adım"}
+                </Big>
+              </div>
+              <p data-batch-verdict className="text-muted text-[10px]">
+                Şu anki durum: {batchVerdict(environment, round.answers)}
+              </p>
+              <p
+                data-batch-measured={JSON.stringify(round.measured)}
+                className="text-muted text-[10px]"
+              >
+                Ölçülen adım: {Object.keys(round.measured).length}/{BATCH_STEPS.length}
+              </p>
+            </>
+          ) : null}
+        </section>
+      )}
     </div>
   );
 }

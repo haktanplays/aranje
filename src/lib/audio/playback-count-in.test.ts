@@ -15,9 +15,9 @@ import { describe, expect, it } from "vitest";
 
 import type { Engine } from "@/lib/audio/engine";
 import { PlaybackController } from "@/lib/audio/playback";
-import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
+import { fakeExpressionRuntime } from "@/test/engine-fakes";
 
 /** What the count-in actually touches, and nothing more. */
 function harness() {
@@ -81,16 +81,7 @@ function harness() {
     voices: new Map(),
     meters: new Map(),
     plan: buildSongPlan(SAMPLE_SONG),
-    expression: {
-      setPlan: () => {},
-      getPlan: () => buildExpressionPlan(SAMPLE_SONG),
-      play: () => false,
-      playChain: () => false,
-      stopAll: () => {},
-      counts: { active: 0, started: 0, disposed: 0 },
-      fetchedUrls: 0,
-      dispose: () => {},
-    },
+    expression: fakeExpressionRuntime(SAMPLE_SONG),
     silentTracks: [],
     expectedBuffers: 0,
     loadedBuffers: 0,
@@ -110,7 +101,14 @@ describe("273. the transport waits for the count-in, then starts", () => {
     await controller.play();
     expect(controller.getState().error).toBeNull();
     expect(clicks).toHaveLength(0);
-    expect(transport.starts).toEqual(["now"]);
+    /*
+     * The audio clock's own `now()`, which this fake fixes at 100. Since
+     * 2V-B.1 §8 the transport is started at an explicit moment rather than
+     * at "whenever" — because the voices a pause left in the air have to be
+     * put back at exactly the same moment, and two calls to `now()` are two
+     * moments.
+     */
+    expect(transport.starts).toEqual([100]);
     expect(controller.getState().countingIn).toBe(false);
   });
 

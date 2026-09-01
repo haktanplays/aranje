@@ -218,7 +218,7 @@ export function SelectionPlaybackAcceptance() {
         it the workspace's own bottom chrome paints over the guide, and every
         press on the guide's controls lands on a toolbar button underneath.
       */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-hidden [&>div]:h-full">
         {session?.ok ? <Workspace /> : null}
       </div>
 

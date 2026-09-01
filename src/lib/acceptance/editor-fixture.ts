@@ -28,7 +28,7 @@
  */
 import { TUNING_PRESETS, soundingMidi } from "@/lib/music/fretboard";
 import { midiToPitch } from "@/lib/music/pitch";
-import type { Bar, MelodicSlot, Song, Track } from "@/lib/song/schema";
+import type { Bar, MelodicSlot, NoteEvent, Song, Track } from "@/lib/song/schema";
 import { SONG_VERSION } from "@/lib/song/schema";
 
 const E_STANDARD = TUNING_PRESETS.e_standard!.tuning;
@@ -78,28 +78,48 @@ export const EDITOR_LANDMARKS = {
   freeBar: 3,
   /** The two adjacent written bars a multi-measure selection covers. */
   multiBars: { start: 0, end: 1 },
+  /**
+   * Where each technique the round has to hear actually is (2V-B.1 §10).
+   *
+   * Named, because §12 forbids a task that names a passage the Song does not
+   * have. A step asking for "the 5→7 slide on the D string" reads the bar,
+   * the slot and the string from here, so a fixture edit that moves the
+   * passage moves the instruction with it — and a fixture edit that *removes*
+   * it makes `editor-fixture.test.ts` red rather than making the founder
+   * hunt for something that is not there.
+   */
+  heldPowerChord: { barIndex: 0, slotIndex: 0, stringIndexes: [0, 1, 2] },
+  slide: { barIndex: 4, sourceSlot: 0, targetSlot: 4, stringIndex: 2, fromFret: 5, toFret: 7 },
+  vibrato: { barIndex: 4, slotIndex: 8, stringIndex: 3 },
+  hammerOn: { barIndex: 5, sourceSlot: 0, targetSlot: 4, stringIndex: 3 },
+  pullOff: { barIndex: 5, sourceSlot: 4, targetSlot: 8, stringIndex: 3 },
+  /** The strummed, let-ringing chord a repeat has to carry unchanged. */
+  strummedChord: { barIndex: 5, slotIndex: 12 },
+  /** Both instruments written in the same bar, so "together" can be false. */
+  bothTracksBar: 4,
   sectionId: "s1",
 } as const;
+
+/**
+ * The string names a task may say out loud, thickest first.
+ *
+ * A guitarist is told "the D string", never "string index 2". The index is
+ * how the model holds it; this is how a person is spoken to, and it lives
+ * beside the tuning it describes rather than in the guide that reads it.
+ */
+export const EDITOR_STRING_NAMES: readonly string[] = [
+  "Mi (kalın)",
+  "La",
+  "Re",
+  "Sol",
+  "Si",
+  "Mi (ince)",
+];
 
 function guitarAt(stringIndex: number, fret: number): MelodicSlot {
   const midi = soundingMidi(GUITAR_BOARD, { string: stringIndex, fret });
   if (midi === null) throw new Error(`unplayable: string ${stringIndex} fret ${fret}`);
   return { notes: [{ pitch: midiToPitch(midi), position: { string: stringIndex, fret } }] };
-}
-
-/** Several notes struck together — one onset, which is what a chord is. */
-function guitarChord(
-  positions: readonly { readonly string: number; readonly fret: number }[],
-): MelodicSlot {
-  return {
-    notes: positions.map((position) => {
-      const midi = soundingMidi(GUITAR_BOARD, position);
-      if (midi === null) {
-        throw new Error(`unplayable: string ${position.string} fret ${position.fret}`);
-      }
-      return { pitch: midiToPitch(midi), position: { ...position } };
-    }),
-  };
 }
 
 function bassAt(stringIndex: number, fret: number): MelodicSlot {
@@ -108,7 +128,62 @@ function bassAt(stringIndex: number, fret: number): MelodicSlot {
   return { notes: [{ pitch: midiToPitch(midi), position: { string: stringIndex, fret } }] };
 }
 
+/** One note that says its own length, and may ring past the next attack. */
+function guitarHeld(
+  stringIndex: number,
+  fret: number,
+  options: {
+    readonly articulation?: NoteEvent["articulation"];
+    readonly durationTicks?: number;
+    readonly letRing?: boolean;
+  } = {},
+): MelodicSlot {
+  const midi = soundingMidi(GUITAR_BOARD, { string: stringIndex, fret });
+  if (midi === null) throw new Error(`unplayable: string ${stringIndex} fret ${fret}`);
+  return {
+    notes: [
+      {
+        pitch: midiToPitch(midi),
+        position: { string: stringIndex, fret },
+        ...(options.articulation === undefined
+          ? {}
+          : { articulation: options.articulation }),
+        ...(options.durationTicks === undefined
+          ? {}
+          : { durationTicks: options.durationTicks }),
+        ...(options.letRing === undefined ? {} : { letRing: options.letRing }),
+      },
+    ],
+  };
+}
+
+/** A chord the picking hand crossed, held, and left ringing. */
+function strummedChord(
+  positions: readonly { readonly string: number; readonly fret: number }[],
+  durationTicks: number,
+): MelodicSlot {
+  return {
+    notes: positions.map((position) => {
+      const midi = soundingMidi(GUITAR_BOARD, position);
+      if (midi === null) {
+        throw new Error(`unplayable: string ${position.string} fret ${position.fret}`);
+      }
+      return {
+        pitch: midiToPitch(midi),
+        position: { ...position },
+        strum: "down" as const,
+        letRing: true,
+        durationTicks,
+      };
+    }),
+  };
+}
+
 const rest: MelodicSlot = null;
+/** The tie marker, spelled once (spec 5.4). */
+const tie: MelodicSlot = "-";
+/** One sixteenth of a 4/4 bar, in ticks. The grid every bar here is on. */
+const SLOT_TICKS = 48;
 const empty = (): MelodicSlot[] => Array.from({ length: 16 }, () => rest);
 
 const fill = (
@@ -125,15 +200,110 @@ const fill = (
  * shape to preserve.
  */
 const MOTIF_GUITAR = fill({
-  0: guitarChord([
-    { string: 0, fret: 0 },
-    { string: 1, fret: 2 },
-    { string: 2, fret: 2 },
-  ]),
+  /*
+   * E5: root, fifth, octave. Held for a whole beat and left ringing, so
+   * "press and hold the first power chord" is a chord that is actually
+   * sounding while the founder holds it (2V-B.1 §10). Written without a
+   * duration it stopped at the next onset a beat later, which is a chord a
+   * listener has to take on trust.
+   */
+  0: strummedChord(
+    [
+      { string: 0, fret: 0 },
+      { string: 1, fret: 2 },
+      { string: 2, fret: 2 },
+    ],
+    /* Two beats, so the chord is still ringing when the melody above it is
+       struck. Held for one beat it stopped exactly as the next note began,
+       which is a chord a listener has to take on trust. */
+    SLOT_TICKS * 8,
+  ),
   4: guitarAt(3, 2),
   8: guitarAt(2, 4),
   12: guitarAt(3, 5),
 });
+
+/*
+ * Bar 5 — the slide and the vibrato (2V-B.1 §10).
+ *
+ * Both are written as a source that is still ringing when the hand does
+ * something to it, because that is what the two articulations are: a slide
+ * needs the previous note to travel out of, and a vibrato needs a note long
+ * enough for the hand to shake it. Written short, the planner would refuse
+ * both and fall back to ordinary onsets — a fixture that draws a technique
+ * the engine then declines to play is exactly the kind of thing this round
+ * exists to stop.
+ *
+ * The slide is 5 → 7 on the D string, which is the passage §12's example task
+ * names out loud. The interval is two semitones and the source rings for four
+ * sixteenths before it, so the hand has room to be heard travelling.
+ */
+const SLIDE_GUITAR = fill({
+  0: guitarAt(2, 5),
+  1: tie,
+  2: tie,
+  3: tie,
+  4: guitarHeld(2, 7, { articulation: "slide" }),
+  5: tie,
+  6: tie,
+  7: tie,
+  8: guitarHeld(3, 7, { articulation: "vibrato", durationTicks: SLOT_TICKS * 8 }),
+  9: tie,
+  10: tie,
+  11: tie,
+  12: tie,
+  13: tie,
+  14: tie,
+  15: tie,
+});
+
+/* The bass plays under the same bar, so "did you hear them together" has two
+   things to be true about rather than one. */
+const SLIDE_BASS = fill({
+  0: bassAt(0, 5),
+  1: tie,
+  2: tie,
+  3: tie,
+  8: bassAt(1, 5),
+  9: tie,
+  10: tie,
+  11: tie,
+});
+
+/*
+ * Bar 6 — the legato passage, and everything a repeat has to carry.
+ *
+ * A hammer-on up and a pull-off back down on the G string, then a strummed
+ * power chord that is let to ring, then rests. In one bar: rests, ties,
+ * articulation, let-ring, strum, polyphony and an explicit duration — the
+ * whole list §10 asks a repeat to preserve, in a place a repeat can reach.
+ */
+const LEGATO_GUITAR = fill({
+  0: guitarAt(3, 5),
+  1: tie,
+  2: tie,
+  3: tie,
+  4: guitarHeld(3, 7, { articulation: "hammer_on" }),
+  5: tie,
+  6: tie,
+  7: tie,
+  8: guitarHeld(3, 5, { articulation: "pull_off" }),
+  9: tie,
+  10: tie,
+  11: tie,
+  12: strummedChord(
+    [
+      { string: 0, fret: 3 },
+      { string: 1, fret: 5 },
+      { string: 2, fret: 5 },
+    ],
+    SLOT_TICKS * 4,
+  ),
+  /* 13, 14 and 15 stay rests on purpose: a repeat that silently filled them
+     would be a repeat that changed the rhythm. */
+});
+
+const LEGATO_BASS = fill({ 0: bassAt(1, 3), 4: rest, 8: bassAt(0, 3) });
 
 /* Bar 3 — something to move and duplicate, on a different pair of strings. */
 const SECOND_GUITAR = fill({
@@ -195,6 +365,8 @@ export function editorFixture(): Song {
           bar(SECOND_GUITAR, SECOND_BASS),
           /* Free space on the right, so a measure move never overwrites. */
           bar(empty(), empty()),
+          bar(SLIDE_GUITAR, SLIDE_BASS),
+          bar(LEGATO_GUITAR, LEGATO_BASS),
         ],
       },
     ],

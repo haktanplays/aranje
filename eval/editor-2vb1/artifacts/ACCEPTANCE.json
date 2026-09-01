@@ -1,0 +1,411 @@
+{
+  "sha": "40a3a07",
+  "generatedAt": "2026-09-01T19:33:33.847Z",
+  "browserEmulation": true,
+  "physicalAcceptance": false,
+  "viewport": "384x692",
+  "opened": {
+    "sha": "40a3a07",
+    "session": "2vb1-1nuxtyqq",
+    "song": "Editör kabul parçası",
+    "fingerprint": "s3612hjgi1r4",
+    "blocked": false
+  },
+  "fixtureStart": {
+    "bytes": "\"{\\\"version\\\":4,\\\"title\\\":\\\"Editör kabul parçası\\\",\\\"bpm\\\":96,\\\"key\\\":\\\"E minor\\\",\\\"tracks\\\":[{\\\"id\\\":\\\"gtr\\\",\\\"name\\\":\\\"Gitar\\\",\\\"instrumentId\\\":\\\"electric_guitar\\\",\\\"presetId\\\":\\\"high_gain\\\",\\\"volumeDb\\\":-6,\\\"fretboard\\\":{\\\"tuning\\\":[\\\"E2\\\",\\\"A2\\\",\\\"D3\\\",\\\"G3\\\",\\\"B3\\\",\\\"E4\\\"],\\\"capo\\\":0}},{\\\"id\\\":\\\"bass\\\",\\\"name\\\":\\\"Bas\\\",\\\"instrumentId\\\":\\\"electric_bass\\\",\\\"presetId\\\":\\\"finger\\\",\\\"volumeDb\\\":-8,\\\"fretboard\\\":{\\\"tuning\\\":[\\\"E1\\\",\\\"A1\\\",\\\"D2\\\",\\\"G2\\\"],\\\"capo\\\":0}}],\\\"sections\\\":[{\\\"id\\\":\\\"s1\\\",\\\"name\\\":\\\"Kabul\\\",\\\"status\\\":\\\"fixed\\\",\\\"bars\\\":[{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"E2\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":0},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":384},{\\\"pitch\\\":\\\"B2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":2},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":384},{\\\"pitch\\\":\\\"E3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":2},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":384}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"A3\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":2}}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"F#3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":4}}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"C4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":5}}]},null,null,null],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"G1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":3}}]},null,null,null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"C2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":3}}]},null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],\\\"bass\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"A3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":7}}]},null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"D4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":7}}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"B3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":9}}]},null,null,null,null,null],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"D2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":5}}]},null,null,null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"A1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":5}}]},null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],\\\"bass\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"G3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"A3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":7},\\\"articulation\\\":\\\"slide\\\"}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"D4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":7},\\\"articulation\\\":\\\"vibrato\\\",\\\"durationTicks\\\":384}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\"],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"A1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"D2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"C4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"D4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":7},\\\"articulation\\\":\\\"hammer_on\\\"}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"C4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":5},\\\"articulation\\\":\\\"pull_off\\\"}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"G2\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":3},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":192},{\\\"pitch\\\":\\\"D3\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":5},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":192},{\\\"pitch\\\":\\\"G3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":5},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":192}]},null,null,null],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"C2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":3}}]},null,null,null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"G1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":3}}]},null,null,null,null,null,null,null]}}]}]}\"",
+    "revision": 1
+  },
+  "fixtureEnd": {
+    "bytes": "\"{\\\"version\\\":4,\\\"title\\\":\\\"Editör kabul parçası\\\",\\\"bpm\\\":96,\\\"key\\\":\\\"E minor\\\",\\\"tracks\\\":[{\\\"id\\\":\\\"gtr\\\",\\\"name\\\":\\\"Gitar\\\",\\\"instrumentId\\\":\\\"electric_guitar\\\",\\\"presetId\\\":\\\"high_gain\\\",\\\"volumeDb\\\":-6,\\\"fretboard\\\":{\\\"tuning\\\":[\\\"E2\\\",\\\"A2\\\",\\\"D3\\\",\\\"G3\\\",\\\"B3\\\",\\\"E4\\\"],\\\"capo\\\":0}},{\\\"id\\\":\\\"bass\\\",\\\"name\\\":\\\"Bas\\\",\\\"instrumentId\\\":\\\"electric_bass\\\",\\\"presetId\\\":\\\"finger\\\",\\\"volumeDb\\\":-8,\\\"fretboard\\\":{\\\"tuning\\\":[\\\"E1\\\",\\\"A1\\\",\\\"D2\\\",\\\"G2\\\"],\\\"capo\\\":0}}],\\\"sections\\\":[{\\\"id\\\":\\\"s1\\\",\\\"name\\\":\\\"Kabul\\\",\\\"status\\\":\\\"fixed\\\",\\\"bars\\\":[{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"E2\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":0},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":384},{\\\"pitch\\\":\\\"B2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":2},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":384},{\\\"pitch\\\":\\\"E3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":2},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":384}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"A3\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":2}}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"F#3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":4}}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"C4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":5}}]},null,null,null],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"G1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":3}}]},null,null,null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"C2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":3}}]},null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],\\\"bass\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"A3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":7}}]},null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"D4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":7}}]},null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"B3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":9}}]},null,null,null,null,null],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"D2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":5}}]},null,null,null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"A1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":5}}]},null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],\\\"bass\\\":[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"G3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"A3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":7},\\\"articulation\\\":\\\"slide\\\"}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"D4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":7},\\\"articulation\\\":\\\"vibrato\\\",\\\"durationTicks\\\":384}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\",\\\"-\\\"],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"A1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"D2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",null,null,null,null]}},{\\\"timeSignature\\\":[4,4],\\\"resolution\\\":16,\\\"slots\\\":{\\\"gtr\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"C4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":5}}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"D4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":7},\\\"articulation\\\":\\\"hammer_on\\\"}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"C4\\\",\\\"position\\\":{\\\"string\\\":3,\\\"fret\\\":5},\\\"articulation\\\":\\\"pull_off\\\"}]},\\\"-\\\",\\\"-\\\",\\\"-\\\",{\\\"notes\\\":[{\\\"pitch\\\":\\\"G2\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":3},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":192},{\\\"pitch\\\":\\\"D3\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":5},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":192},{\\\"pitch\\\":\\\"G3\\\",\\\"position\\\":{\\\"string\\\":2,\\\"fret\\\":5},\\\"strum\\\":\\\"down\\\",\\\"letRing\\\":true,\\\"durationTicks\\\":192}]},null,null,null],\\\"bass\\\":[{\\\"notes\\\":[{\\\"pitch\\\":\\\"C2\\\",\\\"position\\\":{\\\"string\\\":1,\\\"fret\\\":3}}]},null,null,null,null,null,null,null,{\\\"notes\\\":[{\\\"pitch\\\":\\\"G1\\\",\\\"position\\\":{\\\"string\\\":0,\\\"fret\\\":3}}]},null,null,null,null,null,null,null]}}]}]}\"",
+    "revision": 1
+  },
+  "deviceKeys": [
+    "aranje.project.project-1",
+    "aranje.sentinel",
+    "aranje.projects"
+  ],
+  "deviceUnchanged": true,
+  "steps": [
+    {
+      "id": "extend",
+      "answered": 2,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "1→1",
+      "task": "Kabul · Gitar · 1. ölçü: ilk power chord'a basılı tut, sonra «Devam»a dokun ve ileride bir yere uzun bas."
+    },
+    {
+      "id": "openMore",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "1→1",
+      "task": "Kabul · Gitar · 1. ölçü: birkaç notaya basılı tutup sağa sürükle, sonra «Daha fazla»ya dokun."
+    },
+    {
+      "id": "listenOnce",
+      "answered": 3,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "1→1",
+      "task": "Kabul · Gitar · 1. ölçü: bir aralık seç ve «Seçimi dinle»ye dokun."
+    },
+    {
+      "id": "listenLoop",
+      "answered": 3,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "1→1",
+      "task": "Kabul · Gitar · 1. ölçü: aynı seçimde «Seçimden döngü»ye dokun, en az üç tur dinle, sonra «Seçim döngüsünü kapat»a dokun."
+    },
+    {
+      "id": "pauseResume",
+      "answered": 2,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "1→1",
+      "task": "Gitar · 5. ölçü: Re telindeki 5→7 slide sırasında duraklat, sonra devam et."
+    },
+    {
+      "id": "copyPaste",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "Reddedilen olay: wrong_action",
+      "revision": "1→4",
+      "task": "Kabul · Gitar · 1. ölçü: «Kopyala»ya dokun, boş bir yer seçip «Yapıştır» ile uygula; sonra «Geri al», sonra «İleri al»."
+    },
+    {
+      "id": "duplicate",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "4→7",
+      "task": "Kabul · Gitar · 1. ölçü: bir seçim yap, «Çoğalt»a dokun, sonra «Geri al» ve «İleri al»."
+    },
+    {
+      "id": "move",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "7→10",
+      "task": "Kabul · Gitar · 1. ölçü: bir seçim yap, «Taşı» ile bir adım sağa taşı ve uygula; sonra «Geri al» ve «İleri al»."
+    },
+    {
+      "id": "repeat",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "10→13",
+      "task": "Kabul · Gitar · 1. ölçü: bir seçim yap, «Tekrarla» ile iki kez tekrarla ve uygula; sonra «Geri al» ve «İleri al»."
+    },
+    {
+      "id": "deleteUndo",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "13→16",
+      "task": "Seçili notaları sil. Notalar kaybolunca Geri al'a dokun. Aynı notalar aynı yere geri geldi mi? Sonra «İleri al»a dokun."
+    },
+    {
+      "id": "trackScope",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "16→16",
+      "task": "Gitar satırındaki 1. ölçüye basılı tut ve «Seçimi dinle»ye dokun."
+    },
+    {
+      "id": "measureScope",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "16→16",
+      "task": "Üstteki 1 numaralı ölçü başlığına basılı tut ve «Seçimi dinle»ye dokun; Bas ve Gitar birlikte duyulmalı."
+    },
+    {
+      "id": "finish",
+      "answered": 1,
+      "evidenceBeforeAnswering": "ready",
+      "nextDisabledBeforeAnswering": true,
+      "nextDisabledAfterAnswering": false,
+      "refused": "",
+      "revision": "16→1",
+      "task": "Aşağıdaki bloğu kopyala ve gönder."
+    }
+  ],
+  "evidence": {
+    "pauseResume": {
+      "playing": {
+        "status": "playing",
+        "ticks": 785,
+        "loop": null,
+        "selection": null
+      },
+      "paused": {
+        "status": "paused",
+        "ticks": 795,
+        "loop": null,
+        "selection": null
+      },
+      "stillPaused": {
+        "status": "paused",
+        "ticks": 795,
+        "loop": null,
+        "selection": null
+      },
+      "resumed": {
+        "status": "playing",
+        "ticks": 1053,
+        "loop": null,
+        "selection": null
+      }
+    },
+    "loop": {
+      "looping": {
+        "status": "playing",
+        "ticks": 251,
+        "loop": {
+          "on": true,
+          "startTicks": 192,
+          "endTicks": 240
+        },
+        "selection": {
+          "startTicks": 192,
+          "endTicks": 240,
+          "trackIds": [
+            "gtr"
+          ],
+          "mode": "loop",
+          "onsetCount": 1
+        }
+      },
+      "after": {
+        "status": "paused",
+        "ticks": 192,
+        "loop": null,
+        "selection": null
+      }
+    },
+    "scopes": {
+      "track": {
+        "startTicks": 0,
+        "endTicks": 240,
+        "trackIds": [
+          "gtr"
+        ],
+        "mode": "once",
+        "onsetCount": 4
+      },
+      "measure": {
+        "startTicks": 0,
+        "endTicks": 768,
+        "trackIds": [
+          "gtr",
+          "bass"
+        ],
+        "mode": "once",
+        "onsetCount": 9
+      }
+    }
+  },
+  "resultBlock": "Editör eylem kabulü (2V-B.1)\nBuild: 40a3a07\nTarih: 2026-09-01T19:30:27.834Z\nEkran: 384×692\nDokunma noktası: 1\nOrtam: dokunmatik cihaz (dokunma 1)\n\nİzolasyon\n  Oturum: 2vb1-1nuxtyqq\n  Cihaz projesi değişmedi: evet\n  Cihaz deposuna yazma: 0\n  Cihaz hash: device:b17388h1ktmlfv → device:b17388h1ktmlfv\n  Test kopyası geri yüklendi: evet\n  Test kopyasına yazma: 15\n  Kopya hash: fixture:b4569h10c80x3 → fixture:b4569h10c80x3\n  Revizyon: 1 → 1\n  Geçmiş adımı: 1 → 1\n  Rehber temizliği: clean\n  İzolasyon: TAMAM\n  Uygulama konsol hatası: 0\n\nİşlem defteri\n  paste → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=1→2\n    önce=b3612hjgi1r4 · sonra=b3968hup9ami · geri=b3612hjgi1r4 · ileri=b3968hup9ami · temizlik=b3612hjgi1r4\n  duplicate → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=2→3\n    önce=b3968hup9ami · sonra=b4269h1iunxb6 · geri=b3968hup9ami · ileri=b4269h1iunxb6 · temizlik=b3968hup9ami\n  move → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=3→4\n    önce=b4269h1iunxb6 · sonra=b4269h19mx9jc · geri=b4269h1iunxb6 · ileri=b4269h19mx9jc · temizlik=b4269h1iunxb6\n  repeat → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=4→5\n    önce=b4269h19mx9jc · sonra=b4324hmcazd4 · geri=b4269h19mx9jc · ileri=b4324hmcazd4 · temizlik=b4269h19mx9jc\n  delete → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=5→6\n    önce=b4324hmcazd4 · sonra=b4023h6hzpu8 · geri=b4324hmcazd4 · ileri=b4023h6hzpu8 · temizlik=b4324hmcazd4\n\nDinleme kapsamı\n  11A filtresi: gtr\n  11B filtresi: gtr+bass\n  İkinci enstrüman duyuldu: evet\n\nAdımlar (sayfanın ölçtüğü · senin söylediğin)\n  1 · Power chord seç, «Devam»a dokun\n    ölçüm: yazma yok → geçti\n    cevap: extendVisible=Evet, extendGrew=Evet\n  2 · Nota aralığı seç, «Daha fazla»yı aç\n    ölçüm: yazma yok → geçti\n    cevap: moreHasListen=Evet\n  3 · Seçimi bir kez dinle\n    ölçüm: yazma yok → geçti\n    cevap: onceStart=Evet, onceScope=Evet, onceEnd=Evet\n  4 · Seçimden döngü\n    ölçüm: yazma yok → geçti\n    cevap: loopGap=Yok, loopDouble=Hayır, loopClosed=Evet\n  5 · Slide'ın ortasında duraklat, sonra devam et\n    ölçüm: yazma yok → geçti\n    cevap: resumedSamePlace=Evet, resumedWithoutRestrike=Hayır\n  6 · Kopyala, yapıştır, geri al, ileri al\n    ölçüm: üretim olayı + tek yazma + geri al + ileri al bayt-eş → geçti\n    cevap: pasteLanded=Evet\n  7 · Çoğalt\n    ölçüm: üretim olayı + tek atomik yazma → geçti\n    cevap: duplicatePlaced=Evet\n  8 · Taşı\n    ölçüm: üretim olayı + tek atomik yazma → geçti\n    cevap: moveStepped=Evet\n  9 · Tekrarla\n    ölçüm: üretim olayı + tek atomik yazma → geçti\n    cevap: repeatKeptRests=Evet\n  10 · Sil, sonra geri al\n    ölçüm: üretim olayı + tek yazma + geri al bayt-eş → geçti\n    cevap: deleteCameBack=Evet\n  11A · Bir enstrümanın satırını dinle\n    ölçüm: yazma yok → geçti\n    cevap: trackScopeOnly=Evet\n  11B · Ölçü başlığını dinle\n    ölçüm: yazma yok → geçti\n    cevap: allScopeTogether=Evet\n  12 · Sonuç\n    ölçüm: yazma yok → geçti\n    cevap: actionsFindable=Evet\n\nÖlçülmemiş adım: 0\nCevaplanmamış soru: 0\nKararsız cevap: 0\nKullanıcı notu: —\n\nVerdict: PASS",
+  "checks": [
+    {
+      "name": "the route started on the build the link named",
+      "pass": true,
+      "detail": "{\"sha\":\"40a3a07\",\"session\":\"2vb1-1nuxtyqq\",\"song\":\"Editör kabul parçası\",\"fingerprint\":\"s3612hjgi1r4\",\"blocked\":false}"
+    },
+    {
+      "name": "the drawer offers both listening actions",
+      "pass": true,
+      "detail": "paste, listen_once, listen_loop"
+    },
+    {
+      "name": "the loop is running while it is on",
+      "pass": true,
+      "detail": "{\"on\":true,\"startTicks\":192,\"endTicks\":240}"
+    },
+    {
+      "name": "closing the loop stops it, synchronously and completely",
+      "pass": true,
+      "detail": "{\"status\":\"paused\",\"ticks\":192,\"loop\":null,\"selection\":null}"
+    },
+    {
+      "name": "the playhead does not move while paused",
+      "pass": true,
+      "detail": "795 → 795"
+    },
+    {
+      "name": "resuming carries on from the tick it was paused at",
+      "pass": true,
+      "detail": "795 → 1053"
+    },
+    {
+      "name": "the transport really was playing before the pause",
+      "pass": true,
+      "detail": "{\"status\":\"playing\",\"ticks\":785,\"loop\":null,\"selection\":null}"
+    },
+    {
+      "name": "the paste landed somewhere free",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the duplicate landed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the move landed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the repeat landed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the delete landed",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the bar heading opens the whole-measure scope",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "every step advanced on production evidence, not on a press",
+      "pass": true,
+      "detail": "13/13"
+    },
+    {
+      "name": "extend: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "openMore: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "listenOnce: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "listenLoop: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "pauseResume: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "copyPaste: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · Reddedilen olay: wrong_action"
+    },
+    {
+      "name": "duplicate: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "move: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "repeat: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "deleteUndo: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "trackScope: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "measureScope: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "finish: production evidence was in before the step advanced",
+      "pass": true,
+      "detail": "evidence=ready disabled=false · Editör kanıtı geldi. · "
+    },
+    {
+      "name": "the device's own store is byte-identical",
+      "pass": true,
+      "detail": "3 keys"
+    },
+    {
+      "name": "the fixture came back to the bytes it started on",
+      "pass": true,
+      "detail": "1 → 1"
+    },
+    {
+      "name": "the two listening scopes used different filters",
+      "pass": true,
+      "detail": "{\"track\":{\"startTicks\":0,\"endTicks\":240,\"trackIds\":[\"gtr\"],\"mode\":\"once\",\"onsetCount\":4},\"measure\":{\"startTicks\":0,\"endTicks\":768,\"trackIds\":[\"gtr\",\"bass\"],\"mode\":\"once\",\"onsetCount\":9}}"
+    },
+    {
+      "name": "the result block carries the four isolation domains",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "the result block carries a ledger row for every write action",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "every ledger row is atomic, with byte-exact undo and redo",
+      "pass": true,
+      "detail": "  paste → atomic |   duplicate → atomic |   move → atomic |   repeat → atomic |   delete → atomic"
+    },
+    {
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "passed": 34,
+  "total": 34,
+  "consoleErrors": []
+}

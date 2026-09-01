@@ -162,6 +162,22 @@ export const expressionPresets = {
      */
     maxTravelFraction: 0.4,
   },
+  /**
+   * Coming back from a pause (2V-B.1 §7).
+   *
+   * A voice that was cut off mid-note is restarted from the point in its own
+   * sample where it stopped, and a buffer source opened at full level makes a
+   * click at the seam. This is the shortest ramp that removes the seam and is
+   * still far below the length of any attack in the pack, so it cannot stand
+   * in for one.
+   *
+   * It is an engineering number, not a claim about how the resume sounds.
+   * Nothing in this repository has listened to it; the founder's ear decides
+   * that, and §7 forbids anyone else claiming to have.
+   */
+  resume: {
+    fadeSeconds: 0.005,
+  },
   palmMute: {
     /** At most this much of the written length, and never longer than the cap. */
     holdFraction: 0.45,

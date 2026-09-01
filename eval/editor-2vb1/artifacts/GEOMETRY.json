@@ -1,0 +1,1039 @@
+{
+  "sha": "40a3a07",
+  "generatedAt": "2026-09-01T19:37:10.529Z",
+  "contexts": [
+    "320x700",
+    "384x692-android",
+    "390x844",
+    "412x915-android",
+    "1363x936-desktop"
+  ],
+  "checks": [
+    {
+      "context": "320x700",
+      "name": "touch points match the context",
+      "pass": true,
+      "detail": "touch=1"
+    },
+    {
+      "context": "320x700",
+      "name": "song: guide overlay count is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "song: no dialog is open",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "song: hidden pointer owners is 0",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "context": "320x700",
+      "name": "song: stolen production hit targets is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "320x700",
+      "name": "song: six strings visible",
+      "pass": true,
+      "detail": "12"
+    },
+    {
+      "context": "320x700",
+      "name": "song: transport usable",
+      "pass": false,
+      "detail": "[{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false}]"
+    },
+    {
+      "context": "320x700",
+      "name": "song: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "song: required controls are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "song: no truncated required label",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "song: «Teste dön» covers no production target",
+      "pass": true,
+      "detail": "stage=564 return=61 of 700"
+    },
+    {
+      "context": "320x700",
+      "name": "song: the workspace has the screen",
+      "pass": true,
+      "detail": "81%"
+    },
+    {
+      "context": "320x700",
+      "name": "song: a long press selects",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "context": "320x700",
+      "name": "task: exactly one task on screen",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "task: exactly one step heading",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "task: the task names the real song, section, track and bar",
+      "pass": false,
+      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+    },
+    {
+      "context": "320x700",
+      "name": "task: the workspace is out of layout",
+      "pass": false,
+      "detail": "{\"inLayout\":true,\"hidden\":false}"
+    },
+    {
+      "context": "320x700",
+      "name": "task: the workspace is out of hit testing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "320x700",
+      "name": "task: answers are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "task: no answer is preselected",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "task: an unanswered question cannot pass",
+      "pass": false,
+      "detail": "nextDisabled=null"
+    },
+    {
+      "context": "320x700",
+      "name": "task: «Şarkıya geç» is ≥44px and says so",
+      "pass": false,
+      "detail": "0px \"\""
+    },
+    {
+      "context": "320x700",
+      "name": "task: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "320x700",
+      "name": "«Şarkıya geç» returns to the same session, with no question on screen",
+      "pass": true,
+      "detail": "{\"session\":\"2vb1-8l185vbp\",\"stageVisible\":true,\"tasks\":0}"
+    },
+    {
+      "context": "320x700",
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "384x692-android",
+      "name": "touch points match the context",
+      "pass": true,
+      "detail": "touch=1"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: guide overlay count is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: no dialog is open",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: hidden pointer owners is 0",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: stolen production hit targets is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: six strings visible",
+      "pass": true,
+      "detail": "12"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: transport usable",
+      "pass": false,
+      "detail": "[{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false}]"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: required controls are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: no truncated required label",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: «Teste dön» covers no production target",
+      "pass": true,
+      "detail": "stage=556 return=61 of 692"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: the workspace has the screen",
+      "pass": true,
+      "detail": "80%"
+    },
+    {
+      "context": "384x692-android",
+      "name": "song: a long press selects",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: exactly one task on screen",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: exactly one step heading",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: the task names the real song, section, track and bar",
+      "pass": false,
+      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: the workspace is out of layout",
+      "pass": false,
+      "detail": "{\"inLayout\":true,\"hidden\":false}"
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: the workspace is out of hit testing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: answers are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: no answer is preselected",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: an unanswered question cannot pass",
+      "pass": false,
+      "detail": "nextDisabled=null"
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: «Şarkıya geç» is ≥44px and says so",
+      "pass": false,
+      "detail": "0px \"\""
+    },
+    {
+      "context": "384x692-android",
+      "name": "task: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "384x692-android",
+      "name": "«Şarkıya geç» returns to the same session, with no question on screen",
+      "pass": true,
+      "detail": "{\"session\":\"2vb1-xopeemfa\",\"stageVisible\":true,\"tasks\":0}"
+    },
+    {
+      "context": "384x692-android",
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "390x844",
+      "name": "touch points match the context",
+      "pass": true,
+      "detail": "touch=1"
+    },
+    {
+      "context": "390x844",
+      "name": "song: guide overlay count is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "song: no dialog is open",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "song: hidden pointer owners is 0",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "context": "390x844",
+      "name": "song: stolen production hit targets is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "390x844",
+      "name": "song: six strings visible",
+      "pass": true,
+      "detail": "12"
+    },
+    {
+      "context": "390x844",
+      "name": "song: transport usable",
+      "pass": false,
+      "detail": "[{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false}]"
+    },
+    {
+      "context": "390x844",
+      "name": "song: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "song: required controls are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "song: no truncated required label",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "song: «Teste dön» covers no production target",
+      "pass": true,
+      "detail": "stage=708 return=61 of 844"
+    },
+    {
+      "context": "390x844",
+      "name": "song: the workspace has the screen",
+      "pass": true,
+      "detail": "84%"
+    },
+    {
+      "context": "390x844",
+      "name": "song: a long press selects",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "context": "390x844",
+      "name": "task: exactly one task on screen",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "task: exactly one step heading",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "task: the task names the real song, section, track and bar",
+      "pass": false,
+      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+    },
+    {
+      "context": "390x844",
+      "name": "task: the workspace is out of layout",
+      "pass": false,
+      "detail": "{\"inLayout\":true,\"hidden\":false}"
+    },
+    {
+      "context": "390x844",
+      "name": "task: the workspace is out of hit testing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "390x844",
+      "name": "task: answers are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "task: no answer is preselected",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "task: an unanswered question cannot pass",
+      "pass": false,
+      "detail": "nextDisabled=null"
+    },
+    {
+      "context": "390x844",
+      "name": "task: «Şarkıya geç» is ≥44px and says so",
+      "pass": false,
+      "detail": "0px \"\""
+    },
+    {
+      "context": "390x844",
+      "name": "task: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "390x844",
+      "name": "«Şarkıya geç» returns to the same session, with no question on screen",
+      "pass": true,
+      "detail": "{\"session\":\"2vb1-zh3oeqgh\",\"stageVisible\":true,\"tasks\":0}"
+    },
+    {
+      "context": "390x844",
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "412x915-android",
+      "name": "touch points match the context",
+      "pass": true,
+      "detail": "touch=1"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: guide overlay count is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: no dialog is open",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: hidden pointer owners is 0",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: stolen production hit targets is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: six strings visible",
+      "pass": true,
+      "detail": "12"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: transport usable",
+      "pass": false,
+      "detail": "[{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false}]"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: required controls are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: no truncated required label",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: «Teste dön» covers no production target",
+      "pass": true,
+      "detail": "stage=796 return=61 of 915"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: the workspace has the screen",
+      "pass": true,
+      "detail": "87%"
+    },
+    {
+      "context": "412x915-android",
+      "name": "song: a long press selects",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: exactly one task on screen",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: exactly one step heading",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: the task names the real song, section, track and bar",
+      "pass": false,
+      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: the workspace is out of layout",
+      "pass": false,
+      "detail": "{\"inLayout\":true,\"hidden\":false}"
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: the workspace is out of hit testing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: answers are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: no answer is preselected",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: an unanswered question cannot pass",
+      "pass": false,
+      "detail": "nextDisabled=null"
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: «Şarkıya geç» is ≥44px and says so",
+      "pass": false,
+      "detail": "0px \"\""
+    },
+    {
+      "context": "412x915-android",
+      "name": "task: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "412x915-android",
+      "name": "«Şarkıya geç» returns to the same session, with no question on screen",
+      "pass": true,
+      "detail": "{\"session\":\"2vb1-1p7on213\",\"stageVisible\":true,\"tasks\":0}"
+    },
+    {
+      "context": "412x915-android",
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "touch points match the context",
+      "pass": true,
+      "detail": "touch=0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: guide overlay count is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: no dialog is open",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: hidden pointer owners is 0",
+      "pass": false,
+      "detail": "1"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: stolen production hit targets is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: six strings visible",
+      "pass": true,
+      "detail": "30"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: transport usable",
+      "pass": false,
+      "detail": "[{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false},{\"height\":44,\"reachable\":false}]"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: required controls are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: no truncated required label",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: «Teste dön» covers no production target",
+      "pass": true,
+      "detail": "stage=817 return=61 of 936"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: the workspace has the screen",
+      "pass": true,
+      "detail": "87%"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "song: a long press selects",
+      "pass": false,
+      "detail": ""
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: exactly one task on screen",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: exactly one step heading",
+      "pass": false,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: the task names the real song, section, track and bar",
+      "pass": false,
+      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: the workspace is out of layout",
+      "pass": false,
+      "detail": "{\"inLayout\":true,\"hidden\":false}"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: the workspace is out of hit testing",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: answers are ≥44px",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: no answer is preselected",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: an unanswered question cannot pass",
+      "pass": false,
+      "detail": "nextDisabled=null"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: «Şarkıya geç» is ≥44px and says so",
+      "pass": false,
+      "detail": "0px \"\""
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "task: body horizontal overflow is 0",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "«Şarkıya geç» returns to the same session, with no question on screen",
+      "pass": true,
+      "detail": "{\"session\":\"2vb1-ibk6h409\",\"stageVisible\":true,\"tasks\":0}"
+    },
+    {
+      "context": "1363x936-desktop",
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "passed": 80,
+  "total": 125,
+  "measured": {
+    "320x700": {
+      "song": {
+        "floating": 0,
+        "dialogs": 0,
+        "hiddenOwners": 1,
+        "stolen": [],
+        "strings": 12,
+        "small": 0,
+        "truncated": 0,
+        "overflow": 0,
+        "stageHeight": 564,
+        "returnHeight": 61,
+        "viewport": 700,
+        "returnOverlapsStage": false,
+        "transport": [
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          }
+        ]
+      },
+      "task": {
+        "tasks": 0,
+        "steps": 0,
+        "taskText": "",
+        "stageInLayout": true,
+        "stageHidden": false,
+        "workspaceHit": false,
+        "strings": 12,
+        "answerCount": 0,
+        "smallAnswers": 0,
+        "preselected": 0,
+        "nextDisabled": null,
+        "toSongHeight": 0,
+        "toSongLabel": "",
+        "evidence": "",
+        "session": "2vb1-8l185vbp",
+        "song": "Editör kabul parçası",
+        "fingerprint": "s3612hjgi1r4",
+        "overflow": 0
+      }
+    },
+    "384x692-android": {
+      "song": {
+        "floating": 0,
+        "dialogs": 0,
+        "hiddenOwners": 1,
+        "stolen": [],
+        "strings": 12,
+        "small": 0,
+        "truncated": 0,
+        "overflow": 0,
+        "stageHeight": 556,
+        "returnHeight": 61,
+        "viewport": 692,
+        "returnOverlapsStage": false,
+        "transport": [
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          }
+        ]
+      },
+      "task": {
+        "tasks": 0,
+        "steps": 0,
+        "taskText": "",
+        "stageInLayout": true,
+        "stageHidden": false,
+        "workspaceHit": false,
+        "strings": 12,
+        "answerCount": 0,
+        "smallAnswers": 0,
+        "preselected": 0,
+        "nextDisabled": null,
+        "toSongHeight": 0,
+        "toSongLabel": "",
+        "evidence": "",
+        "session": "2vb1-xopeemfa",
+        "song": "Editör kabul parçası",
+        "fingerprint": "s3612hjgi1r4",
+        "overflow": 0
+      }
+    },
+    "390x844": {
+      "song": {
+        "floating": 0,
+        "dialogs": 0,
+        "hiddenOwners": 1,
+        "stolen": [],
+        "strings": 12,
+        "small": 0,
+        "truncated": 0,
+        "overflow": 0,
+        "stageHeight": 708,
+        "returnHeight": 61,
+        "viewport": 844,
+        "returnOverlapsStage": false,
+        "transport": [
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          }
+        ]
+      },
+      "task": {
+        "tasks": 0,
+        "steps": 0,
+        "taskText": "",
+        "stageInLayout": true,
+        "stageHidden": false,
+        "workspaceHit": false,
+        "strings": 12,
+        "answerCount": 0,
+        "smallAnswers": 0,
+        "preselected": 0,
+        "nextDisabled": null,
+        "toSongHeight": 0,
+        "toSongLabel": "",
+        "evidence": "",
+        "session": "2vb1-zh3oeqgh",
+        "song": "Editör kabul parçası",
+        "fingerprint": "s3612hjgi1r4",
+        "overflow": 0
+      }
+    },
+    "412x915-android": {
+      "song": {
+        "floating": 0,
+        "dialogs": 0,
+        "hiddenOwners": 1,
+        "stolen": [],
+        "strings": 12,
+        "small": 0,
+        "truncated": 0,
+        "overflow": 0,
+        "stageHeight": 796,
+        "returnHeight": 61,
+        "viewport": 915,
+        "returnOverlapsStage": false,
+        "transport": [
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          }
+        ]
+      },
+      "task": {
+        "tasks": 0,
+        "steps": 0,
+        "taskText": "",
+        "stageInLayout": true,
+        "stageHidden": false,
+        "workspaceHit": false,
+        "strings": 12,
+        "answerCount": 0,
+        "smallAnswers": 0,
+        "preselected": 0,
+        "nextDisabled": null,
+        "toSongHeight": 0,
+        "toSongLabel": "",
+        "evidence": "",
+        "session": "2vb1-1p7on213",
+        "song": "Editör kabul parçası",
+        "fingerprint": "s3612hjgi1r4",
+        "overflow": 0
+      }
+    },
+    "1363x936-desktop": {
+      "song": {
+        "floating": 0,
+        "dialogs": 0,
+        "hiddenOwners": 1,
+        "stolen": [],
+        "strings": 30,
+        "small": 0,
+        "truncated": 0,
+        "overflow": 0,
+        "stageHeight": 817,
+        "returnHeight": 61,
+        "viewport": 936,
+        "returnOverlapsStage": false,
+        "transport": [
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          },
+          {
+            "height": 44,
+            "reachable": false
+          }
+        ]
+      },
+      "task": {
+        "tasks": 0,
+        "steps": 0,
+        "taskText": "",
+        "stageInLayout": true,
+        "stageHidden": false,
+        "workspaceHit": false,
+        "strings": 30,
+        "answerCount": 0,
+        "smallAnswers": 0,
+        "preselected": 0,
+        "nextDisabled": null,
+        "toSongHeight": 0,
+        "toSongLabel": "",
+        "evidence": "",
+        "session": "2vb1-ibk6h409",
+        "song": "Editör kabul parçası",
+        "fingerprint": "s3612hjgi1r4",
+        "overflow": 0
+      }
+    }
+  },
+  "oldGuideHeightAt384x692": 348,
+  "newOverlayHeightAt384x692": 0
+}

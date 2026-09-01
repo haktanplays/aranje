@@ -30,7 +30,19 @@ export type TransactionPoint = {
   readonly undoDepth: number;
   readonly redoDepth: number;
   readonly evalSongWrites: number;
+  /** Production workspace events seen so far, of any kind. */
   readonly commandCount: number;
+  /**
+   * Of those, the ones that committed a Song (2V-B.1 §5).
+   *
+   * Copy is the reason this is a second number. It is a real production
+   * command and it publishes a real event, so `commandCount` moves by one —
+   * and it must leave every mutation channel at zero, which only
+   * `mutatingCommandCount` can say. One counter would have to choose between
+   * calling copy a command that changed nothing and calling it no command at
+   * all, and both of those are untrue.
+   */
+  readonly mutatingCommandCount: number;
 };
 
 export type ActionLedger = {
@@ -41,6 +53,7 @@ export type ActionLedger = {
   readonly historyBefore: number;
   readonly historyAfter: number;
   readonly commandCount: number;
+  readonly mutatingCommandCount: number;
   readonly storageWriteCount: number;
   readonly undoHash: string | null;
   readonly redoHash: string | null;
@@ -53,6 +66,7 @@ export function transactionPoint(
   session: AcceptanceSession,
   journalStart: number,
   commandCount: number,
+  mutatingCommandCount = commandCount,
 ): TransactionPoint {
   const fixture = readFixture(session.storage);
   const snapshot = session.store?.getSnapshot();
@@ -70,6 +84,7 @@ export function transactionPoint(
     redoDepth: snapshot?.redoDepth ?? 0,
     evalSongWrites: writes,
     commandCount,
+    mutatingCommandCount,
   };
 }
 
@@ -86,39 +101,70 @@ export function judgeActionLedger(input: {
   readonly semantic?: Readonly<Record<string, boolean>>;
 }): ActionLedger {
   const { action, before, after, cleanup } = input;
+  /*
+   * Named failures, never one word (2V-B.1 §5).
+   *
+   * "KALDI" told the last round that something was wrong with six steps and
+   * nothing about what. Every string pushed here says which invariant broke
+   * and, where a number is involved, what was expected and what arrived — so
+   * a report can be read once and acted on, rather than read once and
+   * re-derived by hand.
+   */
   const failures: string[] = [];
   const commands = after.commandCount - before.commandCount;
+  const mutating = after.mutatingCommandCount - before.mutatingCommandCount;
   const writes = after.evalSongWrites - before.evalSongWrites;
   const revisionDelta = after.revision - before.revision;
   const historyDelta = after.historyLength - before.historyLength;
   const unchanged = after.songBytes === before.songBytes;
 
-  if (commands !== 1) failures.push(`commandCount=${commands}, expected=1`);
-
-  if (input.refusal === true) {
-    if (!unchanged) failures.push("typed refusal changed Song bytes");
-    if (writes !== 0) failures.push(`typed refusal storageWrites=${writes}`);
-    if (revisionDelta !== 0) failures.push(`typed refusal revisionDelta=${revisionDelta}`);
-    if (historyDelta !== 0) failures.push(`typed refusal historyDelta=${historyDelta}`);
-  } else if (action === "copy") {
-    if (!unchanged) failures.push("copy changed Song bytes");
-    if (writes !== 0) failures.push(`copy storageWrites=${writes}`);
-    if (revisionDelta !== 0) failures.push(`copy revisionDelta=${revisionDelta}`);
-    if (historyDelta !== 0) failures.push(`copy historyDelta=${historyDelta}`);
-  } else {
-    if (unchanged) failures.push("Song hash did not change");
-    if (writes !== 1) failures.push(`storageWrites=${writes}, expected=1`);
-    if (revisionDelta !== 1) failures.push(`revisionDelta=${revisionDelta}, expected=1`);
-    if (historyDelta !== 1) failures.push(`historyDelta=${historyDelta}, expected=1`);
-    if (!input.undo) failures.push("undo checkpoint missing");
-    else if (input.undo.songBytes !== before.songBytes) failures.push("undo bytes differ");
-    if (!input.redo) failures.push("redo checkpoint missing");
-    else if (input.redo.songBytes !== after.songBytes) failures.push("redo bytes differ");
+  /* Exactly one production event, whatever the action was. Two means the
+     surface ran the command twice; zero means the founder never reached it. */
+  if (commands !== 1) {
+    failures.push(`command_count_expected_1_received_${commands}`);
   }
 
-  if (cleanup.songBytes !== before.songBytes) failures.push("cleanup hash differs");
+  if (input.refusal === true) {
+    if (!unchanged) failures.push("refusal_changed_song");
+    if (mutating !== 0) {
+      failures.push(`refusal_mutating_commands_expected_0_received_${mutating}`);
+    }
+    if (writes !== 0) failures.push(`refusal_wrote_storage_${writes}`);
+    if (revisionDelta !== 0) failures.push(`refusal_moved_revision_${revisionDelta}`);
+    if (historyDelta !== 0) failures.push(`refusal_added_history_step_${historyDelta}`);
+  } else if (action === "copy") {
+    if (mutating !== 0) {
+      failures.push(`copy_mutating_commands_expected_0_received_${mutating}`);
+    }
+    if (!unchanged) failures.push("copy_changed_song");
+    if (writes !== 0) failures.push(`copy_storage_writes_expected_0_received_${writes}`);
+    if (revisionDelta !== 0) {
+      failures.push(`copy_revision_delta_expected_0_received_${revisionDelta}`);
+    }
+    if (historyDelta !== 0) {
+      failures.push(`copy_history_delta_expected_0_received_${historyDelta}`);
+    }
+  } else {
+    if (mutating !== 1) {
+      failures.push(`mutating_command_expected_1_received_${mutating}`);
+    }
+    if (unchanged) failures.push("song_hash_unchanged");
+    if (writes !== 1) failures.push(`storage_writes_expected_1_received_${writes}`);
+    if (revisionDelta !== 1) {
+      failures.push(`revision_delta_expected_1_received_${revisionDelta}`);
+    }
+    if (historyDelta !== 1) {
+      failures.push(`history_delta_expected_1_received_${historyDelta}`);
+    }
+    if (!input.undo) failures.push("undo_checkpoint_missing");
+    else if (input.undo.songBytes !== before.songBytes) failures.push("undo_hash_mismatch");
+    if (!input.redo) failures.push("redo_checkpoint_missing");
+    else if (input.redo.songBytes !== after.songBytes) failures.push("redo_hash_mismatch");
+  }
+
+  if (cleanup.songBytes !== before.songBytes) failures.push("cleanup_hash_mismatch");
   for (const [name, pass] of Object.entries(input.semantic ?? {})) {
-    if (!pass) failures.push(`semantic:${name}`);
+    if (!pass) failures.push(name);
   }
 
   const result =
@@ -138,6 +184,7 @@ export function judgeActionLedger(input: {
     historyBefore: before.historyLength,
     historyAfter: after.historyLength,
     commandCount: commands,
+    mutatingCommandCount: mutating,
     storageWriteCount: writes,
     undoHash: input.undo?.songHash ?? null,
     redoHash: input.redo?.songHash ?? null,
@@ -146,3 +193,23 @@ export function judgeActionLedger(input: {
     failures,
   };
 }
+
+/**
+ * The named musical invariants a write action has to survive (§5).
+ *
+ * Spelled here so a report and a probe use the same words. The value is the
+ * failure name: `semantic` is keyed by these, and a `false` puts the key
+ * straight into `failures`, which is why they read as defects rather than as
+ * properties.
+ */
+export const LEDGER_INVARIANTS = {
+  clipboardAttached: "paste_clipboard_not_detached",
+  halfMoved: "move_exposed_partial_song",
+  lostRest: "repeat_lost_rest",
+  lostTie: "repeat_lost_tie",
+  lostDuration: "repeat_lost_duration",
+  lostArticulation: "repeat_lost_articulation",
+  lostLetRing: "repeat_lost_let_ring",
+  lostStrum: "repeat_lost_strum",
+  lostPolyphony: "repeat_lost_polyphony",
+} as const;

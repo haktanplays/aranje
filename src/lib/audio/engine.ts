@@ -23,6 +23,7 @@
  */
 import type * as Tone from "tone";
 
+import { activeVoicesAt } from "@/lib/audio/active-voices";
 import { MASTER_CEILING_DB, masterGain } from "@/lib/audio/master-bus";
 import {
   audioPresetAvailability,
@@ -50,7 +51,8 @@ import {
 } from "@/lib/playback/selection-playback";
 import { buildSongPlan, ticks, type SongPlan } from "@/lib/audio/schedule";
 import type { DrumPiece, Song, Track } from "@/lib/song/schema";
-import type { TempoMap } from "@/lib/audio/tempo";
+import { buildTempoMap, type TempoMap } from "@/lib/audio/tempo";
+import { DEFAULT_PRACTICE_PERCENT } from "@/lib/audio/practice-rate";
 
 /**
  * Tone reaches for `window` as soon as it is imported, so it is pulled in on
@@ -131,13 +133,33 @@ export type TrackVoice =
 
 /** The expressive layer of one engine (spec 8.5). */
 export type ExpressionRuntime = {
-  /** Replace the plan, for instance when the practice speed changes. */
-  setPlan(plan: ExpressionPlan): void;
+  /**
+   * Replace the plan, for instance when the practice speed changes.
+   *
+   * The tempo map comes with it, and is not optional (2V-B.1 §8). Expression
+   * is written in **seconds**; a plan rebuilt at a new speed and left beside
+   * the timeline it was not built on is two answers to "when does this
+   * happen", and a resume would restore voices from the wrong moment.
+   */
+  setPlan(plan: ExpressionPlan, tempo: TempoMap): void;
   getPlan(): ExpressionPlan;
+  /** The timeline `getPlan()`'s seconds were computed on. */
+  getTempoMap(): TempoMap;
   /** Start one note in a voice of its own. False when it cannot be played. */
   play(note: ExpressiveNotePlan, time: number): boolean;
   /** Start a whole legato chain on one voice (spec 8.5, K-22). */
   playChain(chain: LegatoChain, time: number): boolean;
+  /**
+   * Put back the voices a pause interrupted, at this audio time (2V-B.1 §7).
+   *
+   * Asks `activeVoicesAt` what was in the air at `ticks` — the same plan and
+   * the same tempo map this engine is playing — and hands the answer to the
+   * pool. Returns how many voices actually came back.
+   *
+   * `window` is the selection being auditioned, when there is one: a resume
+   * inside a selection may not restore a voice from outside it.
+   */
+  resumeAt(ticks: number, audioTime: number, window?: PlaybackWindow | null): number;
   /** Every voice currently sounding, gone. */
   stopAll(): void;
   readonly counts: VoicePoolCounts;
@@ -491,16 +513,29 @@ export async function createEngine(
       ? {}
       : { practicePercent: options.practicePercent }),
   });
+  /* The timeline the plan above was built on, kept beside it so the two can
+     never drift apart (2V-B.1 §8). */
+  let expressionTempo = buildTempoMap(
+    song,
+    options.practicePercent ?? DEFAULT_PRACTICE_PERCENT,
+  );
 
   const expression: ExpressionRuntime = {
-    setPlan(next) {
+    setPlan(next, tempo) {
       expressionPlan = next;
+      expressionTempo = tempo;
       // The old automation belongs to the old timing; it does not carry over.
       pool.stopAll();
     },
     getPlan: () => expressionPlan,
+    getTempoMap: () => expressionTempo,
     play: (note, time) => pool.play(note.trackId, note, time),
     playChain: (chain, time) => pool.playChain(chain, time),
+    resumeAt: (ticks, audioTime, window) =>
+      pool.resume(
+        activeVoicesAt(expressionPlan, expressionTempo, ticks, window),
+        audioTime,
+      ),
     stopAll: () => pool.stopAll(),
     get counts() {
       return pool.counts;

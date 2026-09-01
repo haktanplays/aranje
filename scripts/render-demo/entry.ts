@@ -313,7 +313,7 @@ export async function renderExpressionDemo(index: number, pack: DemoPack = "expr
   const buffer = await Tone.Offline(async (context) => {
     const engine = await createEngine(song, context);
     // Render comparisons plan differently; live playback never does.
-    engine.expression.setPlan(buildExpressionPlan(song, options));
+    engine.expression.setPlan(buildExpressionPlan(song, options), buildTempoMap(song));
     scheduleSong(engine, buildTempoMap(song));
     context.transport.start(0);
 

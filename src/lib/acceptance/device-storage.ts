@@ -34,7 +34,7 @@ export function deviceStorageSnapshot(): string {
   return snapshotWhere(() => true);
 }
 
-/** Production Aranjé bytes only; browser or unrelated app keys are excluded. */
+/** Production project bytes only; browser or unrelated app keys are excluded. */
 export function deviceProjectSnapshot(): string {
   return snapshotWhere((key) => key.startsWith(STORAGE_PREFIX));
 }
@@ -69,7 +69,7 @@ export type DeviceStorageWatch = {
  *
  * A before/after diff alone misses a write that restores the old value. The
  * watcher therefore observes the browser Storage methods, but counts only
- * calls made on this window's `localStorage` and only Aranjé keys. The
+ * calls made on this window's `localStorage` and only production project keys. The
  * original methods are restored by `finish`, even when the run fails.
  */
 export function watchDeviceProjectStorage(): DeviceStorageWatch {
@@ -142,4 +142,30 @@ export function watchDeviceProjectStorage(): DeviceStorageWatch {
     writes: () => count,
     finish,
   };
+}
+
+/**
+ * The one watcher a page gets, installed on first ask.
+ *
+ * The watcher patches `Storage.prototype`, so two of them count every write
+ * twice and a third leaks the originals. A module singleton rather than a
+ * hook's ref: the acceptance route needs it installed **before** anything
+ * the workspace does, which is during the first render, and a value created
+ * during render must be one a second render cannot duplicate (2V-B.1 §4).
+ *
+ * `finish()` on the shared watch is idempotent — it restores the prototype
+ * once and answers with the same numbers afterwards — so an unmount and a
+ * closing report can both call it.
+ */
+let shared: DeviceStorageWatch | null = null;
+
+export function sharedDeviceProjectWatch(): DeviceStorageWatch {
+  shared ??= watchDeviceProjectStorage();
+  return shared;
+}
+
+/** Forget the shared watch, so a second run in one process starts clean. */
+export function clearSharedDeviceProjectWatch(): void {
+  shared?.finish();
+  shared = null;
 }

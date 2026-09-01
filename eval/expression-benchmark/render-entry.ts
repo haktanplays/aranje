@@ -119,7 +119,7 @@ async function renderWithPlan(
       const engine = await createEngine(song, context as never);
       built = engine;
       applied = makePlan(engine.expression.getPlan());
-      engine.expression.setPlan(applied);
+      engine.expression.setPlan(applied, buildTempoMap(song));
       scheduleSong(engine, buildTempoMap(song), { metronomeEnabled: () => false });
       if (extras) extraSources = extras(tone, context, engine);
       (context as { transport: { start(at: number): void } }).transport.start(0);

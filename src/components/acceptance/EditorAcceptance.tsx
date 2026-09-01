@@ -317,7 +317,7 @@ export function EditorAcceptance() {
         it because the same press worked at 320 and on the desktop; a
         one-viewport check would have shipped it.
       */}
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="min-h-0 flex-1 overflow-hidden [&>div]:h-full">
         {session?.ok ? <Workspace /> : null}
       </div>
 

@@ -11,6 +11,7 @@
  */
 import { ACCEPTANCE_PROJECT_ID } from "@/lib/acceptance/session";
 import { projectKey } from "@/lib/projects/project-storage";
+import type { MemoryStorage } from "@/lib/acceptance/memory-storage";
 import type { StorageLike } from "@/lib/song/storage";
 
 export type FixtureReading = {
@@ -58,4 +59,36 @@ export function fixtureDigest(reading: FixtureReading): string {
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
   return `r${reading.revision}n${reading.notes}h${hash.toString(36)}`;
+}
+
+/**
+ * How many times the fixture's own record has been written since a mark.
+ *
+ * Here rather than in the component that needs it (spec 13.21 §8, and the
+ * §138 boundary that enforces it): the count is "writes to *this key*", and
+ * a component that could build the key is a component that could write to
+ * it. The journal is the disposable storage's own, so this counts physical
+ * mutations rather than inferring them from bytes.
+ */
+export function fixtureSongWrites(storage: MemoryStorage, fromIndex: number): number {
+  const key = projectKey(ACCEPTANCE_PROJECT_ID);
+  if (key === null) return 0;
+  return storage
+    .journal()
+    .slice(fromIndex)
+    .filter((entry) => entry.kind === "set" && entry.key === key).length;
+}
+
+/**
+ * Does this storage snapshot contain the acceptance fixture's key?
+ *
+ * Asked of the *device's* snapshot, where the answer must be no. A yes means
+ * either the fixture escaped into the reader's storage or the watcher is
+ * reading the wrong store — and the second is the dangerous one, because
+ * every "zero writes" number above it would then be measuring the clone
+ * (2V-B.1 §4, §16).
+ */
+export function mentionsFixtureKey(bytes: string): boolean {
+  const key = projectKey(ACCEPTANCE_PROJECT_ID);
+  return key !== null && bytes.includes(key);
 }

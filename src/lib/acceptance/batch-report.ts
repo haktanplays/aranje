@@ -9,6 +9,11 @@
  */
 import { shortSha } from "@/lib/acceptance/build-id";
 import {
+  formatIsolationTruth,
+  type IsolationTruth,
+} from "@/lib/acceptance/isolation-truth";
+import type { ActionLedger } from "@/lib/acceptance/transaction-ledger";
+import {
   ALL_BATCH_QUESTIONS,
   BATCH_STEPS,
   batchVerdict,
@@ -32,14 +37,46 @@ const MEASURED: Readonly<Record<string, string>> = {
   listenOnce: "yazma yok",
   listenLoop: "yazma yok",
   pauseResume: "yazma yok",
-  copyPaste: "tek yazma + geri al + ileri al bayt-eş",
-  duplicate: "tek atomik yazma",
-  move: "tek atomik yazma",
-  repeat: "tek atomik yazma",
-  deleteUndo: "tek yazma + geri al bayt-eş",
-  measureScopes: "yazma yok",
+  copyPaste: "üretim olayı + tek yazma + geri al + ileri al bayt-eş",
+  duplicate: "üretim olayı + tek atomik yazma",
+  move: "üretim olayı + tek atomik yazma",
+  repeat: "üretim olayı + tek atomik yazma",
+  deleteUndo: "üretim olayı + tek yazma + geri al bayt-eş",
+  trackScope: "yazma yok",
+  measureScope: "yazma yok",
   finish: "yazma yok",
 };
+
+/**
+ * One ledger row, as a line (2V-B.1 §5).
+ *
+ * Every number the round measured about one action, and — when something
+ * broke — the names of exactly what broke. "KALDI" appears nowhere.
+ */
+function ledgerLine(ledger: ActionLedger): string {
+  const numbers = [
+    `komut=${ledger.commandCount}`,
+    `yazan komut=${ledger.mutatingCommandCount}`,
+    `depo yazma=${ledger.storageWriteCount}`,
+    `revizyon=${ledger.revisionDelta}`,
+    `geçmiş=${ledger.historyBefore}→${ledger.historyAfter}`,
+  ].join(" · ");
+  const hashes = [
+    `önce=${ledger.beforeHash}`,
+    `sonra=${ledger.afterHash}`,
+    `geri=${ledger.undoHash ?? "—"}`,
+    `ileri=${ledger.redoHash ?? "—"}`,
+    `temizlik=${ledger.cleanupHash}`,
+  ].join(" · ");
+  const outcome =
+    ledger.failures.length === 0
+      ? ledger.result
+      : `${ledger.result}: ${ledger.failures.join(", ")}`;
+  return `  ${ledger.action} → ${outcome}\n    ${numbers}\n    ${hashes}`;
+}
+
+const scopeText = (filter: readonly string[] | null | undefined): string =>
+  filter === undefined || filter === null ? "ölçülmedi" : filter.join("+");
 
 const mark = (value: boolean | null | undefined): string =>
   value === true ? "geçti" : value === false ? "KALDI" : "ölçülmedi";
@@ -62,6 +99,10 @@ export function formatBatchResult(input: {
   readonly environment: BatchEnvironment;
   readonly answers: BatchAnswers;
   readonly note: string;
+  /** The four state domains, measured apart (§4). Null before the run ends. */
+  readonly isolation?: IsolationTruth | null;
+  /** One row per write action, plus the read-only copy evidence (§5). */
+  readonly ledgers?: readonly ActionLedger[];
 }): string {
   const verdict = batchVerdict(input.environment, input.answers);
   const unanswered = ALL_BATCH_QUESTIONS.filter(
@@ -75,20 +116,49 @@ export function formatBatchResult(input: {
   ).length;
 
   const lines: string[] = [
-    "ARANJÉ · Editör eylem kabulü (2V-B)",
+    "Editör eylem kabulü (2V-B.1)",
     `Build: ${shortSha(input.buildSha)}`,
     `Tarih: ${input.device.date}`,
     `Ekran: ${input.device.viewport}`,
     `Dokunma noktası: ${input.device.touchPoints}`,
     `Ortam: ${environmentLine(input.device)}`,
     "",
-    "Functional",
-    `  Proje değişmedi: ${
-      input.environment.userStorageBefore === input.environment.userStorageAfter
-        ? "evet"
-        : "HAYIR"
-    }`,
+    /*
+     * Four domains, not one sentence (§4). "Proje değişmedi" used to stand
+     * in for four different questions with four different answers, which is
+     * how a run could report a clean device while the clone never came back.
+     */
+    "İzolasyon",
+    ...(input.isolation
+      ? formatIsolationTruth(input.isolation)
+          .split("\n")
+          .map((line) => `  ${line}`)
+      : [
+          `  Cihaz deposu (ham bayt): ${
+            input.environment.userStorageBefore ===
+            input.environment.userStorageAfter
+              ? "aynı"
+              : "DEĞİŞTİ"
+          }`,
+          "  (Tam izolasyon bloğu koşu bitince yazılır.)",
+        ]),
     `  Uygulama konsol hatası: ${input.environment.consoleErrors.length}`,
+    "",
+    "İşlem defteri",
+    ...(input.ledgers && input.ledgers.length > 0
+      ? input.ledgers.flatMap((ledger) => ledgerLine(ledger).split("\n"))
+      : ["  (Henüz yazan bir işlem ölçülmedi.)"]),
+    "",
+    "Dinleme kapsamı",
+    `  11A filtresi: ${scopeText(input.environment.trackScopeFilter)}`,
+    `  11B filtresi: ${scopeText(input.environment.measureScopeFilter)}`,
+    `  İkinci enstrüman duyuldu: ${
+      input.environment.secondTrackAudible === true
+        ? "evet"
+        : input.environment.secondTrackAudible === false
+          ? "HAYIR"
+          : "ölçülmedi"
+    }`,
     "",
     "Adımlar (sayfanın ölçtüğü · senin söylediğin)",
   ];

@@ -82,7 +82,9 @@ describe("reading the music", () => {
   });
 
   it("counts the bars the section has", () => {
-    expect(barCount(editorFixture())).toBe(4);
+    /* Six since 2V-B.1 §10: the four the editor steps need, plus the slide
+       and vibrato bar and the legato bar the listening steps need. */
+    expect(barCount(editorFixture())).toBe(6);
   });
 });
 

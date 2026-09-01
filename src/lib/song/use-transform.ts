@@ -37,6 +37,11 @@ import {
 import { EMPTY_CLIPBOARD, type Clipboard, type TimeSelection } from "@/lib/song/time-selection";
 import { summariseSelection, type SelectionSummary } from "@/lib/song/selection-summary";
 import { transformMessage } from "@/lib/song/transform-messages";
+import {
+  publishWorkspaceEdit,
+  songFingerprint,
+  type WorkspaceEditAction,
+} from "@/lib/song/workspace-events";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song } from "@/lib/song/schema";
 import type { ValidationIssue } from "@/lib/validators/types";
@@ -103,6 +108,31 @@ type Store = {
   getSnapshot(): { song: Song };
   commit(next: Song, action: HistoryAction): boolean;
 };
+
+/**
+ * Which editor action a transform command is, in the canon's words.
+ *
+ * Written out rather than derived from the string, because the two
+ * vocabularies are allowed to diverge: `move_selection_time` is "move" to a
+ * reader whatever the core decides to call it next year, and a silent
+ * mismatch would make an event unmatchable rather than make it fail.
+ */
+const EDIT_ACTIONS: Readonly<Record<TransformCommand["kind"], WorkspaceEditAction>> = {
+  copy_selection: "copy",
+  cut_selection: "cut",
+  delete_selection: "delete",
+  paste_selection: "paste",
+  duplicate_selection: "duplicate",
+  move_selection_time: "move",
+  repeat_selection: "repeat",
+  transpose_pitch: "other",
+  restring_same_pitch: "other",
+  translate_fret_shape: "other",
+};
+
+function editActionOf(kind: TransformCommand["kind"]): WorkspaceEditAction {
+  return EDIT_ACTIONS[kind];
+}
 
 export function useTransform(store: Store, song: Song): TransformHandle {
   const [selection, setSelection] = useState<TimeSelection | null>(null);
@@ -235,6 +265,24 @@ export function useTransform(store: Store, song: Song): TransformHandle {
       setClipboard(result.clipboard);
       setError(null);
       setNotice("Seçim kopyalandı.");
+      /*
+       * And it says so. A copy is a real production command with a real
+       * event; what makes it read-only is `mutating: false` and two equal
+       * fingerprints, not the absence of an announcement (§13).
+       */
+      const fingerprint = songFingerprint(song);
+      publishWorkspaceEdit({
+        action: "copy",
+        scope: "notes",
+        mutating: false,
+        songBefore: fingerprint,
+        songAfter: fingerprint,
+        sectionId: selection.sectionId,
+        trackIds: [selection.trackId],
+        startTicks: selection.startTicks,
+        endTicks: selection.endTicks,
+        barKeys: [],
+      });
     },
     [selection, song],
   );
@@ -264,10 +312,31 @@ export function useTransform(store: Store, song: Song): TransformHandle {
 
       // One commit, and it says what it was — that is the sentence the undo
       // control will read back to the reader.
-      store.commit(result.song, {
+      const before = store.getSnapshot().song;
+      const committed = store.commit(result.song, {
         kind: "selection_transform",
         command: target.kind,
       });
+      /*
+       * Announced only if the commit actually landed (§13). A refused write —
+       * a full disk, a song from a newer version — has changed nothing, and
+       * an event for it would be the acceptance round passing a step the
+       * reader's music never took.
+       */
+      if (committed) {
+        publishWorkspaceEdit({
+          action: editActionOf(target.kind),
+          scope: "notes",
+          mutating: true,
+          songBefore: songFingerprint(before),
+          songAfter: songFingerprint(result.song),
+          sectionId: selection.sectionId,
+          trackIds: [selection.trackId],
+          startTicks: selection.startTicks,
+          endTicks: selection.endTicks,
+          barKeys: [],
+        });
+      }
       setSelection(result.selection);
       setPending(null);
       setError(null);

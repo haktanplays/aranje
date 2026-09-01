@@ -38,6 +38,11 @@ import {
   expansionNotice,
   type BarSelection,
 } from "@/lib/song/bar-selection";
+import {
+  publishWorkspaceEdit,
+  songFingerprint,
+  type WorkspaceEditAction,
+} from "@/lib/song/workspace-events";
 import type { HistoryAction } from "@/lib/song/edit-history";
 import type { Song } from "@/lib/song/schema";
 
@@ -156,6 +161,45 @@ function describe(command: BarCommand, selection: BarSelection): string {
   }
 }
 
+/**
+ * Which editor action a bar command is (2V-B.1 §13).
+ *
+ * The measure vocabulary and the note vocabulary are different words for the
+ * same six verbs, and the acceptance descriptor asks about the verb. Both
+ * inserts and the two blank-bar commands are `other`: they are real edits
+ * that this round does not have a task for, and calling one of them "paste"
+ * to fit the enum would make a wrong event look like a right one.
+ */
+const BAR_EDIT_ACTION_OF: Readonly<Record<BarCommand["kind"], WorkspaceEditAction>> = {
+  copy_bars: "copy",
+  cut_bars: "cut",
+  paste_bar_contents: "paste",
+  insert_copied_bars: "paste",
+  duplicate_bars: "duplicate",
+  repeat_bars: "repeat",
+  insert_blank_bar_before: "other",
+  insert_blank_bar_after: "other",
+  delete_bars: "delete",
+  move_bars_left: "move",
+  move_bars_right: "move",
+};
+
+/** The bars a selection covers, in the key the rest of the app uses. */
+function barKeysOf(selection: BarSelection): string[] {
+  const keys: string[] = [];
+  for (let index = selection.startBarIndex; index <= selection.endBarIndex; index += 1) {
+    keys.push(`${selection.sectionId}:${index}`);
+  }
+  return keys;
+}
+
+/** Whose music a bar command moves: one track, or all of them. */
+function barTrackIds(song: Song, selection: BarSelection): string[] {
+  return selection.scope === "track"
+    ? [selection.trackId]
+    : song.tracks.map((track) => track.id);
+}
+
 export function useBarTransform(
   store: BarStore,
   song: Song,
@@ -226,9 +270,21 @@ export function useBarTransform(
     }
     setClipboard(result.clipboard);
     setSelection(result.selection);
+    publishWorkspaceEdit({
+      action: "copy",
+      scope: "measures",
+      mutating: false,
+      songBefore: songFingerprint(song),
+      songAfter: songFingerprint(song),
+      sectionId: selection.sectionId,
+      trackIds: barTrackIds(song, selection),
+      startTicks: 0,
+      endTicks: 0,
+      barKeys: barKeysOf(selection),
+    });
     setNotice(result.notice ?? "Ölçüler kopyalandı.");
     setError(null);
-  }, [selection, store]);
+  }, [selection, song, store]);
 
   const stage = useCallback((command: BarCommand) => {
     setPending(command);
@@ -309,11 +365,27 @@ export function useBarTransform(
         return false;
       }
       // The one commit. One storage write, one history entry (spec 5.6).
-      store.commit(result.song, {
+      const before = store.getSnapshot().song;
+      const committed = store.commit(result.song, {
         kind: "bar_transform",
         command: command.kind,
         scope: selection.scope,
       });
+      /* Only when the write landed: a refusal changed nothing (§13). */
+      if (committed) {
+        publishWorkspaceEdit({
+          action: BAR_EDIT_ACTION_OF[command.kind],
+          scope: "measures",
+          mutating: true,
+          songBefore: songFingerprint(before),
+          songAfter: songFingerprint(result.song),
+          sectionId: selection.sectionId,
+          trackIds: barTrackIds(before, selection),
+          startTicks: 0,
+          endTicks: 0,
+          barKeys: barKeysOf(selection),
+        });
+      }
       setSelection(result.selection);
       setPending(null);
       setError(null);
