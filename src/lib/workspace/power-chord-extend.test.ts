@@ -246,6 +246,27 @@ describe("the surface the founder was looking at", () => {
   it("still carries it on the compact toolbar too", () => {
     expect(compact).toContain('label: "Devam"');
   });
+
+  it("keeps every target a finger can hit", () => {
+    /*
+     * §5: at least 44×44, and asked of the shared constant rather than of a
+     * number written here — a bar that hard-coded 44 would pass this and
+     * drift the day the constant moves.
+     */
+    expect(tall).toContain("minHeight: MIN_TOUCH_TARGET_PX");
+    expect(tall).toContain("minWidth: MIN_TOUCH_TARGET_PX");
+    expect(tall).not.toMatch(/minHeight:\s*\d/);
+    expect(tall).not.toMatch(/minWidth:\s*\d/);
+  });
+
+  it("calls it «Devam» to a screen reader as well as to an eye", () => {
+    /*
+     * The accessible name is the verb when the control is live, and the verb
+     * plus the model's reason when it is not. A test id in that slot would
+     * leave a reader who cannot see the row with nothing to go on.
+     */
+    expect(tall).toContain("aria-label={off ? `${entry.label} — ${state.reason}` : entry.label}");
+  });
 });
 
 describe("what the reach costs the project", () => {
@@ -266,6 +287,19 @@ describe("what the reach costs the project", () => {
      */
     expect(area).toContain("time.toggleExtend()");
     expect(session).toContain('moveEdge("end", x)');
+  });
+
+  it("moves the far edge, so the run grows from where it started", () => {
+    /*
+     * Sliced to the armed branch rather than searched for in the whole file:
+     * `moveEdge("end", …)` appears elsewhere too, so a file-wide search would
+     * stay green with the reach itself moving the *near* edge — which is a
+     * selection that walks away from the note the reader was holding.
+     */
+    const armed = session.slice(session.indexOf("if (extendArmed) {"));
+    const branch = armed.slice(0, armed.indexOf("return false;"));
+    expect(branch).toContain('moveEdge("end", x)');
+    expect(branch).not.toContain('moveEdge("start"');
   });
 
   it("has no second extension core to drift from the first", () => {

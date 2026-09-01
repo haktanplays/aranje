@@ -1,0 +1,125 @@
+{
+  "kind": "browser emulation — not a physical device",
+  "note": "Ten consecutive runs of both 2V-A.1 harnesses. Each run is 5 contexts x 14 checks per harness. The last run’s full readouts and the founder screenshots are beside this file; the per-run copies are summarised here rather than committed twenty times over.",
+  "contexts": [
+    "320x700",
+    "384x740 + Android UA",
+    "390x844",
+    "412x915 + Android UA",
+    "1363x936 touch=0"
+  ],
+  "runs": [
+    {
+      "run": 1,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 2,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 3,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 4,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 5,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 6,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 7,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 8,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 9,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    },
+    {
+      "run": 10,
+      "devam": {
+        "passed": 70,
+        "total": 70
+      },
+      "listening": {
+        "passed": 70,
+        "total": 70
+      }
+    }
+  ],
+  "everyRunGreen": true,
+  "totalChecks": 1400
+}

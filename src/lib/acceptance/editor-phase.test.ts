@@ -5,6 +5,8 @@
  * gesture that wrote twice also changed the song, and so did one that changed
  * it without recording a step, which is worse than either.
  */
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -333,5 +335,23 @@ describe("the phase the founder could not complete (2V-A.1 §6)", () => {
     expect(judgePhase(grew.expect, diff({ bandBefore: 34, bandAfter: 170 }))).toBe(
       true,
     );
+  });
+});
+
+
+describe("where the arm is read from (2V-A.1 §6)", () => {
+  const watch = readFileSync("src/components/acceptance/useEditorWatch.ts", "utf8");
+
+  it("asks the control whether it is pressed, not whether it exists", () => {
+    /*
+     * `aria-pressed`, from the button named "Devam". Anything looser — the
+     * button being present, say — is true the moment the verb is drawn, which
+     * would pass the phase for a reader who never touched it and put us back
+     * where this round started.
+     */
+    const reader = watch.slice(watch.indexOf("const extendArmed"));
+    const body = reader.slice(0, reader.indexOf("const bandWidth"));
+    expect(body).toContain('getAttribute("aria-pressed") === "true"');
+    expect(body).toContain('"Devam"');
   });
 });
