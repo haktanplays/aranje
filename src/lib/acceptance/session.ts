@@ -16,9 +16,11 @@ import { createMemoryStorage, type MemoryStorage } from "@/lib/acceptance/memory
 import { initialCatalog } from "@/lib/projects/project-catalog";
 import { projectId } from "@/lib/projects/project-id";
 import { installProjectSession } from "@/lib/projects/project-session";
+import { getProjectSession } from "@/lib/projects/project-session";
 import { writeCatalog, writeRecord } from "@/lib/projects/project-storage";
 import { installSettingsStore } from "@/lib/settings/use-settings";
 import type { Song } from "@/lib/song/schema";
+import type { SongStore } from "@/lib/song/song-store";
 
 /*
  * A real project id, not a descriptive name. `projectKey` refuses anything
@@ -40,6 +42,14 @@ export type AcceptanceSession = {
   /** Why not, when the session was already built from something else. */
   readonly reason: string | null;
   readonly storage: MemoryStorage;
+  /** The production store running over the disposable storage. */
+  readonly store: SongStore | null;
+  /** The storage checkpoint after fixture bootstrap and migration probes. */
+  readonly initialStorage: Readonly<Record<string, string>>;
+  /** Journal offset after bootstrap; acceptance writes start here. */
+  readonly initialJournalLength: number;
+  /** Restore bytes, revision and history before the next independent step. */
+  restore(): void;
 };
 
 /**
@@ -65,9 +75,18 @@ export function startAcceptanceSession(
   const storage = createMemoryStorage();
   const written = writeRecord(storage, ACCEPTANCE_PROJECT_ID, song, now);
   if (!written.ok) {
-    return { ok: false, reason: `fixture yazılamadı: ${written.reason}`, storage };
+    return {
+      ok: false,
+      reason: `fixture yazılamadı: ${written.reason}`,
+      storage,
+      store: null,
+      initialStorage: storage.snapshot(),
+      initialJournalLength: storage.journal().length,
+      restore: () => {},
+    };
   }
-  writeCatalog(storage, initialCatalog(ACCEPTANCE_PROJECT_ID));
+  const catalog = initialCatalog(ACCEPTANCE_PROJECT_ID);
+  writeCatalog(storage, catalog);
 
   const project = installProjectSession(storage, () => now);
   const settings = installSettingsStore(storage);
@@ -76,6 +95,10 @@ export function startAcceptanceSession(
       ok: false,
       reason: "proje oturumu zaten kurulmuş; test kendi deposunu kuramadı",
       storage,
+      store: null,
+      initialStorage: storage.snapshot(),
+      initialJournalLength: storage.journal().length,
+      restore: () => {},
     };
   }
   if (!settings) {
@@ -92,9 +115,32 @@ export function startAcceptanceSession(
       reason:
         "ayarlar deposu zaten kurulmuş; test kendi deposunu kuramadı ve senin ayarlarına yazardı",
       storage,
+      store: null,
+      initialStorage: storage.snapshot(),
+      initialJournalLength: storage.journal().length,
+      restore: () => {},
     };
   }
-  return { ok: true, reason: null, storage };
+  const session = getProjectSession();
+  const initialStorage = storage.snapshot();
+  const initialJournalLength = storage.journal().length;
+  const baseline = JSON.parse(JSON.stringify(song)) as Song;
+  return {
+    ok: true,
+    reason: null,
+    storage,
+    store: session.store,
+    initialStorage,
+    initialJournalLength,
+    restore() {
+      storage.restore(initialStorage);
+      session.openProject(
+        ACCEPTANCE_PROJECT_ID,
+        JSON.parse(JSON.stringify(baseline)) as Song,
+        catalog,
+      );
+    },
+  };
 }
 
 /**
