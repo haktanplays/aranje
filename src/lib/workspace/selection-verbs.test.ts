@@ -497,8 +497,14 @@ describe("no surface carries a list of its own", () => {
       "utf8",
     );
     expect(area).toContain("<SelectionMoreSheet");
-    expect(area).toContain('onSurface(read, "more_sheet")');
-    expect(area).toContain('onSurface(read, "read_primary")');
+    /*
+     * The whole prop, not a substring of it. A `.filter(...)` appended to the
+     * call satisfies "contains `onSurface(read, "more_sheet")`" while handing
+     * the sheet a fixed pair again — which is the defect, and a mutant that
+     * did exactly that stayed green until this line was pinned.
+     */
+    expect(area).toContain('actions={onSurface(read, "more_sheet")}');
+    expect(area).toContain('actions={onSurface(read, "read_primary")}');
   });
 
   it("hands the measure bar the canon too", () => {

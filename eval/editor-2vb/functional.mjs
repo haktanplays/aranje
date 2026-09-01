@@ -115,22 +115,6 @@ async function toTab(page) {
   }
 }
 
-async function stringY(page, atX) {
-  return page.evaluate((x) => {
-    const lines = [...document.querySelectorAll("[data-string-line]")]
-      .map((node) => {
-        const box = node.getBoundingClientRect();
-        return box.top + box.height / 2;
-      })
-      .sort((a, b) => a - b);
-    for (const y of lines) {
-      const hit = document.elementFromPoint(x, y);
-      if (hit && hit.closest("[data-tab-content]")) return y;
-    }
-    return null;
-  }, atX);
-}
-
 /**
  * Hold an onset that is actually on screen, and drag right.
  *
@@ -197,24 +181,15 @@ async function dismiss(page) {
 }
 
 /**
- * Stop the transport if it is running, and bring the view home.
+ * Run one step on a page of its own.
  *
- * The tab follows the playhead (2Q-C). A step that played anything leaves the
- * window somewhere down the song, and every later press then lands where the
- * music is not — which is what emptied the staff in the middle of this run.
- * Both controls are the shipped ones.
+ * The tab is windowed horizontally and follows the playhead (2Q-C), a
+ * selection outlives a view switch, and a move leaves the window somewhere
+ * down the song — so chaining steps measures the harness's bookkeeping rather
+ * than the product. Each step is a real cold start on the real route, and the
+ * record it reads is that page's own.
  */
 async function fresh(browser, size, fn) {
-  /*
-   * A page of its own for each of the staged steps.
-   *
-   * The tab is windowed horizontally and follows the playhead (2Q-C), so a
-   * step that moved a run or played one leaves the window somewhere down the
-   * song — and the next step's long press then lands where the music is not.
-   * Fighting that with scroll resets measures the harness's patience; a fresh
-   * page measures the product. Each step is still a real cold start on the
-   * real route, and the record it reads is that page's own.
-   */
   const opened = await open(browser, size);
   await toTab(opened.page);
   try {
@@ -222,20 +197,6 @@ async function fresh(browser, size, fn) {
   } finally {
     await opened.context.close();
   }
-}
-
-async function quiet(page) {
-  const pause = page.getByRole("button", { name: "Duraklat" });
-  if (await pause.count()) {
-    await pause.first().click({ timeout: 2500 }).catch(() => {});
-    await page.waitForTimeout(320);
-  }
-  await page
-    .getByRole("button", { name: "Başa dön" })
-    .first()
-    .click({ timeout: 2500 })
-    .catch(() => {});
-  await page.waitForTimeout(420);
 }
 
 const undo = (page) =>

@@ -1,0 +1,66 @@
+== each action placed nowhere, one at a time ==
+RED     01 «copy» is placed on no surface at all  (5 of 65)
+RED     02 «cut» is placed on no surface at all  (6 of 65)
+RED     03 «duplicate» is placed on no surface at all  (4 of 65)
+RED     04 «repeat» is placed on no surface at all  (5 of 65)
+RED     05 «move» is placed on no surface at all  (5 of 65)
+RED     06 «delete» is placed on no surface at all  (7 of 65)
+RED     07 «extend» is placed on no surface at all  (8 of 65)
+RED     08 «connect» is placed on no surface at all  (2 of 65)
+RED     09 «paste» is placed on no surface at all  (4 of 65)
+RED     10 «listen_once» is placed on no surface at all  (8 of 65)
+RED     11 «listen_loop» is placed on no surface at all  (7 of 65)
+== placement moved to the wrong surface ==
+RED     12 the listening actions are moved onto the reading grid  (14 of 65)
+RED     13 «Devam» is demoted into the sheet  (7 of 65)
+RED     14 the compact row grows a fifth verb  (4 of 65)
+RED     15 the read sheet is given «Sil» again, beside the grid that has it  (5 of 65)
+== the model says available and the surface does not draw it ==
+RED     16 an available capability is dropped before it can be placed  (20 of 65)
+RED     17 a hidden verb is drawn anyway  (1 of 28)
+RED     18 the same action is drawn twice  (7 of 65)
+RED     19 an action with no handler is drawn regardless  (1 of 28)
+== the handler mapping ==
+RED     20 «Sil» is wired to the copy handle  (1 of 12)
+RED     21 «Kes» becomes a duplicate  (1 of 12)
+RED     22 «Seçimi dinle» starts the loop instead  (1 of 12)
+RED     23 «Yapıştır» is silently unhandled  (2 of 12)
+== the surfaces stop asking the canon ==
+RED     24 the read sheet goes back to a fixed pair  (1 of 25)
+RED     25 the reading grid draws the sheet's contents instead  (1 of 25)
+RED     26 the read and edit lists are split apart again  (4 of 65)
+RED     27 the compact drawer stops drawing the sheet surface  (1 of 25)
+RED     28 the measure bar keeps a hard-coded row again  (1 of 25)
+RED     29 the measure sheet loses its listening entries  (1 of 25)
+== the capability model itself ==
+RED     30 «Yapıştır» is offered on an empty clipboard  (3 of 65)
+RED     31 «Yapıştır» is hidden even with a full clipboard  (3 of 65)
+RED     32 the power chord loses «Devam»  (10 of 52)
+RED     33 the measure row's move is always live  (1 of 28)
+RED     34 listening is refused on a run of whole bars  (2 of 65)
+== the founder batch's own honesty ==
+RED     35 a step that wrote nothing counts as a write  (2 of 25)
+RED     36 undo is accepted without returning to the same bytes  (1 of 25)
+RED     37 redo is accepted without restoring what undo took  (1 of 25)
+RED     38 a skipped step is allowed to pass  (1 of 25)
+RED     39 a desktop is allowed a physical PASS  (2 of 25)
+RED     40 a measured breakage is outranked by a good answer  (2 of 25)
+RED     41 the guide grows a thirteenth step  (1 of 25)
+RED     42 a step stops naming the control it asks for  (1 of 25)
+RED     43 the block claims something about how it sounded  (1 of 25)
+== the route's isolation ==
+RED     44 the batched route is left indexable  (1 of 24)
+RED     45 the route grows a test button that plays for the reader  (1 of 24)
+RED     46 the route writes to the store it is meant to only read  (1 of 24)
+RED     47 the exact-build gate is removed  (1 of 24)
+== geometry and the sheet's own behaviour ==
+RED     48 the touch target constant is shrunk on the reading grid  (1 of 24)
+RED     49 the grid is given a third row  (1 of 24)
+RED     50 the sheet closes itself behind the sheet it just opened  (1 of 28)
+RED     51 the disabled reason is dropped from the control  (6 of 65)
+RED     52 a disabled action is reported as available  (7 of 65)
+
+-----------------------------------------------------------------
+RED (a named test failed for the right reason): 52
+VACUOUS (mutant changed nothing observable):    0
+INVALID (no test ran, or a timeout):            0

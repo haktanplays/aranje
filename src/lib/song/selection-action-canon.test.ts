@@ -529,6 +529,33 @@ describe("listening is reachable on a run of whole bars", () => {
     });
   }
 
+  it("greys the measure row's «Taşı» where neither arrow could move", () => {
+    /*
+     * A section of two bars, held whole: there is no bar before the first and
+     * none after the last, so the door to the two arrows opens onto nothing.
+     * It used to stand live and lead there anyway.
+     */
+    const whole = barSelection("full", 0, 1);
+    const actions = selectionActionCanon({
+      mode: "measure",
+      offers: offersFor(whole, false),
+      handlers: HANDLERS.measure,
+      barScope: "full",
+    });
+    const move = actions.find((action) => action.id === "move");
+    expect(move?.availability).toBe("disabled");
+    expect(move?.reason).toBe("Taşınacak yer yok.");
+
+    /* And it is live where an arrow really could move. */
+    const first = selectionActionCanon({
+      mode: "measure",
+      offers: offersFor(barSelection("track", 0, 0), false),
+      handlers: HANDLERS.measure,
+      barScope: "track",
+    });
+    expect(first.find((action) => action.id === "move")?.availability).toBe("available");
+  });
+
   it("plays only the instrument the track scope holds", () => {
     /*
      * Honest scope, measured on the descriptor the plan is built from rather
@@ -537,6 +564,66 @@ describe("listening is reachable on a run of whole bars", () => {
      */
     expect(barSelection("track", 0, 0).trackIds).toEqual([GTR]);
     expect(barSelection("full", 0, 1).trackIds).toEqual([GTR, DRUMS]);
+  });
+});
+
+describe("the two guards the layouts alone cannot reach", () => {
+  /*
+   * `hidden` and "no handler" are contracts, and the layouts happen never to
+   * place a verb that either applies to — so a sweep over the real matrix
+   * cannot tell whether the guards are there. Asked directly instead, with an
+   * offers list and a handler set made for the question. Both mutants came
+   * back green until these existed, and both were my tests' fault.
+   */
+  const offers = offersFor(timeSelection(0, 9 * SLOT), true);
+
+  it("never draws a verb the model hid, even where the layout places it", () => {
+    const hidden = offers.map((offer) =>
+      offer.verb === "copy" ? { verb: offer.verb, state: { kind: "hidden" as const } } : offer,
+    );
+    const drawn = selectionActionCanon({
+      mode: "read",
+      offers: hidden,
+      handlers: HANDLERS.read,
+    });
+    expect(drawn.some((action) => action.id === "copy")).toBe(false);
+    /* And the rest of the row is untouched, so this is not a blanket drop. */
+    expect(drawn.some((action) => action.id === "cut")).toBe(true);
+  });
+
+  it("never draws an action the surface has no handler for", () => {
+    const thin = new Set<SelectionActionId>(
+      [...HANDLERS.read].filter((id) => id !== "duplicate"),
+    );
+    const drawn = selectionActionCanon({ mode: "read", offers, handlers: thin });
+    expect(drawn.some((action) => action.id === "duplicate")).toBe(false);
+    expect(drawn.some((action) => action.id === "repeat")).toBe(true);
+  });
+
+  it("says which actions open another sheet rather than acting at once", () => {
+    /*
+     * The sheet that drew "Yapıştır" used to close itself on every press,
+     * including the press that had just opened the paste sheet behind it. The
+     * surfaces read this rather than each keeping a list.
+     */
+    const drawn = selectionActionCanon({
+      mode: "read",
+      offers,
+      handlers: HANDLERS.read,
+    });
+    const opens = Object.fromEntries(drawn.map((action) => [action.id, action.opens]));
+    expect(opens).toMatchObject({
+      move: "sheet",
+      repeat: "sheet",
+      paste: "sheet",
+      more: "sheet",
+      copy: "immediate",
+      cut: "immediate",
+      delete: "immediate",
+      extend: "immediate",
+      listen_once: "immediate",
+      listen_loop: "immediate",
+    });
   });
 });
 

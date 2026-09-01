@@ -4039,6 +4039,114 @@ Gerekçe ölçülmüştür: 2V-A'da dört yeşil masaüstü viewport'un bulamad�
 telefon bir dakikada buldu.
 
 
+### §13.33 Selection Action Canon (2V-B)
+
+#### §13.33.1 Aynı seçim için ikinci bir sabit liste yasaktır
+
+Üç turda üst üste aynı kusur çıktı: yetenek modeli bir fiili sunuyor, çizen
+sabit liste onu taşımıyor. 2U-B'de «Yapıştır», 2V-A.1'de «Devam», 2V-B'de her
+iki dinleme fiili. Her seferinde düzeltme **bir listeye bir giriş eklemek**
+oldu — ki bu bir düzeltme değil, sıradakini beklemektir.
+
+Bir seçimin eylemleri artık **tek yerde** yanıtlanır:
+`src/lib/song/selection-action-canon.ts`. Hangi eylemler vardır, okuyucunun
+bulunduğu modda hangi yüzeye düşerler, canlı mıdırlar, değilse kullanıcıya
+hangi Türkçe cümle gösterilir — hepsi burada.
+
+Canon **ikinci bir yetenek modeli değildir.** Bir fiilin *uygulanabilir* olup
+olmadığı hâlâ `selectionCapabilities`'in cevabıdır ve canon onu asla ezmez:
+`hidden` bir fiil burada yoktur, `disabled` bir fiil modelin kendi cümlesini
+kelimesi kelimesine taşır. Canon'un eklediği şey hiç yazılmamış olan yarıdır —
+yerleşim, etiket ve hangi handler'ın çalışacağı.
+
+**UI component'leri kendi eylem listelerini taşımaz.** Bir bileşenin kodunda
+«Kopyala», «Seçimi dinle» ya da «Ölçüyü kaldır» yazması, o bileşenin yeniden
+karar vermeye başladığı anlamına gelir; bir sınır testi bunu adıyla yasaklar.
+
+#### §13.33.2 Dört yüzey, üç mod, tek cevap
+
+`SelectionSurface`: `read_primary`, `edit_primary`, `more_sheet`,
+`measure_primary`. `SelectionMode`: `read`, `edit`, `measure`. Modlar arasında
+değişen tek şey bir eylemin **hangi listeye düştüğüdür** — var olup olmadığı
+değil.
+
+Satırlar UI Contract v1'in dondurduğu yerde donmuş kalır: okuma ızgarası sekiz
+hedef ve dört sütun, compact satır `Bağla · Taşı · Devam · Daha fazla`, ölçü
+satırı yedi hedef. Bir modun `primary` ve `sheet` listeleri **kesişmez**: bir
+fiili aynı bağlamda iki kez çizmek, okuyucuya tek sonuç için iki kontrol
+arasında seçim yaptırmaktır ve basmadığı, bastığı hakkında yanlış şey öğretir.
+
+Bu yüzden okuma sheet'inde «Sil» yoktur: önündeki ızgarada zaten vardır. Bir
+founder o kapıyı açtığında arkasında **yalnız** «Seçimi sil» buldu — ızgarada
+olan fiilin tekrarı — ve rehberin istediği «Seçimi dinle» hiç yoktu.
+
+#### §13.33.3 Yanlış yüzeyi ölçmek yeşil sayılmaz
+
+2V-A kabulü «Daha fazla»yı bulup açtı ve iki dinleme fiilini gördü — ama
+`toEditor()` önce «Düzenle»ye basıyordu, yani ölçtüğü sheet **compact satırın
+çekmecesiydi.** 2V-A.1 kabulü kapının *varlığını* saydı, içeriğini hiç
+açmadı. İkisi de 70/70 verdi ve ikisi de founder'ın açtığı yüzeyi hiç
+görmedi.
+
+Kural: bir kabul koşusu, kullanıcının gerçekten geçtiği yolu geçmelidir.
+Gerçek pointer seçimi, ekranda görünen gerçek kapı, açılan gerçek sheet.
+State inject etmek, bileşeni doğrudan mount etmek, gizli bir elemanı bulmak,
+başka bir seçim türü kullanmak veya registry'de kayıtlı olmayı «kullanıcı
+ulaşabilir» saymak — hiçbiri kanıt değildir.
+
+#### §13.33.4 Çizilen her eylemin bir yeteneği ve bir handler'ı vardır
+
+`available → rendered count === 1`, `disabled → rendered count ≤ 1`,
+`rendered → handler exists`, `handler invoked → expected operation`, ve
+desteklenen bir eylemin `rendered count === 0` olması FAIL'dir.
+
+Bu tablo **testlerden üretilir**, elle doldurulmaz
+(`eval/editor-2vb/artifacts/REACHABILITY.json`). Elle yazılan tablo koda dair
+bir iddiadır; bu tablo kodun kendisidir, dolayısıyla canon'un yerleştirmediği
+bir eylem için «rendered 1» yazamaz ve runner'ın case'i olmayan bir id için
+«handler var» diyemez.
+
+Ölçü satırı bu kuralla sınandığında **modelde bir boşluk** çıktı: yedi düğmenin
+üçünün arkasında fiil vardı, dördünün hiçbiri yoktu — çünkü *ölçüleri*
+kopyalamak, kesmek, tekrarlamak ve taşımak, aynı adı taşıyan nota fiillerinden
+başka komutlardır. `copy_bar`, `cut_bar`, `repeat_bar` ve `move_bars`
+eklendi; «Taşı» tek ölçülük bir bölümde artık **«Taşınacak yer yok.»** ile
+grileşir, çünkü orada iki ölü ok açıyordu.
+
+#### §13.33.5 Dinleme bir moda değil bir seçime aittir
+
+`useCoveredRun` dinleme oturumunu artık *covered run'ın içinde* değil, onun
+yanında döndürür ve **hangi seçim tutuluyorsa onu** tarif eder. Okuma
+yüzeyinin dinleyecek bir şeyi olmamasının sebebi buydu: dinleme, düzenleme
+modunun bir ayrıcalığı olarak bağlanmıştı.
+
+Bir ölçü aralığı da dinlenebilir ve **kapsamı dürüstçe kullanır**:
+«Bu enstrüman» plana tek track id taşır, «Tüm enstrümanlar» hepsini taşır —
+`describeBarSelection`'ın kendi cevabı, bu dosyanın kapsamlardan haberi olması
+gerekmeden.
+
+#### §13.33.6 Founder'a artık her kusur için yeni link gönderilmez
+
+`/eval/editor-action-batch?sha=<sha>` — `noindex`, linksiz, exact-SHA kapılı,
+izole bellek deposu, gerçek Workspace ve gerçek seçim yüzeyleri. En fazla on
+iki kısa ekran, ekran başına tek görev.
+
+**İş bölümü sözleşmedir:** founder yalnız bir insanın bilebileceğini yanıtlar —
+kulağa doğru geldi mi, kontrol adının söylediğini yaptı mı, bulması kolay
+mıydı. Bayt, history ve storage bir insana sorulacak sorular değildir; sayfa
+onları kendisi ölçer — proje kaydının baytları ve revizyonu, adım ekrandayken
+örneklenerek. «Tek atomik yazma» ve «geri al bayt-eş döndü» bu izden
+yargılanır.
+
+Bunun sonucu, **hiçbir şey yapmadan «Sonraki»ye basmanın geçmemesidir:** iz tek
+durumda kalır ve yazan adımlar düşer. Uygulanmamış bir yapıştırma ve hiçbir
+şeye dokunulmadan onaylanan bir rehber adımı — ikisi de daha önce yeşil
+raporlanmıştı — burada imkânsızdır.
+
+`touch=0` fiziksel PASS üretemez; bu bir dipnot değil, `batchVerdict`'in bir
+kuralıdır.
+
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)
@@ -4384,6 +4492,7 @@ maliyettir** (§11.2/7).
 | **K-61** | **Seçimi dinle · Seçimden döngü (§13.31, 2V-A).** Amaç yeni bir notasyon ya da ses kalitesi denemesi değildi: **düzenleyiciden çıkmadan** seçilen yeri bir kez duymak ve tekrarlatmak. Dinleme bir **plandır**, ikinci bir çalar değil — `selection-playback.ts` tipli descriptor'ı okur, tick'i çözer, kapsamı track listesine çevirir ve gerekirse tipli bir ret üretir; motorda değişen tek şey `ScheduleOptions`'a eklenen bir penceredir. **Ayrı ve düşük kaliteli bir preview synth yazılmadı:** HO/PO, slide, bend, vibrato, palm mute ve strum normal scheduler yolundan geçer, ifade planı ve `playChain` dokunulmadan kalır. **Ölçülerek bulunan iki kusur:** (1) duyulabilirlik `descriptor.onsetCount`'a soruluyordu, o alan yapı gereği melodiktir (`sectionSlotStream` davul slot dizilerini `writable: false` işaretler) ve davul dolu bir ölçü «dinlenecek nota yok» diye grileşiyordu — soru artık `buildNotatedPlan`'a, motorun gerçekten çalacağı şeye sorulur; (2) tick dönüşümü: descriptor bölüm-göreli, transport şarkı-mutlaktır ve ikisi yalnız ilk bölümde eşittir, bu yüzden fixture bilerek iki bölümlüdür. **Testler önce yazılırken iki gerçek yaşam döngüsü kusuru çıktı:** ses hatası `void`'lenmiş bir press handler'a promise reddi olarak fırlatılıyordu (okuyucuya hiçbir şey söylenmiyor, hiçbir şey temizlenmiyordu), ve motor kurulurken gelen bir abort yok sayılıyordu — iptaller senkron, başlatma asenkron, dolayısıyla bir an sonra dönen başlatma okuyucunun çoktan bıraktığı seçimi çalmaya başlıyordu; bir token bunu kapatır. **Tek loop otoritesi:** `PlaybackLoop` dördüncü bir varyant kazandı (`selection`), ikinci bir loop alanı değil; bölüm/çalışma döngüsünün yerine geçer ve şarkı değiştiğinde taşınmaz. **Sınır anlamı:** aralık yarı açıktır, başlamadan önce başlamış nota yapay atakla içeri sokulmaz, sonu taşan nota **yalnız seste** kesilir ve Song'un yazılı süresi değişmez. **Efemerlik:** Song baytları, proje revizyonu, storage, history, undo/redo ve pano değişmez — ve bu sıfırlar aynı koşuda gerçek bir düzenlemeyle kımıldadığı gösterilen aletlerle ölçülür; `localStorage.setItem` sarmalayarak yazma saymak bu rotada yasaktır çünkü sayfa kendi `Map`'ini kullanır ve o sayaç uygulama ne yaparsa yapsın sıfır okur. **UI Contract v1'e dokunulmadı:** iki eylem mevcut «Daha fazla» çekmecesindedir, ana toolbar'a düğme veya satır eklenmedi, yeni badge/chip yok, aktif döngü yalnız «Seçim döngüsünü kapat» etiketiyle söylenir. `selection-capability.test.ts`'in «nota fiilleri ile ölçü fiilleri ayrık kümelerdir» iddiası artık doğru değildir ve zayıflatılmadı, kesişimi adıyla söyleyecek şekilde düzeltildi. **Doğrulama:** hedefli paket 163 test **10 ardışık yeşil**; tam paket **4.338 test / 267 dosya, 4 ardışık yeşil**; tarayıcı kabulü 20 kontrol × 4 bağlam = **80/80, 10 ardışık koşu (800 kontrol)**; **32 mutasyon probe'u, hepsi adıyla kırmızı, 0 vacuous, 0 invalid**. İki mutant **eşdeğer olduğu için gerekçesiyle emekli edildi** ve yeşil bırakılmadı; yerlerine gerçek soruyu ölçen bir mutant kondu (davul şeridi scheduler'da ayrı bir döngüdür). **Probe'lar üç gerçek boşluk buldu, üçü de benim testlerimdeydi** (bitiş tick'ine ulaşan bir döngünün durdurulmaması; durduktan sonra bütün şarkının yeniden schedule edilmesi; seçim döngüsünün şarkı değişimiyle karşılaşması) — hiçbir iddia zayıflatılmadı. **Satır bütçeleri yükseltilmedi:** `Workspace.tsx` `375/379` (bir ara `398`'e çıktı, bütçe değil kod taşındı: `use-covered-run.ts` ve `copilot/gates.ts`), `TabCanvas.tsx` `456/472`, `ArrangementCanvas.tsx` `470/470`. **Bu turda kimse bu sesi dinlemedi.** Ölçülen şey, doğru notaların doğru pencerede, normal scheduler tarafından schedule edildiğidir; kabul koşusu masaüstü Chromium'dur, kendi raporunda «browser emulation — not a physical device» yazar ve `touch=0` bağlamı fiziksel cihaz kanıtı sayılmaz. 2U-C'nin fiziksel Android seçme/sürükleme kapısı açılmadı; bu turun teknik başarısı işitsel kaliteyi kendiliğinden onaylamaz. | **Haktan edit–dinle akışı kabulünü bekliyor** |
 
 | **K-62** | **Kayıp «Devam» ve gerçek dinleme rotası (§13.32, 2V-A.1).** Founder'ın gerçek Android cihazındaki canlı sonucu otorite kabul edildi: `384×740`, `dokunma 5`, rehber «2/36 · «Devam»a dokun.», production seçimi «1 power chord · 3 nota», ekrandaki eylemler `Kopyala · Kes · Çoğalt · Tekrarla · Taşı · Sil · Daha fazla` — **«Devam» yok.** **Kök neden ölçülerek bulundu ve bariz şüphelilerin hepsi masumdu:** yetenek modeli power chord için `extend`'i zaten `available` yanıtlıyordu ve compact toolbar onu K-59'dan beri çiziyordu. O yedi fiillik liste `SelectionActionBar`'dır — **okuma** yüzeyinin çubuğu — ve fiilleri modele hiçbir şey sormayan sabit bir listeydi; compact satır ise yalnız «Düzenle»ye basıldıktan sonra var olur ve rehber bunu istemez. Yani 2U-B pano kusurunun aynısı: model sunuyor, çizen liste taşımıyor. **Derin düzeltme sekizinci bir satır değil**, iki çubuğun artık aynı fonksiyona sorması oldu (`selectionOffers`), ve o fonksiyon okuyucunun yazıp yazmadığını sormuyor — «bu koşuya ne yapılabilir» müzikal bir sorudur, düzenleme modu cevabın parçası değildir. Dört sütunlu ızgarada sekiz hedef yedinin yaptığı iki satırın aynısıdır; **üçüncü satır yok, hiçbir tel kaybedilmedi**, «Devam» «Taşı»nın yanında, «Daha fazla» sonda. **Model düzgün sorgulanınca bir soruyu özensiz yanıtladığı görüldü:** `extend` koşulsuz `available` idi, bu neredeyse her yerde doğru ve bölümün son slot'undaki tek slotluk bir seçimde yanlıştır — kol yanar, gidecek yer yoktur. `hasExtendTarget` bunu bölümün kendi slot'larından yanıtlar ve kontrol «Uzatılacak yer kalmadı.» ile grileşir; yetenek modeli Song'u almama sözünü korur. **İkinci extension algoritması yazılmadı:** çubuk odaklı satırın çağırdığı `toggleExtend`'i çağırır, sonraki uzun basış bitiş kenarını taşır, kolu kurmak ve uzatmak hiçbir şey yazmaz. **Rehber, ekranda olmayan bir düğmeyi onaylayamaz hâle getirildi:** «Devam» adımı `no_write` bekliyordu ve hiçbir şeye dokunmadan «Yaptım»a basmak da hiçbir şey yazmaz — adım artık `armed` bekler ve cevabı okuyucunun bastığı kontrolün `aria-pressed`'inden alır. **2V-A için gerçek founder rotası açıldı:** `/eval/selection-playback` (`noindex`, `?sha=` kapısı, izole bellek deposu, production Workspace + çekmece + audio engine, sekiz adım, teknik terim yok, **sayfanın kendi playback kontrolü yok**). Eski editör rotası 2V-A dinleme sonucu olarak yeniden verilmedi. **`touch=0` fiziksel PASS üretemez** ve bu bir dipnot değil bir fonksiyondur: `listeningVerdict` dokunmasız ortamda en fazla `PARTIAL` döner, sonuç bloğu hangi ortamın cevapladığını kendi satırında söyler. **Doğrulama:** hedefli paket **10 ardışık yeşil**; tam paket **4.393 test / 270 dosya, 4 ardışık yeşil**; iki tarayıcı kabulü × 5 bağlam = **70/70 ve 70/70, 10 ardışık koşu**; **32 mutasyon probe'u, hepsi adıyla kırmızı, 0 vacuous, 0 invalid**. Devam harness'ı, sekizinci giriş çıkarılmış bir build'e karşı **10/14** verir ve kırmızı adımlar 4, 5, 6, 7'dir — canlı FAIL'in kendisi. **Probe'lar iki gerçek boşluk buldu, ikisi de benim testlerimdeydi** (dosya geneli arama, kollu dalın *yakın* kenarı taşımasıyla yeşil kalıyordu; rehberin kolu nereden okuduğu hiç sınanmamıştı) ve iki harness adımı kendini tarif ediyordu (uzatmadan sonra özetin hâlâ «power chord» diyeceği varsayımı — uygulama haklı; ve 320×700'de eylem çubuğunun altında kalan bir noktaya nişan almak). **Satır bütçeleri yükseltilmedi:** `Workspace.tsx` `375/379`, `TabCanvas.tsx` `456/472`, `ArrangementCanvas.tsx` `470/470`. **Bu turda kimse dinlemedi** — fiziksel edit–dinle kabulü `/eval/selection-playback` üzerinden ayrıca yürütülecektir; 2U-C fiziksel sürükleme kapısı açılmadı ve K-61 kendiliğinden onaylanmadı. | **Haktan 2V-A fiziksel edit–dinle kabulünü bekliyor** |
+| **K-63** | **Selection Action Canon (§13.33, 2V-B).** Founder `/eval/selection-playback?sha=4d4deb3` üzerinde adım 1'i tamamladı, «Daha fazla»yı açtı ve arkasında **yalnız «Seçimi sil»** buldu; rehberin adım 2'si gerçekleştirilemedi. **Canlı FAIL, üretim rotasında, gerçek pointer seçimi ve görünen gerçek kapıyla yeniden üretildi:** sheet `["Kapat","Seçimi sil","Vazgeç","Uygula"]`, iki dinleme eyleminin de `rendered=0` (`eval/editor-2vb/artifacts/BASELINE.json`). **Önceki 70/70 neden yanlış yeşildi:** 2V-A koşusu `toEditor()` içinde önce «Düzenle»ye basıyordu, yani ölçtüğü sheet compact satırın çekmecesiydi; 2V-A.1 koşusu kapının *varlığını* saydı, içeriğini hiç açmadı. İkisi de founder'ın açtığı yüzeyi hiç görmedi. **Bulunan bütün sabit eylem yüzeyleri:** okuma ızgarası (`SelectionActionBar`), okuma «Daha fazla» (`TransformSheet` içindeki `kind === "more"` dalı), compact satır ve çekmecesi (`SelectionToolbar` + `DRAWER_VERBS`), ölçü satırı (`BarActionBar` + `SCOPE_LABELS`/`PRIMARY`). Beşi de artık `selection-action-canon.ts`'in yerleştirdiğini çizer; hiçbir bileşen kendi listesini taşımaz ve bir sınır testi eylem etiketlerini bileşen kodunda adıyla yasaklar. **İkinci gerçek kusur modelde çıktı:** ölçü satırının yedi düğmesinin arkasında üç fiil ve dört boşluk vardı — ölçü kopyalamak/kesmek/tekrarlamak/taşımak aynı adlı nota fiillerinden başka komutlardır — `copy_bar`, `cut_bar`, `repeat_bar`, `move_bars` eklendi ve «Taşı» tek ölçülük bölümde «Taşınacak yer yok.» ile grileşti. **Üçüncüsü dinlemedeydi:** yetenek modeli 2V-A'dan beri bir ölçü aralığında `audition` sunuyordu ve hiçbir yüzey çizmiyordu; `useCoveredRun` artık hangi seçim tutuluyorsa onu tarif eder, «Bu enstrüman» plana tek track id, «Tüm enstrümanlar» hepsini taşır. **Dördüncüsünü kendi harness'ım buldu:** paylaşılan More sheet her basıştan sonra kendini kapatıyordu — «Yapıştır»ın az önce açtığı sheet dâhil — canon artık hangi eylemin sheet açtığını söyler. **Reachability denetimi testlerden üretilir:** 404 satır, on seçim türü × üç mod × iki pano durumu; gizli-ama-available `0`, çift render `0`, handler'sız render `0`. **Founder'a tek toplu rota verildi:** `/eval/editor-action-batch?sha=<sha>` — on iki ekran, founder yalnız işitsel ve kullanım sorularını yanıtlar, bayt/history/storage'ı sayfa proje kaydının izinden kendisi ölçer; hiçbir şey yapmadan «Sonraki»ye basmak yazan adımlarda düşer. **Doğrulama:** iki tarayıcı harness'ı × 5 bağlam = **85/85 ve 70/70**, **10 ardışık koşu**; **52 mutasyon probe'u, hepsi adıyla kırmızı, 0 vacuous, 0 invalid**; tam paket temiz. **Satır bütçeleri yükseltilmedi.** **Bu turda kimse bu sesi dinlemedi** — ölçülen şey erişilebilirlik ve yazma davranışıdır; kabul koşuları masaüstü Chromium'dur ve `touch=0` fiziksel kanıt sayılmaz. 2U-C fiziksel sürükleme kapısı açılmadı; K-61 ve K-62 kendiliğinden onaylanmadı. | **Haktan tek toplu editor-action kabulünü bekliyor** |
 
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler

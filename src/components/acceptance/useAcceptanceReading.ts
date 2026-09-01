@@ -7,8 +7,8 @@
  *
  * The obvious way to measure "did that write" is to wrap `setItem` and count.
  * On these routes that measures nothing: the page owns a storage made of a
- * `Map`, so a wrapper around the device's `localStorage` reads a structural
- * zero and reports it as a proof. That is the vacuity 2U-C was caught by.
+ * `Map`, so a wrapper around the device's own store reads a structural zero
+ * and reports it as a proof. That is the vacuity 2U-C was caught by.
  *
  * So the numbers are the app's own. The bytes are what the record holds, and
  * the revision is the counter the project session bumps once per committed
