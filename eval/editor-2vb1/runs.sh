@@ -27,6 +27,9 @@ TARGETED=(
   src/lib/audio/pan.test.ts
   src/lib/song/workspace-events.test.ts
   src/lib/song/selection-action-canon.test.ts
+  src/lib/playback/selection-sustain.test.ts
+  src/lib/tab/background-pan.test.ts
+  src/lib/workspace/selection-verbs.test.ts
 )
 
 rows_targeted=()

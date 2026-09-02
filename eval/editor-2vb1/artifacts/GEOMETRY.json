@@ -1,6 +1,6 @@
 {
-  "sha": "40a3a07",
-  "generatedAt": "2026-09-01T19:37:10.529Z",
+  "sha": "da9f9a3",
+  "generatedAt": "2026-09-02T07:19:34.991Z",
   "contexts": [
     "320x700",
     "384x692-android",
@@ -103,7 +103,7 @@
       "context": "320x700",
       "name": "task: the task names the real song, section, track and bar",
       "pass": false,
-      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+      "detail": "Editör kabul parçası · s3777h1h8tp95 · "
     },
     {
       "context": "320x700",
@@ -151,7 +151,7 @@
       "context": "320x700",
       "name": "«Şarkıya geç» returns to the same session, with no question on screen",
       "pass": true,
-      "detail": "{\"session\":\"2vb1-8l185vbp\",\"stageVisible\":true,\"tasks\":0}"
+      "detail": "{\"session\":\"2vb1-wydmc8wc\",\"stageVisible\":true,\"tasks\":0}"
     },
     {
       "context": "320x700",
@@ -253,7 +253,7 @@
       "context": "384x692-android",
       "name": "task: the task names the real song, section, track and bar",
       "pass": false,
-      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+      "detail": "Editör kabul parçası · s3777h1h8tp95 · "
     },
     {
       "context": "384x692-android",
@@ -301,7 +301,7 @@
       "context": "384x692-android",
       "name": "«Şarkıya geç» returns to the same session, with no question on screen",
       "pass": true,
-      "detail": "{\"session\":\"2vb1-xopeemfa\",\"stageVisible\":true,\"tasks\":0}"
+      "detail": "{\"session\":\"2vb1-trm8s828\",\"stageVisible\":true,\"tasks\":0}"
     },
     {
       "context": "384x692-android",
@@ -403,7 +403,7 @@
       "context": "390x844",
       "name": "task: the task names the real song, section, track and bar",
       "pass": false,
-      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+      "detail": "Editör kabul parçası · s3777h1h8tp95 · "
     },
     {
       "context": "390x844",
@@ -451,7 +451,7 @@
       "context": "390x844",
       "name": "«Şarkıya geç» returns to the same session, with no question on screen",
       "pass": true,
-      "detail": "{\"session\":\"2vb1-zh3oeqgh\",\"stageVisible\":true,\"tasks\":0}"
+      "detail": "{\"session\":\"2vb1-qo3vkwcs\",\"stageVisible\":true,\"tasks\":0}"
     },
     {
       "context": "390x844",
@@ -553,7 +553,7 @@
       "context": "412x915-android",
       "name": "task: the task names the real song, section, track and bar",
       "pass": false,
-      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+      "detail": "Editör kabul parçası · s3777h1h8tp95 · "
     },
     {
       "context": "412x915-android",
@@ -601,7 +601,7 @@
       "context": "412x915-android",
       "name": "«Şarkıya geç» returns to the same session, with no question on screen",
       "pass": true,
-      "detail": "{\"session\":\"2vb1-1p7on213\",\"stageVisible\":true,\"tasks\":0}"
+      "detail": "{\"session\":\"2vb1-m1cqtic0\",\"stageVisible\":true,\"tasks\":0}"
     },
     {
       "context": "412x915-android",
@@ -703,7 +703,7 @@
       "context": "1363x936-desktop",
       "name": "task: the task names the real song, section, track and bar",
       "pass": false,
-      "detail": "Editör kabul parçası · s3612hjgi1r4 · "
+      "detail": "Editör kabul parçası · s3777h1h8tp95 · "
     },
     {
       "context": "1363x936-desktop",
@@ -751,7 +751,7 @@
       "context": "1363x936-desktop",
       "name": "«Şarkıya geç» returns to the same session, with no question on screen",
       "pass": true,
-      "detail": "{\"session\":\"2vb1-ibk6h409\",\"stageVisible\":true,\"tasks\":0}"
+      "detail": "{\"session\":\"2vb1-ot348920\",\"stageVisible\":true,\"tasks\":0}"
     },
     {
       "context": "1363x936-desktop",
@@ -811,9 +811,9 @@
         "toSongHeight": 0,
         "toSongLabel": "",
         "evidence": "",
-        "session": "2vb1-8l185vbp",
+        "session": "2vb1-wydmc8wc",
         "song": "Editör kabul parçası",
-        "fingerprint": "s3612hjgi1r4",
+        "fingerprint": "s3777h1h8tp95",
         "overflow": 0
       }
     },
@@ -865,9 +865,9 @@
         "toSongHeight": 0,
         "toSongLabel": "",
         "evidence": "",
-        "session": "2vb1-xopeemfa",
+        "session": "2vb1-trm8s828",
         "song": "Editör kabul parçası",
-        "fingerprint": "s3612hjgi1r4",
+        "fingerprint": "s3777h1h8tp95",
         "overflow": 0
       }
     },
@@ -919,9 +919,9 @@
         "toSongHeight": 0,
         "toSongLabel": "",
         "evidence": "",
-        "session": "2vb1-zh3oeqgh",
+        "session": "2vb1-qo3vkwcs",
         "song": "Editör kabul parçası",
-        "fingerprint": "s3612hjgi1r4",
+        "fingerprint": "s3777h1h8tp95",
         "overflow": 0
       }
     },
@@ -973,9 +973,9 @@
         "toSongHeight": 0,
         "toSongLabel": "",
         "evidence": "",
-        "session": "2vb1-1p7on213",
+        "session": "2vb1-m1cqtic0",
         "song": "Editör kabul parçası",
-        "fingerprint": "s3612hjgi1r4",
+        "fingerprint": "s3777h1h8tp95",
         "overflow": 0
       }
     },
@@ -1027,9 +1027,9 @@
         "toSongHeight": 0,
         "toSongLabel": "",
         "evidence": "",
-        "session": "2vb1-ibk6h409",
+        "session": "2vb1-ot348920",
         "song": "Editör kabul parçası",
-        "fingerprint": "s3612hjgi1r4",
+        "fingerprint": "s3777h1h8tp95",
         "overflow": 0
       }
     }

@@ -100,6 +100,11 @@ POOL=src/lib/audio/expressive-voice.ts
 PLAYBACK=src/lib/audio/playback.ts
 ROUTE=src/components/acceptance/EditorActionBatch.tsx
 EVENTS=src/lib/song/workspace-events.ts
+SELPLAY=src/lib/playback/selection-playback.ts
+LISTEN=src/lib/workspace/use-selection-listening.ts
+OWNER=src/lib/tab/pointer-ownership.ts
+EVIDENCE=src/lib/acceptance/step-evidence.ts
+VERBS=src/lib/workspace/selection-verbs.ts
 
 echo "── isolation (§4) ──"
 probe "1 · eval writes production storage" "$ISO" \
@@ -337,11 +342,82 @@ browser_probe() {
 
 if [ "${PROBE_BROWSER:-0}" = "1" ]; then
   echo "── geometry (§11, §15) ──"
-  browser_probe "33 · the guide floats over the workspace again" "$ROUTE" \
+echo "── the 2V-B.2 physical blockers ──"
+
+probe "33 · a selection inside a held chord is called silent again" "$SELPLAY" \
+  '  if (audible.length === 0 && sustaining.length === 0) {' \
+  '  if (audible.length === 0) {' \
+  src/lib/playback/selection-sustain.test.ts
+
+probe "34 · a window keeps notes that had already finished" "$SELPLAY" \
+  '  return event.time < window.startTicks && event.time + event.durationTicks > window.startTicks;' \
+  '  return event.time < window.startTicks;' \
+  src/lib/playback/selection-sustain.test.ts
+
+probe "35 · a sustain from an unselected instrument leaks in" "$SELPLAY" \
+  '  if (!window.trackIds.includes(event.trackId)) return false;' \
+  '' \
+  src/lib/playback/selection-sustain.test.ts
+
+probe "36 · a refused press goes back to saying nothing" "$SELPLAY" \
+  '    : { plan: null, refusal: refusalSentence(result.reason) };' \
+  '    : { plan: null, refusal: null };' \
+  src/lib/playback/selection-sustain.test.ts
+
+probe "36b · the surface stops showing the refusal it was handed" "$VERBS" \
+  '    notice: input.listening.refusal ?? time.handle.notice ?? null,' \
+  '    notice: time.handle.notice ?? null,' \
+  src/lib/workspace/selection-verbs.test.ts
+
+probe "37 · panning takes a press that landed on a note" "$OWNER" \
+  '  if (input.onEmptyBackground === true && input.hasSelection === true) {' \
+  '  if (input.hasSelection === true) {' \
+  src/lib/tab/background-pan.test.ts
+
+probe "38 · panning eats the first long press on an empty staff" "$OWNER" \
+  '  if (input.onEmptyBackground === true && input.hasSelection === true) {' \
+  '  if (input.onEmptyBackground === true) {' \
+  src/lib/tab/background-pan.test.ts
+
+probe "39 · step 10 stops naming the press it is waiting for" "$EVIDENCE" \
+  '    return "Bu adım «İleri al»ı da bekliyor: notaları geri aldıktan sonra ileri al'"'"'a dokun.";' \
+  '    return null;' \
+  src/lib/acceptance/step-evidence.test.ts
+
+probe "40 · a redo onto different bytes counts as a redo" "$EVIDENCE" \
+  '        last === written &&' \
+  '' \
+  src/lib/acceptance/step-evidence.test.ts
+
+probe "41 · a stopped run can reach PASS" "$STEPS" \
+  '  if (environment.endedEarly === true) return "BLOCKED";' \
+  '' \
+  src/lib/acceptance/batch-steps.test.ts
+
+probe "42 · BLOCKED buries a measured storage break" "$STEPS" \
+  '  if (environment.userStorageBefore !== environment.userStorageAfter) return "FAIL";' \
+  '' \
+  src/lib/acceptance/batch-steps.test.ts
+
+probe "43 · the acceptance bass sinks back below a phone speaker" "$FIXTURE" \
+  '  0: bassAt(2, 5),' \
+  '  0: bassAt(0, 3),' \
+  src/lib/acceptance/editor-fixture.test.ts
+
+probe "44 · the bass moves in lockstep with the guitar again" "$FIXTURE" \
+  '  3: bassAt(2, 7),
+  6: bassAt(3, 5),
+  10: bassAt(2, 7),
+  13: bassAt(2, 5),' \
+  '  4: bassAt(2, 7),' \
+  src/lib/acceptance/editor-fixture.test.ts
+
+echo "── browser (§16) ──"
+  browser_probe "45 · the guide floats over the workspace again" "$ROUTE" \
     'className="border-line shrink-0 border-t px-3 py-2"' \
     'className="border-line fixed bottom-0 left-0 right-0 border-t px-3 py-2"'
 
-  browser_probe "34 · an invisible layer owns the workspace's pointers" "$ROUTE" \
+  browser_probe "46 · an invisible layer owns the workspace's pointers" "$ROUTE" \
     '      {onSong ? (' \
     '      {onSong ? (
         <div

@@ -15,8 +15,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { shouldStopListening } from "@/lib/playback/listening-session";
 import {
+  planAudition,
   planSelectionPlayback,
-  refusalSentence,
   type SelectionPlaybackMode,
 } from "@/lib/playback/selection-playback";
 import type { PlaybackController } from "@/lib/audio/playback";
@@ -117,9 +117,9 @@ export function useSelectionListening(input: {
    */
   const planOrExplain = useCallback(
     (mode: SelectionPlaybackMode) => {
-      const result = planSelectionPlayback(song, descriptor, mode);
-      explain(result.ok ? null : refusalSentence(result.reason));
-      return result.ok ? result.plan : null;
+      const outcome = planAudition(song, descriptor, mode);
+      explain(outcome.refusal);
+      return outcome.plan;
     },
     [descriptor, explain, song],
   );

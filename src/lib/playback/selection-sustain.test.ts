@@ -11,6 +11,8 @@ import { describe, expect, it } from "vitest";
 
 import { editorFixture, EDITOR_LANDMARKS } from "@/lib/acceptance/editor-fixture";
 import {
+  NO_AUDIBLE_NOTES,
+  planAudition,
   planSelectionPlayback,
   sustainingEvents,
   windowEvents,
@@ -131,5 +133,42 @@ describe("what the two selection scopes play", () => {
     if (!result.ok) return;
     expect(result.plan.startTicks).toBe(4 * SLOT);
     expect(result.plan.endTicks).toBe(12 * SLOT);
+  });
+});
+
+describe("what a press on «Seçimi dinle» decides (2V-B.2 §4)", () => {
+  /*
+   * The step the hook used to own alone. It is here because the hook cannot
+   * be rendered in this suite, and a probe that deleted the refusal from it
+   * stayed green — a line nothing can check is the line that goes missing.
+   */
+  it("hands back a plan when there is something to hear", () => {
+    const outcome = planAudition(song, describeTimeSelection(song, range(0, 16)), "once");
+    expect(outcome.plan).not.toBeNull();
+    expect(outcome.refusal).toBeNull();
+  });
+
+  it("hands back the sentence when there is not", () => {
+    const outcome = planAudition(song, describeTimeSelection(song, range(16, 32)), "once");
+    expect(outcome.plan).toBeNull();
+    expect(outcome.refusal).toBe(NO_AUDIBLE_NOTES);
+  });
+
+  it("says nothing at all about a press with no selection behind it", () => {
+    /* Nothing on screen to attach a sentence to, so none is produced. */
+    expect(planAudition(song, null, "once")).toEqual({ plan: null, refusal: null });
+  });
+
+  it("never returns a plan and a refusal together", () => {
+    for (const selection of [range(0, 16), range(16, 32), range(1, 4)]) {
+      const outcome = planAudition(song, describeTimeSelection(song, selection), "once");
+      expect(outcome.plan === null).toBe(outcome.refusal !== null || outcome.plan === null);
+      if (outcome.plan) expect(outcome.refusal).toBeNull();
+    }
+  });
+
+  it("carries the mode through to the plan it starts", () => {
+    const outcome = planAudition(song, describeTimeSelection(song, range(0, 16)), "loop");
+    expect(outcome.plan?.mode).toBe("loop");
   });
 });

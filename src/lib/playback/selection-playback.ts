@@ -307,3 +307,29 @@ export function refusalSentence(
 ): string | null {
   return reason === "no_audible_notes" ? NO_AUDIBLE_NOTES : null;
 }
+
+/**
+ * What a press on "Seçimi dinle" should do, decided outside React (§4).
+ *
+ * The hook that owns the two intents is a hook, and this suite has no DOM to
+ * render one in — so the step between "the planner refused" and "the surface
+ * says why" had no test of its own, and a probe that deleted it stayed green.
+ * That gap is the reason this exists rather than any need for another layer:
+ * the decision is one line, and one line nothing can check is exactly the line
+ * that quietly goes missing.
+ *
+ * Returns the plan to start, or the sentence to show, and never both. A
+ * refusal with no sentence — `no_selection`, which cannot happen from a
+ * screen with something on it — is a quiet no, which is the right amount to
+ * say about a press that could not have been made.
+ */
+export function planAudition(
+  song: Song,
+  descriptor: SelectionDescriptor | null,
+  mode: SelectionPlaybackMode,
+): { readonly plan: SelectionPlaybackPlan | null; readonly refusal: string | null } {
+  const result = planSelectionPlayback(song, descriptor, mode);
+  return result.ok
+    ? { plan: result.plan, refusal: null }
+    : { plan: null, refusal: refusalSentence(result.reason) };
+}
