@@ -335,3 +335,52 @@ describe("every technique the round names is really in the song", () => {
     expect(song.sections[0]!.name).toBe("Kabul");
   });
 });
+
+describe("the second instrument can be heard on a phone (2V-B.2 §5)", () => {
+  /*
+   * 11B asks the reader to pick a second instrument out of a bare phone
+   * speaker. That question is only fair if the part is written where such a
+   * speaker radiates, so the two properties it depends on are pinned here
+   * rather than left to whoever next edits the bass.
+   */
+  const barOne = () => editorFixture().sections[0]!.bars[0]!;
+
+  const onsets = (trackId: string): { slot: number; pitch: string }[] => {
+    const slots = barOne().slots[trackId] as readonly unknown[];
+    const found: { slot: number; pitch: string }[] = [];
+    slots.forEach((slot, index) => {
+      if (!slot || typeof slot !== "object" || !("notes" in slot)) return;
+      for (const note of (slot as { notes: { pitch: string }[] }).notes) {
+        found.push({ slot: index, pitch: note.pitch });
+      }
+    });
+    return found;
+  };
+
+  it("writes the bass above the octave a phone speaker cannot reproduce", () => {
+    /*
+     * Every bass note at or above G2 (~98 Hz). Below roughly this, a phone
+     * speaker reproduces almost none of the fundamental, which is how the
+     * old G1/C2 part came to be inaudible rather than merely quiet.
+     */
+    const lowest = 2;
+    for (const { pitch } of onsets(EDITOR_BASS_ID)) {
+      const octave = Number(pitch.slice(-1));
+      expect(octave).toBeGreaterThanOrEqual(lowest);
+    }
+  });
+
+  it("moves at different moments from the guitar, so the two can be told apart", () => {
+    const guitarSlots = new Set(onsets(EDITOR_GUITAR_ID).map((entry) => entry.slot));
+    const bassSlots = new Set(onsets(EDITOR_BASS_ID).map((entry) => entry.slot));
+    const bassAlone = [...bassSlots].filter((slot) => !guitarSlots.has(slot));
+    /* Rhythm is the fallback when timbre cannot carry it. */
+    expect(bassAlone.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("still sounds together with the guitar somewhere, or it is not a duet", () => {
+    const guitarSlots = new Set(onsets(EDITOR_GUITAR_ID).map((entry) => entry.slot));
+    const shared = onsets(EDITOR_BASS_ID).filter((entry) => guitarSlots.has(entry.slot));
+    expect(shared.length).toBeGreaterThan(0);
+  });
+});

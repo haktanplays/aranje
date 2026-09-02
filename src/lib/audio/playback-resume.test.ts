@@ -228,6 +228,7 @@ describe("the exact tick a pause holds (§8)", () => {
       trackIds: ["gtr"],
       mode: "loop",
       onsetCount: 4,
+      sustainCount: 0,
     });
 
     transport.ticks = 1000;
@@ -335,6 +336,7 @@ describe("loop disable and what a queued wrap may do (§9)", () => {
       trackIds: ["gtr"],
       mode: "loop",
       onsetCount: 4,
+      sustainCount: 0,
     });
     expect(controller.getSelectionPlayback()).not.toBeNull();
     expect(transport.loop).toBe(true);
@@ -363,6 +365,7 @@ describe("loop disable and what a queued wrap may do (§9)", () => {
       trackIds: ["gtr"],
       mode: "once",
       onsetCount: 1,
+      sustainCount: 0,
     });
 
     expect(builds()).toBe(0);

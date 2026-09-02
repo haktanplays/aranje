@@ -47,7 +47,17 @@ describe("the steps themselves", () => {
       "allScopeTogether",
     ]);
     expect(track?.questions[0]?.prompt).toBe("Yalnız gitarı mı duydun?");
-    expect(measure?.questions[0]?.prompt).toBe("Gitar ve bası birlikte mi duydun?");
+    /*
+     * Reworded in 2V-B.2 §5, and the reason is worth keeping next to the
+     * assertion: "did you hear them together" is unanswerable when one of the
+     * two parts is below what a phone speaker radiates. The founder's honest
+     * answer was "maybe, in headphones", which is neither pass nor fail. The
+     * bass moved into an audible register and the question now names the
+     * device it is answered on.
+     */
+    expect(measure?.questions[0]?.prompt).toBe(
+      "Gitarın yanında ikinci, daha kalın partiyi telefon hoparlöründe ayırt edebildin mi?",
+    );
     /* The second one needs a bar two instruments really play in. */
     expect(measure?.passage).toBe("shared_bar");
   });
@@ -282,5 +292,69 @@ describe("hedged answers", () => {
     expect(isBatchHedged("Biraz")).toBe(true);
     expect(isBatchHedged("Evet")).toBe(false);
     expect(isBatchHedged(null)).toBe(false);
+  });
+});
+
+describe("an early finish is never a pass (2V-B.2 §3)", () => {
+  /*
+   * The escape a blocked founder needs, and the property that makes it safe
+   * to put on the screen at all: there is no combination of answers that
+   * turns a stopped run into a PASS.
+   */
+  const complete = (): BatchEnvironment => ({
+    touchPoints: 1,
+    consoleErrors: [],
+    userStorageBefore: "x",
+    userStorageAfter: "x",
+    measured: Object.fromEntries(BATCH_STEPS.map((step) => [step.id, true])),
+    trackScopeFilter: ["gtr"],
+    measureScopeFilter: ["gtr", "bass"],
+    secondTrackAudible: true,
+  });
+
+  const allAnswered = Object.fromEntries(
+    ALL_BATCH_QUESTIONS.map((question) => [question.id, question.options[0]!]),
+  );
+
+  it("passes a complete run, so the test below is about the flag alone", () => {
+    expect(batchVerdict(complete(), allAnswered)).toBe("PASS");
+  });
+
+  it("returns BLOCKED once the reader has stopped, even with everything else green", () => {
+    expect(batchVerdict({ ...complete(), endedEarly: true }, allAnswered)).toBe(
+      "BLOCKED",
+    );
+  });
+
+  it("keeps BLOCKED distinct from the ordinary unfinished run", () => {
+    /* Not reaching the end is PARTIAL; being stopped is BLOCKED. The two are
+       different reports about the product and must not collapse. */
+    const unfinished = { ...complete(), measured: { extend: true } };
+    expect(batchVerdict(unfinished, allAnswered)).toBe("PARTIAL");
+    expect(batchVerdict({ ...unfinished, endedEarly: true }, allAnswered)).toBe(
+      "BLOCKED",
+    );
+  });
+
+  it("still reports a measured break as FAIL rather than hiding it behind BLOCKED", () => {
+    /*
+     * Being stuck does not excuse the device store having moved, and the
+     * escape hatch must not be able to bury a defect: a reader who presses
+     * "Burada bitir" on a run that wrote to their real project is owed the
+     * FAIL, not a softer word for it.
+     */
+    const broken = {
+      ...complete(),
+      endedEarly: true,
+      userStorageBefore: "x",
+      userStorageAfter: "y",
+    };
+    expect(batchVerdict(broken, allAnswered)).toBe("FAIL");
+  });
+
+  it("does not let a stopped run bury a founder's breaking answer either", () => {
+    const breaking = ALL_BATCH_QUESTIONS.find((question) => question.breaking)!;
+    const answers = { ...allAnswered, [breaking.id]: BATCH_BROKEN[breaking.id]! };
+    expect(batchVerdict({ ...complete(), endedEarly: true }, answers)).toBe("FAIL");
   });
 });

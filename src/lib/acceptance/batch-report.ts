@@ -186,6 +186,20 @@ export function formatBatchResult(input: {
     `Verdict: ${verdict}`,
   );
 
+  if (verdict === "BLOCKED") {
+    /*
+     * Why the run stopped, said in the report rather than left for whoever
+     * reads the missing steps and guesses (2V-B.2 §3). A blocked run is the
+     * most valuable report the round can produce — it is the only one that
+     * names a place the product would not let a person through — so it says
+     * so plainly instead of looking like an abandoned session.
+     */
+    lines.push(
+      "Not: Test yarıda bırakıldı. Okuyucu «Burada bitir» ile durdu;" +
+        " ölçülmemiş adımlar denenmedi, geçmiş sayılmaz.",
+    );
+  }
+
   if (verdict === "PARTIAL" && input.device.touchPoints === 0) {
     lines.push(
       "Not: Bu ortam dokunmatik değil. Fiziksel kabul yalnız gerçek cihazda verilebilir.",

@@ -294,7 +294,13 @@ function selectionVerbs(input: CoveredRunInput): SelectionActions | null {
   if (!input.editing || !time.handle.selection) return null;
 
   return {
-    notice: time.handle.notice ?? null,
+    /*
+     * The listening refusal first (2V-B.2 §4). It answers the press the
+     * reader just made, so it is newer than anything the staged command left
+     * behind, and it is the sentence that stops a silent button from reading
+     * as a broken one.
+     */
+    notice: input.listening.refusal ?? time.handle.notice ?? null,
     error: time.handle.error ?? null,
     actions: selectionActions({
       song: input.song,

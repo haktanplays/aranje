@@ -12,6 +12,7 @@ import { readFileSync } from "node:fs";
 
 import { describe, expect, it } from "vitest";
 
+import { NO_AUDIBLE_NOTES } from "@/lib/playback/selection-playback";
 import { guitarTrack, melodicBar, section, song } from "@/lib/song/fixtures";
 import type { MelodicSlot, Song } from "@/lib/song/schema";
 import {
@@ -89,11 +90,16 @@ function fakeTime(
  * They reach the transport in the app; here what matters is that the surfaces
  * call them and that they are offered on the same terms as everything else.
  */
-const fakeListening = (calls: string[], looping = false) => ({
+const fakeListening = (
+  calls: string[],
+  looping = false,
+  refusal: string | null = null,
+) => ({
   audition: () => calls.push("audition"),
   toggleLoop: () => calls.push("loop"),
   stop: () => calls.push("stop-listening"),
   looping,
+  refusal,
 });
 
 const cover = (
@@ -516,5 +522,44 @@ describe("no surface carries a list of its own", () => {
     const bar = readFileSync("src/components/workspace/BarActionBar.tsx", "utf8");
     expect(bar).toContain('onSurface(actions, "measure_primary")');
     expect(bar).toContain('onSurface(actions, "more_sheet")');
+  });
+});
+
+describe("a press that cannot play says why (2V-B.2 §4)", () => {
+  /*
+   * The founder pressed "Seçimi dinle" on a physical phone and got neither
+   * sound nor sentence. Two defects were behind it — the planner refused
+   * selections that had sound in them, covered in `selection-sustain.test.ts`,
+   * and a genuine refusal returned in silence. This is the second one: a
+   * refused press must leave something on screen, or a working button and a
+   * broken one look exactly alike.
+   */
+  const withRefusal = (refusal: string | null, notice: string | null = null) => {
+    const { time } = fakeTime(covering(0, 192));
+    if (notice !== null) {
+      (time.handle as { notice: string | null }).notice = notice;
+    }
+    return coveredRun({
+      editing: true,
+      time,
+      song: subject(),
+      listening: fakeListening([], false, refusal),
+    });
+  };
+
+  it("shows the refusal rather than nothing", () => {
+    expect(withRefusal(NO_AUDIBLE_NOTES)?.verbs.notice).toBe(NO_AUDIBLE_NOTES);
+  });
+
+  it("prefers it to an older staged notice, because it answers the newer press", () => {
+    expect(withRefusal(NO_AUDIBLE_NOTES, "Seçim kopyalandı.")?.verbs.notice).toBe(
+      NO_AUDIBLE_NOTES,
+    );
+  });
+
+  it("leaves the staged notice alone when nothing was refused", () => {
+    expect(withRefusal(null, "Seçim kopyalandı.")?.verbs.notice).toBe(
+      "Seçim kopyalandı.",
+    );
   });
 });

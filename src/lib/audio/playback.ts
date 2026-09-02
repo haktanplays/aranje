@@ -804,7 +804,11 @@ export class PlaybackController {
       );
 
       engine.context.transport.ticks = plan.startTicks;
-      engine.context.transport.start();
+      /* One moment for both, so a continuation lines up with the transport
+         rather than with whenever this line happened to run. */
+      const at = engine.context.now();
+      engine.context.transport.start(at);
+      this.resumeSustainedInto(engine, plan, at);
       this.set({ status: "playing", error: null, countingIn: false });
     } catch (error) {
       /*
@@ -817,6 +821,40 @@ export class PlaybackController {
       this.selectionPlayback = null;
       this.fail(error);
     }
+  }
+
+  /**
+   * Continue whatever was already ringing when the selection opened (§4).
+   *
+   * A reader who holds the middle of a let-ring chord has selected music, and
+   * before this they heard nothing: the transport only fires events at or
+   * after its position, so every note that began earlier was simply lost, and
+   * the plan refused the selection outright rather than admit it.
+   *
+   * The continuation goes through the *same* resume the pause uses. Nothing
+   * is re-struck — `activeVoicesAt` skips any onset at or after the resume
+   * tick, so the boundary gains no attack the reader never wrote — and a
+   * slide or vibrato caught mid-flight continues from the pitch and phase it
+   * had actually reached.
+   *
+   * The window keeps the plan's track filter and drops its lower bound, and
+   * that asymmetry is the whole point rather than an oversight: a
+   * continuation from an unselected instrument is music the reader asked not
+   * to hear, while a continuation from before the selection's first tick is
+   * exactly what is being asked for. Zero is "no lower bound", not a
+   * position — the upper bound is already enforced by the resume itself.
+   */
+  private resumeSustainedInto(
+    engine: Engine,
+    plan: SelectionPlaybackPlan,
+    at: number,
+  ): void {
+    if (plan.sustainCount === 0) return;
+    engine.expression.resumeAt(plan.startTicks, at, {
+      startTicks: 0,
+      endTicks: plan.endTicks,
+      trackIds: plan.trackIds,
+    });
   }
 
   /**

@@ -312,7 +312,41 @@ const SECOND_GUITAR = fill({
   10: guitarAt(2, 9),
 });
 
-const MOTIF_BASS = fill({ 0: bassAt(0, 3), 8: bassAt(1, 3) });
+/*
+ * The bass of the shared bar — written to be *heard*, not just to exist
+ * (2V-B.2 §5).
+ *
+ * The founder ran 11B on a physical phone and could not tell the second
+ * instrument was there at all: possibly audible in headphones, not on the
+ * bare speaker. The old part sat on G1 and C2 — fundamentals near 49 Hz and
+ * 65 Hz, which a phone speaker cannot reproduce and does not try to. The
+ * question was therefore unanswerable rather than failed.
+ *
+ * Two honest musical changes, and no dishonest ones. First the register: the
+ * same walking shape moved onto the D and G strings, so the fundamentals land
+ * near 98-131 Hz and — far more importantly on a small speaker — the second
+ * and third harmonics land in the band a phone actually radiates. Second the
+ * rhythm: the guitar states this bar on the beat, so the bass answers off it.
+ * A reader who cannot separate two instruments by timbre on a tinny speaker
+ * can still separate them by *when they move*.
+ *
+ * The downbeat is deliberately kept together with the guitar's power chord.
+ * Take that away and the two parts merely alternate, which is a duet nobody
+ * has to hear as two things; keeping it means 11B is still asking whether two
+ * instruments sound at once.
+ *
+ * What is not done here: no gain trick, no added click, no octave-doubling to
+ * fake presence, and nothing changed outside this fixture. A bass that needed
+ * the engine bent to be audible would be telling us about the engine, and
+ * this file has no business answering that.
+ */
+const MOTIF_BASS = fill({
+  0: bassAt(2, 5),
+  3: bassAt(2, 7),
+  6: bassAt(3, 5),
+  10: bassAt(2, 7),
+  13: bassAt(2, 5),
+});
 const SECOND_BASS = fill({ 0: bassAt(1, 5), 8: bassAt(0, 5) });
 
 const bar = (

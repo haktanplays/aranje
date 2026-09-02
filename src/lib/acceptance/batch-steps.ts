@@ -291,8 +291,19 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     expect: { kind: "no_write" },
     questions: [
       {
+        /*
+         * Asked about what a phone speaker can actually settle (2V-B.2 §5).
+         *
+         * "Did you hear them together" is unanswerable when one of the two is
+         * below what the speaker radiates: the founder's honest report was
+         * "maybe, in headphones" — which is neither a pass nor a fail, and a
+         * question that cannot be answered wrongly cannot be answered rightly
+         * either. The bass was rewritten into a register the device can
+         * reproduce; the question now names the device it is answered on.
+         */
         id: "allScopeTogether",
-        prompt: "Gitar ve bası birlikte mi duydun?",
+        prompt:
+          "Gitarın yanında ikinci, daha kalın partiyi telefon hoparlöründe ayırt edebildin mi?",
         options: YES_NO,
         breaking: true,
       },
@@ -502,9 +513,18 @@ export type BatchEnvironment = {
   readonly measureScopeFilter?: readonly string[] | null;
   /** Whether the second instrument in the shared bar really made a sound. */
   readonly secondTrackAudible?: boolean | null;
+  /**
+   * The reader pressed "Burada bitir" rather than reaching the end (§3).
+   *
+   * A separate fact from "some steps were not measured", which is what
+   * `measured` already records. Both are true of an early finish; only this
+   * one says the reader was *stuck*, and that is the sentence a defect report
+   * is built from.
+   */
+  readonly endedEarly?: boolean;
 };
 
-export type BatchVerdict = "PASS" | "FAIL" | "PARTIAL";
+export type BatchVerdict = "PASS" | "FAIL" | "PARTIAL" | "BLOCKED";
 
 /**
  * What this run is entitled to claim.
@@ -542,6 +562,19 @@ export function batchVerdict(
   if (breaking.some((question) => answers[question.id] === BATCH_BROKEN[question.id])) {
     return "FAIL";
   }
+
+  /*
+   * The reader stopped because they could not go on (2V-B.2 §3).
+   *
+   * Below every measured break and above every unfinished-run outcome. Below,
+   * because a device store that moved is a defect whether or not the founder
+   * was stuck, and a `BLOCKED` that swallowed it would be this escape hatch
+   * quietly destroying evidence. Above `PARTIAL`, because "ran out of steps"
+   * and "was stopped by the product" are different facts and only the second
+   * one is a bug report. What it can never be is `PASS`: every return of that
+   * value is below this line.
+   */
+  if (environment.endedEarly === true) return "BLOCKED";
 
   /* A step that was skipped was not measured, and a skip is never a pass. */
   if (BATCH_STEPS.some((step) => environment.measured[step.id] == null)) return "PARTIAL";

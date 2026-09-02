@@ -114,7 +114,7 @@ export function SelectionActionArea({
           selection={bars.handle.selection}
           actions={measureActions({ song, bars, looping: listening.looping })}
           summary={bars.handle.summary ?? "Ölçü seçimi"}
-          notice={bars.handle.notice}
+          notice={listening.refusal ?? bars.handle.notice}
           preview={bars.handle.preview}
           hasClipboard={bars.handle.hasClipboard}
           clipboardScope={bars.handle.clipboardScope}

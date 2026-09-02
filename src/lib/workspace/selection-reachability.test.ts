@@ -187,6 +187,7 @@ function runnerResults(): Readonly<Record<string, string>> {
       toggleLoop: () => calls.push("transport.playSelection(loop)"),
       stop: () => calls.push("transport.stopSelection"),
       looping: false,
+      refusal: null,
     },
     openMore: () => calls.push("sheet.more"),
   });

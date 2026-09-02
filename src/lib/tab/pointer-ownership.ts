@@ -58,6 +58,21 @@ export type PointerOwner =
   | "measure"
   | "pen"
   | "selection"
+  /**
+   * A drag on empty staff background, panning the timeline (2V-B.2 §6).
+   *
+   * The founder's first natural move, and the one the editor did not have.
+   * Asked to extend a selection past the right edge, they finished it at the
+   * visible edge, released, and then dragged the background to bring the next
+   * bars into view — which did nothing, because every press on the staff
+   * belonged to the selection gesture whether or not the reader was selecting.
+   *
+   * It sits below `selection` in the ranking and is chosen instead of it only
+   * when the press cannot be a selection: no pen, nothing held under the
+   * finger, and — the part that makes it safe — a selection already exists
+   * that the reader is plainly navigating rather than replacing.
+   */
+  | "background_pan"
   | "none";
 
 /**
@@ -100,12 +115,33 @@ export function pointerOwner(input: {
   readonly penArmed: boolean;
   /** True when this surface has a selection gesture to offer at all. */
   readonly selectionAvailable: boolean;
+  /**
+   * True when the pointer went down on staff background with nothing on it
+   * — no note, no handle, no header (2V-B.2 §6).
+   */
+  readonly onEmptyBackground?: boolean;
+  /** True when the reader already holds a selection they might be navigating. */
+  readonly hasSelection?: boolean;
 }): PointerOwner {
   if (input.noteRangeOwning === true) return "note_range";
   if (input.barRangeOwning === true) return "bar_range";
   if (input.onDurationHandle === true) return "duration";
   if (input.onMeasureHeader === true) return "measure";
   if (input.penArmed) return "pen";
+  /*
+   * Panning is offered *before* the selection gesture, and only on the narrow
+   * case that cannot be anything else: empty background, under a reader who
+   * is already holding a selection (§6).
+   *
+   * Both halves matter. Without "empty", this would take presses on notes,
+   * and the reader could no longer select by holding one. Without "has a
+   * selection", the very first long press on an empty staff would pan instead
+   * of selecting, and there would be no way to select an empty range at all —
+   * which is how a reader writes into a bar that has nothing in it yet.
+   */
+  if (input.onEmptyBackground === true && input.hasSelection === true) {
+    return "background_pan";
+  }
   return input.selectionAvailable ? "selection" : "none";
 }
 
@@ -119,6 +155,13 @@ export function pointerOwner(input: {
  * loses a drag, so the smaller hammer is the right one.
  */
 export function stopsPageScroll(owner: PointerOwner): boolean {
+  /*
+   * A background pan is deliberately absent. It moves the tab's own scroller,
+   * so the page scrolling underneath it is the same motion rather than a
+   * competing one — and taking the page away from a finger on the largest
+   * surface in the editor is exactly the "bigger hammer" this function exists
+   * to avoid.
+   */
   return (
     owner === "duration" || owner === "bar_range" || owner === "note_range"
   );

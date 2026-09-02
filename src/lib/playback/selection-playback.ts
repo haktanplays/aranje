@@ -38,6 +38,7 @@
  * two audiences, and a test that holds them together.
  */
 import { barTimeline, buildNotatedPlan } from "@/lib/audio/schedule";
+import type { NotatedDrum, NotatedNote } from "@/lib/audio/schedule";
 import type { SelectionDescriptor } from "@/lib/song/selection-descriptor";
 import type { Song } from "@/lib/song/schema";
 
@@ -92,6 +93,54 @@ export function windowEvents(song: Song, window: PlaybackWindow) {
 }
 
 /**
+ * Is this note still sounding when the window opens?
+ *
+ * A drum hit is a strike with no tail worth continuing, so only written notes
+ * can sustain across a boundary. Half-open at both ends for the same reason
+ * `inWindow` is: a note that ends exactly on the first tick of the window has
+ * finished, and one that begins exactly there is an onset rather than a
+ * continuation.
+ */
+function sustainsInto(
+  window: Pick<PlaybackWindow, "startTicks" | "trackIds">,
+  event: NotatedNote | NotatedDrum,
+): boolean {
+  if (event.kind !== "note") return false;
+  if (!window.trackIds.includes(event.trackId)) return false;
+  return event.time < window.startTicks && event.time + event.durationTicks > window.startTicks;
+}
+
+/**
+ * The notes that were already ringing when this window opened (2V-B.2 §4).
+ *
+ * ## Why this exists, and why it is not `windowEvents` with a wider predicate
+ *
+ * `inWindow` is onset-based, and for *scheduling* that is exactly right: a
+ * note that began before the selection must not be struck again at the
+ * boundary, because that would put an attack in the music the reader never
+ * wrote (§3).
+ *
+ * But the same predicate was also answering a different question — *is there
+ * anything here to hear?* — and there it is simply wrong. The founder's
+ * physical run measured the consequence: on a fixture whose first bar is a
+ * let-ring power chord held across eight slots, selecting slots 1-3 of that
+ * chord reported `no_audible_notes` while the chord was plainly sounding.
+ * Selection playback appeared to work only when the reader happened to start
+ * their selection exactly on a struck onset, which is what "it only played
+ * under a narrow condition" looks like from the outside.
+ *
+ * So membership stays onset-based and audibility becomes overlap-based, and
+ * the gap between them is filled by the *resume* path rather than by a second
+ * strike: `activeVoicesAt` already knows how to continue a mid-flight note
+ * from the pitch and phase it had reached, and the engine already does it on
+ * every pause/resume. A selection that opens mid-chord now continues that
+ * chord instead of pretending the music starts where the reader's finger did.
+ */
+export function sustainingEvents(song: Song, window: PlaybackWindow) {
+  return buildNotatedPlan(song).events.filter((event) => sustainsInto(window, event));
+}
+
+/**
  * How long a note may sound before the window closes on it.
  *
  * §3 draws a careful line here. A note that *begins* inside the selection is
@@ -126,8 +175,17 @@ export type SelectionPlaybackPlan = {
   /** Whose notes may sound. Everything else is silent for the duration. */
   readonly trackIds: readonly string[];
   readonly mode: SelectionPlaybackMode;
-  /** How many struck onsets are in there. Never zero in a plan that is `ok`. */
+  /** How many struck onsets are in there. May be zero — see `sustainCount`. */
   readonly onsetCount: number;
+  /**
+   * How many notes were already ringing when the window opened (2V-B.2 §4).
+   *
+   * A selection can be entirely made of these — the middle of a held chord
+   * has sound in it and no onsets at all — so `onsetCount + sustainCount` is
+   * what "there is something to hear" means, and it is never zero in a plan
+   * that is `ok`.
+   */
+  readonly sustainCount: number;
 };
 
 /**
@@ -202,12 +260,29 @@ export function planSelectionPlayback(
    * write into one — so a bar of drums has an onset count of zero and would
    * have had "Seçimi dinle" greyed on a selection full of noise.
    */
-  const audible = windowEvents(song, { startTicks, endTicks, trackIds });
-  if (audible.length === 0) return { ok: false, reason: "no_audible_notes" };
+  const window = { startTicks, endTicks, trackIds };
+  const audible = windowEvents(song, window);
+  /*
+   * And what was already sounding when the window opened (2V-B.2 §4). A
+   * reader who selects the middle of a let-ring chord has selected music, and
+   * the resume path can play it; refusing here was the measured cause of
+   * "selection playback only works sometimes" on the founder's phone.
+   */
+  const sustaining = sustainingEvents(song, window);
+  if (audible.length === 0 && sustaining.length === 0) {
+    return { ok: false, reason: "no_audible_notes" };
+  }
 
   return {
     ok: true,
-    plan: { startTicks, endTicks, trackIds, mode, onsetCount: audible.length },
+    plan: {
+      startTicks,
+      endTicks,
+      trackIds,
+      mode,
+      onsetCount: audible.length,
+      sustainCount: sustaining.length,
+    },
   };
 }
 

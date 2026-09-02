@@ -49,6 +49,10 @@ import { TabGutter } from "@/components/workspace/TabGutter";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
 import { pointerOwner } from "@/lib/tab/pointer-ownership";
+import {
+  staffPointerHandlers,
+  useBackgroundPan,
+} from "@/lib/ui/use-background-pan";
 import type { NoteRangeGesture } from "@/lib/ui/use-note-range-drag";
 import { xAtTicks } from "@/lib/tab/song-axis";
 import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
@@ -254,6 +258,21 @@ export function TabCanvas({
    */
   const staffPress = noteRange && owner !== "pen" ? noteRange.handlers : null;
 
+  /*
+   * Dragging the empty staff moves the camera (2V-B.2 §6).
+   *
+   * Offered only while a selection is held and no pen is armed — the two
+   * conditions `pointerOwner` ranks `background_pan` behind — so the very
+   * first long press on an empty staff still selects, and a reader holding a
+   * pen still writes where they touch. The press itself is filtered again at
+   * pointerdown, because "is there music under this finger" is a fact about
+   * one press rather than about the render.
+   */
+  const pan = useBackgroundPan({
+    scrollRef,
+    enabled: selectionBand != null && onPenTarget === undefined,
+  });
+
   if (timeline.kind === "unsupported") {
     if (!pitchedEntry) {
       return (
@@ -323,15 +342,7 @@ export function TabCanvas({
           className="relative flex"
           style={{ width: surface.contentWidthPx }}
           ref={contentRef}
-          {...staffPress}
-          onPointerMove={(event) => {
-            staffPress?.onPointerMove(event);
-            onHandleMove?.(event);
-          }}
-          onPointerUp={(event) => {
-            staffPress?.onPointerUp(event);
-            onHandleUp?.();
-          }}
+          {...staffPointerHandlers({ staffPress, pan, onHandleMove, onHandleUp })}
         >
           <TabGutter labels={labels} rowHeight={rowHeight} bodyHeight={bodyHeight} />
 

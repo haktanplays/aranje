@@ -197,9 +197,12 @@ export function EditorActionBatch() {
       trackScopeFilter: round.scopeFilters.trackScope ?? null,
       measureScopeFilter: round.scopeFilters.measureScope ?? null,
       secondTrackAudible: (round.support?.sharedBar?.trackIds.length ?? 0) >= 2,
+      /* A run the reader stopped can only be BLOCKED, never PASS (§3). */
+      endedEarly: round.endedEarly,
     }),
     [
       client.touchPoints,
+      round.endedEarly,
       round.consoleErrors,
       round.measured,
       round.scopeFilters,
@@ -390,6 +393,28 @@ export function EditorActionBatch() {
                       .map((name) => SHORTFALL_TEXT[name] ?? name)
                       .join(" ")}
               </p>
+              {/*
+                And which parts arrived, one line each (2V-B.2 §3).
+                The founder reached step 10, did exactly what the instruction
+                said, and met a disabled button with nothing to read. A
+                checklist turns "it is stuck" into "it is waiting for this".
+              */}
+              <ul data-batch-checklist className="space-y-0.5">
+                {round.evidenceItems.map((item) => (
+                  <li
+                    key={item.id}
+                    data-batch-evidence-item={`${item.id}:${item.present ? "yes" : "no"}`}
+                    className={`text-[11px] ${item.present ? "text-muted" : "text-reject"}`}
+                  >
+                    {item.present ? "✓" : "•"} {item.label}
+                  </li>
+                ))}
+              </ul>
+              {round.evidenceHint === null ? null : (
+                <p data-batch-hint className="text-bronze text-xs">
+                  {round.evidenceHint}
+                </p>
+              )}
               {round.evidence.refused.length > 0 ? (
                 <p data-batch-refused className="text-muted text-[10px]">
                   Reddedilen olay: {round.evidence.refused.map((entry) => entry.refusal).join(", ")}
@@ -452,6 +477,29 @@ export function EditorActionBatch() {
                     : "Sonraki adım"}
                 </Big>
               </div>
+              {/*
+                Two ways out of a step that will not complete (§3).
+
+                "Tekrar dene" clears this step's evidence so the sequence can
+                be attempted again without restarting all thirteen — the
+                alternative a stuck reader had was to abandon the run.
+
+                "Burada bitir" ends the round where it stands. It cannot
+                produce a PASS: the steps never reached stay unmeasured and
+                `endedEarly` forces BLOCKED, so what it produces is a report
+                that says the founder was stopped, which is the most useful
+                thing a blocked run can hand back.
+              */}
+              {round.judgement.passed ? null : (
+                <div className="flex gap-2">
+                  <Big testId="retry-step" tone="plain" onClick={round.retryStep}>
+                    Tekrar dene
+                  </Big>
+                  <Big testId="end-early" tone="plain" onClick={round.endEarly}>
+                    Burada bitir ve sonucu oluştur
+                  </Big>
+                </div>
+              )}
               <p data-batch-verdict className="text-muted text-[10px]">
                 Şu anki durum: {batchVerdict(environment, round.answers)}
               </p>

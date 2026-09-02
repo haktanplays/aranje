@@ -17,6 +17,7 @@ const plan = (
   trackIds: ["gtr"],
   mode: "loop",
   onsetCount: 3,
+  sustainCount: 0,
   ...over,
 });
 

@@ -55,6 +55,11 @@ import {
   type IsolationTruth,
 } from "@/lib/acceptance/isolation-truth";
 import { songSupport, type SongSupport } from "@/lib/acceptance/song-support";
+import {
+  nextEvidenceHint,
+  stepEvidence,
+  type EvidenceItem,
+} from "@/lib/acceptance/step-evidence";
 import type { AcceptanceSession } from "@/lib/acceptance/session";
 import {
   describeTask,
@@ -121,6 +126,16 @@ export type AcceptanceRound = {
   /** The task, bound to the Song on screen, or why it cannot be asked. */
   readonly envelope: TaskEnvelope | null;
   readonly support: SongSupport;
+  /** Which pieces of this step's evidence have arrived, and which have not. */
+  readonly evidenceItems: readonly EvidenceItem[];
+  /** One sentence naming the next press, or null when nothing is due. */
+  readonly evidenceHint: string | null;
+  /** True when the reader pressed "Burada bitir" instead of finishing. */
+  readonly endedEarly: boolean;
+  /** Clear this step's evidence and try the sequence again. */
+  retryStep(): void;
+  /** Stop now and produce a BLOCKED result that keeps what was measured. */
+  endEarly(): void;
   readonly answers: BatchAnswers;
   readonly evidence: StepEvidence;
   /** What is still missing before this step may pass. */
@@ -170,6 +185,7 @@ export function useAcceptanceRound(
   const [answers, setAnswers] = useState<BatchAnswers>({});
   const [measured, setMeasured] = useState<Record<string, boolean | null>>({});
   const [ledgers, setLedgers] = useState<readonly ActionLedger[]>([]);
+  const [endedEarly, setEndedEarly] = useState(false);
   const [isolation, setIsolation] = useState<IsolationTruth | null>(null);
   const [consoleErrors, setConsoleErrors] = useState<readonly string[]>([]);
   const [traces, setTraces] = useState<Record<string, BatchTrace>>({});
@@ -356,6 +372,31 @@ export function useAcceptanceRound(
   const answered = step ? stepAnswered(step.id, answers) : false;
   const mayAdvance = judgement.passed && answered;
 
+  /*
+   * What this step is still waiting for, in the reader's words (§3).
+   *
+   * Derived from the same trace the gate reads, so the checklist cannot say a
+   * step is done while the button stays disabled — which is the shape of the
+   * dead end it exists to prevent.
+   */
+  const evidenceItems = useMemo(
+    () => (step ? stepEvidence(step.expect, trace) : []),
+    [step, trace],
+  );
+  const evidenceHint = useMemo(
+    () => (step ? nextEvidenceHint(step.expect, trace) : null),
+    [step, trace],
+  );
+
+  /** Start this step's evidence again, without losing the round (§3). */
+  const retryStep = useCallback(() => {
+    if (!step) return;
+    setTraces((all) => ({ ...all, [step.id]: EMPTY_TRACE }));
+    setEvidenceByStep((all) => ({ ...all, [step.id]: EMPTY_EVIDENCE }));
+    setScreen("song");
+  }, [step]);
+
+
   /**
    * Close the round, and assemble the four domains (§4).
    *
@@ -464,6 +505,22 @@ export function useAcceptanceRound(
     setScreen("song");
   }, [closeRound, session, step, stepIndex, traces]);
 
+  /**
+   * Stop here and produce an honest result (§3).
+   *
+   * The steps that were never reached stay unmeasured, so the verdict can
+   * only be `BLOCKED` — there is no path from this button to a `PASS`, which
+   * is the property that makes it safe to offer at all. Everything the round
+   * did measure is kept, because a founder who got nine steps in has told us
+   * nine steps' worth of truth.
+   */
+  const endEarly = useCallback(() => {
+    setEndedEarly(true);
+    closeRound();
+    setStepIndex(BATCH_STEPS.length);
+    setScreen("task");
+  }, [closeRound]);
+
   return {
     sessionId,
     screen,
@@ -475,8 +532,13 @@ export function useAcceptanceRound(
     answers,
     evidence,
     judgement,
+    evidenceItems,
+    evidenceHint,
     answered,
     mayAdvance,
+    endedEarly,
+    retryStep,
+    endEarly,
     measured,
     ledgers,
     isolation,
@@ -500,6 +562,7 @@ export function useAcceptanceRound(
       setScreen("song");
     },
     restart: () => {
+      setEndedEarly(false);
       setStepIndex(0);
       setAnswers({});
       setMeasured({});
