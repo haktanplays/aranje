@@ -1,0 +1,689 @@
+{
+  "generatedAt": "2026-09-02T13:14:59.421Z",
+  "sha": "b039d9c",
+  "idleRuns": 10,
+  "passed": 136,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "idle#1: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#1: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#1: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#1: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#1: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#1: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#1: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#1: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#1: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#1: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#1: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#1: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#1: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#2: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#2: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#2: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#2: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#2: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#2: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#2: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#2: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#2: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#2: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#2: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#2: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#2: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#3: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#3: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#3: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#3: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#3: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#3: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#3: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#3: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#3: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#3: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#3: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#3: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#3: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#4: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#4: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#4: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#4: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#4: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#4: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#4: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#4: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#4: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#4: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#4: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#4: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#4: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#5: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#5: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#5: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#5: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#5: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#5: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#5: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#5: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#5: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#5: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#5: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#5: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#5: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#6: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#6: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#6: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#6: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#6: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#6: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#6: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#6: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#6: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#6: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#6: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#6: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#6: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#7: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#7: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#7: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#7: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#7: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#7: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#7: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#7: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#7: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#7: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#7: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#7: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#7: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#8: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#8: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#8: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#8: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#8: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#8: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#8: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#8: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#8: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#8: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#8: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#8: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#8: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#9: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#9: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#9: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#9: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#9: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#9: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#9: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#9: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#9: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#9: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#9: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#9: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#9: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#10: a step nobody touched reports no evidence",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#10: \"Sonraki adım\" is drawn disabled",
+      "pass": true,
+      "detail": "disabled=true"
+    },
+    {
+      "name": "idle#10: every checklist line is unticked",
+      "pass": true,
+      "detail": "held:no, extended:no"
+    },
+    {
+      "name": "idle#10: the gate names this step, not \"an event\"",
+      "pass": true,
+      "detail": "Editörden henüz bu adıma ait kanıt gelmedi."
+    },
+    {
+      "name": "idle#10: nothing is counted as measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "idle#10: answering every question passes nothing",
+      "pass": true,
+      "detail": "answered=2 evidence=missing disabled=true"
+    },
+    {
+      "name": "idle#10: pressing the disabled button does not advance",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13 → 1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "idle#10: the result is BLOCKED",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#10: no step claims its evidence arrived",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#10: every step is reported as never attempted",
+      "pass": true,
+      "detail": "13 of 13"
+    },
+    {
+      "name": "idle#10: no hearing is reported, because nobody was asked",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#10: the block does not contradict itself",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "idle#10: console errors is 0",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "restart: step 1 really was performed first",
+      "pass": true,
+      "detail": "ready · Editör kanıtı geldi."
+    },
+    {
+      "name": "restart: the round really had measured something before it restarted",
+      "pass": true,
+      "detail": "{\"extend\":{\"evidence\":\"valid\",\"isolation\":\"held\"},\"openMore\":{\"evidence\":\"valid\",\"isolation\":\"held\"}}"
+    },
+    {
+      "name": "restart: the round comes back at step 1 with nothing measured",
+      "pass": true,
+      "detail": "{} · Kanıtı gelen adım: 0/13"
+    },
+    {
+      "name": "restart: it comes back at step 1 itself",
+      "pass": true,
+      "detail": "1 · Power chord seç, «Devam»a dokun · 1/13"
+    },
+    {
+      "name": "restart: last run's extension is not inherited",
+      "pass": true,
+      "detail": "missing · held:yes, extended:no"
+    },
+    {
+      "name": "restart: it is a new session, so a stale event cannot satisfy it",
+      "pass": true,
+      "detail": "2vb1-uj0oq3u2 → 2vb1-hvvz7zkn"
+    }
+  ]
+}

@@ -14,8 +14,16 @@ import {
 } from "@/lib/acceptance/isolation-truth";
 import type { ActionLedger } from "@/lib/acceptance/transaction-ledger";
 import {
+  buildStepRows,
+  reportInvariants,
+  EVIDENCE_TEXT,
+  HUMAN_TEXT,
+  ISOLATION_TEXT,
+  type StepRow,
+  type StepState,
+} from "@/lib/acceptance/step-rows";
+import {
   ALL_BATCH_QUESTIONS,
-  BATCH_STEPS,
   batchVerdict,
   isBatchHedged,
   type BatchAnswers,
@@ -28,23 +36,6 @@ export type BatchDevice = {
   readonly platform: string;
   readonly touchPoints: number;
   readonly userAgent: string;
-};
-
-/** What each step's measurement is called in the block. */
-const MEASURED: Readonly<Record<string, string>> = {
-  extend: "yazma yok",
-  openMore: "yazma yok",
-  listenOnce: "yazma yok",
-  listenLoop: "yazma yok",
-  pauseResume: "yazma yok",
-  copyPaste: "üretim olayı + tek yazma + geri al + ileri al bayt-eş",
-  duplicate: "üretim olayı + tek atomik yazma",
-  move: "üretim olayı + tek atomik yazma",
-  repeat: "üretim olayı + tek atomik yazma",
-  deleteUndo: "üretim olayı + tek yazma + geri al bayt-eş",
-  trackScope: "yazma yok",
-  measureScope: "yazma yok",
-  finish: "yazma yok",
 };
 
 /**
@@ -78,9 +69,6 @@ function ledgerLine(ledger: ActionLedger): string {
 const scopeText = (filter: readonly string[] | null | undefined): string =>
   filter === undefined || filter === null ? "ölçülmedi" : filter.join("+");
 
-const mark = (value: boolean | null | undefined): string =>
-  value === true ? "geçti" : value === false ? "KALDI" : "ölçülmedi";
-
 /**
  * What the environment is, said plainly.
  *
@@ -93,6 +81,39 @@ function environmentLine(device: BatchDevice): string {
     : `dokunmatik cihaz (dokunma ${device.touchPoints})`;
 }
 
+/**
+ * The founder's own answer to 11B, mapped to the report's vocabulary.
+ *
+ * Unanswered is "ölçülmedi" and never anything else — the whole defect was a
+ * missing answer being filled in from elsewhere.
+ */
+function heardAnswer(answers: BatchAnswers): string {
+  const given = answers.allScopeTogether;
+  if (given === undefined || given === null || given === "") return "ölçülmedi";
+  if (given === "Evet") return "evet";
+  if (given === "Hayır") return "HAYIR";
+  return given.toLocaleLowerCase("tr");
+}
+
+/**
+ * One step, as three lines that cannot be collapsed into each other.
+ *
+ * `eylem kanıtı`, `izolasyon` and `cevap` are three different questions with
+ * three different answers, and the block that produced the false green had
+ * written them as one: "ölçüm: yazma yok → geçti" said an isolation
+ * invariant, called it a measurement, and concluded a pass — in a step whose
+ * action had never been performed (2V-B.2c §3 step 11).
+ */
+function stepLines(row: StepRow): readonly string[] {
+  return [
+    `  ${row.title}`,
+    `    beklenen: ${row.required}`,
+    `    eylem kanıtı: ${row.survey ? "gerekmiyor" : EVIDENCE_TEXT[row.evidence]}`,
+    `    izolasyon: ${ISOLATION_TEXT[row.isolation]}`,
+    `    cevap: ${HUMAN_TEXT[row.human]} (${row.answers})`,
+  ];
+}
+
 export function formatBatchResult(input: {
   readonly buildSha: string;
   readonly device: BatchDevice;
@@ -103,7 +124,16 @@ export function formatBatchResult(input: {
   readonly isolation?: IsolationTruth | null;
   /** One row per write action, plus the read-only copy evidence (§5). */
   readonly ledgers?: readonly ActionLedger[];
+  /**
+   * What the round recorded about each step, keyed by step id (2V-B.2c §3).
+   *
+   * Optional so a caller that only has answers still produces a readable
+   * block — every step it omits is `blocked` and `not_measured`, which is the
+   * honest reading of "this round never told us".
+   */
+  readonly states?: Readonly<Record<string, StepState | undefined>>;
 }): string {
+  const rows = buildStepRows({ states: input.states ?? {}, answers: input.answers });
   const verdict = batchVerdict(input.environment, input.answers);
   const unanswered = ALL_BATCH_QUESTIONS.filter(
     (question) => !input.answers[question.id],
@@ -111,9 +141,16 @@ export function formatBatchResult(input: {
   const hedged = ALL_BATCH_QUESTIONS.filter((question) =>
     isBatchHedged(input.answers[question.id] ?? null),
   ).length;
-  const unmeasured = BATCH_STEPS.filter(
-    (step) => input.environment.measured[step.id] == null,
-  ).length;
+  /*
+   * Counted off the rows, never off a second source (§2 rule 8). This line
+   * used to read `environment.measured`, which is the same shape but a
+   * different value, and "eight adım ölçülmedi" beside eight rows saying
+   * "geçti" is exactly the contradiction that made the block untrustworthy.
+   */
+  const unproven = rows.filter((row) => row.evidence !== "valid").length;
+  const unreached = rows.filter((row) => row.evidence === "blocked").length;
+
+  const heard = heardAnswer(input.answers);
 
   const lines: string[] = [
     "Editör eylem kabulü (2V-B.1)",
@@ -152,39 +189,51 @@ export function formatBatchResult(input: {
     "Dinleme kapsamı",
     `  11A filtresi: ${scopeText(input.environment.trackScopeFilter)}`,
     `  11B filtresi: ${scopeText(input.environment.measureScopeFilter)}`,
-    `  İkinci enstrüman duyuldu: ${
-      input.environment.secondTrackAudible === true
-        ? "evet"
-        : input.environment.secondTrackAudible === false
-          ? "HAYIR"
-          : "ölçülmedi"
-    }`,
+    /*
+     * Hearing is whatever the founder said, and nothing else (2V-B.2c §12).
+     *
+     * This line used to read `environment.secondTrackAudible`, which the page
+     * computed from the fixture having two tracks. So a run that correctly
+     * reported `BLOCKED`, with 11B unanswered and its row showing "—", also
+     * announced "İkinci enstrüman duyuldu: evet" — a perception nobody
+     * supplied, in the same report that said nobody had been asked.
+     *
+     * The technical fact is still worth having and is printed above as the
+     * 11B filter: that says which instruments were *planned*, which is a
+     * different claim from which instruments were *heard*.
+     */
+    `  İkinci enstrüman duyuldu: ${heard}`,
     "",
     "Adımlar (sayfanın ölçtüğü · senin söylediğin)",
   ];
 
-  for (const step of BATCH_STEPS) {
-    const said = step.questions
-      .map((question) => `${question.id}=${input.answers[question.id] ?? "—"}`)
-      .join(", ");
-    lines.push(
-      `  ${step.title}`,
-      `    ölçüm: ${MEASURED[step.id] ?? "—"} → ${mark(
-        input.environment.measured[step.id],
-      )}`,
-      `    cevap: ${said === "" ? "—" : said}`,
-    );
-  }
+  for (const row of rows) lines.push(...stepLines(row));
 
   lines.push(
     "",
-    `Ölçülmemiş adım: ${unmeasured}`,
+    `Kanıtı gelmemiş adım: ${unproven}`,
+    `Hiç denenmemiş adım: ${unreached}`,
     `Cevaplanmamış soru: ${unanswered}`,
     `Kararsız cevap: ${hedged}`,
     `Kullanıcı notu: ${input.note.trim() === "" ? "—" : input.note.trim()}`,
     "",
     `Verdict: ${verdict}`,
   );
+
+  /*
+   * The block checks itself before a founder is asked to trust it (§3 step
+   * 13). Each name is a way this report has been, or could be, internally
+   * contradictory — a pass with an unproven step, a hearing nobody supplied.
+   * On `b039d9c` the last of those was printed silently; here it is printed
+   * as a defect of the report, in the report.
+   */
+  const violations = reportInvariants({ rows, verdict, heard });
+  if (violations.length > 0) {
+    lines.push(
+      `Tutarsızlık: ${violations.join(", ")}` +
+        " — bu blok kendi içinde çelişiyor, sonucunu geçerli sayma.",
+    );
+  }
 
   if (verdict === "BLOCKED") {
     /*

@@ -26,6 +26,13 @@
  * question can pass (§14).
  */
 import type { WorkspaceEditAction } from "@/lib/song/workspace-events";
+import {
+  contractMet,
+  isolationHeld,
+  writesSong,
+  type StepContract,
+} from "@/lib/acceptance/step-contract";
+import { EMPTY_WITNESS, type WitnessFacts } from "@/lib/acceptance/production-witness";
 
 export type BatchStepId =
   | "extend"
@@ -50,15 +57,16 @@ export type BatchStepId =
  * Judged against the trace of the project record and against the production
  * events the workspace published — never against "the bytes changed".
  */
-export type BatchExpectation =
-  /** Nothing may be written: one state, and the revision never moves. */
-  | { readonly kind: "no_write" }
-  /** Exactly one committed edit: one new state, revision up by one. */
-  | { readonly kind: "one_write"; readonly action: WorkspaceEditAction }
-  /** Written, then taken back: ends byte-identical to where it started. */
-  | { readonly kind: "undo_restores"; readonly action: WorkspaceEditAction }
-  /** Written, taken back, put forward again: ends on the written bytes. */
-  | { readonly kind: "redo_returns"; readonly action: WorkspaceEditAction };
+/**
+ * What a step requires, defined once in `step-contract.ts` (2V-B.2c §3).
+ *
+ * The name is kept because every surface already asks a step for its
+ * `expect`; what changed is that the value is now a contract demanding
+ * *positive* evidence rather than a description of what must not happen.
+ * There is no `no_write` member any more, and that absence is the fix: it was
+ * the only expectation a step could satisfy by having nothing done to it.
+ */
+export type BatchExpectation = StepContract;
 
 export type BatchQuestion = {
   readonly id: string;
@@ -104,7 +112,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "1 · Power chord seç, «Devam»a dokun",
     passage: "held_power_chord",
     watchFor: "Seçim başladığı yerden ileri uzasın; başı kaymasın.",
-    expect: { kind: "no_write" },
+    expect: { kind: "selection_extended" },
     questions: [
       {
         id: "extendVisible",
@@ -125,7 +133,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "2 · Nota aralığı seç, «Daha fazla»yı aç",
     passage: "any_written_bar",
     watchFor: "Açılan listede «Seçimi dinle» ve «Seçimden döngü» olsun.",
-    expect: { kind: "no_write" },
+    expect: { kind: "actions_revealed" },
     questions: [
       {
         id: "moreHasListen",
@@ -147,7 +155,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "3 · Seçimi bir kez dinle",
     passage: "any_written_bar",
     watchFor: "Seçimin başından başlasın, yalnız seçimi çalsın, bir kez bitsin.",
-    expect: { kind: "no_write" },
+    expect: { kind: "auditioned" },
     questions: [
       {
         id: "onceStart",
@@ -174,7 +182,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "4 · Seçimden döngü",
     passage: "any_written_bar",
     watchFor: "Turlar arasında boşluk, çift atak veya tempo kayması var mı?",
-    expect: { kind: "no_write" },
+    expect: { kind: "looped" },
     questions: [
       {
         id: "loopGap",
@@ -196,7 +204,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "5 · Slide'ın ortasında duraklat, sonra devam et",
     passage: "slide",
     watchFor: "Aynı yerden devam etsin; nota baştan çalınmasın.",
-    expect: { kind: "no_write" },
+    expect: { kind: "paused_resumed" },
     questions: [
       { id: "resumedSamePlace", prompt: "Aynı yerden mi devam etti?", options: YES_NO, breaking: true },
       {
@@ -249,9 +257,9 @@ export const BATCH_STEPS: readonly BatchStep[] = [
   },
   {
     id: "deleteUndo",
-    title: "10 · Sil, sonra geri al",
+    title: "10 · Sil, geri al, ileri al",
     passage: "any_written_bar",
-    watchFor: "Silinen notalar aynı yere geri gelsin; sonra İleri al'a dokun.",
+    watchFor: "Seçimi sil; ardından «Geri al», sonra «İleri al»a dokun.",
     expect: { kind: "redo_returns", action: "delete" },
     questions: [
       {
@@ -278,7 +286,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "11A · Bir enstrümanın satırını dinle",
     passage: "any_written_bar",
     watchFor: "Yalnız o enstrüman duyulsun.",
-    expect: { kind: "no_write" },
+    expect: { kind: "listen_one_track" },
     questions: [
       { id: "trackScopeOnly", prompt: "Yalnız gitarı mı duydun?", options: YES_NO, breaking: true },
     ],
@@ -288,7 +296,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "11B · Ölçü başlığını dinle",
     passage: "shared_bar",
     watchFor: "Gitar ve bas birlikte duyulsun.",
-    expect: { kind: "no_write" },
+    expect: { kind: "listen_all_tracks" },
     questions: [
       {
         /*
@@ -314,7 +322,7 @@ export const BATCH_STEPS: readonly BatchStep[] = [
     title: "12 · Sonuç",
     passage: "none",
     watchFor: "",
-    expect: { kind: "no_write" },
+    expect: { kind: "survey_only" },
     questions: [
       {
         id: "actionsFindable",
@@ -415,59 +423,65 @@ export type BatchJudgement = {
 export function judgeBatchStep(
   expect: BatchExpectation,
   trace: BatchTrace,
+  facts: WitnessFacts = EMPTY_WITNESS,
 ): BatchJudgement {
   const shortfalls: BatchShortfall[] = [];
-  const states = trace.states;
-  const first = states[0];
-  const last = states[states.length - 1];
-  const moved =
-    (trace.revisions[trace.revisions.length - 1] ?? 0) - (trace.revisions[0] ?? 0);
 
-  if (first === undefined || last === undefined) {
-    return { passed: false, shortfalls: ["no_production_event"] };
-  }
+  /*
+   * Positive evidence first, and it is the only thing that can pass a step
+   * (2V-B.2c §2). The old code had a `no_write` branch here that returned
+   * `passed` when the trace showed one state and no revision movement — which
+   * is exactly the trace a step has the moment it opens. Eight of the
+   * thirteen steps therefore reported "Editör kanıtı geldi." to a reader who
+   * had done nothing, and two presses of "Evet" carried the round forward.
+   *
+   * There is no such branch now, and no expectation kind that an absence can
+   * satisfy. Every contract asks for something that was seen to happen.
+   */
+  if (!contractMet(expect, trace, facts)) shortfalls.push("no_production_event");
 
-  if (expect.kind === "no_write") {
-    /*
-     * A reading step. There is no production event to wait for — listening
-     * and selecting produce none — so what is measured is that nothing was
-     * written, and the founder's answer carries the rest.
-     */
-    if (!(states.length === 1 && moved === 0)) shortfalls.push("no_write_expected");
-    return { passed: shortfalls.length === 0, shortfalls };
-  }
+  /*
+   * The isolation invariant, reported separately and never as completion. A
+   * reading step that somehow wrote is a defect worth failing on; a writing
+   * step that wrote is not evidence that the reader did anything, which is
+   * why this cannot stand in for the contract above.
+   */
+  if (!isolationHeld(expect, trace)) shortfalls.push("no_write_expected");
 
-  const mutations = trace.events.filter((event) => event.mutating);
-  const matching = mutations.filter((event) => event.action === expect.action);
-  if (mutations.length === 0) shortfalls.push("no_production_event");
-  else if (matching.length === 0) shortfalls.push("wrong_action");
+  if (writesSong(expect)) {
+    const mutations = trace.events.filter((event) => event.mutating);
+    const matching = mutations.filter((event) => event.action === expect.action);
+    if (mutations.length > 0 && matching.length === 0) shortfalls.push("wrong_action");
 
-  switch (expect.kind) {
-    case "one_write":
-      /* One new state and one commit — not two, and not a preview only. */
-      if (!(states.length === 2 && last !== first && moved === 1)) {
-        shortfalls.push("write_not_atomic");
-      }
-      break;
-    case "undo_restores":
-      /*
-       * Something really happened and was really taken back. Pressing
-       * nothing leaves one state and fails here, which is the whole point.
-       */
-      if (!(states.length >= 3 && last === first && moved >= 2)) {
-        shortfalls.push("undo_did_not_restore");
-      }
-      break;
-    case "redo_returns":
-      /*
-       * Start, written, back to start, written again — and the fourth state
-       * must be byte-identical to the second, or "İleri al" did not put back
-       * what "Geri al" took.
-       */
-      if (!(states.length >= 4 && last !== first && last === states[1] && moved >= 3)) {
-        shortfalls.push("redo_did_not_return");
-      }
-      break;
+    const states = trace.states;
+    const first = states[0];
+    const last = states[states.length - 1];
+    const moved =
+      (trace.revisions[trace.revisions.length - 1] ?? 0) - (trace.revisions[0] ?? 0);
+    switch (expect.kind) {
+      case "one_write":
+        /* One new state and one commit — not two, and not a preview only. */
+        if (!(states.length === 2 && last !== first && moved === 1)) {
+          shortfalls.push("write_not_atomic");
+        }
+        break;
+      case "undo_restores":
+        if (!(states.length >= 3 && last === first && moved >= 2)) {
+          shortfalls.push("undo_did_not_restore");
+        }
+        break;
+      case "redo_returns":
+        /*
+         * Start, written, back to start, written again — and the fourth state
+         * must be byte-identical to the second, or "İleri al" did not put back
+         * what "Geri al" took. Ordering matters: a redo seen before an undo
+         * leaves `states[2] !== first` and fails here rather than counting.
+         */
+        if (!(states.length >= 4 && last !== first && last === states[1] && moved >= 3)) {
+          shortfalls.push("redo_did_not_return");
+        }
+        break;
+    }
   }
 
   return { passed: shortfalls.length === 0, shortfalls };
@@ -511,8 +525,14 @@ export type BatchEnvironment = {
    */
   readonly trackScopeFilter?: readonly string[] | null;
   readonly measureScopeFilter?: readonly string[] | null;
-  /** Whether the second instrument in the shared bar really made a sound. */
-  readonly secondTrackAudible?: boolean | null;
+  /*
+   * `secondTrackAudible` used to live here, computed by the page from the
+   * fixture having two tracks, and it is deliberately gone (2V-B.2c §12).
+   * Whether a person heard something is not a property of the environment,
+   * and keeping a field for it is what let a report claim a perception in the
+   * same breath as saying nobody had been asked. The answer is in `answers`,
+   * where the founder put it, and the report reads it from there.
+   */
   /**
    * The reader pressed "Burada bitir" rather than reaching the end (§3).
    *
@@ -556,7 +576,12 @@ export function batchVerdict(
   const track = environment.trackScopeFilter;
   const measure = environment.measureScopeFilter;
   if (track && measure && sameFilter(track, measure)) return "FAIL";
-  if (environment.secondTrackAudible === false) return "FAIL";
+  /*
+   * The two scopes must differ, and that is a technical fact. Whether the
+   * second instrument was *heard* is the founder's answer, and it reaches the
+   * verdict through the breaking-question check below like every other
+   * perception — not through a separate field the page could compute.
+   */
 
   const breaking = ALL_BATCH_QUESTIONS.filter((question) => question.breaking);
   if (breaking.some((question) => answers[question.id] === BATCH_BROKEN[question.id])) {

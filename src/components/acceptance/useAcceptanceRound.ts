@@ -60,6 +60,18 @@ import {
   stepEvidence,
   type EvidenceItem,
 } from "@/lib/acceptance/step-evidence";
+import {
+  witnessFrom,
+  type ProductionSample,
+} from "@/lib/acceptance/production-witness";
+import {
+  evidenceStateOf,
+  measuredFromRows,
+  buildStepRows,
+  type StepRow,
+  type StepState,
+} from "@/lib/acceptance/step-rows";
+import { isolationHeld } from "@/lib/acceptance/step-contract";
 import type { AcceptanceSession } from "@/lib/acceptance/session";
 import {
   describeTask,
@@ -143,6 +155,15 @@ export type AcceptanceRound = {
   readonly answered: boolean;
   /** True only when the evidence and the answers are both in. */
   readonly mayAdvance: boolean;
+  /**
+   * The canonical row per step, and the only thing a summary may read (§3).
+   *
+   * `measured` is kept because the verdict is written in terms of it, but it
+   * is now *derived from these rows* rather than accumulated beside them —
+   * so a count and a row can no longer disagree.
+   */
+  readonly rows: readonly StepRow[];
+  readonly stepStates: Readonly<Record<string, StepState>>;
   readonly measured: Readonly<Record<string, boolean | null>>;
   readonly ledgers: readonly ActionLedger[];
   readonly isolation: IsolationTruth | null;
@@ -179,16 +200,25 @@ export function useAcceptanceRound(
    * hydration error on a route whose job includes reporting a clean console.
    * The measured symptom was React error #418 on all five viewports.
    */
-  const sessionId = useSyncExternalStore(subscribeNothing, clientSessionId, () => "");
+  const sessionId = useSyncExternalStore(subscribeSession, clientSessionId, () => "");
   const [screen, setScreen] = useState<AcceptanceScreen>("song");
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<BatchAnswers>({});
-  const [measured, setMeasured] = useState<Record<string, boolean | null>>({});
+  const [stepStates, setStepStates] = useState<Record<string, StepState>>({});
   const [ledgers, setLedgers] = useState<readonly ActionLedger[]>([]);
   const [endedEarly, setEndedEarly] = useState(false);
   const [isolation, setIsolation] = useState<IsolationTruth | null>(null);
   const [consoleErrors, setConsoleErrors] = useState<readonly string[]>([]);
   const [traces, setTraces] = useState<Record<string, BatchTrace>>({});
+  /*
+   * Readings of the product's own state, per step (§4, §7).
+   *
+   * Keyed by step so a reading taken while step 3 was on screen cannot
+   * satisfy step 4, and cleared by retry and restart so a previous attempt's
+   * evidence cannot be inherited. The key *is* the baseline: there is no
+   * cursor to compare against because nothing outside the key is ever read.
+   */
+  const [samples, setSamples] = useState<Record<string, ProductionSample[]>>({});
   const [evidenceByStep, setEvidenceByStep] = useState<
     Record<string, StepEvidence>
   >({});
@@ -361,13 +391,84 @@ export function useAcceptanceRound(
     });
   }, [envelope, sessionId, session, stepId]);
 
+  /*
+   * Poll the product for what it is doing (§4).
+   *
+   * `__aranjeDebug` is the measurement surface that already exists, armed
+   * only on `/eval/` routes, and reading-only by construction. Nothing here
+   * changes what the editor or the engine does; the harness is a witness.
+   *
+   * Sampling rather than subscribing because the facts a contract needs are
+   * transitions — "the end moved forward", "the tick did not move" — and a
+   * transition is two readings, not an event. Every reading is appended under
+   * the current step's key, so leaving a step ends its record.
+   */
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (screen !== "song") return;
+    const id = window.setInterval(() => {
+      const debug = window.__aranjeDebug;
+      if (!debug) return;
+      const sample: ProductionSample = {
+        status: debug.status(),
+        ticks: debug.ticks(),
+        loop: debug.loop(),
+        selection: debug.selection(),
+        editorSelection: debug.editorSelection?.() ?? null,
+      };
+      setSamples((all) => {
+        const seen = all[stepId] ?? [];
+        const line = JSON.stringify(sample);
+        const last = seen[seen.length - 1];
+        const before = seen[seen.length - 2];
+        /*
+         * A run of identical readings is collapsed to two, not to one.
+         *
+         * One would be cheaper and would be wrong: "the playhead did not move
+         * while paused" *is* two identical readings, and a sampler that kept
+         * only the first could never observe it — which would make the pause
+         * step unpassable however honestly a reader performed it. Two is the
+         * shortest record that can hold a non-event, and a reader who leaves
+         * the page open for a minute still costs the run two rows.
+         */
+        if (
+          last !== undefined &&
+          before !== undefined &&
+          JSON.stringify(last) === line &&
+          JSON.stringify(before) === line
+        ) {
+          return all;
+        }
+        return { ...all, [stepId]: [...seen, sample] };
+      });
+    }, 120);
+    return () => window.clearInterval(id);
+  }, [screen, stepId]);
+
+  const witness = useMemo(
+    () => witnessFrom(samples[stepId] ?? []),
+    [samples, stepId],
+  );
+
   const trace = traces[stepId] ?? EMPTY_TRACE;
   const evidence = evidenceByStep[stepId] ?? EMPTY_EVIDENCE;
   const judgement = useMemo<BatchJudgement>(
     () =>
-      step ? judgeBatchStep(step.expect, trace) : { passed: false, shortfalls: [] },
-    [step, trace],
+      step
+        ? judgeBatchStep(step.expect, trace, witness)
+        : { passed: false, shortfalls: [] },
+    [step, trace, witness],
   );
+
+  /*
+   * The rows, built once per render from the states and the answers, and the
+   * source of every count this round reports (§2 rule 8).
+   */
+  const rows = useMemo(
+    () => buildStepRows({ states: stepStates, answers }),
+    [stepStates, answers],
+  );
+  const measured = useMemo(() => measuredFromRows(rows), [rows]);
 
   const answered = step ? stepAnswered(step.id, answers) : false;
   const mayAdvance = judgement.passed && answered;
@@ -380,12 +481,12 @@ export function useAcceptanceRound(
    * dead end it exists to prevent.
    */
   const evidenceItems = useMemo(
-    () => (step ? stepEvidence(step.expect, trace) : []),
-    [step, trace],
+    () => (step ? stepEvidence(step.expect, trace, witness) : []),
+    [step, trace, witness],
   );
   const evidenceHint = useMemo(
-    () => (step ? nextEvidenceHint(step.expect, trace) : null),
-    [step, trace],
+    () => (step ? nextEvidenceHint(step.expect, trace, witness) : null),
+    [step, trace, witness],
   );
 
   /** Start this step's evidence again, without losing the round (§3). */
@@ -393,6 +494,9 @@ export function useAcceptanceRound(
     if (!step) return;
     setTraces((all) => ({ ...all, [step.id]: EMPTY_TRACE }));
     setEvidenceByStep((all) => ({ ...all, [step.id]: EMPTY_EVIDENCE }));
+    /* A fresh attempt, and that includes what the product was seen doing:
+       readings from the attempt that failed are not this attempt's (§8). */
+    setSamples((all) => ({ ...all, [step.id]: [] }));
     setScreen("song");
   }, [step]);
 
@@ -449,8 +553,25 @@ export function useAcceptanceRound(
   const finishStep = useCallback(() => {
     if (!step || !session?.ok) return;
     const seen = traces[step.id] ?? EMPTY_TRACE;
-    const verdict = judgeBatchStep(step.expect, seen);
-    setMeasured((all) => ({ ...all, [step.id]: verdict.passed }));
+    /*
+     * The same three inputs the gate used, including the witness (§3 step 9).
+     * Re-judging without it would record a reading step the founder really
+     * did perform as unmeasured — the mirror image of the defect this round
+     * removes, and just as dishonest.
+     */
+    const verdict = judgeBatchStep(step.expect, seen, witness);
+    setStepStates((all) => ({
+      ...all,
+      [step.id]: {
+        evidence: evidenceStateOf({
+          reached: true,
+          passed: verdict.passed,
+          shortfalls: verdict.shortfalls,
+          refusals: (evidenceByStep[step.id] ?? EMPTY_EVIDENCE).refused.length,
+        }),
+        isolation: isolationHeld(step.expect, seen) ? "held" : "broken",
+      },
+    }));
 
     /* A write action fills a ledger row (§5). */
     const action = LEDGER_OF[step.id];
@@ -503,7 +624,7 @@ export function useAcceptanceRound(
     if (stepIndex === BATCH_STEPS.length - 1) closeRound();
     setStepIndex(stepIndex + 1);
     setScreen("song");
-  }, [closeRound, session, step, stepIndex, traces]);
+  }, [closeRound, evidenceByStep, session, step, stepIndex, traces, witness]);
 
   /**
    * Stop here and produce an honest result (§3).
@@ -539,6 +660,8 @@ export function useAcceptanceRound(
     endedEarly,
     retryStep,
     endEarly,
+    rows,
+    stepStates,
     measured,
     ledgers,
     isolation,
@@ -557,19 +680,36 @@ export function useAcceptanceRound(
       if (previous) {
         setTraces((all) => ({ ...all, [previous.id]: EMPTY_TRACE }));
         setEvidenceByStep((all) => ({ ...all, [previous.id]: EMPTY_EVIDENCE }));
+        setSamples((all) => ({ ...all, [previous.id]: [] }));
       }
       setStepIndex(stepIndex - 1);
       setScreen("song");
     },
+    /**
+     * Start over, and mean it (§3 step 8).
+     *
+     * Every measurement the previous run made is dropped, including the ones
+     * that are easy to forget because they are not per-step: the listening
+     * filters, the console errors, the fingerprint chain the task descriptors
+     * bind to, and the session's own name. The name matters most — a
+     * production event stamped with the old session is refused by
+     * `judgeWorkspaceEvent`, so an edit still in flight from the abandoned
+     * run cannot satisfy a step of the new one (§2 rule 7).
+     */
     restart: () => {
+      renameSession();
       setEndedEarly(false);
       setStepIndex(0);
       setAnswers({});
-      setMeasured({});
+      setStepStates({});
       setLedgers([]);
       setIsolation(null);
       setTraces({});
       setEvidenceByStep({});
+      setSamples({});
+      setScopeFilters({});
+      setConsoleErrors([]);
+      setChainFingerprint(null);
       setScreen("song");
     },
     recordScopeFilter: (id, trackIds) =>
@@ -598,13 +738,24 @@ function sameFilter(
  * again on a second render would be a second name for the same run.
  */
 let clientSession: string | null = null;
+const sessionListeners = new Set<() => void>();
+
+const newSessionName = () => `2vb1-${Math.random().toString(36).slice(2, 10)}`;
 
 function clientSessionId(): string {
-  clientSession ??= `2vb1-${Math.random().toString(36).slice(2, 10)}`;
+  clientSession ??= newSessionName();
   return clientSession;
 }
 
-/** Nothing changes it, so there is nothing to subscribe to. */
-function subscribeNothing(): () => void {
-  return () => {};
+/** A restart is a different run, so it gets a different name (§3 step 8). */
+function renameSession(): void {
+  clientSession = newSessionName();
+  for (const listener of sessionListeners) listener();
+}
+
+function subscribeSession(listener: () => void): () => void {
+  sessionListeners.add(listener);
+  return () => {
+    sessionListeners.delete(listener);
+  };
 }

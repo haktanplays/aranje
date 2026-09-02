@@ -1,12 +1,12 @@
 {
-  "sha": "da9f9a3",
-  "generatedAt": "2026-09-02T07:55:15.934Z",
+  "sha": "b039d9c",
+  "generatedAt": "2026-09-02T13:30:43.494Z",
   "browserEmulation": true,
   "physicalAcceptance": false,
   "viewport": "384x692",
   "opened": {
-    "sha": "da9f9a3",
-    "session": "2vb1-xqk0wv9h",
+    "sha": "b039d9c",
+    "session": "2vb1-hvz7iwv2",
     "song": "Editör kabul parçası",
     "fingerprint": "s3777h1h8tp95",
     "blocked": false
@@ -161,25 +161,25 @@
     "pauseResume": {
       "playing": {
         "status": "playing",
-        "ticks": 788,
+        "ticks": 785,
         "loop": null,
         "selection": null
       },
       "paused": {
         "status": "paused",
-        "ticks": 801,
+        "ticks": 795,
         "loop": null,
         "selection": null
       },
       "stillPaused": {
         "status": "paused",
-        "ticks": 801,
+        "ticks": 795,
         "loop": null,
         "selection": null
       },
       "resumed": {
         "status": "playing",
-        "ticks": 1056,
+        "ticks": 1053,
         "loop": null,
         "selection": null
       }
@@ -187,7 +187,7 @@
     "loop": {
       "looping": {
         "status": "playing",
-        "ticks": 206,
+        "ticks": 251,
         "loop": {
           "on": true,
           "startTicks": 192,
@@ -232,12 +232,12 @@
       }
     }
   },
-  "resultBlock": "Editör eylem kabulü (2V-B.1)\nBuild: da9f9a3\nTarih: 2026-09-02T07:52:09.322Z\nEkran: 384×692\nDokunma noktası: 1\nOrtam: dokunmatik cihaz (dokunma 1)\n\nİzolasyon\n  Oturum: 2vb1-xqk0wv9h\n  Cihaz projesi değişmedi: evet\n  Cihaz deposuna yazma: 0\n  Cihaz hash: device:b17388hy6ytew → device:b17388hy6ytew\n  Test kopyası geri yüklendi: evet\n  Test kopyasına yazma: 15\n  Kopya hash: fixture:b4770h1btxpuq → fixture:b4770h1btxpuq\n  Revizyon: 1 → 1\n  Geçmiş adımı: 1 → 1\n  Rehber temizliği: clean\n  İzolasyon: TAMAM\n  Uygulama konsol hatası: 0\n\nİşlem defteri\n  paste → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=1→2\n    önce=b3777h1h8tp95 · sonra=b4133ho3p8oz · geri=b3777h1h8tp95 · ileri=b4133ho3p8oz · temizlik=b3777h1h8tp95\n  duplicate → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=2→3\n    önce=b4133ho3p8oz · sonra=b4434h1a5rq11 · geri=b4133ho3p8oz · ileri=b4434h1a5rq11 · temizlik=b4133ho3p8oz\n  move → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=3→4\n    önce=b4434h1a5rq11 · sonra=b4434hji5c0b · geri=b4434h1a5rq11 · ileri=b4434hji5c0b · temizlik=b4434h1a5rq11\n  repeat → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=4→5\n    önce=b4434hji5c0b · sonra=b4489hc4w35 · geri=b4434hji5c0b · ileri=b4489hc4w35 · temizlik=b4434hji5c0b\n  delete → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=5→6\n    önce=b4489hc4w35 · sonra=b4188h1vsugmr · geri=b4489hc4w35 · ileri=b4188h1vsugmr · temizlik=b4489hc4w35\n\nDinleme kapsamı\n  11A filtresi: gtr\n  11B filtresi: gtr+bass\n  İkinci enstrüman duyuldu: evet\n\nAdımlar (sayfanın ölçtüğü · senin söylediğin)\n  1 · Power chord seç, «Devam»a dokun\n    ölçüm: yazma yok → geçti\n    cevap: extendVisible=Evet, extendGrew=Evet\n  2 · Nota aralığı seç, «Daha fazla»yı aç\n    ölçüm: yazma yok → geçti\n    cevap: moreHasListen=Evet\n  3 · Seçimi bir kez dinle\n    ölçüm: yazma yok → geçti\n    cevap: onceStart=Evet, onceScope=Evet, onceEnd=Evet\n  4 · Seçimden döngü\n    ölçüm: yazma yok → geçti\n    cevap: loopGap=Yok, loopDouble=Hayır, loopClosed=Evet\n  5 · Slide'ın ortasında duraklat, sonra devam et\n    ölçüm: yazma yok → geçti\n    cevap: resumedSamePlace=Evet, resumedWithoutRestrike=Hayır\n  6 · Kopyala, yapıştır, geri al, ileri al\n    ölçüm: üretim olayı + tek yazma + geri al + ileri al bayt-eş → geçti\n    cevap: pasteLanded=Evet\n  7 · Çoğalt\n    ölçüm: üretim olayı + tek atomik yazma → geçti\n    cevap: duplicatePlaced=Evet\n  8 · Taşı\n    ölçüm: üretim olayı + tek atomik yazma → geçti\n    cevap: moveStepped=Evet\n  9 · Tekrarla\n    ölçüm: üretim olayı + tek atomik yazma → geçti\n    cevap: repeatKeptRests=Evet\n  10 · Sil, sonra geri al\n    ölçüm: üretim olayı + tek yazma + geri al bayt-eş → geçti\n    cevap: deleteCameBack=Evet\n  11A · Bir enstrümanın satırını dinle\n    ölçüm: yazma yok → geçti\n    cevap: trackScopeOnly=Evet\n  11B · Ölçü başlığını dinle\n    ölçüm: yazma yok → geçti\n    cevap: allScopeTogether=Evet\n  12 · Sonuç\n    ölçüm: yazma yok → geçti\n    cevap: actionsFindable=Evet\n\nÖlçülmemiş adım: 0\nCevaplanmamış soru: 0\nKararsız cevap: 0\nKullanıcı notu: —\n\nVerdict: PASS",
+  "resultBlock": "Editör eylem kabulü (2V-B.1)\nBuild: b039d9c\nTarih: 2026-09-02T13:27:37.612Z\nEkran: 384×692\nDokunma noktası: 1\nOrtam: dokunmatik cihaz (dokunma 1)\n\nİzolasyon\n  Oturum: 2vb1-hvz7iwv2\n  Cihaz projesi değişmedi: evet\n  Cihaz deposuna yazma: 0\n  Cihaz hash: device:b17388hp0gz7z → device:b17388hp0gz7z\n  Test kopyası geri yüklendi: evet\n  Test kopyasına yazma: 15\n  Kopya hash: fixture:b4770h1btxpuq → fixture:b4770h1btxpuq\n  Revizyon: 1 → 1\n  Geçmiş adımı: 1 → 1\n  Rehber temizliği: clean\n  İzolasyon: TAMAM\n  Uygulama konsol hatası: 0\n\nİşlem defteri\n  paste → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=1→2\n    önce=b3777h1h8tp95 · sonra=b4133ho3p8oz · geri=b3777h1h8tp95 · ileri=b4133ho3p8oz · temizlik=b3777h1h8tp95\n  duplicate → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=2→3\n    önce=b4133ho3p8oz · sonra=b4434h1a5rq11 · geri=b4133ho3p8oz · ileri=b4434h1a5rq11 · temizlik=b4133ho3p8oz\n  move → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=3→4\n    önce=b4434h1a5rq11 · sonra=b4434hji5c0b · geri=b4434h1a5rq11 · ileri=b4434hji5c0b · temizlik=b4434h1a5rq11\n  repeat → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=4→5\n    önce=b4434hji5c0b · sonra=b4489hc4w35 · geri=b4434hji5c0b · ileri=b4489hc4w35 · temizlik=b4434hji5c0b\n  delete → atomic\n    komut=1 · yazan komut=1 · depo yazma=1 · revizyon=1 · geçmiş=5→6\n    önce=b4489hc4w35 · sonra=b4188h1vsugmr · geri=b4489hc4w35 · ileri=b4188h1vsugmr · temizlik=b4489hc4w35\n\nDinleme kapsamı\n  11A filtresi: gtr\n  11B filtresi: gtr+bass\n  İkinci enstrüman duyuldu: evet\n\nAdımlar (sayfanın ölçtüğü · senin söylediğin)\n  1 · Power chord seç, «Devam»a dokun\n    beklenen: Bir seçim oluştu + Seçimin sonu ileri taşındı\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (extendVisible=Evet, extendGrew=Evet)\n  2 · Nota aralığı seç, «Daha fazla»yı aç\n    beklenen: Bir nota aralığı seçildi + «Seçimi dinle» ve «Seçimden döngü» göründü\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (moreHasListen=Evet)\n  3 · Seçimi bir kez dinle\n    beklenen: Seçim çalmaya başladı + Seçimin sonunda durdu\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (onceStart=Evet, onceScope=Evet, onceEnd=Evet)\n  4 · Seçimden döngü\n    beklenen: Seçim döngüsü başladı + Döngü başa döndü + Döngü kapatıldı\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (loopGap=Yok, loopDouble=Hayır, loopClosed=Evet)\n  5 · Slide'ın ortasında duraklat, sonra devam et\n    beklenen: Çalma başladı + Duraklatıldı + Duraklarken playhead yerinde kaldı + Aynı yerden devam etti\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (resumedSamePlace=Evet, resumedWithoutRestrike=Hayır)\n  6 · Kopyala, yapıştır, geri al, ileri al\n    beklenen: «Yapıştır» ile nota eklendi + «Geri al» ile eski hâline dönüldü + «İleri al» ile değişiklik yeniden geldi\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (pasteLanded=Evet)\n  7 · Çoğalt\n    beklenen: «Çoğalt» yapıldı + «Geri al» ile eski hâline dönüldü + «İleri al» ile değişiklik yeniden geldi\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (duplicatePlaced=Evet)\n  8 · Taşı\n    beklenen: «Taşı» yapıldı + «Geri al» ile eski hâline dönüldü + «İleri al» ile değişiklik yeniden geldi\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (moveStepped=Evet)\n  9 · Tekrarla\n    beklenen: «Tekrarla» yapıldı + «Geri al» ile eski hâline dönüldü + «İleri al» ile değişiklik yeniden geldi\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (repeatKeptRests=Evet)\n  10 · Sil, geri al, ileri al\n    beklenen: «Sil» yapıldı + «Geri al» ile eski hâline dönüldü + «İleri al» ile değişiklik yeniden geldi\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (deleteCameBack=Evet)\n  11A · Bir enstrümanın satırını dinle\n    beklenen: Tek enstrümanla bir dinleme yapıldı\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (trackScopeOnly=Evet)\n  11B · Ölçü başlığını dinle\n    beklenen: Birden fazla enstrümanla bir dinleme yapıldı\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (allScopeTogether=Evet)\n  12 · Sonuç\n    beklenen: eylem yok, yalnız soru\n    eylem kanıtı: geldi\n    izolasyon: yazma yok\n    cevap: onayladı (actionsFindable=Evet)\n\nKanıtı gelmemiş adım: 0\nHiç denenmemiş adım: 0\nCevaplanmamış soru: 0\nKararsız cevap: 0\nKullanıcı notu: —\n\nVerdict: PASS",
   "checks": [
     {
       "name": "the route started on the build the link named",
       "pass": true,
-      "detail": "{\"sha\":\"da9f9a3\",\"session\":\"2vb1-xqk0wv9h\",\"song\":\"Editör kabul parçası\",\"fingerprint\":\"s3777h1h8tp95\",\"blocked\":false}"
+      "detail": "{\"sha\":\"b039d9c\",\"session\":\"2vb1-hvz7iwv2\",\"song\":\"Editör kabul parçası\",\"fingerprint\":\"s3777h1h8tp95\",\"blocked\":false}"
     },
     {
       "name": "the drawer offers both listening actions",
@@ -257,17 +257,17 @@
     {
       "name": "the playhead does not move while paused",
       "pass": true,
-      "detail": "801 → 801"
+      "detail": "795 → 795"
     },
     {
       "name": "resuming carries on from the tick it was paused at",
       "pass": true,
-      "detail": "801 → 1056"
+      "detail": "795 → 1053"
     },
     {
       "name": "the transport really was playing before the pause",
       "pass": true,
-      "detail": "{\"status\":\"playing\",\"ticks\":788,\"loop\":null,\"selection\":null}"
+      "detail": "{\"status\":\"playing\",\"ticks\":785,\"loop\":null,\"selection\":null}"
     },
     {
       "name": "the paste landed somewhere free",

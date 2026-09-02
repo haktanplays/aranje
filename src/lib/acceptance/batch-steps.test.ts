@@ -15,6 +15,7 @@ import {
   type BatchEnvironment,
   type BatchTrace,
 } from "@/lib/acceptance/batch-steps";
+import { writesSong } from "@/lib/acceptance/step-contract";
 
 const trace = (
   states: readonly string[],
@@ -75,7 +76,7 @@ describe("the steps themselves", () => {
 
   it("names a required action on every writing step", () => {
     for (const step of BATCH_STEPS) {
-      if (step.expect.kind === "no_write") continue;
+      if (!writesSong(step.expect)) continue;
       expect(step.expect.action).toBeTruthy();
     }
   });
@@ -118,11 +119,26 @@ describe("no answer starts filled in", () => {
 });
 
 describe("what completes a step", () => {
-  it("passes a reading step on a still record and nothing else", () => {
-    expect(judgeBatchStep({ kind: "no_write" }, trace(["a"], [1])).passed).toBe(true);
-    expect(judgeBatchStep({ kind: "no_write" }, trace(["a", "b"], [1, 2])).passed).toBe(
-      false,
+  it("refuses a reading step that has only been opened", () => {
+    /*
+     * The regression this file exists to keep out. A still record used to be
+     * the whole requirement for a reading step, so the step passed before the
+     * reader had touched anything (2V-B.2c §2). A still record is now only the
+     * isolation half; the action half is still missing and still says so.
+     */
+    const arrival = judgeBatchStep({ kind: "selection_extended" }, trace(["a"], [1]));
+    expect(arrival.passed).toBe(false);
+    expect(arrival.shortfalls).toContain("no_production_event");
+    expect(arrival.shortfalls).not.toContain("no_write_expected");
+  });
+
+  it("still reports a write on a reading step, on top of the missing action", () => {
+    const written = judgeBatchStep(
+      { kind: "selection_extended" },
+      trace(["a", "b"], [1, 2]),
     );
+    expect(written.passed).toBe(false);
+    expect(written.shortfalls).toContain("no_write_expected");
   });
 
   it("refuses a write step with no production event at all", () => {
@@ -199,7 +215,7 @@ describe("what completes a step", () => {
   it("cannot be passed by pressing a button", () => {
     /* Nothing was done. Every writing step fails, and says why. */
     for (const step of BATCH_STEPS) {
-      if (step.expect.kind === "no_write") continue;
+      if (step.expect.kind === "survey_only") continue;
       const verdict = judgeBatchStep(step.expect, trace(["a"], [1]));
       expect(verdict.passed).toBe(false);
       expect(verdict.shortfalls).toContain("no_production_event");
@@ -216,7 +232,6 @@ describe("the verdict", () => {
     measured: Object.fromEntries(BATCH_STEPS.map((step) => [step.id, true])),
     trackScopeFilter: ["gtr"],
     measureScopeFilter: ["gtr", "bass"],
-    secondTrackAudible: true,
   };
   const allAnswered: BatchAnswers = Object.fromEntries(
     ALL_BATCH_QUESTIONS.map((question) => [
@@ -245,12 +260,6 @@ describe("the verdict", () => {
         allAnswered,
       ),
     ).toBe("FAIL");
-  });
-
-  it("fails when the second instrument turns out to be silent", () => {
-    expect(batchVerdict({ ...clean, secondTrackAudible: false }, allAnswered)).toBe(
-      "FAIL",
-    );
   });
 
   it("stays partial until both filters have been measured", () => {
@@ -309,7 +318,6 @@ describe("an early finish is never a pass (2V-B.2 §3)", () => {
     measured: Object.fromEntries(BATCH_STEPS.map((step) => [step.id, true])),
     trackScopeFilter: ["gtr"],
     measureScopeFilter: ["gtr", "bass"],
-    secondTrackAudible: true,
   });
 
   const allAnswered = Object.fromEntries(

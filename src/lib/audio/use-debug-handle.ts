@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { debugArmed } from "@/lib/audio/debug-arm";
 import type { PlaybackController } from "@/lib/audio/playback";
@@ -40,6 +40,31 @@ export type AranjeDebug = {
     mode: string;
     onsetCount: number;
   } | null;
+  /**
+   * What the *editor* is holding, which is a different thing from the above
+   * (2V-B.2c §4).
+   *
+   * `selection` is the audition that is sounding; this is the run of music
+   * the reader has under their finger, whether or not anything is playing.
+   * The acceptance round needs it because eight of its thirteen steps ask the
+   * reader to *do* something that writes nothing — draw a selection, reach it
+   * forward, open its actions — and the only fact the harness had about those
+   * steps was that no write had happened, which is equally true of a step
+   * nobody has touched. That is how a fresh session came to report "Editör
+   * kanıtı geldi." before the reader had done anything.
+   *
+   * Reading, like everything else on this surface, and armed by the same
+   * `debugArmed` rule. Nothing here can change a selection, and no production
+   * component learns that anyone is watching.
+   */
+  editorSelection: () => {
+    sectionId: string;
+    startTicks: number;
+    endTicks: number;
+    trackIds: string[];
+    /** How many listening verbs the surface is offering on it right now. */
+    listenVerbs: number;
+  } | null;
 };
 
 declare global {
@@ -48,7 +73,30 @@ declare global {
   }
 }
 
-export function useDebugHandle(controller: PlaybackController): void {
+/** What the editor is holding, read from whoever owns the selection session. */
+export type EditorSelectionProbe = () => {
+  sectionId: string;
+  startTicks: number;
+  endTicks: number;
+  trackIds: string[];
+  listenVerbs: number;
+} | null;
+
+export function useDebugHandle(
+  controller: PlaybackController,
+  editorSelection: EditorSelectionProbe = () => null,
+): void {
+  /*
+   * The newest reader, held in a ref so the handle is installed once.
+   * Listing the probe as a dependency would tear the handle down and rebuild
+   * it on every render of the workspace, and a handle that comes and goes is
+   * a handle a harness finds missing exactly when it looks.
+   */
+  const latest = useRef(editorSelection);
+  useEffect(() => {
+    latest.current = editorSelection;
+  });
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!debugArmed(window.location.search, window.location.pathname)) return;
@@ -85,6 +133,7 @@ export function useDebugHandle(controller: PlaybackController): void {
           onsetCount: plan.onsetCount,
         };
       },
+      editorSelection: () => latest.current(),
     };
 
     window.__aranjeDebug = handle;

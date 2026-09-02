@@ -468,8 +468,10 @@ async function runViewport(browser, size) {
     record(13, "the guide runs cold-start to a complete result block",
       screens === 12 &&
         block.includes("Verdict:") &&
-        block.includes("Ölçülmemiş adım:") &&
-        block.includes("ölçüm:"),
+        block.includes("Kanıtı gelmemiş adım:") &&
+        block.includes("eylem kanıtı:") &&
+        /* Isolation is its own line now, never a step's conclusion. */
+        block.includes("izolasyon:"),
       `first="${total.trim()}" screens=${screens} block=${block.length}`);
     await shot(page, "13-result");
   });

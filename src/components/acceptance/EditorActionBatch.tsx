@@ -117,7 +117,13 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 /** Why a step will not pass yet, in a sentence rather than a code. */
 const SHORTFALL_TEXT: Readonly<Record<string, string>> = {
-  no_production_event: "Editörden henüz bir işlem gelmedi.",
+  /*
+   * "bu adıma ait" is the whole sentence's job (2V-B.2c §3 step 10). The old
+   * wording — "henüz bir işlem gelmedi" — is true of a page where an event
+   * arrived for another step, another track or another session, and a reader
+   * who had just done something would read it as the harness being broken.
+   */
+  no_production_event: "Editörden henüz bu adıma ait kanıt gelmedi.",
   wrong_action: "Gelen işlem bu adımın istediği işlem değil.",
   no_write_expected: "Bu adımda hiçbir şey yazılmamalıydı; bir şey yazıldı.",
   write_not_atomic: "Tek bir kayıt bekleniyordu; sayı tutmadı.",
@@ -196,7 +202,6 @@ export function EditorActionBatch() {
       measured: round.measured,
       trackScopeFilter: round.scopeFilters.trackScope ?? null,
       measureScopeFilter: round.scopeFilters.measureScope ?? null,
-      secondTrackAudible: (round.support?.sharedBar?.trackIds.length ?? 0) >= 2,
       /* A run the reader stopped can only be BLOCKED, never PASS (§3). */
       endedEarly: round.endedEarly,
     }),
@@ -206,7 +211,6 @@ export function EditorActionBatch() {
       round.consoleErrors,
       round.measured,
       round.scopeFilters,
-      round.support,
       storageBefore,
       storageAfter,
     ],
@@ -227,6 +231,8 @@ export function EditorActionBatch() {
       note,
       isolation: round.isolation,
       ledgers: round.ledgers,
+      /* The block builds its rows from these, and counts from those rows. */
+      states: round.stepStates,
     });
 
   if (session !== null && !session.ok) {
@@ -385,6 +391,14 @@ export function EditorActionBatch() {
               */}
               <p
                 data-batch-evidence={round.judgement.passed ? "ready" : "missing"}
+                /*
+                 * Announced, not just drawn. The gate changes while the
+                 * reader's attention is on the editor behind it, and a
+                 * founder using a screen reader met the same silent disabled
+                 * button the sighted founder did.
+                 */
+                role="status"
+                aria-live="polite"
                 className={`text-xs ${round.judgement.passed ? "text-muted" : "text-reject"}`}
               >
                 {round.judgement.passed
@@ -503,11 +517,21 @@ export function EditorActionBatch() {
               <p data-batch-verdict className="text-muted text-[10px]">
                 Şu anki durum: {batchVerdict(environment, round.answers)}
               </p>
+              {/*
+                Counted off the rows, and counting only the rows whose
+                evidence arrived. `measured` now carries a key for every step
+                — `null` where nothing was measured — so counting its keys
+                would say 13/13 on a run that had done nothing, which is the
+                same sentence in a different place as the defect this round
+                removes.
+              */}
               <p
-                data-batch-measured={JSON.stringify(round.measured)}
+                data-batch-measured={JSON.stringify(round.stepStates)}
                 className="text-muted text-[10px]"
               >
-                Ölçülen adım: {Object.keys(round.measured).length}/{BATCH_STEPS.length}
+                Kanıtı gelen adım:{" "}
+                {round.rows.filter((row) => row.evidence === "valid").length}/
+                {BATCH_STEPS.length}
               </p>
             </>
           ) : null}

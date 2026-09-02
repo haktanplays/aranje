@@ -9,6 +9,29 @@ import {
   stepEvidence,
 } from "@/lib/acceptance/step-evidence";
 import { BATCH_STEPS, type BatchTrace } from "@/lib/acceptance/batch-steps";
+import {
+  witnessFrom,
+  type ProductionSample,
+} from "@/lib/acceptance/production-witness";
+
+const idle = (
+  editorSelection: ProductionSample["editorSelection"],
+): ProductionSample => ({
+  status: "stopped",
+  ticks: 0,
+  loop: null,
+  selection: null,
+  editorSelection,
+});
+
+const held = (startTicks: number, endTicks: number) =>
+  idle({
+    sectionId: "s1",
+    startTicks,
+    endTicks,
+    trackIds: ["gtr"],
+    listenVerbs: 2,
+  });
 
 const DELETE = { kind: "redo_returns", action: "delete" } as const;
 
@@ -77,15 +100,29 @@ describe("what step 10 is waiting for", () => {
 });
 
 describe("reading steps", () => {
-  const READ = { kind: "no_write" } as const;
+  const READ = { kind: "selection_extended" } as const;
 
-  it("are satisfied by nothing having been written", () => {
-    expect(stepEvidence(READ, trace(["a"]))[0]?.present).toBe(true);
+  it("are not satisfied by nothing having been written", () => {
+    /*
+     * The exact wrong-green Codex measured on `b039d9c`: this step used to
+     * be expressed as "nothing was written", which is true of a step nobody
+     * has touched, so it reported its evidence as complete on arrival.
+     */
+    const items = stepEvidence(READ, trace(["a"]));
+    expect(items.length).toBeGreaterThan(0);
+    expect(items.every((item) => !item.present)).toBe(true);
   });
 
-  it("say so when something was written after all", () => {
-    expect(stepEvidence(READ, trace(["a", "b"]))[0]?.present).toBe(false);
-    expect(nextEvidenceHint(READ, trace(["a", "b"]))).toContain("dinleme");
+  it("name the reading gesture that is still missing", () => {
+    expect(nextEvidenceHint(READ, trace(["a"]))).toContain("seçim");
+  });
+
+  it("are satisfied only once the editor was seen doing it", () => {
+    const facts = witnessFrom([held(0, 192), held(0, 384)]);
+    expect(stepEvidence(READ, trace(["a"]), facts).every((item) => item.present)).toBe(
+      true,
+    );
+    expect(nextEvidenceHint(READ, trace(["a"]), facts)).toBeNull();
   });
 });
 
@@ -93,6 +130,16 @@ describe("every step in the round can describe itself", () => {
   it("produces at least one evidence line, and Turkish labels throughout", () => {
     for (const step of BATCH_STEPS) {
       const items = stepEvidence(step.expect, trace(["a"]));
+      /*
+       * Every acting step describes what it is waiting for. The closing step
+       * is the single declared exception: it is `survey_only`, it asks a
+       * question and requires no gesture, and it says that in its own kind
+       * rather than by having an empty list nobody named.
+       */
+      if (step.expect.kind === "survey_only") {
+        expect(items).toEqual([]);
+        continue;
+      }
       expect(items.length).toBeGreaterThan(0);
       for (const item of items) {
         expect(item.label.length).toBeGreaterThan(0);

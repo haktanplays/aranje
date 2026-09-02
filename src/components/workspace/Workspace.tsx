@@ -31,6 +31,7 @@ import { WorkspaceChrome } from "@/components/workspace/WorkspaceChrome";
 import { WorkspaceSurface } from "@/components/workspace/WorkspaceSurface";
 import { usePlayback } from "@/lib/audio/use-playback";
 import { useDebugHandle } from "@/lib/audio/use-debug-handle";
+import { editorSelectionProbe } from "@/lib/workspace/editor-selection-probe";
 import { availableSkills } from "@/lib/copilot/ui-options";
 import { copilotGates } from "@/lib/copilot/gates";
 import { useCoArranger } from "@/lib/copilot/use-co-arranger";
@@ -75,7 +76,6 @@ export function Workspace() {
   } = useSong();
   const { practiceRatePercent, setPracticeRatePercent } = useSettings();
   const { controller, state } = usePlayback(song, practiceRatePercent);
-  useDebugHandle(controller);
 
   const { pause, seek, getPosition } = useTransportHandles(controller, practiceRatePercent);
 
@@ -254,7 +254,8 @@ export function Workspace() {
     /* Reading counts too (2V-B §1); the Copilot's screens still do not. */
     listenable: canPersist && !previewOpen && !arrangeOpen,
   });
-
+  /* Reading only, and only on `/eval/` (spec 8.4/8.5, 2V-B.2c §4). */
+  useDebugHandle(controller, () => editorSelectionProbe(session, song));
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <WorkspaceChrome
