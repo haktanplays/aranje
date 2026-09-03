@@ -29,6 +29,7 @@ export const SHELF_PANEL_IDS = [
   "chord",
   "fast_sequence",
   "duration",
+  "playing",
   "transpose",
   "phrase",
 ] as const;
@@ -68,6 +69,12 @@ export const SHELF_PANELS: Readonly<Record<ShelfPanelId, ShelfPanelMeta>> = {
     label: "Süre",
     group: "ritim",
     hint: "Ne kadar sürsün?",
+  },
+  playing: {
+    id: "playing",
+    label: "Bend / Kaydır",
+    group: "calim",
+    hint: "Teli bük ya da notaya kayarak gir.",
   },
   transpose: {
     id: "transpose",
@@ -149,6 +156,18 @@ export function panelAvailability(
       return context.hasCell || context.hasSelection
         ? { state: "available" }
         : { state: "disabled", reason: "Önce bir nota ya da alan seç." };
+    case "playing":
+      /*
+       * A bend needs a string to bend and a note to bend it on. Both halves
+       * are said, because "select a note" and "this instrument has no
+       * strings" are different problems with different fixes.
+       */
+      if (!context.fretted) {
+        return { state: "disabled", reason: "Bu enstrümanda tel yok." };
+      }
+      return context.hasCell
+        ? { state: "available" }
+        : { state: "disabled", reason: "Önce bir nota seç." };
     case "transpose":
       return { state: "available" };
     case "phrase":

@@ -40,6 +40,7 @@ import { planSelectionIteration } from "@/lib/playback/selection-iteration";
 import { barTimeline } from "@/lib/audio/schedule";
 import { secondsAtTicks, type TempoMap } from "@/lib/audio/tempo";
 import type { PlaybackWindow } from "@/lib/playback/selection-playback";
+import type { GestureTakeId, GestureTakes } from "@/lib/listening/gesture-take";
 import type { Song } from "@/lib/song/schema";
 
 /** How the founder may answer. Three words, and never a technical one. */
@@ -85,7 +86,13 @@ export type ListeningClipId =
   | "L7"
   | "L8"
   | "L9"
-  | "L10";
+  | "L10"
+  | "L11"
+  | "L12"
+  | "L13"
+  | "L14"
+  | "L15"
+  | "L16";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -158,6 +165,7 @@ export function listeningClips(
   song: Song,
   chord: ChordSide | null,
   sequence: SequenceSide | null = null,
+  gestures: GestureTakes | null = null,
 ): ListeningClip[] {
   const support: SongSupport = songSupport(song);
   const guitar = support.slide?.trackId ?? song.tracks[0]?.id ?? "gtr";
@@ -449,6 +457,107 @@ export function listeningClips(
       ],
       expects: { trackIds: [guitar], minSeconds: 2, maxSeconds: 7 },
     });
+  }
+
+  /*
+   * L11–L16 · the guitar gestures this batch made expressible (2V-C.1 §19).
+   *
+   * Each card is one question with the two sides differing in exactly one
+   * thing, so a "yes" is about that thing and nothing else. All ten takes are
+   * written by the production command; if even one could not be, no card is
+   * offered, because a comparison with a side missing cannot be made.
+   */
+  if (gestures) {
+    const gestureClip = (
+      id: ListeningClipId,
+      label: string,
+      instruction: string,
+      question: string,
+      takes: readonly { readonly id: GestureTakeId; readonly name: string }[],
+    ): ListeningClip => ({
+      id,
+      label,
+      instruction,
+      question,
+      answers: LISTENING_ANSWERS,
+      takes: takes.map((take) => ({
+        id: take.id,
+        name: take.name,
+        segments: [
+          plain(
+            bars(
+              gestures[take.id].song,
+              gestures[take.id].barNumber,
+              gestures[take.id].barNumber + 1,
+              [gestures[take.id].trackId],
+            ),
+            2,
+          ),
+        ],
+      })),
+      expects: {
+        trackIds: [gestures[takes[0]!.id].trackId],
+        minSeconds: 1.5,
+        maxSeconds: 8,
+      },
+    });
+
+    clips.push(
+      gestureClip(
+        "L11",
+        "Bend: tut / geri indir",
+        "Aynı nota, aynı miktar. Yalnız sonu farklı.",
+        "İlkinde bend yukarıda kalıyor, ikincisinde başlangıç notasına geri dönüyor mu?",
+        [
+          { id: "L11a", name: "Yukarıda tut" },
+          { id: "L11b", name: "Geri indir" },
+        ],
+      ),
+      gestureClip(
+        "L12",
+        "Önceden bükme: tut / geri indir",
+        "İkisi de bükülmüş perdeden başlamalı.",
+        "İki ses de yukarı kaymadan bükülmüş perdeden mi başlıyor; ikincisi sonra aşağı iniyor mu?",
+        [
+          { id: "L12a", name: "Önceden bük" },
+          { id: "L12b", name: "Önceden bük ve indir" },
+        ],
+      ),
+      gestureClip(
+        "L13",
+        "Bağlı / vurarak kaydırma",
+        "Aynı mesafe, aynı süre. Yalnız hedefteki atak farklı.",
+        "Bağlı slide'da hedef yeniden vurulmadan geliyor, vurarak slide'da hedefte yeni atak duyuluyor mu?",
+        [
+          { id: "L13a", name: "Bağlı" },
+          { id: "L13b", name: "Vurarak" },
+        ],
+      ),
+      gestureClip(
+        "L14",
+        "Kayarak girme / çıkma",
+        "Tek nota; biri kayarak giriyor, öteki kayarak çıkıyor.",
+        "İlk nota kayarak içeri giriyor, ikinci nota kayarak dışarı çıkıyor mu?",
+        [
+          { id: "L14a", name: "İçeri" },
+          { id: "L14b", name: "Dışarı" },
+        ],
+      ),
+      gestureClip(
+        "L15",
+        "Bend + tepede vibrato",
+        "Önce hedefe varış, sonra tepede titreşim.",
+        "Nota önce tam bend hedefine ulaşıp ardından tepede vibratoya mı geçiyor?",
+        [{ id: "L15", name: "Dinle" }],
+      ),
+      gestureClip(
+        "L16",
+        "Bükülmüş sesin devamı",
+        "Bükülmüş nota ölçü sınırını geçiyor.",
+        "Bükülmüş perde sınırda düz notaya düşmeden devam ediyor mu?",
+        [{ id: "L16", name: "Dinle" }],
+      ),
+    );
   }
 
   return clips;

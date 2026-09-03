@@ -28,6 +28,10 @@ import { songSupport } from "@/lib/acceptance/song-support";
 import { clipFault, type ClipAudit } from "@/lib/listening/clip-audit";
 import { chordTake } from "@/lib/listening/chord-take";
 import { sequenceTake } from "@/lib/listening/sequence-take";
+import {
+  gestureTakes,
+  type GestureTakeId,
+} from "@/lib/listening/gesture-take";
 import { listeningClips, type ListeningClip } from "@/lib/listening/clip-plan";
 import { renderTake } from "@/lib/listening/render-clip";
 import type { Song } from "@/lib/song/schema";
@@ -96,7 +100,10 @@ export function useListeningPack(): ListeningPack {
     const fixture = editorFixture();
     const chord = chordTake(fixture, { rootPitchClass: 4, quality: "minor" });
     const sequence = sequenceTake(fixture);
-    const built = listeningClips(fixture, chord, sequence);
+    /* Ten more takes, each written by the production gesture command on its
+       own copy of the fixture (2V-C.1 §19). */
+    const gestures = gestureTakes(fixture);
+    const built = listeningClips(fixture, chord, sequence, gestures);
     const byTake: Record<string, Song> = {};
     for (const clip of built) {
       for (const take of clip.takes) {
@@ -104,7 +111,9 @@ export function useListeningPack(): ListeningPack {
            chord the flow recommends, and the fast run the command produces. */
         if (take.id === "L8b" && chord) byTake[take.id] = chord.song;
         else if (take.id === "L10" && sequence) byTake[take.id] = sequence.song;
-        else byTake[take.id] = fixture;
+        else if (gestures && take.id in gestures) {
+          byTake[take.id] = gestures[take.id as GestureTakeId].song;
+        } else byTake[take.id] = fixture;
       }
     }
     return { song: fixture, clips: built, songFor: byTake };

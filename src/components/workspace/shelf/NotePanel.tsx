@@ -52,7 +52,9 @@ const STRING_NAMES: readonly string[] = [
 const CONNECTIONS = [
   { id: "hammer_on", label: "Hammer-on" },
   { id: "pull_off", label: "Pull-off" },
-  { id: "slide", label: "Slide" },
+  /* Named for what it renders, not for the enum (2V-C.1 §15). The target of
+     this one is never struck; the struck kind lives in the Çalım shelf. */
+  { id: "slide", label: "Bağlı slide" },
 ] as const;
 
 export function NotePanel({

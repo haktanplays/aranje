@@ -159,29 +159,46 @@ export function EditorDock({
         </div>
       ) : null}
 
-      {panelTitle === null && groupPanels.length > 0 ? (
+      {/*
+        The group's other doors, and when they stay on the screen.
+
+        A one-panel group hides this row once its panel is open: the row would
+        be a single button that reopens what is already open. A group with two
+        keeps it, because hiding it withdraws the sibling — measured, when
+        Çalım gained "Bend / Kaydır" beside "Taşı" and the only way back to
+        Taşı became closing the panel and reopening the group. A reader moving
+        between two doors of one group is not a reader who has finished (§13).
+      */}
+      {(panelTitle === null || groupPanels.length > 1) && groupPanels.length > 0 ? (
         <div data-dock-panels={open ?? ""} className="flex gap-1.5 overflow-x-auto">
-          {groupPanels.map((entry) => (
-            <button
-              key={entry.id}
-              type="button"
-              data-dock-panel={entry.id}
-              disabled={entry.reason !== undefined}
-              title={entry.reason}
-              aria-label={
-                entry.reason === undefined ? entry.label : `${entry.label} — ${entry.reason}`
-              }
-              onClick={() => onPanel(entry.id)}
-              style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 88 }}
-              className={`min-w-0 shrink-0 flex-1 rounded-lg border px-2 text-sm whitespace-nowrap ${
-                entry.reason === undefined
-                  ? "border-bronze/60 text-bronze"
-                  : "border-line/50 text-muted/40"
-              }`}
-            >
-              {entry.label}
-            </button>
-          ))}
+          {groupPanels.map((entry) => {
+            const active = entry.label === panelTitle;
+            return (
+              <button
+                key={entry.id}
+                type="button"
+                data-dock-panel={entry.id}
+                data-dock-panel-open={active ? "" : undefined}
+                aria-pressed={active}
+                disabled={entry.reason !== undefined}
+                title={entry.reason}
+                aria-label={
+                  entry.reason === undefined ? entry.label : `${entry.label} — ${entry.reason}`
+                }
+                onClick={() => onPanel(entry.id)}
+                style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 88 }}
+                className={`min-w-0 shrink-0 flex-1 rounded-lg border px-2 text-sm whitespace-nowrap ${
+                  entry.reason !== undefined
+                    ? "border-line/50 text-muted/40"
+                    : active
+                      ? "border-bronze bg-bronze/15 text-bronze font-medium"
+                      : "border-bronze/60 text-bronze"
+                }`}
+              >
+                {entry.label}
+              </button>
+            );
+          })}
         </div>
       ) : null}
 

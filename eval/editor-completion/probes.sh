@@ -68,6 +68,57 @@ probe "the slide's travel time is never a number" \
   src/lib/music/duration-language.ts 'export const SLIDE_TRAVEL = "Otomatik";' 'export const SLIDE_TRAVEL = "120 ms";' \
   src/lib/music/duration-language.test.ts "keeps the slide's travel automatic"
 
+# --------------------------------------------------- 2V-C.1 guitar gestures
+
+probe "the four bends really end differently" \
+  src/lib/audio/pitch-gesture.ts "return kind === \"bend_release\" || kind === \"prebend_release\";" "return true;" \
+  src/lib/audio/pitch-gesture.test.ts "bend rises from the written pitch and stays up"
+
+probe "a prebend starts already bent" \
+  src/lib/audio/pitch-gesture.ts "if (startsBent(gesture.kind)) {" "if (false) {" \
+  src/lib/audio/pitch-gesture.test.ts "prebend is already there"
+
+probe "vibrato waits for the target" \
+  src/lib/audio/pitch-gesture.ts "const from = reachedAt + delay;" "const from = 0;" \
+  src/lib/audio/pitch-gesture.test.ts "reaches the target before it starts moving"
+
+probe "a legacy bend keeps its own path" \
+  src/lib/audio/expression-plan.ts "if (resolved.pitch?.source === \"gesture\") {" "if (resolved.pitch !== null) {" \
+  src/lib/audio/legacy-expression.test.ts "bends half and full to exactly"
+
+probe "one axis answered twice is refused" \
+  src/lib/music/expression-resolver.ts "if (note.pitchGesture !== undefined && legacyPitch !== undefined) {" "if (false) {" \
+  src/lib/music/expression-resolver.test.ts "refuses two answers on one axis"
+
+probe "the shift slide is struck and the legato one is not" \
+  src/lib/audio/legato-chain.ts "if (restrikesTarget(resolved.connection)) return null;" "" \
+  src/lib/audio/gesture-playback.test.ts "leaves the shift slide an ordinary onset"
+
+probe "a resumed voice is read from its own automation" \
+  src/lib/audio/active-voices.ts "currentCents: cents," "currentCents: 0," \
+  src/lib/audio/gesture-playback.test.ts "is still up when the transport is paused"
+
+probe "the slide reads the sounding pitch, not the fret" \
+  src/lib/song/gesture-write.ts "if (interval === 0) return fail(\"no_direction\");" "" \
+  src/lib/song/gesture-write.test.ts "refuses two frets that sound the same"
+
+probe "a slide across silence is refused" \
+  src/lib/song/gesture-write.ts "if (slot === undefined || slot === null) return \"silence\";" "if (slot === undefined || slot === null) continue;" \
+  src/lib/song/gesture-write.test.ts "refuses a slide across real silence"
+
+probe "the shift slide is marked as the one that is struck" \
+  src/lib/music/gesture-language.ts "return { mark: \`s\${lean}\`, spoken: \"önceki notadan kaydır ve yeniden vur\" };" "return { mark: lean, spoken: \"önceki notadan kaydır ve yeniden vur\" };" \
+  src/lib/music/gesture-language.test.ts "marks the shift slide as the one"
+
+probe "L11's two sides really differ" \
+  src/lib/listening/gesture-take.ts "L11b: { ...HOLD, pitchGesture: { kind: \"bend_release\", targetCents: 200 } }," "L11b: { ...HOLD, pitchGesture: { kind: \"bend\", targetCents: 200 } }," \
+  src/lib/listening/gesture-take.test.ts "holds versus releases"
+
+probe "a transposed note carries its gestures with it" \
+  src/lib/song/transpose.ts "      ...note,
+      pitch," "      pitch," \
+  src/lib/song/transpose-acceptance.test.ts "keeps the bend"
+
 echo
 echo "$pass red · $fail did not"
 [ "$fail" -eq 0 ] || exit 1

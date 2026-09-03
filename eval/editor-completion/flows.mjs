@@ -139,6 +139,17 @@ const measure = (page) =>
     out.chordName =
       document.querySelector("[data-shelf-note=chord-name]")?.textContent?.trim() ?? null;
     out.chordShape = document.querySelector("[data-chord-shape]") !== null;
+    out.playingReading =
+      document.querySelector("[data-shelf-note=playing-reading]")?.textContent?.trim() ??
+      null;
+    out.playingRefusal =
+      document.querySelector("[data-shelf-note=playing-refusal]")?.textContent?.trim() ??
+      null;
+    /* Which second-level rows are on the screen: the panel opens on two
+       words and reveals the rest only after one is chosen (§13). */
+    out.playingRows = [...document.querySelectorAll("[data-shelf-row]")].map((node) =>
+      node.getAttribute("data-shelf-row"),
+    );
     return out;
   });
 
@@ -177,10 +188,56 @@ const reachable = (page) =>
   });
 
 const openPanel = async (page, group, panel) => {
-  await page.locator(`[data-dock-group=${group}]`).first().click().catch(() => {});
-  await page.waitForTimeout(250);
+  /*
+   * The group button toggles, so pressing it when the group is already open
+   * closes it and the panel button disappears. Asked rather than assumed: a
+   * runner that mis-sequences its own clicks reports a missing panel as a
+   * product defect.
+   */
+  const already = await page.locator(`[data-dock-panel=${panel}]`).count();
+  if (already === 0) {
+    await page.locator(`[data-dock-group=${group}]`).first().click().catch(() => {});
+    await page.waitForTimeout(250);
+  }
   await page.locator(`[data-dock-panel=${panel}]`).first().click().catch(() => {});
   await page.waitForTimeout(350);
+};
+
+/**
+ * A cell that really has a note in it.
+ *
+ * Bend and Kaydır are about a written note, so aiming at whatever is 20px in
+ * from the bar's left edge measures the runner's aim rather than the panel:
+ * at some layouts that cell is empty and the panel correctly says so.
+ */
+const notedCell = async (page) => {
+  /*
+   * Bring one into view first. At 740x360 every drawn note sits below the
+   * grid's own 111px window, so a runner that only looked at what is already
+   * on the screen found nothing and reported the panel as broken — while a
+   * reader would simply have scrolled. Scrolling is what a reader does.
+   */
+  await page.evaluate(() => {
+    document
+      .querySelector("[data-fret-glyph]")
+      ?.scrollIntoView({ block: "center", inline: "center" });
+  });
+  await page.waitForTimeout(200);
+  return page.evaluate(() => {
+    const column = document.querySelector("main")?.getBoundingClientRect();
+    if (!column) return null;
+    for (const glyph of document.querySelectorAll("[data-fret-glyph]")) {
+      const rect = glyph.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) continue;
+      const y = rect.top + rect.height / 2;
+      const x = rect.left + rect.width / 2;
+      if (y <= Math.max(column.top, 0) + 4) continue;
+      if (y >= Math.min(column.bottom, window.innerHeight) - 4) continue;
+      if (x <= 0 || x >= window.innerWidth) continue;
+      return { x: Math.round(x), y: Math.round(y) };
+    }
+    return null;
+  });
 };
 
 const holdRange = async (page) => {
@@ -236,6 +293,27 @@ const main = async () => {
     await openPanel(page, "ses", "chord");
     const chord = await measure(page);
 
+    /* ---------------------------------------------------- bend and slide */
+    /* Aim at a cell that has a note in it: the panel is about one. */
+    const noted = await notedCell(page);
+    if (noted) {
+      await page.mouse.click(noted.x, noted.y);
+      await page.waitForTimeout(300);
+    }
+    await openPanel(page, "calim", "playing");
+    const playingIdle = await measure(page);
+    await page.locator("[data-shelf-choice=door-bend]").first().click().catch(() => {});
+    await page.waitForTimeout(250);
+    const bendOpen = await measure(page);
+    await page.locator("[data-shelf-choice=move-bend_release]").first().click().catch(() => {});
+    await page.waitForTimeout(200);
+    await page.locator("[data-shelf-secondary=listen]").first().click().catch(() => {});
+    await page.waitForTimeout(350);
+    const bendStaged = await measure(page);
+    await page.locator("[data-shelf-choice=door-slide]").first().click().catch(() => {});
+    await page.waitForTimeout(300);
+    const slideOpen = await measure(page);
+
     /* ----------------------------------------------------- the transpose */
     await openPanel(page, "calim", "transpose");
     const transpose = await measure(page);
@@ -253,11 +331,26 @@ const main = async () => {
     const phrase = await measure(page);
     await page.screenshot({ path: `${OUT}flow-phrase-${viewport.name}.png` });
 
-    results[viewport.name] = { chord, transpose, staged, phrasePanel, phrase, errors };
+    results[viewport.name] = {
+      chord,
+      playingIdle,
+      bendOpen,
+      bendStaged,
+      slideOpen,
+      transpose,
+      staged,
+      phrasePanel,
+      phrase,
+      errors,
+    };
 
     const where = viewport.name;
     for (const [name, state] of [
       ["akor", chord],
+      ["çalım", playingIdle],
+      ["bend", bendOpen],
+      ["bend+ghost", bendStaged],
+      ["kaydır", slideOpen],
       ["taşı", transpose],
       ["taşı+ghost", staged],
       ["cümle paneli", phrasePanel],
@@ -284,6 +377,21 @@ const main = async () => {
       chord.openPanel === "chord" && chord.chordShape && Boolean(chord.chordName), chord.chordName ?? "-");
     check(where, "the chord's length is said in beats and in notation",
       /vuruş/.test(chord.spanReading ?? "") && /1\/\d/.test(chord.spanReading ?? ""), chord.spanReading ?? "-");
+    check(where, "Bend and Kaydır are the only two doors until one is opened",
+      playingIdle.playingRows?.includes("door") === true &&
+        playingIdle.playingRows?.includes("amount") !== true &&
+        playingIdle.playingRows?.includes("slide") !== true,
+      (playingIdle.playingRows ?? []).join("|"));
+    check(where, "choosing Bend reveals how far and which movement",
+      bendOpen.playingRows?.includes("amount") === true &&
+        bendOpen.playingRows?.includes("move") === true);
+    check(where, "choosing Kaydır replaces them with the slide options",
+      slideOpen.playingRows?.includes("slide") === true &&
+        slideOpen.playingRows?.includes("amount") !== true);
+    check(where, "the gesture is said in the words the tab will speak",
+      /perde/.test(bendOpen.playingReading ?? "") &&
+        !/cent|tick|slot/.test(bendOpen.playingReading ?? ""),
+      bendOpen.playingReading ?? "-");
     check(where, "the transposition names its own scope",
       /^Taşınacak: \S/.test(transpose.transposeScope ?? ""), transpose.transposeScope ?? "-");
     check(where, "a phrase can be named from the production shelf, and it draws",

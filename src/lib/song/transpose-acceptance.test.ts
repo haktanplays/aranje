@@ -17,6 +17,7 @@ import { readChord } from "@/lib/chords/chord-recognition";
 import { pitchToMidi } from "@/lib/music/pitch";
 import { pitchAt } from "@/lib/song/edit";
 import { namePhrase } from "@/lib/song/phrase-write";
+import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { transposeSong } from "@/lib/song/transpose";
 import {
   songSchema,
@@ -331,5 +332,111 @@ describe("73. the guitar doing the playing is a real one", () => {
     const refused = transposeSong(before, { semitones: 40, target: { scope: "song" } });
     expect(refused.ok).toBe(false);
     expect(laneOf(before)).toEqual(laneOf(song()));
+  });
+});
+
+describe("100. a transposition carries the hand's gestures with the notes", () => {
+  const bent = (): Song => {
+    const lane: MelodicSlot[] = Array.from({ length: 16 }, () => null);
+    lane[0] = {
+      notes: [
+        at(STANDARD, 2, 7, {
+          pitchGesture: {
+            kind: "bend",
+            targetCents: 200,
+            vibrato: { startAfterTarget: true, depthCents: 20, rateHz: 5 },
+          },
+        }),
+      ],
+    };
+    lane[1] = "-";
+    lane[4] = { notes: [at(STANDARD, 2, 5)] };
+    lane[5] = "-";
+    lane[6] = { notes: [at(STANDARD, 2, 7, { connection: { kind: "shift_slide" } })] };
+    lane[8] = { notes: [at(STANDARD, 3, 5)] };
+    lane[9] = "-";
+    lane[10] = { notes: [at(STANDARD, 3, 7, { connection: { kind: "legato_slide" } })] };
+    return songSchema.parse({
+      ...SAMPLE_SONG,
+      key: "E minor",
+      tracks: SAMPLE_SONG.tracks,
+      sections: [
+        {
+          ...SAMPLE_SONG.sections[0]!,
+          bars: [
+            { timeSignature: [4, 4], resolution: 16, slots: { [TRACK]: lane } },
+          ],
+        },
+      ],
+    } satisfies Song);
+  };
+
+  const movedLane = (semitones: number) => {
+    const result = transposeSong(bent(), { semitones, target: { scope: "song" } });
+    if (!result.ok) throw new Error(result.error.message);
+    return result.song.sections[0]!.bars[0]!.slots[TRACK] as MelodicSlot[];
+  };
+
+  const voiceAt = (lane: MelodicSlot[], slot: number): NoteEvent => {
+    const entry = lane[slot];
+    if (!entry || entry === "-") throw new Error("no note there");
+    return entry.notes[0]!;
+  };
+
+  it("keeps the bend's amount in cents rather than in frets", () => {
+    /* Two semitones up does not make a full bend into a bend and a half: the
+       gesture is a distance the hand travels, not a place on the neck. */
+    expect(voiceAt(movedLane(2), 0).pitchGesture).toEqual(
+      voiceAt(bent().sections[0]!.bars[0]!.slots[TRACK] as MelodicSlot[], 0)
+        .pitchGesture,
+    );
+  });
+
+  it("keeps the bend's kind and its top vibrato", () => {
+    const gesture = voiceAt(movedLane(-3), 0).pitchGesture!;
+    expect(gesture.kind).toBe("bend");
+    if (gesture.kind !== "bend") return;
+    expect(gesture.vibrato).toEqual({
+      startAfterTarget: true,
+      depthCents: 20,
+      rateHz: 5,
+    });
+  });
+
+  it("keeps each slide the kind of slide it was", () => {
+    const lane = movedLane(2);
+    expect(voiceAt(lane, 6).connection).toEqual({ kind: "shift_slide" });
+    expect(voiceAt(lane, 10).connection).toEqual({ kind: "legato_slide" });
+  });
+
+  it("keeps the slide's direction, read from the moved pitches", () => {
+    const before = bent().sections[0]!.bars[0]!.slots[TRACK] as MelodicSlot[];
+    const after = movedLane(2);
+    const rise = (lane: MelodicSlot[], from: number, to: number) =>
+      Math.sign(
+        pitchToMidi(voiceAt(lane, to).pitch)! - pitchToMidi(voiceAt(lane, from).pitch)!,
+      );
+    expect(rise(after, 4, 6)).toBe(rise(before, 4, 6));
+    expect(rise(after, 8, 10)).toBe(rise(before, 8, 10));
+  });
+
+  it("still plays both slides the way their kinds say, after the move", () => {
+    const result = transposeSong(bent(), { semitones: 2, target: { scope: "song" } });
+    if (!result.ok) throw new Error(result.error.message);
+    const plan = buildExpressionPlan(result.song);
+    const shift = plan.notes.find(
+      (note) => note.trackId === TRACK && note.timeTicks === 288,
+    )!;
+    const legato = plan.notes.find(
+      (note) => note.trackId === TRACK && note.timeTicks === 480,
+    )!;
+    expect(shift.chainId).toBeUndefined();
+    expect(legato.chainRole).toBe("target");
+  });
+
+  it("adds no gesture to a note that had none", () => {
+    const lane = movedLane(2);
+    expect(voiceAt(lane, 4).pitchGesture).toBeUndefined();
+    expect(voiceAt(lane, 4).connection).toBeUndefined();
   });
 });

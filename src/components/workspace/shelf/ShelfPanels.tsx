@@ -17,6 +17,7 @@ import { DurationPanel } from "@/components/workspace/shelf/DurationPanel";
 import { FastSequencePanel } from "@/components/workspace/shelf/FastSequencePanel";
 import { NotePanel } from "@/components/workspace/shelf/NotePanel";
 import { PhrasePanel } from "@/components/workspace/shelf/PhrasePanel";
+import { PlayingPanel } from "@/components/workspace/shelf/PlayingPanel";
 import { TransposePanel } from "@/components/workspace/shelf/TransposePanel";
 import { pitchAt } from "@/lib/song/edit";
 import type { EditDraft } from "@/lib/workspace/edit-draft";
@@ -131,6 +132,26 @@ export function ShelfPanels({
   }
 
   if (!target) return null;
+
+  /*
+   * Bend and Kaydır are about one note under the finger, so unlike Taşı they
+   * need a target — and the panel asks the write command itself which of the
+   * six slides that note can take (2V-C.1 §13).
+   */
+  if (panel === "playing") {
+    return (
+      <PlayingPanel
+        song={song}
+        target={target}
+        noteIndex={0}
+        fret={noteEditing.currentFret}
+        draft={draft}
+        onPropose={onPropose}
+        onPreview={onPreview}
+        onApply={onApply}
+      />
+    );
+  }
 
   if (panel === "note") {
     return (
