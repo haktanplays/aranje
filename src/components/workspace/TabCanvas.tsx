@@ -326,7 +326,7 @@ export function TabCanvas({
       />
       <div
         ref={scrollRef}
-        className="h-full overflow-x-auto overscroll-x-contain"
+        className="h-full overflow-auto overscroll-x-contain"
         style={{ paddingTop: STAFF_TOP_PADDING }}
       >
         <div

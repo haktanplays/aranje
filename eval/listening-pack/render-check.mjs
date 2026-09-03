@@ -79,12 +79,19 @@ const main = async () => {
   }));
 
   check("the page names the build it was opened for", header.sha === sha, header.sha);
-  check("it offers eight clips", header.clips.length === 8, header.clips.join(","));
-  check("every clip is a listening question", header.clips.join(",") === "L1,L2,L3,L4,L5,L6,L7,L8", header.clips.join(","));
+  /* Ten since 2V-B.3 added the loop return and the fast run, and exactly ten:
+     the batch was allowed two new cards and the count is how "exactly two"
+     stays checkable. */
+  check("it offers ten clips", header.clips.length === 10, header.clips.join(","));
+  check(
+    "every clip is a listening question",
+    header.clips.join(",") === "L1,L2,L3,L4,L5,L6,L7,L8,L9,L10",
+    header.clips.join(","),
+  );
   check("it credits the sample source", header.attribution.includes("http"), header.attribution);
   check(
     "nothing is answered before anyone answers",
-    (header.result.match(/ölçülmedi/g) ?? []).length === 8,
+    (header.result.match(/ölçülmedi/g) ?? []).length === 10,
     "",
   );
   check(

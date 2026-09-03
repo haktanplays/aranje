@@ -21,12 +21,14 @@ import {
   RESTRIKE_ANSWERS,
 } from "@/lib/listening/clip-plan";
 import { formatListeningResult } from "@/lib/listening/listening-result";
+import { sequenceTake } from "@/lib/listening/sequence-take";
 import { inWindow } from "@/lib/playback/selection-playback";
 
 const song = editorFixture();
 const tempo = buildTempoMap(song);
 const chord = chordTake(song, { rootPitchClass: 4, quality: "minor" });
-const clips = listeningClips(song, chord);
+const sequence = sequenceTake(song);
+const clips = listeningClips(song, chord, sequence);
 const clipOf = (id: string) => {
   const found = clips.find((entry) => entry.id === id);
   if (!found) throw new Error(`no clip ${id}`);
@@ -34,7 +36,7 @@ const clipOf = (id: string) => {
 };
 
 describe("the pack the founder is handed", () => {
-  it("asks nine questions and no more", () => {
+  it("asks ten questions and no more", () => {
     expect(clips.map((clip) => clip.id)).toEqual([
       "L1",
       "L2",
@@ -44,9 +46,11 @@ describe("the pack the founder is handed", () => {
       "L6",
       "L7",
       "L8",
-      /* 2V-B.3 §7 adds exactly one, and the count is asserted here so that
-         "exactly one" stays true the next time somebody has an idea. */
+      /* 2V-B.3 adds exactly two — the loop return and the fast run — and the
+         count is asserted here so that "exactly two" stays true the next time
+         somebody has an idea. */
       "L9",
+      "L10",
     ]);
   });
 
@@ -187,7 +191,7 @@ describe("what each clip actually contains", () => {
   it("has something to sound in every single-segment take", () => {
     const events = buildNotatedPlan(song).events;
     for (const clip of clips) {
-      if (clip.id === "L8") continue;
+      if (clip.id === "L8" || clip.id === "L10") continue;
       for (const take of clip.takes) {
         const heard = take.segments.some(
           (segment) =>
@@ -300,8 +304,8 @@ describe("the block the founder pastes back", () => {
 
   it("says ölçülmedi for every unanswered clip", () => {
     const block = formatListeningResult({ ...base, answers: {} });
-    expect((block.match(/ölçülmedi/g) ?? []).length).toBe(9);
-    expect(block).toContain("Cevaplanmamış: 9/9");
+    expect((block.match(/ölçülmedi/g) ?? []).length).toBe(10);
+    expect(block).toContain("Cevaplanmamış: 10/10");
     expect(block).not.toContain("Olmuş");
   });
 
@@ -323,7 +327,7 @@ describe("the block the founder pastes back", () => {
     });
     expect(block).toContain("L1 Gitar: Olmuş");
     expect(block).toContain("L2 Bas: Kısmen — kulaklıkta daha net");
-    expect(block).toContain("Cevaplanmamış: 7/9");
+    expect(block).toContain("Cevaplanmamış: 8/10");
   });
 
   it("names the build and the music without asking anyone to check them", () => {
@@ -338,7 +342,7 @@ describe("the block the founder pastes back", () => {
       answers: Object.fromEntries(clips.map((clip) => [clip.id, "Olmuş"])),
       note: "genel olarak iyi",
     });
-    expect(block.split("\n").length).toBeLessThanOrEqual(14);
+    expect(block.split("\n").length).toBeLessThanOrEqual(15);
     expect(block.length).toBeLessThan(600);
   });
 });

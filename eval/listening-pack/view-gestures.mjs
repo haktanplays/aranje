@@ -86,10 +86,24 @@ const selectSomething = async (page) => {
     const node = document.querySelector("[data-bar-drag-index]");
     if (!node) return null;
     const rect = node.getBoundingClientRect();
-    const lines = [...document.querySelectorAll("[data-string-line]")].map((line) => {
-      const at = line.getBoundingClientRect();
-      return at.top + at.height / 2;
-    });
+    /*
+     * A string a finger could really touch (2V-B.3 §8).
+     *
+     * The work area clips its own overflow now, so on a short screen the
+     * lower strings are laid out below the column and scrolled to rather
+     * than reachable. Pressing the *middle* line regardless was pressing
+     * whatever control sits under the clip — which opened the track sheet
+     * and reported the grid as covered by it.
+     */
+    const column = (node.closest("main") ?? node).getBoundingClientRect();
+    const top = Math.max(column.top, 0);
+    const bottom = Math.min(column.bottom, window.innerHeight);
+    const lines = [...document.querySelectorAll("[data-string-line]")]
+      .map((line) => {
+        const at = line.getBoundingClientRect();
+        return at.top + at.height / 2;
+      })
+      .filter((at) => at > top + 4 && at < bottom - 4);
     const y = lines[Math.floor(lines.length / 2)];
     return y === undefined ? null : { x: rect.left + 20, y };
   });
@@ -145,6 +159,33 @@ const pinch = async (page, factor) =>
     ]);
     return true;
   }, factor);
+
+/** Group "bar#slot:string" onsets by bar, so two snapshots can be compared. */
+const byBar = (music) => {
+  const out = new Map();
+  for (const entry of music ? music.split(",").filter(Boolean) : []) {
+    const bar = entry.split("#")[0];
+    if (!out.has(bar)) out.set(bar, new Set());
+    out.get(bar).add(entry);
+  }
+  return out;
+};
+
+const sameWhereBothDrew = (left, right) => {
+  const a = byBar(left);
+  const b = byBar(right);
+  let shared = 0;
+  for (const [bar, onsets] of a) {
+    const other = b.get(bar);
+    if (!other) continue;
+    shared += 1;
+    if (onsets.size !== other.size) return false;
+    for (const onset of onsets) if (!other.has(onset)) return false;
+  }
+  /* And they really did share a bar: an empty intersection would make the
+     claim above true by saying nothing. */
+  return shared > 0;
+};
 
 const main = async () => {
   const sha = process.env.SHA;
@@ -235,9 +276,15 @@ const main = async () => {
     };
     const checks = {
       zoomControlsExist: say(base.magnification !== null, "no zoom controls or staff"),
-      onePresetMagnifies: say(
-        steps.oneBar.barScreenPx > base.barScreenPx * 0.99,
-        "1 ölçü did not widen the measure",
+      /*
+       * "1 ölçü" means one measure fills the screen — which on a 360px phone
+       * is a *smaller* magnification, because one 1/16 bar is 544 content px
+       * and already wider than the viewport. The claim is about fit, not
+       * about direction.
+       */
+      onePresetFitsOneMeasure: say(
+        Math.abs(steps.oneBar.barScreenPx - steps.oneBar.viewportPx) <= 2,
+        `1 ölçü put ${steps.oneBar.barScreenPx}px of measure on a ${steps.oneBar.viewportPx}px screen`,
       ),
       fourPresetShrinks: say(
         steps.fourBars.barScreenPx < steps.oneBar.barScreenPx,
@@ -247,10 +294,19 @@ const main = async () => {
         steps.pinched.magnification > steps.fit.magnification,
         "the pinch did not magnify",
       ),
+      /*
+       * The music is unchanged, said the only way that is true.
+       *
+       * A magnification changes how many *bars* are mounted — that is the
+       * windowing doing its job, and comparing the whole list would call it a
+       * mutation. What must hold is that for every bar both snapshots drew,
+       * the same onsets are in the same slots on the same strings: no note
+       * moved, appeared or vanished in any measure the reader can see.
+       */
       musicUnchanged: say(
         [steps.oneBar, steps.fourBars, steps.zoomIn, steps.fit, steps.pinched, steps.panned]
-          .every((step) => step.music === base.music),
-        "the drawn music changed under a camera move",
+          .every((step) => sameWhereBothDrew(base.music, step.music)),
+        "a note moved, appeared or vanished under a camera move",
       ),
       selectionKept: say(
         !held ||

@@ -190,6 +190,25 @@ export const barSchema = z
 
 export const sectionStatusSchema = z.enum(["fixed", "pending", "accepted"]);
 
+/**
+ * One musical region, addressed in ticks from the start of its section.
+ *
+ * Ticks, not bar numbers, for the reason every other position in this format
+ * is in ticks: bars stopped sharing a grid in 2H-A, so a phrase named by slots
+ * would mean different music in different bars. `endTicks` is exclusive, like
+ * every other range here.
+ */
+export const phraseSchema = z
+  .strictObject({
+    id: z.string().min(1),
+    name: z.string().min(1).optional(),
+    startTicks: z.number().int().min(0),
+    endTicks: z.number().int().min(1),
+  })
+  .refine((phrase) => phrase.endTicks > phrase.startTicks, {
+    message: "phrase ends before it starts",
+  });
+
 export const sectionSchema = z.strictObject({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -209,6 +228,21 @@ export const sectionSchema = z.strictObject({
    */
   bpmOverride: z.number().min(bpmRange.min).max(bpmRange.max).optional(),
   bars: z.array(barSchema).min(1).max(songLimits.barsPerSection),
+  /**
+   * Musical regions of this section, in ticks (2V-B.3 §13).
+   *
+   * A phrase is not a measure and it is not the grid. It is a stretch of music
+   * the reader thinks of as one thing, and it may be shorter than a bar,
+   * longer than a bar, or longer than what is on the screen. Until this field
+   * existed the app had no way to say that at all, and "phrase" quietly meant
+   * "whatever is visible" — which is how a musical idea ends up being split
+   * at a viewport edge that has nothing to do with it.
+   *
+   * Optional, and absent in every song written before now. Absence is not a
+   * default phrase covering the section: it means this song has not said
+   * anything about its phrases, and nothing may invent one.
+   */
+  phrases: z.array(phraseSchema).max(songLimits.barsPerSection).optional(),
 });
 
 export const fretboardSchema = z.strictObject({
@@ -257,6 +291,7 @@ export type DrumPiece = z.infer<typeof drumPieceSchema>;
 export type DrumHit = z.infer<typeof drumHitSchema>;
 export type DrumSlot = z.infer<typeof drumSlotSchema>;
 export type Bar = z.infer<typeof barSchema>;
+export type Phrase = z.infer<typeof phraseSchema>;
 export type SectionStatus = z.infer<typeof sectionStatusSchema>;
 export type Section = z.infer<typeof sectionSchema>;
 export type Fretboard = z.infer<typeof fretboardSchema>;

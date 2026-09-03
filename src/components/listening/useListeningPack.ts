@@ -27,6 +27,7 @@ import { editorFixture } from "@/lib/acceptance/editor-fixture";
 import { songSupport } from "@/lib/acceptance/song-support";
 import { clipFault, type ClipAudit } from "@/lib/listening/clip-audit";
 import { chordTake } from "@/lib/listening/chord-take";
+import { sequenceTake } from "@/lib/listening/sequence-take";
 import { listeningClips, type ListeningClip } from "@/lib/listening/clip-plan";
 import { renderTake } from "@/lib/listening/render-clip";
 import type { Song } from "@/lib/song/schema";
@@ -94,11 +95,16 @@ export function useListeningPack(): ListeningPack {
   const { song, clips, songFor } = useMemo(() => {
     const fixture = editorFixture();
     const chord = chordTake(fixture, { rootPitchClass: 4, quality: "minor" });
-    const built = listeningClips(fixture, chord);
+    const sequence = sequenceTake(fixture);
+    const built = listeningClips(fixture, chord, sequence);
     const byTake: Record<string, Song> = {};
     for (const clip of built) {
       for (const take of clip.takes) {
-        byTake[take.id] = take.id === "L8b" && chord ? chord.song : fixture;
+        /* Two clips play music this batch wrote rather than the fixture: the
+           chord the flow recommends, and the fast run the command produces. */
+        if (take.id === "L8b" && chord) byTake[take.id] = chord.song;
+        else if (take.id === "L10" && sequence) byTake[take.id] = sequence.song;
+        else byTake[take.id] = fixture;
       }
     }
     return { song: fixture, clips: built, songFor: byTake };

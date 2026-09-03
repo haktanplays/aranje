@@ -75,9 +75,19 @@ const measure = (page) =>
        * `elementFromPoint` outside the viewport returns null — which would
        * read as "covered" when nothing is covering anything.
        */
-      const top = Math.max(rect.top, 0);
-      const bottom = Math.min(rect.bottom, window.innerHeight);
-      const x = Math.round(Math.min(Math.max(rect.left + rect.width / 2, 1), window.innerWidth - 1));
+      /*
+       * The grid's *visible* box: its own rect intersected with the column
+       * that clips it and with the viewport. The content element is taller
+       * and far wider than the window — that is what a scroller is for — so
+       * its raw centre is a point no finger can reach, and asking
+       * `elementFromPoint` about it answers a question nobody was asking.
+       */
+      const column = (grid.closest("main") ?? grid).getBoundingClientRect();
+      const top = Math.max(rect.top, column.top, 0);
+      const bottom = Math.min(rect.bottom, column.bottom, window.innerHeight);
+      const left = Math.max(rect.left, column.left, 0);
+      const right = Math.min(rect.right, column.right, window.innerWidth);
+      const x = Math.round(Math.min(Math.max((left + right) / 2, 1), window.innerWidth - 1));
       const y = Math.round((top + bottom) / 2);
       out.gridVisibleHeight = Math.round(Math.max(0, bottom - top));
       const hit = document.elementFromPoint(x, y);
@@ -147,15 +157,28 @@ const main = async () => {
     /* And with a selection open, which is when the action row exists. */
     const spot = await page.evaluate(() => {
       const node = document.querySelector("[data-bar-drag-index]");
-      if (!node) return null;
-      const rect = node.getBoundingClientRect();
-      const lines = [...document.querySelectorAll("[data-string-line]")].map((line) => {
+    if (!node) return null;
+    const rect = node.getBoundingClientRect();
+    /*
+     * A string a finger could really touch (2V-B.3 §8).
+     *
+     * The work area clips its own overflow now, so on a short screen the
+     * lower strings are laid out below the column and scrolled to rather
+     * than reachable. Pressing the *middle* line regardless was pressing
+     * whatever control sits under the clip — which opened the track sheet
+     * and reported the grid as covered by it.
+     */
+    const column = (node.closest("main") ?? node).getBoundingClientRect();
+    const top = Math.max(column.top, 0);
+    const bottom = Math.min(column.bottom, window.innerHeight);
+    const lines = [...document.querySelectorAll("[data-string-line]")]
+      .map((line) => {
         const at = line.getBoundingClientRect();
         return at.top + at.height / 2;
-      });
-      const y = lines[Math.floor(lines.length / 2)];
-      const x = rect.left + 20;
-      return y === undefined ? null : { x, y };
+      })
+      .filter((at) => at > top + 4 && at < bottom - 4);
+    const y = lines[Math.floor(lines.length / 2)];
+    return y === undefined ? null : { x: rect.left + 20, y };
     });
     if (spot) {
       await page.mouse.move(spot.x, spot.y);

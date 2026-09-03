@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-09-03T09:08:16.805Z",
-  "sha": "2373a87",
+  "generatedAt": "2026-09-03T12:23:44.218Z",
+  "sha": "60e186d",
   "fingerprint": "Editör kabul parçası · s3777h1h8tp95",
-  "passed": 53,
+  "passed": 57,
   "failed": 0,
   "takes": [
     {
       "takeId": "L1",
       "state": "playing",
-      "renderMs": 454,
+      "renderMs": 404,
       "audit": {
         "frames": 396900,
         "seconds": 9,
@@ -22,12 +22,12 @@
     {
       "takeId": "L2",
       "state": "playing",
-      "renderMs": 289,
+      "renderMs": 308,
       "audit": {
         "frames": 396900,
         "seconds": 9,
         "peak": 0.2867051959037781,
-        "rms": 0.03212978639550667,
+        "rms": 0.032129786395509494,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -36,12 +36,12 @@
     {
       "takeId": "L3a",
       "state": "playing",
-      "renderMs": 194,
+      "renderMs": 179,
       "audit": {
         "frames": 286650,
         "seconds": 6.5,
         "peak": 0.28158000111579895,
-        "rms": 0.032550387574673094,
+        "rms": 0.03255038757968847,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -50,12 +50,12 @@
     {
       "takeId": "L3b",
       "state": "playing",
-      "renderMs": 195,
+      "renderMs": 161,
       "audit": {
         "frames": 272868,
         "seconds": 6.187482993197279,
-        "peak": 0.27016937732696533,
-        "rms": 0.029483692032634897,
+        "peak": 0.2701694071292877,
+        "rms": 0.029483692028443694,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -64,12 +64,12 @@
     {
       "takeId": "L4a",
       "state": "playing",
-      "renderMs": 215,
+      "renderMs": 198,
       "audit": {
         "frames": 286650,
         "seconds": 6.5,
         "peak": 0.27778318524360657,
-        "rms": 0.0356287452689427,
+        "rms": 0.03562874526096589,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -78,7 +78,7 @@
     {
       "takeId": "L4b",
       "state": "playing",
-      "renderMs": 314,
+      "renderMs": 243,
       "audit": {
         "frames": 286649,
         "seconds": 6.499977324263039,
@@ -92,7 +92,7 @@
     {
       "takeId": "L5",
       "state": "playing",
-      "renderMs": 154,
+      "renderMs": 128,
       "audit": {
         "frames": 143325,
         "seconds": 3.25,
@@ -106,7 +106,7 @@
     {
       "takeId": "L6",
       "state": "playing",
-      "renderMs": 161,
+      "renderMs": 128,
       "audit": {
         "frames": 165375,
         "seconds": 3.75,
@@ -120,12 +120,12 @@
     {
       "takeId": "L7",
       "state": "playing",
-      "renderMs": 218,
+      "renderMs": 163,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.27778318524360657,
-        "rms": 0.0324480218863794,
+        "rms": 0.03244802189078543,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -134,12 +134,12 @@
     {
       "takeId": "L8a",
       "state": "playing",
-      "renderMs": 185,
+      "renderMs": 156,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.28158000111579895,
-        "rms": 0.03912069715516174,
+        "rms": 0.03912069714556992,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -148,12 +148,26 @@
     {
       "takeId": "L8b",
       "state": "playing",
-      "renderMs": 162,
+      "renderMs": 145,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.3277737498283386,
-        "rms": 0.05337357358485697,
+        "rms": 0.053373573577541356,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L9",
+      "state": "playing",
+      "renderMs": 295,
+      "audit": {
+        "frames": 168588,
+        "seconds": 3.822857142857143,
+        "peak": 0.2701694071292877,
+        "rms": 0.05332385151300895,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -164,17 +178,17 @@
     {
       "name": "the page names the build it was opened for",
       "pass": true,
-      "detail": "2373a87"
+      "detail": "60e186d"
     },
     {
-      "name": "it offers eight clips",
+      "name": "it offers nine clips",
       "pass": true,
-      "detail": "L1,L2,L3,L4,L5,L6,L7,L8"
+      "detail": "L1,L2,L3,L4,L5,L6,L7,L8,L9"
     },
     {
       "name": "every clip is a listening question",
       "pass": true,
-      "detail": "L1,L2,L3,L4,L5,L6,L7,L8"
+      "detail": "L1,L2,L3,L4,L5,L6,L7,L8,L9"
     },
     {
       "name": "it credits the sample source",
@@ -413,6 +427,26 @@
     },
     {
       "name": "L8b has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L9 rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.270 rms=0.0533 s=3.82 clip=0"
+    },
+    {
+      "name": "L9 is not silent",
+      "pass": true,
+      "detail": "peak=0.2702"
+    },
+    {
+      "name": "L9 does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L9 has no invalid samples",
       "pass": true,
       "detail": "0"
     },

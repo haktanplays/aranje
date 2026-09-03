@@ -175,7 +175,16 @@ export function WorkspaceSurface({
       : null;
 
   return (
-    <main className="min-h-0 flex-1">
+    /*
+     * Clipped, and scrolled inside itself (2V-B.3 §8).
+     *
+     * In landscape the work area is 139px tall and the staff in edit mode is
+     * 320. Without this the staff simply spilled out of its own column and
+     * was drawn over the transport — measured, not supposed. The grid keeps
+     * its full height and the reader scrolls to the rest of it, which is what
+     * every other surface with more content than room does.
+     */
+    <main className="min-h-0 flex-1 overflow-hidden">
       {navigation.view === "arrange" ? (
         <ArrangementCanvas
           /* Called here and nowhere else: this branch is the only reader,

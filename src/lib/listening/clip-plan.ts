@@ -1,5 +1,5 @@
 /**
- * The nine things the founder is asked to listen to (2W §3, §4; 2V-B.3 §7).
+ * The ten things the founder is asked to listen to (2W §3, §4; 2V-B.3 §7).
  *
  * ## Why this file exists at all
  *
@@ -84,7 +84,8 @@ export type ListeningClipId =
   | "L6"
   | "L7"
   | "L8"
-  | "L9";
+  | "L9"
+  | "L10";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -143,7 +144,21 @@ export type ChordSide = {
   readonly barNumber: number;
 };
 
-export function listeningClips(song: Song, chord: ChordSide | null): ListeningClip[] {
+/**
+ * L10's music: the same shape as L8's B side, and for the same reason.
+ *
+ * It is a second Song rather than a second window, because the fast run is
+ * music this batch's own command wrote. When the command refuses, the card is
+ * not offered at all — an L10 with nothing in it would be a question the
+ * founder could not answer.
+ */
+export type SequenceSide = ChordSide;
+
+export function listeningClips(
+  song: Song,
+  chord: ChordSide | null,
+  sequence: SequenceSide | null = null,
+): ListeningClip[] {
   const support: SongSupport = songSupport(song);
   const guitar = support.slide?.trackId ?? song.tracks[0]?.id ?? "gtr";
   const everyone = support.sharedBar?.trackIds ?? song.tracks.map((track) => track.id);
@@ -401,6 +416,38 @@ export function listeningClips(song: Song, chord: ChordSide | null): ListeningCl
       answers: LISTENING_ANSWERS,
       takes: [{ id: "L9", name: "Dinle · 4 tur", segments: passes }],
       expects: { trackIds: [guitar], minSeconds: 2, maxSeconds: 14 },
+    });
+  }
+
+  /*
+   * L10 · the fast connected run (2V-B.3, "Hızlı dizi").
+   *
+   * One short context and one question. The bar opens with two ordinary
+   * eighths, the `9–10–9` goes into the third, and the note after it arrives
+   * on the beat it was always on — so all three parts of "did it speed up
+   * without stretching anything" are in one listen. The founder chooses no
+   * subdivision, enters no notes and performs no editor gesture.
+   */
+  if (sequence) {
+    clips.push({
+      id: "L10",
+      label: "Hızlı bağlı dizi (\"9–10–9\")",
+      instruction: "Önce normal ritim, sonra aynı süreye sığan hızlı dizi.",
+      question: "9–10–9 doğal biçimde hızlanıp tek bir bağlı gitar hareketi gibi duyuluyor mu?",
+      answers: LISTENING_ANSWERS,
+      takes: [
+        {
+          id: "L10",
+          name: "Dinle",
+          segments: [
+            plain(
+              bars(sequence.song, sequence.barNumber, sequence.barNumber + 1, [guitar]),
+              2,
+            ),
+          ],
+        },
+      ],
+      expects: { trackIds: [guitar], minSeconds: 2, maxSeconds: 7 },
     });
   }
 

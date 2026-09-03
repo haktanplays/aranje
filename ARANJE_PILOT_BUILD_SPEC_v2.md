@@ -4322,6 +4322,137 @@ kontrolleri yeşil kalır. Yalnız rolü değişti: geliştirici tanılama arac�
 8. adımın (`move`) gerçekten yapılmış bir taşımayı görmemesi **bloke etmeyen
 tanılama kusuru** olarak kayıtlıdır; üretim taşıması şüphede değildir.
 
+#### §13.35.4 L1–L8 fiziksel dinleme sonucu — ürün otoritesi (2V-B.3)
+
+Founder `7fc48e3` paketini **fiziksel olarak dinledi**. Aşağıdaki tablo bir
+tahmin ya da bir ölçüm değil, **kabul kaydıdır**; bundan sonraki turlar bu
+satırları veri olarak alır ve aynı soruları yeniden sormaz.
+
+| Örnek | Sonuç |
+|---|---|
+| L1 · Yalnız gitar | PASS |
+| L2 · Gitar + bas | PASS |
+| L3 · Tutulan notanın ortasından başlama | PASS |
+| L4 · Duraklat/devam | **INCONCLUSIVE** — pilot için bloke etmez |
+| L5 · Slide | **CONDITIONAL PASS** — pilot kabul, cila borcu |
+| L6 · Vibrato | PASS |
+| L7 · Hammer-on / pull-off | **CONDITIONAL PASS** — pilot kabul, cila borcu |
+| L8 · Power chord / normal akor | PASS |
+
+Cevaplanmamış: 0/8 · parça parmak izi `s3777h1h8tp95`.
+
+L4/L5/L7 üzerinde yeni cila turu **açılmaz**; borç kayıtlıdır ve pilotu
+durdurmaz. Founder eski editör harness'ına geri gönderilmez.
+
+#### §13.35.5 L9 ve L10 (2V-B.3)
+
+Pakete tam iki kart eklendi ve ikisi de tek dokunuşluk ses onayından fazlasını
+istemez:
+
+- **L9 · Uzayan akorun loop dönüşü.** Aynı kısa bölüm arka arkaya dört kez,
+  üretim motoru ve üretim seçim-döngüsü planıyla. Tek soru: «Dört turda da
+  akor kuyruğu aynı şekilde geliyor mu?» Turlar arasında hiçbir yapay tık
+  yoktur — dördü de aynı `planSelectionIteration` okumasıdır.
+- **L10 · Hızlı bağlı dizi («9–10–9»).** Önce normal ritim, sonra aynı süreye
+  sığan `9h10p9`, sonra sonraki nota zamanında. Tek soru: «9–10–9 doğal
+  biçimde hızlanıp tek bir bağlı gitar hareketi gibi duyuluyor mu?» Alt
+  bölünme seçimi, nota girişi ve editör hareketi yoktur.
+
+### §13.36 Kamera, ölçü, cümle ve ritim eksenleri (2V-B.3)
+
+#### §13.36.1 Döngü sınırı sözleşmesi
+
+Seçimli bir döngü müziğini **iki ayrı mekanizmayla** taşır: pencere içindeki
+onset'ler transport'a aittir ve her dönüşte kendiliğinden gelir; pencere
+açılmadan önce başlamış bir nota ise bir olay değil, `activeVoicesAt` ile
+yeniden kurulup `expression.resumeAt` ile geri konan bir **devamdır**.
+
+`planSelectionIteration` bir geçişin ne olduğunu tek bir değer olarak söyler:
+açılış tick'i, devamın sınırlandığı pencere ve devam edilecek bir şey olup
+olmadığı. **İlk play, duraklamadan sonraki devam ve loop wrap üçü de bunu
+okur.** Pencerenin alt sınırı düşürülür, üst sınırı ve track filtresi kalır:
+seçimin ilk tick'inden önce başlamış bir ses tam olarak istenen şeydir, seçili
+olmayan bir enstrümandan gelen ses ise dinleyicinin duymak istemediğidir.
+
+Bir devam, ait olduğu pencerenin sonunda kesilir (`activeVoicesAt`), böylece
+«bu ne zaman durur» sorusunun cevabı offline render'ın da erişebildiği tek bir
+yerdedir.
+
+#### §13.36.2 Görünüm yakınlığı bir kameradır
+
+Zoom **yalnız görünüm durumudur**. Şarkıyı, nota zamanını, ölçüyü, cümleyi ya
+da işlem defterini değiştiremez — disiplinle değil, yapı gereği: bir basış bir
+`ZoomCommand` olur, bir komut bir büyütme ve bir kaydırma konumuna çözülür ve
+ikisinin de ulaşabileceği bir `commit` yoktur.
+
+Eksen kendi piksellerinde kalır; büyütme yalnız scroller'ın okunduğu **tek
+sınırda** uygulanır. Bu yüzden bir nota her büyütmede aynı x'tedir ve «seçim
+aynı tick aralığında kaldı» hatırlanması gereken bir kural değil, ihlal
+edilebilecek bir kod yolu olmayan bir sonuçtur.
+
+Denetimler: `−`, `1 ölçü`, `2 ölçü`, `4 ölçü`, `+`, `Seçime sığdır`. İki
+parmak aynı görünüm modeline bağlıdır. Dört hareket aynı yüzeyi paylaştığı için
+aralarındaki sıralama tek bir yerdedir: kalem seçim sürüklemesini, sürükleme
+pan'i, iki parmak hepsini geçer.
+
+#### §13.36.3 Grid, ölçü, cümle ve seçim ayrı şeylerdir
+
+- **Grid** — ekranda o an görünen zaman penceresi. Müzikal anlamı yoktur.
+- **Ölçü** — ölçü işaretinin zaman bölümü.
+- **Cümle (phrase)** — bir fikir olan müzik bölgesi; ölçüden kısa, uzun ya da
+  ekrandan uzun olabilir. `Section.phrases` alanında, tick cinsinden, isteğe
+  bağlı olarak tutulur.
+- **Seçim** — geçici bir tick aralığı. Bir cümleyle hizalanmak zorunda değildir
+  ve bir cümle sınırını geçebilir.
+
+Bir cümle **grid sınırında bölünmez veya yeniden yazılmaz**. Renderer'a giden
+şey iki cümle değil, bir cümle ve devam işaretleridir.
+
+#### §13.36.4 Ritim eksenleri, Simple profilleri ve tek otorite
+
+Ritim tek bir şey değildir: ölçü işareti, vuruş gruplaması, alt bölünme,
+tuplet kabiliyeti, cümle aralığı ve görünüm yakınlığı ayrı eksenlerdir.
+Sonuncusu domain'de değildir ve bir notaya ulaşamaz.
+
+Simple profiller — Düz 1/8, Düz 1/16, Düz 1/32, Üçleme 1/8T, Üçleme 1/16T —
+şemanın zaten kabul ettiği çözünürlüklerdir. Hiçbir profilin adlandırmadığı
+bir ritimde yazılmış şarkı **geçerli kalır, çalar ve aynen round-trip eder**.
+Simple bir projeksiyondur, ikinci ve kayıplı bir şarkı formatı değildir.
+
+`rhythmAvailability` tek otoritedir ve üç cevap verir:
+
+| Durum | Anlamı |
+|---|---|
+| `available` | Onset'ler ölçünün zaten sahip olduğu slotlara düşer. |
+| `requires_local_override` | Daha ince bir grid var ve **bu ölçüde yazılı olan her şeyi de tam olarak tutuyor**. Kullanıcıya sorulur. |
+| `unavailable` | Hem yeni diziyi hem mevcut müziği tutan bir grid yok. Açıkça söylenir. |
+
+Orta durumun metni nota değeri içermez: **«Bu hareket için bu bölümü
+sıklaştır.»** / **«Yalnız seçili bölüm hızlanır; ölçü ve diğer notalar
+değişmez.»** Mevcut ileri ritimler hiçbir durumda silinmez, gizlenmez ya da
+sessizce quantise edilmez.
+
+#### §13.36.5 «Hızlı dizi» — yerel nota yoğunluğu
+
+Üç kavram karıştırılmaz: `9 → 10 → 9` bir **perde dizisidir**; hammer-on ve
+pull-off bir **çalış bağlantısıdır**; hızlanma ise aynı zaman aralığına daha
+çok onset koyan **yerel ritim yoğunluğudur**. HO/PO tek başına ritmi
+hızlandırmaz.
+
+Bir hızlı dizi eklendiğinde: ölçü uzamaz, sonraki notanın tick'i kaymaz, cümle
+sınırı değişmez, global grid sessizce değişmez. Seçili aralık yerel olarak daha
+küçük parçalara bölünür. Kullanıcı onaylarsa yerel bir alt bölünme override'ı
+oluşur ve **bu ölçünün her lane'i birlikte** yeni grid'e tam olarak taşınır.
+
+UI makrosu mevcut atomik nota modeline açılır: her notanın onset'i ve süresi
+açıktır, HO/PO ayrı teknik verisidir, çalma motorunun anlamadığı bir kara kutu
+olay yoktur. Bütün dizi tek bir kullanıcı niyetidir, dolayısıyla **tek atomik
+işlemdir**: geri al diziyi bütün olarak kaldırır, ileri al bayt-aynı geri
+getirir.
+
+`9–10–9` kabul fixture'ıdır, özellik değil: uygulanan şey bir aralığa *n* nota
+yerleştirmedir.
+
 
 ## §14 Stack, mimari ve fazlar
 
