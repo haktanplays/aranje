@@ -1,0 +1,93 @@
+{
+  "sha": "5181ac69838da3e18d977d9e2acfe578cfe52693",
+  "generatedAt": "2026-09-03T17:19:23.553Z",
+  "steps": [
+    {
+      "name": "editor opens with the grid on the screen",
+      "pass": true,
+      "detail": "479px"
+    },
+    {
+      "name": "a tap opens Nota in the shelf, not a sheet",
+      "pass": true,
+      "detail": "Nota"
+    },
+    {
+      "name": "and the grid keeps its pixels",
+      "pass": true,
+      "detail": "265px · 0 overlay"
+    },
+    {
+      "name": "Ritim → Hızlı dizi opens in the same shelf",
+      "pass": true,
+      "detail": "Hızlı dizi"
+    },
+    {
+      "name": "no full-screen sheet appeared",
+      "pass": true
+    },
+    {
+      "name": "one line explains the density, in musician's words",
+      "pass": true,
+      "detail": "Aynı süreye 3 nota sığar; ölçünün uzunluğu değişmez."
+    },
+    {
+      "name": "the frets start on the founder's own run",
+      "pass": true,
+      "detail": "9-10-9"
+    },
+    {
+      "name": "every count is offered and answered",
+      "pass": true,
+      "detail": "3:reddedildi 4:yazılabilir 2:yazılabilir"
+    },
+    {
+      "name": "a refusal is a sentence on the screen, never a silent grey button",
+      "pass": true,
+      "detail": "3: Bu hız, bu ölçüdeki mevcut notalarla birlikte yazılamıyor."
+    },
+    {
+      "name": "at least one count this bar can hold",
+      "pass": true,
+      "detail": "4 nota"
+    },
+    {
+      "name": "Dinle draws the proposal as ghosts",
+      "pass": true,
+      "detail": "4 ghost slots"
+    },
+    {
+      "name": "and the grid and the options are both on the screen",
+      "pass": true
+    },
+    {
+      "name": "the measure did not get longer while previewing",
+      "pass": true,
+      "detail": "2 bars · 3578px"
+    },
+    {
+      "name": "Uygula clears the ghosts",
+      "pass": true,
+      "detail": "0 ghost slots"
+    },
+    {
+      "name": "the run is on the staff",
+      "pass": true,
+      "detail": "9,10,9,7,2,4,5"
+    },
+    {
+      "name": "the measure still has the same bars and width",
+      "pass": true,
+      "detail": "2 bars · 3578px"
+    },
+    {
+      "name": "the grid is still the hero",
+      "pass": true
+    },
+    {
+      "name": "one undo takes the whole run back",
+      "pass": true,
+      "detail": "6 glyphs vs 6"
+    }
+  ]
+}

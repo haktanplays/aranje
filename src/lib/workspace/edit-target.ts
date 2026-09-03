@@ -21,7 +21,12 @@
  * description comes out. It writes nothing.
  */
 import { slotCount, ticksPerBar, ticksPerSlot, PPQ } from "@/lib/music/timing";
-import { isMelodicSlotArray, type MelodicSlot, type Song } from "@/lib/song/schema";
+import {
+  isMelodicSlotArray,
+  type Bar,
+  type MelodicSlot,
+  type Song,
+} from "@/lib/song/schema";
 
 export type EditTarget = {
   readonly sectionId: string;
@@ -43,7 +48,14 @@ export type EditTarget = {
   readonly currentTicks: number;
   /** The next onset on this track after the target, in bar ticks, or null. */
   readonly nextOnsetTicks: number | null;
-  /** Every occupied moment in this measure, for the rhythm authority. */
+  /**
+   * Every occupied moment in this measure, on **every** lane.
+   *
+   * Every lane, because a local override regrids the whole bar — a bar has
+   * one grid — so a candidate grid the bass could not survive is not a
+   * candidate at all. Asking only the lane being written to is how the
+   * control comes to offer "sıklaştır" and the write then refuses it.
+   */
   readonly existingTicks: readonly number[];
   /** The most a note here could last without leaving the measure. */
   readonly maxTicks: number;
@@ -83,6 +95,26 @@ function laneOf(song: Song, sectionId: string, barIndex: number, trackId: string
 }
 
 /**
+ * Every moment this measure has music on, whichever lane it is on.
+ *
+ * The rhythm authority is asked whether a finer grid could hold *the bar*,
+ * and the bar is all of its lanes: a guitar run that would be writable on its
+ * own is not writable if the bass under it could not be re-expressed on the
+ * same grid.
+ */
+function occupiedTicks(bar: Bar, slotTicks: number): number[] {
+  const out = new Set<number>();
+  for (const lane of Object.values(bar.slots)) {
+    for (const [index, slot] of lane.entries()) {
+      if (slot === null || slot === undefined) continue;
+      if (Array.isArray(slot) && slot.length === 0) continue;
+      out.add(index * slotTicks);
+    }
+  }
+  return [...out].sort((left, right) => left - right);
+}
+
+/**
  * A target from the cell the reader tapped.
  *
  * The span of a single cell is one grid step: that is what "here" means when
@@ -106,14 +138,12 @@ export function targetFromCell(
   const startTicks = cell.slotIndex * slotTicks;
   const lane = laneOf(song, sectionId, barIndex, trackId);
 
-  const occupied: number[] = [];
+  const occupied = occupiedTicks(bar, slotTicks);
   let nextOnset: number | null = null;
   let current = 0;
   if (lane) {
     for (const [index, slot] of lane.entries()) {
-      if (slot === null) continue;
-      occupied.push(index * slotTicks);
-      if (slot === "-") continue;
+      if (slot === null || slot === "-") continue;
       if (index * slotTicks > startTicks && nextOnset === null) {
         nextOnset = index * slotTicks;
       }
@@ -171,13 +201,12 @@ export function targetFromRange(
       const slotTicks = ticksPerSlot(bar.resolution);
       const startTicks = range.startTicks - ticks;
       const lane = laneOf(song, section.id, barIndex, trackId);
-      const occupied: number[] = [];
+      const occupied = occupiedTicks(bar, slotTicks);
       let nextOnset: number | null = null;
       if (lane) {
         for (const [index, slot] of lane.entries()) {
-          if (slot === null) continue;
-          occupied.push(index * slotTicks);
-          if (slot !== "-" && index * slotTicks >= range.endTicks - ticks && nextOnset === null) {
+          if (slot === null || slot === "-") continue;
+          if (index * slotTicks >= range.endTicks - ticks && nextOnset === null) {
             nextOnset = index * slotTicks;
           }
         }

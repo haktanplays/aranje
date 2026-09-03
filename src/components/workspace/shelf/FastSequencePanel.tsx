@@ -56,6 +56,23 @@ import type { Song } from "@/lib/song/schema";
 
 const COUNTS = [2, 3, 4] as const;
 
+/**
+ * What each refusal means to a person holding a guitar.
+ *
+ * Keyed on the command's own failure names so a new one cannot be added
+ * without someone deciding what to say about it.
+ */
+const WRITE_REFUSAL: Readonly<Record<string, string>> = {
+  regrid_failed:
+    "Bu hız, bu ölçüdeki mevcut notalarla aynı ızgarada durmuyor. Daha az nota dene ya da diziyi boş bir ölçüye yaz.",
+  rhythm_unavailable: "Bu ölçü bu hızı yazamıyor.",
+  outside_bar: "Bu dizi ölçünün dışına taşıyor.",
+  target_occupied: "Burada zaten bir nota var.",
+  string_collision: "Bu teller aynı anda çalınamıyor.",
+  unplayable_position: "Bu perdeler bu enstrümanda çalınamıyor.",
+  not_fretted: "Bu enstrümana perde yazılamıyor.",
+};
+
 /** How the fret boxes start, so the founder's own run is two taps away. */
 const SEED_FRETS: Readonly<Record<number, readonly number[]>> = {
   2: [9, 10],
@@ -131,19 +148,35 @@ export function FastSequencePanel({
    * allowed to hear it at any moment and because a proposal that only exists
    * after "Dinle" cannot be drawn on the grid.
    */
-  const proposal = useMemo(() => {
+  const written = useMemo(() => {
     if (!planned.ok) return null;
     if (availability?.state === "unavailable") return null;
     if (availability?.state === "requires_local_override" && !overrideAccepted) return null;
-    const written = applySequenceWrite(song, {
+    return applySequenceWrite(song, {
       sectionId: target.sectionId,
       trackId: target.trackId,
       barIndex: target.barIndex,
       plan: planned.plan,
       allowLocalOverride: overrideAccepted,
+      /* "Üçe böl" is about a note that is already there (§6): the run takes
+         the place of what it divides, inside its own span and no further. */
+      replaceExisting: true,
     });
-    return written.ok ? written : null;
   }, [availability, overrideAccepted, planned, song, target]);
+  const proposal = written?.ok ? written : null;
+
+  /**
+   * Why the command said no, in the reader's language (§8).
+   *
+   * A refusal that lives only in a disabled button's tooltip is the greyed
+   * control §17 forbids: the reader presses "sıklaştır", nothing visible
+   * changes, and there is nowhere to find out why. Every failure the write
+   * can return has a sentence here.
+   */
+  const writeRefusal =
+    written && !written.ok
+      ? WRITE_REFUSAL[written.error] ?? "Bu dizi buraya yazılamıyor."
+      : null;
 
   const refusal =
     planned.ok
@@ -225,6 +258,7 @@ export function FastSequencePanel({
             <ShelfChoice
               testId={`fret-${index}-down`}
               label="−"
+              spoken={`${index + 1}. notanın perdesini eksilt`}
               onPress={() => setFret(index, (frets[index] ?? 0) - 1)}
             />
             <span
@@ -236,6 +270,7 @@ export function FastSequencePanel({
             <ShelfChoice
               testId={`fret-${index}-up`}
               label="+"
+              spoken={`${index + 1}. notanın perdesini artır`}
               onPress={() => setFret(index, (frets[index] ?? 0) + 1)}
             />
           </span>
@@ -274,6 +309,12 @@ export function FastSequencePanel({
       {availability?.state === "unavailable" ? (
         <ShelfNote tone="warn" testId="unavailable">
           {availability.reason}
+        </ShelfNote>
+      ) : null}
+
+      {writeRefusal ? (
+        <ShelfNote tone="warn" testId="write-refusal">
+          {writeRefusal}
         </ShelfNote>
       ) : null}
 

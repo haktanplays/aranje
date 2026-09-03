@@ -98,6 +98,7 @@ export function NotePanel({
         <ShelfChoice
           testId="fret-down"
           label="−"
+          spoken="Perdeyi bir eksilt"
           reason={fret === null || fret <= 0 ? "Boş tel en aşağısı." : undefined}
           onPress={() => onFret(Math.max(0, (fret ?? 0) - 1))}
         />
@@ -107,6 +108,7 @@ export function NotePanel({
         <ShelfChoice
           testId="fret-up"
           label="+"
+          spoken="Perdeyi bir artır"
           onPress={() => onFret(Math.min(24, (fret ?? -1) + 1))}
         />
         <ShelfChoice

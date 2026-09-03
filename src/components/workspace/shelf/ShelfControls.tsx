@@ -41,18 +41,28 @@ export function ShelfRow({
  */
 export function ShelfChoice({
   label,
+  spoken,
   active = false,
   reason,
   testId,
   onPress,
 }: {
   label: string;
+  /**
+   * What the control is called when the label alone is not a name.
+   *
+   * A "−" beside "Perde" reads perfectly on the screen and says nothing on
+   * its own — and there is a second "−" on the zoom row, so the two would
+   * share one accessible name (§17: no two controls with the same name).
+   */
+  spoken?: string;
   active?: boolean;
   reason?: string;
   testId?: string;
   onPress: () => void;
 }) {
   const disabled = reason !== undefined;
+  const name = spoken ?? label;
   return (
     <button
       type="button"
@@ -60,7 +70,7 @@ export function ShelfChoice({
       data-shelf-choice-state={disabled ? "disabled" : active ? "active" : "idle"}
       disabled={disabled}
       title={reason}
-      aria-label={disabled ? `${label} — ${reason}` : label}
+      aria-label={disabled ? `${name} — ${reason}` : name}
       aria-pressed={active}
       onClick={onPress}
       style={{ minHeight: MIN_TOUCH_TARGET_PX }}

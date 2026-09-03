@@ -111,6 +111,21 @@ body {
   flex-direction: column;
   flex: none;
   min-width: 0;
+  /*
+   * The grid is the hero, and a shelf is a shelf (2V-B.4 §4, §17).
+   *
+   * `flex: none` alone lets the shelf take whatever its contents ask for, and
+   * a shelf panel is exactly the kind of content that asks for a lot: measured
+   * at 384x692 with the note panel open, the shelf reached 481px and the
+   * staff's visible height reached **zero**. That is the sheet it replaced,
+   * arrived at from the other direction.
+   *
+   * So the shelf is capped and scrolls inside itself. Whatever a panel holds,
+   * the music above it keeps most of the screen.
+   */
+  max-height: 45dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 @media (orientation: landscape) and (max-height: 560px) {
@@ -127,6 +142,9 @@ body {
   .workspace-shelf {
     width: 17rem;
     max-width: 45%;
+    /* Beside the grid rather than under it: the cap that keeps a column
+       honest would leave a side inspector two rows tall. */
+    max-height: none;
     overflow-y: auto;
     overscroll-behavior: contain;
     border-left: 1px solid var(--color-line);

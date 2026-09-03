@@ -141,7 +141,7 @@ export function EditorDock({
            * replaced: no `fixed`, no scrim, no 85% of the screen — the grid
            * above keeps its pixels and stays hit-testable (§4, §17).
            */
-          className="border-line/60 flex max-h-[42dvh] flex-col gap-2 overflow-y-auto border-t pt-2"
+          className="border-line/60 flex max-h-[32dvh] flex-col gap-2 overflow-y-auto border-t pt-2"
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-text text-sm font-medium">{panelTitle}</span>

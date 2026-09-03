@@ -32,12 +32,17 @@
 import { rhythmAvailability } from "@/lib/music/rhythm-availability";
 import type { SequencePlan } from "@/lib/music/note-sequence";
 import { slotCount, ticksPerSlot, type Resolution } from "@/lib/music/timing";
-import { regridMelodic } from "@/lib/song/bar-regrid";
+import { regridDrums, regridMelodic } from "@/lib/song/bar-regrid";
 import { pitchAt, settle, type EditResult } from "@/lib/song/edit";
 import { findSection } from "@/lib/song/onset-block";
 import { collisionsIntroduced } from "@/lib/song/string-collision";
 import { withEmptyLaneInBar } from "@/lib/song/track-lanes";
-import { isMelodicSlotArray, type MelodicSlot, type Song } from "@/lib/song/schema";
+import {
+  isMelodicSlotArray,
+  type DrumSlot,
+  type MelodicSlot,
+  type Song,
+} from "@/lib/song/schema";
 
 export type SequenceWriteCommand = {
   readonly sectionId: string;
@@ -53,6 +58,17 @@ export type SequenceWriteCommand = {
    * asked cannot accidentally change a grid on the reader's behalf.
    */
   readonly allowLocalOverride?: boolean;
+  /**
+   * Write over what is here, instead of refusing (2V-B.4 §5, §6).
+   *
+   * "Üçe böl" is a sentence about a note that already exists, so a command
+   * that could only write into silence could not answer it. What it replaces
+   * is bounded and stated: the notes that *start* inside the run's own span,
+   * and the ties that hold them, and nothing else. A note that began before
+   * the span and is still sounding into it is not the reader's target and is
+   * refused rather than truncated.
+   */
+  readonly replaceExisting?: boolean;
 };
 
 export type SequenceWriteFailure =
@@ -79,24 +95,45 @@ export type SequenceWriteResult =
     }
   | { readonly ok: false; readonly error: SequenceWriteFailure };
 
-/** Every moment already spoken for in this bar, for the availability check. */
-function existingTicks(slots: readonly MelodicSlot[], resolution: Resolution): number[] {
+/**
+ * Every moment already spoken for in this bar, on every lane.
+ *
+ * Every lane, because a local override regrids the whole bar — a bar has one
+ * grid (K-34) — so a candidate grid the bass or the kit could not survive is
+ * not a candidate. Asking only the lane being written to is how the offer and
+ * the write come to disagree: the reader is told "sıklaştır" and then refused.
+ *
+ * A tie counts as much as an onset: a finer grid has to be able to draw where
+ * a sound is still going, not only where it started.
+ */
+function existingTicks(
+  slots: Readonly<Record<string, readonly unknown[]>>,
+  resolution: Resolution,
+): number[] {
   const step = ticksPerSlot(resolution);
-  const ticks: number[] = [];
-  for (const [index, slot] of slots.entries()) {
-    if (slot === null) continue;
-    /* A tie is where a sound is still going; its slot boundary matters as
-       much as an onset's, because a finer grid has to be able to draw it. */
-    ticks.push(index * step);
+  const ticks = new Set<number>();
+  for (const lane of Object.values(slots)) {
+    for (const [index, slot] of lane.entries()) {
+      if (slot === null || slot === undefined) continue;
+      if (Array.isArray(slot) && slot.length === 0) continue;
+      ticks.add(index * step);
+    }
   }
-  return ticks;
+  return [...ticks].sort((left, right) => left - right);
 }
 
 export function applySequenceWrite(
   song: Song,
   command: SequenceWriteCommand,
 ): SequenceWriteResult {
-  const { allowLocalOverride = false, barIndex, plan, sectionId, trackId } = command;
+  const {
+    allowLocalOverride = false,
+    barIndex,
+    plan,
+    replaceExisting = false,
+    sectionId,
+    trackId,
+  } = command;
   const section = findSection(song, sectionId);
   if (!section) return { ok: false, error: "no_section" };
   const bar = section.bars[barIndex];
@@ -129,7 +166,7 @@ export function applySequenceWrite(
     startTicks: plan.startTicks,
     stepTicks: plan.stepTicks,
     stepCount: plan.notes.length,
-    existingTicks: existingTicks(lane, bar.resolution),
+    existingTicks: existingTicks(groundedBar.slots, bar.resolution),
   });
   if (availability.state === "unavailable") {
     return { ok: false, error: "rhythm_unavailable" };
@@ -151,13 +188,18 @@ export function applySequenceWrite(
   const regridded: Record<string, MelodicSlot[] | readonly unknown[]> = {};
   if (usedLocalOverride) {
     for (const [id, slots] of Object.entries(groundedBar.slots)) {
-      if (!isMelodicSlotArray(slots)) {
-        /* Drums have no length to rebuild, so a finer grid is only a question
-           of whether their hits land on it — which `bar-regrid` answers, and
-           which this round does not need: the flow is a fretboard flow. */
-        return { ok: false, error: "regrid_failed" };
-      }
-      const moved = regridMelodic(slots, bar.resolution, resolution, targetSlots);
+      /*
+       * Drums come too (2V-B.4 §8).
+       *
+       * This refused a bar with a kit in it, which is nearly every bar of
+       * nearly every song — so "Bu bölümü sıklaştır" was an offer that could
+       * not be taken wherever a drummer was playing. A kit has no lengths to
+       * rebuild, only onsets to re-place, and `bar-regrid` already knows how
+       * and refuses when a hit would not land on the finer grid.
+       */
+      const moved = isMelodicSlotArray(slots)
+        ? regridMelodic(slots, bar.resolution, resolution, targetSlots)
+        : regridDrums(slots as readonly DrumSlot[], bar.resolution, resolution, targetSlots);
       if (!moved) return { ok: false, error: "regrid_failed" };
       regridded[id] = moved;
     }
@@ -175,9 +217,20 @@ export function applySequenceWrite(
     written.push(slotIndex);
   }
   const lastSlot = written[written.length - 1]! + plan.stepTicks / step;
-  for (let index = written[0]!; index < lastSlot; index += 1) {
-    if (laneNow[index] !== null && laneNow[index] !== undefined) {
-      return { ok: false, error: "target_occupied" };
+  const firstSlot = written[0]!;
+  if (replaceExisting) {
+    /* A tie arriving from before the span belongs to a note the reader did
+       not point at; cutting it would change music outside the target. */
+    if (laneNow[firstSlot] === "-") return { ok: false, error: "target_occupied" };
+    for (let index = firstSlot; index < lastSlot; index += 1) laneNow[index] = null;
+    /* And the tail of the last note being replaced goes with it: half a note
+       left sounding past the run would be a fragment nobody wrote. */
+    for (let index = lastSlot; laneNow[index] === "-"; index += 1) laneNow[index] = null;
+  } else {
+    for (let index = firstSlot; index < lastSlot; index += 1) {
+      if (laneNow[index] !== null && laneNow[index] !== undefined) {
+        return { ok: false, error: "target_occupied" };
+      }
     }
   }
 

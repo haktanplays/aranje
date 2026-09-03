@@ -90,6 +90,7 @@ export function EditArea({
   const [door, setDoor] = useState<ComposerDoor | null>(null);
   const [more, setMore] = useState(false);
   const [panel, setPanel] = useState<ShelfPanelId | null>(null);
+  const [reconciledCell, setReconciledCell] = useState<string | null>(null);
 
   const dock = editorDock({
     offers: selectionActions?.actions ?? [],
@@ -113,6 +114,20 @@ export function EditArea({
           })
         : null;
 
+  /*
+   * A tap on a cell opens Nota (§4), adjusted during render rather than in an
+   * effect, and keyed on the position rather than on the object: an
+   * equal-but-new cell reopens nothing, and a reader who has since switched
+   * to Süre is not fought by their own earlier tap.
+   */
+  const cellKey = noteEditing.cell
+    ? `${noteEditing.cell.barKey}:${noteEditing.cell.slotIndex}:${noteEditing.cell.stringIndex}`
+    : null;
+  if (cellKey !== reconciledCell) {
+    setReconciledCell(cellKey);
+    if (cellKey !== null) setPanel(PANEL_FOR_CELL);
+  }
+
   const availabilityContext = {
     hasCell: noteEditing.cell !== null,
     hasSelection: selection !== null,
@@ -131,7 +146,6 @@ export function EditArea({
     };
   });
 
-  /** Route a shelf press back to whichever layer owns it. */
   const runDockItem = (itemId: string) => {
     const [kind, id] = itemId.split(":");
     if (kind === "door") {
@@ -149,10 +163,10 @@ export function EditArea({
     selectionActions?.run(id as SelectionActionId);
   };
 
+  /* Leaving a panel throws away whatever it was proposing: a ghost with no
+     panel behind it is an edit the reader can no longer confirm or cancel. */
   const openPanel = (id: string | null) => {
     setPanel(id as ShelfPanelId | null);
-    /* Leaving a panel throws away whatever it was proposing: a ghost with no
-       panel behind it is an edit the reader can no longer confirm or cancel. */
     if (id === null) onDiscard();
   };
 

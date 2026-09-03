@@ -201,3 +201,85 @@ describe("47. the same bar's other events survive a fast sequence", () => {
     ).toBe(structureDigest(before, { sectionId: PATH.sectionId, barIndex: 0 }));
   });
 });
+
+describe("64. dividing a note replaces it, and nothing beside it", () => {
+  /** A bar with a note on beat one already sounding into the run's space. */
+  const occupied = (): Song => {
+    const lane: MelodicSlot[] = Array.from({ length: 8 }, () => null);
+    lane[0] = note(RUN_STRING, 7);
+    lane[1] = note(RUN_STRING, 5);
+    lane[2] = note(2, 5, { velocity: 40 });
+    return songSchema.parse({
+      ...SAMPLE_SONG,
+      sections: [
+        {
+          ...SAMPLE_SONG.sections[0]!,
+          bars: [{ timeSignature: [4, 4], resolution: 8, slots: { [TRACK]: lane } }],
+        },
+      ],
+    } satisfies Song);
+  };
+
+  const run = (song: Song, options: { readonly replace: boolean }) => {
+    const planned = planNoteSequence({
+      startTicks: 0,
+      spanTicks: SLOT_8,
+      steps: [
+        { stringIndex: RUN_STRING, fret: 9 },
+        { stringIndex: RUN_STRING, fret: 10 },
+        { stringIndex: RUN_STRING, fret: 9 },
+      ],
+      performance: "connected",
+    });
+    if (!planned.ok) throw new Error(planned.reason);
+    return applySequenceWrite(song, {
+      sectionId: PATH.sectionId,
+      trackId: TRACK,
+      barIndex: 0,
+      plan: planned.plan,
+      allowLocalOverride: true,
+      replaceExisting: options.replace,
+    });
+  };
+
+  it("refuses rather than overwriting when it was not asked to", () => {
+    const written = run(occupied(), { replace: false });
+    expect(written.ok).toBe(false);
+    if (written.ok) return;
+    expect(written.error).toBe("target_occupied");
+  });
+
+  it("takes the place of the note it divides, and leaves its neighbours", () => {
+    const before = occupied();
+    const written = run(before, { replace: true });
+    expect(written.ok).toBe(true);
+    if (!written.ok) return;
+    expect(breachesOutside(before, written.song, PATH)).toEqual([]);
+    /* The run is there, and what stood in its space is not. */
+    const after = semanticSnapshot(written.song, {
+      sectionId: PATH.sectionId,
+      barIndex: 0,
+    });
+    expect(after.filter((event) => event.atTicks < SLOT_8)).toHaveLength(3);
+    expect(after.filter((event) => event.atTicks >= SLOT_8).length).toBe(
+      semanticSnapshot(before, { sectionId: PATH.sectionId, barIndex: 0 }).filter(
+        (event) => event.atTicks >= SLOT_8,
+      ).length,
+    );
+  });
+
+  it("will not cut a note that began before the space it was given", () => {
+    const before = occupied();
+    const lane = before.sections[0]!.bars[0]!.slots[TRACK] as MelodicSlot[];
+    /* The note now starts a slot earlier and is still sounding at tick 0's
+       neighbour, so the run's first slot holds a tie rather than an onset. */
+    const held = structuredClone(before) as Song;
+    const heldLane = held.sections[0]!.bars[0]!.slots[TRACK] as MelodicSlot[];
+    heldLane[0] = "-";
+    expect(lane[0]).not.toBe("-");
+    const written = run(held, { replace: true });
+    expect(written.ok).toBe(false);
+    if (written.ok) return;
+    expect(written.error).toBe("target_occupied");
+  });
+});

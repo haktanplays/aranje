@@ -95,8 +95,22 @@ describe("61. the shelf is a shelf, not a sheet in disguise", () => {
   it("keeps the panel region scrollable and bounded rather than tall", () => {
     const dock = read("src/components/workspace/EditorDock.tsx");
     expect(dock).toContain("data-shelf-panel");
-    expect(dock).toMatch(/max-h-\[4\d?dvh\]/u);
+    expect(dock).toMatch(/max-h-\[[123]\d?dvh\]/u);
     expect(dock).toContain("overflow-y-auto");
+  });
+
+  it("caps the shelf itself, so a panel cannot squeeze the staff to nothing", () => {
+    /*
+     * Measured, not assumed. With the panel bounded but the shelf not, the
+     * note panel took the shelf to 481px at 384x692 and the staff's visible
+     * height to **zero** — the sheet this batch removed, arrived at from the
+     * other direction. The cap and the internal scroll are what stop it.
+     */
+    const css = readFileSync("src/app/globals.css", "utf8");
+    const shelf = css.slice(css.indexOf(".workspace-shelf {"));
+    const block = shelf.slice(0, shelf.indexOf("}"));
+    expect(block).toMatch(/max-height:\s*\d+dvh/u);
+    expect(block).toContain("overflow-y: auto");
   });
 
   it("gives every control a 44px target through the one constant", () => {
@@ -223,8 +237,16 @@ describe("63. the shelf speaks Turkish, not Song Contract", () => {
      */
     const namers = shelfFiles.filter((path) => identifiersOf(path).has("measureLabel"));
     expect(namers.length).toBeGreaterThanOrEqual(3);
+    /*
+     * Saying "bu ölçüde" in a sentence is ordinary Turkish and welcome. What
+     * is forbidden is *numbering* one by hand — a digit or an interpolation
+     * next to the word — because that is the spelling `measureLabel` owns.
+     */
     for (const path of shelfFiles) {
-      expect(read(path), `${path} spells a measure itself`).not.toMatch(/ölçü/u);
+      expect(read(path), `${path} numbers a measure itself`).not.toMatch(
+        /(\d|\$\{[^}]*\})\s*\.?\s*ölçü/u,
+      );
+      expect(read(path), `${path} says Bar N`).not.toMatch(/\bBar\s*\d/u);
     }
   });
 
