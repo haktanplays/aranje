@@ -27,6 +27,11 @@ import {
 } from "@/lib/chords/chord-command";
 import { CHORD_MESSAGES } from "@/lib/chords/chord-errors";
 import {
+  recommendVoicings,
+  type VoicingChoice,
+} from "@/lib/chords/voicing-recommendation";
+import { summarizeWarnings, type WarningSummary } from "@/lib/validators/warning-summary";
+import {
   chordName,
   type ChordQualityId,
 } from "@/lib/chords/chord-formula";
@@ -80,8 +85,26 @@ export type ChordBuilderHandle = {
   /** The name the reader sees, from the one naming function. */
   readonly name: string;
   readonly voicings: readonly ChordVoicing[];
+  /**
+   * Other shapes worth a tap, each named for how it differs (2W §11).
+   *
+   * "En yakın", "En kolay", "Daha açık", "Daha kalın" — never "voicing 2 of
+   * 4", which tells a reader nothing about why they would want it.
+   */
+  readonly alternatives: readonly VoicingChoice[];
   readonly selectedId: string | null;
   readonly selected: ChordVoicing | null;
+  /** Playability warnings, each said once (2W §14). Never blocks. */
+  readonly warnings: WarningSummary;
+  /**
+   * Why the primary control cannot be pressed, or null when it can.
+   *
+   * A sentence rather than a boolean, because a grey button that explains
+   * nothing is the defect §14 names.
+   */
+  readonly blockedReason: string | null;
+  /** True when this beat already holds notes, so the CTA is a replacement. */
+  readonly replacing: boolean;
   /** The song as it would be, for the ghost. Null when nothing can be shown. */
   readonly preview: Song | null;
   /** One safe sentence, or null. Never a diagnostic. */
@@ -150,9 +173,32 @@ export function useChordBuilder(options: {
     });
   }, [effectiveQuality, rootPitchClass, target, track, withOctave]);
 
-  const voicings = search?.ok ? search.voicings : [];
+  const voicings = useMemo(
+    () => (search?.ok ? search.voicings : []),
+    [search],
+  );
+  /*
+   * Which shape goes on the grid before the reader touches anything (2W §11).
+   *
+   * `chordVoicings` hands back up to four in canonical order and deliberately
+   * does not choose; taking `voicings[0]` was that non-choice leaking into the
+   * UI. `recommendVoicings` picks the one nearest the hand, ties going to the
+   * easier grip, and names the others by how they differ so a reader who does
+   * not like the first has a reason to try a second.
+   */
+  const anchorFret = target?.anchorFret;
+  const ranked = useMemo(
+    () =>
+      recommendVoicings(
+        voicings,
+        anchorFret === undefined ? {} : { anchorFret },
+      ),
+    [voicings, anchorFret],
+  );
   const selected =
-    voicings.find((voicing) => voicing.id === selectedId) ?? voicings[0] ?? null;
+    voicings.find((voicing) => voicing.id === selectedId) ??
+    ranked?.recommended ??
+    null;
 
   /** The command that both the ghost and the apply run. One description. */
   const command = useMemo((): ChordWriteCommand | null => {
@@ -208,8 +254,12 @@ export function useChordBuilder(options: {
     slots,
     name: chordName(rootPitchClass, effectiveQuality),
     voicings,
+    alternatives: ranked?.alternatives ?? [],
     selectedId: selected?.id ?? null,
     selected,
+    warnings: summarizeWarnings(outcome?.ok ? outcome.warnings : []),
+    blockedReason: blockedReason(canPersist, selected, outcome),
+    replacing: target?.occupied ?? false,
     preview: outcome?.ok ? outcome.song : null,
     error,
     canApply: canPersist,
@@ -279,4 +329,24 @@ export function useChordBuilder(options: {
       return true;
     },
   };
+}
+
+/**
+ * Why the primary control is off, in the reader's words (2W §14).
+ *
+ * Three distinct reasons, kept distinct: writing is closed, no shape has been
+ * chosen yet, and the command itself refuses this beat. Collapsing them into
+ * "disabled" is what left a reader looking at a grey button with a fully
+ * filled-in form and no idea what was missing.
+ */
+function blockedReason(
+  canPersist: boolean,
+  selected: ChordVoicing | null,
+  outcome: ChordWriteResult | null,
+): string | null {
+  if (!canPersist) return "Bu proje şu anda yazmaya kapalı.";
+  if (selected === null) return "Önce çalınabilir bir biçim seç.";
+  if (outcome === null) return "Akorun nereye yazılacağı henüz belli değil.";
+  if (!outcome.ok) return outcome.error.message;
+  return null;
 }

@@ -26,6 +26,8 @@ import {
   voicingLabel,
 } from "@/lib/chords/chord-copy";
 import { CHORD_ARTICULATIONS } from "@/lib/chords/chord-command";
+import { VOICING_ANGLE_LABEL } from "@/lib/chords/voicing-recommendation";
+import { warningLineText } from "@/lib/validators/warning-summary";
 import type { ChordBuilderHandle } from "@/lib/workspace/use-chord-builder";
 import { MIN_TOUCH_TARGET_PX } from "@/lib/ui/interaction";
 
@@ -41,7 +43,8 @@ const STEP_LABELS: readonly { id: "type" | "root" | "quality" | "voicing"; label
   { id: "type", label: "Tür" },
   { id: "root", label: "Kök" },
   { id: "quality", label: "Akor" },
-  { id: "voicing", label: "Şekil" },
+  /* "Şekil" named nothing musical; a voicing is how the chord is gripped. */
+  { id: "voicing", label: "Biçim" },
 ];
 
 function Chip({
@@ -100,10 +103,15 @@ export function ChordBuilderSheet({
   return (
     <Sheet
       open
+      /*
+       * Musician language, not grid coordinates (2W §14). "Bar 4 · slot 3"
+       * names two things a guitarist does not count in; "4. ölçü" names the
+       * one they do. `slot` appears nowhere a reader can see.
+       */
       title={
         target.occupied
-          ? `Bar ${target.barNumber} · bu vuruşu akorla değiştir`
-          : `Bar ${target.barNumber} · akoru yaz`
+          ? `${target.barNumber}. ölçü · bu vuruşu akorla değiştir`
+          : `${target.barNumber}. ölçü · akor ekle`
       }
       onClose={builder.close}
       labelledBy="chord-sheet-title"
@@ -112,13 +120,20 @@ export function ChordBuilderSheet({
           <SheetButton onClick={builder.close} data-chord-cancel>
             Vazgeç
           </SheetButton>
+          {/*
+            One primary control, and its name says which of the two things it
+            does: creation adds, editing applies (2W §14). When it is off it
+            carries the reason with it rather than waiting to be pressed.
+          */}
           <SheetButton
             tone="primary"
             onClick={builder.apply}
-            disabled={!builder.canApply || builder.preview === null}
+            disabled={builder.blockedReason !== null || builder.preview === null}
+            title={builder.blockedReason ?? undefined}
             data-chord-apply
+            data-chord-blocked={builder.blockedReason ?? undefined}
           >
-            Uygula
+            {builder.replacing ? "Uygula" : "Ekle"}
           </SheetButton>
         </div>
       }
@@ -248,6 +263,53 @@ export function ChordBuilderSheet({
                 Bu konumda çalınabilir bir akor şekli bulunamadı. Başlangıç
                 perdesini veya varyasyonu değiştir.
               </p>
+            ) : null}
+
+            {/*
+              The shapes worth trying, named for how they differ (2W §11). The
+              recommended one is already on the grid; these are the reasons to
+              want a different one, and a reason is what "voicing 2 of 4"
+              never gave anybody.
+            */}
+            {builder.alternatives.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5" data-chord-alternatives>
+                {builder.alternatives.map((choice) => (
+                  <button
+                    key={choice.angle}
+                    type="button"
+                    data-chord-angle={choice.angle}
+                    aria-pressed={builder.selectedId === choice.voicing.id}
+                    onClick={() => builder.select(choice.voicing.id)}
+                    style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+                    className={`min-w-0 flex-1 rounded-lg border px-2 text-xs whitespace-nowrap ${
+                      builder.selectedId === choice.voicing.id
+                        ? "border-bronze bg-bronze/15 text-bronze"
+                        : "border-line text-muted"
+                    }`}
+                  >
+                    {VOICING_ANGLE_LABEL[choice.angle]}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+
+            {/*
+              Playability warnings, each said once (2W §14). Six copies of one
+              sentence used to grow the panel until it pushed the grid away;
+              the count travels with the line instead.
+            */}
+            {builder.warnings.lines.length > 0 ? (
+              <ul data-chord-warnings className="flex flex-col gap-1">
+                {builder.warnings.lines.map((line) => (
+                  <li
+                    key={line.message}
+                    data-chord-warning-count={line.count}
+                    className="text-muted text-[11px] leading-snug"
+                  >
+                    {warningLineText(line)}
+                  </li>
+                ))}
+              </ul>
             ) : null}
 
             {builder.voicings.map((voicing) => (
