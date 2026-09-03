@@ -14,13 +14,12 @@
  * proposal `EXPRESSION-CONTRACT-V2.md` argues for, exercised here before
  * anybody commits to it.
  */
+import { bendAutomation, type PitchPoint } from "@/lib/audio/expression-plan";
 import {
-  bendAutomation,
-  bendStages,
-  type PitchPoint,
-} from "@/lib/audio/expression-plan";
+  bendGestureAutomation,
+  openSlideAutomation,
+} from "@/lib/audio/pitch-gesture";
 import { desiredGlideSeconds, transitionPoints } from "@/lib/audio/legato-chain";
-import { expressionPresets } from "@/lib/audio/expression";
 import type { Articulation } from "@/lib/song/schema";
 
 const round = (value: number): number => Math.round(value * 1e6) / 1e6;
@@ -45,9 +44,10 @@ export type BendCandidate = {
 /**
  * The shape of a bend, as automation points on a note of this length.
  *
- * The four kinds differ in exactly two places — where the pitch starts and
- * whether it comes back — and everything else is shared, which is the point
- * of having one function rather than four.
+ * Delegates to the production module. When these curves were measured they
+ * lived here; they now live in `@/lib/audio/pitch-gesture` because the app
+ * ships them, and the benchmark calls that rather than keeping a twin which
+ * could drift from what a listener actually hears (2V-C.1 §5).
  */
 export function bendCandidateAutomation(
   candidate: BendCandidate,
@@ -60,77 +60,22 @@ export function bendCandidateAutomation(
       curve: index === 0 ? ("step" as const) : ("linear" as const),
     }));
   }
-
-  const preset = expressionPresets.bend;
-  const stages = bendStages(durationSeconds);
-  const target = candidate.targetCents;
-  const points: PitchPoint[] = [];
-
-  const startsAtTarget =
-    candidate.kind === "prebend" || candidate.kind === "prebend_release";
-  const returns =
-    candidate.kind === "bend_release" || candidate.kind === "prebend_release";
-
-  if (startsAtTarget) {
-    /*
-     * A prebend is already bent when the string is struck. There is no rise
-     * to hear, and starting from zero and climbing would be a different
-     * gesture with the same name.
-     */
-    points.push({ timeSeconds: 0, cents: target, curve: "step" });
-  } else {
-    points.push({ timeSeconds: 0, cents: 0, curve: "step" });
-    if (stages.settleSeconds > 0) {
-      points.push({ timeSeconds: round(stages.settleSeconds), cents: 0, curve: "linear" });
-    }
-    for (let step = 1; step <= preset.curvePoints; step += 1) {
-      const t = step / preset.curvePoints;
-      points.push({
-        timeSeconds: round(stages.settleSeconds + stages.riseSeconds * t),
-        // Fast away from the start, controlled as it arrives: the same easing
-        // the production bend uses, so the difference under test is the
-        // *ending*, not the climb.
-        cents: round(target * (1 - (1 - t) * (1 - t))),
-        curve: "linear",
-      });
-    }
-  }
-
-  const reachedAt = startsAtTarget ? 0 : stages.reachedAtSeconds;
-  const releaseSeconds = returns ? stages.releaseSeconds : 0;
-  const holdEnd = Math.max(reachedAt, durationSeconds - releaseSeconds);
-
-  if (candidate.vibrato && holdEnd > reachedAt) {
-    const { depthCents, rateHz, startAfterTarget } = candidate.vibrato;
-    const delay = startAfterTarget ? preset.top.startDelaySeconds : 0;
-    const from = reachedAt + delay;
-    if (from < holdEnd) {
-      points.push({ timeSeconds: round(from), cents: target, curve: "linear" });
-      const step = 1 / (rateHz * preset.top.pointsPerCycle);
-      for (let time = step; time <= holdEnd - from + 1e-9; time += step) {
-        points.push({
-          timeSeconds: round(from + time),
-          cents: round(target + depthCents * Math.sin(2 * Math.PI * rateHz * time)),
-          curve: "sine",
-        });
-      }
-    }
-  }
-
-  points.push({ timeSeconds: round(holdEnd), cents: target, curve: "linear" });
-
-  if (returns) {
-    for (let step = 1; step <= preset.curvePoints; step += 1) {
-      const t = step / preset.curvePoints;
-      points.push({
-        timeSeconds: round(holdEnd + releaseSeconds * t),
-        cents: round(target * (1 - (t < 0.5 ? 2 * t * t : 1 - 2 * (1 - t) * (1 - t)))),
-        curve: "linear",
-      });
-    }
-  }
-
-  return points;
+  return bendGestureAutomation(
+    {
+      kind: candidate.kind,
+      targetCents: candidate.targetCents,
+      ...(candidate.vibrato
+        ? {
+            vibrato: {
+              startAfterTarget: true as const,
+              depthCents: candidate.vibrato.depthCents,
+              rateHz: candidate.vibrato.rateHz,
+            },
+          }
+        : {}),
+    },
+    durationSeconds,
+  );
 }
 
 /** Today's production bend, through the production planner. Not a copy. */
@@ -183,37 +128,29 @@ export function slideCandidateAutomation(
   const semitoneToCents = 100;
 
   if (candidate.kind === "slide_in_below" || candidate.kind === "slide_in_above") {
-    const away = (candidate.approxSemitones ?? 2) * semitoneToCents;
-    const from = candidate.kind === "slide_in_below" ? -away : away;
-    const travel = Math.min(
-      desiredGlideSeconds(candidate.approxSemitones ?? 2),
-      durationSeconds * 0.4,
+    return openSlideAutomation(
+      {
+        kind: "slide_in",
+        from: candidate.kind === "slide_in_below" ? "below" : "above",
+        ...(candidate.approxSemitones === undefined
+          ? {}
+          : { approxSemitones: candidate.approxSemitones }),
+      },
+      durationSeconds,
     );
-    return transitionPoints("slide", 0, round(travel), from, 0).map((point) => ({
-      timeSeconds: round(point.timeSeconds),
-      cents: round(point.cents),
-      curve: point.curve,
-    }));
   }
 
   if (candidate.kind === "slide_out_down" || candidate.kind === "slide_out_up") {
-    const away = (candidate.approxSemitones ?? 3) * semitoneToCents;
-    const to = candidate.kind === "slide_out_down" ? -away : away;
-    const travel = Math.min(
-      desiredGlideSeconds(candidate.approxSemitones ?? 3),
-      durationSeconds * 0.4,
+    return openSlideAutomation(
+      {
+        kind: "slide_out",
+        to: candidate.kind === "slide_out_down" ? "down" : "up",
+        ...(candidate.approxSemitones === undefined
+          ? {}
+          : { approxSemitones: candidate.approxSemitones }),
+      },
+      durationSeconds,
     );
-    const startsAt = Math.max(0, durationSeconds - travel);
-    return [
-      { timeSeconds: 0, cents: 0, curve: "step" as const },
-      ...transitionPoints("slide", round(startsAt), round(durationSeconds), 0, to).map(
-        (point) => ({
-          timeSeconds: round(point.timeSeconds),
-          cents: round(point.cents),
-          curve: point.curve,
-        }),
-      ),
-    ];
   }
 
   // legato and shift: the hand travels into the target and arrives on time.

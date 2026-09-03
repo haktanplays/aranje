@@ -15,7 +15,12 @@
 import { DEFAULT_VELOCITY, articulationHold, barTimeline } from "@/lib/audio/schedule";
 import { ticksPerSlot } from "@/lib/music/timing";
 import { pitchToMidi } from "@/lib/music/pitch";
-import type { Articulation, Song } from "@/lib/song/schema";
+import type {
+  Articulation,
+  NoteConnection,
+  PitchGesture,
+  Song,
+} from "@/lib/song/schema";
 import { buildTrackTimeline } from "@/lib/tab/timeline";
 
 /** One struck note of one fretted track, with the context it needs. */
@@ -32,6 +37,9 @@ export type LegatoOnset = {
   midi: number | null;
   velocity: number;
   articulation?: Articulation;
+  /** The two explicit expression axes, carried verbatim (2V-C.1 §2). */
+  pitchGesture?: PitchGesture;
+  connection?: NoteConnection;
   /** The hand's direction across a strummed chord, when one was written. */
   strum?: "down" | "up";
   /** Ticks from the start of the song, as `buildSongPlan` counts them. */
@@ -96,6 +104,8 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
         midi: pitchToMidi(span.pitch),
         velocity: span.velocity ?? DEFAULT_VELOCITY,
         ...(span.articulation === undefined ? {} : { articulation: span.articulation }),
+        ...(span.pitchGesture === undefined ? {} : { pitchGesture: span.pitchGesture }),
+        ...(span.connection === undefined ? {} : { connection: span.connection }),
         ...(span.strum === undefined ? {} : { strum: span.strum }),
         timeTicks: start + span.startSlot * step,
         durationTicks: Math.max(

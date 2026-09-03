@@ -20,7 +20,7 @@ import {
   type BendCandidate,
 } from "./candidates";
 import { bendStages } from "@/lib/audio/expression-plan";
-import { articulationSchema } from "@/lib/song/schema";
+import { articulationSchema, pitchGestureSchema } from "@/lib/song/schema";
 
 const articulationOptions: readonly string[] = articulationSchema.options;
 
@@ -137,15 +137,29 @@ describe("185. bend plus vibrato is one gesture, in the right order", () => {
     expect(shaken.length).toBeGreaterThan(plain.length);
   });
 
-  it("is refused the wrong order rather than silently reordered", () => {
-    // `startAfterTarget: false` is a different gesture — the hand shaking on
-    // the way up — and the shape says so rather than pretending.
-    const early = bendCandidateAutomation(
-      bend({ vibrato: { ...vibrato, startAfterTarget: false } }),
-      DURATION,
-    );
-    const late = bendCandidateAutomation(bend({ vibrato }), DURATION);
-    expect(early).not.toEqual(late);
+  it("cannot be written in the wrong order at all any more", () => {
+    /*
+     * This used to check that `startAfterTarget: false` rendered *differently*
+     * — the hand shaking on the way up, drawn honestly rather than silently
+     * reordered. Now that the gesture ships (2V-C.1 §2), the production schema
+     * types that field as `true` and nothing else, so the wrong order is not a
+     * shape that renders differently: it is a shape that cannot be written.
+     * That is the stronger guarantee, so the assertion moved rather than
+     * being dropped.
+     */
+    const wrongOrder = pitchGestureSchema.safeParse({
+      kind: "bend",
+      targetCents: 200,
+      vibrato: { ...vibrato, startAfterTarget: false },
+    });
+    expect(wrongOrder.success).toBe(false);
+    expect(
+      pitchGestureSchema.safeParse({
+        kind: "bend",
+        targetCents: 200,
+        vibrato: { ...vibrato, startAfterTarget: true },
+      }).success,
+    ).toBe(true);
   });
 });
 

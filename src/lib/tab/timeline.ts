@@ -53,6 +53,8 @@ import type {
   DrumPiece,
   DrumSlot,
   MelodicSlot,
+  NoteConnection,
+  PitchGesture,
   Resolution,
   SectionStatus,
   Song,
@@ -122,6 +124,15 @@ export type TabSpan = {
   pitch: string;
   velocity?: number;
   articulation?: Articulation;
+  /**
+   * What the pitch does and how the note is joined (2V-C.1 §2).
+   *
+   * Carried rather than interpreted. The span is a drawing and a scheduling
+   * fact; what these two *mean* is `expression-resolver`'s answer, asked once
+   * by whoever needs it.
+   */
+  pitchGesture?: PitchGesture;
+  connection?: NoteConnection;
   /** The picking hand's direction across a chord, when the reader wrote one. */
   strum?: "down" | "up";
   startSlot: number;
@@ -263,6 +274,8 @@ function buildFretted(
         pitch: span.note.pitch,
         velocity: span.note.velocity,
         articulation: span.note.articulation,
+        pitchGesture: span.note.pitchGesture,
+        connection: span.note.connection,
         strum: span.note.strum,
         writtenTicks: span.writtenTicks,
         startSlot: slice.startSlot,

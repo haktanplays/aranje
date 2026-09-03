@@ -109,6 +109,71 @@ export const positionSchema = z
     fret: z.number().int().min(0),
   });
 
+/**
+ * How far a bend goes, in cents (2V-C.1 §2).
+ *
+ * Bounded rather than enumerated. A quarter-tone is 50, a half bend 100, a
+ * full bend 200, and the two-tone bend a rock player reaches for is 400 —
+ * all of them the same field, so a new interval never needs a migration.
+ * Zero is refused because a bend that arrives nowhere is not a bend.
+ */
+export const bendCentsSchema = z.number().int().min(25).max(400);
+
+/**
+ * The pitch's own movement during a note.
+ *
+ * Six kinds, on one axis: a note's pitch does one thing, and asking it to do
+ * two would be asking two hands to hold one string. `vibrato` lives *inside*
+ * the bend kinds rather than beside them because "bend up then shake at the
+ * top" is one gesture with an order to it, and two independent fields could
+ * express the impossible "shake first, then arrive".
+ */
+export const pitchGestureSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.enum(["bend", "bend_release", "prebend", "prebend_release"]),
+    targetCents: bendCentsSchema,
+    vibrato: z
+      .strictObject({
+        /* A hand arrives before it shakes; false would be another gesture. */
+        startAfterTarget: z.literal(true),
+        depthCents: z.number().int().min(1).max(100),
+        rateHz: z.number().min(1).max(12),
+      })
+      .optional(),
+  }),
+  /**
+   * Arriving from nowhere written down.
+   *
+   * `approxSemitones` is approximate on purpose: a slide-in from below is a
+   * hand starting somewhere lower, not a fret the player wrote. Writing a
+   * source note into the Song would put a note on the staff nobody played.
+   */
+  z.strictObject({
+    kind: z.literal("slide_in"),
+    from: z.enum(["below", "above"]),
+    approxSemitones: z.number().int().min(1).max(12).optional(),
+  }),
+  z.strictObject({
+    kind: z.literal("slide_out"),
+    to: z.enum(["down", "up"]),
+    approxSemitones: z.number().int().min(1).max(12).optional(),
+  }),
+]);
+
+/**
+ * The bond between this note and the one before it.
+ *
+ * `legato_slide` is what the old `slide` articulation already renders: the
+ * hand travels and the target is never struck. `shift_slide` is the one the
+ * enum could not say — the same travel, and then the target *is* struck.
+ */
+export const noteConnectionSchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("hammer_on") }),
+  z.strictObject({ kind: z.literal("pull_off") }),
+  z.strictObject({ kind: z.literal("legato_slide") }),
+  z.strictObject({ kind: z.literal("shift_slide") }),
+]);
+
 export const noteEventSchema = z.strictObject({
   pitch: pitchSchema,
   velocity: z.number().int().min(velocityRange.min).max(velocityRange.max).optional(),
@@ -159,6 +224,38 @@ export const noteEventSchema = z.strictObject({
    * note — and this is the reader saying otherwise on purpose.
    */
   letRing: z.boolean().optional(),
+  /**
+   * What the pitch does while this note sounds (2V-C.1 §2).
+   *
+   * The `articulation` enum answers "how was the string struck" and can hold
+   * exactly one value, which is why it could say `bend_full` but never "bend
+   * up and stay there, with vibrato on top". Those are two different
+   * questions about one note, and this is the second one.
+   *
+   * Absent is the ordinary case and is **not** a default: a song written
+   * before this field means exactly what it always meant, and a legacy
+   * `bend_half`/`bend_full` articulation keeps its own audio path rather than
+   * being quietly re-read as one of these (§3). Nothing migrates on open.
+   *
+   * `targetCents` is a number rather than a `half | full` enum so the next
+   * interval a guitarist asks for — a quarter-tone, a bend and a half — costs
+   * a bound change and not a schema migration. This round's simple editor
+   * still offers only 100 and 200.
+   */
+  pitchGesture: pitchGestureSchema.optional(),
+  /**
+   * How this note is joined to the one before it (2V-C.1 §2, §8).
+   *
+   * The old enum carried `hammer_on`, `pull_off` and one generic `slide` —
+   * and that slide is, in what it actually renders, a *legato* slide: the
+   * target is never struck. A shift slide is a different musical event that
+   * the enum had no room for, so this field is where the difference lives.
+   *
+   * Absent means "read `articulation`", which is what every existing song
+   * says. Both present and disagreeing is a typed refusal, never a silent
+   * winner — see `expression-resolver`.
+   */
+  connection: noteConnectionSchema.optional(),
 });
 
 /** null is a rest, "-" ties the previous event (spec 5.4). */
@@ -317,6 +414,14 @@ export const songSchema = z.strictObject({
 export type Articulation = z.infer<typeof articulationSchema>;
 export type Position = z.infer<typeof positionSchema>;
 export type NoteEvent = z.infer<typeof noteEventSchema>;
+export type PitchGesture = z.infer<typeof pitchGestureSchema>;
+export type NoteConnection = z.infer<typeof noteConnectionSchema>;
+export type BendGesture = Extract<
+  PitchGesture,
+  { kind: "bend" | "bend_release" | "prebend" | "prebend_release" }
+>;
+export type BendKind = BendGesture["kind"];
+export type NoteConnectionKind = NoteConnection["kind"];
 export type MelodicSlot = z.infer<typeof melodicSlotSchema>;
 export type DrumPiece = z.infer<typeof drumPieceSchema>;
 export type DrumHit = z.infer<typeof drumHitSchema>;

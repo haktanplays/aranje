@@ -44,25 +44,29 @@ import {
   trackLegatoOnsets,
   type LegatoOnset,
 } from "@/lib/music/legato";
+import {
+  bendStages,
+  type GainPoint,
+  type PitchPoint,
+} from "@/lib/audio/automation";
+import { pitchGestureAutomation } from "@/lib/audio/pitch-gesture";
+import { resolveExpression } from "@/lib/music/expression-resolver";
 import type { Articulation, Song } from "@/lib/song/schema";
 
-export type AutomationCurve = "step" | "linear" | "sine";
-
-export type PitchPoint = {
-  /** Seconds from the note's own start. */
-  timeSeconds: number;
-  /** Deviation from the written pitch. 0 is the pitch as written. */
-  cents: number;
-  curve: AutomationCurve;
-};
-
-export type GainPoint = { timeSeconds: number; value: number };
 
 /**
  * Why an articulation could not be played as asked. The playback falls back to
  * an ordinary onset; the reason is a fixed identifier, never free text and
  * never anything a provider or a musician typed.
  */
+export type {
+  AutomationCurve,
+  BendStages,
+  GainPoint,
+  PitchPoint,
+} from "@/lib/audio/automation";
+export { bendStages } from "@/lib/audio/automation";
+
 export type ExpressionFallbackReason =
   | "no_previous_note"
   | "previous_note_other_string"
@@ -70,7 +74,9 @@ export type ExpressionFallbackReason =
   | "interval_too_wide"
   | "not_fretted"
   /** Slide only: the notes are too close together to hear the hand travel. */
-  | "no_room_to_glide";
+  | "no_room_to_glide"
+  /** Two sources answered one expression axis; neither was chosen (§4). */
+  | "conflicting_expression";
 
 export type ExpressiveNotePlan = {
   /** Stable and independent of placement: track, tick and pitch. */
@@ -213,67 +219,6 @@ export function vibratoAutomation(durationSeconds: number): PitchPoint[] {
  * back: a bend that arrives in 280ms rather than 1.2s is the whole point of
  * v2, and "how long did the rise take" has to be answerable without listening.
  */
-export type BendStages = {
-  settleSeconds: number;
-  riseSeconds: number;
-  holdSeconds: number;
-  releaseSeconds: number;
-  /** When the target pitch is first reached, from the note's start. */
-  reachedAtSeconds: number;
-};
-
-/**
- * How long each stage lasts.
- *
- * The rise and the release scale with the note but are clamped into a range a
- * hand can actually do. When the note is too short to hold all three, they are
- * squeezed **proportionally** — deterministic, and never producing a negative
- * hold or automation that runs off the end of the note.
- *
- * `timeScale` is the practice-speed factor: at half speed the musical gesture
- * is twice as long, so its real-time floors and ceilings stretch with it.
- */
-export function bendStages(
-  durationSeconds: number,
-  timeScale = 1,
-): BendStages {
-  const preset = expressionPresets.bend;
-
-  let settle = Math.min(
-    preset.settleSeconds * timeScale,
-    durationSeconds * preset.settleMaxFraction,
-  );
-  let rise = Math.min(
-    preset.riseMaxSeconds * timeScale,
-    Math.max(preset.riseMinSeconds * timeScale, durationSeconds * preset.riseFraction),
-  );
-  let release = Math.min(
-    preset.releaseMaxSeconds * timeScale,
-    Math.max(
-      preset.releaseMinSeconds * timeScale,
-      durationSeconds * preset.releaseFraction,
-    ),
-  );
-
-  const needed = settle + rise + release;
-  if (needed > durationSeconds && needed > 0) {
-    const squeeze = durationSeconds / needed;
-    settle *= squeeze;
-    rise *= squeeze;
-    release *= squeeze;
-  }
-
-  const hold = Math.max(0, durationSeconds - settle - rise - release);
-
-  return {
-    settleSeconds: round(settle),
-    riseSeconds: round(rise),
-    holdSeconds: round(hold),
-    releaseSeconds: round(release),
-    reachedAtSeconds: round(settle + rise),
-  };
-}
-
 /** Fast away from the start, controlled as it arrives. */
 function easeOut(t: number): number {
   return 1 - (1 - t) * (1 - t);
@@ -483,7 +428,44 @@ function planFor(
     slotIndex: onset.slotIndex,
   };
 
+  /*
+   * What this note is doing, asked once (2V-C.1 §4).
+   *
+   * The resolver is the only thing in the app that decides what a note's
+   * expression *is*. This function then decides what that means for the
+   * speakers, which is a different question and the only one it should be
+   * answering.
+   */
+  const resolved = resolveExpression(onset);
+  if (resolved.conflict !== null) {
+    /* Two answers on one axis. Nothing is chosen and nothing is guessed:
+       the note falls back to an ordinary onset and says why. */
+    return { ...base, fallbackReason: "conflicting_expression" };
+  }
+
   const articulation = onset.articulation;
+
+  /*
+   * An explicit pitch gesture (2V-C.1 §6).
+   *
+   * Reached only by a note that carries `pitchGesture`. A legacy
+   * `bend_half`/`bend_full` never arrives here — it takes the branch below,
+   * which is the same automation it has always had, so an old song does not
+   * change what it sounds like on the day this field was added (§3).
+   */
+  if (resolved.pitch?.source === "gesture") {
+    if (onset.fret === null || onset.midi === null) {
+      return { ...base, fallbackReason: "not_fretted" };
+    }
+    return {
+      ...base,
+      expressive: true,
+      pitchAutomation: pitchGestureAutomation(resolved.pitch.gesture, durationSeconds, {
+        timeScale: options.timeScale,
+      }),
+    };
+  }
+
   if (!isExpressive(articulation)) return base;
 
   // Anything expressive on a note with no string under it is not something to
