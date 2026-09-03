@@ -273,7 +273,13 @@ export function EditorActionBatch() {
         data-batch-header
         className="border-line text-muted shrink-0 border-b px-3 py-1 text-[11px]"
       >
-        <span className="text-text font-medium">Editör eylem kabulü</span>
+        {/* Says what it is on the screen itself, so nobody who opens the link
+            mistakes it for the thing the founder is asked to complete (2W §2). */}
+        <span className="text-text font-medium">Editör tanılama</span>
+        {" · "}
+        <span data-batch-role className="text-muted">
+          geliştirici aracı
+        </span>
         {" · "}
         <span data-batch-sha>{shortSha(BUILD_SHA)}</span>
         {" · "}

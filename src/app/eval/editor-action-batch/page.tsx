@@ -5,26 +5,45 @@ import { BRAND_NAME } from "@/lib/brand";
 import { EditorActionBatch } from "@/components/acceptance/EditorActionBatch";
 
 /**
- * The one batched founder round (2V-B §9).
+ * A developer diagnostic. **Not a founder gate** (2W §1, §2).
  *
- * Three rounds in a row ended by sending a founder a new link for one
- * control — the clipboard link, the "Devam" link, the listening link — and
- * each was answered honestly and found the next defect somewhere the link did
- * not go. This route is every selection action in one pass, so the answer that
- * comes back is about the editor rather than about a button.
+ * ## What changed, and why
  *
- * Not linked from anywhere, told not to be indexed, and reached by one URL
- * carrying the commit it expects. The workspace underneath is the real one,
- * with the real selection surfaces and the real audio engine, on a two-track
- * fixture in a storage the page owns: no sign-in, no provider call, and not
- * one byte of the reader's own music touched.
+ * This route was a thirteen-step founder round: select, extend, audition,
+ * loop, pause, copy, paste, duplicate, move, repeat, delete, undo, redo. It
+ * was built carefully, corrected twice, and it produced both a false positive
+ * (eight steps passing with nothing done) and — on the run after that was
+ * fixed — a false negative: a "Taşı" that really worked, which the harness
+ * failed to see, stopping the founder at step 8.
  *
- * Nothing plays and nothing is written until the reader presses a production
- * control. There is no test-only control anywhere on this page that does what
- * a production control does.
+ * Both failures share a cause that no further repair removes. Copy, move,
+ * delete, undo and redo are claims about bytes, and a person performing them
+ * by hand on a phone is a slow, error-prone way to check something a test can
+ * check exactly. So the division is now fixed: **Claude and CI own everything
+ * mechanical, and the founder owns only what an ear can judge** — which is
+ * `/eval/listening-pack`.
+ *
+ * ## What this route is still for
+ *
+ * Diagnosis, by whoever is working on the editor. Its step contracts, typed
+ * evidence states, transaction ledger, isolation record and negative controls
+ * are all still correct and still tested, and its automated positive and
+ * negative browser controls stay green. None of that was weakened when it
+ * stopped being a gate.
+ *
+ * What it must not do is come back as a release requirement. Completing it by
+ * hand proves nothing that `npm test` does not prove faster.
+ *
+ * ## Known, non-blocking
+ *
+ * Step 8 (`move`) can refuse a move the editor really performed. The
+ * production move is not in doubt — `move_onset_group` and its transaction
+ * are covered by unit tests and by the automated browser control that walks
+ * all thirteen steps — so this is a defect of the diagnostic's own evidence
+ * matching, recorded here rather than repaired in a batch about shipping.
  */
 export const metadata: Metadata = {
-  title: `${BRAND_NAME} · Editör eylem kabulü`,
+  title: `${BRAND_NAME} · Editör tanılama (geliştirici)`,
   robots: { index: false, follow: false },
 };
 

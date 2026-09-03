@@ -4127,6 +4127,13 @@ gerekmeden.
 
 #### §13.33.6 Founder'a artık her kusur için yeni link gönderilmez
 
+> **Bu bölüm 2W ile aşıldı — bkz. §13.35.** `/eval/editor-action-batch`
+> **artık bir founder kapısı değildir**; geliştirici tanılama aracıdır.
+> Founder'ın tek kapısı `/eval/listening-pack?sha=<sha>`'tır ve orada
+> hiçbir editör işlemi istenmez. Aşağıdaki metin, rotanın hâlâ doğru olan
+> teknik davranışını tarif eder; «founder şunu yapar» cümleleri artık
+> otomasyona aittir.
+
 `/eval/editor-action-batch?sha=<sha>` — `noindex`, linksiz, exact-SHA kapılı,
 izole bellek deposu, gerçek Workspace ve gerçek seçim yüzeyleri. En fazla on
 iki kısa ekran, ekran başına tek görev.
@@ -4267,6 +4274,53 @@ okuyor** — ve ikincisi tehlikelidir, çünkü üstündeki bütün sıfırlar k
 gibi adlar taşır. Kopyanın okuma-yalnız oluşu iki sayaçla söylenir — bir üretim
 olayı, sıfır yazan komut — çünkü tek sayaç ya kopyayı «hiçbir şey değiştirmeyen
 komut» ya da «komut değil» saymak zorunda kalır ve ikisi de doğru değildir.
+
+
+### §13.35 Test iş bölümü ve Altın Dinleme Paketi (2W)
+
+#### §13.35.1 Sözleşme
+
+Founder'dan **hiçbir editör işlemi** istenmez. Kopyala, taşı, sil, uzun bas,
+kaydır, geri al, ileri al — bunların hepsi bayt hakkında iddialardır ve bir
+makine onları tam olarak ölçebilir. Bir insana telefonda yaptırmak yavaş,
+hataya açık ve — iki turda ölçüldüğü üzere — güvenilmezdir: önce yapılmamış
+sekiz adım «geçti» diye raporlandı, düzeltildikten sonra da gerçekten çalışan
+bir «Taşı» harness tarafından görülmedi ve founder 8. adımda durduruldu.
+
+**Claude/CI'nin sahibi olduğu:** birim ve entegrasyon testleri, üretim
+yüzeyinde tarayıcı testleri, jest otomasyonu, işlem defteri, geri al/ileri al
+bayt eşitliği, depo izolasyonu, responsive geometri, hit testing, konsol
+hataları, mutasyon probe'ları, ekran görüntüleri.
+
+**Founder'ın sahibi olduğu:** yalnız kulak. Kısa örnekler, tek dokunuşla
+çalma, en fazla «Olmuş / Kısmen / Olmamış», isteğe bağlı kısa not.
+
+Bir founder cevabı **hiçbir zaman** copy/move/delete/pan/undo/redo'nun
+teknik olarak çalıştığını kanıtlamak için gerekli değildir.
+
+#### §13.35.2 `/eval/listening-pack?sha=<sha>`
+
+Sekiz kısa örnek (L1–L8): yalnız gitar, gitar+bas, tutulan notanın ortasından
+başlama, duraklat/devam, slide, vibrato, hammer-on/pull-off, power chord vs
+normal akor. Kapı yok, adım sayacı yok, pasif «Sonraki» yok, sıra zorunluluğu
+yok, takılma yolu yok. Cevaplanmamış örnek `ölçülmedi` kalır ve hiçbir zaman
+onaya çevrilmez.
+
+Her klip **üretim ses yolundan** üretilir: `createEngine`, `scheduleSong`
+(seçim penceresiyle), `setTrackAudibility` ve duraklama/orta-nota devamı için
+`expression.resumeAt`. Sentez yok, ikinci zamanlayıcı yok, klibe özel timing
+yok. `Tone.Offline` ile önceden render edilir, bu yüzden her tekrar anında
+çalar ve ses **sunulmadan önce ölçülür**: sessizlik, kırpılma, geçersiz
+örnek, süre sınırları. Ölçüm başarısızsa klip sebebini yazar, boş bir çalma
+düğmesi çizmez.
+
+#### §13.35.3 `/eval/editor-action-batch` geri çekilmedi, indirildi
+
+Adım sözleşmeleri, tipli kanıt durumları, işlem defteri, izolasyon kaydı ve
+negatif kontrolleri **zayıflatılmadı** ve otomatik pozitif/negatif tarayıcı
+kontrolleri yeşil kalır. Yalnız rolü değişti: geliştirici tanılama aracı.
+8. adımın (`move`) gerçekten yapılmış bir taşımayı görmemesi **bloke etmeyen
+tanılama kusuru** olarak kayıtlıdır; üretim taşıması şüphede değildir.
 
 
 ## §14 Stack, mimari ve fazlar

@@ -1,0 +1,430 @@
+{
+  "generatedAt": "2026-09-03T08:31:13.726Z",
+  "sha": "28d8849",
+  "fingerprint": "Editör kabul parçası · s3777h1h8tp95",
+  "passed": 53,
+  "failed": 0,
+  "takes": [
+    {
+      "takeId": "L1",
+      "state": "playing",
+      "renderMs": 482,
+      "audit": {
+        "frames": 396900,
+        "seconds": 9,
+        "peak": 0.28158000111579895,
+        "rms": 0.028882044448220626,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L2",
+      "state": "playing",
+      "renderMs": 295,
+      "audit": {
+        "frames": 396900,
+        "seconds": 9,
+        "peak": 0.2867051959037781,
+        "rms": 0.03212978639550667,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L3a",
+      "state": "playing",
+      "renderMs": 212,
+      "audit": {
+        "frames": 286650,
+        "seconds": 6.5,
+        "peak": 0.28158000111579895,
+        "rms": 0.032550387572980045,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L3b",
+      "state": "playing",
+      "renderMs": 181,
+      "audit": {
+        "frames": 272868,
+        "seconds": 6.187482993197279,
+        "peak": 0.2701694071292877,
+        "rms": 0.029483692042933902,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L4a",
+      "state": "playing",
+      "renderMs": 243,
+      "audit": {
+        "frames": 286650,
+        "seconds": 6.5,
+        "peak": 0.27778318524360657,
+        "rms": 0.03562874525832256,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L4b",
+      "state": "playing",
+      "renderMs": 292,
+      "audit": {
+        "frames": 286649,
+        "seconds": 6.499977324263039,
+        "peak": 0.27893391251564026,
+        "rms": 0.035537935587486635,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L5",
+      "state": "playing",
+      "renderMs": 144,
+      "audit": {
+        "frames": 143325,
+        "seconds": 3.25,
+        "peak": 0.12865319848060608,
+        "rms": 0.023013881022939303,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L6",
+      "state": "playing",
+      "renderMs": 178,
+      "audit": {
+        "frames": 165375,
+        "seconds": 3.75,
+        "peak": 0.14212186634540558,
+        "rms": 0.021729160923815164,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L7",
+      "state": "playing",
+      "renderMs": 186,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.27778318524360657,
+        "rms": 0.03244802189966874,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L8a",
+      "state": "playing",
+      "renderMs": 172,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.28158000111579895,
+        "rms": 0.03912069712262869,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L8b",
+      "state": "playing",
+      "renderMs": 163,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.3277737498283386,
+        "rms": 0.05337357354738573,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "the page names the build it was opened for",
+      "pass": true,
+      "detail": "28d8849"
+    },
+    {
+      "name": "it offers eight clips",
+      "pass": true,
+      "detail": "L1,L2,L3,L4,L5,L6,L7,L8"
+    },
+    {
+      "name": "every clip is a listening question",
+      "pass": true,
+      "detail": "L1,L2,L3,L4,L5,L6,L7,L8"
+    },
+    {
+      "name": "it credits the sample source",
+      "pass": true,
+      "detail": "https://github.com/gleitz/midi-js-soundfonts"
+    },
+    {
+      "name": "nothing is answered before anyone answers",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "no editor gesture is asked for anywhere on the page",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "nothing plays until it is asked to",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "L1 rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.282 rms=0.0289 s=9.00 clip=0"
+    },
+    {
+      "name": "L1 is not silent",
+      "pass": true,
+      "detail": "peak=0.2816"
+    },
+    {
+      "name": "L1 does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L1 has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L2 rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.287 rms=0.0321 s=9.00 clip=0"
+    },
+    {
+      "name": "L2 is not silent",
+      "pass": true,
+      "detail": "peak=0.2867"
+    },
+    {
+      "name": "L2 does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L2 has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L3a rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.282 rms=0.0326 s=6.50 clip=0"
+    },
+    {
+      "name": "L3a is not silent",
+      "pass": true,
+      "detail": "peak=0.2816"
+    },
+    {
+      "name": "L3a does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L3a has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L3b rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.270 rms=0.0295 s=6.19 clip=0"
+    },
+    {
+      "name": "L3b is not silent",
+      "pass": true,
+      "detail": "peak=0.2702"
+    },
+    {
+      "name": "L3b does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L3b has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L4a rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.278 rms=0.0356 s=6.50 clip=0"
+    },
+    {
+      "name": "L4a is not silent",
+      "pass": true,
+      "detail": "peak=0.2778"
+    },
+    {
+      "name": "L4a does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L4a has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L4b rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.279 rms=0.0355 s=6.50 clip=0"
+    },
+    {
+      "name": "L4b is not silent",
+      "pass": true,
+      "detail": "peak=0.2789"
+    },
+    {
+      "name": "L4b does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L4b has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L5 rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.129 rms=0.0230 s=3.25 clip=0"
+    },
+    {
+      "name": "L5 is not silent",
+      "pass": true,
+      "detail": "peak=0.1287"
+    },
+    {
+      "name": "L5 does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L5 has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L6 rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.142 rms=0.0217 s=3.75 clip=0"
+    },
+    {
+      "name": "L6 is not silent",
+      "pass": true,
+      "detail": "peak=0.1421"
+    },
+    {
+      "name": "L6 does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L6 has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L7 rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.278 rms=0.0324 s=4.50 clip=0"
+    },
+    {
+      "name": "L7 is not silent",
+      "pass": true,
+      "detail": "peak=0.2778"
+    },
+    {
+      "name": "L7 does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L7 has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L8a rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.282 rms=0.0391 s=4.50 clip=0"
+    },
+    {
+      "name": "L8a is not silent",
+      "pass": true,
+      "detail": "peak=0.2816"
+    },
+    {
+      "name": "L8a does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L8a has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L8b rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.328 rms=0.0534 s=4.50 clip=0"
+    },
+    {
+      "name": "L8b is not silent",
+      "pass": true,
+      "detail": "peak=0.3278"
+    },
+    {
+      "name": "L8b does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L8b has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "the device's own store is byte-identical",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "console errors is 0",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}
