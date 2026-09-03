@@ -12,6 +12,19 @@
  * snap to bar lines, does not end where the screen does, and keeps the same
  * identity in every viewport: what changes with the window is where the ink
  * is, never what the phrase is.
+ *
+ * ## Three layers, three voices (2V-B.4 Completion §10)
+ *
+ * The reader is looking at three things at once and must not confuse them.
+ * The **selection** is the loud one — a filled band with solid ends and
+ * grab handles, in the selection hue — because it is what the next action
+ * will happen to. The **phrase** is this: one hairline along the top of the
+ * staff's padding and a small name, in the muted text colour, going steel
+ * only while it is the phrase in hand. It is quieter than the selection on
+ * purpose; it is a fact about the music, not a pending decision. The **ghost
+ * preview** is the third, and it is the only one wearing bronze, which in
+ * this palette means "suggested, not yet yours". A phrase never borrows that
+ * colour, or the reader would read a written idea as an unapplied one.
  */
 import { phraseBand, type PhraseBandSpan } from "@/lib/tab/phrase-band";
 import type { SongAxis, SongAxisBar } from "@/lib/tab/song-axis";
@@ -56,10 +69,11 @@ export function PhraseBand({
             undefined
           }
           onClick={() => onSelect?.(span)}
-          className={`absolute top-0 flex h-3.5 items-center gap-0.5 overflow-hidden rounded-sm border-t-2 px-1 text-[9px] leading-none font-semibold tracking-wide whitespace-nowrap ${
+          data-phrase-active={activePhraseId === span.phraseId ? "" : undefined}
+          className={`absolute top-0 flex h-3.5 items-center gap-0.5 overflow-hidden rounded-sm border-t-2 px-1 text-[9px] leading-none tracking-wide whitespace-nowrap ${
             activePhraseId === span.phraseId
-              ? "border-bronze text-bronze"
-              : "border-muted/60 text-muted"
+              ? "border-accent text-accent font-semibold"
+              : "border-muted/50 text-muted/90 font-medium"
           }`}
           style={{ left: span.leftPx, width: span.widthPx }}
         >

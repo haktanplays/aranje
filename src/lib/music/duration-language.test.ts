@@ -16,6 +16,9 @@ import { describe, expect, it } from "vitest";
 
 import { PPQ } from "@/lib/music/timing";
 import {
+  CONNECTION_SENTENCE,
+  SLIDE_TRAVEL,
+  noteLengthReading,
   DIVIDE_COUNT,
   DURATION_ACTION_IDS,
   DURATION_ACTION_KIND,
@@ -154,5 +157,42 @@ describe("56. the one sentence a fast run shows, and the details it does not", (
     /* The technical reading exists — that is the point of Ayrıntılar — and it
        is the only place in this module where it does. */
     expect(detail).toMatch(/\d+ tick/u);
+  });
+});
+
+describe("69. a slide and a note length are two different facts", () => {
+  it("says the length in beats first and the note value second", () => {
+    /*
+     * "1/4" is a quarter note — one beat in 4/4, not four beats and never a
+     * slide's travel. The reading says the countable thing first, so a reader
+     * who has not met note values can still act (§17).
+     */
+    expect(noteLengthReading(192, 192)).toEqual({
+      plain: "1 vuruş",
+      technical: "dörtlük · 1/4",
+    });
+    expect(noteLengthReading(96, 192)).toEqual({
+      plain: "½ vuruş",
+      technical: "sekizlik · 1/8",
+    });
+    expect(noteLengthReading(384, 192)).toEqual({
+      plain: "2 vuruş",
+      technical: "ikilik · 1/2",
+    });
+    expect(noteLengthReading(288, 192).plain).toBe("1½ vuruş");
+  });
+
+  it("never puts the connection and the length in one string", () => {
+    /* The exact ambiguity §17 names: "Slide · 1/4". */
+    for (const sentence of Object.values(CONNECTION_SENTENCE)) {
+      expect(sentence).not.toMatch(/\d\s*\/\s*\d/u);
+      expect(sentence.toLowerCase()).not.toContain("slide");
+      expect(sentence).toMatch(/önceki notadan/iu);
+    }
+  });
+
+  it("keeps the slide's travel automatic and unnumbered", () => {
+    expect(SLIDE_TRAVEL).toBe("Otomatik");
+    expect(SLIDE_TRAVEL).not.toMatch(/\d/u);
   });
 });

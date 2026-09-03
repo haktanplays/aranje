@@ -20,6 +20,7 @@ import { semanticSnapshot } from "@/lib/song/preserve";
 import {
   KEY_CHOICES,
   PITCH_MOVES,
+  pitchMoveScopeLabel,
   TRANSPOSE_SCOPES,
   semitonesBetween,
   transposeSong,
@@ -81,13 +82,22 @@ const midiOf = (song: Song, slot: number, voice = 0) => {
 describe("48. moving a sound is one intention, changing a key is another", () => {
   it("offers the four intervals a beginner asks for, in their own words", () => {
     expect(PITCH_MOVES.map((move) => move.label)).toEqual([
-      "Yarım ses aşağı",
-      "Yarım ses yukarı",
-      "Tam ses aşağı",
-      "Tam ses yukarı",
+      "½ ses aşağı",
+      "½ ses yukarı",
+      "1 ses aşağı",
+      "1 ses yukarı",
     ]);
     expect(PITCH_MOVES.map((move) => move.semitones)).toEqual([-1, 1, -2, 2]);
     expect([...TRANSPOSE_SCOPES]).toEqual(["selection", "section", "song"]);
+  });
+
+  it("names its own scope from what the reader is holding", () => {
+    /* Not a picker beside a selection: the reader already said what they
+       meant by selecting it, and the panel reads it back (§14). */
+    expect(pitchMoveScopeLabel({ hasSelection: false, voices: 0 })).toBe("Şarkı");
+    expect(pitchMoveScopeLabel({ hasSelection: true, voices: 1 })).toBe("Nota");
+    expect(pitchMoveScopeLabel({ hasSelection: true, voices: 3 })).toBe("Akor");
+    expect(pitchMoveScopeLabel({ hasSelection: true, voices: 0 })).toBe("Seçili alan");
   });
 
   it("moves every voice of a chord by the same interval", () => {

@@ -275,3 +275,17 @@ export function transposeChord(chord: ChordIdentity, semitones: number): ChordId
 export function measureLabel(barNumber: number): string {
   return `${barNumber}. ölçü`;
 }
+
+/**
+ * The chord as the reader meets it: the symbol they will see everywhere, and
+ * the words for what it is (§12).
+ *
+ * "Cm · C minör" rather than either alone. The symbol is what a chart, a
+ * search box and every other surface uses; the words are what somebody who
+ * has not learned the symbols can read. Both come from one identity, so they
+ * cannot drift, and the internal enum appears in neither.
+ */
+export function chordDisplayPair(chord: ChordIdentity, key: string): string {
+  const root = spellPitchClass(chord.rootPitchClass, key);
+  return `${chordDisplayName(chord, key)} · ${root} ${qualityLabel(chord.quality).toLocaleLowerCase("tr")}`;
+}

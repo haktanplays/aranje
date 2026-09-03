@@ -23,8 +23,25 @@ import type { EditDraft } from "@/lib/workspace/edit-draft";
 import type { EditTarget } from "@/lib/workspace/edit-target";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { ShelfPanelId } from "@/lib/workspace/shelf-panel";
-import type { Song, Track } from "@/lib/song/schema";
+import { isMelodicSlotArray, type Song, type Track } from "@/lib/song/schema";
 import type { TimeSelection } from "@/lib/song/time-selection";
+
+/**
+ * How many voices sound at the position under the finger.
+ *
+ * One is a note, more is a chord, none is a stretch of time — which is the
+ * whole of what "Sesi taşı" needs to name its own scope (§14).
+ */
+function voicesAt(song: Song, target: EditTarget | null): number {
+  if (!target) return 0;
+  const bar = song.sections.find((entry) => entry.id === target.sectionId)?.bars[
+    target.barIndex
+  ];
+  const lane = bar?.slots[target.trackId];
+  if (!lane || !isMelodicSlotArray(lane)) return 0;
+  const slot = lane[target.startTicks / target.slotTicks];
+  return slot && slot !== "-" ? slot.notes.length : 0;
+}
 
 /** What a position sounds on this track, or null when there is no note. */
 function pitchOf(
@@ -81,6 +98,11 @@ export function ShelfPanels({
         }
         sectionId={selection?.sectionId ?? song.sections[0]?.id ?? ""}
         trackId={track?.id ?? ""}
+        /* How many voices are under the finger, so "Sesi taşı" can say
+           whether it is about a note or a chord (§14). */
+        voices={voicesAt(song, target)}
+        draft={draft}
+        onPropose={onPropose}
         onPreview={onPreview}
         onApply={onApply}
       />

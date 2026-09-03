@@ -11,6 +11,23 @@
   --color-text: #f0ece4;
   --color-muted: #9ca2ac;
   --color-steel: #7fa7b8;
+  /*
+   * The selection hue (2V-B.4 Completion §10).
+   *
+   * `bg-accent`, `border-accent` and `ring-accent` are written across the
+   * selection band, the range handles, the duration preview and every "this
+   * one is chosen" chip — and none of them resolved, because the token they
+   * name was never declared. Tailwind 4 emits nothing for an unknown colour
+   * and says nothing about it, so the strongest layer of the editor's visual
+   * language was drawing at width and opacity with no colour at all.
+   *
+   * It is steel, deliberately, and not a fourth hue: the palette already says
+   * steel means playing or selected, and the selected bar, the drum step and
+   * the playhead are all steel. Selection is one idea and reads as one colour
+   * wherever it appears; bronze stays reserved for pending/suggested, which is
+   * what keeps the ghost preview a different layer rather than a louder one.
+   */
+  --color-accent: #7fa7b8;
   --color-bronze: #c58a3a;
   --color-accept: #56866a;
   --color-reject: #b55e57;

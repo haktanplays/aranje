@@ -33,15 +33,17 @@ import {
   ShelfSecondary,
 } from "@/components/workspace/shelf/ShelfControls";
 import { applyChordWrite } from "@/lib/chords/chord-command";
+import { ChordShape, shapeLabel } from "@/components/workspace/shelf/ChordShape";
 import {
   ADVANCED_QUALITIES,
   SIMPLE_QUALITIES,
-  chordDisplayName,
+  chordDisplayPair,
   measureLabel,
   qualityLabel,
   spellPitchClass,
 } from "@/lib/chords/chord-naming";
 import { chordSpanOffers, defaultChordSpan, type ChordSpanId } from "@/lib/chords/chord-span";
+import { noteLengthReading } from "@/lib/music/duration-language";
 import { chordVoicings } from "@/lib/chords/chord-voicing";
 import {
   recommendVoicings,
@@ -112,31 +114,41 @@ export function ChordPanel({
   const choices = pick ? [pick.recommended, ...pick.alternatives.map((entry) => entry.voicing)] : [];
   const chosen = choices[Math.min(angle, choices.length - 1)] ?? null;
 
-  const proposal = useMemo(() => {
+  /*
+   * The candidate, or the reason there is not one (§13).
+   *
+   * `applyChordWrite` already refuses rather than pushing a neighbour aside,
+   * shortening the chord to fit or moving a voice to another string — and it
+   * says exactly which of those it would have had to do. That sentence is
+   * what the reader needs, so it is carried out of here instead of being
+   * flattened into one house-brand apology.
+   */
+  const attempt = useMemo(() => {
     if (!chosen || span.ticks === null || span.ticks <= 0) return null;
-    const written = applyChordWrite(song, {
-      sectionId: target.sectionId,
-      trackId: target.trackId,
-      timeTicks: target.sectionTicks,
-      durationTicks: span.ticks,
-      voicing: chosen,
-      velocity: 96,
-      mode: "insert",
-    });
-    if (written.ok) return { song: written.song, replace: false };
-    const replaced = applyChordWrite(song, {
-      sectionId: target.sectionId,
-      trackId: target.trackId,
-      timeTicks: target.sectionTicks,
-      durationTicks: span.ticks,
-      voicing: chosen,
-      velocity: 96,
-      mode: "replace_onset",
-    });
-    return replaced.ok ? { song: replaced.song, replace: true } : null;
+    const write = (mode: "insert" | "replace_onset") =>
+      applyChordWrite(song, {
+        sectionId: target.sectionId,
+        trackId: target.trackId,
+        timeTicks: target.sectionTicks,
+        durationTicks: span.ticks!,
+        voicing: chosen,
+        velocity: 96,
+        mode,
+      });
+    const written = write("insert");
+    if (written.ok) return { song: written.song, replace: false, refusal: null };
+    /* Occupied is not a refusal, it is the replace flow: the reader is
+       offered "Uygula" instead of "Ekle" and told what is being replaced. */
+    if (written.error.code !== "target_occupied") {
+      return { song: null, replace: false, refusal: written.error.message };
+    }
+    const replaced = write("replace_onset");
+    if (replaced.ok) return { song: replaced.song, replace: true, refusal: null };
+    return { song: null, replace: false, refusal: replaced.error.message };
   }, [chosen, song, span.ticks, target]);
+  const proposal = attempt?.song ? { song: attempt.song, replace: attempt.replace } : null;
 
-  const name = chordDisplayName({ rootPitchClass: root, quality }, song.key);
+  const name = chordDisplayPair({ rootPitchClass: root, quality }, song.key);
 
   const stage = (): EditDraft | null => {
     if (!proposal || span.ticks === null) return null;
@@ -158,9 +170,13 @@ export function ChordPanel({
     ? "Bu enstrümanda bu akor çalınamıyor."
     : chosen === null
       ? "Bu akor için çalınabilir bir şekil bulunamadı."
-      : proposal === null
-        ? "Bu süre buraya sığmıyor; daha kısa bir süre seç."
-        : null;
+      : (attempt?.refusal ?? (proposal === null ? "Önce bir süre seç." : null));
+
+  /* The span in the reader's words, with the notation underneath it (§13). */
+  const length =
+    span.ticks === null || span.ticks <= 0
+      ? null
+      : noteLengthReading(span.ticks, target.beatTicks);
 
   const qualities = advanced ? [...SIMPLE_QUALITIES, ...ADVANCED_QUALITIES] : SIMPLE_QUALITIES;
 
@@ -169,6 +185,12 @@ export function ChordPanel({
       <ShelfNote testId="chord-name">
         {name} · {measureLabel(target.barNumber)}
       </ShelfNote>
+
+      {/* The shape itself, before "Dinle" (§11 step 7): six strings and where
+          the hand sits, from the same voicing the write uses. */}
+      <div aria-label={shapeLabel(chosen)} role="img">
+        <ChordShape voicing={chosen} />
+      </div>
 
       <ShelfRow label="Kök" testId="root">
         {ROOT_PITCH_CLASSES.map((pitchClass) => (
@@ -206,6 +228,12 @@ export function ChordPanel({
           />
         ))}
       </ShelfRow>
+
+      {length ? (
+        <ShelfNote testId="span-reading">
+          {length.plain} · {length.technical}
+        </ShelfNote>
+      ) : null}
 
       {choices.length > 1 ? (
         <ShelfRow label="Şekil" testId="shape">

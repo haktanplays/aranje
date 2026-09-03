@@ -192,3 +192,80 @@ export function detailedLength(ticks: number, slotTicks: number): string {
   const stepText = Number.isInteger(steps) ? `${steps} adım` : `${steps.toFixed(2)} adım`;
   return `${beatText} · ${stepText} · ${ticks} tick`;
 }
+
+
+/**
+ * How long the note itself is, said twice (2V-B.4 Completion §17).
+ *
+ * ## The ambiguity this removes
+ *
+ * "Slide · 1/4" put two unrelated facts in one string and invited the worst
+ * possible reading. "1/4" is a **quarter note**: one beat in 4/4, not four
+ * beats, and never the time the hand spends sliding. A slide begins in the
+ * tail of the note before it and arrives at this note's own onset; how long
+ * that travel takes is worked out by the production engine from the interval
+ * and the room available, and it is not a number anyone types.
+ *
+ * So a length is reported as two things a reader can tell apart: what they
+ * count, and what it is called. The connection is a separate line entirely,
+ * and the travel is a third.
+ */
+export type LengthReading = {
+  /** What a reader counts: "1 vuruş". Never a fraction. */
+  readonly plain: string;
+  /** What it is called: "dörtlük · 1/4". Never shown alone. */
+  readonly technical: string;
+};
+
+const VALUE_NAME: Readonly<Record<number, string>> = {
+  1: "birlik",
+  2: "ikilik",
+  4: "dörtlük",
+  8: "sekizlik",
+  16: "16'lık",
+  32: "32'lik",
+};
+
+/** "1 vuruş", "½ vuruş", "1½ vuruş" — beats, the way they are counted. */
+function beatsPlain(beats: number): string {
+  if (beats === 0.5) return "½ vuruş";
+  if (Number.isInteger(beats)) return `${beats} vuruş`;
+  const whole = Math.floor(beats);
+  if (beats - whole === 0.5) return `${whole === 0 ? "" : whole}½ vuruş`;
+  return `${beats.toFixed(2)} vuruş`;
+}
+
+export function noteLengthReading(ticks: number, beatTicks: number): LengthReading {
+  const beats = beatTicks > 0 ? ticks / beatTicks : 0;
+  const divisions = ticks > 0 ? PPQ * 4 / ticks : 0;
+  const name = VALUE_NAME[divisions];
+  return {
+    plain: beatsPlain(beats),
+    technical:
+      name === undefined
+        ? `${beats.toFixed(2)} vuruş`
+        : `${name} · 1/${divisions}`,
+  };
+}
+
+/**
+ * What joins this note to the one before it, in a sentence (§17).
+ *
+ * A verb, not a technique name in a foreign alphabet: a reader who has never
+ * met "slide" can act on "önceki notadan buraya kay". The technique's own name
+ * still appears on the control that sets it, so nothing is hidden.
+ */
+export const CONNECTION_SENTENCE: Readonly<Record<string, string>> = {
+  hammer_on: "Önceki notadan buraya bağla",
+  pull_off: "Önceki notadan buraya kopar",
+  slide: "Önceki notadan buraya kay",
+};
+
+/**
+ * How long the slide's travel takes.
+ *
+ * Never a number on the Simple surface, and never a control: the engine
+ * derives it from the interval and the time available, which is the only way
+ * it can be right at both 1/8 · 132 and 1/32 · 260 (K-59).
+ */
+export const SLIDE_TRAVEL = "Otomatik";

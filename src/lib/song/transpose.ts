@@ -49,11 +49,28 @@ import {
 
 /** How far a "Sesi taşı" step moves, in the reader's own words. */
 export const PITCH_MOVES = [
-  { id: "down_semitone", label: "Yarım ses aşağı", semitones: -1 },
-  { id: "up_semitone", label: "Yarım ses yukarı", semitones: 1 },
-  { id: "down_tone", label: "Tam ses aşağı", semitones: -2 },
-  { id: "up_tone", label: "Tam ses yukarı", semitones: 2 },
+  { id: "down_semitone", label: "½ ses aşağı", semitones: -1 },
+  { id: "up_semitone", label: "½ ses yukarı", semitones: 1 },
+  { id: "down_tone", label: "1 ses aşağı", semitones: -2 },
+  { id: "up_tone", label: "1 ses yukarı", semitones: 2 },
 ] as const;
+
+/**
+ * What the reader is holding, said back to them (§14).
+ *
+ * The scope of "Sesi taşı" is not a control: it is whatever they selected, and
+ * naming it is how they know what is about to move. A separate scope picker
+ * beside a selection would be two answers to one question.
+ */
+export function pitchMoveScopeLabel(input: {
+  readonly hasSelection: boolean;
+  readonly voices: number;
+}): string {
+  if (!input.hasSelection) return "Şarkı";
+  if (input.voices > 1) return "Akor";
+  if (input.voices === 1) return "Nota";
+  return "Seçili alan";
+}
 
 export type PitchMoveId = (typeof PITCH_MOVES)[number]["id"];
 

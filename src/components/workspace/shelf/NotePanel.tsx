@@ -29,7 +29,12 @@ import {
   ShelfRow,
   ShelfSecondary,
 } from "@/components/workspace/shelf/ShelfControls";
-import { detailedLength } from "@/lib/music/duration-language";
+import {
+  CONNECTION_SENTENCE,
+  SLIDE_TRAVEL,
+  detailedLength,
+  noteLengthReading,
+} from "@/lib/music/duration-language";
 import { measureLabel } from "@/lib/chords/chord-naming";
 import type { EditTarget } from "@/lib/workspace/edit-target";
 
@@ -84,6 +89,7 @@ export function NotePanel({
   onOpenDetails: () => void;
 }) {
   const [details, setDetails] = useState(false);
+  const length = noteLengthReading(target.currentTicks, target.beatTicks);
   const stringName =
     target.stringIndex === null ? "" : (STRING_NAMES[target.stringIndex] ?? `${target.stringIndex + 1}. tel`);
 
@@ -125,12 +131,37 @@ export function NotePanel({
             key={entry.id}
             testId={`connection-${entry.id}`}
             label={entry.label}
+            spoken={CONNECTION_SENTENCE[entry.id]}
             active={articulation === entry.id}
             reason={fret === null ? "Önce bir nota yaz." : undefined}
             onPress={() => onConnection(articulation === entry.id ? null : entry.id)}
           />
         ))}
       </ShelfRow>
+
+      {/*
+        Three facts, three lines (§17).
+
+        They used to be one string — "Slide · 1/4" — which reads as though the
+        quarter note were the slide's own length. It is not: it is how long
+        *this* note lasts, the connection is what joins it to the one before,
+        and the travel is worked out by the engine. Saying them together said
+        none of them.
+      */}
+      {articulation !== null && CONNECTION_SENTENCE[articulation] ? (
+        <div className="flex flex-col gap-0.5" data-connection-reading={articulation}>
+          <ShelfNote testId="connection-sentence">
+            {CONNECTION_SENTENCE[articulation]}
+          </ShelfNote>
+          <ShelfNote testId="note-length">
+            Bu notanın süresi: {length.plain}
+            <span className="text-muted/70"> · {length.technical}</span>
+          </ShelfNote>
+          {articulation === "slide" ? (
+            <ShelfNote testId="slide-travel">Kayma süresi: {SLIDE_TRAVEL}</ShelfNote>
+          ) : null}
+        </div>
+      ) : null}
 
       {error ? <ShelfNote tone="warn" testId="note-error">{error}</ShelfNote> : null}
 
