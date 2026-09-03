@@ -235,8 +235,21 @@ describe("the exact tick a pause holds (§8)", () => {
     controller.pause();
     await controller.play();
 
+    /*
+     * The track filter and the end are the selection's; the lower bound is
+     * dropped (2V-B.3 §4).
+     *
+     * This assertion used to name 768, and that was the pause path holding a
+     * private opinion about the audition's boundaries. A note that began
+     * before the selection and was still ringing when it opened is *part of*
+     * what the reader is hearing — the first play puts it there deliberately.
+     * Bounding the resume at 768 made that same voice vanish across a pause,
+     * so the audition sounded different before and after a button the reader
+     * pressed only to stop for a moment. All three moments now read one
+     * window, from one function.
+     */
     expect(expression.log.resumes[0]?.window).toEqual({
-      startTicks: 768,
+      startTicks: 0,
       endTicks: 1536,
       trackIds: ["gtr"],
     });

@@ -313,6 +313,22 @@ function chainVoice(
 }
 
 /**
+ * Cut a continuation at the end of the window it is being restored into.
+ *
+ * A voice with nothing left inside the window is not restored at all: putting
+ * it back to release immediately would be an attack the reader never wrote.
+ */
+function clampRemaining(
+  voice: ContinuationVoice | null,
+  cap: number | null,
+): ContinuationVoice | null {
+  if (!voice || cap === null) return voice;
+  if (cap <= 0) return null;
+  if (voice.remainingSeconds <= cap) return voice;
+  return { ...voice, remainingSeconds: cap };
+}
+
+/**
  * Which voices were in the air at `pausedTicks`, and where each one was.
  *
  * The plan and the tempo map are the **same** ones the engine is playing, not
@@ -332,6 +348,17 @@ export function activeVoicesAt(
 ): ContinuationPlan {
   const pausedSeconds = secondsAtTicks(tempo, pausedTicks);
   const voices: ContinuationVoice[] = [];
+  /*
+   * A continuation may not outlive the window it belongs to (2V-B.3 §5).
+   *
+   * Without this the resumed voice keeps its natural length, and it is only
+   * the controller's `stopAll` at the wrap that happens to cut it. That made
+   * the truth about "when does this stop" live in two places, one of which
+   * does not exist for an offline render — so a rendered pass and a live pass
+   * could disagree about a tail crossing the selection's end.
+   */
+  const remainingCap =
+    window == null ? null : secondsAtTicks(tempo, window.endTicks) - pausedSeconds;
 
   for (const note of plan.notes) {
     /* Chain members are rendered by their chain, so continuing them here
@@ -340,14 +367,14 @@ export function activeVoicesAt(
     /* Exactly at the resume tick is the transport's own event, not ours. */
     if (note.timeTicks >= pausedTicks) continue;
     if (!withinWindow(window, note.trackId, note.timeTicks)) continue;
-    const voice = noteVoice(note, pausedSeconds);
+    const voice = clampRemaining(noteVoice(note, pausedSeconds), remainingCap);
     if (voice) voices.push(voice);
   }
 
   for (const chain of plan.chains) {
     if (chain.startTicks >= pausedTicks) continue;
     if (!withinWindow(window, chain.trackId, chain.startTicks)) continue;
-    const voice = chainVoice(chain, pausedSeconds);
+    const voice = clampRemaining(chainVoice(chain, pausedSeconds), remainingCap);
     if (voice) voices.push(voice);
   }
 

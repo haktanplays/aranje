@@ -26,6 +26,7 @@ const SHORT: Readonly<Record<string, string>> = {
   L6: "Vibrato",
   L7: "HO/PO",
   L8: "Power/Akor",
+  L9: "Loop dönüşü",
 };
 
 export function formatListeningResult(input: {

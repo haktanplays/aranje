@@ -1,5 +1,5 @@
 /**
- * The eight things the founder is asked to listen to (2W §3, §4).
+ * The nine things the founder is asked to listen to (2W §3, §4; 2V-B.3 §7).
  *
  * ## Why this file exists at all
  *
@@ -35,6 +35,8 @@
  * the durations and the track scope be checked by tests that have no browser.
  */
 import { songSupport, type SongSupport } from "@/lib/acceptance/song-support";
+import { buildExpressionPlan } from "@/lib/audio/expression-plan";
+import { planSelectionIteration } from "@/lib/playback/selection-iteration";
 import { barTimeline } from "@/lib/audio/schedule";
 import { secondsAtTicks, type TempoMap } from "@/lib/audio/tempo";
 import type { PlaybackWindow } from "@/lib/playback/selection-playback";
@@ -81,7 +83,8 @@ export type ListeningClipId =
   | "L5"
   | "L6"
   | "L7"
-  | "L8";
+  | "L8"
+  | "L9";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -359,7 +362,98 @@ export function listeningClips(song: Song, chord: ChordSide | null): ListeningCl
     expects: { trackIds: [guitar], minSeconds: 2, maxSeconds: 7 },
   });
 
+  /*
+   * L9 · the extended chord's loop return (2V-B.3 §7).
+   *
+   * The founder heard this by hand: a selection opened in the middle of the
+   * held opening chord and looped, and the chord's tail was there on the
+   * first pass and gone from the second wrap on. So the clip is four passes
+   * of one selection, back to back and with nothing between them, and the
+   * only question is whether they sound the same as each other.
+   *
+   * The passes are not written out four times. Each one is
+   * `planSelectionIteration` of the *same* selection — the value the live
+   * controller reads on its first play and on every wrap — so if the plan and
+   * the loop ever diverged again, this clip would diverge with them rather
+   * than keep sounding correct.
+   */
+  const loop = extendedChordSelection(song, support);
+  if (loop) {
+    const iteration = planSelectionIteration({
+      startTicks: loop.startTicks,
+      endTicks: loop.endTicks,
+      trackIds: [guitar],
+      sustainCount: loop.sustainCount,
+    });
+    const pass = (): ClipSegment => ({
+      window: { ...loop, trackIds: [guitar] },
+      continueSustained: iteration.continues,
+      /* No tail between passes: a gap the loop does not have would be a
+         musical event this clip invented. The last pass gets one. */
+      tailSeconds: 0,
+    });
+    const passes = [pass(), pass(), pass(), { ...pass(), tailSeconds: 2 }];
+    clips.push({
+      id: "L9",
+      label: "Uzayan akorun loop dönüşü",
+      instruction: "Aynı kısa bölüm arka arkaya dört kez çalınıyor.",
+      question: "Dört turda da akor kuyruğu aynı şekilde geliyor mu?",
+      answers: LISTENING_ANSWERS,
+      takes: [{ id: "L9", name: "Dinle · 4 tur", segments: passes }],
+      expects: { trackIds: [guitar], minSeconds: 2, maxSeconds: 14 },
+    });
+  }
+
   return clips;
+}
+
+/**
+ * Where the founder's own selection was: inside the held chord, reaching the
+ * note after it.
+ *
+ * Read off the plan the engine plays rather than written down, for the same
+ * reason every other clip is: the chord has to still be *sounding* at the
+ * window's start for there to be anything to lose, and only the plan knows
+ * how long the planner really gave it.
+ */
+function extendedChordSelection(
+  song: Song,
+  support: SongSupport,
+): { startTicks: number; endTicks: number; sustainCount: number } | null {
+  const held = support.heldPowerChord;
+  if (!held) return null;
+  const plan = buildExpressionPlan(song);
+  const voices = plan.notes.filter(
+    (note) =>
+      note.trackId === held.trackId &&
+      note.barKey === held.barKey &&
+      note.slotIndex === held.slotIndex,
+  );
+  const first = voices[0];
+  if (!first) return null;
+
+  const next = plan.notes
+    .filter(
+      (note) => note.trackId === held.trackId && note.timeTicks > first.timeTicks,
+    )
+    .sort((left, right) => left.timeTicks - right.timeTicks)[0];
+  if (!next) return null;
+
+  /* Halfway into the chord, which is where a finger lands when someone drags
+     a selection across a note they can see. */
+  const startTicks = Math.round((first.timeTicks + next.timeTicks) / 2);
+  const stillRinging = voices.filter(
+    (voice) => voice.timeTicks + voice.durationTicks > startTicks,
+  );
+  if (stillRinging.length === 0) return null;
+
+  return {
+    startTicks,
+    /* Past the following note's onset, so each pass has to deliver both the
+       tail that is at risk and the event that was never at risk. */
+    endTicks: next.timeTicks + next.durationTicks,
+    sustainCount: stillRinging.length,
+  };
 }
 
 /** How long a take runs, in seconds, on this song's own timeline. */

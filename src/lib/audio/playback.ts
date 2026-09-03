@@ -62,6 +62,10 @@ import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { silentTrackNotice } from "@/lib/audio/preset-availability";
 import type { PreviewBankSession } from "@/lib/audio/preview-bank";
 import { buildSongPlan, type SongPlan } from "@/lib/audio/schedule";
+import {
+  planSelectionIteration,
+  selectionResumeWindow,
+} from "@/lib/playback/selection-iteration";
 import type { SelectionPlaybackPlan } from "@/lib/playback/selection-playback";
 import type { Bar, Song } from "@/lib/song/schema";
 
@@ -389,6 +393,25 @@ export class PlaybackController {
 
       engine.expression.stopAll();
       /*
+       * And the pass begins again — all of it (2V-B.3 §1–§5).
+       *
+       * The onsets inside the window are the transport's own events and come
+       * back by themselves. A note that was already ringing when the window
+       * opened is not an event at all, so unless it is put back here the
+       * reader hears the held chord's tail on the first pass and silence in
+       * its place on every wrap after it. That is the defect this batch was
+       * opened on, and the fix is that a wrap runs the *same* iteration the
+       * first play ran, at the wrap's own audio moment.
+       *
+       * After `stopAll`, never before it: the previous pass has to be
+       * released before its successor is put in the air, or a four-pass loop
+       * accumulates four copies of the same string.
+       */
+      const looping = this.selectionPlayback;
+      if (looping !== null && looping.mode === "loop") {
+        this.resumeSustainedInto(engine, looping, engine.context.now());
+      }
+      /*
        * And the pass is announced. This is the *only* signal the progressive
        * rate is allowed to act on (§12): the transport came round, which the
        * app knows, rather than anything about how the pass was played, which
@@ -643,13 +666,7 @@ export class PlaybackController {
     engine.expression.resumeAt(
       held,
       at,
-      plan === null
-        ? null
-        : {
-            startTicks: plan.startTicks,
-            endTicks: plan.endTicks,
-            trackIds: plan.trackIds,
-          },
+      plan === null ? null : selectionResumeWindow(plan),
     );
   }
 
@@ -849,12 +866,9 @@ export class PlaybackController {
     plan: SelectionPlaybackPlan,
     at: number,
   ): void {
-    if (plan.sustainCount === 0) return;
-    engine.expression.resumeAt(plan.startTicks, at, {
-      startTicks: 0,
-      endTicks: plan.endTicks,
-      trackIds: plan.trackIds,
-    });
+    const iteration = planSelectionIteration(plan);
+    if (!iteration.continues) return;
+    engine.expression.resumeAt(iteration.resumeTicks, at, iteration.window);
   }
 
   /**

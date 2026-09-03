@@ -34,7 +34,7 @@ const clipOf = (id: string) => {
 };
 
 describe("the pack the founder is handed", () => {
-  it("asks eight questions and no more", () => {
+  it("asks nine questions and no more", () => {
     expect(clips.map((clip) => clip.id)).toEqual([
       "L1",
       "L2",
@@ -44,6 +44,9 @@ describe("the pack the founder is handed", () => {
       "L6",
       "L7",
       "L8",
+      /* 2V-B.3 §7 adds exactly one, and the count is asserted here so that
+         "exactly one" stays true the next time somebody has an idea. */
+      "L9",
     ]);
   });
 
@@ -297,8 +300,8 @@ describe("the block the founder pastes back", () => {
 
   it("says ölçülmedi for every unanswered clip", () => {
     const block = formatListeningResult({ ...base, answers: {} });
-    expect((block.match(/ölçülmedi/g) ?? []).length).toBe(8);
-    expect(block).toContain("Cevaplanmamış: 8/8");
+    expect((block.match(/ölçülmedi/g) ?? []).length).toBe(9);
+    expect(block).toContain("Cevaplanmamış: 9/9");
     expect(block).not.toContain("Olmuş");
   });
 
@@ -320,7 +323,7 @@ describe("the block the founder pastes back", () => {
     });
     expect(block).toContain("L1 Gitar: Olmuş");
     expect(block).toContain("L2 Bas: Kısmen — kulaklıkta daha net");
-    expect(block).toContain("Cevaplanmamış: 6/8");
+    expect(block).toContain("Cevaplanmamış: 7/9");
   });
 
   it("names the build and the music without asking anyone to check them", () => {
@@ -335,7 +338,7 @@ describe("the block the founder pastes back", () => {
       answers: Object.fromEntries(clips.map((clip) => [clip.id, "Olmuş"])),
       note: "genel olarak iyi",
     });
-    expect(block.split("\n").length).toBeLessThanOrEqual(13);
+    expect(block.split("\n").length).toBeLessThanOrEqual(14);
     expect(block.length).toBeLessThan(600);
   });
 });
