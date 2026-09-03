@@ -30,11 +30,14 @@ import {
 } from "@/lib/audio/practice-rate";
 import {
   bendTargetCents,
+  CENTS_PER_SEMITONE,
   expressionPresets,
   isExpressive,
 } from "@/lib/audio/expression";
 import {
   buildLegatoChains,
+  glideFor,
+  transitionPoints,
   type ChainBuildResult,
   type ChainRole,
   type LegatoChain,
@@ -50,7 +53,7 @@ import {
   type PitchPoint,
 } from "@/lib/audio/automation";
 import { pitchGestureAutomation } from "@/lib/audio/pitch-gesture";
-import { resolveExpression } from "@/lib/music/expression-resolver";
+import { resolveExpression, restrikesTarget } from "@/lib/music/expression-resolver";
 import type { Articulation, Song } from "@/lib/song/schema";
 
 
@@ -463,6 +466,57 @@ function planFor(
       pitchAutomation: pitchGestureAutomation(resolved.pitch.gesture, durationSeconds, {
         timeScale: options.timeScale,
       }),
+    };
+  }
+
+  /*
+   * A shift slide: the same travel, and then the target is struck (§8).
+   *
+   * Not a chain. A chain exists precisely so the target is *not* struck —
+   * one voice travels through all of it — so this is an ordinary onset that
+   * carries the travel on its own automation, arriving at the written pitch
+   * at its own onset. The travel curve is the one the legato chain uses, so
+   * the two slides differ in the attack and in nothing else.
+   */
+  if (restrikesTarget(resolved.connection)) {
+    if (onset.fret === null || onset.midi === null) {
+      return { ...base, fallbackReason: "not_fretted" };
+    }
+    const link = legatoLink(allOnsets, index);
+    if (link.kind !== "joined") {
+      return {
+        ...base,
+        fallbackReason:
+          link.kind === "other_string"
+            ? "previous_note_other_string"
+            : "no_previous_note",
+      };
+    }
+    const previous = link.previous;
+    if (previous.midi === null) return { ...base, fallbackReason: "no_previous_note" };
+    const interval = onset.midi - previous.midi;
+    if (interval === 0) return { ...base, fallbackReason: "wrong_direction" };
+    if (Math.abs(interval) > expressionPresets.slide.maxIntervalSemitones) {
+      return { ...base, fallbackReason: "interval_too_wide" };
+    }
+    const glide = glideFor(interval, durationSeconds, options.timeScale);
+    if (glide.kind === "too_tight") {
+      return { ...base, fallbackReason: "no_room_to_glide" };
+    }
+    return {
+      ...base,
+      expressive: true,
+      pitchAutomation: transitionPoints(
+        "slide",
+        0,
+        glide.seconds,
+        -interval * CENTS_PER_SEMITONE,
+        0,
+      ).map((point) => ({
+        timeSeconds: round(point.timeSeconds),
+        cents: round(point.cents),
+        curve: point.curve,
+      })),
     };
   }
 

@@ -32,6 +32,11 @@
 import { CENTS_PER_SEMITONE, expressionPresets } from "@/lib/audio/expression";
 import { legatoLink, type LegatoOnset } from "@/lib/music/legato";
 import {
+  resolveExpression,
+  restrikesTarget,
+  transitionOf,
+} from "@/lib/music/expression-resolver";
+import {
   durationSeconds,
   secondsAtTicks,
   type TempoMap,
@@ -155,7 +160,26 @@ export function legatoDecision(
   const onset = onsets[index];
   if (!onset) return null;
 
-  const articulation = onset.articulation;
+  /*
+   * Which transition this note asks for, from the one authority (2V-C.1 §4).
+   *
+   * Asked of the resolver rather than of `articulation`, so an explicit
+   * `connection` and the legacy enum reach the same decision and cannot
+   * disagree about a note.
+   */
+  const resolved = resolveExpression(onset);
+  if (resolved.conflict !== null) return null;
+  /*
+   * A shift slide is not a chain (2V-C.1 §8).
+   *
+   * A chain exists so the target is *not* struck — one voice travels through
+   * every note of it. A shift slide travels the same way and then strikes,
+   * which makes it an ordinary onset carrying travel automation, planned per
+   * note. Letting it open a chain here would be asking the chain to do the
+   * one thing a chain is defined by not doing.
+   */
+  if (restrikesTarget(resolved.connection)) return null;
+  const articulation = transitionOf(resolved.connection);
   if (
     articulation !== "hammer_on" &&
     articulation !== "pull_off" &&
@@ -407,7 +431,9 @@ export function buildLegatoChains(input: ChainBuildInput): ChainBuildResult {
   const openChains = new Map<string, { chain: LegatoChain; lastIndex: number }>();
 
   onsets.forEach((onset, index) => {
-    if (input.skipSlides && onset.articulation === "slide") return;
+    if (input.skipSlides && transitionOf(resolveExpression(onset).connection) === "slide") {
+      return;
+    }
 
     // The decision is given the clock, so "there is no room to slide here" is
     // answered once, before a chain is opened for a transition that cannot

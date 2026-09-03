@@ -557,12 +557,14 @@ export function FrettedBarBlock({
                   {/* The character mark is the fallback, not the notation: it
                       appears only where the geometry layer drew nothing, so an
                       articulation the tab cannot honour is still visible. */}
-                  {span.articulation &&
+                  {(span.articulation || span.pitchGesture || span.connection) &&
                   !techniques.annotated.has(
                     techniqueNoteKey(span.stringIndex, span.startSlot),
                   ) ? (
                     <ArticulationGlyph
                       articulation={span.articulation}
+                      pitchGesture={span.pitchGesture}
+                      connection={span.connection}
                       rising={risingAt(bar, span)}
                     />
                   ) : null}

@@ -1,5 +1,14 @@
 import { articulationLabel } from "@/lib/validators";
-import type { Articulation } from "@/lib/song/schema";
+import { resolveExpression } from "@/lib/music/expression-resolver";
+import {
+  connectionReading,
+  pitchReading,
+} from "@/lib/music/gesture-language";
+import type {
+  Articulation,
+  NoteConnection,
+  PitchGesture,
+} from "@/lib/song/schema";
 
 /**
  * The small mark beside a fret number (spec 13.9).
@@ -51,18 +60,57 @@ export function articulationMark(
 
 export function ArticulationGlyph({
   articulation,
+  pitchGesture,
+  connection,
   rising,
 }: {
-  articulation: Articulation;
+  articulation?: Articulation;
+  /**
+   * The two explicit axes (2V-C.1 §11).
+   *
+   * Passed rather than read from a song here: this draws, it does not decide.
+   * What they mean comes from `gesture-language`, which is also what the
+   * screen reader is given, so the character and the sentence cannot drift.
+   */
+  pitchGesture?: PitchGesture;
+  connection?: NoteConnection;
   rising?: boolean;
 }) {
-  const mark = articulationMark(articulation, rising);
-  if (!mark) return null;
+  const reading = resolveExpression({
+    ...(articulation === undefined ? {} : { articulation }),
+    ...(pitchGesture === undefined ? {} : { pitchGesture }),
+    ...(connection === undefined ? {} : { connection }),
+  });
+
+  /*
+   * A note that answers one axis twice is not drawn as either of them.
+   * Playback refuses it too, and the page saying "b1" over a note the
+   * speakers refuse would be the page and the ear disagreeing.
+   */
+  if (reading.conflict !== null) return null;
+
+  const joined = connectionReading(reading.connection, rising);
+  const moved = pitchReading(reading.pitch);
+  /* The attack axis keeps its old table: `>`, `PM`, `.` and the rest are
+     marks about the strike, which neither of the two new fields touches. */
+  const struck =
+    reading.attack === undefined ? null : articulationMark(reading.attack, rising);
+
+  const mark = [joined.mark, struck ?? "", moved.mark].join("");
+  if (mark.length === 0) return null;
+
+  const spoken = [
+    joined.spoken,
+    reading.attack === undefined ? "" : articulationLabel(reading.attack),
+    moved.spoken,
+  ]
+    .filter((part) => part.length > 0)
+    .join(", ");
 
   return (
     <span className="text-bronze ml-px font-mono text-[9px] leading-none">
       <span aria-hidden>{mark}</span>
-      <span className="sr-only"> {articulationLabel(articulation)}</span>
+      <span className="sr-only"> {spoken}</span>
     </span>
   );
 }

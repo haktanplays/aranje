@@ -41,7 +41,7 @@
  * `bendAutomation`, untouched. This file is only ever reached by a note that
  * carries an explicit `pitchGesture`.
  */
-import { bendStages, type PitchPoint } from "@/lib/audio/automation";
+import { bendStages, valueAt, type PitchPoint } from "@/lib/audio/automation";
 import { desiredGlideSeconds, transitionPoints } from "@/lib/audio/legato-chain";
 import { expressionPresets } from "@/lib/audio/expression";
 import type { BendGesture, PitchGesture } from "@/lib/song/schema";
@@ -228,19 +228,5 @@ export function centsAt(
   points: readonly PitchPoint[],
   timeSeconds: number,
 ): number {
-  if (points.length === 0) return 0;
-  const first = points[0]!;
-  if (timeSeconds <= first.timeSeconds) return first.cents;
-
-  for (let index = 1; index < points.length; index += 1) {
-    const point = points[index]!;
-    if (timeSeconds > point.timeSeconds) continue;
-    const previous = points[index - 1]!;
-    if (point.curve === "step") return previous.cents;
-    const span = point.timeSeconds - previous.timeSeconds;
-    if (span <= 0) return point.cents;
-    const t = (timeSeconds - previous.timeSeconds) / span;
-    return round(previous.cents + (point.cents - previous.cents) * t);
-  }
-  return points[points.length - 1]!.cents;
+  return valueAt(points, points.map((point) => point.cents), timeSeconds);
 }

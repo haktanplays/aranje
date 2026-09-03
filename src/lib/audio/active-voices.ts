@@ -52,6 +52,7 @@ import type {
   GainPoint,
   PitchPoint,
 } from "@/lib/audio/expression-plan";
+import { valueAt } from "@/lib/audio/automation";
 import type { LegatoChain } from "@/lib/audio/legato-chain";
 import { secondsAtTicks, type TempoMap } from "@/lib/audio/tempo";
 import type { PlaybackWindow } from "@/lib/playback/selection-playback";
@@ -124,29 +125,6 @@ export const NO_CONTINUATION: ContinuationPlan = {
  * of its own — reading it as linear between its own points *is* reading the
  * sine.
  */
-function valueAt(
-  points: readonly { readonly timeSeconds: number; readonly curve?: string }[],
-  values: readonly number[],
-  elapsed: number,
-): number {
-  if (points.length === 0) return 0;
-  const first = points[0]!;
-  if (elapsed <= first.timeSeconds) return values[0]!;
-
-  for (let index = 1; index < points.length; index += 1) {
-    const point = points[index]!;
-    if (point.timeSeconds < elapsed) continue;
-    const previous = points[index - 1]!;
-    /* A step holds what came before it until the instant it lands. */
-    if (point.curve === "step") return values[index - 1]!;
-    const span = point.timeSeconds - previous.timeSeconds;
-    if (span <= 0) return values[index]!;
-    const ratio = (elapsed - previous.timeSeconds) / span;
-    return values[index - 1]! + (values[index]! - values[index - 1]!) * ratio;
-  }
-  return values[values.length - 1]!;
-}
-
 /** The part of a timeline still ahead, moved so the resume moment is zero. */
 function rebasePitch(
   points: readonly PitchPoint[],

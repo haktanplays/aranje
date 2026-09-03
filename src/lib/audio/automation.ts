@@ -87,3 +87,40 @@ export function bendStages(
   };
 }
 
+
+/**
+ * The value of an automation timeline at a moment (2V-C.1 §7).
+ *
+ * The one rule for reading a curve, so a bend that is up when the transport
+ * pauses resumes at the pitch it was actually at rather than at a number
+ * remembered somewhere else. Between two points the reading follows the curve
+ * the *later* point names, so a `step` really does hold until the instant it
+ * lands — which is what makes a prebend read a millisecond in already at its
+ * target, and that is the whole gesture.
+ *
+ * Generic over the values so one implementation serves pitch and gain; two
+ * copies of this rule is exactly how a resumed voice comes to disagree with
+ * the note it is resuming.
+ */
+export function valueAt(
+  points: readonly { readonly timeSeconds: number; readonly curve?: string }[],
+  values: readonly number[],
+  elapsed: number,
+): number {
+  if (points.length === 0) return 0;
+  const first = points[0]!;
+  if (elapsed <= first.timeSeconds) return values[0]!;
+
+  for (let index = 1; index < points.length; index += 1) {
+    const point = points[index]!;
+    if (point.timeSeconds < elapsed) continue;
+    const previous = points[index - 1]!;
+    /* A step holds what came before it until the instant it lands. */
+    if (point.curve === "step") return values[index - 1]!;
+    const span = point.timeSeconds - previous.timeSeconds;
+    if (span <= 0) return values[index]!;
+    const ratio = (elapsed - previous.timeSeconds) / span;
+    return values[index - 1]! + (values[index]! - values[index - 1]!) * ratio;
+  }
+  return values[values.length - 1]!;
+}
