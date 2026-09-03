@@ -1,0 +1,407 @@
+{
+  "generatedAt": "2026-09-03T08:38:09.617Z",
+  "sha": "28d8849",
+  "label": "before",
+  "results": {
+    "360x800": {
+      "idle": {
+        "editHeader": {
+          "top": 75,
+          "bottom": 120,
+          "height": 45,
+          "width": 360
+        },
+        "grid": {
+          "top": 148,
+          "bottom": 468,
+          "height": 320,
+          "width": 3543
+        },
+        "trackControls": null,
+        "doorRow": {
+          "top": 585,
+          "bottom": 633,
+          "height": 48,
+          "width": 360
+        },
+        "actionRow": null,
+        "dock": null,
+        "transport": {
+          "top": 682,
+          "bottom": 739,
+          "height": 57,
+          "width": 360
+        },
+        "stage": {
+          "top": 120,
+          "bottom": 541,
+          "height": 421,
+          "width": 360
+        },
+        "overflowX": false,
+        "innerHeight": 800,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      },
+      "selected": {
+        "editHeader": {
+          "top": 75,
+          "bottom": 120,
+          "height": 45,
+          "width": 360
+        },
+        "grid": {
+          "top": 148,
+          "bottom": 468,
+          "height": 320,
+          "width": 3543
+        },
+        "trackControls": null,
+        "doorRow": null,
+        "actionRow": {
+          "top": 584,
+          "bottom": 633,
+          "height": 49,
+          "width": 360
+        },
+        "dock": null,
+        "transport": {
+          "top": 682,
+          "bottom": 739,
+          "height": 57,
+          "width": 360
+        },
+        "stage": {
+          "top": 120,
+          "bottom": 540,
+          "height": 420,
+          "width": 360
+        },
+        "overflowX": false,
+        "innerHeight": 800,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      }
+    },
+    "384x692": {
+      "idle": {
+        "editHeader": {
+          "top": 75,
+          "bottom": 120,
+          "height": 45,
+          "width": 384
+        },
+        "grid": {
+          "top": 148,
+          "bottom": 468,
+          "height": 320,
+          "width": 3559
+        },
+        "trackControls": null,
+        "doorRow": {
+          "top": 477,
+          "bottom": 525,
+          "height": 48,
+          "width": 384
+        },
+        "actionRow": null,
+        "dock": null,
+        "transport": {
+          "top": 574,
+          "bottom": 631,
+          "height": 57,
+          "width": 384
+        },
+        "stage": {
+          "top": 120,
+          "bottom": 433,
+          "height": 313,
+          "width": 384
+        },
+        "overflowX": false,
+        "innerHeight": 692,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      },
+      "selected": {
+        "editHeader": {
+          "top": 75,
+          "bottom": 120,
+          "height": 45,
+          "width": 384
+        },
+        "grid": {
+          "top": 148,
+          "bottom": 468,
+          "height": 320,
+          "width": 3559
+        },
+        "trackControls": null,
+        "doorRow": null,
+        "actionRow": {
+          "top": 476,
+          "bottom": 525,
+          "height": 49,
+          "width": 384
+        },
+        "dock": null,
+        "transport": {
+          "top": 574,
+          "bottom": 631,
+          "height": 57,
+          "width": 384
+        },
+        "stage": {
+          "top": 120,
+          "bottom": 432,
+          "height": 312,
+          "width": 384
+        },
+        "overflowX": false,
+        "innerHeight": 692,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      }
+    },
+    "412x915": {
+      "idle": {
+        "editHeader": {
+          "top": 75,
+          "bottom": 120,
+          "height": 45,
+          "width": 412
+        },
+        "grid": {
+          "top": 148,
+          "bottom": 468,
+          "height": 320,
+          "width": 3578
+        },
+        "trackControls": null,
+        "doorRow": {
+          "top": 700,
+          "bottom": 748,
+          "height": 48,
+          "width": 412
+        },
+        "actionRow": null,
+        "dock": null,
+        "transport": {
+          "top": 797,
+          "bottom": 854,
+          "height": 57,
+          "width": 412
+        },
+        "stage": {
+          "top": 120,
+          "bottom": 656,
+          "height": 536,
+          "width": 412
+        },
+        "overflowX": false,
+        "innerHeight": 915,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      },
+      "selected": {
+        "editHeader": {
+          "top": 75,
+          "bottom": 120,
+          "height": 45,
+          "width": 412
+        },
+        "grid": {
+          "top": 148,
+          "bottom": 468,
+          "height": 320,
+          "width": 3578
+        },
+        "trackControls": null,
+        "doorRow": null,
+        "actionRow": {
+          "top": 699,
+          "bottom": 748,
+          "height": 49,
+          "width": 412
+        },
+        "dock": null,
+        "transport": {
+          "top": 797,
+          "bottom": 854,
+          "height": 57,
+          "width": 412
+        },
+        "stage": {
+          "top": 120,
+          "bottom": 655,
+          "height": 535,
+          "width": 412
+        },
+        "overflowX": false,
+        "innerHeight": 915,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      }
+    },
+    "landscape-740x360": {
+      "idle": {
+        "editHeader": {
+          "top": 59,
+          "bottom": 103,
+          "height": 44,
+          "width": 740
+        },
+        "grid": {
+          "top": 131,
+          "bottom": 451,
+          "height": 320,
+          "width": 3801
+        },
+        "trackControls": null,
+        "doorRow": {
+          "top": 147,
+          "bottom": 195,
+          "height": 48,
+          "width": 740
+        },
+        "actionRow": null,
+        "dock": null,
+        "transport": {
+          "top": 244,
+          "bottom": 301,
+          "height": 57,
+          "width": 740
+        },
+        "stage": {
+          "top": 103,
+          "bottom": 103,
+          "height": 0,
+          "width": 740
+        },
+        "overflowX": false,
+        "innerHeight": 360,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      },
+      "selected": {
+        "editHeader": {
+          "top": 59,
+          "bottom": 103,
+          "height": 44,
+          "width": 740
+        },
+        "grid": {
+          "top": 131,
+          "bottom": 451,
+          "height": 320,
+          "width": 3801
+        },
+        "trackControls": null,
+        "doorRow": {
+          "top": 147,
+          "bottom": 195,
+          "height": 48,
+          "width": 740
+        },
+        "actionRow": null,
+        "dock": null,
+        "transport": {
+          "top": 244,
+          "bottom": 301,
+          "height": 57,
+          "width": 740
+        },
+        "stage": {
+          "top": 103,
+          "bottom": 103,
+          "height": 0,
+          "width": 740
+        },
+        "overflowX": false,
+        "innerHeight": 360,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      }
+    },
+    "desktop-1280x800": {
+      "idle": {
+        "editHeader": {
+          "top": 59,
+          "bottom": 104,
+          "height": 45,
+          "width": 1280
+        },
+        "grid": {
+          "top": 132,
+          "bottom": 452,
+          "height": 320,
+          "width": 4168
+        },
+        "trackControls": null,
+        "doorRow": {
+          "top": 585,
+          "bottom": 633,
+          "height": 48,
+          "width": 1280
+        },
+        "actionRow": null,
+        "dock": null,
+        "transport": {
+          "top": 682,
+          "bottom": 739,
+          "height": 57,
+          "width": 1280
+        },
+        "stage": {
+          "top": 104,
+          "bottom": 541,
+          "height": 438,
+          "width": 1280
+        },
+        "overflowX": false,
+        "innerHeight": 800,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      },
+      "selected": {
+        "editHeader": {
+          "top": 59,
+          "bottom": 104,
+          "height": 45,
+          "width": 1280
+        },
+        "grid": {
+          "top": 132,
+          "bottom": 452,
+          "height": 320,
+          "width": 4168
+        },
+        "trackControls": null,
+        "doorRow": null,
+        "actionRow": {
+          "top": 584,
+          "bottom": 633,
+          "height": 49,
+          "width": 1280
+        },
+        "dock": null,
+        "transport": {
+          "top": 682,
+          "bottom": 739,
+          "height": 57,
+          "width": 1280
+        },
+        "stage": {
+          "top": 104,
+          "bottom": 540,
+          "height": 437,
+          "width": 1280
+        },
+        "overflowX": false,
+        "innerHeight": 800,
+        "gridHitOwner": "none",
+        "gridCoveredBy": ""
+      }
+    }
+  }
+}
