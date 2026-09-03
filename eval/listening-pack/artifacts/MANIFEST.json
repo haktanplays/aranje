@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-09-03T08:31:13.726Z",
-  "sha": "28d8849",
+  "generatedAt": "2026-09-03T09:08:16.805Z",
+  "sha": "2373a87",
   "fingerprint": "Editör kabul parçası · s3777h1h8tp95",
   "passed": 53,
   "failed": 0,
@@ -8,12 +8,12 @@
     {
       "takeId": "L1",
       "state": "playing",
-      "renderMs": 482,
+      "renderMs": 454,
       "audit": {
         "frames": 396900,
         "seconds": 9,
         "peak": 0.28158000111579895,
-        "rms": 0.028882044448220626,
+        "rms": 0.028882044425131526,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -22,7 +22,7 @@
     {
       "takeId": "L2",
       "state": "playing",
-      "renderMs": 295,
+      "renderMs": 289,
       "audit": {
         "frames": 396900,
         "seconds": 9,
@@ -36,12 +36,12 @@
     {
       "takeId": "L3a",
       "state": "playing",
-      "renderMs": 212,
+      "renderMs": 194,
       "audit": {
         "frames": 286650,
         "seconds": 6.5,
         "peak": 0.28158000111579895,
-        "rms": 0.032550387572980045,
+        "rms": 0.032550387574673094,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -50,12 +50,12 @@
     {
       "takeId": "L3b",
       "state": "playing",
-      "renderMs": 181,
+      "renderMs": 195,
       "audit": {
         "frames": 272868,
         "seconds": 6.187482993197279,
-        "peak": 0.2701694071292877,
-        "rms": 0.029483692042933902,
+        "peak": 0.27016937732696533,
+        "rms": 0.029483692032634897,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -64,12 +64,12 @@
     {
       "takeId": "L4a",
       "state": "playing",
-      "renderMs": 243,
+      "renderMs": 215,
       "audit": {
         "frames": 286650,
         "seconds": 6.5,
         "peak": 0.27778318524360657,
-        "rms": 0.03562874525832256,
+        "rms": 0.0356287452689427,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -78,12 +78,12 @@
     {
       "takeId": "L4b",
       "state": "playing",
-      "renderMs": 292,
+      "renderMs": 314,
       "audit": {
         "frames": 286649,
         "seconds": 6.499977324263039,
         "peak": 0.27893391251564026,
-        "rms": 0.035537935587486635,
+        "rms": 0.03553793558417401,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -92,7 +92,7 @@
     {
       "takeId": "L5",
       "state": "playing",
-      "renderMs": 144,
+      "renderMs": 154,
       "audit": {
         "frames": 143325,
         "seconds": 3.25,
@@ -106,7 +106,7 @@
     {
       "takeId": "L6",
       "state": "playing",
-      "renderMs": 178,
+      "renderMs": 161,
       "audit": {
         "frames": 165375,
         "seconds": 3.75,
@@ -120,12 +120,12 @@
     {
       "takeId": "L7",
       "state": "playing",
-      "renderMs": 186,
+      "renderMs": 218,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.27778318524360657,
-        "rms": 0.03244802189966874,
+        "rms": 0.0324480218863794,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -134,12 +134,12 @@
     {
       "takeId": "L8a",
       "state": "playing",
-      "renderMs": 172,
+      "renderMs": 185,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.28158000111579895,
-        "rms": 0.03912069712262869,
+        "rms": 0.03912069715516174,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -148,12 +148,12 @@
     {
       "takeId": "L8b",
       "state": "playing",
-      "renderMs": 163,
+      "renderMs": 162,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.3277737498283386,
-        "rms": 0.05337357354738573,
+        "rms": 0.05337357358485697,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -164,7 +164,7 @@
     {
       "name": "the page names the build it was opened for",
       "pass": true,
-      "detail": "28d8849"
+      "detail": "2373a87"
     },
     {
       "name": "it offers eight clips",
