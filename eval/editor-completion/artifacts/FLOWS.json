@@ -1,0 +1,498 @@
+{
+  "generatedAt": "2026-09-03T20:15:25.573Z",
+  "sha": "9a47dcf",
+  "results": {
+    "360x800": {
+      "chord": {
+        "overflowX": false,
+        "gridVisibleHeight": 174,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "chord",
+        "spanReading": "1 vuruş · dörtlük · 1/4",
+        "transposeScope": null,
+        "chordName": "Cm · C minör · 1. ölçü",
+        "chordShape": true
+      },
+      "transpose": {
+        "overflowX": false,
+        "gridVisibleHeight": 174,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "staged": {
+        "overflowX": false,
+        "gridVisibleHeight": 174,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrasePanel": {
+        "overflowX": false,
+        "gridVisibleHeight": 174,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrase": {
+        "overflowX": false,
+        "gridVisibleHeight": 174,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": {
+          "spans": 1,
+          "height": 28,
+          "coversStaff": false,
+          "targetHeight": 28,
+          "continues": [],
+          "names": [
+            "Cümle 1"
+          ]
+        },
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "errors": []
+    },
+    "384x692": {
+      "chord": {
+        "overflowX": false,
+        "gridVisibleHeight": 115,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "chord",
+        "spanReading": "1 vuruş · dörtlük · 1/4",
+        "transposeScope": null,
+        "chordName": "Cm · C minör · 1. ölçü",
+        "chordShape": true
+      },
+      "transpose": {
+        "overflowX": false,
+        "gridVisibleHeight": 115,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "staged": {
+        "overflowX": false,
+        "gridVisibleHeight": 115,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrasePanel": {
+        "overflowX": false,
+        "gridVisibleHeight": 115,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrase": {
+        "overflowX": false,
+        "gridVisibleHeight": 115,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": {
+          "spans": 1,
+          "height": 28,
+          "coversStaff": false,
+          "targetHeight": 28,
+          "continues": [],
+          "names": [
+            "Cümle 1"
+          ]
+        },
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "errors": []
+    },
+    "412x915": {
+      "chord": {
+        "overflowX": false,
+        "gridVisibleHeight": 237,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "chord",
+        "spanReading": "1 vuruş · dörtlük · 1/4",
+        "transposeScope": null,
+        "chordName": "Cm · C minör · 1. ölçü",
+        "chordShape": true
+      },
+      "transpose": {
+        "overflowX": false,
+        "gridVisibleHeight": 237,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "staged": {
+        "overflowX": false,
+        "gridVisibleHeight": 237,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrasePanel": {
+        "overflowX": false,
+        "gridVisibleHeight": 271,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrase": {
+        "overflowX": false,
+        "gridVisibleHeight": 271,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": {
+          "spans": 1,
+          "height": 28,
+          "coversStaff": false,
+          "targetHeight": 28,
+          "continues": [],
+          "names": [
+            "Cümle 1"
+          ]
+        },
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "errors": []
+    },
+    "740x360": {
+      "chord": {
+        "overflowX": false,
+        "gridVisibleHeight": 111,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "chord",
+        "spanReading": "1 vuruş · dörtlük · 1/4",
+        "transposeScope": null,
+        "chordName": "Cm · C minör · 1. ölçü",
+        "chordShape": true
+      },
+      "transpose": {
+        "overflowX": false,
+        "gridVisibleHeight": 111,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "staged": {
+        "overflowX": false,
+        "gridVisibleHeight": 111,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrasePanel": {
+        "overflowX": false,
+        "gridVisibleHeight": 111,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrase": {
+        "overflowX": false,
+        "gridVisibleHeight": 111,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": {
+          "spans": 1,
+          "height": 28,
+          "coversStaff": false,
+          "targetHeight": 28,
+          "continues": [],
+          "names": [
+            "Cümle 1"
+          ]
+        },
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "errors": []
+    },
+    "844x390": {
+      "chord": {
+        "overflowX": false,
+        "gridVisibleHeight": 141,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "chord",
+        "spanReading": "1 vuruş · dörtlük · 1/4",
+        "transposeScope": null,
+        "chordName": "Cm · C minör · 1. ölçü",
+        "chordShape": true
+      },
+      "transpose": {
+        "overflowX": false,
+        "gridVisibleHeight": 141,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "staged": {
+        "overflowX": false,
+        "gridVisibleHeight": 141,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrasePanel": {
+        "overflowX": false,
+        "gridVisibleHeight": 141,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrase": {
+        "overflowX": false,
+        "gridVisibleHeight": 141,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": {
+          "spans": 1,
+          "height": 28,
+          "coversStaff": false,
+          "targetHeight": 28,
+          "continues": [],
+          "names": [
+            "Cümle 1"
+          ]
+        },
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "errors": []
+    },
+    "1280x800": {
+      "chord": {
+        "overflowX": false,
+        "gridVisibleHeight": 191,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "chord",
+        "spanReading": "1 vuruş · dörtlük · 1/4",
+        "transposeScope": null,
+        "chordName": "Cm · C minör · 1. ölçü",
+        "chordShape": true
+      },
+      "transpose": {
+        "overflowX": false,
+        "gridVisibleHeight": 191,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "staged": {
+        "overflowX": false,
+        "gridVisibleHeight": 191,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "transpose",
+        "spanReading": null,
+        "transposeScope": "Taşınacak: Şarkı",
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrasePanel": {
+        "overflowX": false,
+        "gridVisibleHeight": 191,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": null,
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "phrase": {
+        "overflowX": false,
+        "gridVisibleHeight": 191,
+        "gridHit": "grid",
+        "coveringOverlays": 0,
+        "shortestTouchTarget": 44,
+        "textOverflow": false,
+        "phraseBand": {
+          "spans": 1,
+          "height": 28,
+          "coversStaff": false,
+          "targetHeight": 28,
+          "continues": [],
+          "names": [
+            "Cümle 1"
+          ]
+        },
+        "openPanel": "phrase",
+        "spanReading": null,
+        "transposeScope": null,
+        "chordName": null,
+        "chordShape": false
+      },
+      "errors": []
+    }
+  }
+}

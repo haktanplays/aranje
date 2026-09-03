@@ -26,6 +26,7 @@
  * this palette means "suggested, not yet yours". A phrase never borrows that
  * colour, or the reader would read a written idea as an unapplied one.
  */
+import { STAFF_TOP_PADDING } from "@/components/workspace/geometry";
 import { phraseBand, type PhraseBandSpan } from "@/lib/tab/phrase-band";
 import type { SongAxis, SongAxisBar } from "@/lib/tab/song-axis";
 import type { Song } from "@/lib/song/schema";
@@ -57,7 +58,8 @@ export function PhraseBand({
   return (
     <div
       data-phrase-band={spans.length}
-      className="absolute inset-x-0 top-0 h-3.5"
+      className="absolute inset-x-0 top-0"
+      style={{ height: STAFF_TOP_PADDING }}
     >
       {spans.map((span) => (
         <button
@@ -70,16 +72,29 @@ export function PhraseBand({
           }
           onClick={() => onSelect?.(span)}
           data-phrase-active={activePhraseId === span.phraseId ? "" : undefined}
-          className={`absolute top-0 flex h-3.5 items-center gap-0.5 overflow-hidden rounded-sm border-t-2 px-1 text-[9px] leading-none tracking-wide whitespace-nowrap ${
-            activePhraseId === span.phraseId
-              ? "border-accent text-accent font-semibold"
-              : "border-muted/50 text-muted/90 font-medium"
-          }`}
-          style={{ left: span.leftPx, width: span.widthPx }}
+          /*
+           * The whole padding is the target; only the top of it is the ink.
+           *
+           * A 14px band is a 14px button, which no finger can take hold of.
+           * The band cannot grow into the staff — covering the notes is the
+           * one thing §9 forbids it — so it takes the strip it already owns
+           * instead, and the same job keeps a full-size door in the shelf
+           * (Seçim → Cümle) for the finger that misses.
+           */
+          className="absolute top-0 flex items-start"
+          style={{ left: span.leftPx, width: span.widthPx, height: STAFF_TOP_PADDING }}
         >
-          {span.continuesBefore ? <span aria-hidden>‹</span> : null}
-          <span className="truncate">{span.name}</span>
-          {span.continuesAfter ? <span aria-hidden>›</span> : null}
+          <span
+            className={`flex h-3.5 w-full items-center gap-0.5 overflow-hidden rounded-sm border-t-2 px-1 text-[9px] leading-none tracking-wide whitespace-nowrap ${
+              activePhraseId === span.phraseId
+                ? "border-accent text-accent font-semibold"
+                : "border-muted/50 text-muted/90 font-medium"
+            }`}
+          >
+            {span.continuesBefore ? <span aria-hidden>‹</span> : null}
+            <span className="truncate">{span.name}</span>
+            {span.continuesAfter ? <span aria-hidden>›</span> : null}
+          </span>
         </button>
       ))}
     </div>
