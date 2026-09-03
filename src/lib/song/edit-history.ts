@@ -50,6 +50,16 @@ export type BarCommandKind = BarCommand["kind"];
  */
 export type HistoryAction =
   | { readonly kind: "note_edit" }
+  /**
+   * One intention taken in the editor shelf (2V-B.4 §5, §12, §15).
+   *
+   * A fast run, a chord, a transposition: three different commands and one
+   * shape of user act — the reader made a proposal, heard it and kept it. The
+   * label travels with the action because the panel that made it is the only
+   * thing that knows whether this was "Hızlı dizi" or "Ton: G minor", and a
+   * per-panel enum would be a list this file has to be edited to extend.
+   */
+  | { readonly kind: "editor_intent"; readonly label: string }
   /** A group of onsets nudged in time or across strings (spec 13.1). */
   | { readonly kind: "group_move" }
   | { readonly kind: "selection_transform"; readonly command: SelectionCommandKind }

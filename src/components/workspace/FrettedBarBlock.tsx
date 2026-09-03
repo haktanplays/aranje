@@ -116,7 +116,7 @@ export function FrettedBarBlock({
   onSelect,
   editing = false,
   selectedCell = null,
-  ghost = null,
+  ghosts = [],
   onPenTarget,
   onCellSelect,
   onsets = null,
@@ -134,12 +134,14 @@ export function FrettedBarBlock({
   editing?: boolean;
   selectedCell?: CellSelection | null;
   /**
-   * The whole shape an armed pen would write here, or null (K-59 §6).
+   * The slots a proposal would write here (K-59 §6, 2V-B.4 §7).
    *
-   * Drawn, never written. The layer takes no pointer events and is not
-   * measured: it cannot move a number, grow the staff or steal a cell.
+   * An armed pen proposes one; a staged fast sequence, chord or transposition
+   * proposes several. Drawn, never written: the layer takes no pointer events
+   * and is not measured, so it cannot move a number, grow the staff or steal
+   * a cell.
    */
-  ghost?: PenGhost | null;
+  ghosts?: readonly PenGhost[];
   /**
    * The beat under the finger while a pen is armed, or null on release.
    *
@@ -456,10 +458,12 @@ export function FrettedBarBlock({
 
             {/* What an armed pen would write here: every voice of it, on the
                 real beat, at a third of the ink and behind no touch target. */}
-            {ghost ? (
+            {ghosts.map((ghost) => (
               <div
+                key={ghost.slotIndex}
                 aria-hidden
                 data-pen-ghost={ghost.notes.length}
+                data-ghost-slot={ghost.slotIndex}
                 className="pointer-events-none absolute inset-0 opacity-60"
               >
                 {ghost.notes.map((note) => (
@@ -477,7 +481,7 @@ export function FrettedBarBlock({
                   </span>
                 ))}
               </div>
-            ) : null}
+            ))}
 
             {/* One arrow per strummed chord, beside the numbers rather than
                 on them: a strum is a single gesture across the strings, so it

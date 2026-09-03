@@ -30,6 +30,7 @@ import { TrackControl } from "@/components/workspace/TrackControl";
 import type { WorkspaceView } from "@/components/workspace/ViewSwitch";
 import type { ViewZoom } from "@/lib/ui/use-view-zoom";
 import type { CoveredRun } from "@/lib/workspace/selection-verbs";
+import type { EditIntent } from "@/lib/workspace/use-edit-intent";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
@@ -52,8 +53,10 @@ export function WorkspaceShelf(props: {
   onOpenChordBuilder: ((power: boolean) => void) | null;
   onOpenRhythm: (() => void) | null;
   toolbar: React.ComponentProps<typeof EditToolbar>;
+  /** The staged proposal, shared with the staff that draws its ghosts (§7). */
+  intent: EditIntent;
 }) {
-  const { covered, session, view } = props;
+  const { covered, intent, session, view } = props;
   return (
     <div className="workspace-shelf">
       <SelectionActionArea
@@ -84,6 +87,11 @@ export function WorkspaceShelf(props: {
         /* The arrangement has no staff, so there is nothing to magnify. */
         canZoom={view === "tab"}
         canFitSelection={session.time.handle.selection !== null}
+        draft={intent.draft}
+        onPropose={intent.propose}
+        onDiscard={intent.discard}
+        onPreview={intent.preview}
+        onApply={intent.apply}
       />
     </div>
   );

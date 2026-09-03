@@ -41,6 +41,15 @@ export type Audition = {
    * different instrument would be worse than no preview.
    */
   note(pitch: string, velocity: number): void;
+  /**
+   * Play a whole candidate song (2V-B.4 §7).
+   *
+   * The preview of an edit that has not been made: the shelf builds the song
+   * as it *would* be and hands it here, so what the reader hears is the
+   * production scheduler on the production engine. There is no second audio
+   * path, and the canonical Song is not involved at all.
+   */
+  song(candidate: Song): void;
   /** Silence whatever is sounding, without discarding the decoded bank. */
   stop(): void;
 };
@@ -102,6 +111,13 @@ export function useAudition(options: {
     [engine, pause, song, track],
   );
 
+  const previewSong = useCallback(
+    (candidate: Song) => {
+      engine.start(candidate, "draft-preview", pause);
+    },
+    [engine, pause],
+  );
+
   const stop = useCallback(() => engine.stop(), [engine]);
 
   // Closing the sheet silences the chord. It does not throw the recordings
@@ -121,5 +137,5 @@ export function useAudition(options: {
     [bankSession, engine],
   );
 
-  return { voicing, note, stop };
+  return { voicing, note, song: previewSong, stop };
 }

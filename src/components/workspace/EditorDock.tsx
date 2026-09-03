@@ -43,14 +43,36 @@ export function EditorDock({
   notice,
   error,
   onRun,
+  panels,
+  panel,
+  panelTitle,
+  onPanel,
 }: {
   model: DockModel;
   notice: string | null;
   error: string | null;
   onRun: (itemId: string) => void;
+  /**
+   * The rich controls each group offers, as entry buttons (2V-B.4 §4).
+   *
+   * They sit beside the group's ordinary verbs rather than in a menu of their
+   * own, because a reader looking for "Akor" is looking under "Ses" and
+   * should find it there next to everything else that makes a sound.
+   */
+  panels: readonly {
+    readonly id: string;
+    readonly group: DockGroup;
+    readonly label: string;
+    readonly reason?: string;
+  }[];
+  /** The open panel's body, rendered in the flow. Never over the grid. */
+  panel: React.ReactNode;
+  panelTitle: string | null;
+  onPanel: (id: string | null) => void;
 }) {
   const [open, setOpen] = useState<DockGroup | null>(null);
   const items = open === null ? [] : dockGroupItems(model, open);
+  const groupPanels = open === null ? [] : panels.filter((entry) => entry.group === open);
 
   return (
     <section
@@ -76,7 +98,12 @@ export function EditorDock({
         className="flex gap-1.5"
       >
         {DOCK_GROUPS.map((group) => {
-          const available = model.groups.includes(group);
+          const available =
+            model.groups.includes(group) ||
+            panels.some((entry) => entry.group === group && entry.reason === undefined);
+          /* A group with no verbs may still have a panel — "Akor" lives under
+             Ses whether or not anything is selected — so availability is the
+             union of the two rather than the verbs alone. */
           const active = open === group;
           return (
             <button
@@ -86,7 +113,10 @@ export function EditorDock({
               data-dock-group={group}
               aria-selected={active}
               disabled={!available}
-              onClick={() => setOpen(active ? null : group)}
+              onClick={() => {
+                setOpen(active ? null : group);
+                onPanel(null);
+              }}
               style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 56 }}
               className={`min-w-0 flex-1 rounded-lg border px-1.5 text-sm whitespace-nowrap ${
                 !available
@@ -102,7 +132,60 @@ export function EditorDock({
         })}
       </div>
 
-      {items.length > 0 ? (
+      {panelTitle ? (
+        <div
+          data-shelf-panel={panelTitle}
+          /*
+           * In the flow, and scrolling inside itself when it is taller than
+           * the room it has. This is the whole difference from the sheet it
+           * replaced: no `fixed`, no scrim, no 85% of the screen — the grid
+           * above keeps its pixels and stays hit-testable (§4, §17).
+           */
+          className="border-line/60 flex max-h-[42dvh] flex-col gap-2 overflow-y-auto border-t pt-2"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-text text-sm font-medium">{panelTitle}</span>
+            <button
+              type="button"
+              data-shelf-panel-close
+              onClick={() => onPanel(null)}
+              style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+              className="border-line text-muted rounded-lg border px-3 text-sm"
+            >
+              Kapat
+            </button>
+          </div>
+          {panel}
+        </div>
+      ) : null}
+
+      {panelTitle === null && groupPanels.length > 0 ? (
+        <div data-dock-panels={open ?? ""} className="flex gap-1.5 overflow-x-auto">
+          {groupPanels.map((entry) => (
+            <button
+              key={entry.id}
+              type="button"
+              data-dock-panel={entry.id}
+              disabled={entry.reason !== undefined}
+              title={entry.reason}
+              aria-label={
+                entry.reason === undefined ? entry.label : `${entry.label} — ${entry.reason}`
+              }
+              onClick={() => onPanel(entry.id)}
+              style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 88 }}
+              className={`min-w-0 shrink-0 flex-1 rounded-lg border px-2 text-sm whitespace-nowrap ${
+                entry.reason === undefined
+                  ? "border-bronze/60 text-bronze"
+                  : "border-line/50 text-muted/40"
+              }`}
+            >
+              {entry.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      {panelTitle === null && items.length > 0 ? (
         <div
           data-dock-items={open ?? ""}
           role="group"

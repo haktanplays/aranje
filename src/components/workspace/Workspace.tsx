@@ -284,7 +284,7 @@ export function Workspace() {
         song={song}
         arrangement={arrangement}
         ghostArrangement={ghostArrangement}
-        timeline={timeline}
+        tab={tab}
         multi={multi}
         entry={entry}
         onSelectTrack={selectTrack}
@@ -309,6 +309,7 @@ export function Workspace() {
         noteEditing={noteEditing}
         onOpenChordBuilder={doors.catalogue}
         onOpenRhythm={doors.rhythm}
+        intent={tab.intent}
         toolbar={{
           editing: noteEditing.editing,
           canEdit,

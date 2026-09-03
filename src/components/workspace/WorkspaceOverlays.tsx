@@ -246,7 +246,13 @@ export function WorkspaceOverlays({
       {noteEditing.editing && fretboard && track ? (
         <FretSheet
           key={`${noteEditing.cell?.barKey}:${noteEditing.cell?.slotIndex}:${noteEditing.cell?.stringIndex}:${noteEditing.currentFret}:${noteEditing.currentArticulation}`}
-          open={noteEditing.cell !== null && !previewOpen}
+          /*
+           * A second step, never the first (2V-B.4 §4). The tap opens the
+           * note panel in the shelf, beside the music; this sheet carries the
+           * sixteen techniques, the retune and the shape work, and it opens
+           * because the reader asked for it by name.
+           */
+          open={noteEditing.detailsOpen && noteEditing.cell !== null && !previewOpen}
           fretboard={fretboard}
           target={noteEditing.fretTarget}
           duration={noteEditing.duration}
@@ -255,7 +261,7 @@ export function WorkspaceOverlays({
           retune={noteEditing.retune}
           playability={noteEditing.playability}
           error={noteEditing.editError}
-          onClose={noteEditing.closeCell}
+          onClose={noteEditing.closeDetails}
           onNudge={noteEditing.nudge}
           onLetRing={(letRing) =>
             noteEditing.runCommand((target) => ({

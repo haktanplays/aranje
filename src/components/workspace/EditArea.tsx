@@ -1,22 +1,26 @@
 "use client";
 
 /**
- * The edit strip, as one area (2S-A §11, 2W §8).
+ * The edit strip, as one area (2S-A §11, 2W §8, 2V-B.4 §4).
  *
- * ## One shell, from two rows that took turns
+ * ## One shell, and now one place where work happens
  *
- * The doors and the selection verbs used to swap places on the same line —
- * `showDoors={selectionActions === null}` — so the row changed identity under
- * the reader's finger: four intent names with nothing held, seven unrelated
- * verbs with something held. Measured at five viewports they never stacked,
- * so this was never a height problem; it was two vocabularies sharing a line.
+ * `EditorDock` gave the four groups — Ses, Ritim, Çalım, Seçim — one constant
+ * vocabulary. What it did not have was anywhere to *do* anything beyond a row
+ * of verbs, so the real work still happened in bottom sheets that covered the
+ * grid: measured at `c11a758`, a cell tap put an 85%-tall sheet over the music
+ * at all six viewports.
  *
- * `EditorDock` replaces both. Four constant group names — Ses, Ritim, Çalım,
- * Seçim — and only their contents change with what is held. It sits in the
- * flow, never over the grid.
+ * The dock now has a panel region in the flow, and the panels live here. A
+ * tap on a cell opens Nota; a group's own entry opens Akor, Hızlı dizi, Süre
+ * or Taşı. All four are the same shell, all four leave the grid on the screen,
+ * and which one is open is one piece of state rather than four.
  *
- * It composes; it decides nothing. Every callback here belongs to a handle
- * that was made somewhere else.
+ * ## It composes; it decides nothing
+ *
+ * The targets come from `edit-target`, the proposals from the production
+ * commands, the preview from the production engine and the commit from the
+ * one the rest of the app uses. What this file owns is which panel is open.
  */
 import { useState } from "react";
 
@@ -26,7 +30,16 @@ import { EditorDock } from "@/components/workspace/EditorDock";
 import { ViewZoomControls } from "@/components/workspace/ViewZoomControls";
 import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { SelectionMoreSheet } from "@/components/workspace/SelectionMoreSheet";
+import { ShelfPanels } from "@/components/workspace/shelf/ShelfPanels";
 import { editorDock } from "@/lib/workspace/editor-dock";
+import {
+  SHELF_PANELS,
+  SHELF_PANEL_IDS,
+  panelAvailability,
+  type ShelfPanelId,
+} from "@/lib/workspace/shelf-panel";
+import { targetFromCell, targetFromRange } from "@/lib/workspace/edit-target";
+import type { EditDraft } from "@/lib/workspace/edit-draft";
 import type { SelectionActions } from "@/lib/workspace/selection-verbs";
 import type { SelectionActionId } from "@/lib/song/selection-action-canon";
 import type { ComposerDoor } from "@/lib/workspace/composer-tool";
@@ -49,48 +62,73 @@ export function EditArea({
   zoom,
   canZoom,
   canFitSelection,
+  draft,
+  onPropose,
+  onDiscard,
+  onPreview,
+  onApply,
 }: {
   composer: IntentComposer;
   noteEditing: NoteEditing;
   song: Song;
   track: Track | undefined;
   selection: TimeSelection | null;
-  /**
-   * The verbs a covered run offers, or null when nothing is covered.
-   *
-   * Null is what makes the doors visible: the two rows are one line of the
-   * screen, and which of them is on it is a question about the selection.
-   */
   selectionActions: SelectionActions | null;
   onOpenChordBuilder: ((power: boolean) => void) | null;
   onOpenRhythm: (() => void) | null;
-  /** Everything the toolbar needs, passed through unchanged. */
   toolbar: React.ComponentProps<typeof EditToolbar>;
-  /**
-   * The view magnification (2V-B.3 §10).
-   *
-   * It lives in the shelf rather than over the staff, and it is here in both
-   * layouts for one reason: in landscape the shelf *is* the side inspector,
-   * so a control placed here is reachable in portrait and in landscape
-   * without being written twice.
-   */
   zoom: ViewZoom;
-  /** The arrangement has no staff to magnify. */
   canZoom: boolean;
   canFitSelection: boolean;
+  /** The proposal on the screen, drawn as ghosts over the grid (§7). */
+  draft: EditDraft | null;
+  onPropose: (next: EditDraft) => void;
+  onDiscard: () => void;
+  onPreview: (candidate: Song) => void;
+  onApply: (proposal: EditDraft) => void;
 }) {
   const [door, setDoor] = useState<ComposerDoor | null>(null);
   const [more, setMore] = useState(false);
+  const [panel, setPanel] = useState<ShelfPanelId | null>(null);
 
-  /*
-   * One shelf, from the two sources that used to draw two rows. `offers` is
-   * the capability model's own list — unchanged, including every disabled
-   * entry's reason — and the doors come from the intent layer.
-   */
   const dock = editorDock({
     offers: selectionActions?.actions ?? [],
     tool: composer.tool,
     hasSelection: selectionActions !== null,
+  });
+
+  /*
+   * Where the panels point. The cell wins over the range: a reader who has
+   * just tapped one position is asking about that position, even if a range
+   * from a moment ago is still held.
+   */
+  const target =
+    track && noteEditing.cell
+      ? targetFromCell(song, track.id, noteEditing.cell)
+      : track && selection
+        ? targetFromRange(song, track.id, {
+            sectionId: selection.sectionId,
+            startTicks: selection.startTicks,
+            endTicks: selection.endTicks,
+          })
+        : null;
+
+  const availabilityContext = {
+    hasCell: noteEditing.cell !== null,
+    hasSelection: selection !== null,
+    fretted: track?.fretboard !== undefined,
+    canEdit: noteEditing.editing,
+  };
+
+  const panelEntries = SHELF_PANEL_IDS.map((id) => {
+    const meta = SHELF_PANELS[id];
+    const state = panelAvailability(id, availabilityContext);
+    return {
+      id,
+      group: meta.group,
+      label: meta.label,
+      ...(state.state === "disabled" && state.reason ? { reason: state.reason } : {}),
+    };
   });
 
   /** Route a shelf press back to whichever layer owns it. */
@@ -105,11 +143,17 @@ export function EditArea({
       return;
     }
     if (id === "connect") {
-      /* The brush's own door, one tap from a covered run. */
       setDoor("connect");
       return;
     }
     selectionActions?.run(id as SelectionActionId);
+  };
+
+  const openPanel = (id: string | null) => {
+    setPanel(id as ShelfPanelId | null);
+    /* Leaving a panel throws away whatever it was proposing: a ghost with no
+       panel behind it is an edit the reader can no longer confirm or cancel. */
+    if (id === null) onDiscard();
   };
 
   return (
@@ -121,7 +165,6 @@ export function EditArea({
             song={song}
             track={track}
             selection={selection}
-            /* The dock draws the doors now; the sheets behind them stay. */
             showDoors={false}
             door={door}
             onDoor={setDoor}
@@ -133,6 +176,27 @@ export function EditArea({
             notice={selectionActions?.notice ?? null}
             error={selectionActions?.error ?? null}
             onRun={runDockItem}
+            panels={panelEntries}
+            panel={
+              panel === null ? null : (
+                <ShelfPanels
+                  panel={panel}
+                  song={song}
+                  track={track}
+                  target={target}
+                  selection={selection}
+                  noteEditing={noteEditing}
+                  draft={draft}
+                  onPropose={onPropose}
+                  onDiscard={onDiscard}
+                  onPreview={onPreview}
+                  onApply={onApply}
+                  onOpenPanel={setPanel}
+                />
+              )
+            }
+            panelTitle={panel === null ? null : SHELF_PANELS[panel].label}
+            onPanel={openPanel}
           />
           <SelectionMoreSheet
             open={more}
@@ -153,8 +217,6 @@ export function EditArea({
       {canZoom ? (
         <ViewZoomControls
           zoom={zoom}
-          /* Named by the surface, which is the only thing that knows how wide
-             a measure is here; null after a pinch, and that is honest. */
           activeBars={zoom.presetBars}
           canFitSelection={canFitSelection}
         />
@@ -163,3 +225,12 @@ export function EditArea({
     </>
   );
 }
+
+/**
+ * Which panel a cell tap should open.
+ *
+ * Exported so the composition root can open it without reaching into this
+ * component's state: a tap arrives at the surface, not here, and the panel it
+ * opens is a fact about the gesture rather than about this file.
+ */
+export const PANEL_FOR_CELL: ShelfPanelId = "note";

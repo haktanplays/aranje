@@ -41,6 +41,7 @@ import {
   EDIT_STRING_ROW_HEIGHT,
   STRING_ROW_HEIGHT,
 } from "@/components/workspace/geometry";
+import { PhraseBand } from "@/components/workspace/PhraseBand";
 import { PlayheadLayer } from "@/components/workspace/PlayheadLayer";
 import { ReturnToPlayback } from "@/components/workspace/ReturnToPlayback";
 import { SectionMarkers } from "@/components/workspace/SectionMarkers";
@@ -52,6 +53,7 @@ import type { NoteRangeGesture } from "@/lib/ui/use-note-range-drag";
 import type { ViewZoom } from "@/lib/ui/use-view-zoom";
 import { useStaffGestures } from "@/lib/workspace/use-staff-gestures";
 import { xAtTicks } from "@/lib/tab/song-axis";
+import type { PhraseBandSpan } from "@/lib/tab/phrase-band";
 import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
 import { useTabPlayhead } from "@/components/workspace/use-tab-playhead";
@@ -64,9 +66,6 @@ import type { DrumBar, FrettedBar, TrackTimeline } from "@/lib/tab/timeline";
 /** Bars are found by this attribute, so no child refs are needed. */
 // Re-exported from geometry so existing importers keep their path.
 export { BAR_KEY_ATTRIBUTE } from "@/components/workspace/geometry";
-
-
-
 
 export function TabCanvas({
   song,
@@ -93,7 +92,8 @@ export function TabCanvas({
   editing = false,
   selectedCell = null,
   duration = null,
-  penGhost = null,
+  ghosts = [],
+  onSelectPhrase,
   onPenTarget,
   onCellSelect,
   onsetsForBar,
@@ -175,7 +175,10 @@ export function TabCanvas({
   /** The finger on the selected note's length, handed straight through. */
   duration?: DurationGestureProps | null;
   /** The armed pen's whole shape, on the bar it belongs to (K-59 §6). */
-  penGhost?: PenGhost | null;
+  /** Proposed slots, from the armed pen or from a staged edit (§7). */
+  ghosts?: readonly PenGhost[];
+  /** Touching a named idea in the band, when the surface offers that (§11). */
+  onSelectPhrase?: (span: PhraseBandSpan) => void;
   /** The beat under the finger while a pen is armed (K-59 §6). */
   onPenTarget?: (cell: (CellSelection & { barKey: string }) | null) => void;
   onCellSelect?: (cell: CellSelection & { barKey: string }) => void;
@@ -349,6 +352,15 @@ export function TabCanvas({
           {/* Not while writing: the header already names it (K-59 §4). */}
           {editing ? null : <SectionMarkers axis={surface.axis} sections={song.sections} />}
 
+          {/* The ideas, above the staff and inside the padding it already
+              had: a phrase that runs past the mounted bars says so (§10). */}
+          <PhraseBand
+            song={song}
+            axis={surface.axis}
+            mounted={surface.window.bars}
+            onSelect={onSelectPhrase}
+          />
+
           {/* The bars before this window. Empty, never a hit target, and
               exactly as wide as the music it stands in for — which is what
               makes a scroll position mean the same thing whether or not the
@@ -380,7 +392,7 @@ export function TabCanvas({
                     }
                     onsets={onsetsForBar?.(bar) ?? null}
                     duration={selectedCell?.barKey === bar.key ? duration : null}
-                    ghost={penGhost?.barKey === bar.key ? penGhost : null}
+                    ghosts={ghosts.filter((entry) => entry.barKey === bar.key)}
                     onPenTarget={(cell) =>
                       onPenTarget?.(cell && { ...cell, barKey: bar.key })
                     }

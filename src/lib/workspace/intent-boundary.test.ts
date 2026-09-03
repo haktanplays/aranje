@@ -278,11 +278,19 @@ describe("41. the intent layer stays inside its line budget", () => {
      * The whole feature was wired in without any of these four growing. Three
      * of them shrank, because the wiring was paid for with behaviour-
      * preserving extractions rather than with budget.
+     *
+     * The tab's own number moved once, at 2V-B.4 §10: the phrase band is a
+     * new thing on the staff and it is drawn where the staff is. It was paid
+     * for as far as it could be — the band's model and its markup are their
+     * own two files, so what landed here is the four props that place it —
+     * and the ceiling `workspace-boundary` already agreed (480) still binds.
+     * The composition root did not move: `useEditIntent` went into the tab
+     * view rather than into `Workspace.tsx`.
      */
     const started = {
       "src/components/workspace/Workspace.tsx": 377,
       "src/components/workspace/ArrangementCanvas.tsx": 470,
-      "src/components/workspace/TabCanvas.tsx": 472,
+      "src/components/workspace/TabCanvas.tsx": 478,
     } as const;
     for (const [path, before] of Object.entries(started)) {
       expect(lineCount(path), path).toBeLessThanOrEqual(before);

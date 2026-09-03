@@ -96,6 +96,8 @@ export function historyActionLabel(action: HistoryAction): string {
   switch (action.kind) {
     case "note_edit":
       return "Nota düzenleme";
+    case "editor_intent":
+      return action.label;
     case "group_move":
       return "Nota grubunu taşıma";
     case "selection_transform":

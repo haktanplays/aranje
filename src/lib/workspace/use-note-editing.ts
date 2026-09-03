@@ -234,6 +234,14 @@ export type RetuneSession = {
 export type NoteEditing = {
   readonly editing: boolean;
   readonly cell: EditedCell | null;
+  /**
+   * Whether the full technique sheet is open (2V-B.4 §4).
+   *
+   * A tap used to open it by itself, over the grid. It is a deliberate second
+   * step now — "Tüm teknikler" in the note panel — so the ordinary edit stays
+   * beside the music and the sixteen techniques stay reachable.
+   */
+  readonly detailsOpen: boolean;
   readonly editError: string | null;
   readonly currentFret: number | null;
   readonly currentArticulation: string | null;
@@ -250,6 +258,8 @@ export type NoteEditing = {
   exitEditMode(): void;
   selectCell(next: EditedCell | null): void;
   closeCell(): void;
+  openDetails(): void;
+  closeDetails(): void;
   nudge(delta: { slot?: number; string?: number }): void;
   /** The command bridge: target prepared here, algorithm in the pure core. */
   runCommand(
@@ -278,6 +288,7 @@ export function useNoteEditing(options: {
 
   const [editing, setEditing] = useState(false);
   const [cell, setCell] = useState<EditedCell | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const [drag, setDrag] = useState<DurationDrag | null>(null);
   /* Null until the reader picks one; the grid's own step until then. */
   const [chosenTicks, setChosenTicks] = useState<number | null>(null);
@@ -298,6 +309,7 @@ export function useNoteEditing(options: {
   const toggleEdit = useCallback(() => {
     setEditError(null);
     setCell(null);
+    setDetailsOpen(false);
     clearGroup();
     setEditing((was) => {
       if (!was) pause();
@@ -313,13 +325,20 @@ export function useNoteEditing(options: {
     setEditError(null);
     setDrag(null);
     setCell(next);
+    /* A new position is a new question; the sheet from the last one would
+       answer it about the wrong note. */
+    setDetailsOpen(false);
   }, []);
 
   const closeCell = useCallback(() => {
     setCell(null);
+    setDetailsOpen(false);
     setDrag(null);
     setEditError(null);
   }, []);
+
+  const openDetails = useCallback(() => setDetailsOpen(true), []);
+  const closeDetails = useCallback(() => setDetailsOpen(false), []);
 
   /** The span under the selected cell, if there is a note there. */
   const currentSpan = useMemo(() => {
@@ -849,6 +868,7 @@ export function useNoteEditing(options: {
   return {
     editing,
     cell,
+    detailsOpen,
     editError,
     currentFret,
     currentArticulation,
@@ -898,6 +918,8 @@ export function useNoteEditing(options: {
     exitEditMode,
     selectCell,
     closeCell,
+    openDetails,
+    closeDetails,
     nudge,
     runCommand,
     reset,

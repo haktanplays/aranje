@@ -96,3 +96,42 @@ export function penGhost(input: {
     notes: [...notes].sort((a, b) => a.stringIndex - b.stringIndex),
   };
 }
+
+/**
+ * Every slot a proposed edit changed, as ghosts (2V-B.4 §7).
+ *
+ * The pen writes one beat, so one ghost was enough for it. A fast sequence
+ * writes three or four, a chord writes one onset across several strings, and
+ * a transposition can touch a whole section — so the draft's ghosts are a
+ * list, produced by the same slot-level comparison the pen already uses.
+ *
+ * The comparison is against the canonical Song, which is what makes the ghost
+ * honest: a slot the proposal left exactly as it was is not drawn, so the
+ * amber the reader sees is the change and nothing else.
+ */
+export function draftGhosts(input: {
+  readonly preview: Song | null;
+  readonly current: Song;
+  readonly trackId: string;
+  /** The section the proposal is in; the rest of the song is not compared. */
+  readonly sectionId: string;
+}): readonly PenGhost[] {
+  if (!input.preview) return [];
+  const section = input.preview.sections.find((entry) => entry.id === input.sectionId);
+  if (!section) return [];
+  return section.bars.flatMap((bar, barIndex) => {
+    const lane = bar.slots[input.trackId];
+    if (!lane || Array.isArray(lane[0])) return [];
+    const barKey = `${input.sectionId}:${barIndex}`;
+    return lane.flatMap((_slot, slotIndex) => {
+      const ghost = penGhost({
+        preview: input.preview,
+        current: input.current,
+        trackId: input.trackId,
+        barKey,
+        slotIndex,
+      });
+      return ghost ? [ghost] : [];
+    });
+  });
+}

@@ -17,11 +17,19 @@
  *   that flickered while a chord was being chosen would be the app changing
  *   the subject.
  *
+ * 2V-B.4 §7 added a fourth part on the same ground: the shelf's staged
+ * proposal. It belongs here for the same reason the chord builder's preview
+ * does — it is another answer to "which song is on the staff right now" — and
+ * putting it here is what lets the staff draw the proposal and the amber mark
+ * it, from one value, without the composition root holding either.
+ *
  * Nothing here holds state of its own or makes a decision; it hands back what
- * its three parts said.
+ * its parts said.
  */
 import { useAudition, type Audition } from "@/lib/workspace/use-audition";
+import { useEditIntent, type EditIntent } from "@/lib/workspace/use-edit-intent";
 import { useTabTimeline } from "@/lib/workspace/use-tab-timeline";
+import { draftGhosts, type PenGhost } from "@/lib/tab/pen-ghost";
 
 import {
   useChordBuilder,
@@ -37,6 +45,10 @@ export type TabView = {
   readonly runs: ReturnType<typeof sectionRuns>;
   /** Play one shape briefly, through the preview path that already exists. */
   audition: Audition;
+  /** The shelf's staged proposal: propose it, hear it, keep it (§7). */
+  readonly intent: EditIntent;
+  /** The slots that proposal would change, for the staff to draw amber. */
+  readonly ghosts: readonly PenGhost[];
 };
 
 export function useTabView(options: {
@@ -50,12 +62,6 @@ export function useTabView(options: {
 
   const chords = useChordBuilder({ song, track, canPersist, commit, pause });
 
-  const { timeline, runs } = useTabTimeline({
-    song,
-    previewSong: chords.preview,
-    trackId: track?.id ?? "",
-  });
-
   const audition = useAudition({
     song,
     track,
@@ -66,5 +72,22 @@ export function useTabView(options: {
     pause,
   });
 
-  return { chords, timeline, runs, audition };
+  const intent = useEditIntent({ commit, previewSong: audition.song });
+
+  const { timeline, runs } = useTabTimeline({
+    song,
+    /* Two previews, never at once: the chord builder is a full-screen state,
+       and the shelf's proposal only exists while the reader is in the shelf. */
+    previewSong: intent.draft?.song ?? chords.preview,
+    trackId: track?.id ?? "",
+  });
+
+  const ghosts = draftGhosts({
+    preview: intent.draft?.song ?? null,
+    current: song,
+    trackId: track?.id ?? "",
+    sectionId: intent.draft?.ghost.sectionId ?? "",
+  });
+
+  return { chords, timeline, runs, audition, intent, ghosts };
 }

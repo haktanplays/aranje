@@ -26,7 +26,7 @@ import type { CellSelection } from "@/components/workspace/FrettedBarBlock";
 import { armedPenGhost } from "@/lib/workspace/pen-preview";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
 import type { Song } from "@/lib/song/schema";
-import type { TrackTimeline } from "@/lib/tab/timeline";
+import type { TabView } from "@/lib/workspace/use-tab-view";
 import type { DrumPiece } from "@/lib/instruments/registry";
 import type { EventEntry } from "@/lib/workspace/use-event-entry";
 import type { MultiTrackView } from "@/lib/workspace/use-multitrack-session";
@@ -45,7 +45,7 @@ export function WorkspaceSurface({
   song,
   arrangement,
   ghostArrangement,
-  timeline,
+  tab,
   multi,
   entry,
   onSelectTrack,
@@ -64,7 +64,15 @@ export function WorkspaceSurface({
   arrangement: Lazy<ArrangementModel>;
   /** The song a staged bar command would produce, drawn half-lit. */
   ghostArrangement: Lazy<ArrangementModel> | null;
-  timeline: TrackTimeline;
+  /**
+   * What the tab is showing, as one thing (2O-B, 2V-B.4 §7).
+   *
+   * The staff, and the ghosts of any proposal staged in the shelf. They
+   * arrive together because they are one answer to one question — what is on
+   * the screen right now — and separating them here would let the staff draw
+   * a proposal that the amber did not mark.
+   */
+  tab: TabView;
   multi: MultiTrackView;
   /** Writing a hit or a note on an instrument the tab cannot draw (2Q-B). */
   entry: EventEntry;
@@ -246,7 +254,7 @@ export function WorkspaceSurface({
       ) : (
         <TabCanvas
           song={song}
-          timeline={timeline}
+          timeline={tab.timeline}
           getPosition={getPosition}
           running={running}
           activeBarKey={navigation.activeBarKey}
@@ -305,14 +313,27 @@ export function WorkspaceSurface({
           editing={noteEditing.editing}
           selectedCell={noteEditing.cell}
           duration={noteEditing.duration}
-          /* The whole shape an armed pen would write, before it writes it. */
-          penGhost={armedPenGhost({
-            composer,
-            cell: penTarget,
-            song,
-            trackId: track?.id,
-          })}
+          /* What is about to be written, before it is: the armed pen's own
+             shape and every slot a staged proposal would change (§7). */
+          ghosts={[
+            armedPenGhost({ composer, cell: penTarget, song, trackId: track?.id }),
+            ...tab.ghosts,
+          ].filter((entry) => entry !== null)}
           {...(composer.penArmed ? { onPenTarget: setPenTarget } : {})}
+          /*
+           * A phrase is a region, a selection is a moment (§11). Touching one
+           * hands the reader its range to hold; it does not make the phrase
+           * *be* the selection, and letting the selection go leaves the
+           * phrase exactly where it was.
+           */
+          onSelectPhrase={(span) =>
+            session.time.handle.select({
+              trackId: track?.id ?? "",
+              sectionId: span.sectionId,
+              startTicks: span.phraseStartTicks,
+              endTicks: span.phraseEndTicks,
+            })
+          }
           onCellSelect={noteEditing.selectCell}
           onsetsForBar={onsetsForBar}
         />
