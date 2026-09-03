@@ -25,6 +25,9 @@ const VIEWPORTS = [
   { name: "384x692", width: 384, height: 692 },
   { name: "412x915", width: 412, height: 915 },
   { name: "landscape-740x360", width: 740, height: 360 },
+  /* A common phone in landscape, added in 2V-B.3 §8: 740x360 is the narrow
+     end and this is what most readers who rotate actually have. */
+  { name: "landscape-844x390", width: 844, height: 390 },
   { name: "desktop-1280x800", width: 1280, height: 800 },
 ];
 
@@ -36,6 +39,9 @@ const ROWS = [
   ["doorRow", "[data-composer-doors]"],
   ["actionRow", "[data-selection-toolbar]"],
   ["dock", "[data-editor-dock]"],
+  ["zoomControls", "[data-view-zoom]"],
+  /* The side inspector, which in portrait is simply the flow (§8). */
+  ["shelf", ".workspace-shelf"],
   ["transport", "footer"],
   ["stage", "main"],
 ];

@@ -23,6 +23,7 @@ import { useState } from "react";
 import { ComposerArea } from "@/components/workspace/ComposerArea";
 import { EditToolbar } from "@/components/workspace/EditToolbar";
 import { EditorDock } from "@/components/workspace/EditorDock";
+import { ViewZoomControls } from "@/components/workspace/ViewZoomControls";
 import { SelectionBar } from "@/components/workspace/SelectionBar";
 import { SelectionMoreSheet } from "@/components/workspace/SelectionMoreSheet";
 import { editorDock } from "@/lib/workspace/editor-dock";
@@ -31,6 +32,7 @@ import type { SelectionActionId } from "@/lib/song/selection-action-canon";
 import type { ComposerDoor } from "@/lib/workspace/composer-tool";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
+import type { ViewZoom } from "@/lib/ui/use-view-zoom";
 import type { Song, Track } from "@/lib/song/schema";
 import type { TimeSelection } from "@/lib/song/time-selection";
 
@@ -44,6 +46,9 @@ export function EditArea({
   onOpenChordBuilder,
   onOpenRhythm,
   toolbar,
+  zoom,
+  canZoom,
+  canFitSelection,
 }: {
   composer: IntentComposer;
   noteEditing: NoteEditing;
@@ -61,6 +66,18 @@ export function EditArea({
   onOpenRhythm: (() => void) | null;
   /** Everything the toolbar needs, passed through unchanged. */
   toolbar: React.ComponentProps<typeof EditToolbar>;
+  /**
+   * The view magnification (2V-B.3 §10).
+   *
+   * It lives in the shelf rather than over the staff, and it is here in both
+   * layouts for one reason: in landscape the shelf *is* the side inspector,
+   * so a control placed here is reachable in portrait and in landscape
+   * without being written twice.
+   */
+  zoom: ViewZoom;
+  /** The arrangement has no staff to magnify. */
+  canZoom: boolean;
+  canFitSelection: boolean;
 }) {
   const [door, setDoor] = useState<ComposerDoor | null>(null);
   const [more, setMore] = useState(false);
@@ -132,6 +149,15 @@ export function EditArea({
             onClear={noteEditing.group.clear}
           />
         </>
+      ) : null}
+      {canZoom ? (
+        <ViewZoomControls
+          zoom={zoom}
+          /* Named by the surface, which is the only thing that knows how wide
+             a measure is here; null after a pinch, and that is honest. */
+          activeBars={zoom.presetBars}
+          canFitSelection={canFitSelection}
+        />
       ) : null}
       <EditToolbar {...toolbar} />
     </>

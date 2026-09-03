@@ -255,6 +255,21 @@ export function WorkspaceSurface({
           pendingScroll={navigation.pendingScroll}
           onPendingHandled={navigation.clearPendingScroll}
           scrollRef={navigation.scrollRef}
+          /* The camera, held with the rest of the navigation (§10, §11). */
+          zoom={navigation.zoom}
+          /*
+           * The held range in the same coordinates the band is drawn in, so
+           * "Seçime sığdır" frames exactly what the reader can see rather
+           * than a second reading of the same selection.
+           */
+          selectionContentPx={
+            time.band
+              ? {
+                  from: time.band.left + GUTTER_WIDTH,
+                  to: time.band.left + GUTTER_WIDTH + time.band.width,
+                }
+              : null
+          }
           onSlotLongPress={selectionEnabled ? time.onSlotLongPress : undefined}
           /*
            * The same gate the press has. A staff that offered the reach

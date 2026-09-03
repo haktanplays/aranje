@@ -28,6 +28,15 @@
  * here can change what a bar contains, only whether it is currently in the
  * DOM — and a bar that is not in the DOM is still exactly where it was, on an
  * axis that still has its full width.
+ *
+ * ## Magnification lives exactly here (2V-B.3 §10)
+ *
+ * The axis is built in its own pixels and stays there whatever the view zoom
+ * is. What the zoom changes is only the conversion at the scroller's edge:
+ * `scrollLeft` and `clientWidth` are screen px, everything above is content
+ * px, and `zoom` is the ratio between them. Keeping the conversion in one
+ * place is what makes "zoom changed no tick" structural — there is no code
+ * above this boundary that could tell the difference.
  */
 import {
   useCallback,
@@ -89,6 +98,22 @@ export type ReadingSurface = {
    * pixels.
    */
   readonly viewedSectionId: string | null;
+  /**
+   * Where the surface is and how much of it is visible, right now.
+   *
+   * The one place the scroller's own numbers are read: a component asking
+   * `scrollLeft` for itself would be a second opinion about the magnification,
+   * and the boundary test that forbids tick and scroll arithmetic in a canvas
+   * is what keeps it from becoming one.
+   *
+   * Returns null before the surface is mounted.
+   */
+  measureView(): {
+    readonly scrollContentPx: number;
+    readonly viewportScreenPx: number;
+  } | null;
+  /** How wide the measure at a content position is, in content px. */
+  barWidthAt(contentX: number): number;
   /** Move the surface without it counting as the reader taking over. */
   scrollTo(contentX: number): void;
   /**
@@ -144,8 +169,26 @@ export function useReadingSurface(options: {
   readonly originPx?: number;
   /** The reader scrolled themselves into a different section. */
   readonly onScrolledToSection?: (sectionId: string) => void;
+  /**
+   * The view magnification (2V-B.3 §10). 1 is the axis's own pixels.
+   *
+   * A ratio, not a second geometry: the surface renders its content magnified
+   * by this and reports scroll positions in screen px, so every number that
+   * crosses this boundary is divided or multiplied by it and nothing else
+   * changes.
+   */
+  readonly zoom?: number;
 }): ReadingSurface {
-  const { song, scrollRef, running, originPx = 0, onScrolledToSection } = options;
+  const {
+    song,
+    scrollRef,
+    running,
+    originPx = 0,
+    onScrolledToSection,
+    zoom = 1,
+  } = options;
+  /* Never zero: a division by the magnification happens on every scroll. */
+  const scale = zoom > 0 ? zoom : 1;
 
   const axis = useMemo(() => buildSongAxis(song, SLOT_WIDTH), [song]);
   const [viewportWidthPx, setViewportWidthPx] = useState(0);
@@ -200,15 +243,15 @@ export function useReadingSurface(options: {
     const scroller = scrollRef.current;
     if (!scroller) return;
     const measure = () => {
-      setViewportWidthPx(scroller.clientWidth);
-      syncWindow(scroller.scrollLeft, scroller.clientWidth);
+      setViewportWidthPx(scroller.clientWidth / scale);
+      syncWindow(scroller.scrollLeft / scale, scroller.clientWidth / scale);
     };
     measure();
     if (typeof ResizeObserver === "undefined") return;
     const observer = new ResizeObserver(measure);
     observer.observe(scroller);
     return () => observer.disconnect();
-  }, [scrollRef, syncWindow]);
+  }, [scale, scrollRef, syncWindow]);
 
   /*
    * A scroll the surface made on the reader's behalf is not the reader taking
@@ -224,7 +267,10 @@ export function useReadingSurface(options: {
         Math.abs(scroller.scrollLeft - ownScrollLeft.current) <
           OWN_SCROLL_TOLERANCE_PX;
       const before = arrivedAt.current;
-      const { sectionId } = syncWindow(scroller.scrollLeft, scroller.clientWidth);
+      const { sectionId } = syncWindow(
+        scroller.scrollLeft / scale,
+        scroller.clientWidth / scale,
+      );
       arrivedAt.current = sectionId;
       if (!ours) {
         setFollow((state) => nextFollowState(state, { type: "user_scrolled" }));
@@ -241,7 +287,7 @@ export function useReadingSurface(options: {
     };
     scroller.addEventListener("scroll", onScroll, { passive: true });
     return () => scroller.removeEventListener("scroll", onScroll);
-  }, [onScrolledToSection, scrollRef, syncWindow]);
+  }, [onScrolledToSection, scale, scrollRef, syncWindow]);
 
   /*
    * Play, or resume, hands the view back to the transport.
@@ -289,14 +335,18 @@ export function useReadingSurface(options: {
     (contentX: number) => {
       const scroller = scrollRef.current;
       if (!scroller) return;
-      ownScrollLeft.current = contentX;
+      /* In: content px, because that is what every caller above has. Out: the
+         scroller's own screen px. The magnification is applied here and
+         nowhere else. */
+      const screenX = contentX * scale;
+      ownScrollLeft.current = screenX;
       // Set directly. A native smooth scroll is still moving when the next
       // frame asks where the surface is, and "still animating" is not a
       // position.
-      scroller.scrollLeft = contentX;
-      syncWindow(scroller.scrollLeft, scroller.clientWidth);
+      scroller.scrollLeft = screenX;
+      syncWindow(scroller.scrollLeft / scale, scroller.clientWidth / scale);
     },
-    [scrollRef, syncWindow],
+    [scale, scrollRef, syncWindow],
   );
 
   const scrollToBar = useCallback(
@@ -318,17 +368,45 @@ export function useReadingSurface(options: {
     [],
   );
 
+  const measureView = useCallback(() => {
+    const scroller = scrollRef.current;
+    if (!scroller) return null;
+    return {
+      scrollContentPx: scroller.scrollLeft / scale,
+      viewportScreenPx: scroller.clientWidth,
+    };
+  }, [scale, scrollRef]);
+
+  /*
+   * Which measure is under a position, asked of the axis.
+   *
+   * A measure is not one width — 4/4 at 1/8 is 272px and at 1/16 is 544 — so
+   * "put two measures on the screen" needs the measure the reader is actually
+   * looking at rather than the first one in the song.
+   */
+  const barWidthAt = useCallback(
+    (contentX: number) => {
+      const here =
+        axis.bars.find(
+          (bar) => contentX >= bar.leftPx && contentX < bar.leftPx + bar.widthPx,
+        ) ?? axis.bars[0];
+      return here?.widthPx ?? 0;
+    },
+    [axis],
+  );
+
   const step = useCallback(
     (playheadAxisX: number | null) => {
       const scroller = scrollRef.current;
       if (!scroller || playheadAxisX === null) return;
       if (follow.manual) return;
 
-      const view = { widthPx: scroller.clientWidth, contentWidthPx };
+      const view = { widthPx: scroller.clientWidth / scale, contentWidthPx };
       const contentX = playheadAxisX + originPx;
+      const atContentPx = scroller.scrollLeft / scale;
 
       if (follow.reduceMotion) {
-        const target = reducedMotionScrollLeft(contentX, scroller.scrollLeft, view);
+        const target = reducedMotionScrollLeft(contentX, atContentPx, view);
         if (target !== null) scrollTo(target);
         return;
       }
@@ -336,9 +414,17 @@ export function useReadingSurface(options: {
       const target = desiredScrollLeft(contentX, view);
       // Whole pixels: a scroller reports back a rounded value, and comparing
       // a fractional target against it would call every frame a miss.
-      if (Math.abs(target - scroller.scrollLeft) >= 0.5) scrollTo(target);
+      if (Math.abs(target - atContentPx) >= 0.5) scrollTo(target);
     },
-    [contentWidthPx, follow.manual, follow.reduceMotion, originPx, scrollRef, scrollTo],
+    [
+      contentWidthPx,
+      follow.manual,
+      follow.reduceMotion,
+      originPx,
+      scale,
+      scrollRef,
+      scrollTo,
+    ],
   );
 
   const returnToPlayback = useCallback(
@@ -348,12 +434,12 @@ export function useReadingSurface(options: {
       if (!scroller || playheadAxisX === null) return;
       scrollTo(
         desiredScrollLeft(playheadAxisX + originPx, {
-          widthPx: scroller.clientWidth,
+          widthPx: scroller.clientWidth / scale,
           contentWidthPx,
         }),
       );
     },
-    [contentWidthPx, originPx, scrollRef, scrollTo],
+    [contentWidthPx, originPx, scale, scrollRef, scrollTo],
   );
 
   return {
@@ -364,6 +450,8 @@ export function useReadingSurface(options: {
     mode: followMode(follow),
     detached: follow.manual,
     viewedSectionId,
+    measureView,
+    barWidthAt,
     scrollTo,
     scrollToBar,
     follow: step,

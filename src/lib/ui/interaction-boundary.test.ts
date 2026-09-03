@@ -179,15 +179,23 @@ describe("a bar-range drag does not seek the bar it ends on", () => {
  */
 describe("holding a note and reaching across its slots", () => {
   const canvas = read(`${COMPONENTS}/TabCanvas.tsx`);
+  /*
+   * The ranking moved out of the canvas in 2V-B.3 §12, when the pinch made a
+   * fourth gesture on the same element. What is asserted is unchanged — these
+   * are still claims about which gesture owns a press — but they are now made
+   * where the decision is, which is the point of having moved it.
+   */
+  const gestures = read("src/lib/workspace/use-staff-gestures.ts");
 
   it("the staff carries the drag, not a press that forgets", () => {
-    expect(canvas).toContain("noteRange.handlers");
+    expect(gestures).toContain("noteRange.handlers");
+    expect(gestures).not.toContain("useLongPress");
     expect(canvas).not.toContain("useLongPress");
   });
 
   it("the pen still takes the press before the drag can arm", () => {
-    expect(canvas).toMatch(/owner !== "pen"/);
-    expect(canvas).toContain("noteRangeOwning: noteRange?.owning === true");
+    expect(gestures).toMatch(/owner !== "pen"/);
+    expect(gestures).toContain("noteRangeOwning: noteRange?.owning === true");
   });
 
   it("the reach is refused unless the press really opened a range", () => {

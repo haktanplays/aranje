@@ -81,3 +81,54 @@ body {
   border-right: 3px solid transparent;
   border-bottom: 4px solid var(--color-bronze);
 }
+
+/*
+ * The landscape work area (2V-B.3 §8).
+ *
+ * Measured at 740x360 before this: the column layout could not fit, so the
+ * app's own action row overlapped the staff and the centre of the grid failed
+ * its own hit test — the reader's main work surface was covered by the
+ * controls for working on it.
+ *
+ * On a short landscape screen the body becomes two columns instead: the grid
+ * takes the width it needs on the left, and everything contextual — the
+ * selection actions, the track door, the editor shelf, the view zoom — becomes
+ * a side inspector on the right that scrolls on its own. Nothing moves over
+ * the grid, so the grid keeps answering for its own pixels.
+ *
+ * Portrait is untouched: the default rules below are the column layout the app
+ * has always had, and the query is the only thing that changes it.
+ */
+.workspace-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0%;
+  min-height: 0;
+}
+
+.workspace-shelf {
+  display: flex;
+  flex-direction: column;
+  flex: none;
+  min-width: 0;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  .workspace-body {
+    flex-direction: row;
+  }
+
+  /* The grid is the hero and takes what is left, never a fixed share. */
+  .workspace-body > main {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  .workspace-shelf {
+    width: 17rem;
+    max-width: 45%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-left: 1px solid var(--color-line);
+  }
+}

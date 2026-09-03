@@ -33,6 +33,8 @@
  */
 import { useCallback, useRef } from "react";
 
+import { swallowNextClick } from "@/lib/ui/swallow-click";
+
 /**
  * What the DOM said about where a press landed.
  *
@@ -154,7 +156,18 @@ export function useBackgroundPan(input: {
 
   const end = useCallback((event: React.PointerEvent) => {
     if (drag.current?.pointerId !== event.pointerId) return;
+    const panned = drag.current.moved;
     drag.current = null;
+    /*
+     * A pan does not end in a tap (2V-B.3 §12).
+     *
+     * The staff has no gaps — every position is a cell button — so lifting
+     * after a pan lands a click on whichever cell arrived under the finger,
+     * and that click writes a note or moves the selection. Nothing about the
+     * pan itself prevented it; the gesture was correct and its aftermath was
+     * not.
+     */
+    if (panned) swallowNextClick();
   }, []);
 
   return {
@@ -177,12 +190,23 @@ export function useBackgroundPan(input: {
 export function staffPointerHandlers(input: {
   readonly staffPress: Partial<BackgroundPan> | null;
   readonly pan: BackgroundPan;
+  /**
+   * The two-finger zoom, which outranks everything else (2V-B.3 §11, §12).
+   *
+   * Ranked here rather than inside each gesture, because "who owns this
+   * press" is one question: a second finger arriving means the reader has
+   * stopped doing whatever the first one was doing, and every other gesture
+   * has to be told so in the same instant rather than each noticing on its
+   * own a frame later.
+   */
+  readonly pinch?: (Partial<BackgroundPan> & { active(): boolean }) | null;
   readonly onHandleMove?: (event: React.PointerEvent) => void;
   readonly onHandleUp?: () => void;
 }) {
-  const { onHandleMove, onHandleUp, pan, staffPress } = input;
+  const { onHandleMove, onHandleUp, pan, pinch, staffPress } = input;
   return {
     onPointerDown(event: React.PointerEvent) {
+      pinch?.onPointerDown?.(event);
       staffPress?.onPointerDown?.(event);
       /* The note-range drag keeps its own sequence; panning only ever joins a
          press that landed on nothing written. */
@@ -191,16 +215,33 @@ export function staffPointerHandlers(input: {
       }
     },
     onPointerMove(event: React.PointerEvent) {
+      pinch?.onPointerMove?.(event);
+      if (pinch?.active() === true) {
+        /* Stood down, not merely skipped: a selection drag left mid-gesture
+           would still be holding the run it had picked up, and the next
+           single-finger move would carry on extending it. */
+        staffPress?.onPointerCancel?.(event);
+        pan.onPointerCancel(event);
+        return;
+      }
       staffPress?.onPointerMove?.(event);
       pan.onPointerMove(event);
       onHandleMove?.(event);
     },
     onPointerUp(event: React.PointerEvent) {
+      const zooming = pinch?.active() === true;
+      pinch?.onPointerUp?.(event);
+      if (zooming) {
+        staffPress?.onPointerCancel?.(event);
+        pan.onPointerCancel(event);
+        return;
+      }
       staffPress?.onPointerUp?.(event);
       pan.onPointerUp(event);
       onHandleUp?.();
     },
     onPointerCancel(event: React.PointerEvent) {
+      pinch?.onPointerCancel?.(event);
       staffPress?.onPointerCancel?.(event);
       pan.onPointerCancel(event);
     },

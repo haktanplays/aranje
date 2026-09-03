@@ -16,6 +16,7 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from "react";
 
 import type { WorkspaceView } from "@/components/workspace/ViewSwitch";
+import { useViewZoom, type ViewZoom } from "@/lib/ui/use-view-zoom";
 import type { Song, Track } from "@/lib/song/schema";
 import {
   initialSectionView,
@@ -61,6 +62,16 @@ export type WorkspaceNavigation = {
   readonly track: Track | undefined;
   /** The tab's scroller. Lives here because scroll targets are navigation. */
   readonly scrollRef: RefObject<HTMLDivElement | null>;
+  /**
+   * How much of the music is on the screen (2V-B.3 §10).
+   *
+   * Navigation, not notation: it belongs beside the scroll position and the
+   * viewed section because it is the same kind of fact — where the reader is
+   * looking — and because it must be unable to reach anything else. Nothing
+   * in this hook has ever written to the Song, and the zoom inherits that by
+   * living in it.
+   */
+  readonly zoom: ViewZoom;
   readonly arrangeScrollRef: RefObject<HTMLDivElement | null>;
   setActiveBarKey(barKey: string | null): void;
   /** The stepper, the list, the arrangement: an explicit choice of section. */
@@ -176,6 +187,7 @@ export function useWorkspaceNavigation(options: {
   );
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const zoom = useViewZoom();
   const arrangeScrollRef = useRef<HTMLDivElement | null>(null);
 
   const track =
@@ -277,6 +289,7 @@ export function useWorkspaceNavigation(options: {
     pendingScroll: pendingTabBar,
     track,
     scrollRef,
+    zoom,
     arrangeScrollRef,
     setActiveBarKey: reportPlaybackBar,
     viewSection,

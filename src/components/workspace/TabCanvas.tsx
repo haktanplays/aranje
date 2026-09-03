@@ -48,12 +48,9 @@ import { BarSlot, DRUM_LABEL } from "@/components/workspace/TabBarSlot";
 import { TabGutter } from "@/components/workspace/TabGutter";
 import { gridLabelFor } from "@/components/workspace/grid-label";
 import { frettedRowLabels } from "@/components/workspace/staff";
-import { pointerOwner } from "@/lib/tab/pointer-ownership";
-import {
-  staffPointerHandlers,
-  useBackgroundPan,
-} from "@/lib/ui/use-background-pan";
 import type { NoteRangeGesture } from "@/lib/ui/use-note-range-drag";
+import type { ViewZoom } from "@/lib/ui/use-view-zoom";
+import { useStaffGestures } from "@/lib/workspace/use-staff-gestures";
 import { xAtTicks } from "@/lib/tab/song-axis";
 import { useArmedGridRow } from "@/lib/workspace/use-armed-grid-row";
 import { useReadingSurface } from "@/lib/workspace/use-reading-surface";
@@ -84,6 +81,8 @@ export function TabCanvas({
   onSeekBar,
   barRange,
   scrollRef,
+  zoom,
+  selectionContentPx = null,
   selectionBand,
   onSlotLongPress,
   noteRange,
@@ -137,6 +136,10 @@ export function TabCanvas({
    */
   barRange?: BarRangeGesture;
   scrollRef: React.RefObject<HTMLDivElement | null>;
+  /** The camera, bound by `use-surface-zoom` (2V-B.3 §10, §11). */
+  zoom?: ViewZoom;
+  /** The held range, in the same content px the selection band is drawn in. */
+  selectionContentPx?: { readonly from: number; readonly to: number } | null;
   /** The time band, already positioned; null when nothing is selected. */
   selectionBand?: React.ReactNode;
   /**
@@ -190,12 +193,17 @@ export function TabCanvas({
    * position differ by exactly its width, and this is the only place that
    * conversion happens.
    */
+  /* One number, read twice below: the surface's conversion and the content's
+     own magnification must be the same or the staff scrolls to the wrong bar. */
+  const magnification = zoom?.zoom ?? 1;
+
   const surface = useReadingSurface({
     song,
     scrollRef,
     running,
     originPx: GUTTER_WIDTH,
     onScrolledToSection,
+    zoom: magnification,
   });
 
   const drawn = useMemo(
@@ -244,33 +252,18 @@ export function TabCanvas({
    * to. Reading the rect at fire time rather than at press time keeps that
    * true even if the tab moved during the press.
    */
-  /* A writing pen takes the press; both gestures used to run (K-59.1 §5). */
-  const owner = pointerOwner({
-    noteRangeOwning: noteRange?.owning === true,
+  /* Who owns a press on the staff, decided in one place (§12). */
+  const staffHandlers = useStaffGestures({
+    scrollRef,
+    surface,
+    zoom,
+    selectionContentPx,
+    noteRange,
     penArmed: onPenTarget !== undefined,
     selectionAvailable: onSlotLongPress !== undefined,
-  });
-  /*
-   * The staff's press is the note-range drag now (2U-C §3), not a long press
-   * that fires and forgets. The gesture is the same up to the threshold; what
-   * changed is that the finger is still holding something afterwards, so the
-   * hook keeps the sequence instead of handing it back to the scroller.
-   */
-  const staffPress = noteRange && owner !== "pen" ? noteRange.handlers : null;
-
-  /*
-   * Dragging the empty staff moves the camera (2V-B.2 §6).
-   *
-   * Offered only while a selection is held and no pen is armed — the two
-   * conditions `pointerOwner` ranks `background_pan` behind — so the very
-   * first long press on an empty staff still selects, and a reader holding a
-   * pen still writes where they touch. The press itself is filtered again at
-   * pointerdown, because "is there music under this finger" is a fact about
-   * one press rather than about the render.
-   */
-  const pan = useBackgroundPan({
-    scrollRef,
-    enabled: selectionBand != null && onPenTarget === undefined,
+    hasSelection: selectionBand != null,
+    onHandleMove,
+    onHandleUp,
   });
 
   if (timeline.kind === "unsupported") {
@@ -340,9 +333,12 @@ export function TabCanvas({
           data-tab-content
           data-viewed-section={surface.viewedSectionId ?? undefined}
           className="relative flex"
-          style={{ width: surface.contentWidthPx }}
+          /* `zoom`, not a transform: it takes part in layout, so the scroller
+             really does widen, hit tests land on the cell under the finger,
+             and every position inside stays in unmagnified axis pixels. */
+          style={{ width: surface.contentWidthPx, zoom: magnification }}
           ref={contentRef}
-          {...staffPointerHandlers({ staffPress, pan, onHandleMove, onHandleUp })}
+          {...staffHandlers}
         >
           <TabGutter labels={labels} rowHeight={rowHeight} bodyHeight={bodyHeight} />
 

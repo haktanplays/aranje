@@ -22,9 +22,7 @@
  */
 import { useMemo } from "react";
 
-import { EditArea } from "@/components/workspace/EditArea";
-import { SelectionActionArea } from "@/components/workspace/SelectionActionArea";
-import { TrackControl } from "@/components/workspace/TrackControl";
+import { WorkspaceShelf } from "@/components/workspace/WorkspaceShelf";
 import { TransportBar } from "@/components/workspace/TransportBar";
 import { WorkspaceOverlays } from "@/components/workspace/WorkspaceOverlays";
 import { WorkspaceChrome } from "@/components/workspace/WorkspaceChrome";
@@ -277,6 +275,7 @@ export function Workspace() {
         onDoneEditing={noteEditing.toggleEdit}
       />
 
+      <div className="workspace-body">
       <WorkspaceSurface
         navigation={navigation}
         session={session}
@@ -295,20 +294,19 @@ export function Workspace() {
         copilotOwnsScreen={previewOpen || arrangeOpen}
       />
 
-      <SelectionActionArea session={session} song={song} listening={listening} practice={practice} compact={covered !== null} onOpenTiming={timing.open} />
-
-      {/* Both notation surfaces; the multi view needs this door too (§8). */}
-      {navigation.view !== "arrange" ? (
-        <TrackControl track={track} onOpen={() => overlays.open("track")} />
-      ) : null}
-
-      <EditArea
+      <WorkspaceShelf
+        session={session}
+        song={song}
+        listening={listening}
+        practice={practice}
+        covered={covered}
+        onOpenTiming={timing.open}
+        view={navigation.view}
+        zoom={navigation.zoom}
+        track={track}
+        onOpenTrack={() => overlays.open("track")}
         composer={composer}
         noteEditing={noteEditing}
-        song={song}
-        track={track}
-        selection={session.time.handle.selection}
-        selectionActions={covered?.verbs ?? null}
         onOpenChordBuilder={doors.catalogue}
         onOpenRhythm={doors.rhythm}
         toolbar={{
@@ -328,6 +326,7 @@ export function Workspace() {
           canToggleEdit: navigation.view !== "arrange",
         }}
       />
+      </div>
 
       <TransportBar
         state={state}

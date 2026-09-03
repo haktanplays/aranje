@@ -67,6 +67,11 @@ const COMPOSITION_HOOKS = new Set([
   // calls and no state of its own — it exists so the root does not have to
   // spell the same relationship out in six lines.
   "src/lib/workspace/use-covered-run.ts",
+  // 2V-B.3 §12: who owns a press on the staff. Four gestures share one
+  // element and the ranking between them is one decision, so it calls the
+  // pan, the pinch and the note-range drag and keeps no state of its own —
+  // which is exactly the shape this set exists for.
+  "src/lib/workspace/use-staff-gestures.ts",
 ]);
 
 describe("38. the composition root stays a composition root", () => {
