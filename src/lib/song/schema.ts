@@ -10,7 +10,11 @@ import { bpmRange, songLimits, velocityRange, volumeDbRange } from "@/lib/limits
 import { DRUM_PIECES } from "@/lib/instruments/registry";
 import { MAX_CAPO } from "@/lib/music/fretboard";
 import { PITCH_PATTERN } from "@/lib/music/pitch";
-import { RESOLUTIONS, isRepresentableGrid } from "@/lib/music/timing";
+import {
+  RESOLUTIONS,
+  STORED_RESOLUTIONS,
+  isRepresentableGrid,
+} from "@/lib/music/timing";
 
 /** "E minor", "C major" (spec 5.1). */
 export const KEY_PATTERN = /^[A-G](#|b)? (minor|major)$/;
@@ -42,7 +46,20 @@ export const timeSignatureSchema = z.union([
  * with nothing to notice if someone forgot. `z.literal` over the const array
  * keeps both the runtime check and the inferred type coming from one source.
  */
-export const resolutionSchema = z.literal(RESOLUTIONS);
+/**
+ * The grids a *stored* bar may declare.
+ *
+ * Wider than the grids anyone is offered: it also admits the lattices that
+ * exist so straight and triplet music can share one measure (2V-B.4
+ * Completion §5). A song written before they existed parses unchanged —
+ * adding a member to this list can only accept more, never less — and a bar
+ * that reaches a lattice carries `notation` so the reader is never told a
+ * number nobody counts.
+ */
+export const resolutionSchema = z.literal(STORED_RESOLUTIONS);
+
+/** The grids a picker offers and a Copilot may write. */
+export const offeredResolutionSchema = z.literal(RESOLUTIONS);
 
 /**
  * How one note is played (spec 5.4, 8.5).
@@ -166,6 +183,20 @@ export const barSchema = z
   .strictObject({
     timeSignature: timeSignatureSchema,
     resolution: resolutionSchema,
+    /**
+     * The grid the reader is reading and snapping to (2V-B.4 Completion §5, §7).
+     *
+     * Absent — and absent in every song written before now — means the stored
+     * resolution *is* the reading grid, which is the ordinary case. It is
+     * present only when a local write raised this one bar to a lattice so a
+     * triplet run could live beside straight sixteenths: the data is exact on
+     * the lattice, and every user-facing question about "which grid is this
+     * bar on" is answered from here instead.
+     *
+     * It is an **offered** grid, never a lattice: a bar cannot claim to be
+     * read on a grid nobody counts.
+     */
+    notation: offeredResolutionSchema.optional(),
     slots: z.record(
       z.string(),
       z.union([z.array(melodicSlotSchema), z.array(drumSlotSchema)]),
@@ -299,7 +330,7 @@ export type Track = z.infer<typeof trackSchema>;
 export type Song = z.infer<typeof songSchema>;
 
 export type TimeSignature = z.infer<typeof timeSignatureSchema>;
-export type Resolution = (typeof RESOLUTIONS)[number];
+export type Resolution = (typeof STORED_RESOLUTIONS)[number];
 
 /** True when the slot array belongs to a drum track (spec 5.4). */
 export function isDrumSlotArray(

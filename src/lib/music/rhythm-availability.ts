@@ -21,6 +21,13 @@
  * - **unavailable** — no grid the format has can hold both the new run and the
  *   music already in this bar. Said plainly, not silently rounded.
  *
+ * The candidates are `STORED_RESOLUTIONS`, not the grids a picker offers: a
+ * straight-1/16 bar that wants a triplet run is answered by the lattice
+ * (2V-B.4 Completion §4), which holds both exactly and which nobody chooses.
+ * Searching the offered grids alone is what made that case `unavailable`, and
+ * "the format cannot write this" was never true — only "the vocabulary
+ * cannot name a grid for it".
+ *
  * The middle state is the whole reason this file exists. Without it a denser
  * run in a Straight 1/16 bar could only be refused or *quietly* rewritten to
  * 1/32 — and quietly changing the grid under a reader's music is precisely
@@ -33,7 +40,11 @@
  * to be normalised; it is music. Every candidate grid below is required to
  * hold the existing onsets *exactly*, and a grid that cannot is not offered.
  */
-import { RESOLUTIONS, ticksPerSlot, type Resolution } from "@/lib/music/timing";
+import {
+  STORED_RESOLUTIONS,
+  ticksPerSlot,
+  type Resolution,
+} from "@/lib/music/timing";
 
 export type RhythmAvailabilityState =
   | "available"
@@ -60,9 +71,25 @@ export type RhythmAvailability = {
   readonly reason: string | null;
 };
 
-export const LOCAL_OVERRIDE_ACTION = "Bu hareket için bu bölümü sıklaştır.";
+export const LOCAL_OVERRIDE_ACTION = "Bu hareket için yalnız bu bölümü sıklaştır.";
 export const LOCAL_OVERRIDE_DETAIL =
-  "Yalnız seçili bölüm hızlanır; ölçü ve diğer notalar değişmez.";
+  "Notalar seçili alana sığar; ölçü ve diğer notalar değişmez.";
+
+/** Turkish for the two, three or four notes a fast run is made of. */
+const COUNT_WORD: Readonly<Record<number, string>> = { 2: "İki", 3: "Üç", 4: "Dört" };
+
+/**
+ * The same promise, with the reader's own number in it.
+ *
+ * "Üç nota seçili alana sığar" is a claim they can check by looking, which
+ * "yalnız seçili bölüm hızlanır" was not. The generic sentence stays for
+ * callers that do not know the count yet.
+ */
+export function localOverrideDetail(count: number): string {
+  const word = COUNT_WORD[count];
+  if (word === undefined) return LOCAL_OVERRIDE_DETAIL;
+  return `${word} nota seçili alana sığar; ölçü ve diğer notalar değişmez.`;
+}
 const UNAVAILABLE_REASON =
   "Bu hız, bu ölçüdeki mevcut notalarla birlikte yazılamıyor.";
 
@@ -131,7 +158,7 @@ export function rhythmAvailability(request: RhythmRequest): RhythmAvailability {
    * stops at the first that works — the smallest change to their bar that
    * makes the run writable.
    */
-  const finer = [...RESOLUTIONS]
+  const finer = [...STORED_RESOLUTIONS]
     .filter((candidate) => ticksPerSlot(candidate) < ticksPerSlot(resolution))
     .sort((left, right) => ticksPerSlot(right) - ticksPerSlot(left));
 

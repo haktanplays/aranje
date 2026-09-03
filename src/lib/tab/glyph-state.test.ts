@@ -54,6 +54,8 @@ const bar = (spans: readonly TabSpan[]): FrettedBar => ({
   isSectionStart: true,
   timeSignature: [4, 4],
   resolution: 8,
+  notation: 8,
+  slotsPerCell: 1,
   slotCount: 8,
   silent: false,
   spans: [...spans],

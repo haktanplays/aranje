@@ -39,7 +39,12 @@
  * count — which is why every lane's bar lines land on the same x by
  * construction rather than by being kept in step.
  */
-import { slotCount, ticksPerSlot, type Resolution } from "@/lib/music/timing";
+import {
+  readingResolution,
+  slotCount,
+  ticksPerSlot,
+  type Resolution,
+} from "@/lib/music/timing";
 import type { Song, TimeSignature } from "@/lib/song/schema";
 
 export type SongAxisBar = {
@@ -99,7 +104,18 @@ export function buildSongAxis(song: Song, slotWidthPx: number): SongAxis {
     for (const [localBarIndex, bar] of section.bars.entries()) {
       const slots = slotCount(bar.timeSignature, bar.resolution);
       const durationTicks = slots * ticksPerSlot(bar.resolution);
-      const widthPx = slots * slotWidthPx;
+      /*
+       * A bar is as wide as the reader's own grid, not the lattice under it
+       * (2V-B.4 Completion §7).
+       *
+       * A local densify raises the stored resolution so a triplet can be
+       * exact; measuring the width from that would make the measure three
+       * times wider the moment a run was written into it, which is precisely
+       * "the whole bar moved to another grid" told in pixels. The reading
+       * grid is what the reader chose, so it is what sets the width — and the
+       * lattice columns inside simply become narrower.
+       */
+      const widthPx = slotCount(bar.timeSignature, readingResolution(bar)) * slotWidthPx;
       bars.push({
         key: `${section.id}:${localBarIndex}`,
         sectionId: section.id,

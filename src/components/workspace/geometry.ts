@@ -88,13 +88,21 @@ export const LANE_DIGEST_HEIGHT = 14;
 /** How tall a pitched lane's note field is, whatever its range. */
 export const PITCHED_LANE_HEIGHT = 72;
 
-export function barWidth(slotCount: number): number {
-  return slotCount * SLOT_WIDTH;
+/**
+ * How wide a bar is drawn.
+ *
+ * `slotWidth` is the width of one *stored* column. It is `SLOT_WIDTH` in
+ * every ordinary bar and narrower in one raised to a lattice, so that a bar
+ * keeps the width its reader's own grid gives it (2V-B.4 Completion §7): a
+ * measure does not grow when a triplet is written into it.
+ */
+export function barWidth(slotCount: number, slotWidth: number = SLOT_WIDTH): number {
+  return slotCount * slotWidth;
 }
 
 /** Horizontal centre of a slot inside its bar. */
-export function slotCentre(slotIndex: number): number {
-  return slotIndex * SLOT_WIDTH + SLOT_WIDTH / 2;
+export function slotCentre(slotIndex: number, slotWidth: number = SLOT_WIDTH): number {
+  return slotIndex * slotWidth + slotWidth / 2;
 }
 
 /**

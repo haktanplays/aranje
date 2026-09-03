@@ -42,7 +42,11 @@ import {
   writtenSpans,
   type WrittenSpan,
 } from "@/lib/song/sounding";
-import { slotCount } from "@/lib/music/timing";
+import {
+  readingResolution,
+  slotCount,
+  slotsPerReadingSlot,
+} from "@/lib/music/timing";
 import type {
   Articulation,
   Bar,
@@ -87,8 +91,21 @@ export type BarMeta = {
   sectionStatus: SectionStatus;
   isSectionStart: boolean;
   timeSignature: TimeSignature;
+  /** The grid the bar is stored on. May be a lattice (§5). */
   resolution: Resolution;
+  /**
+   * The grid the reader is reading and tapping on.
+   *
+   * The same as `resolution` in every ordinary bar. It differs only where a
+   * local write raised this one bar to a lattice so a triplet could live
+   * beside straight sixteenths: the notes are drawn at their exact lattice
+   * positions and the cells, the label and the counting stay where the reader
+   * left them (2V-B.4 Completion §5, §7).
+   */
+  notation: Resolution;
   slotCount: number;
+  /** Lattice slots per reading cell. One in every ordinary bar. */
+  slotsPerCell: number;
   /** The track writes nothing in this bar, so it is silent here (spec 5.5). */
   silent: boolean;
 };
@@ -175,7 +192,9 @@ function barMeta(song: Song): MetaEntry[] {
           isSectionStart: barIndex === 0,
           timeSignature: bar.timeSignature,
           resolution: bar.resolution,
+          notation: readingResolution(bar),
           slotCount: slotCount(bar.timeSignature, bar.resolution),
+          slotsPerCell: slotsPerReadingSlot(bar),
         },
       });
     });

@@ -232,7 +232,13 @@ describe("where tempo lives, and only there (spec 5.1, 8.3, K-25)", () => {
     // The Song Contract has exactly one place to write a tempo. A second one
     // would be a second answer to the same question (K-25).
     expect(Object.keys(barSchema.shape)).not.toContain("bpmOverride");
+    /*
+     * `notation` joined the bar at 2V-B.4 Completion §5 and is not a second
+     * tempo: it says which grid the *reader* is reading when the stored one
+     * is a lattice, and it carries no time of its own.
+     */
     expect(Object.keys(barSchema.shape).sort()).toEqual([
+      "notation",
       "resolution",
       "slots",
       "timeSignature",

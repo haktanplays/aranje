@@ -119,6 +119,8 @@ describe("which way a slide leans", () => {
     barNumber: 1,
     timeSignature: [4, 4],
     resolution: 8,
+    notation: 8,
+    slotsPerCell: 1,
     slotCount: 8,
     silent: false,
     spans,

@@ -21,7 +21,7 @@ import { readGrid } from "@/lib/music/rhythm-language";
 import {
   formatTimeSignature,
   resolutionLabel,
-  type Resolution,
+  type OfferedResolution,
   type TimeSignature,
 } from "@/lib/music/timing";
 
@@ -63,7 +63,8 @@ export function tempoLine(bpm: number): CountingLine {
  */
 export function gridLine(
   timeSignature: TimeSignature,
-  resolution: Resolution,
+  /* The grid the reader is reading, never the lattice underneath it (§5). */
+  resolution: OfferedResolution,
 ): CountingLine {
   const reading = readGrid(timeSignature, resolution);
   const triplet = resolution === 12 || resolution === 24;
@@ -83,7 +84,7 @@ export function gridLine(
 export function countingDescription(
   timeSignature: TimeSignature,
   bpm: number,
-  resolution: Resolution,
+  resolution: OfferedResolution,
 ): string {
   const lines = [meterLine(timeSignature), tempoLine(bpm), gridLine(timeSignature, resolution)];
   return lines

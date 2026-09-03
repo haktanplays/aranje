@@ -10,9 +10,12 @@ import type { SlotState } from "@/lib/tab/timeline";
 export function RhythmStrip({
   states,
   slotsPerBeat,
+  column = SLOT_WIDTH,
 }: {
   states: readonly SlotState[];
   slotsPerBeat: number;
+  /** One stored column's width; narrower in a bar raised to a lattice (§7). */
+  column?: number;
 }) {
   return (
     <div className="relative h-full">
@@ -22,7 +25,7 @@ export function RhythmStrip({
           <div
             key={slotIndex}
             className="absolute inset-y-0 flex flex-col items-center justify-start"
-            style={{ left: slotIndex * SLOT_WIDTH, width: SLOT_WIDTH }}
+            style={{ left: slotIndex * column, width: column }}
           >
             <span
               className={onBeat ? "bg-line block h-1.5 w-px" : "bg-line/50 block h-1 w-px"}

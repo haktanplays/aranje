@@ -37,6 +37,7 @@ import {
   resolutionLabel,
   slotCount,
   slotsPerFeltBeat,
+  type OfferedResolution,
   type Resolution,
   type TimeSignature,
 } from "@/lib/music/timing";
@@ -150,7 +151,7 @@ export type GridReading = {
 };
 
 /** Beginner-first names for the grids, with the notation beside each. */
-export const GRID_NAMES: Readonly<Record<Resolution, string>> = {
+export const GRID_NAMES: Readonly<Record<OfferedResolution, string>> = {
   4: "Vuruş",
   8: "Yarım vuruş",
   12: "Sekizlik triole",
@@ -160,7 +161,7 @@ export const GRID_NAMES: Readonly<Record<Resolution, string>> = {
 };
 
 /** What each grid writes, in note values a reader can look up. */
-export const GRID_VALUE_NAMES: Readonly<Record<Resolution, string>> = {
+export const GRID_VALUE_NAMES: Readonly<Record<OfferedResolution, string>> = {
   4: "dörtlük",
   8: "sekizlik",
   12: "sekizlik triole",
@@ -169,9 +170,17 @@ export const GRID_VALUE_NAMES: Readonly<Record<Resolution, string>> = {
   32: "32'lik",
 };
 
+/**
+ * What a reader is told about this bar's grid.
+ *
+ * The parameter is an **offered** grid on purpose (2V-B.4 Completion §5): a
+ * bar stored on a lattice has no reading of its own, and a caller that handed
+ * one straight in would be asking this to name a grid nobody counts. They ask
+ * `readingResolution(bar)` first, and the type says so.
+ */
 export function readGrid(
   timeSignature: TimeSignature,
-  resolution: Resolution,
+  resolution: OfferedResolution,
 ): GridReading {
   const stepsPerBeat = Math.round(
     slotCount(timeSignature, resolution) /
@@ -193,7 +202,7 @@ export function readGrid(
 }
 
 export type GridChoice = {
-  readonly resolution: Resolution;
+  readonly resolution: OfferedResolution;
   /** "Çeyrek vuruş" */
   readonly name: string;
   /** "1/16" */
@@ -212,7 +221,8 @@ export type GridChoice = {
  */
 export function gridChoices(
   timeSignature: TimeSignature,
-  available: readonly Resolution[],
+  /* Offered grids only: a picker never lists a lattice (§5). */
+  available: readonly OfferedResolution[],
 ): readonly GridChoice[] {
   return available
     .filter((resolution) => {

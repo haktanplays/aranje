@@ -32,7 +32,7 @@ const HOOK_WIDTH = Math.round(SLOT_WIDTH * 0.35);
 const TIE_TOP = BEAM_TOP + 3 * BEAM_PITCH + 1;
 const BRACKET_TOP = TIE_TOP + 2;
 
-const centreOf = (slot: number) => slot * SLOT_WIDTH + SLOT_WIDTH / 2;
+const centreOf = (slot: number, column: number) => slot * column + column / 2;
 
 /** What a screen reader is told about one entry (spec 13.20 §7). */
 export function tailNoteLabel(note: TailNote): string {
@@ -44,11 +44,11 @@ export function tailNoteLabel(note: TailNote): string {
 }
 
 /** A rest: a block on the beat, with one hook per beam its value carries. */
-function Rest({ note }: { note: TailNote }) {
+function Rest({ note, column }: { note: TailNote; column: number }) {
   return (
     <span
       className="absolute"
-      style={{ left: centreOf(note.slotIndex) - 5, top: BEAM_TOP - 4 }}
+      style={{ left: centreOf(note.slotIndex, column) - 5, top: BEAM_TOP - 4 }}
       role="img"
       aria-label={tailNoteLabel(note)}
     >
@@ -66,8 +66,8 @@ function Rest({ note }: { note: TailNote }) {
 }
 
 /** A note: a stem, its dot, its own flags if no beam took it in, its tie. */
-function Note({ note }: { note: TailNote }) {
-  const left = centreOf(note.slotIndex);
+function Note({ note, column }: { note: TailNote; column: number }) {
+  const left = centreOf(note.slotIndex, column);
   return (
     <span
       className="absolute"
@@ -112,7 +112,7 @@ function Note({ note }: { note: TailNote }) {
         <span
           aria-hidden
           className="bg-muted/50 absolute block h-px"
-          style={{ top: TIE_TOP, left: 1, width: SLOT_WIDTH / 2 }}
+          style={{ top: TIE_TOP, left: 1, width: column / 2 }}
         />
       ) : null}
 
@@ -129,7 +129,14 @@ function Note({ note }: { note: TailNote }) {
   );
 }
 
-export function RhythmTailLayer({ tail }: { tail: RhythmTail }) {
+export function RhythmTailLayer({
+  tail,
+  column = SLOT_WIDTH,
+}: {
+  tail: RhythmTail;
+  /** One stored column's width; narrower in a bar raised to a lattice (§7). */
+  column?: number;
+}) {
   if (tail.notes.length === 0) return null;
 
   return (
@@ -139,15 +146,15 @@ export function RhythmTailLayer({ tail }: { tail: RhythmTail }) {
     >
       {tail.notes.map((note) =>
         note.kind === "rest" ? (
-          <Rest key={`r${note.slotIndex}`} note={note} />
+          <Rest key={`r${note.slotIndex}`} note={note} column={column} />
         ) : (
-          <Note key={`n${note.slotIndex}`} note={note} />
+          <Note key={`n${note.slotIndex}`} note={note} column={column} />
         ),
       )}
 
       {tail.beams.map((beam) => {
-        const from = centreOf(beam.fromSlot);
-        const to = centreOf(beam.toSlot);
+        const from = centreOf(beam.fromSlot, column);
+        const to = centreOf(beam.toSlot, column);
         const width =
           beam.hook === null ? Math.max(to - from, 1) : HOOK_WIDTH;
         const left = beam.hook === "left" ? from - HOOK_WIDTH : from;
@@ -167,8 +174,8 @@ export function RhythmTailLayer({ tail }: { tail: RhythmTail }) {
       })}
 
       {tail.tuplets.map((bracket) => {
-        const from = centreOf(bracket.fromSlot);
-        const width = Math.max(centreOf(bracket.toSlot) - from, 1);
+        const from = centreOf(bracket.fromSlot, column);
+        const width = Math.max(centreOf(bracket.toSlot, column) - from, 1);
         return (
           <span
             key={`t${bracket.fromSlot}`}

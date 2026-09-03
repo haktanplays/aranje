@@ -18,6 +18,8 @@ import { useCallback, useMemo, useState } from "react";
 
 import {
   RESOLUTIONS,
+  readingResolution,
+  type OfferedResolution,
   TIME_SIGNATURES,
   isRepresentableGrid,
   type Resolution,
@@ -42,17 +44,19 @@ export type TimingChangeHandle = {
   readonly current: RhythmReading | null;
   /** What the reader has picked. Starts at the current value. */
   readonly meter: TimeSignature;
-  readonly resolution: Resolution;
+  /** The grid the sheet is editing. Always an offered one (§5). */
+  readonly resolution: OfferedResolution;
   /** The pick, in both readings, so the sheet can show what it would become. */
   readonly draft: RhythmReading | null;
   /** Grids this meter can actually be written on. Never a list of its own. */
-  readonly grids: readonly Resolution[];
+  /** Offered grids only; a picker never lists a lattice (§5). */
+  readonly grids: readonly OfferedResolution[];
   readonly error: string | null;
   readonly notice: string | null;
   open(target: TimingTarget): void;
   close(): void;
   chooseMeter(meter: TimeSignature): void;
-  chooseResolution(resolution: Resolution): void;
+  chooseResolution(resolution: OfferedResolution): void;
   /** Commit. One write, one history step, or a refusal that changes nothing. */
   apply(): boolean;
 };
@@ -88,7 +92,7 @@ function currentOf(
 export function useTimingChange(store: Store, song: Song): TimingChangeHandle {
   const [target, setTarget] = useState<TimingTarget | null>(null);
   const [draftMeter, setDraftMeter] = useState<TimeSignature | null>(null);
-  const [draftResolution, setDraftResolution] = useState<Resolution | null>(null);
+  const [draftResolution, setDraftResolution] = useState<OfferedResolution | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -105,8 +109,13 @@ export function useTimingChange(store: Store, song: Song): TimingChangeHandle {
    * switching from 4/4 to 6/8 while 1/4 is selected falls back to the first
    * grid the new meter allows rather than to a pair that cannot exist.
    */
-  const wanted = draftResolution ?? current?.resolution ?? grids[0];
-  const resolution = (wanted !== undefined && grids.includes(wanted) ? wanted : grids[0]) as Resolution;
+  /* A bar on a lattice has no offered grid of its own; the sheet edits the
+     grid the reader is reading (§5). */
+  const wanted: OfferedResolution | undefined =
+    draftResolution ??
+    (current ? readingResolution({ resolution: current.resolution }) : grids[0]);
+  const resolution =
+    wanted !== undefined && grids.includes(wanted) ? wanted : grids[0]!;
 
   const open = useCallback((next: TimingTarget) => {
     setTarget(next);

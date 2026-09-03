@@ -1,6 +1,6 @@
 {
-  "sha": "5181ac69838da3e18d977d9e2acfe578cfe52693",
-  "generatedAt": "2026-09-03T17:19:23.553Z",
+  "sha": "0c7fa377f61c4ee550dac45d95f05395530a8b3a",
+  "generatedAt": "2026-09-03T19:42:15.768Z",
   "steps": [
     {
       "name": "editor opens with the grid on the screen",
@@ -39,22 +39,22 @@
     {
       "name": "every count is offered and answered",
       "pass": true,
-      "detail": "3:reddedildi 4:yazılabilir 2:yazılabilir"
+      "detail": "3:yazılabilir 4:yazılabilir 2:yazılabilir"
     },
     {
       "name": "a refusal is a sentence on the screen, never a silent grey button",
       "pass": true,
-      "detail": "3: Bu hız, bu ölçüdeki mevcut notalarla birlikte yazılamıyor."
+      "detail": "nothing was refused"
     },
     {
       "name": "at least one count this bar can hold",
       "pass": true,
-      "detail": "4 nota"
+      "detail": "3 nota"
     },
     {
       "name": "Dinle draws the proposal as ghosts",
       "pass": true,
-      "detail": "4 ghost slots"
+      "detail": "6 ghost slots"
     },
     {
       "name": "and the grid and the options are both on the screen",
@@ -73,7 +73,7 @@
     {
       "name": "the run is on the staff",
       "pass": true,
-      "detail": "9,10,9,7,2,4,5"
+      "detail": "9,10,9,2,4,5"
     },
     {
       "name": "the measure still has the same bars and width",

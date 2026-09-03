@@ -221,16 +221,40 @@ describe("whether the bar can hold it (§17)", () => {
     ).toBe("available");
   });
 
-  it("refuses when no grid holds both the run and what is already there", () => {
-    /* Existing music on a straight 1/16 grid, a run that needs a triplet one:
-       nothing in the format can write both, and saying so is the only honest
-       answer — quantising either would be silently rewriting music. */
+  it("offers the lattice when straight and triplet have to share a measure", () => {
+    /*
+     * This is the case that used to be refused, and refusing it was the
+     * defect (2V-B.4 Completion §4). Existing music on a straight 1/16 grid,
+     * a run that needs a triplet one: no *offered* grid holds both, so the
+     * answer used to be "unavailable" and the founder's own riff could not be
+     * written. 48 holds both exactly — sixteenths every three slots, triplets
+     * every two — and nothing is quantised to get there.
+     */
     const answer = rhythmAvailability({
       resolution: 16,
       startTicks: 0,
       stepTicks: 64,
       stepCount: 3,
       existingTicks: [48, 240],
+    });
+    expect(answer.state).toBe("requires_local_override");
+    expect(answer.neededResolution).toBe(48);
+    expect(answer.action).toBeTruthy();
+  });
+
+  it("still refuses when even the lattice cannot hold both", () => {
+    /*
+     * The negative control, so the line above is a capability and not a
+     * removed check. Straight 1/32 has an onset every 24 ticks; a triplet run
+     * every 32. Their common lattice is a slot of 8 ticks — 96 divisions of a
+     * bar — which the format deliberately does not have. It says so.
+     */
+    const answer = rhythmAvailability({
+      resolution: 32,
+      startTicks: 0,
+      stepTicks: 32,
+      stepCount: 3,
+      existingTicks: [24, 120],
     });
     expect(answer.state).toBe("unavailable");
     expect(answer.neededResolution).toBeNull();

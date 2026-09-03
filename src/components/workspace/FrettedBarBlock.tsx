@@ -26,6 +26,7 @@ import {
 } from "@/lib/tab/technique-geometry";
 import type { GlyphState } from "@/lib/tab/glyph-model";
 import { glyphStateFor, legatoNotes } from "@/lib/tab/glyph-state";
+import { measureLabel } from "@/lib/chords/chord-naming";
 import { measureGestureWanted } from "@/lib/song/measure-gesture";
 import type { PenGhost } from "@/lib/tab/pen-ghost";
 import {
@@ -190,7 +191,22 @@ export function FrettedBarBlock({
    */
   barDrag?: BoundBarDrag;
 }) {
-  const width = barWidth(bar.slotCount);
+  /*
+   * One stored column's width (2V-B.4 Completion §7).
+   *
+   * `SLOT_WIDTH` in every ordinary bar. In one raised to a lattice so a
+   * triplet could sit beside its sixteenths, the columns are narrower and
+   * there are proportionally more of them — so the *measure* is exactly as
+   * wide as it was, and the reader's cells are exactly where they were.
+   */
+  const column = SLOT_WIDTH / bar.slotsPerCell;
+  const width = barWidth(bar.slotCount, column);
+  /*
+   * How many cells the reader taps: the bar's *reading* steps, not its stored
+   * columns. They are the same number in every ordinary bar and differ only
+   * where a local write raised this one to a lattice (2V-B.4 Completion §7).
+   */
+  const cellCount = Math.max(1, Math.round(bar.slotCount / bar.slotsPerCell));
   /*
    * One reading of the bar's rhythm, shared by the strip and the tail. The
    * strip's beat ticks come from these states; the tail reads the same bar's
@@ -252,7 +268,7 @@ export function FrettedBarBlock({
    * only says which staff it is drawing over.
    */
   const techniques = buildTechniquePrimitives(bar, {
-    slotWidth: SLOT_WIDTH,
+    slotWidth: column,
     stringRowHeight: rowHeight,
     stringCount,
     rowTop: (stringIndex) =>
@@ -429,13 +445,13 @@ export function FrettedBarBlock({
                         rowHeight,
                       ) +
                       rowHeight / 2,
-                    left: span.openStart ? 0 : slotCentre(span.startSlot) + 7,
+                    left: span.openStart ? 0 : slotCentre(span.startSlot, column) + 7,
                     width: Math.max(
                       0,
                       (span.openEnd
                         ? width
-                        : slotCentre(span.endSlot) + SLOT_WIDTH / 3) -
-                        (span.openStart ? 0 : slotCentre(span.startSlot) + 7),
+                        : slotCentre(span.endSlot, column) + column / 3) -
+                        (span.openStart ? 0 : slotCentre(span.startSlot, column) + 7),
                     ),
                   }}
                 />
@@ -471,9 +487,9 @@ export function FrettedBarBlock({
                     key={note.stringIndex}
                     className="absolute flex items-center justify-center"
                     style={{
-                      left: ghost.slotIndex * SLOT_WIDTH,
+                      left: ghost.slotIndex * column,
                       top: rowOffset(stringCount, note.stringIndex, rowHeight),
-                      width: SLOT_WIDTH,
+                      width: column,
                       height: rowHeight,
                     }}
                   >
@@ -500,7 +516,7 @@ export function FrettedBarBlock({
                   aria-label={mark.label}
                   className="text-bronze pointer-events-none absolute flex items-center justify-center font-mono text-[10px] leading-none"
                   style={{
-                    left: slotCentre(mark.slotIndex) - SLOT_WIDTH / 2 - 6,
+                    left: slotCentre(mark.slotIndex, column) - column / 2 - 6,
                     top: Math.min(top, bottom) - 4,
                     height: Math.abs(bottom - top) + 8,
                   }}
@@ -517,13 +533,16 @@ export function FrettedBarBlock({
                   key={`fret-${index}`}
                   className="absolute flex items-center justify-center"
                   style={{
-                    left: span.startSlot * SLOT_WIDTH,
+                    left: span.startSlot * column,
                     top: rowOffset(
                       stringCount,
                       span.stringIndex,
                       rowHeight,
                     ),
-                    width: SLOT_WIDTH,
+                    /* A digit sits over its own column, and a lattice column
+                       is narrower than a reading cell — so three fast notes
+                       do not overlap each other (§7). */
+                    width: column,
                     height: rowHeight,
                   }}
                   title={span.pitch}
@@ -556,16 +575,24 @@ export function FrettedBarBlock({
         {/* Edit mode: one hit target per string and slot. The grid sits above
             the staff so a tap lands on a cell rather than on the bar. */}
         {editing
-          ? Array.from({ length: bar.slotCount }, (_, slotIndex) =>
+          ? Array.from({ length: cellCount }, (_, cellIndex) =>
               Array.from({ length: stringCount }, (__, stringIndex) => {
+                const slotIndex = cellIndex * bar.slotsPerCell;
                 const isSelected =
                   selectedCell?.slotIndex === slotIndex &&
                   selectedCell.stringIndex === stringIndex;
                 const inGroup = onsets?.selectedSlots.has(slotIndex) ?? false;
                 const isOnset = onsets?.onsetSlots.has(slotIndex) ?? false;
                 const groupActive = onsets?.active ?? false;
+                /*
+                 * What a screen reader says here (§18: no jargon anywhere a
+                 * reader meets, and an accessible name is somewhere they
+                 * meet). It used to read "Bar 1, slot 1, tel 1" — the very
+                 * vocabulary the visible surface stopped using — which the
+                 * text scan never caught because it reads innerText.
+                 */
                 const label = [
-                  `Bar ${bar.barNumber}, slot ${slotIndex + 1}, tel ${stringIndex + 1}`,
+                  `${measureLabel(bar.barNumber)}, ${cellIndex + 1}. adım, ${stringIndex + 1}. tel`,
                   isOnset ? "akor başlangıcı" : null,
                   inGroup ? "seçili" : null,
                 ]
@@ -573,7 +600,7 @@ export function FrettedBarBlock({
                   .join(", ");
                 return (
                   <button
-                    key={`cell-${slotIndex}-${stringIndex}`}
+                    key={`cell-${cellIndex}-${stringIndex}`}
                     type="button"
                     data-cell={`${slotIndex}:${stringIndex}`}
                     data-onset={isOnset ? "" : undefined}
@@ -619,8 +646,11 @@ export function FrettedBarBlock({
                           : "hover:bg-steel/10"
                     }`}
                     style={{
-                      left: slotIndex * SLOT_WIDTH,
+                      left: slotIndex * column,
                       top: rowOffset(stringCount, stringIndex, rowHeight),
+                      /* One cell is one *reading* step, whatever the columns
+                         under it: a reader who wrote sixteenths goes on
+                         tapping sixteenths (§7). */
                       width: SLOT_WIDTH,
                       height: rowHeight,
                     }}
@@ -638,9 +668,9 @@ export function FrettedBarBlock({
             data-duration-preview
             className="bg-accent/20 border-accent/50 pointer-events-none absolute rounded-sm border border-dashed"
             style={{
-              left: heldNote.startSlot * SLOT_WIDTH,
+              left: heldNote.startSlot * column,
               top: rowOffset(stringCount, heldNote.stringIndex, rowHeight),
-              width: (heldEndSlot - heldNote.startSlot + 1) * SLOT_WIDTH,
+              width: (heldEndSlot - heldNote.startSlot + 1) * column,
               height: rowHeight,
             }}
           />
@@ -648,10 +678,10 @@ export function FrettedBarBlock({
       </div>
 
       <div style={{ height: RHYTHM_ROW_HEIGHT }} className="relative">
-        <RhythmStrip states={states} slotsPerBeat={beat} />
+        <RhythmStrip states={states} slotsPerBeat={beat} column={column} />
         {/* Below the ticks, so the tail sits under the rhythm it describes. */}
         <div className="absolute inset-x-0" style={{ top: RHYTHM_STRIP_HEIGHT }}>
-          <RhythmTailLayer tail={tail} />
+          <RhythmTailLayer tail={tail} column={column} />
         </div>
       </div>
     </Frame>

@@ -45,7 +45,7 @@ import {
 } from "@/lib/music/note-sequence";
 import {
   LOCAL_OVERRIDE_ACTION,
-  LOCAL_OVERRIDE_DETAIL,
+  localOverrideDetail,
   rhythmAvailability,
 } from "@/lib/music/rhythm-availability";
 import { applySequenceWrite } from "@/lib/song/sequence-write";
@@ -302,7 +302,7 @@ export function FastSequencePanel({
 
       {needsOverride ? (
         <div className="flex flex-col gap-1" data-availability="requires_local_override">
-          <ShelfNote testId="override-detail">{LOCAL_OVERRIDE_DETAIL}</ShelfNote>
+          <ShelfNote testId="override-detail">{localOverrideDetail(count)}</ShelfNote>
         </div>
       ) : null}
 

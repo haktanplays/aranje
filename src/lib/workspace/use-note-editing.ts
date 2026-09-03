@@ -30,7 +30,7 @@ import {
   type ArpeggioStep,
   type TransformFailure,
 } from "@/lib/song/chord-shape";
-import { slotCount } from "@/lib/music/timing";
+import { readingResolution, slotCount } from "@/lib/music/timing";
 import { applyEdit, type EditCommand } from "@/lib/song/edit";
 import {
   guessHarmony,
@@ -618,7 +618,8 @@ export function useNoteEditing(options: {
     return [
       meterLine(bar.timeSignature),
       tempoLine(song.bpm),
-      gridLine(bar.timeSignature, bar.resolution),
+      /* What the reader is reading, not the lattice under it (§5). */
+      gridLine(bar.timeSignature, readingResolution(bar)),
     ];
   }, [rhythmTarget, song]);
 

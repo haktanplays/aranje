@@ -6,7 +6,7 @@ import {
   meterLine,
   tempoLine,
 } from "@/lib/music/counting-language";
-import type { Resolution } from "@/lib/song/schema";
+import type { OfferedResolution } from "@/lib/music/timing";
 
 describe("three questions, three sentences", () => {
   it("names the bar's shape", () => {
@@ -53,7 +53,7 @@ describe("three questions, three sentences", () => {
   });
 
   it("keeps the technical name available without leading with it", () => {
-    for (const resolution of [4, 8, 12, 16, 24, 32] as Resolution[]) {
+    for (const resolution of [4, 8, 12, 16, 24, 32] as OfferedResolution[]) {
       const line = gridLine([4, 4], resolution);
       expect(line.technical.startsWith("1/")).toBe(true);
       expect(line.text.includes(line.technical)).toBe(false);

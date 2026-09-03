@@ -31,7 +31,13 @@
  */
 import { rhythmAvailability } from "@/lib/music/rhythm-availability";
 import type { SequencePlan } from "@/lib/music/note-sequence";
-import { slotCount, ticksPerSlot, type Resolution } from "@/lib/music/timing";
+import {
+  isLatticeResolution,
+  readingResolution,
+  slotCount,
+  ticksPerSlot,
+  type Resolution,
+} from "@/lib/music/timing";
 import { regridDrums, regridMelodic } from "@/lib/song/bar-regrid";
 import { pitchAt, settle, type EditResult } from "@/lib/song/edit";
 import { findSection } from "@/lib/song/onset-block";
@@ -177,6 +183,19 @@ export function applySequenceWrite(
 
   const resolution = availability.neededResolution ?? bar.resolution;
   const usedLocalOverride = resolution !== bar.resolution;
+  /*
+   * What the reader goes on reading (2V-B.4 Completion §5, §7).
+   *
+   * Raising a bar to a lattice must not read as "your measure changed grid":
+   * the straight sixteenths are still sixteenths and the reader is still
+   * writing them. The grid they read and snap to is recorded here — the one
+   * this bar had — so every label, chip and beat tick keeps saying it while
+   * the data underneath holds both rhythms exactly.
+   */
+  const notation =
+    isLatticeResolution(resolution) && !isLatticeResolution(bar.resolution)
+      ? readingResolution(bar)
+      : bar.notation;
   const targetSlots = slotCount(bar.timeSignature, resolution);
   const step = ticksPerSlot(resolution);
 
@@ -260,6 +279,7 @@ export function applySequenceWrite(
       ? {
           ...entry,
           resolution,
+          ...(notation === undefined ? {} : { notation }),
           slots: {
             ...(usedLocalOverride
               ? (regridded as Record<string, MelodicSlot[]>)

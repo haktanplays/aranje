@@ -168,16 +168,30 @@ describe("song schema (spec 5)", () => {
     }
   });
 
-  it("takes the six grids the contract names and nothing else (K-34, 2N-A)", () => {
+  it("takes the six named grids and the one lattice, and nothing else", () => {
     for (const resolution of [8, 12, 16, 24, 32]) {
       expect(
         barSchema.safeParse({ timeSignature: [4, 4], resolution, slots: {} })
           .success,
       ).toBe(true);
     }
+    /*
+     * 48 joined at 2V-B.4 Completion §5 and is a different kind of member: it
+     * is a **lattice**, not a grid anyone is offered. It exists so straight
+     * sixteenths (every 48 ticks) and their triplets (every 32) can be written
+     * exactly in one measure, which under six grids they could not be. It is
+     * never in a picker and never in the Copilot's vocabulary — the format
+     * accepts it, the vocabulary does not.
+     */
+    expect(
+      barSchema.safeParse({ timeSignature: [4, 4], resolution: 48, slots: {} })
+        .success,
+    ).toBe(true);
+    expect(RESOLUTIONS as readonly number[]).not.toContain(48);
+
     // 64 is the one people will ask for; it is deliberately not here. 4 is,
     // since 2N-A — a quarter grid, which is why it left this list.
-    for (const rejected of [1, 6, 10, 20, 48, 64, 128, 16.5, -16]) {
+    for (const rejected of [1, 6, 10, 20, 64, 96, 128, 16.5, -16]) {
       expect(
         barSchema.safeParse({
           timeSignature: [4, 4],
@@ -186,6 +200,25 @@ describe("song schema (spec 5)", () => {
         }).success,
       ).toBe(false);
     }
+  });
+
+  it("lets a bar say which grid its reader is reading, and only an offered one", () => {
+    const onLattice = (notation: unknown) =>
+      barSchema.safeParse({
+        timeSignature: [4, 4],
+        resolution: 48,
+        notation,
+        slots: {},
+      }).success;
+    expect(onLattice(16)).toBe(true);
+    expect(onLattice(8)).toBe(true);
+    /* A bar cannot claim to be read on a grid nobody counts. */
+    expect(onLattice(48)).toBe(false);
+    expect(onLattice(64)).toBe(false);
+    /* And absence is the ordinary case: every song written before now. */
+    expect(
+      barSchema.safeParse({ timeSignature: [4, 4], resolution: 16, slots: {} }).success,
+    ).toBe(true);
   });
 
   it("refuses a meter that cannot be written on the grid it declares", () => {
