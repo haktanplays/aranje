@@ -92,7 +92,7 @@ const main = async () => {
   check("it offers four clips", header.clips.length === 4, header.clips.join(","));
   check(
     "every clip is one of this round's questions",
-    header.clips.join(",") === "L17,L18,L19,L20",
+    header.clips.join(",") === "L21,L22,L23,L24",
     header.clips.join(","),
   );
   check("it credits the sample source", header.attribution.includes("http"), header.attribution);

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Fourteen corruptions of this batch's fixes, each required to go red
-# (2V-C.2 §18).
+# Corruptions of the slide family's fixes, each required to go red
+# (2V-C.2 §18, 2V-C.3 §17).
 #
 # Every fix here answers a measured defect, and a test that catches a defect
 # today says nothing about whether it will catch it tomorrow. So each probe
@@ -82,7 +82,7 @@ probe() {
 }
 
 
-SHAPE=src/lib/audio/gesture-shape.ts
+SHAPE_GAIN=src/lib/audio/gesture-shape.ts
 PRESETS=src/lib/audio/expression.ts
 GESTURE=src/lib/audio/pitch-gesture.ts
 SHIFT=src/lib/audio/shift-slide.ts
@@ -122,12 +122,12 @@ probe "3 · there is no rest at the written pitch" "$PRESETS" \
   '      restMaxSeconds: 0,' \
   "$FIDELITY"
 
-probe "4 · the descent may start before the target is reached" "$SHAPE" \
+probe "4 · the descent may start before the target is reached" "$SHAPE_GAIN" \
   '  const releaseStartsAt = reachedAt + hold;' \
   '  const releaseStartsAt = Math.max(0, reachedAt - hold);' \
   "$FIDELITY"
 
-probe "5 · a short note writes automation past its own end" "$SHAPE" \
+probe "5 · a short note writes automation past its own end" "$SHAPE_GAIN" \
   '  const needed = settle + rise + release + rest;
   if (needed > durationSeconds && needed > 0) {' \
   '  const needed = settle + rise + release + rest;
@@ -234,6 +234,139 @@ probe "22 · a comment without a verdict is read as one" "$RESULT" \
   '        : UNMEASURED_WITH_NOTE;' \
   '        : "Olmuş";' \
   "$PACK"
+
+
+echo "── the invented shift mark comes back (2V-C.3 §5) ──"
+LANG_SRC=src/lib/music/gesture-language.ts
+GEOM=src/lib/tab/technique-geometry.ts
+NOTATION=src/lib/tab/slide-notation.test.ts
+SHAPE=src/lib/song/shape-slide.ts
+SHAPEWRITE=src/lib/song/shape-slide-write.ts
+SHAPETEST=src/lib/song/shape-slide.test.ts
+SHAPEINV=src/lib/song/shape-invariants.test.ts
+SLIDEFID=src/lib/audio/slide-fidelity.test.ts
+HANDOFF=src/lib/audio/shift-slide.ts
+
+probe "23 · a letter of our own is written beside the slash" "$LANG_SRC" \
+  '      return { mark: lean, spoken: "önceki notadan kaydır ve yeniden vur" };' \
+  '      return { mark: `s${lean}`, spoken: "önceki notadan kaydır ve yeniden vur" };' \
+  "$NOTATION"
+
+probe "24 · the two slides stop being told apart at all" "$LANG_SRC" \
+  '      return { mark: lean, spoken: "önceki notadan bağlı kaydır", slur: true };
+    default:' \
+  '      return { mark: lean, spoken: "önceki notadan bağlı kaydır" };
+    default:' \
+  "$NOTATION"
+
+probe "25 · the explicit connections stop drawing a connector" "$GEOM" \
+  '  if (joined.mark !== "/" && joined.mark !== "\\") return null;' \
+  '  if (span.articulation !== "slide") return null;' \
+  "$NOTATION"
+
+probe "26 · a shift slide is drawn with a slur" "$GEOM" \
+  '  return { slur: joined.slur === true };' \
+  '  return { slur: true };' \
+  "$NOTATION"
+
+echo "── the shape stops being a shape (2V-C.3 §9, §10) ──"
+probe "27 · one string sliding counts as a shape" "$SHAPE" \
+  '  if (moving.length < MIN_SHAPE_STRINGS) return refuse("not_a_shape");' \
+  '  if (moving.length < 1) return refuse("not_a_shape");' \
+  "$SHAPETEST"
+
+probe "28 · the strings may travel different distances" "$SHAPE" \
+  '    else if (step !== interval) return refuse("shape_not_preserved");' \
+  '    else if (false) return refuse("shape_not_preserved");' \
+  "$SHAPETEST"
+
+probe "29 · an open string is carried along" "$SHAPE" \
+  '    if (fromFret === 0 || toFret === 0) return refuse("open_string_moving");' \
+  '    if (false) return refuse("open_string_moving");' \
+  "$SHAPETEST"
+
+probe "30 · the two sides may be different strings" "$SHAPE" \
+  '  if (sourceVoices.size !== moving.length) return refuse("string_set_differs");' \
+  '  if (false) return refuse("string_set_differs");' \
+  "$SHAPETEST"
+
+probe "31 · half the shape may be legato and half struck" "$SHAPE" \
+  '  if (kinds.size !== 1) return refuse("mixed_connection_kinds");' \
+  '  if (false) return refuse("mixed_connection_kinds");' \
+  "$SHAPETEST"
+
+probe "32 · the write commits before it validates the shape" "$SHAPEWRITE" \
+  '    const derived = shapeSlideAt(candidate, command);
+    if (!derived.ok) return refuse(derived.reason);' \
+  '    const derived = shapeSlideAt(candidate, command);
+    if (false && !derived.ok) return refuse(derived.reason);' \
+  "$SHAPETEST"
+
+# A capo and an alternate tuning cannot separate these two readings: on one
+# string a fret delta *is* the semitone delta, and both notes shift equally.
+# What separates them is a Song whose written pitch and written fret disagree,
+# which is what the fixture behind this probe builds.
+probe "33 · the direction is read from the fret instead of the ear" "$SHAPE" \
+  '    const step = toMidi - fromMidi;' \
+  '    const step = toFret - fromFret;' \
+  "$SHAPEINV"
+
+echo "── the handoff goes back to a cut (2V-C.3 §3, §4) ──"
+probe "34 · the source stops at full level again" "$HANDOFF" \
+  '      gainEnvelope: handoffGain(source.gain, round(handover), leaves),' \
+  '      gainEnvelope: [],' \
+  "$SLIDEFID"
+
+probe "35 · the source is faded to nothing instead of handed over" "$PRESETS" \
+  '    handoverGainFraction: 0.45,' \
+  '    handoverGainFraction: 0.02,' \
+  "$SLIDEFID"
+
+probe "36 · the fade starts before the hand moves" "$SHAPE_GAIN" \
+  '  const startsAt = clamp(travelStartsAt, 0, durationSeconds);
+  const arrives = round(gain * expressionPresets.slide.handoverGainFraction);' \
+  '  const startsAt = 0;
+  const arrives = round(gain * expressionPresets.slide.handoverGainFraction);' \
+  "$SLIDEFID"
+
+echo "── the three distances stop being one movement (2V-C.3 §7) ──"
+probe "37 · the open slide borrows the note-to-note floor again" "$GESTURE" \
+  '  const wanted = Math.max(
+    preset.openMinSeconds,
+    (semitones * preset.openMsPerSemitone) / 1000,
+  );' \
+  '  const wanted = Math.max(preset.openMinSeconds, preset.minGlideSeconds);' \
+  "$SLIDEFID"
+
+probe "38 · a longer distance is taken at a faster speed" "$PRESETS" \
+  '    openMsPerSemitone: 70,' \
+  '    openMsPerSemitone: 20,' \
+  "$SLIDEFID"
+
+echo "── the founder's record is rewritten (2V-C.3 §1) ──"
+probe "39 · L19 is promoted to a pass" "$AUTHORITY" \
+  '    id: "L19",
+    title: "Bağlı / vurarak kaydırma",
+    verdict: "conditional_pass",' \
+  '    id: "L19",
+    title: "Bağlı / vurarak kaydırma",
+    verdict: "pass",' \
+  "$FOUNDER"
+
+probe "40 · L20 is given a sentence nobody said" "$AUTHORITY" \
+  '    verdict: "conditional_pass",
+  },
+];' \
+  '    verdict: "conditional_pass",
+    note: "Çıkış biraz kısa.",
+  },
+];' \
+  "$FOUNDER"
+
+probe "41 · the round re-asks the cards that are already answered" "$SCOPE" \
+  'export const ACTIVE_CLIP_IDS = ["L21", "L22", "L23", "L24"] as const;' \
+  'export const ACTIVE_CLIP_IDS = ["L17", "L18", "L19", "L20"] as const;' \
+  "$FOUNDER"
 
 printf '{\n  "generatedAt": "%s",\n  "sha": "%s",\n  "passed": %d,\n  "failed": %d,\n  "probes": [\n    %s\n  ]\n}\n' \
   "$(date -u +%FT%TZ)" "$(git rev-parse HEAD)" "$PASSED" "$FAILED" \

@@ -55,6 +55,13 @@ import {
 } from "@/lib/music/slide-distance";
 import { applyGestureWrite } from "@/lib/song/gesture-write";
 import { inspectGesture } from "@/lib/song/gesture-inspect";
+import { applyShapeSlide } from "@/lib/song/shape-slide-write";
+import { shapeCandidateStrings, shapeSlideAt, shapeSummary } from "@/lib/song/shape-slide";
+import {
+  ShapeSlideRow,
+  SHAPE_KINDS,
+  type ShapeKindId,
+} from "@/components/workspace/shelf/ShapeSlideRow";
 import type { EditTarget } from "@/lib/workspace/edit-target";
 import type { EditDraft } from "@/lib/workspace/edit-draft";
 import type { NoteConnection, PitchGesture, Song } from "@/lib/song/schema";
@@ -149,6 +156,7 @@ export function PlayingPanel({
   const [detail, setDetail] = useState(false);
   /** Which axis the reader has asked to take off, if any. */
   const [remove, setRemove] = useState<"pitch" | "connection" | null>(null);
+  const [shape, setShape] = useState<ShapeKindId | null>(null);
 
   const base = {
     sectionId: target.sectionId,
@@ -196,6 +204,44 @@ export function PlayingPanel({
     [song, target.sectionTicks, target.trackId, target.sectionId, noteIndex, slide],
   );
 
+  /*
+   * How many strings could move together from here (2V-C.3 §12).
+   *
+   * The flow decides from the selection rather than from a mode the reader
+   * has to find: one voice is the single-note slide it has always been, two
+   * or more is a shape. Nothing new is opened and nothing is asked twice.
+   */
+  const shapeWhere = {
+    sectionId: target.sectionId,
+    trackId: target.trackId,
+    targetTicks: target.sectionTicks,
+  };
+  const shapeStrings = useMemo(
+    () => shapeCandidateStrings(song, shapeWhere),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [song, target.sectionId, target.trackId, target.sectionTicks],
+  );
+  const isShape = shapeStrings >= 2;
+
+  const shapeOffers = useMemo(
+    () =>
+      SHAPE_KINDS.map((entry) => {
+        const result = applyShapeSlide(song, {
+          ...shapeWhere,
+          connection: {
+            kind: entry.id === "legato" ? ("legato_slide" as const) : ("shift_slide" as const),
+          },
+        });
+        return {
+          id: entry.id,
+          ok: result.ok,
+          reason: result.ok ? undefined : result.message,
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [song, target.sectionId, target.trackId, target.sectionTicks],
+  );
+
   /* What the note already says, so the reader can change or remove it (§13). */
   const written = useMemo(
     () =>
@@ -229,6 +275,22 @@ export function PlayingPanel({
         ? slideCommand(slide, distance)
         : null;
 
+  /*
+   * A shape is written by its own command, all strings or none (§14).
+   *
+   * Looping the single-note command over each string would be N writes
+   * wearing one button, and the third of them failing would leave two behind.
+   */
+  const shapeResult =
+    isShape && shape !== null
+      ? applyShapeSlide(song, {
+          ...shapeWhere,
+          connection: {
+            kind: shape === "legato" ? ("legato_slide" as const) : ("shift_slide" as const),
+          },
+        })
+      : null;
+
   const chosen:
     | { pitchGesture?: PitchGesture | null; connection?: NoteConnection | null }
     | null =
@@ -251,6 +313,28 @@ export function PlayingPanel({
           : null;
 
   const stage = (): EditDraft | null => {
+    /*
+     * A shape stages the whole gesture: its ghost spans from the source onset
+     * to the target's, so the preview shows the hand moving rather than one
+     * note changing. Both onsets are marked, because both are real notes.
+     */
+    if (shapeResult !== null) {
+      if (!shapeResult.ok) return null;
+      const found = shapeSlideAt(shapeResult.song, shapeWhere);
+      if (!found.ok) return null;
+      return {
+        song: shapeResult.song,
+        ghost: {
+          sectionId: target.sectionId,
+          trackId: target.trackId,
+          fromTicks: found.plan.sourceTicks,
+          toTicks: target.sectionTicks + Math.max(target.currentTicks, target.slotTicks),
+          onsetTicks: [found.plan.sourceTicks, target.sectionTicks],
+        },
+        summary: `${shapeSummary(found.plan)} · ${measureLabel(target.barNumber)}`,
+        label: "Şekli kaydır",
+      };
+    }
     if (!result || !result.ok || !sentence) return null;
     return {
       song: result.song,
@@ -276,15 +360,20 @@ export function PlayingPanel({
   const refusal =
     fret === null
       ? "Önce bir nota yaz."
-      : chosen === null
-        ? "Bend mi, kaydırma mı?"
-        : result && !result.ok
-          ? result.message
-          : null;
+      : shapeResult !== null
+        ? shapeResult.ok
+          ? null
+          : shapeResult.message
+        : chosen === null
+          ? "Bend mi, kaydırma mı?"
+          : result && !result.ok
+            ? result.message
+            : null;
 
   /** Choosing one thing puts down the others: one axis at a time. */
   const pick = (next: () => void) => {
     setRemove(null);
+    setShape(null);
     next();
   };
 
@@ -362,7 +451,20 @@ export function PlayingPanel({
         </>
       ) : null}
 
-      {door === "slide" ? (
+      {door === "slide" && isShape ? (
+        <ShapeSlideRow
+          chosen={shape}
+          offers={shapeOffers}
+          summary={`${shapeStrings} tel birlikte kayacak`}
+          onChoose={(next) => {
+            setRemove(null);
+            setSlide(null);
+            setShape(next);
+          }}
+        />
+      ) : null}
+
+      {door === "slide" && !isShape ? (
         <ShelfRow label="Nasıl?" testId="slide">
           {slideOffers.map((entry) => (
             <ShelfChoice
@@ -380,7 +482,7 @@ export function PlayingPanel({
 
       {/* Only for the open slides (§12). A note-to-note slide gets its
           distance from the two notes that are already written. */}
-      {door === "slide" && slide !== null && isOpen(slide) ? (
+      {door === "slide" && !isShape && slide !== null && isOpen(slide) ? (
         <>
           <ShelfRow label="Ne kadar uzaktan?" testId="distance">
             {distanceOffers.map((entry) => (

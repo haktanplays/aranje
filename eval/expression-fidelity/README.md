@@ -10,7 +10,9 @@ so this directory is the showing.
 | `BEFORE.md` | What the shipped code did, in numbers. |
 | `AFTER.md` | What it does now, against those numbers. |
 | `panel-geometry.mjs` | The shelf's two new controls measured on the six viewports §17 names, in both states: choosing a distance, and coming back to remove what was written. |
-| `probes.sh` | Twenty-one corruptions of this batch's fixes, each required to go red. Several are the shipped code as it stood before — would the suite have caught what the founder heard? |
+| `handoff.ts` | Measures the moment the two voices of a struck slide meet: overlap, levels, arrival error, gap, attacks. Written for 2V-C.3 §3. |
+| `HANDOFF.md` | What that found for L19's "biraz kusurlu", and what changed. |
+| `probes.sh` | Forty corruptions of the slide family's fixes, each required to go red. Several are the shipped code as it stood before — would the suite have caught what the founder heard? |
 | `artifacts/` | What those runs produced. |
 
 ## Running them
@@ -33,3 +35,12 @@ fixture reaches it, so removing it changes nothing today. It is defence in
 depth against a note that is both a chain member and a shift-slide source,
 and calling an unreachable branch "covered" is the kind of claim the probes
 exist to prevent.
+
+One probe needed a fixture built for it rather than a claim adjusted around
+it. "The direction is read from the fret instead of the ear" came back green,
+and the reason is worth stating: **on a single string, a fret delta and a
+semitone delta are the same number**. A capo shifts both notes equally; an
+alternate tuning shifts both notes equally. So neither can separate the two
+readings, and the sounding-pitch read is not defending against them. What it
+defends against is a Song whose written pitch and written fret disagree —
+which the suite had no fixture for, and now does.

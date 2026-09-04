@@ -1,70 +1,14 @@
 {
-  "generatedAt": "2026-09-04T06:53:38.650Z",
-  "sha": "cf0c12c",
+  "generatedAt": "2026-09-04T08:44:17.422Z",
+  "sha": "8ad37a9",
   "fingerprint": "Editör kabul parçası · s3777h1h8tp95",
   "passed": 41,
   "failed": 0,
   "takes": [
     {
-      "takeId": "L17a",
+      "takeId": "L21a",
       "state": "playing",
-      "renderMs": 403,
-      "audit": {
-        "frames": 198450,
-        "seconds": 4.5,
-        "peak": 0.12681210041046143,
-        "rms": 0.016949286079031768,
-        "clipped": 0,
-        "invalid": 0,
-        "silent": false
-      }
-    },
-    {
-      "takeId": "L17b",
-      "state": "playing",
-      "renderMs": 191,
-      "audit": {
-        "frames": 198450,
-        "seconds": 4.5,
-        "peak": 0.12681210041046143,
-        "rms": 0.016976515265468204,
-        "clipped": 0,
-        "invalid": 0,
-        "silent": false
-      }
-    },
-    {
-      "takeId": "L18a",
-      "state": "playing",
-      "renderMs": 176,
-      "audit": {
-        "frames": 198450,
-        "seconds": 4.5,
-        "peak": 0.12681210041046143,
-        "rms": 0.016949286079031768,
-        "clipped": 0,
-        "invalid": 0,
-        "silent": false
-      }
-    },
-    {
-      "takeId": "L18b",
-      "state": "playing",
-      "renderMs": 193,
-      "audit": {
-        "frames": 198450,
-        "seconds": 4.5,
-        "peak": 0.12660785019397736,
-        "rms": 0.0169456335090943,
-        "clipped": 0,
-        "invalid": 0,
-        "silent": false
-      }
-    },
-    {
-      "takeId": "L19a",
-      "state": "playing",
-      "renderMs": 181,
+      "renderMs": 344,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
@@ -76,42 +20,98 @@
       }
     },
     {
-      "takeId": "L19b",
+      "takeId": "L21b",
       "state": "playing",
-      "renderMs": 193,
+      "renderMs": 164,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
-        "peak": 0.13745978474617004,
-        "rms": 0.02355755247329932,
+        "peak": 0.137459859251976,
+        "rms": 0.0230273515737235,
         "clipped": 0,
         "invalid": 0,
         "silent": false
       }
     },
     {
-      "takeId": "L20a",
+      "takeId": "L22a",
       "state": "playing",
-      "renderMs": 210,
+      "renderMs": 174,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
-        "peak": 0.12730525434017181,
-        "rms": 0.01710178626361668,
+        "peak": 0.12875226140022278,
+        "rms": 0.01719350599252352,
         "clipped": 0,
         "invalid": 0,
         "silent": false
       }
     },
     {
-      "takeId": "L20b",
+      "takeId": "L22b",
       "state": "playing",
-      "renderMs": 197,
+      "renderMs": 161,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.1288262903690338,
+        "rms": 0.01705194109378371,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L23a",
+      "state": "playing",
+      "renderMs": 174,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.12875226140022278,
+        "rms": 0.01719350599252352,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L23b",
+      "state": "playing",
+      "renderMs": 160,
       "audit": {
         "frames": 198450,
         "seconds": 4.5,
         "peak": 0.12875233590602875,
-        "rms": 0.01647505415581375,
+        "rms": 0.016445247402287907,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L24a",
+      "state": "playing",
+      "renderMs": 161,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.20745617151260376,
+        "rms": 0.035421577778643895,
+        "clipped": 0,
+        "invalid": 0,
+        "silent": false
+      }
+    },
+    {
+      "takeId": "L24b",
+      "state": "playing",
+      "renderMs": 166,
+      "audit": {
+        "frames": 198450,
+        "seconds": 4.5,
+        "peak": 0.20745627582073212,
+        "rms": 0.031207822976646527,
         "clipped": 0,
         "invalid": 0,
         "silent": false
@@ -122,17 +122,17 @@
     {
       "name": "the page names the build it was opened for",
       "pass": true,
-      "detail": "cf0c12c"
+      "detail": "8ad37a9"
     },
     {
       "name": "it offers four clips",
       "pass": true,
-      "detail": "L17,L18,L19,L20"
+      "detail": "L21,L22,L23,L24"
     },
     {
       "name": "every clip is one of this round's questions",
       "pass": true,
-      "detail": "L17,L18,L19,L20"
+      "detail": "L21,L22,L23,L24"
     },
     {
       "name": "it credits the sample source",
@@ -142,7 +142,7 @@
     {
       "name": "nothing is answered before anyone answers",
       "pass": true,
-      "detail": "Build: cf0c12c\nBu tur: 4 kart\n\nL17 Bend geri dönüşü: ölçülmedi\nL18 Normal bend / önceden bükme: ölçülmedi\nL19 Bağlı / vurarak kaydırma: ölçülmedi\nL20 Kayarak girme / çıkma: ölçülmedi\n\nCevaplanmamış: 4"
+      "detail": "Build: 8ad37a9\nBu tur: 4 kart\n\nL21 Vurarak slide handoff: ölçülmedi\nL22 Kayarak giriş: ölçülmedi\nL23 Kayarak çıkış: ölçülmedi\nL24 İki telli şekil slide'ı: ölçülmedi\n\nCevaplanmamış: 4/4\n\nÖnceki turlar "
     },
     {
       "name": "no editor gesture is asked for anywhere on the page",
@@ -155,162 +155,162 @@
       "detail": ""
     },
     {
-      "name": "L17a rendered and is playable",
-      "pass": true,
-      "detail": "playing peak=0.127 rms=0.0169 s=4.50 clip=0"
-    },
-    {
-      "name": "L17a is not silent",
-      "pass": true,
-      "detail": "peak=0.1268"
-    },
-    {
-      "name": "L17a does not clip",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L17a has no invalid samples",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L17b rendered and is playable",
-      "pass": true,
-      "detail": "playing peak=0.127 rms=0.0170 s=4.50 clip=0"
-    },
-    {
-      "name": "L17b is not silent",
-      "pass": true,
-      "detail": "peak=0.1268"
-    },
-    {
-      "name": "L17b does not clip",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L17b has no invalid samples",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L18a rendered and is playable",
-      "pass": true,
-      "detail": "playing peak=0.127 rms=0.0169 s=4.50 clip=0"
-    },
-    {
-      "name": "L18a is not silent",
-      "pass": true,
-      "detail": "peak=0.1268"
-    },
-    {
-      "name": "L18a does not clip",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L18a has no invalid samples",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L18b rendered and is playable",
-      "pass": true,
-      "detail": "playing peak=0.127 rms=0.0169 s=4.50 clip=0"
-    },
-    {
-      "name": "L18b is not silent",
-      "pass": true,
-      "detail": "peak=0.1266"
-    },
-    {
-      "name": "L18b does not clip",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L18b has no invalid samples",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L19a rendered and is playable",
+      "name": "L21a rendered and is playable",
       "pass": true,
       "detail": "playing peak=0.137 rms=0.0274 s=4.50 clip=0"
     },
     {
-      "name": "L19a is not silent",
+      "name": "L21a is not silent",
       "pass": true,
       "detail": "peak=0.1375"
     },
     {
-      "name": "L19a does not clip",
+      "name": "L21a does not clip",
       "pass": true,
       "detail": "0"
     },
     {
-      "name": "L19a has no invalid samples",
+      "name": "L21a has no invalid samples",
       "pass": true,
       "detail": "0"
     },
     {
-      "name": "L19b rendered and is playable",
+      "name": "L21b rendered and is playable",
       "pass": true,
-      "detail": "playing peak=0.137 rms=0.0236 s=4.50 clip=0"
+      "detail": "playing peak=0.137 rms=0.0230 s=4.50 clip=0"
     },
     {
-      "name": "L19b is not silent",
+      "name": "L21b is not silent",
       "pass": true,
       "detail": "peak=0.1375"
     },
     {
-      "name": "L19b does not clip",
+      "name": "L21b does not clip",
       "pass": true,
       "detail": "0"
     },
     {
-      "name": "L19b has no invalid samples",
+      "name": "L21b has no invalid samples",
       "pass": true,
       "detail": "0"
     },
     {
-      "name": "L20a rendered and is playable",
+      "name": "L22a rendered and is playable",
       "pass": true,
-      "detail": "playing peak=0.127 rms=0.0171 s=4.50 clip=0"
+      "detail": "playing peak=0.129 rms=0.0172 s=4.50 clip=0"
     },
     {
-      "name": "L20a is not silent",
-      "pass": true,
-      "detail": "peak=0.1273"
-    },
-    {
-      "name": "L20a does not clip",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L20a has no invalid samples",
-      "pass": true,
-      "detail": "0"
-    },
-    {
-      "name": "L20b rendered and is playable",
-      "pass": true,
-      "detail": "playing peak=0.129 rms=0.0165 s=4.50 clip=0"
-    },
-    {
-      "name": "L20b is not silent",
+      "name": "L22a is not silent",
       "pass": true,
       "detail": "peak=0.1288"
     },
     {
-      "name": "L20b does not clip",
+      "name": "L22a does not clip",
       "pass": true,
       "detail": "0"
     },
     {
-      "name": "L20b has no invalid samples",
+      "name": "L22a has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L22b rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.129 rms=0.0171 s=4.50 clip=0"
+    },
+    {
+      "name": "L22b is not silent",
+      "pass": true,
+      "detail": "peak=0.1288"
+    },
+    {
+      "name": "L22b does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L22b has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L23a rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.129 rms=0.0172 s=4.50 clip=0"
+    },
+    {
+      "name": "L23a is not silent",
+      "pass": true,
+      "detail": "peak=0.1288"
+    },
+    {
+      "name": "L23a does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L23a has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L23b rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.129 rms=0.0164 s=4.50 clip=0"
+    },
+    {
+      "name": "L23b is not silent",
+      "pass": true,
+      "detail": "peak=0.1288"
+    },
+    {
+      "name": "L23b does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L23b has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L24a rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.207 rms=0.0354 s=4.50 clip=0"
+    },
+    {
+      "name": "L24a is not silent",
+      "pass": true,
+      "detail": "peak=0.2075"
+    },
+    {
+      "name": "L24a does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L24a has no invalid samples",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L24b rendered and is playable",
+      "pass": true,
+      "detail": "playing peak=0.207 rms=0.0312 s=4.50 clip=0"
+    },
+    {
+      "name": "L24b is not silent",
+      "pass": true,
+      "detail": "peak=0.2075"
+    },
+    {
+      "name": "L24b does not clip",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "L24b has no invalid samples",
       "pass": true,
       "detail": "0"
     },
