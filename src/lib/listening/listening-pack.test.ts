@@ -304,10 +304,9 @@ describe("what a rendered clip is measured for", () => {
 
 describe("the block the founder pastes back", () => {
   /*
-   * The pack it is handed now contains this round's four revision cards as
-   * well as the older ones. Only the four are being asked, so only the four
-   * are counted — the rest are printed as the record they already are
-   * (2V-C.2 §4).
+   * The pack it is handed contains this round's two cards as well as every
+   * older one. Only the two are being asked, so only the two are counted —
+   * the rest are printed as the record they already are (2V-C.2 §4).
    */
   const round = listeningClips(song, chord, sequence, gestureTakes(song));
   const base = {
@@ -320,8 +319,8 @@ describe("the block the founder pastes back", () => {
 
   it("counts this round's cards, not every card that ever existed", () => {
     const block = formatListeningResult({ ...base, answers: {} });
-    expect(block).toContain("Cevaplanmamış: 4/4");
-    expect(block).toContain("Bu tur: 4 kart");
+    expect(block).toContain("Cevaplanmamış: 2/2");
+    expect(block).toContain("Bu tur: 2 kart");
     /* The old summary counted the browser session's own answers against
        every card in the pack and reported the founder's decided results as
        unmeasured. Nothing here counts an archived card. */
@@ -332,11 +331,10 @@ describe("the block the founder pastes back", () => {
   it("never turns a blank or cleared answer into an approval", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L17: "", L18: null, L19: undefined },
+      answers: { L25: "", L26: null },
     });
-    expect(block).toContain("L21 Vurarak slide handoff: ölçülmedi");
-    expect(block).toContain("L22 Kayarak giriş: ölçülmedi");
-    expect(block).toContain("L23 Kayarak çıkış: ölçülmedi");
+    expect(block).toContain("L25 Tek telli vurarak slide: ölçülmedi");
+    expect(block).toContain("L26 İki telli şekil slide'ı: ölçülmedi");
   });
 
   it("says so when a comment was written but no verdict chosen", () => {
@@ -345,10 +343,10 @@ describe("the block the founder pastes back", () => {
     const block = formatListeningResult({
       ...base,
       answers: {},
-      notes: { L21: "biraz mekanik" },
+      notes: { L25: "biraz mekanik" },
     });
-    expect(block).toContain("L21 Vurarak slide handoff: ölçülmedi — yorum var — biraz mekanik");
-    expect(block).toContain("Cevaplanmamış: 4/4");
+    expect(block).toContain("L25 Tek telli vurarak slide: ölçülmedi — yorum var — biraz mekanik");
+    expect(block).toContain("Cevaplanmamış: 2/2");
     /* This round only. The archive below legitimately says "Olmuş" about
        cards the founder passed, and that is a record, not an answer. */
     expect(block.slice(0, block.indexOf("Önceki turlar"))).not.toContain("Olmuş");
@@ -357,12 +355,12 @@ describe("the block the founder pastes back", () => {
   it("carries the answers and per-clip notes it was given", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L21: "Olmuş", L22: "Kısmen" },
-      notes: { L22: "kulaklıkta daha net" },
+      answers: { L25: "Olmuş", L26: "Kısmen" },
+      notes: { L26: "kulaklıkta daha net" },
     });
-    expect(block).toContain("L21 Vurarak slide handoff: Olmuş");
-    expect(block).toContain("L22 Kayarak giriş: Kısmen — kulaklıkta daha net");
-    expect(block).toContain("Cevaplanmamış: 2/4");
+    expect(block).toContain("L25 Tek telli vurarak slide: Olmuş");
+    expect(block).toContain("L26 İki telli şekil slide'ı: Kısmen — kulaklıkta daha net");
+    expect(block).toContain("Cevaplanmamış: 0/2");
   });
 
   it("uses each card's own title, never its id twice", () => {
@@ -372,7 +370,7 @@ describe("the block the founder pastes back", () => {
     for (const clip of round) {
       expect(block).not.toContain(`${clip.id} ${clip.id}`);
     }
-    expect(block).toMatch(/L24 İki telli şekil slide.ı:/u);
+    expect(block).toMatch(/L26 İki telli şekil slide.ı:/u);
   });
 
   it("prints the recorded results without letting a session change them", () => {

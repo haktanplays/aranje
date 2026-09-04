@@ -37,13 +37,57 @@ const round = listeningClips(
   gestureTakes(fixture),
 );
 
-describe("101. the twenty recorded results, exactly as they were given", () => {
+describe("101. the twenty-four recorded results, exactly as they were given", () => {
   it("holds every card the founder has judged, in order", () => {
     expect(FOUNDER_AUTHORITY.map((card) => card.id)).toEqual([
       "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8",
       "L9", "L10", "L11", "L12", "L13", "L14", "L15", "L16",
-      "L17", "L18", "L19", "L20",
+      "L17", "L18", "L19", "L20", "L21", "L22", "L23", "L24",
     ]);
+  });
+
+  it("keeps L21 and L24 inconclusive rather than reading a verdict into them", () => {
+    /*
+     * Both came back "emin değilim" with a description of a defect. That is
+     * a lead and not a decision: read as a pass it closes a card the founder
+     * did not close, and read as a fail it records a judgement they did not
+     * make. 2V-C.4 exists because of the sentence, not because of a verdict.
+     */
+    for (const id of ["L21", "L24"]) {
+      expect(archivedCard(id)?.verdict).toBe("inconclusive");
+      expect(archivedCard(id)?.verdict).not.toBe("pass");
+      expect(archivedCard(id)?.verdict).not.toBe("needs_polish");
+    }
+    expect(archivedCard("L21")?.note).toBe(
+      "Vurarak da iki ses arasında minik bir boşluk var sanki o bozuyor.",
+    );
+    expect(archivedCard("L24")?.note).toBe("21'in aynısı.");
+  });
+
+  it("records the two slide cards the round did answer", () => {
+    expect(archivedCard("L22")?.verdict).toBe("pass");
+    expect(archivedCard("L22")?.note).toBeUndefined();
+    expect(archivedCard("L23")?.verdict).toBe("conditional_pass");
+    expect(archivedCard("L23")?.note).toBe(
+      "Kabul edebilirim, gelişmesi gerekebilir ileride ne kadar geliştirilebilirse ondan da emin değilim.",
+    );
+  });
+
+  it("never turns a card that was measured into one that was not", () => {
+    /*
+     * Two rows are recorded as unmeasured, and legitimately: L12 and L13
+     * were built and never listened to. Every other row carries a decision,
+     * and a later round must not quietly demote one of them to "ölçülmedi"
+     * — which is what happens when a card is rebuilt and its history is
+     * rebuilt with it.
+     */
+    for (const card of FOUNDER_AUTHORITY) {
+      if (card.id === "L12" || card.id === "L13") {
+        expect(card.verdict).toBe("unmeasured");
+        continue;
+      }
+      expect(card.verdict, card.id).not.toBe("unmeasured");
+    }
   });
 
   it("keeps the passes that were given", () => {
@@ -127,25 +171,26 @@ describe("101. the twenty recorded results, exactly as they were given", () => {
   });
 });
 
-describe("102. this round asks four cards, and counts four", () => {
-  it("names exactly the four revisions", () => {
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L21", "L22", "L23", "L24"]);
+describe("102. this round asks two cards, and counts two", () => {
+  it("names exactly the two the founder is being asked", () => {
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L25", "L26"]);
   });
 
-  it("puts the older cards out of the round and into the record", () => {
-    for (const id of ["L1", "L10", "L11", "L14", "L16"]) {
+  it("never asks a card whose answer is already recorded", () => {
+    /* A round that re-asks a decided card invites a second answer to a
+       closed question, and then there are two records of one fact. */
+    for (const id of ACTIVE_CLIP_IDS) expect(isArchived(id)).toBe(false);
+  });
+
+  it("puts every judged card out of the round and into the record", () => {
+    for (const id of ["L1", "L10", "L11", "L14", "L16", "L21", "L22", "L23", "L24"]) {
       expect(isArchived(id)).toBe(true);
       expect(isActive(id)).toBe(false);
     }
   });
 
-  it("offers only the four in front of the reader", () => {
-    expect(activeClips(round).map((clip) => clip.id)).toEqual([
-      "L21",
-      "L22",
-      "L23",
-      "L24",
-    ]);
+  it("offers only the two in front of the reader", () => {
+    expect(activeClips(round).map((clip) => clip.id)).toEqual(["L25", "L26"]);
   });
 
   it("keeps the older clips reachable but out of the count", () => {
@@ -154,7 +199,7 @@ describe("102. this round asks four cards, and counts four", () => {
     for (const id of archived) expect(isActive(id)).toBe(false);
   });
 
-  it("counts this round out of four, never out of twenty", () => {
+  it("counts this round out of two, never out of twenty-six", () => {
     const block = formatListeningResult({
       buildSha: "abc1234",
       fingerprint: "x",
@@ -163,13 +208,23 @@ describe("102. this round asks four cards, and counts four", () => {
       notes: {},
       note: "",
     });
-    expect(block).toContain("Cevaplanmamış: 4/4");
+    expect(block).toContain("Cevaplanmamış: 2/2");
     /*
      * The defect this replaces: a summary that counted this browser
      * session's answers against every card ever built and reported the
      * founder's own decided results as unmeasured.
      */
-    expect(block).not.toMatch(/Cevaplanmamış: \d+\/1[0-9]/u);
+    expect(block).not.toMatch(/Cevaplanmamış: \d+\/(1[0-9]|2[0-9])/u);
+  });
+
+  it("gives each card one take and no comparison", () => {
+    /* §15: the question is whether one gesture has a hole in it. An A/B
+       turns that into a preference between two takes, which is a different
+       question with a different answer. */
+    for (const clip of activeClips(round)) {
+      expect(clip.takes, clip.id).toHaveLength(1);
+      expect(clip.takes[0]!.segments.length, clip.id).toBeGreaterThan(1);
+    }
   });
 });
 

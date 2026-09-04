@@ -23,6 +23,8 @@ eval/guitar-performance/.render/
 eval/ui-contract/CURRENT.json
 # 2S-A intent-composer render bundle
 eval/intent-composer/.render/
+# 2V-C.4 §3 rendered-PCM seam bundle
+eval/expression-fidelity/.render/
 
 # Probe protokolünün geçici yedeği (2Q-B §17). Asla commit edilmez.
 *.probebak

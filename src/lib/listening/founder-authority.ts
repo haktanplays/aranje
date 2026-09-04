@@ -36,6 +36,15 @@
  * exit needed work" would be a guess wearing the founder's voice. The row
  * carries the verdict and no note, and 2V-C.3 asks the two halves separately
  * instead (§6).
+ *
+ * ## An inconclusive card with a description is a lead, not a verdict
+ *
+ * L21 and L24 came back `inconclusive` — not a pass and not a failure — with
+ * a sentence describing a small gap between the two sounds. That sentence is
+ * the most valuable thing in this file: it is a physical observation about
+ * rendered audio that no event-level measurement had caught, and 2V-C.4
+ * exists because of it. It is recorded word for word, and the row is not
+ * upgraded when the fix lands. Only the founder moves a verdict.
  */
 
 export type FounderVerdict =
@@ -137,6 +146,30 @@ export const FOUNDER_AUTHORITY: readonly ArchivedCard[] = [
      * was given, and inventing one would be worse than the silence.
      */
     verdict: "conditional_pass",
+  },
+  /*
+   * 2V-C.3's round. Two cards came back inconclusive with the same
+   * description, which is itself the finding: L24 is L21 on two strings, and
+   * the founder heard the same thing on both.
+   */
+  {
+    id: "L21",
+    title: "Vurarak slide handoff",
+    verdict: "inconclusive",
+    note: "Vurarak da iki ses arasında minik bir boşluk var sanki o bozuyor.",
+  },
+  { id: "L22", title: "Kayarak giriş", verdict: "pass" },
+  {
+    id: "L23",
+    title: "Kayarak çıkış",
+    verdict: "conditional_pass",
+    note: "Kabul edebilirim, gelişmesi gerekebilir ileride ne kadar geliştirilebilirse ondan da emin değilim.",
+  },
+  {
+    id: "L24",
+    title: "İki telli şekil slide'ı",
+    verdict: "inconclusive",
+    note: "21'in aynısı.",
   },
 ];
 

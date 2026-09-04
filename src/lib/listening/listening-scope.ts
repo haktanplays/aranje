@@ -1,10 +1,15 @@
 /**
- * Which cards this round is actually asking about (2V-C.2 §2, §4).
+ * Which cards this round is actually asking about (2V-C.2 §2, §4; 2V-C.4 §15).
  *
  * A listening round is a question with a scope, and the scope is not "every
- * card that has ever existed". This round asks four: the revisions of the
- * bend release, the pre-bend, the two slides and the open slides. Everything
- * older has a recorded answer and is history.
+ * card that has ever existed". This round asks two: the single-string shift
+ * slide and the two-string shape slide. Everything older has a recorded
+ * answer and is history.
+ *
+ * Two rather than four, because two of the four came back with a description
+ * of the same defect and the other two were answered. Re-asking an answered
+ * card invites a different answer to a question that is closed, and asking a
+ * tired listener about four things is how a small difference gets lost.
  *
  * Keeping this as a list rather than as a flag on the clip is deliberate. A
  * clip does not know which round it is in; a round knows which clips it is
@@ -14,7 +19,7 @@ import { isArchived } from "@/lib/listening/founder-authority";
 import type { ListeningClip } from "@/lib/listening/clip-plan";
 
 /** The cards the founder is being asked to judge now. */
-export const ACTIVE_CLIP_IDS = ["L21", "L22", "L23", "L24"] as const;
+export const ACTIVE_CLIP_IDS = ["L25", "L26"] as const;
 
 export type ActiveClipId = (typeof ACTIVE_CLIP_IDS)[number];
 

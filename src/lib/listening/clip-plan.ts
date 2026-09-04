@@ -112,7 +112,9 @@ export type ListeningClipId =
   | "L21"
   | "L22"
   | "L23"
-  | "L24";
+  | "L24"
+  | "L25"
+  | "L26";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -522,6 +524,50 @@ export function listeningClips(
       },
     });
 
+    /*
+     * One gesture, heard more than once, with nothing to compare it against
+     * (2V-C.4 §15).
+     *
+     * The repeat is the point: a hole a few milliseconds long is easy to
+     * miss once and hard to miss three times, and hearing the same thing
+     * again is what a listener does naturally when they are not sure. The
+     * segments are the same window rendered again and joined, so every
+     * repetition is the same audio rather than a second performance that
+     * might differ.
+     */
+    const soloClip = (
+      id: ListeningClipId,
+      label: string,
+      instruction: string,
+      question: string,
+      takeId: GestureTakeId,
+      name: string,
+      repeats: number,
+    ): ListeningClip => {
+      const gesture = gestures[takeId];
+      const window = bars(
+        gesture.song,
+        gesture.barNumber,
+        gesture.barNumber + 1,
+        [gesture.trackId],
+      );
+      return {
+        id,
+        label,
+        instruction,
+        question,
+        answers: LISTENING_ANSWERS,
+        takes: [
+          {
+            id: takeId,
+            name,
+            segments: Array.from({ length: repeats }, () => plain(window, 1.2)),
+          },
+        ],
+        expects: { trackIds: [gesture.trackId], minSeconds: 1.5, maxSeconds: 12 },
+      };
+    };
+
     clips.push(
       gestureClip(
         "L17",
@@ -611,6 +657,32 @@ export function listeningClips(
           { id: "L24a", name: "A · Bağlı şekil" },
           { id: "L24b", name: "B · Vurarak şekil" },
         ],
+      ),
+      /*
+       * 2V-C.4's round (§15).
+       *
+       * L21 and L24 came back inconclusive with one sentence between them:
+       * a small gap between the two sounds. These two ask about exactly
+       * that, one gesture at a time, with no A/B to turn the question into
+       * a preference.
+       */
+      soloClip(
+        "L25",
+        "Tek telli vurarak slide",
+        "Aynı kısa kaydırma üç kez çalınıyor.",
+        "Kaynak notadan hedef vuruşuna geçerken arada boşluk olmadan tek ve temiz bir hedef atağı duyuluyor mu?",
+        "L25a",
+        "Vurarak slide",
+        3,
+      ),
+      soloClip(
+        "L26",
+        "İki telli şekil slide'ı",
+        "İki tel birlikte kayıyor; aynı örnek birkaç kez.",
+        "İki tel birlikte kayıp hedef şekle geçerken arada boşluk olmadan tek ve temiz bir akor atağı duyuluyor mu?",
+        "L26a",
+        "Şekil slide'ı",
+        3,
       ),
     );
   }

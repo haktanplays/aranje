@@ -59,6 +59,8 @@ export const GESTURE_TAKE_IDS = [
   "L23b",
   "L24a",
   "L24b",
+  "L25a",
+  "L26a",
 ] as const;
 
 export type GestureTakeId = (typeof GESTURE_TAKE_IDS)[number];
@@ -165,6 +167,25 @@ const RECIPES: Readonly<Record<GestureTakeId, Recipe>> = {
   /* L24 · two strings, one hand, and a target shape struck once. */
   L24a: { frets: [5, 7], onSlot: 2, connection: { kind: "legato_slide" }, holdSlots: 3, shapeString: STRING + 1 },
   L24b: { frets: [5, 7], onSlot: 2, connection: { kind: "shift_slide" }, holdSlots: 3, shapeString: STRING + 1 },
+
+  /*
+   * 2V-C.4's two cards, and the one way they differ from every card above.
+   *
+   * They have no B side. L21 and L24 came back "emin değilim" with the same
+   * sentence — a small gap between the two sounds — and a comparison is the
+   * wrong instrument for that question: asked to choose between two takes,
+   * a listener judges which is better rather than whether either has a hole
+   * in it. So each card is one take of one gesture, played more than once,
+   * and the question is about the gesture itself.
+   */
+  L25a: { frets: [5, 7], onSlot: 2, connection: { kind: "shift_slide" }, holdSlots: 3 },
+  L26a: {
+    frets: [5, 7],
+    onSlot: 2,
+    connection: { kind: "shift_slide" },
+    holdSlots: 3,
+    shapeString: STRING + 1,
+  },
 };
 
 /** A bar with only this take's notes in it, on a copy of the song. */
