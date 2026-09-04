@@ -44,7 +44,19 @@ import type { GestureTakeId, GestureTakes } from "@/lib/listening/gesture-take";
 import type { Song } from "@/lib/song/schema";
 
 /** How the founder may answer. Three words, and never a technical one. */
-export const LISTENING_ANSWERS = ["Olmuş", "Kısmen", "Olmamış"] as const;
+/**
+ * The four decisions a card may be given (2V-C.2 §15).
+ *
+ * "Emin değilim" is a real answer and is kept apart from silence: a listener
+ * who heard it and could not tell has told us something, and a listener who
+ * never pressed play has not. Neither is a pass.
+ */
+export const LISTENING_ANSWERS = [
+  "Olmuş",
+  "Kısmen",
+  "Olmamış",
+  "Emin değilim",
+] as const;
 export type ListeningAnswer = (typeof LISTENING_ANSWERS)[number];
 
 /** L4 asks the opposite way round, so its wording is its own. */
@@ -92,7 +104,11 @@ export type ListeningClipId =
   | "L13"
   | "L14"
   | "L15"
-  | "L16";
+  | "L16"
+  | "L17"
+  | "L18"
+  | "L19"
+  | "L20";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -504,58 +520,44 @@ export function listeningClips(
 
     clips.push(
       gestureClip(
-        "L11",
-        "Bend: tut / geri indir",
+        "L17",
+        "Bend geri dönüşü",
         "Aynı nota, aynı miktar. Yalnız sonu farklı.",
-        "İlkinde bend yukarıda kalıyor, ikincisinde başlangıç notasına geri dönüyor mu?",
+        "İlk bend yukarıda kalırken ikincisi hedefe ulaşıp kontrollü biçimde başlangıç notasına dönüyor mu?",
         [
-          { id: "L11a", name: "Yukarıda tut" },
-          { id: "L11b", name: "Geri indir" },
+          { id: "L17a", name: "A · Yukarıda tut" },
+          { id: "L17b", name: "B · Geri indir" },
         ],
       ),
       gestureClip(
-        "L12",
-        "Önceden bükme: tut / geri indir",
-        "İkisi de bükülmüş perdeden başlamalı.",
-        "İki ses de yukarı kaymadan bükülmüş perdeden mi başlıyor; ikincisi sonra aşağı iniyor mu?",
+        "L18",
+        "Normal bend / önceden bükme",
+        "İlkinde yükselişi duy; ikincisinde yükseliş olmamalı.",
+        "İlk nota aşağıdan yükselirken ikinci nota kaymadan doğrudan bükülmüş perdeden mi başlıyor?",
         [
-          { id: "L12a", name: "Önceden bük" },
-          { id: "L12b", name: "Önceden bük ve indir" },
+          { id: "L18a", name: "A · Normal bend" },
+          { id: "L18b", name: "B · Önceden bükülmüş" },
         ],
       ),
       gestureClip(
-        "L13",
+        "L19",
         "Bağlı / vurarak kaydırma",
-        "Aynı mesafe, aynı süre. Yalnız hedefteki atak farklı.",
-        "Bağlı slide'da hedef yeniden vurulmadan geliyor, vurarak slide'da hedefte yeni atak duyuluyor mu?",
+        "Aynı kaynak, aynı hedef, aynı varış anı.",
+        "İkisi de hedefe aynı anda ulaşıyor; yalnız ikincisinde hedef perdede yeni bir pena atağı duyuluyor mu?",
         [
-          { id: "L13a", name: "Bağlı" },
-          { id: "L13b", name: "Vurarak" },
+          { id: "L19a", name: "A · Bağlı" },
+          { id: "L19b", name: "B · Vurarak" },
         ],
       ),
       gestureClip(
-        "L14",
+        "L20",
         "Kayarak girme / çıkma",
         "Tek nota; biri kayarak giriyor, öteki kayarak çıkıyor.",
-        "İlk nota kayarak içeri giriyor, ikinci nota kayarak dışarı çıkıyor mu?",
+        "İlk nota kayarak içeri girip hedefte kalıyor, ikinci nota önce hedefte duyulup sonra kayarak dışarı çıkıyor mu?",
         [
-          { id: "L14a", name: "İçeri" },
-          { id: "L14b", name: "Dışarı" },
+          { id: "L20a", name: "A · İçeri" },
+          { id: "L20b", name: "B · Dışarı" },
         ],
-      ),
-      gestureClip(
-        "L15",
-        "Bend + tepede vibrato",
-        "Önce hedefe varış, sonra tepede titreşim.",
-        "Nota önce tam bend hedefine ulaşıp ardından tepede vibratoya mı geçiyor?",
-        [{ id: "L15", name: "Dinle" }],
-      ),
-      gestureClip(
-        "L16",
-        "Bükülmüş sesin devamı",
-        "Bükülmüş nota ölçü sınırını geçiyor.",
-        "Bükülmüş perde sınırda düz notaya düşmeden devam ediyor mu?",
-        [{ id: "L16", name: "Dinle" }],
       ),
     );
   }

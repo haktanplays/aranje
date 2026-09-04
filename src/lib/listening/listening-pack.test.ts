@@ -21,6 +21,7 @@ import {
   RESTRIKE_ANSWERS,
 } from "@/lib/listening/clip-plan";
 import { formatListeningResult } from "@/lib/listening/listening-result";
+import { gestureTakes } from "@/lib/listening/gesture-take";
 import { sequenceTake } from "@/lib/listening/sequence-take";
 import { inWindow } from "@/lib/playback/selection-playback";
 
@@ -54,9 +55,17 @@ describe("the pack the founder is handed", () => {
     ]);
   });
 
-  it("offers three answers per clip and never a technical word", () => {
+  it("always offers a way to say 'I could not tell', and no technical word", () => {
     for (const clip of clips) {
-      expect(clip.answers.length).toBe(3);
+      /*
+       * The real invariant, rather than a count: a listener who heard it and
+       * could not tell has told us something, and a card with no way to say
+       * that pushes them into a verdict they do not hold (2V-C.2 §15). L4
+       * asks its question the other way round and has always had its own
+       * three words, so the shape is checked and not the length.
+       */
+      expect(clip.answers).toContain("Emin değilim");
+      expect(clip.answers.length).toBeGreaterThanOrEqual(3);
       expect(clip.question.length).toBeGreaterThan(0);
       for (const word of ["slot", "tick", "window", "trackId"]) {
         expect(clip.question.toLowerCase()).not.toContain(word);
@@ -294,40 +303,90 @@ describe("what a rendered clip is measured for", () => {
 });
 
 describe("the block the founder pastes back", () => {
+  /*
+   * The pack it is handed now contains this round's four revision cards as
+   * well as the older ones. Only the four are being asked, so only the four
+   * are counted — the rest are printed as the record they already are
+   * (2V-C.2 §4).
+   */
+  const round = listeningClips(song, chord, sequence, gestureTakes(song));
   const base = {
     buildSha: "abc1234",
     fingerprint: songSupport(song).fingerprint,
-    clips,
+    clips: round,
     notes: {},
     note: "",
   };
 
-  it("says ölçülmedi for every unanswered clip", () => {
+  it("counts this round's cards, not every card that ever existed", () => {
     const block = formatListeningResult({ ...base, answers: {} });
-    expect((block.match(/ölçülmedi/g) ?? []).length).toBe(10);
-    expect(block).toContain("Cevaplanmamış: 10/10");
-    expect(block).not.toContain("Olmuş");
+    expect(block).toContain("Cevaplanmamış: 4/4");
+    expect(block).toContain("Bu tur: 4 kart");
+    /* The old summary counted the browser session's own answers against
+       every card in the pack and reported the founder's decided results as
+       unmeasured. Nothing here counts an archived card. */
+    expect(block).not.toContain("/16");
+    expect(block).not.toContain("/10");
   });
 
   it("never turns a blank or cleared answer into an approval", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L1: "", L2: null, L3: undefined },
+      answers: { L17: "", L18: null, L19: undefined },
     });
-    expect(block).toContain("L1 Gitar: ölçülmedi");
-    expect(block).toContain("L2 Bas: ölçülmedi");
-    expect(block).toContain("L3 Orta başlangıç: ölçülmedi");
+    expect(block).toContain("L17 Bend geri dönüşü: ölçülmedi");
+    expect(block).toContain("L18 Normal bend / önceden bükme: ölçülmedi");
+    expect(block).toContain("L19 Bağlı / vurarak kaydırma: ölçülmedi");
+  });
+
+  it("says so when a comment was written but no verdict chosen", () => {
+    /* Two different things: nobody touched it, and somebody wrote something
+       down and did not commit to a word. Neither is a pass. */
+    const block = formatListeningResult({
+      ...base,
+      answers: {},
+      notes: { L17: "biraz mekanik" },
+    });
+    expect(block).toContain("L17 Bend geri dönüşü: ölçülmedi — yorum var — biraz mekanik");
+    expect(block).toContain("Cevaplanmamış: 4/4");
+    /* This round only. The archive below legitimately says "Olmuş" about
+       cards the founder passed, and that is a record, not an answer. */
+    expect(block.slice(0, block.indexOf("Önceki turlar"))).not.toContain("Olmuş");
   });
 
   it("carries the answers and per-clip notes it was given", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L1: "Olmuş", L2: "Kısmen" },
-      notes: { L2: "kulaklıkta daha net" },
+      answers: { L17: "Olmuş", L18: "Kısmen" },
+      notes: { L18: "kulaklıkta daha net" },
     });
-    expect(block).toContain("L1 Gitar: Olmuş");
-    expect(block).toContain("L2 Bas: Kısmen — kulaklıkta daha net");
-    expect(block).toContain("Cevaplanmamış: 8/10");
+    expect(block).toContain("L17 Bend geri dönüşü: Olmuş");
+    expect(block).toContain("L18 Normal bend / önceden bükme: Kısmen — kulaklıkta daha net");
+    expect(block).toContain("Cevaplanmamış: 2/4");
+  });
+
+  it("uses each card's own title, never its id twice", () => {
+    /* "L11 L11" is what a second table of short names produced for every
+       card it had no row for. There is one title now, and it is the clip's. */
+    const block = formatListeningResult({ ...base, answers: {} });
+    for (const clip of round) {
+      expect(block).not.toContain(`${clip.id} ${clip.id}`);
+    }
+    expect(block).toMatch(/L20 Kayarak girme \/ çıkma:/u);
+  });
+
+  it("prints the recorded results without letting a session change them", () => {
+    const block = formatListeningResult({ ...base, answers: {} });
+    expect(block).toContain("Önceki turlar (kayıtlı):");
+    expect(block).toContain("L11 Bend: tut / geri indir: Cila gerekiyor");
+    expect(block).toContain("L12 Önceden bükme: tut / geri indir: Ölçülmedi");
+    expect(block).toContain("L15 Bend + tepede vibrato: Olmuş");
+    /* An archived row says what the founder said, whatever this session did. */
+    const answered = formatListeningResult({
+      ...base,
+      answers: { L11: "Olmamış" },
+    });
+    expect(answered).toContain("L11 Bend: tut / geri indir: Cila gerekiyor");
   });
 
   it("names the build and the music without asking anyone to check them", () => {
@@ -336,13 +395,13 @@ describe("the block the founder pastes back", () => {
     expect(block).toContain(`Parça: ${base.fingerprint}`);
   });
 
-  it("is short enough to paste", () => {
+  it("keeps this round's own section short enough to read at a glance", () => {
     const block = formatListeningResult({
       ...base,
-      answers: Object.fromEntries(clips.map((clip) => [clip.id, "Olmuş"])),
+      answers: Object.fromEntries(round.map((clip) => [clip.id, "Olmuş"])),
       note: "genel olarak iyi",
     });
-    expect(block.split("\n").length).toBeLessThanOrEqual(15);
-    expect(block.length).toBeLessThan(600);
+    const thisRound = block.slice(0, block.indexOf("Önceki turlar"));
+    expect(thisRound.split("\n").length).toBeLessThanOrEqual(12);
   });
 });

@@ -42,16 +42,14 @@ const STRING = 1;
 
 /** The takes, in the order the pack offers them. */
 export const GESTURE_TAKE_IDS = [
-  "L11a",
-  "L11b",
-  "L12a",
-  "L12b",
-  "L13a",
-  "L13b",
-  "L14a",
-  "L14b",
-  "L15",
-  "L16",
+  "L17a",
+  "L17b",
+  "L18a",
+  "L18b",
+  "L19a",
+  "L19b",
+  "L20a",
+  "L20b",
 ] as const;
 
 export type GestureTakeId = (typeof GESTURE_TAKE_IDS)[number];
@@ -84,35 +82,39 @@ const HOLD: Pick<Recipe, "frets" | "onSlot" | "holdSlots"> = {
   holdSlots: 3,
 };
 
+/**
+ * The four cards, and what makes each pair a fair question (2V-C.2 §14).
+ *
+ * Every pair shares its base note, its velocity and its written length; the
+ * one thing that differs is the gesture the card is about. A pair that
+ * differed in two ways would be unanswerable however good it sounded.
+ */
 const RECIPES: Readonly<Record<GestureTakeId, Recipe>> = {
-  /* L11 · the same note and the same amount; only the ending differs. */
-  L11a: { ...HOLD, pitchGesture: { kind: "bend", targetCents: 200 } },
-  L11b: { ...HOLD, pitchGesture: { kind: "bend_release", targetCents: 200 } },
-  /* L12 · both start bent; only the second comes down. */
-  L12a: { ...HOLD, pitchGesture: { kind: "prebend", targetCents: 200 } },
-  L12b: { ...HOLD, pitchGesture: { kind: "prebend_release", targetCents: 200 } },
-  /* L13 · the same travel; only the attack at the target differs. */
-  L13a: { frets: [5, 7], onSlot: 2, connection: { kind: "legato_slide" }, holdSlots: 3 },
-  L13b: { frets: [5, 7], onSlot: 2, connection: { kind: "shift_slide" }, holdSlots: 3 },
-  /* L14 · one note entered from below, one note left downwards. */
-  L14a: { ...HOLD, pitchGesture: { kind: "slide_in", from: "below" } },
-  L14b: { ...HOLD, pitchGesture: { kind: "slide_out", to: "down" } },
-  /* L15 · arrive first, then shake — one gesture with an order to it. */
-  L15: {
-    ...HOLD,
-    pitchGesture: {
-      kind: "bend",
-      targetCents: 200,
-      vibrato: { startAfterTarget: true, depthCents: 22, rateHz: 5 },
-    },
-  },
+  /* L17 · the same note, the same amount, and only the ending differs. */
+  L17a: { ...HOLD, pitchGesture: { kind: "bend", targetCents: 200 } },
+  L17b: { ...HOLD, pitchGesture: { kind: "bend_release", targetCents: 200 } },
   /*
-   * L16 · a bent note held across the bar line.
+   * L18 · a rise to listen for, and its absence.
    *
-   * Six slots of tie carry it past the measure's own end, so the question
-   * "does the pitch survive the boundary" has a boundary to survive.
+   * The previous round compared two prebends with each other, which asks a
+   * listener to hear the difference between two things that both start bent.
+   * Comparing a prebend with an ordinary bend puts the rise itself on one
+   * side of the question, which is what the card is actually about.
    */
-  L16: { frets: [7], onSlot: 0, holdSlots: 7, pitchGesture: { kind: "bend", targetCents: 200 } },
+  L18a: { ...HOLD, pitchGesture: { kind: "bend", targetCents: 200 } },
+  L18b: { ...HOLD, pitchGesture: { kind: "prebend", targetCents: 200 } },
+  /* L19 · the same travel arriving at the same moment; only the attack. */
+  L19a: { frets: [5, 7], onSlot: 2, connection: { kind: "legato_slide" }, holdSlots: 3 },
+  L19b: { frets: [5, 7], onSlot: 2, connection: { kind: "shift_slide" }, holdSlots: 3 },
+  /* L20 · one note entered by sliding, one note left by sliding. */
+  L20a: {
+    ...HOLD,
+    pitchGesture: { kind: "slide_in", from: "below", approxSemitones: 2 },
+  },
+  L20b: {
+    ...HOLD,
+    pitchGesture: { kind: "slide_out", to: "down", approxSemitones: 3 },
+  },
 };
 
 /** A bar with only this take's notes in it, on a copy of the song. */

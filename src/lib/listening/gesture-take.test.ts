@@ -13,6 +13,7 @@ import { editorFixture } from "@/lib/acceptance/editor-fixture";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { barTimeline } from "@/lib/audio/schedule";
 import { listeningClips } from "@/lib/listening/clip-plan";
+import { isActive } from "@/lib/listening/listening-scope";
 import {
   gestureTakes,
   GESTURE_TAKE_IDS,
@@ -80,34 +81,32 @@ describe("97. every take is real music, written by the production command", () =
 });
 
 describe("98. each card's two sides differ in exactly one thing", () => {
-  it("L11 · holds versus releases, same note and same amount", () => {
-    const hold = gestureNote("L11a").pitchGesture!;
-    const release = gestureNote("L11b").pitchGesture!;
+  it("L17 · holds versus releases, same note and same amount", () => {
+    const hold = gestureNote("L17a").pitchGesture!;
+    const release = gestureNote("L17b").pitchGesture!;
     expect(hold).toEqual({ kind: "bend", targetCents: 200 });
     expect(release).toEqual({ kind: "bend_release", targetCents: 200 });
-    /* And the audio really diverges at the ending, which is the question. */
-    expect(planned("L11a")[0]!.pitchAutomation.at(-1)!.cents).toBe(200);
-    expect(planned("L11b")[0]!.pitchAutomation.at(-1)!.cents).toBe(0);
+    expect(planned("L17a")[0]!.pitchAutomation.at(-1)!.cents).toBe(200);
+    expect(planned("L17b")[0]!.pitchAutomation.at(-1)!.cents).toBe(0);
   });
 
-  it("L12 · both start bent, and only the second comes down", () => {
-    expect(planned("L12a")[0]!.pitchAutomation[0]!.cents).toBe(200);
-    expect(planned("L12b")[0]!.pitchAutomation[0]!.cents).toBe(200);
-    expect(planned("L12a")[0]!.pitchAutomation.at(-1)!.cents).toBe(200);
-    expect(planned("L12b")[0]!.pitchAutomation.at(-1)!.cents).toBe(0);
+  it("L18 · one rises from the written pitch and the other does not", () => {
+    /* The rise is the question, so it has to be on exactly one side. */
+    expect(planned("L18a")[0]!.pitchAutomation[0]!.cents).toBe(0);
+    expect(planned("L18b")[0]!.pitchAutomation[0]!.cents).toBe(200);
+    expect(planned("L18a")[0]!.pitchAutomation.at(-1)!.cents).toBe(200);
+    expect(planned("L18b")[0]!.pitchAutomation.at(-1)!.cents).toBe(200);
   });
 
-  it("L13 · the same travel, and only the target's attack differs", () => {
-    const legato = planned("L13a").find((note) => note.timeTicks % 768 !== 0)!;
-    const shift = planned("L13b").find((note) => note.timeTicks % 768 !== 0)!;
-    /* The legato target belongs to a chain, so nothing strikes it; the shift
-       target does not, so the transport fires it like any other onset. */
+  it("L19 · the same travel, and only the target's attack differs", () => {
+    const legato = planned("L19a").find((note) => note.timeTicks % 768 !== 0)!;
+    const shift = planned("L19b").find((note) => note.timeTicks % 768 !== 0)!;
     expect(legato.chainRole).toBe("target");
     expect(shift.chainId).toBeUndefined();
   });
 
-  it("L14 · one note entered, one note left, and neither invents a fret", () => {
-    for (const id of ["L14a", "L14b"] as const) {
+  it("L20 · one note entered, one note left, and neither invents a fret", () => {
+    for (const id of ["L20a", "L20b"] as const) {
       const take = takes[id];
       const marker = barTimeline(take.song)[take.barNumber - 1]!;
       const notes = buildExpressionPlan(take.song).notes.filter(
@@ -116,73 +115,73 @@ describe("98. each card's two sides differ in exactly one thing", () => {
           note.timeTicks >= marker.time &&
           note.timeTicks < marker.time + marker.durationTicks,
       );
-      /* One real note. The place the hand comes from or goes to is
-         automation, never a second onset on the staff. */
+      /* One real note. Where the hand comes from or goes to is automation,
+         never a second onset on the staff. */
       expect(notes).toHaveLength(1);
     }
-    expect(gestureNote("L14a").pitchGesture).toEqual({
+    expect(gestureNote("L20a").pitchGesture).toEqual({
       kind: "slide_in",
       from: "below",
+      approxSemitones: 2,
     });
-    expect(gestureNote("L14b").pitchGesture).toEqual({ kind: "slide_out", to: "down" });
+    expect(gestureNote("L20b").pitchGesture).toEqual({
+      kind: "slide_out",
+      to: "down",
+      approxSemitones: 3,
+    });
   });
 
-  it("L15 · arrives at the target before it starts shaking", () => {
-    const points = planned("L15")[0]!.pitchAutomation;
-    const arrival = points.findIndex((point) => point.cents === 200);
-    expect(arrival).toBeGreaterThan(0);
-    for (const point of points.slice(0, arrival)) {
-      expect(point.cents).toBeLessThanOrEqual(200);
+  it("gives every pair the same base note, velocity and written length", () => {
+    for (const [a, b] of [
+      ["L17a", "L17b"],
+      ["L18a", "L18b"],
+      ["L20a", "L20b"],
+    ] as const) {
+      const left = planned(a)[0]!;
+      const right = planned(b)[0]!;
+      expect(right.pitch).toBe(left.pitch);
+      expect(right.velocity).toBe(left.velocity);
+      expect(right.durationTicks).toBe(left.durationTicks);
     }
-    /* And it really shakes: something goes above the target afterwards. */
-    expect(Math.max(...points.map((point) => point.cents))).toBeGreaterThan(200);
-  });
-
-  it("L16 · is one note that outlives its own measure", () => {
-    const take = takes.L16;
-    const marker = barTimeline(take.song)[take.barNumber - 1]!;
-    const notes = buildExpressionPlan(take.song).notes.filter(
-      (note) => note.trackId === take.trackId && note.timeTicks === marker.time,
-    );
-    expect(notes).toHaveLength(1);
-    expect(notes[0]!.pitchAutomation.at(-1)!.cents).toBe(200);
   });
 });
 
-describe("99. the pack offers the cards, and offers none of them half-built", () => {
+describe("99. the pack asks this round's four, and no more", () => {
   const clips = listeningClips(fixture, null, null, takes);
   const ids = clips.map((clip) => clip.id);
 
-  it("adds exactly the six new cards", () => {
-    for (const id of ["L11", "L12", "L13", "L14", "L15", "L16"] as const) {
+  it("adds exactly the four revision cards", () => {
+    for (const id of ["L17", "L18", "L19", "L20"] as const) {
       expect(ids).toContain(id);
     }
   });
 
-  it("keeps every earlier card", () => {
-    for (const id of ["L1", "L5", "L9"] as const) expect(ids).toContain(id);
+  it("does not re-ask the cards the founder already judged", () => {
+    for (const id of ["L11", "L12", "L13", "L14", "L15", "L16"] as const) {
+      expect(ids).not.toContain(id);
+    }
   });
 
   it("offers none of them when the music could not be written", () => {
     const without = listeningClips(fixture, null, null, null).map((clip) => clip.id);
-    for (const id of ["L11", "L12", "L13", "L14", "L15", "L16"] as const) {
+    for (const id of ["L17", "L18", "L19", "L20"] as const) {
       expect(without).not.toContain(id);
     }
   });
 
   it("asks a question a listener can answer yes or no to", () => {
-    for (const clip of clips.filter((entry) => entry.id.startsWith("L1") && entry.id > "L10")) {
+    for (const clip of clips.filter((entry) => isActive(entry.id))) {
       expect(clip.question.endsWith("?")).toBe(true);
       expect(clip.question).not.toMatch(/cent|tick|slot|gesture|automation/iu);
       expect(clip.takes.length).toBeGreaterThan(0);
     }
   });
 
-  it("names both sides of a comparison so they can be told apart", () => {
-    const eleven = clips.find((clip) => clip.id === "L11")!;
-    expect(eleven.takes.map((take) => take.name)).toEqual([
-      "Yukarıda tut",
-      "Geri indir",
+  it("names both sides of a comparison, and says which comes first", () => {
+    const seventeen = clips.find((clip) => clip.id === "L17")!;
+    expect(seventeen.takes.map((take) => take.name)).toEqual([
+      "A · Yukarıda tut",
+      "B · Geri indir",
     ]);
   });
 });

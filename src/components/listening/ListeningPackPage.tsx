@@ -25,6 +25,11 @@ import { BUILD_SHA, shortSha } from "@/lib/acceptance/build-id";
 import { BRAND_NAME } from "@/lib/brand";
 import { SAMPLE_LICENSE } from "@/lib/audio/packs";
 import { formatListeningResult } from "@/lib/listening/listening-result";
+import {
+  FOUNDER_AUTHORITY,
+  VERDICT_LABEL,
+} from "@/lib/listening/founder-authority";
+import { activeClips } from "@/lib/listening/listening-scope";
 import { useListeningPack, type TakeState } from "@/components/listening/useListeningPack";
 
 /** Everything a finger has to hit is at least this tall (2W §3). */
@@ -85,6 +90,16 @@ function TakeButton({
 export function ListeningPackPage() {
   const pack = useListeningPack();
   const [copied, setCopied] = useState(false);
+  /*
+   * This round's cards, and only those (2V-C.2 §4). Everything older has a
+   * recorded physical result and is shown below as the record it is — a
+   * browser session cannot answer it and is not asked to.
+   */
+  const asked = activeClips(pack.clips);
+  const decided = asked.filter((clip) => {
+    const answer = pack.answers[clip.id];
+    return answer !== undefined && answer !== null && answer !== "";
+  }).length;
 
   const result = () =>
     formatListeningResult({
@@ -107,6 +122,9 @@ export function ListeningPackPage() {
           Editörü test etmen gerekmiyor. Yalnızca kısa örnekleri dinle ve kulağına
           nasıl geldiğini söyle.
         </p>
+        <p className="text-text text-xs" data-listen-round>
+          Bu tur: {decided}/{asked.length}
+        </p>
         <p className="text-muted text-[11px]">
           Build <span data-listen-sha>{shortSha(BUILD_SHA)}</span>
           {" · "}
@@ -127,7 +145,7 @@ export function ListeningPackPage() {
       </button>
 
       <ol className="flex list-none flex-col gap-2 p-0">
-        {pack.clips.map((clip) => {
+        {asked.map((clip) => {
           const answer = pack.answers[clip.id];
           return (
             <li
@@ -193,6 +211,39 @@ export function ListeningPackPage() {
           );
         })}
       </ol>
+
+      {/*
+        The record, open on request (§4).
+
+        Readable and not answerable: these are physical results the founder
+        gave on real devices, and a button that let this session overwrite one
+        would be a second authority for the same fact.
+      */}
+      <details data-listen-archive={FOUNDER_AUTHORITY.length}>
+        <summary
+          style={{ minHeight: TOUCH }}
+          className="border-line text-muted flex items-center rounded-lg border px-3 text-xs"
+        >
+          Önceki turlar ({FOUNDER_AUTHORITY.length} kart, kayıtlı)
+        </summary>
+        <ul className="mt-2 flex list-none flex-col gap-1 p-0">
+          {FOUNDER_AUTHORITY.map((card) => (
+            <li
+              key={card.id}
+              data-listen-archived={card.id}
+              className="border-line/60 flex items-baseline justify-between gap-2 rounded-lg border px-3 py-2"
+            >
+              <span className="text-muted text-xs">
+                <span className="mr-1.5 text-[11px] opacity-70">{card.id}</span>
+                {card.title}
+              </span>
+              <span className="text-muted/80 shrink-0 text-[11px]">
+                {VERDICT_LABEL[card.verdict]}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
 
       <label className="flex flex-col gap-1">
         <span className="text-muted text-xs">Genel not (isteğe bağlı)</span>

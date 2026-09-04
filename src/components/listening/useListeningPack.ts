@@ -27,6 +27,7 @@ import { editorFixture } from "@/lib/acceptance/editor-fixture";
 import { songSupport } from "@/lib/acceptance/song-support";
 import { clipFault, type ClipAudit } from "@/lib/listening/clip-audit";
 import { chordTake } from "@/lib/listening/chord-take";
+import { activeClips } from "@/lib/listening/listening-scope";
 import { sequenceTake } from "@/lib/listening/sequence-take";
 import {
   gestureTakes,
@@ -239,7 +240,9 @@ export function useListeningPack(): ListeningPack {
     const token = runToken.current;
     setRunningAll(true);
     void (async () => {
-      for (const clip of clips) {
+      /* This round's cards only: "listen to everything" must not walk
+         through music nobody is being asked about (2V-C.2 §4). */
+      for (const clip of activeClips(clips)) {
         for (const take of clip.takes) {
           if (runToken.current !== token) return;
           await sound(take.id, token);
