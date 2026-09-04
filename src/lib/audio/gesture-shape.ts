@@ -131,6 +131,40 @@ export function bendReleaseStages(
  * It does not fade to silence. The note is still stopping on its own, and a
  * ramp that reached zero early would cut the tail before the string did.
  */
+/**
+ * The old vibration, handed over rather than cut (2V-C.3 §3, §4).
+ *
+ * A struck slide's source note was measured stopping at **full level** at the
+ * exact sample its target's attack began — a step discontinuity in the
+ * waveform with a fresh full-level attack on the other side of it. That is a
+ * click, and a small one is exactly what "vurarak biraz kusurlu duruyor"
+ * sounds like.
+ *
+ * It is also not what a hand does. A finger arriving at a fret damps the
+ * string it arrives on, and the pick that follows damps it again; the old
+ * sound decays *into* the strike rather than surviving at full strength up to
+ * it. So the source fades across its travel and arrives quieter.
+ *
+ * Deliberately not a fade to silence. The ear has to hear the hand reach the
+ * target — that arrival is the gesture — so what is removed is the step, not
+ * the arrival. And deliberately only the source: the target's attack is the
+ * thing the card is about, and softening it would answer the complaint by
+ * deleting its subject.
+ */
+export function handoffGain(
+  gain: number,
+  durationSeconds: number,
+  travelStartsAt: number,
+): { timeSeconds: number; value: number }[] {
+  const startsAt = clamp(travelStartsAt, 0, durationSeconds);
+  const arrives = round(gain * expressionPresets.slide.handoverGainFraction);
+  return [
+    { timeSeconds: 0, value: round(gain) },
+    { timeSeconds: round(startsAt), value: round(gain) },
+    { timeSeconds: round(durationSeconds), value: arrives },
+  ];
+}
+
 export function slideOutGain(
   gain: number,
   durationSeconds: number,

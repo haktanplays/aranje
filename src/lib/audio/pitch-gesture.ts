@@ -43,7 +43,7 @@
  */
 import { bendStages, valueAt, type PitchPoint } from "@/lib/audio/automation";
 import { bendReleaseStages } from "@/lib/audio/gesture-shape";
-import { desiredGlideSeconds, transitionPoints } from "@/lib/audio/legato-chain";
+import { transitionPoints } from "@/lib/audio/legato-chain";
 import { expressionPresets } from "@/lib/audio/expression";
 import type { BendGesture, PitchGesture } from "@/lib/song/schema";
 
@@ -196,14 +196,31 @@ export function bendGestureAutomation(
  * starting somewhere lower, not a fret the player wrote down, and inventing
  * that fret would put a note on the staff nobody played.
  */
+/**
+ * How long an open slide's travel lasts (2V-C.3 §7, §8).
+ *
+ * Its own rate rather than the note-to-note one. A written slide between two
+ * notes has to arrive when the second note is written, so its timing is
+ * clamped by the music and floored so a cramped one is still audible. An open
+ * slide has no partner and no fixed arrival, so what it owes is consistency:
+ * the three distances must sound like the same hand going further, and under
+ * the borrowed floor they did not — Kısa and Belirgin both took 120 ms for
+ * 100 and 200 cents, so the longer one moved twice as fast.
+ *
+ * The note's own length is still the ceiling. A short note cannot hold a long
+ * slide, and shortening the travel is the honest answer to that.
+ */
 export function openSlideTravelSeconds(
   gesture: Extract<PitchGesture, { kind: "slide_in" | "slide_out" }>,
   durationSeconds: number,
 ): number {
+  const preset = expressionPresets.slide;
   const semitones = openSlideSemitones(gesture);
-  return round(
-    Math.min(desiredGlideSeconds(semitones), durationSeconds * OPEN_SLIDE_MAX_FRACTION),
+  const wanted = Math.max(
+    preset.openMinSeconds,
+    (semitones * preset.openMsPerSemitone) / 1000,
   );
+  return round(Math.min(wanted, durationSeconds * OPEN_SLIDE_MAX_FRACTION));
 }
 
 /** How far away the hand starts, or ends up. */

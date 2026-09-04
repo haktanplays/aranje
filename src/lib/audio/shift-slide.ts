@@ -32,6 +32,7 @@
  * falling back has always sounded like. Silently doing both would give one
  * string two owners.
  */
+import { handoffGain } from "@/lib/audio/gesture-shape";
 import { transitionPoints } from "@/lib/audio/legato-chain";
 import type { ExpressiveNotePlan } from "@/lib/audio/expression-plan";
 import type { PitchPoint } from "@/lib/audio/automation";
@@ -98,6 +99,15 @@ export function applyShiftSlides(
       ...source,
       expressive: true,
       durationSeconds: round(handover),
+      /*
+       * The old vibration handed over rather than cut (2V-C.3 §4).
+       *
+       * Measured at full level at the exact sample the target's attack began,
+       * which puts a step in the waveform between two full-amplitude events.
+       * The source now decays across its travel, the way a string does when a
+       * finger arrives on it.
+       */
+      gainEnvelope: handoffGain(source.gain, round(handover), leaves),
       /* Held as itself first, then travelling. The leading point is what
          makes the departure late rather than immediate. */
       pitchAutomation:

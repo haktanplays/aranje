@@ -134,6 +134,41 @@ export const expressionPresets = {
      * ramp that reaches silence early would take the tail with it.
      */
     outFadeToFraction: 0.12,
+    /**
+     * Where a struck slide's source arrives, in level (2V-C.3 §4).
+     *
+     * The seam was measured with the source at full gain at the instant its
+     * target was struck, and the target starting at full gain too: a step in
+     * the waveform between two full-amplitude events. This is how far the old
+     * vibration has decayed by the time the hand gets there.
+     *
+     * Not lower. Below about a third the arrival stops being audible as an
+     * arrival, and the gesture becomes a note that fades out followed by an
+     * unrelated note — which is a different thing from a hand sliding into a
+     * pick stroke. Not higher, or the step comes back.
+     */
+    handoverGainFraction: 0.45,
+    /**
+     * How fast a hand moves on an *open* slide (2V-C.3 §7, §8).
+     *
+     * Not `msPerSemitone` above, and the difference is the whole reason this
+     * exists. A note-to-note slide has its arrival fixed by the music, so its
+     * timing is clamped to fit between two written notes and the floor exists
+     * to stop a cramped one being inaudible. An open slide has no partner:
+     * its length is free, and it should scale with the distance so "Kısa",
+     * "Belirgin" and "Uzun" are the same movement going further.
+     *
+     * They were not. Measured, Kısa and Belirgin both took exactly 120 ms —
+     * the note-to-note floor — while covering 100 and 200 cents, so the hand
+     * moved twice as fast for the longer one; and Uzun ran at 2222 cents per
+     * second, which is where a slide stops sounding like a finger and starts
+     * sounding like a whammy bar. At this rate all three travel at the same
+     * speed and differ only in how far they go, which is what the three words
+     * claim.
+     */
+    openMsPerSemitone: 70,
+    /** A one-semitone slide still has to be long enough to hear. */
+    openMinSeconds: 0.07,
   },
   /**
    * Hammer-on and pull-off (spec 8.5, K-22).
