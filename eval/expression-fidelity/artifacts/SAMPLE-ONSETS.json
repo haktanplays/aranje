@@ -1,0 +1,735 @@
+{
+  "generatedAt": "2026-09-04T15:39:28.035Z",
+  "consoleErrors": [],
+  "packs": [
+    {
+      "pack": "electric_guitar/high_gain",
+      "files": [
+        {
+          "note": "E2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0,
+            "peak": 0.164006,
+            "peakSeconds": 0.161043,
+            "reach10Seconds": 0.010975,
+            "reach50Seconds": 0.020952,
+            "reach90Seconds": 0.039909
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.021,
+          "attackMatches": true
+        },
+        {
+          "note": "A2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0,
+            "peak": 0.164368,
+            "peakSeconds": 0.133923,
+            "reach10Seconds": 0.002993,
+            "reach50Seconds": 0.011973,
+            "reach90Seconds": 0.061859
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.012,
+          "attackMatches": true
+        },
+        {
+          "note": "C3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0,
+            "peak": 0.145116,
+            "peakSeconds": 0.169501,
+            "reach10Seconds": 0.001995,
+            "reach50Seconds": 0.010975,
+            "reach90Seconds": 0.024943
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.011,
+          "attackMatches": true
+        },
+        {
+          "note": "E3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0.000068,
+            "peak": 0.135803,
+            "peakSeconds": 0.053946,
+            "reach10Seconds": 0.012971,
+            "reach50Seconds": 0.018957,
+            "reach90Seconds": 0.041905
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.019,
+          "attackMatches": true
+        },
+        {
+          "note": "A3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0,
+            "peak": 0.136444,
+            "peakSeconds": 0.04356,
+            "reach10Seconds": 0.016961,
+            "reach50Seconds": 0.03093,
+            "reach90Seconds": 0.042902
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.031,
+          "attackMatches": true
+        },
+        {
+          "note": "C4",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0,
+            "peak": 0.137211,
+            "peakSeconds": 0.241587,
+            "reach10Seconds": 0.001995,
+            "reach50Seconds": 0.005986,
+            "reach90Seconds": 0.164626
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.006,
+          "attackMatches": true
+        },
+        {
+          "note": "E4",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0,
+            "peak": 0.139404,
+            "peakSeconds": 0.232789,
+            "reach10Seconds": 0,
+            "reach50Seconds": 0.002993,
+            "reach90Seconds": 0.007982
+          },
+          "shape": "immediate",
+          "claimedAttackSeconds": 0.003,
+          "attackMatches": true
+        }
+      ],
+      "played": [
+        {
+          "note": "E2",
+          "sample": "E2",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.010975,
+          "heardReach50Seconds": 0.020952,
+          "heardReach90Seconds": 0.039909
+        },
+        {
+          "note": "A2",
+          "sample": "A2",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.002993,
+          "heardReach50Seconds": 0.011973,
+          "heardReach90Seconds": 0.061859
+        },
+        {
+          "note": "D3",
+          "sample": "C3",
+          "playbackRate": 1.122462,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.001777,
+          "heardReach50Seconds": 0.009778,
+          "heardReach90Seconds": 0.022222
+        },
+        {
+          "note": "G3",
+          "sample": "A3",
+          "playbackRate": 0.890899,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.019038,
+          "heardReach50Seconds": 0.034718,
+          "heardReach90Seconds": 0.048156
+        },
+        {
+          "note": "B3",
+          "sample": "C4",
+          "playbackRate": 0.943874,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.002114,
+          "heardReach50Seconds": 0.006342,
+          "heardReach90Seconds": 0.174415
+        },
+        {
+          "note": "C4",
+          "sample": "C4",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.001995,
+          "heardReach50Seconds": 0.005986,
+          "heardReach90Seconds": 0.164626
+        },
+        {
+          "note": "D4",
+          "sample": "C4",
+          "playbackRate": 1.122462,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0.001777,
+          "heardReach50Seconds": 0.005333,
+          "heardReach90Seconds": 0.146665
+        },
+        {
+          "note": "E4",
+          "sample": "E4",
+          "playbackRate": 1,
+          "shape": "immediate",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0,
+          "heardReach50Seconds": 0.002993,
+          "heardReach90Seconds": 0.007982
+        },
+        {
+          "note": "G4",
+          "sample": "E4",
+          "playbackRate": 1.189207,
+          "shape": "immediate",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0,
+          "heardReach50Seconds": 0.002517,
+          "heardReach90Seconds": 0.006712
+        },
+        {
+          "note": "A4",
+          "sample": "E4",
+          "playbackRate": 1.33484,
+          "shape": "immediate",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0,
+          "heardReach10Seconds": 0,
+          "heardReach50Seconds": 0.002242,
+          "heardReach90Seconds": 0.00598
+        }
+      ]
+    },
+    {
+      "pack": "steel_acoustic/finger",
+      "files": [
+        {
+          "note": "E2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000045,
+            "firstNonZeroSeconds": 0.000045,
+            "firstEnergySeconds": 0.001655,
+            "peak": 0.125645,
+            "peakSeconds": 0.036304,
+            "reach10Seconds": 0.00898,
+            "reach50Seconds": 0.011973,
+            "reach90Seconds": 0.022948
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.012,
+          "attackMatches": true
+        },
+        {
+          "note": "A2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000249,
+            "firstNonZeroSeconds": 0.000249,
+            "firstEnergySeconds": 0.002041,
+            "peak": 0.115329,
+            "peakSeconds": 0.047324,
+            "reach10Seconds": 0.009977,
+            "reach50Seconds": 0.019955,
+            "reach90Seconds": 0.029932
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.02,
+          "attackMatches": true
+        },
+        {
+          "note": "C3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000068,
+            "firstNonZeroSeconds": 0.000068,
+            "firstEnergySeconds": 0.001973,
+            "peak": 0.118442,
+            "peakSeconds": 0.032268,
+            "reach10Seconds": 0.00898,
+            "reach50Seconds": 0.016961,
+            "reach90Seconds": 0.024943
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.017,
+          "attackMatches": true
+        },
+        {
+          "note": "E3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0.000703,
+            "peak": 0.11655,
+            "peakSeconds": 0.023129,
+            "reach10Seconds": 0.006984,
+            "reach50Seconds": 0.007982,
+            "reach90Seconds": 0.022948
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.008,
+          "attackMatches": true
+        },
+        {
+          "note": "A3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000113,
+            "firstNonZeroSeconds": 0.000113,
+            "firstEnergySeconds": 0.001315,
+            "peak": 0.125309,
+            "peakSeconds": 0.024535,
+            "reach10Seconds": 0.007982,
+            "reach50Seconds": 0.012971,
+            "reach90Seconds": 0.023946
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.013,
+          "attackMatches": true
+        },
+        {
+          "note": "C4",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000023,
+            "firstNonZeroSeconds": 0.000023,
+            "firstEnergySeconds": 0.000635,
+            "peak": 0.117252,
+            "peakSeconds": 0.032902,
+            "reach10Seconds": 0.005986,
+            "reach50Seconds": 0.00898,
+            "reach90Seconds": 0.015964
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.009,
+          "attackMatches": true
+        },
+        {
+          "note": "E4",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000091,
+            "firstNonZeroSeconds": 0.000091,
+            "firstEnergySeconds": 0.001587,
+            "peak": 0.12363,
+            "peakSeconds": 0.015918,
+            "reach10Seconds": 0.00898,
+            "reach50Seconds": 0.011973,
+            "reach90Seconds": 0.014966
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.012,
+          "attackMatches": true
+        },
+        {
+          "note": "A4",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0,
+            "firstNonZeroSeconds": 0,
+            "firstEnergySeconds": 0.000703,
+            "peak": 0.125061,
+            "peakSeconds": 0.020272,
+            "reach10Seconds": 0.006984,
+            "reach50Seconds": 0.00898,
+            "reach90Seconds": 0.019955
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.009,
+          "attackMatches": true
+        }
+      ],
+      "played": [
+        {
+          "note": "E2",
+          "sample": "E2",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000045,
+          "heardFirstEnergySeconds": 0.001655,
+          "heardReach10Seconds": 0.00898,
+          "heardReach50Seconds": 0.011973,
+          "heardReach90Seconds": 0.022948
+        },
+        {
+          "note": "A2",
+          "sample": "A2",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000249,
+          "heardFirstEnergySeconds": 0.002041,
+          "heardReach10Seconds": 0.009977,
+          "heardReach50Seconds": 0.019955,
+          "heardReach90Seconds": 0.029932
+        },
+        {
+          "note": "D3",
+          "sample": "C3",
+          "playbackRate": 1.122462,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000061,
+          "heardFirstEnergySeconds": 0.001758,
+          "heardReach10Seconds": 0.008,
+          "heardReach50Seconds": 0.015111,
+          "heardReach90Seconds": 0.022222
+        },
+        {
+          "note": "G3",
+          "sample": "A3",
+          "playbackRate": 0.890899,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000127,
+          "heardFirstEnergySeconds": 0.001476,
+          "heardReach10Seconds": 0.008959,
+          "heardReach50Seconds": 0.014559,
+          "heardReach90Seconds": 0.026878
+        },
+        {
+          "note": "B3",
+          "sample": "C4",
+          "playbackRate": 0.943874,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000024,
+          "heardFirstEnergySeconds": 0.000673,
+          "heardReach10Seconds": 0.006342,
+          "heardReach50Seconds": 0.009514,
+          "heardReach90Seconds": 0.016913
+        },
+        {
+          "note": "C4",
+          "sample": "C4",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000023,
+          "heardFirstEnergySeconds": 0.000635,
+          "heardReach10Seconds": 0.005986,
+          "heardReach50Seconds": 0.00898,
+          "heardReach90Seconds": 0.015964
+        },
+        {
+          "note": "D4",
+          "sample": "C4",
+          "playbackRate": 1.122462,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.00002,
+          "heardFirstEnergySeconds": 0.000566,
+          "heardReach10Seconds": 0.005333,
+          "heardReach50Seconds": 0.008,
+          "heardReach90Seconds": 0.014222
+        },
+        {
+          "note": "E4",
+          "sample": "E4",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000091,
+          "heardFirstEnergySeconds": 0.001587,
+          "heardReach10Seconds": 0.00898,
+          "heardReach50Seconds": 0.011973,
+          "heardReach90Seconds": 0.014966
+        },
+        {
+          "note": "G4",
+          "sample": "A4",
+          "playbackRate": 0.890899,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0.000789,
+          "heardReach10Seconds": 0.007839,
+          "heardReach50Seconds": 0.01008,
+          "heardReach90Seconds": 0.022399
+        },
+        {
+          "note": "A4",
+          "sample": "A4",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0,
+          "heardFirstEnergySeconds": 0.000703,
+          "heardReach10Seconds": 0.006984,
+          "heardReach50Seconds": 0.00898,
+          "heardReach90Seconds": 0.019955
+        }
+      ]
+    },
+    {
+      "pack": "electric_bass/finger",
+      "files": [
+        {
+          "note": "E1",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000136,
+            "firstNonZeroSeconds": 0.000136,
+            "firstEnergySeconds": 0.001882,
+            "peak": 0.122623,
+            "peakSeconds": 0.044195,
+            "reach10Seconds": 0.017959,
+            "reach50Seconds": 0.018957,
+            "reach90Seconds": 0.042902
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.019,
+          "attackMatches": true
+        },
+        {
+          "note": "A1",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000023,
+            "firstNonZeroSeconds": 0.000023,
+            "firstEnergySeconds": 0.002063,
+            "peak": 0.122559,
+            "peakSeconds": 0.041859,
+            "reach10Seconds": 0.02195,
+            "reach50Seconds": 0.025941,
+            "reach90Seconds": 0.040907
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.026,
+          "attackMatches": true
+        },
+        {
+          "note": "C2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000181,
+            "firstNonZeroSeconds": 0.000181,
+            "firstEnergySeconds": 0.001655,
+            "peak": 0.121616,
+            "peakSeconds": 0.053583,
+            "reach10Seconds": 0.020952,
+            "reach50Seconds": 0.02195,
+            "reach90Seconds": 0.037914
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.022,
+          "attackMatches": true
+        },
+        {
+          "note": "E2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000159,
+            "firstNonZeroSeconds": 0.000159,
+            "firstEnergySeconds": 0.002063,
+            "peak": 0.121525,
+            "peakSeconds": 0.040023,
+            "reach10Seconds": 0.012971,
+            "reach50Seconds": 0.014966,
+            "reach90Seconds": 0.026939
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.015,
+          "attackMatches": true
+        },
+        {
+          "note": "A2",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.00034,
+            "firstNonZeroSeconds": 0.00034,
+            "firstEnergySeconds": 0.001769,
+            "peak": 0.122711,
+            "peakSeconds": 0.024195,
+            "reach10Seconds": 0.012971,
+            "reach50Seconds": 0.013968,
+            "reach90Seconds": 0.023946
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.014,
+          "attackMatches": true
+        },
+        {
+          "note": "C3",
+          "profile": {
+            "sampleRate": 44100,
+            "durationSeconds": 3.128889,
+            "digitalSilenceSeconds": 0.000045,
+            "firstNonZeroSeconds": 0.000045,
+            "firstEnergySeconds": 0.001587,
+            "peak": 0.12262,
+            "peakSeconds": 0.022562,
+            "reach10Seconds": 0.012971,
+            "reach50Seconds": 0.013968,
+            "reach90Seconds": 0.02195
+          },
+          "shape": "slow_attack",
+          "claimedAttackSeconds": 0.014,
+          "attackMatches": true
+        }
+      ],
+      "played": [
+        {
+          "note": "E2",
+          "sample": "E2",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000159,
+          "heardFirstEnergySeconds": 0.002063,
+          "heardReach10Seconds": 0.012971,
+          "heardReach50Seconds": 0.014966,
+          "heardReach90Seconds": 0.026939
+        },
+        {
+          "note": "A2",
+          "sample": "A2",
+          "playbackRate": 1,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.00034,
+          "heardFirstEnergySeconds": 0.001769,
+          "heardReach10Seconds": 0.012971,
+          "heardReach50Seconds": 0.013968,
+          "heardReach90Seconds": 0.023946
+        },
+        {
+          "note": "D3",
+          "sample": "C3",
+          "playbackRate": 1.122462,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.00004,
+          "heardFirstEnergySeconds": 0.001414,
+          "heardReach10Seconds": 0.011556,
+          "heardReach50Seconds": 0.012444,
+          "heardReach90Seconds": 0.019555
+        },
+        {
+          "note": "G3",
+          "sample": "C3",
+          "playbackRate": 1.498307,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.00003,
+          "heardFirstEnergySeconds": 0.001059,
+          "heardReach10Seconds": 0.008657,
+          "heardReach50Seconds": 0.009323,
+          "heardReach90Seconds": 0.01465
+        },
+        {
+          "note": "B3",
+          "sample": "C3",
+          "playbackRate": 1.887749,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000024,
+          "heardFirstEnergySeconds": 0.000841,
+          "heardReach10Seconds": 0.006871,
+          "heardReach50Seconds": 0.007399,
+          "heardReach90Seconds": 0.011628
+        },
+        {
+          "note": "C4",
+          "sample": "C3",
+          "playbackRate": 2,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000023,
+          "heardFirstEnergySeconds": 0.000794,
+          "heardReach10Seconds": 0.006486,
+          "heardReach50Seconds": 0.006984,
+          "heardReach90Seconds": 0.010975
+        },
+        {
+          "note": "D4",
+          "sample": "C3",
+          "playbackRate": 2.244924,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.00002,
+          "heardFirstEnergySeconds": 0.000707,
+          "heardReach10Seconds": 0.005778,
+          "heardReach50Seconds": 0.006222,
+          "heardReach90Seconds": 0.009778
+        },
+        {
+          "note": "E4",
+          "sample": "C3",
+          "playbackRate": 2.519842,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000018,
+          "heardFirstEnergySeconds": 0.00063,
+          "heardReach10Seconds": 0.005148,
+          "heardReach50Seconds": 0.005543,
+          "heardReach90Seconds": 0.008711
+        },
+        {
+          "note": "G4",
+          "sample": "C3",
+          "playbackRate": 2.996614,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000015,
+          "heardFirstEnergySeconds": 0.00053,
+          "heardReach10Seconds": 0.004329,
+          "heardReach50Seconds": 0.004661,
+          "heardReach90Seconds": 0.007325
+        },
+        {
+          "note": "A4",
+          "sample": "C3",
+          "playbackRate": 3.363586,
+          "shape": "slow_attack",
+          "heardSilenceSeconds": 0.000013,
+          "heardFirstEnergySeconds": 0.000472,
+          "heardReach10Seconds": 0.003856,
+          "heardReach50Seconds": 0.004153,
+          "heardReach90Seconds": 0.006526
+        }
+      ]
+    }
+  ]
+}

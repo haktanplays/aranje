@@ -31,10 +31,22 @@
  * from the planner and the two notes are struck plainly, which is what
  * falling back has always sounded like. Silently doing both would give one
  * string two owners.
+ *
+ * ## Where the source now stops (2V-C.4)
+ *
+ * Not at the target's onset any more. C.2 and C.3 both ended it exactly
+ * there, which is right about the event and wrong about the sound: the
+ * source's release runs out a few milliseconds later while the target's
+ * recording is still climbing, and the rendered waveform dips into the hole
+ * between them. So the source keeps a short measured tail past the onset, at
+ * the target's pitch, fading out as the target gets loud. How long is
+ * `handoffEnvelope`'s decision and depends on the recording the target will
+ * play; nothing about the target's own onset, pitch or duration moves.
  */
-import { handoffGain } from "@/lib/audio/gesture-shape";
+import { handoffEnvelope } from "@/lib/audio/handoff-envelope";
 import { transitionPoints } from "@/lib/audio/legato-chain";
 import type { ExpressiveNotePlan } from "@/lib/audio/expression-plan";
+import { DEFAULT_ATTACK_SECONDS } from "@/lib/audio/sample-onset";
 import type { PitchPoint } from "@/lib/audio/automation";
 
 const CENTS_PER_SEMITONE = 100;
@@ -55,6 +67,16 @@ export type ShiftSlideLink = {
 };
 
 /**
+ * How long the target's recording takes to become audible, by plan index.
+ *
+ * Supplied rather than looked up, because which recording a note plays is a
+ * property of the track's pack and the planner is the thing that knows the
+ * track. A link with no entry falls back to the shared default, which is a
+ * usable handoff rather than none.
+ */
+export type TargetAttackSeconds = (targetIndex: number) => number;
+
+/**
  * Move each link's travel into its source note.
  *
  * Mutates the array it is given, which is the plan being assembled and is not
@@ -65,8 +87,34 @@ export function applyShiftSlides(
   planned: ExpressiveNotePlan[],
   links: readonly ShiftSlideLink[],
   chained: ReadonlySet<number>,
+  attackFor: TargetAttackSeconds = () => DEFAULT_ATTACK_SECONDS,
 ): ShiftSlideLink[] {
   const applied: ShiftSlideLink[] = [];
+
+  /*
+   * A shape hands over as one hand (2V-C.4 §11).
+   *
+   * Its strings play different recordings with different attacks, so left to
+   * themselves they would each take their own tail and stop up to thirty
+   * milliseconds apart. Both targets are ringing throughout either way, but a
+   * chord whose strings are released at different moments is not one hand
+   * letting go, so the group shares the longest attack among them and every
+   * string is handed over on the same schedule. Each still *reads* its own
+   * recording — it is the group's answer that is shared, not the question.
+   *
+   * The count is shared for a second reason: three quiet voices under one
+   * chord attack are not quiet, and the ceiling belongs on their sum.
+   */
+  const groups = new Map<number, { voices: number; attack: number }>();
+  for (const link of links) {
+    const target = planned[link.targetIndex];
+    if (!target) continue;
+    const found = groups.get(target.timeTicks) ?? { voices: 0, attack: 0 };
+    groups.set(target.timeTicks, {
+      voices: found.voices + 1,
+      attack: Math.max(found.attack, attackFor(link.targetIndex)),
+    });
+  }
 
   for (const link of links) {
     const source = planned[link.sourceIndex];
@@ -82,6 +130,16 @@ export function applyShiftSlides(
     const travel = Math.min(link.travelSeconds, handover);
     const leaves = round(handover - travel);
 
+    const group = groups.get(target.timeTicks);
+    const envelope = handoffEnvelope({
+      sourceGain: source.gain,
+      handoverSeconds: round(handover),
+      travelSeconds: travel,
+      targetAttackSeconds: group?.attack ?? attackFor(link.targetIndex),
+      targetDurationSeconds: target.durationSeconds,
+      voiceCount: group?.voices ?? 1,
+    });
+
     const climb = link.intervalSemitones * CENTS_PER_SEMITONE;
     const points: PitchPoint[] = transitionPoints(
       "slide",
@@ -95,19 +153,35 @@ export function applyShiftSlides(
       curve: point.curve,
     }));
 
+    /*
+     * The tail stays where the hand arrived. Holding the target's pitch
+     * through the overlap is what makes the tail part of the target's sound
+     * rather than a second note underneath it — and it is the reason the
+     * overlap does not beat: both voices are at the same pitch.
+     */
+    if (envelope.endSeconds > handover) {
+      points.push({
+        timeSeconds: envelope.endSeconds,
+        cents: round(climb),
+        curve: "linear",
+      });
+    }
+
     planned[link.sourceIndex] = {
       ...source,
       expressive: true,
-      durationSeconds: round(handover),
+      durationSeconds: envelope.endSeconds,
       /*
-       * The old vibration handed over rather than cut (2V-C.3 §4).
+       * The old vibration handed over rather than cut (2V-C.3 §4, 2V-C.4 §8).
        *
-       * Measured at full level at the exact sample the target's attack began,
-       * which puts a step in the waveform between two full-amplitude events.
-       * The source now decays across its travel, the way a string does when a
-       * finger arrives on it.
+       * C.3 measured it at full level at the exact sample the target's attack
+       * began — a step between two full-amplitude events — and fixed that by
+       * fading it across the travel. C.4 measured what was left: it still
+       * ended at the onset, and the target was not loud yet. It now fades
+       * *through* the target's attack instead, reaching silence when the
+       * target has taken the note.
        */
-      gainEnvelope: handoffGain(source.gain, round(handover), leaves),
+      gainEnvelope: [...envelope.points],
       /* Held as itself first, then travelling. The leading point is what
          makes the departure late rather than immediate. */
       pitchAutomation:

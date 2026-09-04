@@ -38,6 +38,22 @@ describe("127. every fixture the matrix names is actually built", () => {
     expect(names.some((name) => name.includes("16th"))).toBe(true);
   });
 
+  it("renders the practice fixtures at their own rate, not at the written one", () => {
+    /*
+     * The first version of these two claimed a practice rate the render never
+     * saw: `renderTake` built its plan at the written tempo, so both fixtures
+     * measured a moment in the middle of a sustaining note and reported it as
+     * continuous. A matrix row that measures the wrong instant is worse than
+     * a missing one, because it reports coverage.
+     */
+    expect(fixtures["shift-half-speed"]!.practicePercent).toBe(50);
+    expect(fixtures["shift-fast-practice"]!.practicePercent).toBe(150);
+    for (const [name, fixture] of Object.entries(fixtures)) {
+      if (name.includes("speed") || name.includes("practice")) continue;
+      expect(fixture.practicePercent, name).toBeUndefined();
+    }
+  });
+
   it("places every seam inside its own clip", () => {
     for (const [name, fixture] of Object.entries(fixtures)) {
       expect(fixture.seamSeconds, name).toBeGreaterThan(0);

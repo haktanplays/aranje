@@ -41,6 +41,8 @@ export type SeamFixture = {
   readonly seamClass: SeamClass;
   /** Whether the energy is expected to be continuous across it. */
   readonly expectContinuous: boolean;
+  /** The rate to render at, when this fixture is about the practice rate. */
+  readonly practicePercent?: number;
   /** One line for the report. */
   readonly what: string;
 };
@@ -208,6 +210,9 @@ function build(song: Song, recipe: Recipe): SeamFixture | null {
       ],
     },
     seamSeconds,
+    ...(recipe.practicePercent === undefined
+      ? {}
+      : { practicePercent: recipe.practicePercent }),
     seamClass: recipe.seamClass,
     expectContinuous: expectsContinuity(recipe.seamClass),
     what: recipe.what,

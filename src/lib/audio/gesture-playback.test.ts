@@ -95,13 +95,20 @@ describe("89. a legato slide is not struck; a shift slide is", () => {
     expect(leaves.timeSeconds).toBeGreaterThan(0);
 
     /* And it gets there exactly on time, at exactly the interval. */
-    const arrival = source.pitchAutomation.at(-1)!;
-    expect(arrival.cents).toBe(200);
+    const arrival = source.pitchAutomation.find((point) => point.cents === 200)!;
     const handover = target.startSeconds - source.startSeconds;
     expect(arrival.timeSeconds).toBeCloseTo(handover, 6);
-    /* The string is not let go on the way: the source sounds until then, and
-       no automation is written past it. */
-    expect(source.durationSeconds).toBeCloseTo(handover, 6);
+    /*
+     * The string is not let go on the way: the source sounds right through
+     * the arrival. Since 2V-C.4 it sounds a little past it too — the target's
+     * recording needs a few milliseconds to get loud and the source covers
+     * them — and every point written after the arrival holds the pitch it
+     * arrived at, so the tail is the same note rather than a second one.
+     */
+    expect(source.durationSeconds).toBeGreaterThanOrEqual(handover);
+    for (const point of source.pitchAutomation) {
+      if (point.timeSeconds > handover) expect(point.cents).toBe(200);
+    }
   });
 
   it("leaves the legato slide's source alone, because its chain owns it", () => {

@@ -55,6 +55,9 @@ import {
   pitchGestureAutomation,
 } from "@/lib/audio/pitch-gesture";
 import { slideOutGain } from "@/lib/audio/gesture-shape";
+import { pitchToMidi } from "@/lib/music/pitch";
+import { samplePackFor } from "@/lib/audio/packs";
+import { attackSecondsFor, DEFAULT_ATTACK_SECONDS } from "@/lib/audio/sample-onset";
 import { applyShiftSlides, type ShiftSlideLink } from "@/lib/audio/shift-slide";
 import { resolveExpression, restrikesTarget } from "@/lib/music/expression-resolver";
 import type { Articulation, Song } from "@/lib/song/schema";
@@ -876,7 +879,24 @@ export function buildExpressionPlan(
      * are. Before the notes are pushed, because what it changes is the plan
      * they are pushed from.
      */
-    applyShiftSlides(planned, shiftSlides, new Set(built.membership.keys()));
+    /*
+     * Each target's own recording decides its handoff (2V-C.4 §5, §7).
+     *
+     * Resolved here because this is where the track is: the pack comes from
+     * the track's instrument and preset, and the same `nearestSample` the
+     * voice will use picks the recording. A track with no pack — a synth kit
+     * — falls back to the shared default inside `applyShiftSlides`.
+     */
+    const pack = samplePackFor(track.instrumentId, track.presetId);
+    applyShiftSlides(
+      planned,
+      shiftSlides,
+      new Set(built.membership.keys()),
+      (index) => {
+        const midi = pitchToMidi(planned[index]?.pitch ?? "");
+        return midi === null ? DEFAULT_ATTACK_SECONDS : attackSecondsFor(pack, midi);
+      },
+    );
 
     planned.forEach((note, index) => {
       const member = built.membership.get(index);

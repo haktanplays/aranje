@@ -93,14 +93,25 @@ async function renderSegment(
   song: Song,
   segment: ClipSegment,
   offline: OfflineRenderer,
+  practicePercent: number | undefined,
 ): Promise<{ channels: Float32Array[]; sampleRate: number; active: number }> {
-  const tempo = buildTempoMap(song);
+  /*
+   * One percent, two users. The tempo map places the notes and the engine
+   * builds the plan; if they were given different rates the render would put
+   * gestures where no note is. Defaulting to the written tempo keeps every
+   * existing caller — the Listening Pack included — rendering exactly as it
+   * did before this parameter existed.
+   */
+  const tempo =
+    practicePercent === undefined ? buildTempoMap(song) : buildTempoMap(song, practicePercent);
   const seconds = segmentSeconds(segment, tempo);
   let built: Engine | null = null;
 
   const buffer = await offline(
     async (context) => {
-      const engine = await createEngine(song, context);
+      const engine = await createEngine(song, context, {
+        ...(practicePercent === undefined ? {} : { practicePercent }),
+      });
       built = engine;
 
       /* The window is the whole point: `scheduleSong` fires only the onsets
@@ -179,7 +190,19 @@ function concat(parts: readonly Float32Array[][]): Float32Array[] {
 export async function renderTake(
   song: Song,
   take: ClipTake,
-  options: { readonly offline?: OfflineRenderer } = {},
+  options: {
+    readonly offline?: OfflineRenderer;
+    /**
+     * Whole percent of the song's own tempo to render at (spec 13.8).
+     *
+     * Omitted, the clip sounds at its written tempo, which is what every
+     * listening card wants. Given, the plan and the timeline are both built
+     * at that rate — the practice speed is a property of the performance and
+     * not of a playback knob, so a slowed render has to go through the
+     * planner rather than around it.
+     */
+    readonly practicePercent?: number;
+  } = {},
 ): Promise<RenderedTake> {
   const offline = options.offline ?? (await toneOffline());
   const parts: Float32Array[][] = [];
@@ -187,7 +210,7 @@ export async function renderTake(
   let activeAfterDispose = 0;
 
   for (const segment of take.segments) {
-    const rendered = await renderSegment(song, segment, offline);
+    const rendered = await renderSegment(song, segment, offline, options.practicePercent);
     parts.push(rendered.channels);
     sampleRate = rendered.sampleRate;
     activeAfterDispose += rendered.active;

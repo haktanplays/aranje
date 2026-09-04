@@ -10,7 +10,11 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { buildExpressionPlan } from "@/lib/audio/expression-plan";
+import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
+import {
+  MAX_OVERLAP_SECONDS,
+  MIN_OVERLAP_SECONDS,
+} from "@/lib/audio/handoff-envelope";
 import { openSlideTravelSeconds } from "@/lib/audio/pitch-gesture";
 import { expressionPresets } from "@/lib/audio/expression";
 import { SLIDE_DISTANCES } from "@/lib/music/slide-distance";
@@ -83,24 +87,58 @@ const gainAt = (
     : valueAt(note.gainEnvelope, note.gainEnvelope.map((point) => point.value), elapsed);
 
 describe("118. the two voices of a struck slide hand over rather than collide", () => {
+  /** Where the target lands, from the source's own onset. */
+  const seamOf = (source: ExpressiveNotePlan, target: ExpressiveNotePlan): number =>
+    target.startSeconds - source.startSeconds;
+
   it("brings the source down before the target is struck", () => {
     const song = pair({ kind: "shift_slide" });
     const source = at(song, 0, 2);
     const target = at(song, 96, 2);
-    const handover = gainAt(source, source.durationSeconds);
+    const seam = seamOf(source, target);
+    const handover = gainAt(source, seam);
     /* The defect: both at full level at the same sample, a step in the
        waveform between two full-amplitude events. */
     expect(handover).toBeLessThan(gainAt(target, 0));
-    expect(handover / gainAt(target, 0)).toBeCloseTo(
-      expressionPresets.slide.handoverGainFraction,
-      3,
-    );
+    expect(handover / gainAt(target, 0)).toBeLessThan(0.75);
   });
 
-  it("does not fade the source to silence, so the arrival is still heard", () => {
+  it("does not fade the source to silence before the target arrives", () => {
     const song = pair({ kind: "shift_slide" });
     const source = at(song, 0, 2);
-    expect(gainAt(source, source.durationSeconds)).toBeGreaterThan(0.2 * source.gain);
+    const target = at(song, 96, 2);
+    expect(gainAt(source, seamOf(source, target))).toBeGreaterThan(0.2 * source.gain);
+  });
+
+  it("keeps the source sounding past the onset, and takes it to silence", () => {
+    /*
+     * 2V-C.4. Ending at the onset is right about the event and wrong about
+     * the sound: the source's release runs out a few milliseconds later
+     * while the target's recording is still climbing, and the rendered
+     * waveform dips into the hole between them. So the tail continues, and
+     * it ends at zero rather than at a level, because a voice stopped at a
+     * level is a step in the waveform.
+     */
+    const song = pair({ kind: "shift_slide" });
+    const source = at(song, 0, 2);
+    const target = at(song, 96, 2);
+    const seam = seamOf(source, target);
+    expect(source.durationSeconds).toBeGreaterThan(seam);
+    expect(source.durationSeconds - seam).toBeGreaterThanOrEqual(MIN_OVERLAP_SECONDS);
+    expect(source.durationSeconds - seam).toBeLessThanOrEqual(MAX_OVERLAP_SECONDS);
+    expect(source.gainEnvelope.at(-1)!.value).toBe(0);
+    expect(source.gainEnvelope.at(-1)!.timeSeconds).toBeCloseTo(source.durationSeconds, 6);
+  });
+
+  it("holds the target's pitch through the tail rather than sliding past it", () => {
+    /* The overlap is the old string still ringing at the new fret. At any
+       other pitch it would be a second note under the target, and two pitches
+       a few cents apart is exactly what beats. */
+    const song = pair({ kind: "shift_slide" });
+    const source = at(song, 0, 2);
+    const target = at(song, 96, 2);
+    expect(centsAt(source.pitchAutomation, seamOf(source, target))).toBe(200);
+    expect(centsAt(source.pitchAutomation, source.durationSeconds)).toBe(200);
   });
 
   it("holds the source at full level until the hand actually moves", () => {
@@ -123,17 +161,23 @@ describe("118. the two voices of a struck slide hand over rather than collide", 
   });
 
   it("still arrives exactly when the target is struck", () => {
+    /*
+     * The claim C.3 made here was "no overlap and no gap", checked by the
+     * source ending at the target's onset. C.4 measured that in rendered PCM
+     * and it was a hole, so the claim is now the one it was standing in for:
+     * the *pitch* arrives exactly on time, and the level is well down by
+     * then. Zero overlap was never the goal — an uninterrupted sound was.
+     */
     const song = pair({ kind: "shift_slide" });
     const source = at(song, 0, 2);
     const target = at(song, 96, 2);
-    const arrival = source.pitchAutomation.at(-1)!;
-    expect(arrival.cents).toBe(200);
-    expect(arrival.timeSeconds).toBeCloseTo(target.startSeconds - source.startSeconds, 6);
-    /* No overlap and no gap: the seam is a handover, not a fight or a hole. */
-    expect(source.startSeconds + source.durationSeconds).toBeCloseTo(
-      target.startSeconds,
-      6,
-    );
+    const seam = target.startSeconds - source.startSeconds;
+    const arrival = source.pitchAutomation.find((point) => point.cents === 200)!;
+    expect(arrival.timeSeconds).toBeCloseTo(seam, 6);
+    expect(gainAt(source, seam)).toBeLessThan(0.75 * source.gain);
+    /* And the overlap stays short: a tail, not a second voice. */
+    expect(source.startSeconds + source.durationSeconds - target.startSeconds)
+      .toBeLessThanOrEqual(MAX_OVERLAP_SECONDS);
   });
 
   it("gives a legato slide no handoff fade and no target attack", () => {
@@ -272,7 +316,14 @@ describe("120. a shape moves as one hand", () => {
     const song = shapePair({ kind: "shift_slide" });
     const arrivals = [2, 3].map((string) => {
       const source = at(song, 0, string);
-      return source.startSeconds + source.pitchAutomation.at(-1)!.timeSeconds;
+      /* The first point at the interval, not the last point written: since
+         2V-C.4 the automation holds that pitch through the tail, so the last
+         point is where the tail ends rather than where the hand landed. */
+      const climb = Math.max(...source.pitchAutomation.map((point) => point.cents));
+      return (
+        source.startSeconds +
+        source.pitchAutomation.find((point) => point.cents === climb)!.timeSeconds
+      );
     });
     expect(arrivals[0]).toBeCloseTo(arrivals[1]!, 9);
   });
@@ -287,15 +338,24 @@ describe("120. a shape moves as one hand", () => {
   });
 
   it("hands every string over with the same policy", () => {
+    /*
+     * The strings play different recordings with different attacks, so the
+     * shape shares one answer: the group takes the longest attack among its
+     * voices and every string is handed over on that schedule. Otherwise a
+     * chord would be released one string at a time.
+     */
     const song = shapePair({ kind: "shift_slide" });
-    const ratios = [2, 3].map((string) => {
-      const source = at(song, 0, string);
-      return gainAt(source, source.durationSeconds) / source.gain;
-    });
+    const sources = [2, 3].map((string) => at(song, 0, string));
+    const target = at(song, 96, 2);
+    const ratios = sources.map(
+      (source) => gainAt(source, target.startSeconds - source.startSeconds) / source.gain,
+    );
     expect(ratios[0]).toBeCloseTo(ratios[1]!, 9);
-    /* Envelope values are rounded to a microsecond's worth of precision, so
-       the ratio is compared at that grain rather than exactly. */
-    expect(ratios[0]).toBeCloseTo(expressionPresets.slide.handoverGainFraction, 5);
+    /* And the shared level stays inside the policy's own two bounds, rather
+       than being whatever one recording happened to ask for. */
+    const preset = expressionPresets.slide;
+    expect(ratios[0]).toBeGreaterThanOrEqual(preset.handoverGainFraction - 1e-6);
+    expect(ratios[0]).toBeLessThanOrEqual(preset.handoverSlowFraction + 1e-6);
   });
 
   it("does not cut one voice before the others", () => {

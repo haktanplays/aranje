@@ -148,6 +148,16 @@ export const expressionPresets = {
      * pick stroke. Not higher, or the step comes back.
      */
     handoverGainFraction: 0.45,
+    /*
+     * The same level, for a target that is slow to arrive (2V-C.4 §7).
+     *
+     * Measured across the pack, a recording takes between 3 and 31 ms to
+     * reach half its attack. The fast ones need almost no help; the slow
+     * ones are where the founder heard a gap. So the source arrives a little
+     * higher when it has more to cover, and `handoffEnvelope` interpolates
+     * between the two rather than picking one number for every note.
+     */
+    handoverSlowFraction: 0.6,
     /**
      * How fast a hand moves on an *open* slide (2V-C.3 §7, §8).
      *
