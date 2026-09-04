@@ -42,6 +42,7 @@
  * carries an explicit `pitchGesture`.
  */
 import { bendStages, valueAt, type PitchPoint } from "@/lib/audio/automation";
+import { bendReleaseStages } from "@/lib/audio/gesture-shape";
 import { desiredGlideSeconds, transitionPoints } from "@/lib/audio/legato-chain";
 import { expressionPresets } from "@/lib/audio/expression";
 import type { BendGesture, PitchGesture } from "@/lib/song/schema";
@@ -87,7 +88,21 @@ export function bendGestureAutomation(
 ): PitchPoint[] {
   const timeScale = options.timeScale ?? 1;
   const preset = expressionPresets.bend;
-  const stages = bendStages(durationSeconds, timeScale);
+  /*
+   * A bend that comes back is shaped by its own stage split (2V-C.2 §6).
+   *
+   * `bendStages` divides the note into settle, rise, hold and release with
+   * nothing after the release, which is right for the legacy enum and wrong
+   * for this gesture: the measurement found the written pitch being reached
+   * at the note's last sample, so the return had no moment to be heard in.
+   * The release shape reserves that moment. A bend that *stays* up has no
+   * release at all and keeps the stages it was accepted with.
+   */
+  const coming = returnsToWritten(gesture.kind)
+    ? bendReleaseStages(durationSeconds, timeScale)
+    : null;
+  const returns = coming !== null;
+  const stages = coming ?? bendStages(durationSeconds, timeScale);
   const target = gesture.targetCents;
   const points: PitchPoint[] = [];
 
@@ -113,13 +128,18 @@ export function bendGestureAutomation(
   }
 
   const reachedAt = startsBent(gesture.kind) ? 0 : stages.reachedAtSeconds;
-  const releaseSeconds = returnsToWritten(gesture.kind) ? stages.releaseSeconds : 0;
+  const releaseSeconds = returns ? stages.releaseSeconds : 0;
   /*
    * Where the hold ends. Never before the target is reached: on a note too
    * short to hold anything, this collapses to the arrival rather than going
    * negative and writing automation backwards.
+   *
+   * A gesture that comes back takes this from its own stages, so the descent
+   * finishes with a rest still to go. One that stays up holds to the end.
    */
-  const holdEnd = Math.max(reachedAt, durationSeconds - releaseSeconds);
+  const holdEnd = coming
+    ? Math.max(reachedAt, coming.releaseStartsAtSeconds)
+    : Math.max(reachedAt, durationSeconds - releaseSeconds);
 
   if (gesture.vibrato && holdEnd > reachedAt) {
     const { depthCents, rateHz } = gesture.vibrato;
@@ -142,7 +162,7 @@ export function bendGestureAutomation(
 
   points.push({ timeSeconds: round(holdEnd), cents: target, curve: "linear" });
 
-  if (returnsToWritten(gesture.kind)) {
+  if (returns) {
     for (let step = 1; step <= preset.curvePoints; step += 1) {
       const t = step / preset.curvePoints;
       points.push({
@@ -150,6 +170,19 @@ export function bendGestureAutomation(
         cents: round(target * (1 - easeInOut(t))),
         curve: "linear",
       });
+    }
+    /*
+     * The note, being the note again.
+     *
+     * Without this the automation ends the instant the descent does, and on
+     * any note where those coincide the listener hears a fall and then
+     * silence. Holding the written pitch to the end is what makes the return
+     * a movement that finished rather than one that was interrupted — and it
+     * is a hold, not a further ramp, so nothing is still moving at note-off.
+     */
+    const returnedAt = round(holdEnd + releaseSeconds);
+    if (durationSeconds > returnedAt) {
+      points.push({ timeSeconds: round(durationSeconds), cents: 0, curve: "linear" });
     }
   }
 
@@ -163,19 +196,33 @@ export function bendGestureAutomation(
  * starting somewhere lower, not a fret the player wrote down, and inventing
  * that fret would put a note on the staff nobody played.
  */
+export function openSlideTravelSeconds(
+  gesture: Extract<PitchGesture, { kind: "slide_in" | "slide_out" }>,
+  durationSeconds: number,
+): number {
+  const semitones = openSlideSemitones(gesture);
+  return round(
+    Math.min(desiredGlideSeconds(semitones), durationSeconds * OPEN_SLIDE_MAX_FRACTION),
+  );
+}
+
+/** How far away the hand starts, or ends up. */
+export function openSlideSemitones(
+  gesture: Extract<PitchGesture, { kind: "slide_in" | "slide_out" }>,
+): number {
+  return (
+    gesture.approxSemitones ??
+    (gesture.kind === "slide_in" ? DEFAULT_SLIDE_IN_SEMITONES : DEFAULT_SLIDE_OUT_SEMITONES)
+  );
+}
+
 export function openSlideAutomation(
   gesture: Extract<PitchGesture, { kind: "slide_in" | "slide_out" }>,
   durationSeconds: number,
 ): PitchPoint[] {
   const isIn = gesture.kind === "slide_in";
-  const semitones =
-    gesture.approxSemitones ??
-    (isIn ? DEFAULT_SLIDE_IN_SEMITONES : DEFAULT_SLIDE_OUT_SEMITONES);
-  const away = semitones * CENTS_PER_SEMITONE;
-  const travel = Math.min(
-    desiredGlideSeconds(semitones),
-    durationSeconds * OPEN_SLIDE_MAX_FRACTION,
-  );
+  const away = openSlideSemitones(gesture) * CENTS_PER_SEMITONE;
+  const travel = openSlideTravelSeconds(gesture, durationSeconds);
 
   if (isIn) {
     const from = gesture.from === "below" ? -away : away;

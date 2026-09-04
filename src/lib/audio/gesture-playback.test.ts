@@ -67,12 +67,51 @@ describe("89. a legato slide is not struck; a shift slide is", () => {
     expect(note.expressive).toBe(true);
   });
 
-  it("travels the same distance either way, arriving at the written pitch", () => {
+  /*
+   * This test used to assert the opposite (2V-C.2 §9).
+   *
+   * It required the target's automation to start at −200 and arrive at 0,
+   * which is what C.1 built and what the trace showed to be the wrong event
+   * order: the target's buffer struck at the *source's* pitch, at the
+   * target's written moment, sliding up from there. That is not re-striking
+   * the target — it is re-striking the source, late. The assertion has not
+   * been dropped, it has been moved onto the notes that now carry the
+   * behaviour, and it is stricter than it was.
+   */
+  it("strikes the target flat, at the pitch and the moment written for it", () => {
     const shift = targetOf(pair({ kind: "shift_slide" }));
-    /* Starts a whole tone below and arrives at 0 — the same travel the chain
-       makes, on the note's own automation. */
-    expect(shift.pitchAutomation[0]!.cents).toBe(-200);
-    expect(shift.pitchAutomation.at(-1)!.cents).toBe(0);
+    expect(shift.timeTicks).toBe(192);
+    expect(shift.pitchAutomation.every((point) => point.cents === 0)).toBe(true);
+  });
+
+  it("travels during the source note, arriving exactly as the target is struck", () => {
+    const plan = buildExpressionPlan(pair({ kind: "shift_slide" }));
+    const source = plan.notes.find((note) => note.timeTicks === 0)!;
+    const target = plan.notes.find((note) => note.timeTicks === 192)!;
+
+    /* Held as itself first: the departure is not at the onset. */
+    expect(source.pitchAutomation[0]!.cents).toBe(0);
+    const leaves = source.pitchAutomation.find((point) => point.cents !== 0)!;
+    expect(leaves.timeSeconds).toBeGreaterThan(0);
+
+    /* And it gets there exactly on time, at exactly the interval. */
+    const arrival = source.pitchAutomation.at(-1)!;
+    expect(arrival.cents).toBe(200);
+    const handover = target.startSeconds - source.startSeconds;
+    expect(arrival.timeSeconds).toBeCloseTo(handover, 6);
+    /* The string is not let go on the way: the source sounds until then, and
+       no automation is written past it. */
+    expect(source.durationSeconds).toBeCloseTo(handover, 6);
+  });
+
+  it("leaves the legato slide's source alone, because its chain owns it", () => {
+    const plan = buildExpressionPlan(pair({ kind: "legato_slide" }));
+    const source = plan.notes.find((note) => note.timeTicks === 0)!;
+    /* One voice travels through the whole chain, so nothing is written onto
+       the source separately — two owners for one string is the bug this
+       skip exists to avoid. */
+    expect(source.chainRole).toBe("source");
+    expect(source.pitchAutomation.every((point) => point.cents === 0)).toBe(true);
   });
 
   it("keeps the legacy slide on the chain path, unchanged", () => {

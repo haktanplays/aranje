@@ -30,14 +30,12 @@ import {
 } from "@/lib/audio/practice-rate";
 import {
   bendTargetCents,
-  CENTS_PER_SEMITONE,
   expressionPresets,
   isExpressive,
 } from "@/lib/audio/expression";
 import {
   buildLegatoChains,
   glideFor,
-  transitionPoints,
   type ChainBuildResult,
   type ChainRole,
   type LegatoChain,
@@ -52,7 +50,12 @@ import {
   type GainPoint,
   type PitchPoint,
 } from "@/lib/audio/automation";
-import { pitchGestureAutomation } from "@/lib/audio/pitch-gesture";
+import {
+  openSlideTravelSeconds,
+  pitchGestureAutomation,
+} from "@/lib/audio/pitch-gesture";
+import { slideOutGain } from "@/lib/audio/gesture-shape";
+import { applyShiftSlides, type ShiftSlideLink } from "@/lib/audio/shift-slide";
 import { resolveExpression, restrikesTarget } from "@/lib/music/expression-resolver";
 import type { Articulation, Song } from "@/lib/song/schema";
 
@@ -398,6 +401,8 @@ function planFor(
     timeScale: number;
     profile: BendProfile;
     comparison: ExpressionComparisonOptions;
+    /** Where a shift slide records the two notes its travel spans (§9). */
+    shiftSlides: ShiftSlideLink[];
   },
 ): ExpressiveNotePlan {
   // Asked of the timeline rather than multiplied out, so a note held across a
@@ -460,23 +465,52 @@ function planFor(
     if (onset.fret === null || onset.midi === null) {
       return { ...base, fallbackReason: "not_fretted" };
     }
+    const gesture = resolved.pitch.gesture;
     return {
       ...base,
       expressive: true,
-      pitchAutomation: pitchGestureAutomation(resolved.pitch.gesture, durationSeconds, {
+      pitchAutomation: pitchGestureAutomation(gesture, durationSeconds, {
         timeScale: options.timeScale,
       }),
+      /*
+       * A slide-out is the sound going away (2V-C.2 §11).
+       *
+       * Its pitch is still travelling when the note stops, which is what
+       * leaving a string sounds like — so the level has to be going with it,
+       * or the ear hears a full-voice pitch dive cut off mid-flight. The
+       * entry gets no such envelope: it lands *into* a note that then carries
+       * on, and fading that would be fading the note itself.
+       */
+      ...(gesture.kind === "slide_out"
+        ? {
+            gainEnvelope: slideOutGain(
+              gain,
+              durationSeconds,
+              durationSeconds - openSlideTravelSeconds(gesture, durationSeconds),
+            ),
+          }
+        : {}),
     };
   }
 
   /*
-   * A shift slide: the same travel, and then the target is struck (§8).
+   * A shift slide: the hand arrives, and then the target is struck (§8;
+   * corrected 2V-C.2 §9).
    *
    * Not a chain. A chain exists precisely so the target is *not* struck —
-   * one voice travels through all of it — so this is an ordinary onset that
-   * carries the travel on its own automation, arriving at the written pitch
-   * at its own onset. The travel curve is the one the legato chain uses, so
-   * the two slides differ in the attack and in nothing else.
+   * one voice travels through all of it — whereas here it is. But "not a
+   * chain" is not the same as "no travel before it", and C.1 read it that
+   * way: the travel was written onto the target's own automation, which
+   * struck the target buffer at the **source** pitch at the target's onset
+   * and slid up from there. That is re-striking the source late, not
+   * re-striking the target.
+   *
+   * The hand moves during the source note. So the travel belongs in the
+   * source's tail, ending exactly at the target's onset, and the target is
+   * struck flat at the pitch that was written for it. This branch keeps the
+   * refusals — they are decisions about whether the slide can happen at all —
+   * and hands the timeline itself to `applyShiftSlides` below, which is the
+   * only place that can see both notes at once.
    */
   if (restrikesTarget(resolved.connection)) {
     if (onset.fret === null || onset.midi === null) {
@@ -499,25 +533,31 @@ function planFor(
     if (Math.abs(interval) > expressionPresets.slide.maxIntervalSemitones) {
       return { ...base, fallbackReason: "interval_too_wide" };
     }
-    const glide = glideFor(interval, durationSeconds, options.timeScale);
+    /*
+     * The room is the *source* note's, because that is where the hand moves.
+     * Asked of the source's sounding length rather than the target's, so a
+     * long note into a short one is still allowed to slide.
+     */
+    const room = round(
+      secondsAtTicks(tempo, onset.timeTicks) -
+        secondsAtTicks(tempo, previous.timeTicks),
+    );
+    const glide = glideFor(interval, room, options.timeScale);
     if (glide.kind === "too_tight") {
       return { ...base, fallbackReason: "no_room_to_glide" };
     }
-    return {
-      ...base,
-      expressive: true,
-      pitchAutomation: transitionPoints(
-        "slide",
-        0,
-        glide.seconds,
-        -interval * CENTS_PER_SEMITONE,
-        0,
-      ).map((point) => ({
-        timeSeconds: round(point.timeSeconds),
-        cents: round(point.cents),
-        curve: point.curve,
-      })),
-    };
+    /* Struck flat, at its own pitch, at its own time. The travel that leads
+       here is written onto the source note by `applyShiftSlides`. */
+    const sourceIndex = allOnsets.indexOf(previous);
+    if (sourceIndex >= 0) {
+      options.shiftSlides.push({
+        targetIndex: index,
+        sourceIndex,
+        intervalSemitones: interval,
+        travelSeconds: glide.seconds,
+      });
+    }
+    return { ...base, expressive: true };
   }
 
   if (!isExpressive(articulation)) return base;
@@ -802,11 +842,13 @@ export function buildExpressionPlan(
     const noteIds = onsets.map(
       (onset) => `${track.id}:${onset.timeTicks}:${onset.stringIndex}:${onset.pitch}`,
     );
+    const shiftSlides: ShiftSlideLink[] = [];
     const planned = onsets.map((onset, index) => ({
       ...planFor(onset, onsets, index, tempo, {
         timeScale,
         profile,
         comparison,
+        shiftSlides,
       }),
       trackId: track.id,
       id: noteIds[index] ?? "",
@@ -825,6 +867,16 @@ export function buildExpressionPlan(
           withAuxiliary: comparison.pullOffAuxiliary ?? true,
         });
     chains.push(...built.chains);
+
+    /*
+     * The hand moves during the source note (2V-C.2 §9).
+     *
+     * After the chains, because a note a chain is already playing is not this
+     * pass's to rewrite, and it is the membership map that knows which those
+     * are. Before the notes are pushed, because what it changes is the plan
+     * they are pushed from.
+     */
+    applyShiftSlides(planned, shiftSlides, new Set(built.membership.keys()));
 
     planned.forEach((note, index) => {
       const member = built.membership.get(index);

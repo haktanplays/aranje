@@ -52,6 +52,38 @@ export const expressionPresets = {
     /** How finely the eased rise and release are written out. */
     curvePoints: 6,
     /**
+     * The written release, as a movement rather than an ending (2V-C.2 §6).
+     *
+     * The four numbers above shape the release the legacy `bend_half` /
+     * `bend_full` enum has always had, and they are not touched: an old song
+     * must sound on the day this was added exactly as it did the day before.
+     * These are the ones the explicit `bend_release` gesture uses, and they
+     * exist because the measurement said the old ones were wrong for it.
+     *
+     * What the trace showed: the descent took 0.138s against a 0.211s rise —
+     * a hand that lets go half again as fast as it pushed — and it landed on
+     * the written pitch at the note's very last sample. So the listener never
+     * heard the note arrive anywhere. It heard a fall, and then silence,
+     * which is why "geri indir tam tatmin etmedi".
+     *
+     * `ratioToRise` is therefore at least 1: relaxing is never quicker than
+     * pushing. `rest` is the part that was missing entirely — the stretch at
+     * the end where the note is simply the note again, which is what makes
+     * the return a movement that finished rather than one that was cut off.
+     * Both are clamped so a long note does not turn the gesture into a slow
+     * effect and a short one still gets a rest it can be heard in; when even
+     * the clamps do not fit, every stage is squeezed by the same factor, so
+     * the character survives and nothing is written past the note.
+     */
+    release: {
+      ratioToRise: 1.15,
+      minSeconds: 0.1,
+      maxSeconds: 0.34,
+      restFraction: 0.12,
+      restMinSeconds: 0.07,
+      restMaxSeconds: 0.26,
+    },
+    /**
      * The "expressive" profile only. Not a second articulation and never
      * written to the song: it is a playback character for the same bend.
      */
@@ -85,6 +117,23 @@ export const expressionPresets = {
     curvePoints: 8,
     /** Further than this and it is a jump, not a slide. */
     maxIntervalSemitones: 12,
+    /**
+     * Leaving a note is not entering one backwards (2V-C.2 §11).
+     *
+     * A slide-in arrives *into* the note: the hand lands, the pitch settles,
+     * and the note carries on at full voice for the rest of its length. A
+     * slide-out has no note to arrive at. The hand keeps moving as the string
+     * is let go, and what the ear follows on the way out is the sound
+     * leaving, not a pitch being reached — which is why the exit gets a fade
+     * the entry must not have, and why mirroring one curve for both would be
+     * wrong rather than economical.
+     *
+     * The trace showed the exit at full gain right up to the note's last
+     * sample, which is a whammy dive cut with scissors. This is how far the
+     * voice has fallen by then. Not zero: the note is still stopping, and a
+     * ramp that reaches silence early would take the tail with it.
+     */
+    outFadeToFraction: 0.12,
   },
   /**
    * Hammer-on and pull-off (spec 8.5, K-22).
