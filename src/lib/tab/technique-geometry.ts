@@ -37,6 +37,8 @@
  * that the data cannot support; they are written down as visual-spec debt
  * instead (`docs/TECHNIQUE-NOTATION.md`).
  */
+import { connectionReading } from "@/lib/music/gesture-language";
+import { resolveExpression } from "@/lib/music/expression-resolver";
 import { pitchToMidi } from "@/lib/music/pitch";
 import { glyphText, legatoLabel, maskWidthFor } from "@/lib/tab/glyph-model";
 import type { FrettedBar, TabSpan } from "@/lib/tab/timeline";
@@ -76,6 +78,14 @@ const ARC_OVERHANG_PX = 5;
 const ARC_RISE_PX = 7;
 const SLIDE_TILT_PX = 3;
 const SLIDE_MAX_PX = 14;
+/**
+ * How high a legato slide's arc rises above its stroke (2V-C.3 §5).
+ *
+ * Small on purpose. It has to be visible without colour and without pushing
+ * the numerals or growing the staff, and it shares a lane with the phrase
+ * band above it, so it stays inside the space the stroke already occupies.
+ */
+const SLUR_RISE_PX = 4;
 const BEND_RUN_PX = 8;
 const BEND_RISE_PX = 10;
 const BEND_HEAD_PX = 2.6;
@@ -126,6 +136,17 @@ export type SlideMark = Owned & {
   readonly x2: number;
   readonly y2: number;
   readonly label: string;
+  /**
+   * Whether a slur belongs over this stroke (2V-C.3 §5).
+   *
+   * Both slides draw the same leaning line — that is what tablature does —
+   * so the arc is the only thing separating "one continuous sound" from
+   * "struck again on arrival". The answer comes from `gesture-language`, the
+   * same place the screen reader's sentence comes from.
+   */
+  readonly slur: boolean;
+  /** The small arc, when there is one. Empty for a shift slide. */
+  readonly slurPath: string;
 };
 
 export type BendMark = Owned & {
@@ -398,13 +419,37 @@ function buildLegato(
   return phrases;
 }
 
+/**
+ * What kind of slide a span writes, if any (2V-C.3 §5).
+ *
+ * Three shapes reach here and all three draw a leaning stroke: the legacy
+ * `slide` articulation, and the two explicit connections. Until now only the
+ * legacy one was drawn, so a note carrying `legato_slide` or `shift_slide`
+ * had a character beside its digit and no connector on the staff — the
+ * reader could see *that* something was joined and not *where from*.
+ *
+ * The resolver is asked rather than the fields being read directly, so a note
+ * that answers this axis twice is refused here exactly as it is in playback
+ * instead of being drawn as whichever field is checked first.
+ */
+function slideOf(span: TabSpan): { readonly slur: boolean } | null {
+  const reading = resolveExpression(span);
+  if (reading.conflict !== null) return null;
+  const joined = connectionReading(reading.connection);
+  /* A hammer-on and a pull-off are joins too, and they are not slides: the
+     leaning stroke is the test, not the fact of being connected. */
+  if (joined.mark !== "/" && joined.mark !== "\\") return null;
+  return { slur: joined.slur === true };
+}
+
 function buildSlides(bar: FrettedBar, layout: TechniqueLayout): SlideMark[] {
   const marks: SlideMark[] = [];
 
   for (let stringIndex = 0; stringIndex < layout.stringCount; stringIndex += 1) {
     const onsets = stringOnsets(bar, stringIndex);
     onsets.forEach((span, index) => {
-      if (span.articulation !== "slide") return;
+      const slide = slideOf(span);
+      if (slide === null) return;
       const previous = onsets[index - 1];
       if (!previous) return;
       const from = pitchToMidi(previous.pitch);
@@ -435,7 +480,24 @@ function buildSlides(bar: FrettedBar, layout: TechniqueLayout): SlideMark[] {
         y1: round(rising ? y + SLIDE_TILT_PX : y - SLIDE_TILT_PX),
         x2: round(centre + width / 2),
         y2: round(rising ? y - SLIDE_TILT_PX : y + SLIDE_TILT_PX),
-        label: `${previous.fret ?? "?"}. perdeden ${span.fret ?? "?"}. perdeye kaydırma`,
+        label: `${previous.fret ?? "?"}. perdeden ${span.fret ?? "?"}. perdeye ${
+          slide.slur ? "bağlı kaydırma" : "kaydırma, hedefte yeniden vurulur"
+        }`,
+        slur: slide.slur,
+        /*
+         * A shallow arc over the stroke, above the string line so it never
+         * sits where a tie is drawn and never pushes a numeral. It spans the
+         * stroke rather than the whole run: the run's own arc belongs to
+         * hammer-ons and pull-offs, and two arcs meaning different things
+         * over the same notes is worse than one that is slightly short.
+         */
+        slurPath: slide.slur
+          ? `M ${round(centre - width / 2)} ${round(y - SLIDE_TILT_PX - 2)} Q ${round(
+              centre,
+            )} ${round(y - SLIDE_TILT_PX - SLUR_RISE_PX - 2)} ${round(
+              centre + width / 2,
+            )} ${round(y - SLIDE_TILT_PX - 2)}`
+          : "",
       });
     });
   }

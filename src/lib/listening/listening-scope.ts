@@ -14,7 +14,7 @@ import { isArchived } from "@/lib/listening/founder-authority";
 import type { ListeningClip } from "@/lib/listening/clip-plan";
 
 /** The cards the founder is being asked to judge now. */
-export const ACTIVE_CLIP_IDS = ["L17", "L18", "L19", "L20"] as const;
+export const ACTIVE_CLIP_IDS = ["L21", "L22", "L23", "L24"] as const;
 
 export type ActiveClipId = (typeof ACTIVE_CLIP_IDS)[number];
 

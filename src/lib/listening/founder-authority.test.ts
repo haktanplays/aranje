@@ -37,16 +37,19 @@ const round = listeningClips(
   gestureTakes(fixture),
 );
 
-describe("101. the sixteen recorded results, exactly as they were given", () => {
+describe("101. the twenty recorded results, exactly as they were given", () => {
   it("holds every card the founder has judged, in order", () => {
     expect(FOUNDER_AUTHORITY.map((card) => card.id)).toEqual([
       "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8",
       "L9", "L10", "L11", "L12", "L13", "L14", "L15", "L16",
+      "L17", "L18", "L19", "L20",
     ]);
   });
 
   it("keeps the passes that were given", () => {
-    for (const id of ["L1", "L2", "L3", "L6", "L8", "L9", "L10", "L15", "L16"]) {
+    for (const id of [
+      "L1", "L2", "L3", "L6", "L8", "L9", "L10", "L15", "L16", "L17", "L18",
+    ]) {
       expect(archivedCard(id)?.verdict).toBe("pass");
     }
   });
@@ -56,6 +59,26 @@ describe("101. the sixteen recorded results, exactly as they were given", () => 
       expect(archivedCard(id)?.verdict).toBe("conditional_pass");
       expect(archivedCard(id)?.note).toBe("Cila borcu.");
     }
+  });
+
+  it("keeps the two slide cards conditional rather than promoting them", () => {
+    /* 2V-C.3 polishes what these two were conditional on. Polishing a thing
+       is not the founder saying it is done, and the record must not start
+       saying so on the strength of a fix. */
+    for (const id of ["L19", "L20"]) {
+      expect(archivedCard(id)?.verdict).toBe("conditional_pass");
+    }
+  });
+
+  it("gives L19 the founder's own sentence and L20 no sentence at all", () => {
+    expect(archivedCard("L19")?.note).toBe("Vurarak biraz kusurlu duruyor.");
+    /*
+     * L20 came back conditional and said nothing else. Its card had asked
+     * about entering *and* leaving at once, so there is no way to know which
+     * half the reservation was about — and a note here would be a guess in
+     * the founder's voice. The silence is the record.
+     */
+    expect(archivedCard("L20")?.note).toBeUndefined();
   });
 
   it("keeps L4 inconclusive and says it does not block", () => {
@@ -106,7 +129,7 @@ describe("101. the sixteen recorded results, exactly as they were given", () => 
 
 describe("102. this round asks four cards, and counts four", () => {
   it("names exactly the four revisions", () => {
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L17", "L18", "L19", "L20"]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L21", "L22", "L23", "L24"]);
   });
 
   it("puts the older cards out of the round and into the record", () => {
@@ -118,10 +141,10 @@ describe("102. this round asks four cards, and counts four", () => {
 
   it("offers only the four in front of the reader", () => {
     expect(activeClips(round).map((clip) => clip.id)).toEqual([
-      "L17",
-      "L18",
-      "L19",
-      "L20",
+      "L21",
+      "L22",
+      "L23",
+      "L24",
     ]);
   });
 
@@ -131,7 +154,7 @@ describe("102. this round asks four cards, and counts four", () => {
     for (const id of archived) expect(isActive(id)).toBe(false);
   });
 
-  it("counts this round out of four, never out of sixteen", () => {
+  it("counts this round out of four, never out of twenty", () => {
     const block = formatListeningResult({
       buildSha: "abc1234",
       fingerprint: "x",

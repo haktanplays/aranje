@@ -334,9 +334,9 @@ describe("the block the founder pastes back", () => {
       ...base,
       answers: { L17: "", L18: null, L19: undefined },
     });
-    expect(block).toContain("L17 Bend geri dönüşü: ölçülmedi");
-    expect(block).toContain("L18 Normal bend / önceden bükme: ölçülmedi");
-    expect(block).toContain("L19 Bağlı / vurarak kaydırma: ölçülmedi");
+    expect(block).toContain("L21 Vurarak slide handoff: ölçülmedi");
+    expect(block).toContain("L22 Kayarak giriş: ölçülmedi");
+    expect(block).toContain("L23 Kayarak çıkış: ölçülmedi");
   });
 
   it("says so when a comment was written but no verdict chosen", () => {
@@ -345,9 +345,9 @@ describe("the block the founder pastes back", () => {
     const block = formatListeningResult({
       ...base,
       answers: {},
-      notes: { L17: "biraz mekanik" },
+      notes: { L21: "biraz mekanik" },
     });
-    expect(block).toContain("L17 Bend geri dönüşü: ölçülmedi — yorum var — biraz mekanik");
+    expect(block).toContain("L21 Vurarak slide handoff: ölçülmedi — yorum var — biraz mekanik");
     expect(block).toContain("Cevaplanmamış: 4/4");
     /* This round only. The archive below legitimately says "Olmuş" about
        cards the founder passed, and that is a record, not an answer. */
@@ -357,11 +357,11 @@ describe("the block the founder pastes back", () => {
   it("carries the answers and per-clip notes it was given", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L17: "Olmuş", L18: "Kısmen" },
-      notes: { L18: "kulaklıkta daha net" },
+      answers: { L21: "Olmuş", L22: "Kısmen" },
+      notes: { L22: "kulaklıkta daha net" },
     });
-    expect(block).toContain("L17 Bend geri dönüşü: Olmuş");
-    expect(block).toContain("L18 Normal bend / önceden bükme: Kısmen — kulaklıkta daha net");
+    expect(block).toContain("L21 Vurarak slide handoff: Olmuş");
+    expect(block).toContain("L22 Kayarak giriş: Kısmen — kulaklıkta daha net");
     expect(block).toContain("Cevaplanmamış: 2/4");
   });
 
@@ -372,7 +372,7 @@ describe("the block the founder pastes back", () => {
     for (const clip of round) {
       expect(block).not.toContain(`${clip.id} ${clip.id}`);
     }
-    expect(block).toMatch(/L20 Kayarak girme \/ çıkma:/u);
+    expect(block).toMatch(/L24 İki telli şekil slide.ı:/u);
   });
 
   it("prints the recorded results without letting a session change them", () => {

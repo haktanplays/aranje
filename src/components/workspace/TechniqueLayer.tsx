@@ -86,15 +86,22 @@ function Legato({ phrase, tone }: { phrase: LegatoPhrase; tone: Tone }) {
 }
 
 function Slide({ mark, tone }: { mark: SlideMark; tone: Tone }) {
+  /*
+   * One stroke, and an arc over it when the sound is continuous (2V-C.3 §5).
+   *
+   * The two slides are the same leaning line — that is the grammar tablature
+   * already has — so the slur is what tells a reader whether the target is
+   * struck again. It is a shape rather than a colour, sits above the stroke
+   * so it never lands where a tie is drawn, and carries no pointer events of
+   * its own: touching here is touching the note, as it always was.
+   */
   return (
-    <line
-      {...markProps("slide", mark, tone)}
-      x1={mark.x1}
-      y1={mark.y1}
-      x2={mark.x2}
-      y2={mark.y2}
-      {...strokeProps(tone)}
-    />
+    <g {...markProps("slide", mark, tone)} data-slide-slur={mark.slur ? "" : undefined}>
+      <line x1={mark.x1} y1={mark.y1} x2={mark.x2} y2={mark.y2} {...strokeProps(tone)} />
+      {mark.slurPath === "" ? null : (
+        <path d={mark.slurPath} {...strokeProps(tone)} fill="none" />
+      )}
+    </g>
   );
 }
 

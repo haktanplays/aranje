@@ -25,6 +25,20 @@ import type { MelodicSlot, NoteEvent } from "@/lib/song/schema";
 const fixture = editorFixture();
 const takes = gestureTakes(fixture)!;
 
+/** Every note in a take's own bar. */
+function barNotes(id: GestureTakeId): NoteEvent[] {
+  const take = takes[id];
+  const marker = barTimeline(take.song)[take.barNumber - 1]!;
+  const [sectionId, barIndex] = marker.barKey.split(":");
+  const bar = take.song.sections.find((entry) => entry.id === sectionId)!.bars[
+    Number(barIndex)
+  ]!;
+  const lane = bar.slots[take.trackId] as MelodicSlot[];
+  return lane
+    .filter((slot): slot is { notes: NoteEvent[] } => slot !== null && slot !== "-")
+    .flatMap((slot) => slot.notes);
+}
+
 /** The note the take's gesture landed on. */
 function gestureNote(id: GestureTakeId): NoteEvent {
   const take = takes[id];
@@ -55,12 +69,19 @@ function planned(id: GestureTakeId) {
 }
 
 describe("97. every take is real music, written by the production command", () => {
-  it("builds all ten of them", () => {
+  it("builds all sixteen of them", () => {
     expect(Object.keys(takes).sort()).toEqual([...GESTURE_TAKE_IDS].sort());
   });
 
+  /**
+   * The takes that carry a gesture. L22a and L23a deliberately do not: their
+   * cards compare a gesture against the same note played plainly, and the
+   * plain side having nothing written on it is the comparison (2V-C.3 §16).
+   */
+  const GESTURED = GESTURE_TAKE_IDS.filter((id) => id !== "L22a" && id !== "L23a");
+
   it("writes a gesture into each, and the command is the one the editor calls", () => {
-    for (const id of GESTURE_TAKE_IDS) {
+    for (const id of GESTURED) {
       const note = gestureNote(id);
       expect(note.pitchGesture ?? note.connection).toBeDefined();
       expect(resolveExpression(note).conflict).toBeNull();
@@ -69,6 +90,17 @@ describe("97. every take is real music, written by the production command", () =
 
   it("leaves the fixture the other cards read untouched", () => {
     expect(JSON.stringify(editorFixture())).toBe(JSON.stringify(fixture));
+  });
+
+  it("leaves the plain side of a comparison plain", () => {
+    /* Not an oversight: the card asks about a gesture against its absence,
+       so writing anything at all onto the A side would remove the question. */
+    for (const id of ["L22a", "L23a"] as const) {
+      const carrying = barNotes(id).find(
+        (note) => note.pitchGesture !== undefined || note.connection !== undefined,
+      );
+      expect(carrying).toBeUndefined();
+    }
   });
 
   it("puts sounding notes in every take's own bar", () => {
@@ -136,6 +168,8 @@ describe("98. each card's two sides differ in exactly one thing", () => {
       ["L17a", "L17b"],
       ["L18a", "L18b"],
       ["L20a", "L20b"],
+      ["L22a", "L22b"],
+      ["L23a", "L23b"],
     ] as const) {
       const left = planned(a)[0]!;
       const right = planned(b)[0]!;
@@ -151,7 +185,7 @@ describe("99. the pack asks this round's four, and no more", () => {
   const ids = clips.map((clip) => clip.id);
 
   it("adds exactly the four revision cards", () => {
-    for (const id of ["L17", "L18", "L19", "L20"] as const) {
+    for (const id of ["L21", "L22", "L23", "L24"] as const) {
       expect(ids).toContain(id);
     }
   });
@@ -164,7 +198,7 @@ describe("99. the pack asks this round's four, and no more", () => {
 
   it("offers none of them when the music could not be written", () => {
     const without = listeningClips(fixture, null, null, null).map((clip) => clip.id);
-    for (const id of ["L17", "L18", "L19", "L20"] as const) {
+    for (const id of ["L21", "L22", "L23", "L24"] as const) {
       expect(without).not.toContain(id);
     }
   });
@@ -178,10 +212,10 @@ describe("99. the pack asks this round's four, and no more", () => {
   });
 
   it("names both sides of a comparison, and says which comes first", () => {
-    const seventeen = clips.find((clip) => clip.id === "L17")!;
+    const seventeen = clips.find((clip) => clip.id === "L21")!;
     expect(seventeen.takes.map((take) => take.name)).toEqual([
-      "A · Yukarıda tut",
-      "B · Geri indir",
+      "A · Bağlı",
+      "B · Vurarak",
     ]);
   });
 });

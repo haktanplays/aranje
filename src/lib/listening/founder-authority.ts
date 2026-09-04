@@ -27,6 +27,15 @@
  * with actionable negative feedback and no formal verdict — L14 — is recorded
  * as `needs_polish` with the founder's own sentence, because calling it a
  * conditional pass would be inventing a decision nobody made.
+ *
+ * ## A conditional pass with no sentence stays silent
+ *
+ * L20 came back conditional and said nothing else. The card had asked about
+ * sliding *into* a note and *out of* one in the same question, so there is no
+ * way to know which half was the reservation — and a note here reading "the
+ * exit needed work" would be a guess wearing the founder's voice. The row
+ * carries the verdict and no note, and 2V-C.3 asks the two halves separately
+ * instead (§6).
  */
 
 export type FounderVerdict =
@@ -107,6 +116,28 @@ export const FOUNDER_AUTHORITY: readonly ArchivedCard[] = [
   },
   { id: "L15", title: "Bend + tepede vibrato", verdict: "pass" },
   { id: "L16", title: "Bükülmüş sesin devamı", verdict: "pass" },
+  /* 2V-C.2's round. L11 and L12 are answered by L17 and L18; the two slide
+     cards came back conditional and their polish is 2V-C.3's work. */
+  { id: "L17", title: "Bend geri dönüşü", verdict: "pass" },
+  { id: "L18", title: "Normal bend / önceden bükme", verdict: "pass" },
+  {
+    id: "L19",
+    title: "Bağlı / vurarak kaydırma",
+    verdict: "conditional_pass",
+    note: "Vurarak biraz kusurlu duruyor.",
+  },
+  {
+    id: "L20",
+    title: "Kayarak girme / çıkma",
+    /*
+     * Conditional, with no sentence saying which half. The card asked about
+     * entering *and* leaving in one question, so the result cannot be
+     * attributed to either — which is why 2V-C.3 splits them into L22 and L23
+     * rather than guessing. Recorded as it was given: no note, because none
+     * was given, and inventing one would be worse than the silence.
+     */
+    verdict: "conditional_pass",
+  },
 ];
 
 const BY_ID = new Map(FOUNDER_AUTHORITY.map((card) => [card.id, card]));

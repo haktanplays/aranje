@@ -83,7 +83,17 @@ describe("94. the four bends are four different marks and four sentences", () =>
 });
 
 describe("95. the two slides read differently on the page", () => {
-  it("marks the shift slide as the one that is struck again", () => {
+  /*
+   * This test used to require `s/` for the shift slide (2V-C.3 §5).
+   *
+   * The reasoning was that a stroke alone cannot say the target is struck
+   * again. It can: tablature says it by leaving the slur off, which is the
+   * grammar the founder's reference uses and the one a guitarist already
+   * reads. So the assertion is not dropped — the same distinction is asserted
+   * on the channel that actually carries it, and the ban on the old mark is
+   * now a test of its own below.
+   */
+  it("gives both slides the same stroke and tells them apart by the slur", () => {
     const legato = connectionReading(
       resolveExpression({ connection: { kind: "legato_slide" } }).connection,
       true,
@@ -93,9 +103,25 @@ describe("95. the two slides read differently on the page", () => {
       true,
     );
     expect(legato.mark).toBe("/");
-    expect(shift.mark).toBe("s/");
+    expect(shift.mark).toBe("/");
+    expect(legato.slur).toBe(true);
+    expect(shift.slur).not.toBe(true);
     expect(legato.spoken).toContain("bağlı");
     expect(shift.spoken).toContain("yeniden vur");
+  });
+
+  it("writes no letter of our own beside either slide", () => {
+    for (const kind of ["legato_slide", "shift_slide"] as const) {
+      for (const rising of [true, false]) {
+        const read = connectionReading(
+          resolveExpression({ connection: { kind } }).connection,
+          rising,
+        );
+        /* One character, and it is one of the two tablature already uses. */
+        expect(["/", "\\"]).toContain(read.mark);
+        expect(read.mark).not.toMatch(/[a-zA-Z]/);
+      }
+    }
   });
 
   it("leans the way the music goes, both ways", () => {
@@ -197,7 +223,7 @@ describe("96. the sentence is the movement, never the model", () => {
       connection: { kind: "shift_slide" },
       pitchGesture: { kind: "bend", targetCents: 100 },
     });
-    expect(both.connection.mark).toBe("s/");
+    expect(both.connection.mark).toBe("/");
     expect(both.pitch.mark).toBe("b½");
   });
 });

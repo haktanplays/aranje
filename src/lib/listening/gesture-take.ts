@@ -25,6 +25,7 @@
 import { barTimeline } from "@/lib/audio/schedule";
 import { songSupport } from "@/lib/acceptance/song-support";
 import { applyGestureWrite } from "@/lib/song/gesture-write";
+import { applyShapeSlide } from "@/lib/song/shape-slide-write";
 import { pitchAt, settle } from "@/lib/song/edit";
 import {
   isDrumSlotArray,
@@ -50,6 +51,14 @@ export const GESTURE_TAKE_IDS = [
   "L19b",
   "L20a",
   "L20b",
+  "L21a",
+  "L21b",
+  "L22a",
+  "L22b",
+  "L23a",
+  "L23b",
+  "L24a",
+  "L24b",
 ] as const;
 
 export type GestureTakeId = (typeof GESTURE_TAKE_IDS)[number];
@@ -74,6 +83,15 @@ type Recipe = {
   readonly connection?: NoteConnection;
   /** Ties after the gesture's slot, so a held note has something to hold. */
   readonly holdSlots?: number;
+  /**
+   * A second string moving with the first (2V-C.3 §16, card L24).
+   *
+   * Present only on the shape card. The two strings carry the same frets and
+   * the same connection, which is the whole point: the card asks whether they
+   * arrive as one hand, so anything that could make them differ is absent by
+   * construction rather than by care.
+   */
+  readonly shapeString?: number;
 };
 
 const HOLD: Pick<Recipe, "frets" | "onSlot" | "holdSlots"> = {
@@ -115,6 +133,38 @@ const RECIPES: Readonly<Record<GestureTakeId, Recipe>> = {
     ...HOLD,
     pitchGesture: { kind: "slide_out", to: "down", approxSemitones: 3 },
   },
+
+  /*
+   * 2V-C.3's four cards.
+   *
+   * L21 asks the question L19 came back conditional on, and asks it about
+   * the *handoff* rather than about whether an attack exists: both sides
+   * travel identically and arrive together, so the only thing left to judge
+   * is whether the re-struck target is one clean sound.
+   */
+  L21a: { frets: [5, 7], onSlot: 2, connection: { kind: "legato_slide" }, holdSlots: 3 },
+  L21b: { frets: [5, 7], onSlot: 2, connection: { kind: "shift_slide" }, holdSlots: 3 },
+  /*
+   * L22 and L23 are L20 split in two (§6).
+   *
+   * The old card asked about entering *and* leaving in one question, so its
+   * "kısmen" cannot be attributed to either half. Each is now compared
+   * against the same note played plainly, which is the comparison that makes
+   * a single answer mean something.
+   */
+  L22a: { ...HOLD },
+  L22b: {
+    ...HOLD,
+    pitchGesture: { kind: "slide_in", from: "below", approxSemitones: 2 },
+  },
+  L23a: { ...HOLD },
+  L23b: {
+    ...HOLD,
+    pitchGesture: { kind: "slide_out", to: "down", approxSemitones: 2 },
+  },
+  /* L24 · two strings, one hand, and a target shape struck once. */
+  L24a: { frets: [5, 7], onSlot: 2, connection: { kind: "legato_slide" }, holdSlots: 3, shapeString: STRING + 1 },
+  L24b: { frets: [5, 7], onSlot: 2, connection: { kind: "shift_slide" }, holdSlots: 3, shapeString: STRING + 1 },
 };
 
 /** A bar with only this take's notes in it, on a copy of the song. */
@@ -170,7 +220,16 @@ function buildTake(song: Song, recipe: Recipe): GestureTake | null {
        with the source ringing right up to it: a hand cannot slide across a
        rest, and the write command says so. */
     const slot = index === 0 ? 0 : recipe.onSlot;
-    lane[slot] = { notes: [{ pitch, position: { string: STRING, fret } }] };
+    const notes = [{ pitch, position: { string: STRING, fret } }];
+    /* The shape card's second string, at the same fret so both voices move
+       the same distance — which is the only shape v1 can express. */
+    if (recipe.shapeString !== undefined) {
+      const second = pitchAt(fretboard, recipe.shapeString, fret);
+      if (second !== null) {
+        notes.push({ pitch: second, position: { string: recipe.shapeString, fret } });
+      }
+    }
+    lane[slot] = { notes };
     if (index === 0 && recipe.frets.length > 1) {
       for (let tie = 1; tie < recipe.onSlot; tie += 1) lane[tie] = "-";
     }
@@ -187,13 +246,41 @@ function buildTake(song: Song, recipe: Recipe): GestureTake | null {
   const sectionTicks =
     (staged.barIndex * barTicks) + recipe.onSlot * SLOT_TICKS;
 
-  const written = applyGestureWrite(staged.song, {
-    sectionId: staged.sectionId,
-    trackId: track.id,
-    timeTicks: sectionTicks,
-    ...(recipe.pitchGesture ? { pitchGesture: recipe.pitchGesture } : {}),
-    ...(recipe.connection ? { connection: recipe.connection } : {}),
-  });
+  /*
+   * A shape goes through the shape command, so the take is written the way a
+   * reader writes it: all strings or none. Routing it through the single-note
+   * command twice would make the card's audio a thing the product cannot
+   * produce, which is the one way a listening card can lie.
+   */
+  /*
+   * A card's plain side writes nothing (2V-C.3 §16).
+   *
+   * L22 and L23 compare a gesture against the *same note played normally*,
+   * which is the comparison that makes a single answer mean something. The
+   * plain side therefore has no gesture to write, and asking the write
+   * command for one would come back `no_change` — correctly — and take the
+   * whole pack down with it.
+   */
+  const written = recipe.pitchGesture === undefined &&
+    recipe.connection === undefined
+    ? ({ ok: true as const, song: staged.song })
+    : recipe.shapeString === undefined
+    ? applyGestureWrite(staged.song, {
+        sectionId: staged.sectionId,
+        trackId: track.id,
+        timeTicks: sectionTicks,
+        ...(recipe.pitchGesture ? { pitchGesture: recipe.pitchGesture } : {}),
+        ...(recipe.connection ? { connection: recipe.connection } : {}),
+      })
+    : applyShapeSlide(staged.song, {
+        sectionId: staged.sectionId,
+        trackId: track.id,
+        targetTicks: sectionTicks,
+        connection:
+          recipe.connection?.kind === "shift_slide"
+            ? { kind: "shift_slide" }
+            : { kind: "legato_slide" },
+      });
   if (!written.ok) return null;
 
   const barNumber = barTimeline(written.song).findIndex(

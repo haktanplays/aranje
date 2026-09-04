@@ -108,7 +108,11 @@ export type ListeningClipId =
   | "L17"
   | "L18"
   | "L19"
-  | "L20";
+  | "L20"
+  | "L21"
+  | "L22"
+  | "L23"
+  | "L24";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -557,6 +561,55 @@ export function listeningClips(
         [
           { id: "L20a", name: "A · İçeri" },
           { id: "L20b", name: "B · Dışarı" },
+        ],
+      ),
+      /*
+       * 2V-C.3's round (§16).
+       *
+       * L21 re-asks what L19 came back conditional on, narrowed to the thing
+       * the founder actually described: not whether the target is struck —
+       * that was heard — but whether the strike is clean. L22 and L23 are L20
+       * split, because a single "kısmen" over two gestures cannot be
+       * attributed to either. L24 is new.
+       */
+      gestureClip(
+        "L21",
+        "Vurarak slide handoff",
+        "Aynı notalar, aynı yol, aynı varış anı.",
+        "İkisi de hedefe aynı anda ulaşıyor; ikincisindeki hedef vuruşu tek, temiz ve kusursuz duyuluyor mu?",
+        [
+          { id: "L21a", name: "A · Bağlı" },
+          { id: "L21b", name: "B · Vurarak" },
+        ],
+      ),
+      gestureClip(
+        "L22",
+        "Kayarak giriş",
+        "Aynı hedef nota; ikincisine kayarak giriliyor.",
+        "İkinci nota kayarak girip hedefe temiz biçimde yerleşiyor mu?",
+        [
+          { id: "L22a", name: "A · Normal" },
+          { id: "L22b", name: "B · Kayarak giriş" },
+        ],
+      ),
+      gestureClip(
+        "L23",
+        "Kayarak çıkış",
+        "Aynı tutulan nota; ikincisinden kayarak çıkılıyor.",
+        "İkinci nota önce net duyulup sonra doğal biçimde kayarak dışarı çıkıyor mu?",
+        [
+          { id: "L23a", name: "A · Normal" },
+          { id: "L23b", name: "B · Kayarak çıkış" },
+        ],
+      ),
+      gestureClip(
+        "L24",
+        "İki telli şekil slide'ı",
+        "İki tel birlikte iki perde yukarı kayıyor.",
+        "İki tel tek bir el hareketi gibi birlikte kayıp hedef şekli tek ve temiz bir vuruşla veriyor mu?",
+        [
+          { id: "L24a", name: "A · Bağlı şekil" },
+          { id: "L24b", name: "B · Vurarak şekil" },
         ],
       ),
     );

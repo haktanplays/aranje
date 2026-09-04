@@ -72,6 +72,15 @@ export type GestureReading = {
   readonly mark: string;
   /** What a screen reader is told. Empty when this axis says nothing. */
   readonly spoken: string;
+  /**
+   * Whether a slur belongs over this connection (2V-C.3 §5).
+   *
+   * The two slides share a mark, so this is the whole of what separates them
+   * on the page. It is a fact about the notation rather than a drawing
+   * instruction: whoever draws asks for it, and the accessible sentence is
+   * built from the same answer, so the arc and the words cannot disagree.
+   */
+  readonly slur?: boolean;
 };
 
 const NOTHING: GestureReading = { mark: "", spoken: "" };
@@ -114,7 +123,25 @@ export function pitchReading(pitch: ResolvedPitch | null): GestureReading {
   };
 }
 
-/** How the note is joined to the one before it. */
+/**
+ * How the note is joined to the one before it.
+ *
+ * ## Both slides are one leaning stroke, and the slur is the difference
+ * (2V-C.3 §2, §5)
+ *
+ * C.1 wrote `s/` for a shift slide, reasoning that a stroke alone cannot say
+ * the target is struck again. That reasoning was sound and the conclusion was
+ * wrong: standard tablature *does* have a way to say it, and the way is to
+ * leave the slur off. A slash on its own is a slide with a re-struck target;
+ * a slash under a slur is one continuous sound. So the extra letter was a
+ * private convention on a page whose whole job is to be readable by someone
+ * who already reads tab, and it is gone.
+ *
+ * What replaced it is not a smaller mark but a second channel: the same
+ * stroke, plus `slur`, which the renderer draws as an arc and the screen
+ * reader says as "bağlı". Nothing here invents `LS`, `s\`, an enum name or a
+ * letter of our own.
+ */
 export function connectionReading(
   connection: ResolvedConnection | null,
   rising?: boolean,
@@ -130,7 +157,7 @@ export function connectionReading(
         return { mark: "p", spoken: "önceki notadan kopar" };
       default:
         /* Today's `slide` is a legato slide: the target is not struck. */
-        return { mark: lean, spoken: "önceki notadan bağlı kaydır" };
+        return { mark: lean, spoken: "önceki notadan bağlı kaydır", slur: true };
     }
   }
 
@@ -140,11 +167,9 @@ export function connectionReading(
     case "pull_off":
       return { mark: "p", spoken: "önceki notadan kopar" };
     case "legato_slide":
-      return { mark: lean, spoken: "önceki notadan bağlı kaydır" };
+      return { mark: lean, spoken: "önceki notadan bağlı kaydır", slur: true };
     default:
-      /* `s` is the one thing a leaning stroke cannot say on its own: that the
-         target is struck again when the hand arrives. */
-      return { mark: `s${lean}`, spoken: "önceki notadan kaydır ve yeniden vur" };
+      return { mark: lean, spoken: "önceki notadan kaydır ve yeniden vur" };
   }
 }
 
