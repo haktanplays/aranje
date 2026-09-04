@@ -25,6 +25,11 @@
  * physical truth, so the pitch decides.
  */
 import { pitchToMidi } from "@/lib/music/pitch";
+import {
+  approachIsPlayable,
+  DEFAULT_SLIDE_DISTANCE,
+  slideDistance,
+} from "@/lib/music/slide-distance";
 import { resolveExpression } from "@/lib/music/expression-resolver";
 import { expressionPresets } from "@/lib/audio/expression";
 import { settle } from "@/lib/song/edit";
@@ -56,6 +61,8 @@ export type GestureFailure =
   | "no_room_to_glide"
   /** The note already answers this axis another way. */
   | "conflicting_gesture"
+  /** The approach or exit pitch is not somewhere this instrument can be. */
+  | "slide_off_the_neck"
   | "no_change";
 
 export const GESTURE_MESSAGE: Readonly<Record<GestureFailure, string>> = {
@@ -74,6 +81,7 @@ export const GESTURE_MESSAGE: Readonly<Record<GestureFailure, string>> = {
   no_room_to_glide: "Notalar birbirine çok yakın; kayma duyulmaz.",
   conflicting_gesture:
     "Bu notada zaten başka bir hareket var. Önce onu kaldır.",
+  slide_off_the_neck: "Bu kadar uzaktan kayacak yer yok; daha kısa seç.",
   no_change: "Bu nota zaten böyle.",
 };
 
@@ -201,6 +209,24 @@ export function applyGestureWrite(
     if (interval === 0) return fail("no_direction");
     if (Math.abs(interval) > expressionPresets.slide.maxIntervalSemitones) {
       return fail("interval_too_wide");
+    }
+  }
+
+  /*
+   * An open slide has to start, or end, somewhere real (2V-C.2 §12).
+   *
+   * There is no written note at the far end — that is what makes it open —
+   * so nothing else in the pipeline would notice a slide-in from four
+   * semitones below an open low string. Asked of the sounding pitch, so a
+   * capo or an alternate tuning moves the answer with the instrument.
+   */
+  const gesture = next.pitchGesture;
+  if (gesture && (gesture.kind === "slide_in" || gesture.kind === "slide_out")) {
+    const semitones =
+      gesture.approxSemitones ??
+      slideDistance(DEFAULT_SLIDE_DISTANCE).semitones;
+    if (!approachIsPlayable(track.fretboard, note.position, gesture, semitones)) {
+      return fail("slide_off_the_neck");
     }
   }
 

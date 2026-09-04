@@ -79,20 +79,32 @@ const main = async () => {
   }));
 
   check("the page names the build it was opened for", header.sha === sha, header.sha);
-  /* Ten since 2V-B.3 added the loop return and the fast run, and exactly ten:
-     the batch was allowed two new cards and the count is how "exactly two"
-     stays checkable. */
-  check("it offers ten clips", header.clips.length === 10, header.clips.join(","));
+  /*
+   * Four since 2V-C.2, and exactly four (§2, §4).
+   *
+   * This check used to require ten, which was right when every card ever
+   * built was on the surface. It is now the wrong question: L1-L16 are
+   * answered, their results are the founder's and are kept in the archive,
+   * and re-asking them is precisely what this batch removed. So the count is
+   * of what the founder is being asked *this round*, and the number stays a
+   * number rather than "some" so a fifth card cannot arrive unnoticed.
+   */
+  check("it offers four clips", header.clips.length === 4, header.clips.join(","));
   check(
-    "every clip is a listening question",
-    header.clips.join(",") === "L1,L2,L3,L4,L5,L6,L7,L8,L9,L10",
+    "every clip is one of this round's questions",
+    header.clips.join(",") === "L17,L18,L19,L20",
     header.clips.join(","),
   );
   check("it credits the sample source", header.attribution.includes("http"), header.attribution);
   check(
     "nothing is answered before anyone answers",
-    (header.result.match(/ölçülmedi/g) ?? []).length === 10,
-    "",
+    /* Only the round's own cards. The archive below the result carries the
+       founder's real verdicts and is not "unanswered" — counting it here is
+       the arithmetic the "13/16" defect was made of. */
+    (
+      header.result.slice(0, header.result.indexOf("Önceki turlar")).match(/ölçülmedi/g) ?? []
+    ).length === 4,
+    header.result.slice(0, 200),
   );
   check(
     "no editor gesture is asked for anywhere on the page",

@@ -1,0 +1,300 @@
+{
+  "generatedAt": "2026-09-04T06:52:57.954Z",
+  "sha": "cf0c12c",
+  "results": {
+    "360x800": {
+      "overflowX": false,
+      "panel": {
+        "top": 480,
+        "height": 375,
+        "width": 336
+      },
+      "distanceRow": {
+        "top": 654,
+        "height": 67,
+        "width": 336
+      },
+      "removeRow": null,
+      "current": null,
+      "controlCount": 14,
+      "tooSmall": [],
+      "jargon": [],
+      "surfaceText": "1. ölçü · 0. perdeNe yapsın?BendKaydırNasıl?BağlıVurarakAşağıdan girYukarıdan girAşağı çıkYukarı çıkNe kadar uzaktan?KısaBelirginUzunDaha fazla0. perdede yukarıdan kayarak girDinleUygula",
+      "digitsOnSurface": false,
+      "gridVisibleHeight": 174,
+      "gridHit": "grid",
+      "phraseBand": null,
+      "phraseBandExpected": 28,
+      "panelOpened": true,
+      "afterApply": {
+        "current": {
+          "top": 301,
+          "height": 17,
+          "width": 336
+        },
+        "removeRow": {
+          "top": 607,
+          "height": 67,
+          "width": 336
+        },
+        "currentText": "Şu an: yukarıdan kayarak gir",
+        "removeChoices": [
+          {
+            "name": "remove-pitch",
+            "h": 44
+          }
+        ],
+        "overflowX": false,
+        "gridHit": "grid",
+        "gridCoveredBy": "",
+        "tooSmall": []
+      },
+      "problems": []
+    },
+    "384x692": {
+      "overflowX": false,
+      "panel": {
+        "top": 411,
+        "height": 375,
+        "width": 360
+      },
+      "distanceRow": {
+        "top": 584,
+        "height": 67,
+        "width": 360
+      },
+      "removeRow": null,
+      "current": null,
+      "controlCount": 14,
+      "tooSmall": [],
+      "jargon": [],
+      "surfaceText": "1. ölçü · 0. perdeNe yapsın?BendKaydırNasıl?BağlıVurarakAşağıdan girYukarıdan girAşağı çıkYukarı çıkNe kadar uzaktan?KısaBelirginUzunDaha fazla0. perdede yukarıdan kayarak girDinleUygula",
+      "digitsOnSurface": false,
+      "gridVisibleHeight": 143,
+      "gridHit": "grid",
+      "phraseBand": null,
+      "phraseBandExpected": 28,
+      "panelOpened": true,
+      "afterApply": {
+        "current": {
+          "top": 199,
+          "height": 17,
+          "width": 360
+        },
+        "removeRow": {
+          "top": 505,
+          "height": 67,
+          "width": 360
+        },
+        "currentText": "Şu an: yukarıdan kayarak gir",
+        "removeChoices": [
+          {
+            "name": "remove-pitch",
+            "h": 44
+          }
+        ],
+        "overflowX": false,
+        "gridHit": "grid",
+        "gridCoveredBy": "",
+        "tooSmall": []
+      },
+      "problems": []
+    },
+    "412x915": {
+      "overflowX": false,
+      "panel": {
+        "top": 543,
+        "height": 375,
+        "width": 388
+      },
+      "distanceRow": {
+        "top": 717,
+        "height": 67,
+        "width": 388
+      },
+      "removeRow": null,
+      "current": null,
+      "controlCount": 14,
+      "tooSmall": [],
+      "jargon": [],
+      "surfaceText": "1. ölçü · 0. perdeNe yapsın?BendKaydırNasıl?BağlıVurarakAşağıdan girYukarıdan girAşağı çıkYukarı çıkNe kadar uzaktan?KısaBelirginUzunDaha fazla0. perdede yukarıdan kayarak girDinleUygula",
+      "digitsOnSurface": false,
+      "gridVisibleHeight": 237,
+      "gridHit": "grid",
+      "phraseBand": null,
+      "phraseBandExpected": 28,
+      "panelOpened": true,
+      "afterApply": {
+        "current": {
+          "top": 400,
+          "height": 17,
+          "width": 388
+        },
+        "removeRow": {
+          "top": 706,
+          "height": 67,
+          "width": 388
+        },
+        "currentText": "Şu an: yukarıdan kayarak gir",
+        "removeChoices": [
+          {
+            "name": "remove-pitch",
+            "h": 44
+          }
+        ],
+        "overflowX": false,
+        "gridHit": "grid",
+        "gridCoveredBy": "",
+        "tooSmall": []
+      },
+      "problems": []
+    },
+    "landscape-740x360": {
+      "overflowX": false,
+      "panel": {
+        "top": -3,
+        "height": 375,
+        "width": 247
+      },
+      "distanceRow": {
+        "top": 170,
+        "height": 67,
+        "width": 247
+      },
+      "removeRow": null,
+      "current": null,
+      "controlCount": 14,
+      "tooSmall": [],
+      "jargon": [],
+      "surfaceText": "1. ölçü · 0. perdeNe yapsın?BendKaydırNasıl?BağlıVurarakAşağıdan girYukarıdan girAşağı çıkYukarı çıkNe kadar uzaktan?KısaBelirginUzunDaha fazla0. perdede yukarıdan kayarak girDinleUygula",
+      "digitsOnSurface": false,
+      "gridVisibleHeight": 139,
+      "gridHit": "grid",
+      "phraseBand": null,
+      "phraseBandExpected": 28,
+      "panelOpened": true,
+      "afterApply": {
+        "current": {
+          "top": -206,
+          "height": 17,
+          "width": 247
+        },
+        "removeRow": {
+          "top": 100,
+          "height": 67,
+          "width": 247
+        },
+        "currentText": "Şu an: yukarıdan kayarak gir",
+        "removeChoices": [
+          {
+            "name": "remove-pitch",
+            "h": 44
+          }
+        ],
+        "overflowX": false,
+        "gridHit": "grid",
+        "gridCoveredBy": "",
+        "tooSmall": []
+      },
+      "problems": []
+    },
+    "landscape-844x390": {
+      "overflowX": false,
+      "panel": {
+        "top": 6,
+        "height": 375,
+        "width": 247
+      },
+      "distanceRow": {
+        "top": 179,
+        "height": 67,
+        "width": 247
+      },
+      "removeRow": null,
+      "current": null,
+      "controlCount": 14,
+      "tooSmall": [],
+      "jargon": [],
+      "surfaceText": "1. ölçü · 0. perdeNe yapsın?BendKaydırNasıl?BağlıVurarakAşağıdan girYukarıdan girAşağı çıkYukarı çıkNe kadar uzaktan?KısaBelirginUzunDaha fazla0. perdede yukarıdan kayarak girDinleUygula",
+      "digitsOnSurface": false,
+      "gridVisibleHeight": 169,
+      "gridHit": "grid",
+      "phraseBand": null,
+      "phraseBandExpected": 28,
+      "panelOpened": true,
+      "afterApply": {
+        "current": {
+          "top": -191,
+          "height": 17,
+          "width": 247
+        },
+        "removeRow": {
+          "top": 115,
+          "height": 67,
+          "width": 247
+        },
+        "currentText": "Şu an: yukarıdan kayarak gir",
+        "removeChoices": [
+          {
+            "name": "remove-pitch",
+            "h": 44
+          }
+        ],
+        "overflowX": false,
+        "gridHit": "grid",
+        "gridCoveredBy": "",
+        "tooSmall": []
+      },
+      "problems": []
+    },
+    "desktop-1280x800": {
+      "overflowX": false,
+      "panel": {
+        "top": 480,
+        "height": 375,
+        "width": 1256
+      },
+      "distanceRow": {
+        "top": 654,
+        "height": 67,
+        "width": 1256
+      },
+      "removeRow": null,
+      "current": null,
+      "controlCount": 14,
+      "tooSmall": [],
+      "jargon": [],
+      "surfaceText": "1. ölçü · 0. perdeNe yapsın?BendKaydırNasıl?BağlıVurarakAşağıdan girYukarıdan girAşağı çıkYukarı çıkNe kadar uzaktan?KısaBelirginUzunDaha fazla0. perdede yukarıdan kayarak girDinleUygula",
+      "digitsOnSurface": false,
+      "gridVisibleHeight": 191,
+      "gridHit": "grid",
+      "phraseBand": null,
+      "phraseBandExpected": 28,
+      "panelOpened": true,
+      "afterApply": {
+        "current": {
+          "top": 301,
+          "height": 17,
+          "width": 1256
+        },
+        "removeRow": {
+          "top": 607,
+          "height": 67,
+          "width": 1256
+        },
+        "currentText": "Şu an: yukarıdan kayarak gir",
+        "removeChoices": [
+          {
+            "name": "remove-pitch",
+            "h": 44
+          }
+        ],
+        "overflowX": false,
+        "gridHit": "grid",
+        "gridCoveredBy": "",
+        "tooSmall": []
+      },
+      "problems": []
+    }
+  }
+}
