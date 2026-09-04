@@ -108,20 +108,32 @@ describe("130. the tail is the recording's length, not a constant", () => {
   });
 
   it("stays inside its bounds however extreme the recording", () => {
+    /*
+     * The numbers are written out rather than read from the module. A test
+     * that compares a value against the constant it is testing moves with
+     * it: widen the bound and the assertion widens too, and a mutation run
+     * finds nothing. The literals are the second opinion.
+     */
     for (const attack of [0, 0.0005, 0.05, 5]) {
       const envelope = handoffEnvelope({ ...base, targetAttackSeconds: attack });
-      expect(envelope.overlapSeconds).toBeGreaterThanOrEqual(MIN_OVERLAP_SECONDS);
-      expect(envelope.overlapSeconds).toBeLessThanOrEqual(MAX_OVERLAP_SECONDS);
+      expect(envelope.overlapSeconds).toBeGreaterThanOrEqual(0.012);
+      expect(envelope.overlapSeconds).toBeLessThanOrEqual(0.045);
     }
+    expect(MIN_OVERLAP_SECONDS).toBe(0.012);
+    expect(MAX_OVERLAP_SECONDS).toBe(0.045);
   });
 
   it("arrives higher when there is more to cover", () => {
     const fast = handoffEnvelope({ ...base, targetAttackSeconds: 0.003 });
     const slow = handoffEnvelope({ ...base, targetAttackSeconds: 0.031 });
     expect(slow.onsetFraction).toBeGreaterThan(fast.onsetFraction);
+    /* The two ends written out rather than read from the preset, so lowering
+       one cannot lower the assertion with it. */
+    expect(fast.onsetFraction).toBeGreaterThanOrEqual(0.45);
+    expect(slow.onsetFraction).toBeLessThanOrEqual(0.6);
     const preset = expressionPresets.slide;
-    expect(fast.onsetFraction).toBeGreaterThanOrEqual(preset.handoverGainFraction);
-    expect(slow.onsetFraction).toBeLessThanOrEqual(preset.handoverSlowFraction);
+    expect(preset.handoverGainFraction).toBe(0.45);
+    expect(preset.handoverSlowFraction).toBe(0.6);
   });
 
   it("does not apply one number to every sample", () => {
@@ -144,15 +156,22 @@ describe("131. what the overlap must never do", () => {
       targetDurationSeconds: 0.06,
       targetAttackSeconds: 0.031,
     });
-    expect(short.overlapSeconds).toBeLessThanOrEqual(0.06 * MAX_OVERLAP_FRACTION + 1e-9);
+    /* Written out, not read from the module: see the bounds test above. */
+    expect(short.overlapSeconds).toBeLessThanOrEqual(0.06 * 0.35 + 1e-9);
+    expect(MAX_OVERLAP_FRACTION).toBe(0.35);
   });
 
   it("shares the ceiling between the strings of a shape", () => {
     const alone = handoffEnvelope({ ...base, targetAttackSeconds: 0.031 });
     const three = handoffEnvelope({ ...base, targetAttackSeconds: 0.031, voiceCount: 3 });
-    /* Fractions are rounded to a millionth, so three of them can exceed the
-       ceiling by three millionths. Compared at that grain, not exactly. */
-    expect(three.onsetFraction * 3).toBeLessThanOrEqual(MAX_SOURCE_SUM + 3e-6);
+    /*
+     * Fractions are rounded to a millionth, so three of them can exceed the
+     * ceiling by three millionths. Compared at that grain, not exactly — and
+     * against the number itself rather than against the constant, so raising
+     * the ceiling cannot raise the assertion with it.
+     */
+    expect(three.onsetFraction * 3).toBeLessThanOrEqual(1.4 + 3e-6);
+    expect(MAX_SOURCE_SUM).toBe(1.4);
     expect(three.onsetFraction).toBeLessThanOrEqual(alone.onsetFraction);
   });
 

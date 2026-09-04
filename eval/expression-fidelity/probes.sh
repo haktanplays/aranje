@@ -100,6 +100,14 @@ PLAYBACK=src/lib/audio/gesture-playback.test.ts
 EDIT=src/lib/song/gesture-edit.test.ts
 FOUNDER=src/lib/listening/founder-authority.test.ts
 PACK=src/lib/listening/listening-pack.test.ts
+ENVELOPE=src/lib/audio/handoff-envelope.ts
+ONSET=src/lib/audio/sample-onset.ts
+ENVFID=src/lib/audio/handoff-envelope.test.ts
+ONSETFID=src/lib/audio/sample-onset.test.ts
+SEAMPCM=eval/expression-fidelity/seam-pcm.ts
+SEAMFID=eval/expression-fidelity/seam-pcm.test.ts
+SEAMFX=eval/expression-fidelity/seam-fixtures.ts
+SEAMFXFID=eval/expression-fidelity/seam-fixtures.test.ts
 
 echo "── the bend release goes back to what the founder heard (§6) ──"
 probe "1 · the return lands on the note's last sample again" "$GESTURE" \
@@ -142,8 +150,10 @@ probe "6 · the first audible frame is no longer the target" "$GESTURE" \
 
 echo "── the shift slide goes back to striking the source pitch (§9) ──"
 probe "7 · nothing travels during the source note" "$PLAN" \
-  '    applyShiftSlides(planned, shiftSlides, new Set(built.membership.keys()));' \
-  '    applyShiftSlides(planned, [], new Set(built.membership.keys()));' \
+  '      planned,
+      shiftSlides,' \
+  '      planned,
+      [],' \
   "$PLAYBACK"
 
 probe "8 · the hand arrives after the target is struck" "$SHIFT" \
@@ -154,7 +164,7 @@ probe "8 · the hand arrives after the target is struck" "$SHIFT" \
   "$PLAYBACK"
 
 probe "9 · the source is let go before it gets there" "$SHIFT" \
-  '      durationSeconds: round(handover),' \
+  '      durationSeconds: envelope.endSeconds,' \
   '      durationSeconds: source.durationSeconds,' \
   "$PLAYBACK"
 
@@ -312,21 +322,22 @@ probe "33 · the direction is read from the fret instead of the ear" "$SHAPE" \
   "$SHAPEINV"
 
 echo "── the handoff goes back to a cut (2V-C.3 §3, §4) ──"
-probe "34 · the source stops at full level again" "$HANDOFF" \
-  '      gainEnvelope: handoffGain(source.gain, round(handover), leaves),' \
+probe "34 · the source stops at full level again" "$SHIFT" \
+  '      gainEnvelope: [...envelope.points],' \
   '      gainEnvelope: [],' \
   "$SLIDEFID"
 
+# The A3 the pair fixture lands on has the pack's slowest attack, so its
+# handover reads the *slow* end of the interpolation; mutating the fast end
+# here would leave the fixture untouched and the probe would look covered.
 probe "35 · the source is faded to nothing instead of handed over" "$PRESETS" \
-  '    handoverGainFraction: 0.45,' \
-  '    handoverGainFraction: 0.02,' \
+  '    handoverSlowFraction: 0.6,' \
+  '    handoverSlowFraction: 0.02,' \
   "$SLIDEFID"
 
-probe "36 · the fade starts before the hand moves" "$SHAPE_GAIN" \
-  '  const startsAt = clamp(travelStartsAt, 0, durationSeconds);
-  const arrives = round(gain * expressionPresets.slide.handoverGainFraction);' \
-  '  const startsAt = 0;
-  const arrives = round(gain * expressionPresets.slide.handoverGainFraction);' \
+probe "36 · the fade starts before the hand moves" "$ENVELOPE" \
+  '  const fadeStart = round(handover - travel);' \
+  '  const fadeStart = 0;' \
   "$SLIDEFID"
 
 echo "── the three distances stop being one movement (2V-C.3 §7) ──"
@@ -353,25 +364,152 @@ probe "39 · L19 is promoted to a pass" "$AUTHORITY" \
     verdict: "pass",' \
   "$FOUNDER"
 
-probe "40 · L20 is given a sentence nobody said" "$AUTHORITY" \
-  '    verdict: "conditional_pass",
-  },
-];' \
-  '    verdict: "conditional_pass",
-    note: "Çıkış biraz kısa.",
-  },
-];' \
+probe "40 · L22 is given a sentence nobody said" "$AUTHORITY" \
+  '  { id: "L22", title: "Kayarak giriş", verdict: "pass" },' \
+  '  { id: "L22", title: "Kayarak giriş", verdict: "pass", note: "Temiz." },' \
   "$FOUNDER"
 
 probe "41 · the round re-asks the cards that are already answered" "$SCOPE" \
+  'export const ACTIVE_CLIP_IDS = ["L25", "L26"] as const;' \
   'export const ACTIVE_CLIP_IDS = ["L21", "L22", "L23", "L24"] as const;' \
-  'export const ACTIVE_CLIP_IDS = ["L17", "L18", "L19", "L20"] as const;' \
   "$FOUNDER"
 
-printf '{\n  "generatedAt": "%s",\n  "sha": "%s",\n  "passed": %d,\n  "failed": %d,\n  "probes": [\n    %s\n  ]\n}\n' \
-  "$(date -u +%FT%TZ)" "$(git rev-parse HEAD)" "$PASSED" "$FAILED" \
-  "$(IFS=$'\n'; echo "${ROWS[*]}" | paste -sd, - | sed 's/,/,\n    /g')" \
-  > "$RESULTS"
+echo "── the source stops at the onset again, which is the defect (2V-C.4 §7) ──"
+probe "42 · the tail past the target's onset is removed" "$ENVELOPE" \
+  '  if (end > handover) points.push({ timeSeconds: end, value: 0 });' \
+  '  if (false) points.push({ timeSeconds: end, value: 0 });' \
+  "$ENVFID"
+
+probe "43 · the source is cut at the onset rather than fading through it" "$SHIFT" \
+  '      durationSeconds: envelope.endSeconds,' \
+  '      durationSeconds: round(handover),' \
+  "$SLIDEFID"
+
+probe "44 · the tail ends on a level instead of on silence" "$ENVELOPE" \
+  '  if (end > handover) points.push({ timeSeconds: end, value: 0 });' \
+  '  if (end > handover) points.push({ timeSeconds: end, value: gainAtTargetOnset });' \
+  "$ENVFID"
+
+probe "45 · the overlap loses its lower bound and collapses" "$ENVELOPE" \
+  'export const MIN_OVERLAP_SECONDS = 0.012;' \
+  'export const MIN_OVERLAP_SECONDS = 0;' \
+  "$ENVFID"
+
+probe "46 · the overlap loses its ceiling and smears the next note" "$ENVELOPE" \
+  'export const MAX_OVERLAP_SECONDS = 0.045;' \
+  'export const MAX_OVERLAP_SECONDS = 9;' \
+  "$ENVFID"
+
+probe "47 · a short note is no longer protected from being buried" "$ENVELOPE" \
+  'export const MAX_OVERLAP_FRACTION = 0.35;' \
+  'export const MAX_OVERLAP_FRACTION = 9;' \
+  "$ENVFID"
+
+probe "48 · the strings of a shape stop sharing a ceiling" "$ENVELOPE" \
+  'export const MAX_SOURCE_SUM = 1.4;' \
+  'export const MAX_SOURCE_SUM = 99;' \
+  "$ENVFID"
+
+echo "── the handoff stops being sample-aware (2V-C.4 §5) ──"
+probe "49 · one number is applied to every recording again" "$ENVELOPE" \
+  '  const wanted = input.targetAttackSeconds + SOURCE_RELEASE_SECONDS;' \
+  '  const wanted = 0.02;' \
+  "$ENVFID"
+
+probe "50 · the arrival level stops moving with the attack" "$ENVELOPE" \
+  '  const lean = clamp(input.targetAttackSeconds / span, 0, 1);' \
+  '  const lean = 0;' \
+  "$ENVFID"
+
+probe "51 · the attack table loses the range that makes it worth having" "$ONSET" \
+  '    A3: 0.031,' \
+  '    A3: 0.003,' \
+  "$ONSETFID"
+
+probe "52 · the playback rate is dropped from the attack lookup" "$ONSET" \
+  '  return rate > 0 ? attack / rate : attack;' \
+  '  return attack;' \
+  "$ONSETFID"
+
+probe "53 · a shape releases one string before another" "$SHIFT" \
+  '      targetAttackSeconds: group?.attack ?? attackFor(link.targetIndex),' \
+  '      targetAttackSeconds: attackFor(link.targetIndex),' \
+  "$SLIDEFID"
+
+probe "54 · the tail slides past the pitch it arrived at" "$SHIFT" \
+  '        cents: round(climb),' \
+  '        cents: round(climb * 1.1),' \
+  "$PLAYBACK"
+
+echo "── the PCM analyzer stops measuring (2V-C.4 §3, §4) ──"
+probe "55 · silence is only counted, never measured in seconds" "$SEAMPCM" \
+  '  if (seam.silentSeconds > maxSilent) {' \
+  '  if (false) {' \
+  "$SEAMFID"
+
+probe "56 · a deep dip that never reaches silence is let through" "$SEAMPCM" \
+  '  if (seam.valleyRatio < minValley) {' \
+  '  if (false) {' \
+  "$SEAMFID"
+
+probe "57 · a spliced discontinuity stops being a click" "$SEAMPCM" \
+  '  if (seam.maxStep > maxStep) {' \
+  '  if (false) {' \
+  "$SEAMFID"
+
+probe "58 · an entirely silent window is accepted as continuous" "$SEAMPCM" \
+  '  if (seam.beforeMedianRms <= SILENCE_FLOOR && seam.afterMedianRms <= SILENCE_FLOOR) {' \
+  '  if (false) {' \
+  "$SEAMFID"
+
+probe "59 · the connected floor drops below an unconnected re-strike" "$SEAMPCM" \
+  '  connected: { minValleyRatio: 0.2 },' \
+  '  connected: { minValleyRatio: 0.05 },' \
+  "$SEAMFID"
+
+probe "60 · the re-strike reference is given a floor it can be tuned to" "$SEAMPCM" \
+  '  restrike: { minValleyRatio: 0 },' \
+  '  restrike: { minValleyRatio: 0.2 },' \
+  "$SEAMFID"
+
+echo "── the fixtures stop covering what the report says (2V-C.4 §4, §12) ──"
+probe "61 · the written rest is quietly filled in" "$SEAMFX" \
+  '    if (recipe.restBetween === true && tie < lastOnset) continue;' \
+  '    if (false) continue;' \
+  "$SEAMFXFID"
+
+probe "62 · the sustain control goes back to a note one slot long" "$SEAMFX" \
+  '  for (let tie = 1; tie < RESOLUTION; tie += 1) {' \
+  '  for (let tie = spacing + 1; tie < RESOLUTION; tie += 1) {' \
+  "$SEAMFXFID"
+
+probe "63 · the practice fixtures claim a rate the render never sees" "$SEAMFX" \
+  '    ...(recipe.practicePercent === undefined
+      ? {}
+      : { practicePercent: recipe.practicePercent }),' \
+  '    ...({}),' \
+  "$SEAMFXFID"
+
+probe "64 · a quick recording gets no handover at all" "$PRESETS" \
+  '    handoverGainFraction: 0.45,' \
+  '    handoverGainFraction: 0.02,' \
+  "$ENVFID"
+
+# Joined by walking the array. An earlier version pasted the rows together
+# and then split on every comma, which put a line break inside the first
+# probe name that happened to contain one and produced unparseable JSON.
+{
+  printf '{\n  "generatedAt": "%s",\n  "sha": "%s",\n  "passed": %d,\n  "failed": %d,\n  "probes": [\n' \
+    "$(date -u +%FT%TZ)" "$(git rev-parse HEAD)" "$PASSED" "$FAILED"
+  for i in "${!ROWS[@]}"; do
+    if [ "$i" -eq $(( ${#ROWS[@]} - 1 )) ]; then
+      printf '    %s\n' "${ROWS[$i]}"
+    else
+      printf '    %s,\n' "${ROWS[$i]}"
+    fi
+  done
+  printf '  ]\n}\n'
+} > "$RESULTS"
 
 echo
 echo "$PASSED red · $FAILED not red · results in $RESULTS"

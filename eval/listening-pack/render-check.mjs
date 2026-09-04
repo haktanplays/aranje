@@ -80,19 +80,22 @@ const main = async () => {
 
   check("the page names the build it was opened for", header.sha === sha, header.sha);
   /*
-   * Four since 2V-C.2, and exactly four (§2, §4).
+   * Two since 2V-C.4, and exactly two (§15).
    *
-   * This check used to require ten, which was right when every card ever
-   * built was on the surface. It is now the wrong question: L1-L16 are
-   * answered, their results are the founder's and are kept in the archive,
-   * and re-asking them is precisely what this batch removed. So the count is
-   * of what the founder is being asked *this round*, and the number stays a
-   * number rather than "some" so a fifth card cannot arrive unnoticed.
+   * The count is of what the founder is being asked *this round*, not of
+   * every card ever built: L1-L24 are answered, their results are theirs and
+   * live in the archive, and re-asking them is what the round before this
+   * one removed. The number stays a number rather than "some", so a third
+   * card cannot arrive unnoticed.
+   *
+   * It went from four to two because two of C.3's four came back describing
+   * the same defect and the other two were decided. Asking a listener about
+   * four things is how a small difference gets lost.
    */
-  check("it offers four clips", header.clips.length === 4, header.clips.join(","));
+  check("it offers two clips", header.clips.length === 2, header.clips.join(","));
   check(
     "every clip is one of this round's questions",
-    header.clips.join(",") === "L21,L22,L23,L24",
+    header.clips.join(",") === "L25,L26",
     header.clips.join(","),
   );
   check("it credits the sample source", header.attribution.includes("http"), header.attribution);
@@ -103,7 +106,7 @@ const main = async () => {
        the arithmetic the "13/16" defect was made of. */
     (
       header.result.slice(0, header.result.indexOf("Önceki turlar")).match(/ölçülmedi/g) ?? []
-    ).length === 4,
+    ).length === 2,
     header.result.slice(0, 200),
   );
   check(

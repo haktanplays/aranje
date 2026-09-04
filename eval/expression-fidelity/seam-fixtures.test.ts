@@ -77,20 +77,38 @@ describe("127. every fixture the matrix names is actually built", () => {
   });
 
   it("really writes a rest into the negative control", () => {
-    /* If this stops being a hole, the analyzer's only guaranteed-red case
-       stops being red and the whole gate turns into decoration. */
-    const rest = fixtures["control-rest"]!;
-    expect(rest.expectContinuous).toBe(false);
-    const plan = buildExpressionPlan(rest.song);
-    const window = rest.take.segments[0]!.window;
-    const inWindow = plan.notes
-      .filter((note) => note.timeTicks >= window.startTicks && note.timeTicks < window.endTicks)
-      .sort((a, b) => a.startSeconds - b.startSeconds);
-    expect(inWindow.length).toBe(2);
-    const gap =
-      inWindow[1]!.startSeconds -
-      (inWindow[0]!.startSeconds + inWindow[0]!.durationSeconds);
-    expect(gap).toBeGreaterThan(0.02);
+    /*
+     * If this stops being a hole, the analyzer's only guaranteed-red case
+     * stops being red and the whole gate turns into decoration.
+     *
+     * Compared against the pair that is *not* rested rather than against an
+     * absolute number. A first version asked only that the hole be wider than
+     * 20 ms, and a mutation that filled the rest in still left 49 ms —
+     * because two notes played one after another are detached anyway, and a
+     * threshold below what ordinary spacing gives cannot tell the two apart.
+     */
+    const gapOf = (name: string): number => {
+      const fixture = fixtures[name]!;
+      const window = fixture.take.segments[0]!.window;
+      const inWindow = buildExpressionPlan(fixture.song)
+        .notes.filter(
+          (note) => note.timeTicks >= window.startTicks && note.timeTicks < window.endTicks,
+        )
+        .sort((a, b) => a.startSeconds - b.startSeconds);
+      expect(inWindow.length, name).toBe(2);
+      return (
+        inWindow[1]!.startSeconds -
+        (inWindow[0]!.startSeconds + inWindow[0]!.durationSeconds)
+      );
+    };
+
+    expect(fixtures["control-rest"]!.expectContinuous).toBe(false);
+    const rested = gapOf("control-rest");
+    /* Same spacing, same two slots, nothing written between them. */
+    const plain = gapOf("control-restruck");
+    expect(rested).toBeGreaterThan(0.1);
+    expect(rested).toBeGreaterThan(plain * 2);
+    expect(rested - plain).toBeGreaterThan(0.08);
   });
 
   it("writes the connection the recipe asked for, through the real command", () => {
