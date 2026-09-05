@@ -96,7 +96,8 @@ const VIBRATO_PER_SLOT_PX = 6;
 const VIBRATO_FLOOR_PX = 8;
 /** "PM" at the 9px technique size, from the same advance the digits use. */
 const LABEL_ADVANCE_PX = 5.42;
-const PM_LABEL_PX = LABEL_ADVANCE_PX * 2;
+/** How much room a rail's own label needs, from its character count. */
+const labelWidth = (text: string): number => LABEL_ADVANCE_PX * text.length;
 const PM_CAP_PX = 4;
 
 const round = (value: number): number => Math.round(value * 100) / 100;
@@ -171,7 +172,18 @@ export type VibratoMark = Owned & {
   readonly label: string;
 };
 
-export type PalmMuteRange = Owned & {
+/**
+ * A hand position held over a run of notes, drawn as a labelled rail.
+ *
+ * One shape for both techniques the model has: a palm mute and a let ring are
+ * the same *kind* of statement — this hand does this for these notes — and
+ * drawing them from two code paths is how one of them ends up with a cap the
+ * other lost. `text` is the character on the page; `kind` is what it means.
+ */
+export type TechniqueRail = Owned & {
+  readonly kind: "palm_mute" | "let_ring";
+  /** What is printed at the left of the rail: `PM` or `L.R.`. */
+  readonly text: string;
   readonly stringIndex: number;
   readonly slots: readonly number[];
   readonly labelX: number;
@@ -185,12 +197,23 @@ export type PalmMuteRange = Owned & {
   readonly label: string;
 };
 
+/** The name this had before let ring joined it. */
+export type PalmMuteRange = TechniqueRail;
+
 export type TechniquePrimitives = {
   readonly legato: readonly LegatoPhrase[];
   readonly slides: readonly SlideMark[];
   readonly bends: readonly BendMark[];
   readonly vibratos: readonly VibratoMark[];
-  readonly palmMutes: readonly PalmMuteRange[];
+  readonly palmMutes: readonly TechniqueRail[];
+  /**
+   * Let-ring rails (2V-D.1-C §11).
+   *
+   * Held apart from the palm mutes rather than merged into one list because
+   * the two are mutually exclusive over one note and a reader looking for
+   * "is anything muted here" should not have to filter.
+   */
+  readonly letRings: readonly TechniqueRail[];
   /**
    * `string:slot` for every onset this layer drew a mark for.
    *
@@ -209,6 +232,7 @@ const EMPTY: TechniquePrimitives = {
   bends: [],
   vibratos: [],
   palmMutes: [],
+  letRings: [],
   annotated: new Set<string>(),
   count: 0,
 };
@@ -287,7 +311,7 @@ export function annotationLane(
  * `7` and a mark that assumed a slot-wide number would cross one of them.
  */
 export function digitBounds(span: TabSpan, layout: TechniqueLayout): Extent {
-  const half = maskWidthFor(glyphText(span.fret, span.articulation)) / 2;
+  const half = maskWidthFor(glyphText(span.fret, span.articulation, span.attack)) / 2;
   const centre = centreOf(span.startSlot, layout);
   return { left: centre - half, right: centre + half };
 }
@@ -619,13 +643,30 @@ function buildVibratos(
   return marks;
 }
 
-function palmMuteRuns(bar: FrettedBar, stringIndex: number): TabSpan[][] {
+/**
+ * Does this onset hold the technique, however it was written?
+ *
+ * The whole point of the unified notation: a palm mute written on the note
+ * the old way and one held by a span over the bar are the same statement to
+ * the reader, and drawing only one of them was the page disagreeing with the
+ * speakers about music the planner already treats identically.
+ */
+function holds(span: TabSpan, kind: "palm_mute" | "let_ring"): boolean {
+  if (span.techniques?.includes(kind) === true) return true;
+  return kind === "palm_mute" ? span.articulation === "palm_mute" : span.letRing === true;
+}
+
+function techniqueRuns(
+  bar: FrettedBar,
+  stringIndex: number,
+  kind: "palm_mute" | "let_ring",
+): TabSpan[][] {
   const runs: TabSpan[][] = [];
   let run: TabSpan[] = [];
   let previous: TabSpan | undefined;
 
   for (const span of stringOnsets(bar, stringIndex)) {
-    if (span.articulation !== "palm_mute") {
+    if (!holds(span, kind)) {
       if (run.length > 0) runs.push(run);
       run = [];
       previous = span;
@@ -648,22 +689,30 @@ function palmMuteRuns(bar: FrettedBar, stringIndex: number): TabSpan[][] {
   return runs;
 }
 
-function buildPalmMutes(
+/** What the rail says out loud, for one note and for a run of them. */
+const RAIL_WORDS: Readonly<Record<"palm_mute" | "let_ring", { text: string; spoken: string }>> = {
+  palm_mute: { text: "PM", spoken: "avuç susturma" },
+  let_ring: { text: "L.R.", spoken: "çınlamaya bırak" },
+};
+
+function buildRails(
   bar: FrettedBar,
   layout: TechniqueLayout,
   arcs: readonly LegatoPhrase[],
-): PalmMuteRange[] {
-  const ranges: PalmMuteRange[] = [];
+  kind: "palm_mute" | "let_ring",
+): TechniqueRail[] {
+  const ranges: TechniqueRail[] = [];
+  const words = RAIL_WORDS[kind];
 
   for (let stringIndex = 0; stringIndex < layout.stringCount; stringIndex += 1) {
-    for (const run of palmMuteRuns(bar, stringIndex)) {
+    for (const run of techniqueRuns(bar, stringIndex, kind)) {
       const first = run[0] as TabSpan;
       const last = run[run.length - 1] as TabSpan;
       const lane = annotationLane(stringIndex, layout);
       const start = ownerSlot(bar, first, layout);
       const end = ownerSlot(bar, last, layout);
 
-      const railLeft = Math.min(start.left + PM_LABEL_PX + 2, end.right);
+      const railLeft = Math.min(start.left + labelWidth(words.text) + 2, end.right);
       // Two deterministic micro-lanes: the rail moves to the top of the band
       // when a slur is already using it over the same notes.
       const clash = arcs.some(
@@ -678,6 +727,8 @@ function buildPalmMutes(
         : labelY - Math.round(LABEL_ASCENT_PX / 2);
 
       ranges.push({
+        kind,
+        text: words.text,
         owner: { left: round(start.left), right: round(end.right) },
         stringIndex,
         slots: run.map((span) => span.startSlot),
@@ -690,8 +741,8 @@ function buildPalmMutes(
         capBottom: round(railY + PM_CAP_PX / 2),
         label:
           run.length === 1
-            ? "Avuç susturma"
-            : `${run.length} nota boyunca avuç susturma`,
+            ? words.spoken
+            : `${run.length} nota boyunca ${words.spoken}`,
       });
     }
   }
@@ -718,7 +769,8 @@ export function buildTechniquePrimitives(
   const slides = buildSlides(bar, layout);
   const bends = buildBends(bar, layout);
   const vibratos = buildVibratos(bar, layout);
-  const palmMutes = buildPalmMutes(bar, layout, legato);
+  const palmMutes = buildRails(bar, layout, legato, "palm_mute");
+  const letRings = buildRails(bar, layout, legato, "let_ring");
 
   const annotated = new Set<string>();
   for (const phrase of legato) {
@@ -727,6 +779,12 @@ export function buildTechniquePrimitives(
   for (const mark of slides) annotated.add(noteKey(mark.stringIndex, mark.slot));
   for (const mark of bends) annotated.add(noteKey(mark.stringIndex, mark.slot));
   for (const mark of vibratos) annotated.add(noteKey(mark.stringIndex, mark.slot));
+  /*
+   * A let ring is not an annotation on the note the way a mute is. The mute
+   * shortens what is heard, so the small mark beside the digit would be a
+   * second spelling of the rail; a let ring lengthens it and leaves whatever
+   * else the note says beside the number where it was.
+   */
   for (const range of palmMutes) {
     for (const slot of range.slots) annotated.add(noteKey(range.stringIndex, slot));
   }
@@ -737,17 +795,19 @@ export function buildTechniquePrimitives(
     bends,
     vibratos,
     palmMutes,
+    letRings,
     annotated,
     count:
       legato.length +
       slides.length +
       bends.length +
       vibratos.length +
-      palmMutes.length,
+      palmMutes.length +
+      letRings.length,
   };
 }
 
 /** The key `annotated` uses, so a caller cannot invent a second spelling. */
 export const techniqueNoteKey = noteKey;
 
-export const __testing = { legatoRuns, palmMuteRuns, bendAmount };
+export const __testing = { legatoRuns, techniqueRuns, bendAmount };

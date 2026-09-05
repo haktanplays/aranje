@@ -134,11 +134,18 @@ function Vibrato({ mark, tone }: { mark: VibratoMark; tone: Tone }) {
   );
 }
 
-function PalmMute({ range, tone }: { range: PalmMuteRange; tone: Tone }) {
+/**
+ * A hand position held over a run of notes.
+ *
+ * One component for a palm mute and a let ring: the geometry says which, and
+ * the text it carries is what the reader sees. Two components would be two
+ * chances for one of them to lose its closing cap.
+ */
+function TechniqueRailMark({ range, tone }: { range: PalmMuteRange; tone: Tone }) {
   return (
-    <g {...markProps("palm-mute", range, tone)}>
+    <g {...markProps(range.kind === "let_ring" ? "let-ring" : "palm-mute", range, tone)}>
       <text x={range.labelX} y={range.labelY} {...labelProps(tone)}>
-        PM
+        {range.text}
       </text>
       {range.rail.right > range.rail.left ? (
         <line
@@ -187,8 +194,8 @@ export function TechniqueLayer({
       ? "preview"
       : "read";
 
-  const { legato, slides, bends, vibratos, palmMutes } = primitives;
-  const labels = [legato, slides, bends, vibratos, palmMutes]
+  const { legato, slides, bends, vibratos, palmMutes, letRings } = primitives;
+  const labels = [legato, slides, bends, vibratos, palmMutes, letRings]
     .flat()
     .map((mark) => mark.label);
 
@@ -230,9 +237,9 @@ export function TechniqueLayer({
           tone={toneFor(mark.stringIndex, [mark.slot])}
         />
       ))}
-      {palmMutes.map((range) => (
-        <PalmMute
-          key={`pm-${range.stringIndex}-${range.slots[0]}`}
+      {[...palmMutes, ...letRings].map((range) => (
+        <TechniqueRailMark
+          key={`${range.kind}-${range.stringIndex}-${range.slots[0]}`}
           range={range}
           tone={toneFor(range.stringIndex, range.slots)}
         />

@@ -88,8 +88,22 @@ export const WAV_SCOPE_TEXT = {
  * that carries notes and a file that pretends to carry a performance.
  */
 export const MIDI_ARTICULATION_NOTE =
-  "MIDI notaları ve zamanlamayı taşır. Bend, slide, vibrato ve bazı gitar " +
-  "teknikleri başka programlarda aynı duyulmayabilir.";
+  "MIDI notaları ve zamanlamayı taşır. Bend, slide, vibrato, vuruş sertliği " +
+  "ve avuç susturma gibi çalım ayrıntıları başka programlarda aynı " +
+  "duyulmayabilir.";
+
+/**
+ * What a pena yönü actually does, said where the reader can act on it.
+ *
+ * The sample bank holds one recording per pitch, so a down-stroke and an
+ * up-stroke reach the speakers identically — in the app, in the WAV and in
+ * the MIDI file alike. The mark is worth writing because a guitarist plays it
+ * with their own hand; claiming it changes the sound would be the app taking
+ * credit for the player's wrist.
+ */
+export const PICKING_NOTATION_NOTE =
+  "Pena yönü nota üzerinde yazılır ve çalarken duyulmaz: elindeki hareketi " +
+  "not eder, sesi değiştirmez.";
 
 /** Playback is paused, deliberately and visibly, and does not resume itself. */
 export const EXPORT_PLAYBACK_NOTE =

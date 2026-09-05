@@ -2,7 +2,7 @@ import {
   buildFretGlyph,
   type GlyphState,
 } from "@/lib/tab/glyph-model";
-import type { Articulation } from "@/lib/song/schema";
+import type { Articulation, NoteAttack } from "@/lib/song/schema";
 
 /**
  * The single way a fret number is drawn (2S-A §4).
@@ -25,12 +25,20 @@ import type { Articulation } from "@/lib/song/schema";
 export function FretGlyph({
   fret,
   articulation,
+  attack,
   state = "normal",
   slurredFrom,
   slotIndex,
 }: {
   fret: number | null;
   articulation?: Articulation;
+  /**
+   * The explicit attack axis (2V-D.1-C §11).
+   *
+   * A ghost, a dead note and a natural harmonic are written on the number
+   * itself whichever axis said so, so the digit has to know about both.
+   */
+  attack?: NoteAttack;
   state?: GlyphState;
   /** The fret this note is slurred from, so the label can say the movement. */
   slurredFrom?: number | null;
@@ -50,6 +58,7 @@ export function FretGlyph({
     fret,
     state,
     ...(articulation === undefined ? {} : { articulation }),
+    ...(attack === undefined ? {} : { attack }),
     ...(slurredFrom === undefined ? {} : { slurredFrom }),
   });
 
@@ -64,7 +73,7 @@ export function FretGlyph({
             ? "text-bronze"
             : articulation === "palm_mute"
               ? "text-text/70"
-              : articulation === "accent"
+              : articulation === "accent" || attack === "accent"
                 ? "text-text font-semibold"
                 : "text-text";
 

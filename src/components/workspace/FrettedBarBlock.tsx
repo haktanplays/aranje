@@ -550,6 +550,7 @@ export function FrettedBarBlock({
                   <FretGlyph
                     fret={span.fret}
                     articulation={span.articulation}
+                    attack={span.attack}
                     state={stateOf(span)}
                     slurredFrom={slurredFrom(span)}
                     slotIndex={span.startSlot}
@@ -557,12 +558,18 @@ export function FrettedBarBlock({
                   {/* The character mark is the fallback, not the notation: it
                       appears only where the geometry layer drew nothing, so an
                       articulation the tab cannot honour is still visible. */}
-                  {(span.articulation || span.pitchGesture || span.connection) &&
+                  {(span.articulation ||
+                    span.attack ||
+                    span.picking ||
+                    span.pitchGesture ||
+                    span.connection) &&
                   !techniques.annotated.has(
                     techniqueNoteKey(span.stringIndex, span.startSlot),
                   ) ? (
                     <ArticulationGlyph
                       articulation={span.articulation}
+                      attack={span.attack}
+                      picking={span.picking}
                       pitchGesture={span.pitchGesture}
                       connection={span.connection}
                       rising={risingAt(bar, span)}

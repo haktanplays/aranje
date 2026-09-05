@@ -18,7 +18,7 @@
  *   `pitchAutomation` are a deviation applied while playing, and nothing here
  *   writes back to the song.
  */
-import { articulationHold, velocityGain } from "@/lib/audio/schedule";
+import { velocityGain } from "@/lib/audio/schedule";
 import {
   buildTempoMap,
   durationSeconds as tempoDurationSeconds,

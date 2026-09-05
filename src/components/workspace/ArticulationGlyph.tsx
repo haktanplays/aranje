@@ -4,9 +4,12 @@ import {
   connectionReading,
   pitchReading,
 } from "@/lib/music/gesture-language";
+import { attackMark, pickingMark } from "@/lib/tab/expression-marks";
 import type {
   Articulation,
+  NoteAttack,
   NoteConnection,
+  PickingDirection,
   PitchGesture,
 } from "@/lib/song/schema";
 
@@ -60,11 +63,23 @@ export function articulationMark(
 
 export function ArticulationGlyph({
   articulation,
+  attack,
+  picking,
   pitchGesture,
   connection,
   rising,
 }: {
   articulation?: Articulation;
+  /**
+   * The two axes 2V-D.1 added, drawn the same way as the three before them.
+   *
+   * `picking` is notation and nothing else: the sample bank holds one
+   * recording per pitch, so a down-stroke and an up-stroke sound identical.
+   * The mark is here because a guitarist can act on it with their own hand,
+   * not because the app can.
+   */
+  attack?: NoteAttack;
+  picking?: PickingDirection;
   /**
    * The two explicit axes (2V-C.1 §11).
    *
@@ -78,6 +93,8 @@ export function ArticulationGlyph({
 }) {
   const reading = resolveExpression({
     ...(articulation === undefined ? {} : { articulation }),
+    ...(attack === undefined ? {} : { attack }),
+    ...(picking === undefined ? {} : { picking }),
     ...(pitchGesture === undefined ? {} : { pitchGesture }),
     ...(connection === undefined ? {} : { connection }),
   });
@@ -95,13 +112,25 @@ export function ArticulationGlyph({
      marks about the strike, which neither of the two new fields touches. */
   const struck =
     reading.attack === undefined ? null : articulationMark(reading.attack, rising);
+  /* The explicit axis has its own table; a note answers one of the two, never
+     both, so these can never print twice. */
+  const explicit = attackMark(
+    reading.attackAxis?.source === "attack" ? reading.attackAxis.attack : null,
+  );
+  const picked = pickingMark(reading.picking);
 
-  const mark = [joined.mark, struck ?? "", moved.mark].join("");
+  const mark = [
+    joined.mark,
+    struck ?? explicit?.glyph ?? "",
+    picked?.glyph ?? "",
+    moved.mark,
+  ].join("");
   if (mark.length === 0) return null;
 
   const spoken = [
     joined.spoken,
-    reading.attack === undefined ? "" : articulationLabel(reading.attack),
+    reading.attack === undefined ? (explicit?.spoken ?? "") : articulationLabel(reading.attack),
+    picked?.spoken ?? "",
     moved.spoken,
   ]
     .filter((part) => part.length > 0)

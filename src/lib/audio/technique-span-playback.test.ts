@@ -27,7 +27,6 @@ import { SAMPLE_SONG } from "@/lib/song/sample-song";
 
 const TRACK = "gtr";
 const BOARD = SAMPLE_SONG.tracks.find((track) => track.id === TRACK)!.fretboard!;
-const SECTION = SAMPLE_SONG.sections[0]!.id;
 
 const note = (stringIndex: number, fret: number, extra: Partial<NoteEvent> = {}): NoteEvent =>
   ({

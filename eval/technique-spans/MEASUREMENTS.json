@@ -1,0 +1,31 @@
+{
+  "what": "2V-D.1-C §10 — legacy palm mute, span palm mute ve susturulmamış notanın gerçek offline render'ı",
+  "renderedAt": "2026-09-05T14:43:58.821Z",
+  "commit": "a9e17e0",
+  "sampleRate": 44100,
+  "fixtures": {
+    "plain": {
+      "seconds": 3.818163,
+      "peak": 0.138009,
+      "firstStrikeRms": 0.039892,
+      "firstStrikeDecaySeconds": 0.249977
+    },
+    "legacy": {
+      "seconds": 3.818163,
+      "peak": 0.106023,
+      "firstStrikeRms": 0.018577,
+      "firstStrikeDecaySeconds": 0.107007
+    },
+    "span": {
+      "seconds": 3.818163,
+      "peak": 0.106023,
+      "firstStrikeRms": 0.018577,
+      "firstStrikeDecaySeconds": 0.107007
+    }
+  },
+  "verdicts": {
+    "spanIsAudible": true,
+    "spanMatchesLegacy": true,
+    "muteChangesTheSound": true
+  }
+}

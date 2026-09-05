@@ -20,7 +20,8 @@
  * Nothing here knows about React or about pixels the view owns; it takes the
  * font's own advance width and gives back numbers.
  */
-import type { Articulation } from "@/lib/song/schema";
+import { markById, printedFret } from "@/lib/tab/expression-marks";
+import type { Articulation, NoteAttack } from "@/lib/song/schema";
 
 /**
  * How the reader is meant to understand this number right now (2S-A §4).
@@ -124,12 +125,21 @@ const MARKERS: Readonly<Record<GlyphState, GlyphMarker>> = {
 export function glyphText(
   fret: number | null,
   articulation?: Articulation,
+  attack?: NoteAttack,
 ): string {
-  if (articulation === "dead") return "x";
-  if (fret === null) return "?";
-  if (articulation === "ghost") return `(${fret})`;
-  if (articulation === "natural_harmonic") return `<${fret}>`;
-  return String(fret);
+  /*
+   * The explicit axis wins, and the legacy enum is read for the three values
+   * that mean the same thing there (2V-D.1-C §11). A note cannot say both —
+   * the resolver refuses that — so this is a fallback, not a merge.
+   */
+  return printedFret(fret, attack ?? legacyPrinted(articulation));
+}
+
+/** The legacy values that are also printed on the digit, and nothing else. */
+function legacyPrinted(articulation?: Articulation): NoteAttack | null {
+  if (articulation === "dead" || articulation === "ghost") return articulation;
+  if (articulation === "natural_harmonic") return articulation;
+  return null;
 }
 
 /**
@@ -187,6 +197,8 @@ export type GlyphRequest = {
   readonly fret: number | null;
   readonly state: GlyphState;
   readonly articulation?: Articulation;
+  /** The explicit attack axis, when the note answers it that way. */
+  readonly attack?: NoteAttack;
   /** The fret this note is slurred from, when it is a legato endpoint. */
   readonly slurredFrom?: number | null;
   readonly advance?: number;
@@ -200,14 +212,18 @@ export type GlyphRequest = {
  * label to the accessibility tree.
  */
 export function buildFretGlyph(request: GlyphRequest): FretGlyph {
-  const text = glyphText(request.fret, request.articulation);
+  const text = glyphText(request.fret, request.articulation, request.attack);
   const advance = request.advance ?? DIGIT_ADVANCE_PX;
   const marker = MARKERS[request.state];
   const base = fretLabel(request.fret);
+  /* The explicit axis says it in the reader's words; the legacy enum keeps
+     its own table. Neither is an identifier by the time it is spoken. */
   const spoken =
-    request.articulation === undefined
-      ? undefined
-      : TECHNIQUE_SPOKEN[request.articulation];
+    request.attack !== undefined
+      ? markById(request.attack)?.spoken
+      : request.articulation === undefined
+        ? undefined
+        : TECHNIQUE_SPOKEN[request.articulation];
   const label =
     (request.articulation === "hammer_on" || request.articulation === "pull_off") &&
     request.slurredFrom !== undefined

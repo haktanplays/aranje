@@ -1,0 +1,112 @@
+{
+  "what": "2V-D.1-C §16 — span yoğunluğu 1x / 4x / 8x, her katman ayrı",
+  "surface": "Node/desktop",
+  "note": "Node üzerinde ölçüldü; telefon rakamları değil. Taşınan şey mutlak milisaniye değil, yoğunlukla birlikte düz kalıp kalmadığı.",
+  "measuredAt": "2026-09-05T14:45:53.114Z",
+  "commit": "a9e17e0",
+  "bars": 32,
+  "unit": "ms",
+  "contractCeiling": "Bir section en fazla 8 span tutabiliyor (schema: barsPerSection). 8x bu tavanın kendisi; daha yoğun bir şarkı bugün yazılamıyor.",
+  "statistic": "p50 / p95 over 30 rounds after 8 warmups",
+  "densities": {
+    "x1": {
+      "spanCount": 4,
+      "index": {
+        "rounds": 30,
+        "p50": 0.001,
+        "p95": 0.016,
+        "max": 0.063
+      },
+      "timeline": {
+        "rounds": 30,
+        "p50": 3.175,
+        "p95": 4.315,
+        "max": 5.749
+      },
+      "plan": {
+        "rounds": 30,
+        "p50": 3.353,
+        "p95": 4.553,
+        "max": 4.786
+      },
+      "edit": {
+        "rounds": 30,
+        "p50": 9.795,
+        "p95": 12.682,
+        "max": 13.641
+      },
+      "settle": {
+        "rounds": 30,
+        "p50": 8.841,
+        "p95": 9.597,
+        "max": 9.878
+      }
+    },
+    "x4": {
+      "spanCount": 16,
+      "index": {
+        "rounds": 30,
+        "p50": 0.001,
+        "p95": 0.001,
+        "max": 0.002
+      },
+      "timeline": {
+        "rounds": 30,
+        "p50": 2.39,
+        "p95": 3.613,
+        "max": 23.82
+      },
+      "plan": {
+        "rounds": 30,
+        "p50": 2.346,
+        "p95": 3.788,
+        "max": 3.828
+      },
+      "edit": {
+        "rounds": 30,
+        "p50": 9.076,
+        "p95": 13.87,
+        "max": 13.919
+      },
+      "settle": {
+        "rounds": 30,
+        "p50": 8.64,
+        "p95": 10.129,
+        "max": 10.662
+      }
+    },
+    "x8": {
+      "spanCount": 32,
+      "index": {
+        "rounds": 30,
+        "p50": 0.001,
+        "p95": 0.001,
+        "max": 0.001
+      },
+      "timeline": {
+        "rounds": 30,
+        "p50": 1.755,
+        "p95": 2.148,
+        "max": 2.371
+      },
+      "plan": {
+        "rounds": 30,
+        "p50": 2.317,
+        "p95": 2.839,
+        "max": 2.866
+      },
+      "edit": {
+        "rounds": 30,
+        "p50": 8.879,
+        "p95": 13.304,
+        "max": 14.112
+      },
+      "settle": {
+        "rounds": 30,
+        "p50": 8.56,
+        "p95": 10.345,
+        "max": 10.347
+      }
+    }
+  }
+}

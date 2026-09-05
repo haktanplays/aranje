@@ -19,6 +19,8 @@ eval/chord-audio/.render/
 eval/expression-benchmark/.render/
 # 2T-C §10 guitar-performance render bundle
 eval/guitar-performance/.render/
+# 2V-D.1-C §10 technique-span render bundle
+eval/technique-spans/.render/
 # 2U-A §1: the golden baseline is committed; each run's readout is not
 eval/ui-contract/CURRENT.json
 # 2S-A intent-composer render bundle

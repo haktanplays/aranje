@@ -18,6 +18,7 @@ const config = [
       "eval/intent-composer/.render/**",
       "eval/guitar-performance/.render/**",
       "eval/expression-fidelity/.render/**",
+      "eval/technique-spans/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",

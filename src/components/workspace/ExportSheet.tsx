@@ -21,6 +21,7 @@ import {
   EXPORT_READ_ONLY_NOTE,
   MIDI_ARTICULATION_NOTE,
   MIDI_LICENSE_NOTE,
+  PICKING_NOTATION_NOTE,
   WAV_LICENSE_NOTE,
   WAV_SCOPE_TEXT,
 } from "@/lib/export/export-messages";
@@ -204,6 +205,12 @@ export function ExportSheet({
         <FormatBlock label={EXPORT_FORMAT_TEXT.midi.label} hint={EXPORT_FORMAT_TEXT.midi.hint}>
           <p data-export-midi-note className="text-muted mb-2 text-xs leading-relaxed">
             {MIDI_ARTICULATION_NOTE}
+          </p>
+          {/* Said here as well as in the editor: a reader deciding what to
+              hand to someone else needs to know which of the marks on their
+              page is notation only. */}
+          <p data-export-picking-note className="text-muted mb-2 text-xs leading-relaxed">
+            {PICKING_NOTATION_NOTE}
           </p>
           <p data-export-midi-estimate className="text-muted mb-2 text-xs">
             Tahmini {handle.midiEventEstimate} olay
