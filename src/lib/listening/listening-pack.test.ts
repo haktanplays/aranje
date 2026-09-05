@@ -304,9 +304,11 @@ describe("what a rendered clip is measured for", () => {
 
 describe("the block the founder pastes back", () => {
   /*
-   * The pack it is handed contains this round's two cards as well as every
-   * older one. Only the two are being asked, so only the two are counted —
-   * the rest are printed as the record they already are (2V-C.2 §4).
+   * The pack it is handed contains every card ever built, and no round is
+   * open: L25 and L26 closed the slide phase and 2V-D.1 opened nothing. So
+   * the block counts nothing as unanswered and prints the whole record
+   * below, which is the difference between "nobody was asked" and "nobody
+   * answered" (2V-C.2 §4; 2V-D.1 §19).
    */
   const round = listeningClips(song, chord, sequence, gestureTakes(song));
   const base = {
@@ -319,8 +321,8 @@ describe("the block the founder pastes back", () => {
 
   it("counts this round's cards, not every card that ever existed", () => {
     const block = formatListeningResult({ ...base, answers: {} });
-    expect(block).toContain("Cevaplanmamış: 2/2");
-    expect(block).toContain("Bu tur: 2 kart");
+    expect(block).toContain("Cevaplanmamış: 0/0");
+    expect(block).toContain("Bu tur: 0 kart");
     /* The old summary counted the browser session's own answers against
        every card in the pack and reported the founder's decided results as
        unmeasured. Nothing here counts an archived card. */
@@ -329,12 +331,19 @@ describe("the block the founder pastes back", () => {
   });
 
   it("never turns a blank or cleared answer into an approval", () => {
+    /*
+     * With the round closed there is nothing above the archive to approve,
+     * and a session's own blank answers cannot put anything there. The
+     * founder's recorded results are printed below, unchanged.
+     */
     const block = formatListeningResult({
       ...base,
       answers: { L25: "", L26: null },
     });
-    expect(block).toContain("L25 Tek telli vurarak slide: ölçülmedi");
-    expect(block).toContain("L26 İki telli şekil slide'ı: ölçülmedi");
+    const asked = block.slice(0, block.indexOf("Önceki turlar"));
+    expect(asked).not.toContain("Olmuş");
+    expect(block).toContain("L25 Tek telli vurarak slide: Olmuş");
+    expect(block).toContain("L26 İki telli şekil slide'ı: Olmuş");
   });
 
   it("says so when a comment was written but no verdict chosen", () => {
@@ -345,8 +354,10 @@ describe("the block the founder pastes back", () => {
       answers: {},
       notes: { L25: "biraz mekanik" },
     });
-    expect(block).toContain("L25 Tek telli vurarak slide: ölçülmedi — yorum var — biraz mekanik");
-    expect(block).toContain("Cevaplanmamış: 2/2");
+    /* A note on an archived card is a session's scribble, not a verdict: the
+       record keeps saying what the founder said. */
+    expect(block).toContain("L25 Tek telli vurarak slide: Olmuş");
+    expect(block).toContain("Cevaplanmamış: 0/0");
     /* This round only. The archive below legitimately says "Olmuş" about
        cards the founder passed, and that is a record, not an answer. */
     expect(block.slice(0, block.indexOf("Önceki turlar"))).not.toContain("Olmuş");
@@ -355,12 +366,17 @@ describe("the block the founder pastes back", () => {
   it("carries the answers and per-clip notes it was given", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L25: "Olmuş", L26: "Kısmen" },
+      answers: { L25: "Kısmen", L26: "Olmamış" },
       notes: { L26: "kulaklıkta daha net" },
     });
+    /*
+     * The strongest form of "the record is the founder's": a session that
+     * answers a closed card cannot change what it says. Both rows still read
+     * the way the founder left them.
+     */
     expect(block).toContain("L25 Tek telli vurarak slide: Olmuş");
-    expect(block).toContain("L26 İki telli şekil slide'ı: Kısmen — kulaklıkta daha net");
-    expect(block).toContain("Cevaplanmamış: 0/2");
+    expect(block).toContain("L26 İki telli şekil slide'ı: Olmuş");
+    expect(block).toContain("Cevaplanmamış: 0/0");
   });
 
   it("uses each card's own title, never its id twice", () => {

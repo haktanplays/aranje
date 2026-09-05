@@ -18,7 +18,7 @@
  *   `pitchAutomation` are a deviation applied while playing, and nothing here
  *   writes back to the song.
  */
-import { velocityGain } from "@/lib/audio/schedule";
+import { articulationHold, velocityGain } from "@/lib/audio/schedule";
 import {
   buildTempoMap,
   durationSeconds as tempoDurationSeconds,
@@ -56,12 +56,19 @@ import {
   pitchGestureAutomation,
 } from "@/lib/audio/pitch-gesture";
 import { attackLayerFor, composeAttack } from "@/lib/audio/attack-layer";
+import { indexSpans } from "@/lib/music/technique-span";
+import { barTicksOf } from "@/lib/song/timing-change";
 import { slideOutGain } from "@/lib/audio/gesture-shape";
 import { pitchToMidi } from "@/lib/music/pitch";
 import { samplePackFor } from "@/lib/audio/packs";
 import { attackSecondsFor, DEFAULT_ATTACK_SECONDS } from "@/lib/audio/sample-onset";
 import { applyShiftSlides, type ShiftSlideLink } from "@/lib/audio/shift-slide";
-import { attackValue, resolveExpression, restrikesTarget } from "@/lib/music/expression-resolver";
+import {
+  attackValue,
+  resolveExpression,
+  restrikesTarget,
+  type SpanContext,
+} from "@/lib/music/expression-resolver";
 import type { Articulation, Song } from "@/lib/song/schema";
 
 
@@ -408,6 +415,15 @@ function planFor(
     comparison: ExpressionComparisonOptions;
     /** Where a shift slide records the two notes its travel spans (§9). */
     shiftSlides: ShiftSlideLink[];
+    /**
+     * The technique spans holding over this onset (2V-D.1 §5).
+     *
+     * Passed in rather than looked up, because the section a note belongs to
+     * and the offset between its ticks and the section's are the caller's
+     * facts. Absent for a caller with none to give, which is not the same as
+     * a song with no spans and is never read as one.
+     */
+    spanContext?: (onset: LegatoOnset) => SpanContext | undefined;
   },
 ): ExpressiveNotePlan {
   // Asked of the timeline rather than multiplied out, so a note held across a
@@ -449,7 +465,7 @@ function planFor(
    * speakers, which is a different question and the only one it should be
    * answering.
    */
-  const resolved = resolveExpression(onset);
+  const resolved = resolveExpression(onset, options.spanContext?.(onset));
   if (resolved.conflict !== null) {
     /* Two answers on one axis. Nothing is chosen and nothing is guessed:
        the note falls back to an ordinary onset and says why. */
@@ -608,13 +624,62 @@ function planFor(
    * completely inaudible.
    */
   const attackLayer = attackLayerFor(attackValue(resolved.attackAxis));
+  /*
+   * A palm-mute span reaches this note (2V-D.1 §6, §8).
+   *
+   * Read from the resolver rather than from the note, so a span and a legacy
+   * `palm_mute` articulation arrive by the same door and the audio layer
+   * never has to know which one the song used. The plan it produces is the
+   * shipped palm mute — the same choke, the same roll-off — because the
+   * technique did not change, only where it is written.
+   */
+  const palmMuted = resolved.techniques.some((held) => held.kind === "palm_mute");
 
-  if (attackLayer === null && !isExpressive(articulation)) return base;
+  if (attackLayer === null && !palmMuted && !isExpressive(articulation)) return base;
 
   // Anything expressive on a note with no string under it is not something to
   // guess at; it falls back and says so.
   if (onset.fret === null || onset.midi === null) {
     return { ...base, fallbackReason: "not_fretted" };
+  }
+
+  if (palmMuted && articulation !== "palm_mute" && !movesPitch(articulation)) {
+    /*
+     * The mute shortens and rolls off; the attack, if there is one, decides
+     * the level it does that at. Composed rather than multiplied twice: an
+     * accented palm mute is the muted envelope at the accent's level, not
+     * two gain curves in series with each other, which is how a note ends up
+     * inaudible from two decisions that each looked reasonable.
+     */
+    /*
+     * The shipped palm mute is shortened twice, in two modules, and a span
+     * has to reproduce both or it is a different technique wearing the same
+     * name. `articulationHold` chokes the note upstream in the timeline,
+     * where it reads the legacy enum — which a span-muted note has nothing
+     * in — and `palmMuteSeconds` shapes what is left. The first is applied
+     * here so the two ways of writing a mute come out the same length.
+     */
+    const asWritten =
+      durationSeconds *
+      articulationHold("palm_mute") *
+      (attackLayer?.holdFraction ?? 1);
+    const held = palmMuteSeconds(asWritten);
+    const level = round(gain * (attackLayer?.gainScale ?? 1));
+    return {
+      ...base,
+      expressive: true,
+      durationSeconds: held,
+      gainEnvelope: palmMuteGain(held, level),
+      filterPreset: "palm_mute",
+      ...(attackLayer?.centsOffset === undefined
+        ? {}
+        : {
+            pitchAutomation: base.pitchAutomation.map((point) => ({
+              ...point,
+              cents: round(point.cents + (attackLayer.centsOffset ?? 0)),
+            })),
+          }),
+    };
   }
 
   if (attackLayer !== null && !movesPitch(articulation)) {
@@ -896,6 +961,24 @@ export function buildExpressionPlan(
   const notes: ExpressiveNotePlan[] = [];
   const chains: LegatoChain[] = [];
 
+  /*
+   * Where each section starts, so a span's own ticks can be compared with an
+   * onset's place in the song (2V-D.1 §6). Built once per plan rather than
+   * per note: a lookup inside the loop would be this same walk, every time.
+   */
+  const sectionStart = new Map<string, number>();
+  const sectionSpans = new Map<string, ReturnType<typeof indexSpans>>();
+  {
+    let ticks = 0;
+    for (const section of song.sections) {
+      sectionStart.set(section.id, ticks);
+      sectionSpans.set(section.id, indexSpans(section.techniqueSpans));
+      for (const bar of section.bars) {
+        ticks += barTicksOf(bar.timeSignature, bar.resolution);
+      }
+    }
+  }
+
   for (const track of song.tracks) {
     const onsets = trackLegatoOnsets(song, track.id);
     const noteIds = onsets.map(
@@ -908,6 +991,22 @@ export function buildExpressionPlan(
         profile,
         comparison,
         shiftSlides,
+        spanContext: (onset) => {
+          const held = song.sections.find((entry) => entry.id === onset.sectionId);
+          if (!held?.techniqueSpans?.length) return undefined;
+          return {
+            trackId: track.id,
+            timeTicks: onset.timeTicks - (sectionStart.get(onset.sectionId) ?? 0),
+            stringIndex: onset.stringIndex,
+            spans: sectionSpans
+              .get(onset.sectionId)!
+              .at({
+                trackId: track.id,
+                timeTicks: onset.timeTicks - (sectionStart.get(onset.sectionId) ?? 0),
+                stringIndex: onset.stringIndex,
+              }),
+          };
+        },
       }),
       trackId: track.id,
       id: noteIds[index] ?? "",

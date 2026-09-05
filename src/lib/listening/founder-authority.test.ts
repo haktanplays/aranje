@@ -37,13 +37,33 @@ const round = listeningClips(
   gestureTakes(fixture),
 );
 
-describe("101. the twenty-four recorded results, exactly as they were given", () => {
+describe("101. the twenty-six recorded results, exactly as they were given", () => {
   it("holds every card the founder has judged, in order", () => {
     expect(FOUNDER_AUTHORITY.map((card) => card.id)).toEqual([
       "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8",
       "L9", "L10", "L11", "L12", "L13", "L14", "L15", "L16",
       "L17", "L18", "L19", "L20", "L21", "L22", "L23", "L24",
+      "L25", "L26",
     ]);
+  });
+
+  it("records the two cards that closed the slide phase", () => {
+    /* L25 and L26 are the gestures L21 and L24 asked about, after the handoff
+       was rebuilt on rendered PCM. Both clean, and the seam is closed for
+       this engine. */
+    expect(archivedCard("L25")?.verdict).toBe("pass");
+    expect(archivedCard("L26")?.verdict).toBe("pass");
+  });
+
+  it("does not let a later pass rewrite the card it came from", () => {
+    /*
+     * L25 passing is not the founder revisiting L21. Rewriting the older row
+     * to agree with the newer one would delete the only record of what was
+     * wrong — and the description in it is what the fix was built from.
+     */
+    expect(archivedCard("L21")?.verdict).toBe("inconclusive");
+    expect(archivedCard("L24")?.verdict).toBe("inconclusive");
+    expect(archivedCard("L21")?.note).toMatch(/boşluk/u);
   });
 
   it("keeps L21 and L24 inconclusive rather than reading a verdict into them", () => {
@@ -171,9 +191,15 @@ describe("101. the twenty-four recorded results, exactly as they were given", ()
   });
 });
 
-describe("102. this round asks two cards, and counts two", () => {
-  it("names exactly the two the founder is being asked", () => {
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L25", "L26"]);
+describe("102. no round is open, and that is a state rather than a gap", () => {
+  it("asks nothing, because every card has an answer", () => {
+    /*
+     * L25 and L26 closed the slide phase; 2V-D.1 built the multi-axis model
+     * underneath the cards that come next without building the cards. An
+     * empty round says exactly that. It is not the same as a round whose
+     * cards nobody answered, and the paste block below distinguishes them.
+     */
+    expect([...ACTIVE_CLIP_IDS]).toEqual([]);
   });
 
   it("never asks a card whose answer is already recorded", () => {
@@ -183,14 +209,14 @@ describe("102. this round asks two cards, and counts two", () => {
   });
 
   it("puts every judged card out of the round and into the record", () => {
-    for (const id of ["L1", "L10", "L11", "L14", "L16", "L21", "L22", "L23", "L24"]) {
+    for (const id of ["L1", "L10", "L11", "L14", "L16", "L21", "L24", "L25", "L26"]) {
       expect(isArchived(id)).toBe(true);
       expect(isActive(id)).toBe(false);
     }
   });
 
-  it("offers only the two in front of the reader", () => {
-    expect(activeClips(round).map((clip) => clip.id)).toEqual(["L25", "L26"]);
+  it("offers nothing in front of the reader while the round is closed", () => {
+    expect(activeClips(round)).toEqual([]);
   });
 
   it("keeps the older clips reachable but out of the count", () => {
@@ -199,7 +225,7 @@ describe("102. this round asks two cards, and counts two", () => {
     for (const id of archived) expect(isActive(id)).toBe(false);
   });
 
-  it("counts this round out of two, never out of twenty-six", () => {
+  it("counts a closed round as nothing to answer, never as the archive", () => {
     const block = formatListeningResult({
       buildSha: "abc1234",
       fingerprint: "x",
@@ -208,7 +234,7 @@ describe("102. this round asks two cards, and counts two", () => {
       notes: {},
       note: "",
     });
-    expect(block).toContain("Cevaplanmamış: 2/2");
+    expect(block).toContain("Cevaplanmamış: 0/0");
     /*
      * The defect this replaces: a summary that counted this browser
      * session's answers against every card ever built and reported the
@@ -217,14 +243,11 @@ describe("102. this round asks two cards, and counts two", () => {
     expect(block).not.toMatch(/Cevaplanmamış: \d+\/(1[0-9]|2[0-9])/u);
   });
 
-  it("gives each card one take and no comparison", () => {
-    /* §15: the question is whether one gesture has a hole in it. An A/B
-       turns that into a preference between two takes, which is a different
-       question with a different answer. */
-    for (const clip of activeClips(round)) {
-      expect(clip.takes, clip.id).toHaveLength(1);
-      expect(clip.takes[0]!.segments.length, clip.id).toBeGreaterThan(1);
-    }
+  it("keeps every built card reachable in the archive", () => {
+    /* A closed round hides nothing: the cards are still there, still
+       playable, and answered. */
+    const archived = archivedClips(round).map((clip) => clip.id);
+    for (const id of ["L25", "L26"]) expect(archived).toContain(id);
   });
 });
 

@@ -171,6 +171,22 @@ export const FOUNDER_AUTHORITY: readonly ArchivedCard[] = [
     verdict: "inconclusive",
     note: "21'in aynısı.",
   },
+
+  /*
+   * 2V-C.4's round, and the end of the slide phase.
+   *
+   * L25 and L26 are the two gestures L21 and L24 asked about, after the
+   * handoff was rebuilt on rendered PCM rather than on the event list. Both
+   * came back clean, which closes the seam for this engine: no curve round
+   * follows it, and the exit policy the round shipped with (§13.37.6) says so
+   * in the spec rather than in anyone's memory.
+   *
+   * L21 and L24 stay inconclusive above. A later card passing is not the
+   * founder revisiting an earlier one, and rewriting the older rows to agree
+   * with the newer ones would delete the only record of what was wrong.
+   */
+  { id: "L25", title: "Tek telli vurarak slide", verdict: "pass" },
+  { id: "L26", title: "İki telli şekil slide'ı", verdict: "pass" },
 ];
 
 const BY_ID = new Map(FOUNDER_AUTHORITY.map((card) => [card.id, card]));

@@ -92,12 +92,15 @@ const main = async () => {
    * the same defect and the other two were decided. Asking a listener about
    * four things is how a small difference gets lost.
    */
-  check("it offers two clips", header.clips.length === 2, header.clips.join(","));
-  check(
-    "every clip is one of this round's questions",
-    header.clips.join(",") === "L25,L26",
-    header.clips.join(","),
-  );
+  /*
+   * None, since 2V-D.1. L25 and L26 closed the slide phase and this round
+   * built the multi-axis model underneath the cards that come next without
+   * building the cards, so no round is open. Checked as a number rather than
+   * as "some" for the same reason it always was: a card must not be able to
+   * appear without anyone deciding it should.
+   */
+  check("it offers no clips while the round is closed", header.clips.length === 0,
+    header.clips.join(","));
   check("it credits the sample source", header.attribution.includes("http"), header.attribution);
   check(
     "nothing is answered before anyone answers",
@@ -106,7 +109,7 @@ const main = async () => {
        the arithmetic the "13/16" defect was made of. */
     (
       header.result.slice(0, header.result.indexOf("Önceki turlar")).match(/ölçülmedi/g) ?? []
-    ).length === 2,
+    ).length === 0,
     header.result.slice(0, 200),
   );
   check(

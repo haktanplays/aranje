@@ -197,6 +197,15 @@ export function soundingSpans(
   spans: readonly WrittenSpan[],
   stringOf: (span: WrittenSpan) => number | null,
   endTicks?: number,
+  /**
+   * Whether this note rings past the next attack on its own string.
+   *
+   * The note's own `letRing` flag by default, which is what every song
+   * written before 2V-D.1 says. A caller that knows about technique spans
+   * passes a predicate that also asks them, so a let-ring span is the same
+   * rule reached a different way rather than a second let-ring.
+   */
+  ringsOnFor?: (span: WrittenSpan, stringIndex: number | null) => boolean,
 ): readonly SoundingSpan[] {
   const withStrings = spans.map((span) => ({ span, stringIndex: stringOf(span) }));
   const end =
@@ -234,7 +243,8 @@ export function soundingSpans(
         : (attacks.get(stringIndex) ?? []).find((at) => at > span.startTicks);
     const room = Math.max(0, (next ?? end) - span.startTicks);
     /* Only an unstated length may ring on; a stated one is the writer talking. */
-    const ringsOn = span.note.letRing === true && !span.explicit;
+    const asked = ringsOnFor?.(span, stringIndex) ?? span.note.letRing === true;
+    const ringsOn = asked && !span.explicit;
     const wanted = ringsOn ? Math.max(span.writtenTicks, room) : span.writtenTicks;
     const soundingTicks = Math.min(wanted, room);
     return {

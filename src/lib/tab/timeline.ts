@@ -36,7 +36,9 @@ import {
 } from "@/lib/music/placement";
 import { trackPlacementInput } from "@/lib/tab/placement-input";
 import { sliceSpan } from "@/lib/tab/span-extent";
+import { indexSpans } from "@/lib/music/technique-span";
 import {
+  barOffsets,
   sectionTicks,
   soundingSpans,
   writtenSpans,
@@ -269,10 +271,41 @@ function buildFretted(
     return placed?.find((note) => note.noteIndex === span.noteIndex);
   };
 
+  /*
+   * Where each section starts, so a span's section-relative ticks can be
+   * compared with a note's place in the whole track (2V-D.1 §6).
+   *
+   * `TechniqueSpan` is addressed from the start of its own section for the
+   * same reason a phrase is; the timeline counts from the start of the song.
+   * The offset is the only thing between the two, and it is computed here
+   * rather than stored, so there is nothing to fall out of step with.
+   */
+  const offsets = barOffsets(flatBars);
+  const sectionStart = new Map<string, number>();
+  metas.forEach((entry, index) => {
+    if (entry.meta.isSectionStart) {
+      sectionStart.set(entry.meta.sectionId, offsets[index] ?? 0);
+    }
+  });
+  const spansBySection = new Map(
+    song.sections.map((section) => [section.id, indexSpans(section.techniqueSpans)]),
+  );
+
   const heard = soundingSpans(
     writtenSpans(flatBars, track.id),
     (span) => placedNotes(span)?.stringIndex ?? null,
     sectionTicks(flatBars),
+    (span, stringIndex) => {
+      if (span.note.letRing === true) return true;
+      const meta = metas[span.barIndex]?.meta;
+      if (!meta) return false;
+      const index = spansBySection.get(meta.sectionId);
+      if (!index) return false;
+      const at = span.startTicks - (sectionStart.get(meta.sectionId) ?? 0);
+      return index
+        .at({ trackId: track.id, timeTicks: at, stringIndex })
+        .some((held) => held.kind === "let_ring");
+    },
   );
 
   const perBar: TabSpan[][] = metas.map(() => []);
