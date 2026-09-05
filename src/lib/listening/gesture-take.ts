@@ -26,14 +26,18 @@ import { barTimeline } from "@/lib/audio/schedule";
 import { songSupport } from "@/lib/acceptance/song-support";
 import { applyGestureWrite } from "@/lib/song/gesture-write";
 import { applyShapeSlide } from "@/lib/song/shape-slide-write";
+import { applyAttackWrite, applySpanWrite } from "@/lib/song/technique-write";
 import { pitchAt, settle } from "@/lib/song/edit";
 import {
   isDrumSlotArray,
   type DrumSlot,
   type MelodicSlot,
+  type NoteAttack,
+  type NoteEvent,
   type NoteConnection,
   type PitchGesture,
   type Song,
+  type TechniqueSpan,
 } from "@/lib/song/schema";
 
 /** 4/4 at 1/8: the grid a beginner's bar is on. */
@@ -61,6 +65,12 @@ export const GESTURE_TAKE_IDS = [
   "L24b",
   "L25a",
   "L26a",
+  "L27a",
+  "L27b",
+  "L28a",
+  "L28b",
+  "L29a",
+  "L29b",
 ] as const;
 
 export type GestureTakeId = (typeof GESTURE_TAKE_IDS)[number];
@@ -94,6 +104,18 @@ type Recipe = {
    * construction rather than by care.
    */
   readonly shapeString?: number;
+  /**
+   * The three things 2V-D.1 added, written by their own commands (§18).
+   *
+   * `legacyMute` is the exception and is written straight onto the note,
+   * because that is what the legacy path *is*: a field on a note. The card it
+   * belongs to compares it against `span`, and routing the old way through a
+   * new command would quietly make the comparison a test of the new command
+   * against itself.
+   */
+  readonly attack?: NoteAttack;
+  readonly legacyMute?: boolean;
+  readonly span?: { readonly kind: TechniqueSpan["kind"]; readonly strings: readonly number[] };
 };
 
 const HOLD: Pick<Recipe, "frets" | "onSlot" | "holdSlots"> = {
@@ -186,6 +208,42 @@ const RECIPES: Readonly<Record<GestureTakeId, Recipe>> = {
     holdSlots: 3,
     shapeString: STRING + 1,
   },
+
+  /*
+   * 2V-D.1-C's three cards, and what each of them is not asking.
+   *
+   * L27 is a parity question, not a quality one. The two sides are the *same
+   * palm mute* written two ways — the old field on the note and the new
+   * region over the bar — and the measurements already say the plan, the
+   * length and the envelope are identical. What no measurement can say is
+   * whether they sound the same to a person, which is exactly why it is a
+   * card and not another assertion.
+   */
+  L27a: { ...HOLD, legacyMute: true },
+  L27b: { ...HOLD, span: { kind: "palm_mute", strings: [STRING] } },
+  /*
+   * L28 puts the two axes on top of each other. A harmonic is a way of
+   * striking the string and a bend is what the pitch does afterwards; the
+   * model treats them as independent, and a listener is the only one who can
+   * say whether the harmonic survives the movement or is swallowed by it.
+   */
+  L28a: { ...HOLD, pitchGesture: { kind: "bend", targetCents: 200 } },
+  L28b: {
+    ...HOLD,
+    pitchGesture: { kind: "bend", targetCents: 200 },
+    attack: "natural_harmonic",
+  },
+  /*
+   * L29 is the sound the region model exists for: one hand, two strings, and
+   * only one of them muted. Both sides carry both strings, so the only thing
+   * that differs is whether the region is there.
+   */
+  L29a: { ...HOLD, shapeString: STRING + 1 },
+  L29b: {
+    ...HOLD,
+    shapeString: STRING + 1,
+    span: { kind: "palm_mute", strings: [STRING] },
+  },
 };
 
 /** A bar with only this take's notes in it, on a copy of the song. */
@@ -241,13 +299,23 @@ function buildTake(song: Song, recipe: Recipe): GestureTake | null {
        with the source ringing right up to it: a hand cannot slide across a
        rest, and the write command says so. */
     const slot = index === 0 ? 0 : recipe.onSlot;
-    const notes = [{ pitch, position: { string: STRING, fret } }];
+    const notes: NoteEvent[] = [
+      {
+        pitch,
+        position: { string: STRING, fret },
+        ...(recipe.legacyMute === true ? { articulation: "palm_mute" as const } : {}),
+      },
+    ];
     /* The shape card's second string, at the same fret so both voices move
        the same distance — which is the only shape v1 can express. */
     if (recipe.shapeString !== undefined) {
       const second = pitchAt(fretboard, recipe.shapeString, fret);
       if (second !== null) {
-        notes.push({ pitch: second, position: { string: recipe.shapeString, fret } });
+        notes.push({
+          pitch: second,
+          position: { string: recipe.shapeString, fret },
+          ...(recipe.legacyMute === true ? { articulation: "palm_mute" as const } : {}),
+        });
       }
     }
     lane[slot] = { notes };
@@ -304,12 +372,48 @@ function buildTake(song: Song, recipe: Recipe): GestureTake | null {
       });
   if (!written.ok) return null;
 
-  const barNumber = barTimeline(written.song).findIndex(
+  /*
+   * The two new axes, each through its own production command (§18).
+   *
+   * After the gesture rather than before it, so a card that carries both is
+   * written in the order a reader writes them — the note first, then how it
+   * is struck, then the region over the passage — and a refusal from either
+   * takes the whole take down rather than leaving a half-marked card.
+   */
+  let marked = written.song;
+  if (recipe.attack !== undefined) {
+    const attacked = applyAttackWrite(marked, {
+      sectionId: staged.sectionId,
+      trackId: track.id,
+      targets: [{ timeTicks: sectionTicks }],
+      attack: recipe.attack,
+    });
+    if (!attacked.ok) return null;
+    marked = attacked.song;
+  }
+  if (recipe.span !== undefined) {
+    const startTicks = staged.barIndex * barTicks;
+    const region = applySpanWrite(marked, {
+      sectionId: staged.sectionId,
+      span: {
+        id: `card-${staged.barIndex}`,
+        kind: recipe.span.kind,
+        trackId: track.id,
+        startTicks,
+        endTicks: startTicks + barTicks,
+        stringIndices: [...recipe.span.strings],
+      },
+    });
+    if (!region.ok) return null;
+    marked = region.song;
+  }
+
+  const barNumber = barTimeline(marked).findIndex(
     (marker) => marker.barKey === `${staged.sectionId}:${staged.barIndex}`,
   );
   if (barNumber < 0) return null;
 
-  return { song: written.song, barNumber: barNumber + 1, trackId: track.id };
+  return { song: marked, barNumber: barNumber + 1, trackId: track.id };
 }
 
 /**

@@ -191,15 +191,17 @@ describe("101. the twenty-six recorded results, exactly as they were given", () 
   });
 });
 
-describe("102. no round is open, and that is a state rather than a gap", () => {
-  it("asks nothing, because every card has an answer", () => {
+describe("102. the round that is open, and what it may not re-ask", () => {
+  it("asks the three cards this round built, and no others", () => {
     /*
-     * L25 and L26 closed the slide phase; 2V-D.1 built the multi-axis model
-     * underneath the cards that come next without building the cards. An
-     * empty round says exactly that. It is not the same as a round whose
-     * cards nobody answered, and the paste block below distinguishes them.
+     * L25 and L26 closed the slide phase and the round stood empty while
+     * 2V-D.1 built the multi-axis model underneath the cards that come next.
+     * These are those cards: a palm-mute parity question, a harmonic under a
+     * bend, and a region over one string of two. There is no picking card —
+     * the two strokes are identical in the speakers, so asking would be the
+     * pack inviting an answer to a difference that is not there.
      */
-    expect([...ACTIVE_CLIP_IDS]).toEqual([]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L27", "L28", "L29"]);
   });
 
   it("never asks a card whose answer is already recorded", () => {
@@ -215,8 +217,8 @@ describe("102. no round is open, and that is a state rather than a gap", () => {
     }
   });
 
-  it("offers nothing in front of the reader while the round is closed", () => {
-    expect(activeClips(round)).toEqual([]);
+  it("offers exactly the round's own cards in front of the reader", () => {
+    expect(activeClips(round).map((clip) => clip.id)).toEqual([...ACTIVE_CLIP_IDS]);
   });
 
   it("keeps the older clips reachable but out of the count", () => {
@@ -225,7 +227,7 @@ describe("102. no round is open, and that is a state rather than a gap", () => {
     for (const id of archived) expect(isActive(id)).toBe(false);
   });
 
-  it("counts a closed round as nothing to answer, never as the archive", () => {
+  it("counts this round's cards, never the archive", () => {
     const block = formatListeningResult({
       buildSha: "abc1234",
       fingerprint: "x",
@@ -234,7 +236,7 @@ describe("102. no round is open, and that is a state rather than a gap", () => {
       notes: {},
       note: "",
     });
-    expect(block).toContain("Cevaplanmamış: 0/0");
+    expect(block).toContain("Cevaplanmamış: 3/3");
     /*
      * The defect this replaces: a summary that counted this browser
      * session's answers against every card ever built and reported the

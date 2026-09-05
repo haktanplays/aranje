@@ -15,6 +15,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
+import { expressionPresets } from "@/lib/audio/expression";
 import { pitchAt } from "@/lib/song/edit";
 import {
   songSchema,
@@ -198,5 +199,45 @@ describe("145. a let-ring span reaches the same rule the flag does", () => {
     expect(first.durationSeconds).toBeLessThanOrEqual(
       planAt(built, 768, 1).startSeconds - first.startSeconds + 1e-6,
     );
+  });
+});
+
+describe("342. the mute's absolute ceiling, where it actually binds", () => {
+  /*
+   * The 180 ms ceiling is a *different* job from the notated gate: the gate
+   * is proportional and the ceiling is not, which is why neither could be
+   * deleted when the double-gating was fixed. At the fixture's own tempo it
+   * never binds — the measurement said so — so nothing exercised it, and a
+   * probe that removed it stayed green. This is the case where it binds.
+   */
+  const slow = (spans?: TechniqueSpan[]): Song =>
+    songSchema.parse({ ...song(spans), bpm: 40 } satisfies Song);
+
+  it("cuts a slow note at the ceiling, not at its proportional length", () => {
+    const muted = buildExpressionPlan(slow([span()])).notes.find(
+      (note) => note.timeTicks === 0 && note.position?.stringIndex === 5,
+    )!;
+    expect(muted.filterPreset).toBe("palm_mute");
+    expect(muted.durationSeconds).toBe(expressionPresets.palmMute.maxHoldSeconds);
+  });
+
+  it("is not simply the length every muted note gets", () => {
+    /* The control: at the fixture's own tempo the proportional gate is
+       shorter than the ceiling, so the ceiling does not decide. */
+    const quick = buildExpressionPlan(song([span()])).notes.find(
+      (note) => note.timeTicks === 0 && note.position?.stringIndex === 5,
+    )!;
+    expect(quick.durationSeconds).toBeLessThan(expressionPresets.palmMute.maxHoldSeconds);
+  });
+
+  it("gives the legacy writing the same ceiling", () => {
+    /* Parity holds at the ceiling too, not only under it. */
+    const legacy = buildExpressionPlan(
+      songSchema.parse({
+        ...song(undefined, { articulation: "palm_mute" }),
+        bpm: 40,
+      } satisfies Song),
+    ).notes.find((note) => note.timeTicks === 0 && note.position?.stringIndex === 5)!;
+    expect(legacy.durationSeconds).toBe(expressionPresets.palmMute.maxHoldSeconds);
   });
 });

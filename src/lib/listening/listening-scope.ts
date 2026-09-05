@@ -1,15 +1,20 @@
 /**
- * Which cards this round is actually asking about (2V-C.2 §2, §4; 2V-D.1 §19).
+ * Which cards this round is actually asking about (2V-C.2 §2, §4; 2V-D.1-C §18).
  *
  * A listening round is a question with a scope, and the scope is not "every
  * card that has ever existed". Everything with a recorded answer is history.
  *
- * **Empty, at the moment, and that is a state rather than an oversight.**
- * L25 and L26 closed the slide phase, and 2V-D.1 built the multi-axis model
- * underneath the cards that come next without building the cards. An empty
- * round says exactly that: every card has an answer and the founder is not
- * being asked anything. It is not the same as a round with cards nobody
- * answered, and the paste block distinguishes the two.
+ * **Three cards, and one of them is a parity question.** L27 asks whether a
+ * palm mute written as a region sounds like the same mute written on the
+ * note; the numbers already say the plan, the length, the envelope and the
+ * rendered audio are identical, so what is left is the only thing a number
+ * cannot settle. L28 asks whether a harmonic survives a bend, and L29 asks
+ * for the sound the region model exists for: one hand, two strings, one of
+ * them muted.
+ *
+ * There is no picking card. The sample bank holds one recording per pitch,
+ * so the two strokes are identical in the speakers; asking the founder to
+ * hear a difference that is not there would be the pack lying to them.
  *
  * Keeping this as a list rather than as a flag on the clip is deliberate. A
  * clip does not know which round it is in; a round knows which clips it is
@@ -19,7 +24,7 @@ import { isArchived } from "@/lib/listening/founder-authority";
 import type { ListeningClip } from "@/lib/listening/clip-plan";
 
 /** The cards the founder is being asked to judge now. */
-export const ACTIVE_CLIP_IDS = [] as const;
+export const ACTIVE_CLIP_IDS = ["L27", "L28", "L29"] as const;
 
 export type ActiveClipId = (typeof ACTIVE_CLIP_IDS)[number];
 

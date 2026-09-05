@@ -14,6 +14,8 @@ import {
   type ShapeCommandInput,
   type ShapePreviewResult,
 } from "@/components/workspace/ShapeSection";
+import { TechniqueSection } from "@/components/workspace/TechniqueSection";
+import type { TechniqueSurface } from "@/lib/song/technique-surface";
 import { maxCapoRelativeFret } from "@/lib/music/fretboard";
 import { pitchAt } from "@/lib/song/edit";
 import { articulationLabel } from "@/lib/validators";
@@ -133,6 +135,7 @@ export function FretSheet({
   duration = null,
   rhythm = null,
   shape = null,
+  technique = null,
   retune = null,
   playability = [],
   error,
@@ -187,6 +190,14 @@ export function FretSheet({
     preview(command: ShapeCommandInput): ShapePreviewResult;
     apply(command: ShapeCommandInput): void;
   } | null;
+  /**
+   * The three Çalım questions (2V-D.1-C §12), or null off a fretted track.
+   *
+   * Above the chord transforms and below the note's own fields, because how a
+   * note is *played* is asked of nearly every note and a chord transform is
+   * asked of a few.
+   */
+  technique?: TechniqueSurface | null;
   /** "Ritmi koru, akoru değiştir", on the bar this note is in (2T-C §7). */
   retune?:
     | ({ readonly available: boolean } & Omit<
@@ -376,6 +387,8 @@ export function FretSheet({
             </span>
           </div>
         )}
+
+        {technique?.available ? <TechniqueSection surface={technique} /> : null}
 
         {shape?.available ? (
           <ShapeSection preview={shape.preview} apply={shape.apply} />

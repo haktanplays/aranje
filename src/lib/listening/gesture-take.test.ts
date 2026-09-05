@@ -74,11 +74,26 @@ describe("97. every take is real music, written by the production command", () =
   });
 
   /**
-   * The takes that carry a gesture. L22a and L23a deliberately do not: their
-   * cards compare a gesture against the same note played plainly, and the
-   * plain side having nothing written on it is the comparison (2V-C.3 §16).
+   * The takes that carry a *pitch* gesture or a connection.
+   *
+   * L22a and L23a deliberately do not: their cards compare a gesture against
+   * the same note played plainly, and the plain side having nothing written
+   * on it is the comparison (2V-C.3 §16).
+   *
+   * The 2V-D.1-C cards are the same shape for a different axis. L27 and L29
+   * ask about a technique region and L28 about how a string is struck, and
+   * none of those is a movement of the pitch — so a take that carries only
+   * one of the new axes is checked below, by the axis it actually carries.
    */
-  const GESTURED = GESTURE_TAKE_IDS.filter((id) => id !== "L22a" && id !== "L23a");
+  const NO_PITCH_MOVEMENT = new Set([
+    "L22a",
+    "L23a",
+    "L27a",
+    "L27b",
+    "L29a",
+    "L29b",
+  ]);
+  const GESTURED = GESTURE_TAKE_IDS.filter((id) => !NO_PITCH_MOVEMENT.has(id));
 
   it("writes a gesture into each, and the command is the one the editor calls", () => {
     for (const id of GESTURED) {
@@ -86,6 +101,31 @@ describe("97. every take is real music, written by the production command", () =
       expect(note.pitchGesture ?? note.connection).toBeDefined();
       expect(resolveExpression(note).conflict).toBeNull();
     }
+  });
+
+  it("writes the new axes with their own commands, on the cards that ask", () => {
+    /*
+     * 2V-D.1-C §18. Each card is checked by the axis it is about, and each
+     * against its own A side — a B side that carried nothing would be a card
+     * asking the founder to hear a difference that was never written.
+     */
+    const spansOf = (id: GestureTakeId) =>
+      takes[id].song.sections.flatMap((section) => section.techniqueSpans ?? []);
+
+    /* L27: the same mute, written the old way and the new way. */
+    expect(barNotes("L27a").every((note) => note.articulation === "palm_mute")).toBe(true);
+    expect(spansOf("L27a")).toEqual([]);
+    expect(barNotes("L27b").some((note) => note.articulation === "palm_mute")).toBe(false);
+    expect(spansOf("L27b").map((span) => span.kind)).toEqual(["palm_mute"]);
+
+    /* L28: the attack axis, on top of a bend that both sides carry. */
+    expect(barNotes("L28a").some((note) => note.attack !== undefined)).toBe(false);
+    expect(barNotes("L28b").some((note) => note.attack === "natural_harmonic")).toBe(true);
+
+    /* L29: one region, over one of the two strings. */
+    expect(spansOf("L29a")).toEqual([]);
+    expect(spansOf("L29b").map((span) => span.stringIndices)).toEqual([[1]]);
+    expect(barNotes("L29b").length).toBeGreaterThan(1);
   });
 
   it("leaves the fixture the other cards read untouched", () => {

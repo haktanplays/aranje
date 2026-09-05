@@ -137,5 +137,23 @@ describe("317. where a palm mute's length comes from", () => {
     expect(rows[0]!.filterPreset).toBeUndefined();
     expect(rows[1]!.filterPreset).toBe("palm_mute");
     expect(rows[2]!.filterPreset).toBe("palm_mute");
+
+    /*
+     * The finish condition, stated here as well as in the playback test.
+     *
+     * The brief was explicit that the difference may not be hidden under a
+     * tolerance, so the row this file prints is also the row it asserts: the
+     * two writings must agree at *every* stage, not only at the last one. A
+     * regression that made the timeline stop resolving the technique would
+     * show up in `gated` before it showed up anywhere else.
+     */
+    const legacy = rows[1]!;
+    const span = rows[2]!;
+    expect(span.gatedTicks).toBe(legacy.gatedTicks);
+    expect(span.plannedSeconds).toBe(legacy.plannedSeconds);
+    expect(span.releaseStartSeconds).toBe(legacy.releaseStartSeconds);
+    expect(span.releaseEndSeconds).toBe(legacy.releaseEndSeconds);
+    /* And the plain note is gated differently, so "equal" means something. */
+    expect(legacy.gatedTicks).not.toBe(rows[0]!.gatedTicks);
   });
 });

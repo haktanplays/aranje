@@ -141,6 +141,19 @@ export function historyActionLabel(action: HistoryAction): string {
       return "Notaları bağlama";
     case "continue_pattern":
       return "Deseni devam ettirme";
+    case "technique_write":
+      /* Named by the question it answered, in the same words the buttons
+         used, so the history reads back as the thing the reader did. */
+      switch (action.group) {
+        case "attack":
+          return action.value === null ? "Vuruşu kaldırma" : "Vuruş verme";
+        case "picking":
+          return action.value === null ? "Pena yönünü kaldırma" : "Pena yönü verme";
+        case "region":
+          return action.value === null
+            ? "Bölge boyunca çalımı kaldırma"
+            : "Bölge boyunca çalım verme";
+      }
     case "chord_shape":
       switch (action.command) {
         case "to_arpeggio":

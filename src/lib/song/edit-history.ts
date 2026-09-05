@@ -171,7 +171,19 @@ export type HistoryAction =
    * One action however many copies: the reader asked for four, so undo gives
    * back the song before the four rather than one of them at a time.
    */
-  | { readonly kind: "continue_pattern" };
+  | { readonly kind: "continue_pattern" }
+  /**
+   * One answer to one of the three Çalım questions (2V-D.1-C §12).
+   *
+   * The group and the value travel with the action so the undo label can say
+   * what was changed rather than "Çalım", and so the three axes stay visible
+   * in the history as three different edits rather than one blurred one.
+   */
+  | {
+      readonly kind: "technique_write";
+      readonly group: "attack" | "picking" | "region";
+      readonly value: string | null;
+    };
 
 export type HistorySnapshot = {
   readonly song: Song;

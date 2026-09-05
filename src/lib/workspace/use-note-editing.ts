@@ -13,6 +13,19 @@
  */
 import { useCallback, useMemo, useState } from "react";
 
+import {
+  applySpanRemove,
+} from "@/lib/song/technique-write";
+import {
+  NOTHING_CHOSEN,
+  previewTechnique,
+  regionsInScope,
+  runTechnique,
+  techniqueScope,
+  noteInScope,
+  type TechniqueGroupId,
+  type TechniqueSurface,
+} from "@/lib/song/technique-surface";
 import type { FretSheetTarget } from "@/components/workspace/FretSheet";
 import {
   beginDurationDrag,
@@ -249,6 +262,16 @@ export type NoteEditing = {
   readonly group: GroupSelection;
   readonly duration: DurationGesture;
   readonly shape: ShapeGesture;
+  /**
+   * The three Çalım questions, bound to the selected note (2V-D.1-C §12).
+   *
+   * Bound here rather than in a controller of its own because it needs the
+   * same cell this one already owns, and a second place deciding what "the
+   * selected note" means is how two surfaces start disagreeing about it.
+   * Every decision it makes lives in `technique-surface`, which is pure; what
+   * is held here is the refusal sentence and nothing else.
+   */
+  readonly technique: TechniqueSurface;
   readonly rhythm: RhythmSession;
   readonly retune: RetuneSession;
   /** What a real guitar would have trouble with, in this bar (2T-C §8). */
@@ -768,6 +791,76 @@ export function useNoteEditing(options: {
     [commit, runShape],
   );
 
+  /* ------------------------------------------------------- the çalım axes */
+
+  const techniqueTarget = useMemo(() => {
+    if (!cell || !track?.fretboard) return null;
+    const scope = techniqueScope(song, track.id, cell);
+    if (!scope) return null;
+    const barIndex = Number(cell.barKey.split(":")[1]);
+    return { scope, barIndex };
+  }, [cell, song, track]);
+
+  const runTechniqueChoice = useCallback(
+    (group: TechniqueGroupId, value: string | null) => {
+      if (!techniqueTarget) return null;
+      return runTechnique(song, techniqueTarget.scope, group, value);
+    },
+    [song, techniqueTarget],
+  );
+
+  const applyTechnique = useCallback(
+    (group: TechniqueGroupId, value: string | null) => {
+      const result = runTechniqueChoice(group, value);
+      if (result === null) {
+        setEditError(NOTHING_CHOSEN);
+        return;
+      }
+      if (!result.ok) {
+        setEditError(result.message);
+        return;
+      }
+      setEditError(null);
+      commit(result.song, { kind: "technique_write", group, value });
+    },
+    [commit, runTechniqueChoice],
+  );
+
+  const removeRegion = useCallback(
+    (id: string) => {
+      if (!techniqueTarget) return;
+      const result = applySpanRemove(song, {
+        sectionId: techniqueTarget.scope.sectionId,
+        spanId: id,
+      });
+      if (!result.ok) {
+        setEditError(result.message);
+        return;
+      }
+      setEditError(null);
+      commit(result.song, { kind: "technique_write", group: "region", value: null });
+    },
+    [commit, song, techniqueTarget],
+  );
+
+  const technique: TechniqueSurface = useMemo(() => {
+    const scope = techniqueTarget?.scope ?? null;
+    const note =
+      scope && cell ? noteInScope(song, scope, cell.slotIndex, techniqueTarget!.barIndex) : null;
+    return {
+      available: scope !== null,
+      attack: note?.attack ?? null,
+      picking: note?.picking ?? null,
+      regions: scope ? regionsInScope(song, scope) : [],
+      noteCount: scope?.targets.length ?? 0,
+      barCount: scope?.barCount ?? 0,
+      error: editError,
+      preview: (group, value) => previewTechnique(song, scope, group, value),
+      apply: applyTechnique,
+      removeRegion,
+    };
+  }, [applyTechnique, cell, editError, removeRegion, song, techniqueTarget]);
+
   /* ------------------------------------------------ the duration gesture */
 
   const durationTargetOf = useCallback(
@@ -895,6 +988,7 @@ export function useNoteEditing(options: {
       preview: previewShape,
       apply: applyShape,
     },
+    technique,
     duration: {
       drag,
       previewTicks: drag?.ticks ?? null,

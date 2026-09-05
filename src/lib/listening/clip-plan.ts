@@ -114,7 +114,10 @@ export type ListeningClipId =
   | "L23"
   | "L24"
   | "L25"
-  | "L26";
+  | "L26"
+  | "L27"
+  | "L28"
+  | "L29";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -683,6 +686,50 @@ export function listeningClips(
         "L26a",
         "Şekil slide'ı",
         3,
+      ),
+      /*
+       * 2V-D.1-C's three cards (§18).
+       *
+       * L27 is the only *parity* card in the pack: both sides are the same
+       * palm mute, written the old way and the new way. Every measurement
+       * says they are identical — the plan, the length, the envelope and a
+       * rendered WAV. What a measurement cannot say is whether a person
+       * hears them as the same thing, and that is the whole question.
+       *
+       * There is deliberately no picking card. A down-stroke and an
+       * up-stroke reach the speakers identically, so asking the founder to
+       * listen for the difference would be asking them to judge something
+       * that is not there.
+       */
+      gestureClip(
+        "L27",
+        "Avuç susturma: iki yazım",
+        "Aynı susturulmuş nota iki kez; ikisi de aynı susturma.",
+        "İki taraf aynı mı duyuluyor, yoksa biri diğerinden kısa ya da boğuk mu?",
+        [
+          { id: "L27a", name: "A · Nota üzerinde" },
+          { id: "L27b", name: "B · Bölge boyunca" },
+        ],
+      ),
+      gestureClip(
+        "L28",
+        "Armonik ve perde hareketi",
+        "Aynı bükme iki kez; ikincisinde nota armonik olarak vuruluyor.",
+        "Armonik, perde yukarı kayarken kendi ince karakterini koruyor mu?",
+        [
+          { id: "L28a", name: "A · Düz bükme" },
+          { id: "L28b", name: "B · Armonik bükme" },
+        ],
+      ),
+      gestureClip(
+        "L29",
+        "Tek elde iki tel: biri susturulmuş",
+        "İki tel birlikte çalıyor; ikinci taraftaki kalın tel susturuluyor.",
+        "İkinci tarafta kalın tel susarken ince tel çınlamaya devam ediyor mu?",
+        [
+          { id: "L29a", name: "A · İkisi de açık" },
+          { id: "L29b", name: "B · Kalın tel susturulmuş" },
+        ],
       ),
     );
   }

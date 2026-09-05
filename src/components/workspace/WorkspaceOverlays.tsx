@@ -258,6 +258,7 @@ export function WorkspaceOverlays({
           duration={noteEditing.duration}
           rhythm={noteEditing.rhythm}
           shape={noteEditing.shape}
+          technique={noteEditing.technique}
           retune={noteEditing.retune}
           playability={noteEditing.playability}
           error={noteEditing.editError}
