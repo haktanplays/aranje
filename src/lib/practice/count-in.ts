@@ -9,11 +9,12 @@
  * ## Counted from the bar the loop starts on
  *
  * Not from the song's meter, not from 4/4, and not from whatever the reader
- * last saw: from the **first bar of the range**. A 7/8 loop counts seven
- * eighths — well, two clicks, because 7/8 is felt in two — and a 6/8 loop
- * counts two, not six. That rule already exists as `slotsPerFeltBeat` and is
- * not restated here; a second copy is a second answer waiting to disagree
- * with the metronome.
+ * last saw: from the **first bar of the range**. A 6/8 loop counts two, not
+ * six, and a 7/8 loop felt `2+2+3` counts three — unevenly, because that is
+ * how it is played: the third click waits a beat and a half.
+ *
+ * The beats come from `meterBeats` and are not restated here; a second copy
+ * is a second answer waiting to disagree with the metronome (2V-D.2 §12).
  *
  * ## No fake bars
  *
@@ -30,7 +31,8 @@
  * it teaches the wrong pulse in the last second before playing.
  */
 import { effectiveBpm } from "@/lib/audio/practice-rate";
-import { PPQ, slotCount, slotsPerFeltBeat, ticksPerSlot } from "@/lib/music/timing";
+import { meterBeats, type MeterBeat } from "@/lib/music/meter-beats";
+import { PPQ, ticksPerBar, ticksPerSlot } from "@/lib/music/timing";
 import type { Bar } from "@/lib/song/schema";
 
 /** Off, one bar, or two. */
@@ -60,23 +62,36 @@ export type CountInClick = {
   readonly beat: number;
 };
 
+/** The beats of this bar, in order, from the feel it carries. */
+export function beatsIn(bar: Bar): readonly MeterBeat[] {
+  return meterBeats({
+    meter: bar.timeSignature,
+    resolution: bar.resolution,
+    grouping: bar.grouping,
+  });
+}
+
 /**
  * How many felt beats one bar of this meter has.
  *
- * Derived from the same grid rule the metronome uses rather than from the
- * time signature's numerator, which is wrong in compound time — 6/8 has six
- * eighths and two beats.
+ * From the beat list rather than from the numerator, which is wrong in
+ * compound time — 6/8 has six eighths and two beats — and wrong again in an
+ * asymmetric one, where 7/8 has seven eighths and three beats.
  */
 export function feltBeatsIn(bar: Bar): number {
-  const slots = slotCount(bar.timeSignature, bar.resolution);
-  const perBeat = slotsPerFeltBeat(bar.timeSignature, bar.resolution);
-  return Math.max(1, Math.round(slots / perBeat));
+  return Math.max(1, beatsIn(bar).length);
 }
 
-/** How long one felt beat of this bar lasts, in ticks. */
-export function feltBeatTicks(bar: Bar): number {
-  return slotsPerFeltBeat(bar.timeSignature, bar.resolution) *
-    ticksPerSlot(bar.resolution);
+/**
+ * How long each beat of this bar lasts, in ticks, in order.
+ *
+ * A list, because an asymmetric metre's beats are not the same length: 7/8
+ * felt `2+2+3` counts one, two, three with the third held half as long
+ * again. Summing it gives the bar exactly.
+ */
+export function feltBeatTicks(bar: Bar): readonly number[] {
+  const step = ticksPerSlot(bar.resolution);
+  return beatsIn(bar).map((beat) => beat.slots * step);
 }
 
 export type CountInInput = {
@@ -97,20 +112,31 @@ export type CountInInput = {
  */
 export function countInClicks(input: CountInInput): readonly CountInClick[] {
   if (input.bars === 0) return [];
-  const beats = feltBeatsIn(input.firstBar);
-  const perBeatTicks = feltBeatTicks(input.firstBar);
+  const bar = input.firstBar;
+  const beats = beatsIn(bar);
+  if (beats.length === 0) return [];
+  const step = ticksPerSlot(bar.resolution);
+  const barTicks = ticksPerBar(bar.timeSignature, bar.resolution);
   const bpm = effectiveBpm(input.bpm, input.practicePercent);
   // Ticks to seconds through the one definition of a quarter note.
   const secondsPerTick = 60 / (bpm * PPQ);
-  const total = beats * input.bars;
+  const totalTicks = barTicks * input.bars;
 
+  /*
+   * Each click is placed by its own tick offset rather than by multiplying a
+   * beat length, because the beats of an asymmetric metre differ. The last
+   * click still lands exactly one beat before the loop's first tick, and the
+   * first is exactly `bars` bars before it.
+   */
   const clicks: CountInClick[] = [];
-  for (let index = 0; index < total; index += 1) {
-    const remaining = total - index;
-    clicks.push({
-      beforeSeconds: remaining * perBeatTicks * secondsPerTick,
-      downbeat: index % beats === 0,
-      beat: (index % beats) + 1,
+  for (let barIndex = 0; barIndex < input.bars; barIndex += 1) {
+    beats.forEach((beat, index) => {
+      const offset = barIndex * barTicks + beat.slot * step;
+      clicks.push({
+        beforeSeconds: (totalTicks - offset) * secondsPerTick,
+        downbeat: beat.strength === "downbeat",
+        beat: index + 1,
+      });
     });
   }
   return clicks;

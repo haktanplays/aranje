@@ -22,16 +22,21 @@
  * someone their bar has sixteen beats in it, which is not true of any bar this
  * product can make.
  *
- * ## What is not invented
+ * ## Where the beat count comes from
  *
- * In 7/8 there is no honest beat count. Whether it is felt 2+2+3, 3+2+2 or
- * 2+3+2 is a property of the music, and the Song Contract has no field for it
- * (spec 5.5) — so nothing here guesses. The bar is described in the unit it is
- * actually counted in: "7 sekizlik · 14 adım". 6/8 does have an answer, and it
- * comes from `slotsPerFeltBeat` in the timing core rather than from a rule
- * restated here, because "the beat in compound time is the dotted note" is
- * already that function's job.
+ * From the bar's own feel (2V-D.2 §12), through `meterBeats`. 6/8 reads two
+ * beats, 7/8 felt `2+2+3` reads three, and both come from the same list the
+ * metronome clicks and the beat lines are drawn from — one answer, not three
+ * that agree until they do not.
+ *
+ * This module used to say, correctly for its time, that 7/8 had no honest
+ * beat count and describe the bar as "7 sekizlik · 14 adım" instead. The
+ * Song Contract has a grouping field now, so the honest answer exists; a bar
+ * that does not carry one gets the metre's ordinary feel, which the reader
+ * can see and change rather than a number this file invented.
  */
+import { meterBeats } from "@/lib/music/meter-beats";
+import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
   formatTimeSignature,
   resolutionLabel,
@@ -43,68 +48,51 @@ import {
 } from "@/lib/music/timing";
 
 export type RhythmReading = {
-  /** How many of them: beats in a meter that has them, note values otherwise. */
+  /** How many main beats the bar has. */
   readonly count: number;
-  /** What to call them: "ana vuruş", or the meter's own note value. */
+  /** What to call them. Always "ana vuruş" — every metre has them now. */
   readonly unit: string;
   /** Places a note can be written in the bar. */
   readonly steps: number;
-  /** True when the meter has a beat a foot can tap. */
-  readonly hasFeltBeat: boolean;
+  /** True when the beats are all the same length. False in 5/8, 7/8, 9/8. */
+  readonly evenBeats: boolean;
   /** "4 ana vuruş · 16 adım" */
   readonly plain: string;
   /** "4/4 · 1/16" */
   readonly technical: string;
 };
 
-/**
- * The name of the note value a meter counts in, for the meters that have no
- * felt beat to offer instead.
- *
- * Only the denominators the contract allows are named. An unnamed one would
- * mean the meter table grew without this being looked at, and inventing a word
- * for it is worse than saying the number.
- */
-const NOTE_VALUE_NAMES: Readonly<Record<number, string>> = {
-  2: "ikilik",
-  4: "dörtlük",
-  8: "sekizlik",
-  16: "onaltılık",
-};
-
-/** True when a foot has something to tap: x/4, and compound x/8. */
-export function hasFeltBeat(timeSignature: readonly [number, number]): boolean {
-  const [numerator, denominator] = timeSignature;
-  if (denominator === 4) return true;
-  return denominator === 8 && numerator % 3 === 0;
+/** True when every beat of this metre is the same length. */
+export function hasEvenBeats(
+  timeSignature: TimeSignature,
+  resolution: Resolution,
+  grouping?: BeatGrouping,
+): boolean {
+  const beats = meterBeats({ meter: timeSignature, resolution, grouping });
+  return new Set(beats.map((beat) => beat.slots)).size <= 1;
 }
 
 export function readRhythm(
   timeSignature: TimeSignature,
   resolution: Resolution,
+  grouping?: BeatGrouping,
 ): RhythmReading {
   const steps = slotCount(timeSignature, resolution);
-  const felt = hasFeltBeat(timeSignature);
-
   /*
-   * The count comes out of the grid arithmetic, not out of the meter's
-   * numerator: at 1/16 in 6/8 there are twelve steps and two beats, and only
-   * the timing core knows that the beat there is three eighths long.
+   * The count is the number of beats the bar is actually felt in, and it
+   * comes from the one list that answers that: at 1/16 in 6/8 there are
+   * twelve steps and two beats, and in 7/8 felt `2+2+3` there are fourteen
+   * steps and three.
    */
-  const perBeat = slotsPerFeltBeat(timeSignature, resolution);
-  const count = felt
-    ? Math.round(steps / perBeat)
-    : timeSignature[0];
-  const unit = felt
-    ? "ana vuruş"
-    : (NOTE_VALUE_NAMES[timeSignature[1]] ?? `1/${timeSignature[1]}`);
+  const beats = meterBeats({ meter: timeSignature, resolution, grouping });
+  const count = Math.max(1, beats.length);
 
   return {
     count,
-    unit,
+    unit: "ana vuruş",
     steps,
-    hasFeltBeat: felt,
-    plain: `${count} ${unit} · ${steps} adım`,
+    evenBeats: new Set(beats.map((beat) => beat.slots)).size <= 1,
+    plain: `${count} ana vuruş · ${steps} adım`,
     technical: `${formatTimeSignature(timeSignature)} · ${resolutionLabel(resolution)}`,
   };
 }
@@ -113,8 +101,9 @@ export function readRhythm(
 export function rhythmSummary(
   timeSignature: TimeSignature,
   resolution: Resolution,
+  grouping?: BeatGrouping,
 ): string {
-  const reading = readRhythm(timeSignature, resolution);
+  const reading = readRhythm(timeSignature, resolution, grouping);
   return `${reading.plain} (${reading.technical})`;
 }
 

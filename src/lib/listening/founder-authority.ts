@@ -187,6 +187,24 @@ export const FOUNDER_AUTHORITY: readonly ArchivedCard[] = [
    */
   { id: "L25", title: "Tek telli vurarak slide", verdict: "pass" },
   { id: "L26", title: "İki telli şekil slide'ı", verdict: "pass" },
+
+  /*
+   * 2V-D.1-C's round, and the end of the multi-axis phase.
+   *
+   * L27 was the pack's only *parity* card: the same palm mute written on the
+   * note and written as a region over the bar. Every measurement already said
+   * they were identical — the plan, the gated length, the envelope and a
+   * rendered WAV — and the one thing no measurement could settle came back in
+   * a single word. "Aynı" is recorded as the founder said it, because a note
+   * paraphrasing it would be this file's own voice standing in for theirs.
+   *
+   * L28 and L29 passed without a sentence. That is a verdict and not a
+   * silence: a card answered with no comment has been decided, which is a
+   * different fact from L12 and L13, which were never played at all.
+   */
+  { id: "L27", title: "Avuç susturma: iki yazım", verdict: "pass", note: "Aynı" },
+  { id: "L28", title: "Armonik ve perde hareketi", verdict: "pass" },
+  { id: "L29", title: "Tek elde iki tel: biri susturulmuş", verdict: "pass" },
 ];
 
 const BY_ID = new Map(FOUNDER_AUTHORITY.map((card) => [card.id, card]));

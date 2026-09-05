@@ -243,10 +243,16 @@ describe("song schema (spec 5)", () => {
   });
 
   it("still refuses a meter that is not in the contract", () => {
+    /*
+     * 5/4 joined the contract in 2V-D.2 §12, so the negative case moved to a
+     * metre that genuinely cannot be written in whole ticks on any grid the
+     * format has. 11/16 is the honest example: it is a real metre and this
+     * app does not claim it.
+     */
     expect(
       barSchema.safeParse({
-        timeSignature: [5, 4],
-        resolution: 8,
+        timeSignature: [11, 16],
+        resolution: 16,
         slots: {},
       }).success,
     ).toBe(false);

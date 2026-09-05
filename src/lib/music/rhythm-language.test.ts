@@ -3,13 +3,21 @@
  *
  * Every example the brief gave is here as a literal string, because the
  * wording *is* the feature: a reader who does not read music has nothing to
- * check it against except itself. The two rules that matter most are that a
- * step is never called a beat, and that 7/8 is never given a beat grouping the
- * contract cannot back up.
+ * check it against except itself. The rule that matters most is that a step is
+ * never called a beat. The second one used to be that 7/8 is never given a
+ * grouping the contract cannot back up; the contract backs one now, so the
+ * rule became "7/8 is counted the way the bar says it is felt" (2V-D.2 §12).
  */
 import { describe, expect, it } from "vitest";
 
-import { hasFeltBeat, readRhythm, rhythmSummary, gridChoices, readGrid } from "@/lib/music/rhythm-language";
+import {
+  hasEvenBeats,
+  readRhythm,
+  rhythmSummary,
+  gridChoices,
+  readGrid,
+} from "@/lib/music/rhythm-language";
+import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
   isRepresentableGrid,
   RESOLUTIONS,
@@ -18,8 +26,11 @@ import {
   type TimeSignature,
 } from "@/lib/music/timing";
 
-const plain = (meter: TimeSignature, resolution: Resolution) =>
-  readRhythm(meter, resolution).plain;
+const plain = (
+  meter: TimeSignature,
+  resolution: Resolution,
+  grouping?: BeatGrouping,
+) => readRhythm(meter, resolution, grouping).plain;
 
 describe("98. the plain reading, exactly as the brief asked for it", () => {
   it("counts beats and steps separately in 4/4", () => {
@@ -54,40 +65,53 @@ describe("98. the plain reading, exactly as the brief asked for it", () => {
         if (!isRepresentableGrid(meter, resolution)) continue;
         const reading = readRhythm(meter as TimeSignature, resolution);
         expect(reading.count, reading.plain).toBeLessThanOrEqual(reading.steps);
-        if (reading.hasFeltBeat) {
-          expect(reading.count, reading.plain).toBeLessThanOrEqual(7);
-        }
+        /* No metre in the contract is felt in more beats than a hand can
+           count; anything higher would mean beats and steps had merged. */
+        expect(reading.count, reading.plain).toBeLessThanOrEqual(7);
       }
     }
   });
 });
 
-describe("99. 7/8 is not given a grouping the contract cannot back", () => {
-  it("says what it counts in, rather than inventing main beats", () => {
-    expect(plain([7, 8], 8)).toBe("7 sekizlik · 7 adım");
-    expect(plain([7, 8], 16)).toBe("7 sekizlik · 14 adım");
+describe("99. 7/8 is counted the way the bar says it is felt", () => {
+  /*
+   * This describe used to hold the opposite rule, and the reason it changed
+   * is the whole of 2V-D.2 §12: the Song Contract had no field for a feel, so
+   * describing 7/8 as "7 sekizlik" was the only honest thing to say. There is
+   * a field now. Saying "7 sekizlik" while the metronome clicks three would
+   * be two answers to one question.
+   */
+  it("counts the beats of the feel, not the eighths", () => {
+    expect(plain([7, 8], 8, [2, 2, 3])).toBe("3 ana vuruş · 7 adım");
+    expect(plain([7, 8], 16, [2, 2, 3])).toBe("3 ana vuruş · 14 adım");
   });
 
-  it("has no felt beat to offer", () => {
-    expect(hasFeltBeat([7, 8])).toBe(false);
-    expect(readRhythm([7, 8], 16).hasFeltBeat).toBe(false);
+  it("says the same count for a different feel, and means different beats", () => {
+    /* Both are three beats; what changed is where the long one is, which is
+       `meterBeats`' answer and not this module's to spell out. */
+    expect(plain([7, 8], 16, [3, 2, 2])).toBe("3 ana vuruş · 14 adım");
+    expect(hasEvenBeats([7, 8], 16, [3, 2, 2])).toBe(false);
   });
 
-  it("never writes 2+2+3 or any other invented grouping", () => {
-    // Whether 7/8 is felt 2+2+3, 3+2+2 or 2+3+2 is a property of the music,
-    // and the Song Contract has no field for it (spec 5.5).
+  it("marks the beats uneven, which is the fact a reader needs", () => {
+    expect(hasEvenBeats([7, 8], 16)).toBe(false);
+    expect(hasEvenBeats([5, 8], 16)).toBe(false);
+    expect(hasEvenBeats([4, 4], 16)).toBe(true);
+    expect(hasEvenBeats([6, 8], 16)).toBe(true);
+    expect(hasEvenBeats([12, 8], 16)).toBe(true);
+  });
+
+  it("never spells the grouping into the reading line", () => {
+    /* `2+2+3` is the grouping picker's string (`groupingLabel`). Two places
+       writing it would be two spellings of one feel. */
     for (const resolution of [8, 16, 32] as const) {
-      const reading = readRhythm([7, 8], resolution);
-      expect(reading.plain).not.toMatch(/\+/);
-      expect(reading.plain).not.toContain("ana vuruş");
-      expect(reading.technical).not.toMatch(/\+/);
+      expect(readRhythm([7, 8], resolution).plain).not.toMatch(/\+/);
+      expect(readRhythm([7, 8], resolution).technical).not.toMatch(/\+/);
     }
   });
 
-  it("still calls 6/8 compound, because that one really is", () => {
-    // The absence of a grouping for 7/8 is a fact about 7/8, not a blanket
-    // refusal to describe eighth-note meters.
-    expect(hasFeltBeat([6, 8])).toBe(true);
+  it("still calls 6/8 two beats, because that one always was", () => {
+    expect(readRhythm([6, 8], 16).count).toBe(2);
   });
 });
 

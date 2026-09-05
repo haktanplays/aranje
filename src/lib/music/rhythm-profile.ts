@@ -92,13 +92,72 @@ export function isTripletResolution(resolution: number): boolean {
  */
 export type BeatGrouping = readonly number[];
 
-export function defaultGrouping(meter: TimeSignature): BeatGrouping {
+/**
+ * The groupings a metre is normally felt in, best-known first (2V-D.2 §12).
+ *
+ * A short list rather than every partition of the numerator: 7 has fifteen
+ * compositions and a guitarist plays three of them. The **first entry is the
+ * default**, which is what makes `defaultGrouping` and the picker one fact
+ * instead of two — an app whose own default is not among the options it
+ * offers is telling the reader two different things.
+ */
+export const GROUPING_PRESETS: Readonly<Record<string, readonly BeatGrouping[]>> = {
+  "4/4": [[1, 1, 1, 1]],
+  "3/4": [[1, 1, 1]],
+  "5/4": [
+    [3, 2],
+    [2, 3],
+    [1, 1, 1, 1, 1],
+  ],
+  "6/8": [
+    [3, 3],
+    [2, 2, 2],
+  ],
+  "5/8": [
+    [2, 3],
+    [3, 2],
+  ],
+  "7/8": [
+    [2, 2, 3],
+    [3, 2, 2],
+    [2, 3, 2],
+  ],
+  "9/8": [
+    [3, 3, 3],
+    [2, 2, 2, 3],
+    [4, 2, 3],
+  ],
+  "12/8": [[3, 3, 3, 3]],
+};
+
+export function groupingPresets(meter: TimeSignature): readonly BeatGrouping[] {
+  const listed = GROUPING_PRESETS[`${meter[0]}/${meter[1]}`];
+  if (listed) return listed;
+  return [evenGrouping(meter)];
+}
+
+/** Every beat of the metre on its own: the fallback when nothing is known. */
+function evenGrouping(meter: TimeSignature): BeatGrouping {
   const [count, unit] = meter;
   /* Compound metres are felt in threes: 6/8 is two dotted beats, not six. */
   if (unit === 8 && count % 3 === 0) {
     return Array.from({ length: count / 3 }, () => 3);
   }
   return Array.from({ length: count }, () => 1);
+}
+
+/**
+ * The ordinary feel of a metre, when the bar does not name one.
+ *
+ * **Changed in 2V-D.2 for the asymmetric metres.** It used to return one beat
+ * per numerator unit for anything that was not compound, so a 7/8 defaulted to
+ * seven equal eighths — which is a legal reading and not a thing anybody
+ * plays, and which made the metronome click seven identical times. It now
+ * returns the metre's best-known feel, so 7/8 arrives as `2+2+3`. No notes,
+ * ticks or durations move; what changes is where the weight is heard.
+ */
+export function defaultGrouping(meter: TimeSignature): BeatGrouping {
+  return groupingPresets(meter)[0]!;
 }
 
 export function groupingFitsMeter(grouping: BeatGrouping, meter: TimeSignature): boolean {

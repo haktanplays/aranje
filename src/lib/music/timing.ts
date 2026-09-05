@@ -66,11 +66,28 @@ export const PPQ = 192;
 /** Ticks in a whole note. Every grid divides this. */
 export const TICKS_PER_WHOLE = PPQ * 4;
 
+/**
+ * Every metre the contract holds.
+ *
+ * The first four shipped before 2V-D.2 and are what the Simple surface builds
+ * its intents from. The rest are Pro metres: each one is here because it can
+ * be written in **exact ticks** on a grid the format already has, which is
+ * the only test a metre has to pass. 11/16 or a 5-tuplet cannot, so they are
+ * not here — a list that offered them would be offering an approximation.
+ *
+ * Order is stable and read by the Pro picker, so a metre is appended rather
+ * than inserted.
+ */
 export const TIME_SIGNATURES = [
   [4, 4],
   [3, 4],
   [6, 8],
   [7, 8],
+  /* 2V-D.2 §12. Asymmetric and compound metres, each exact at 1/8 and finer. */
+  [5, 8],
+  [9, 8],
+  [12, 8],
+  [5, 4],
 ] as const;
 
 export type TimeSignature = (typeof TIME_SIGNATURES)[number];

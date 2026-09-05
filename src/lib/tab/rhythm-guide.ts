@@ -32,18 +32,22 @@
  *   silence is what a beam may not be drawn over.
  * - **The bar line ends it too.** The states are one bar's, so a group cannot
  *   reach past the end of the bar it is in.
- * - **Beat grouping** comes from the timing core: the felt beat where the
- *   meter has one, the notated beat where it does not. 6/8 therefore groups in
- *   two dotted beats. **7/8 gets no invented grouping** — whether it is felt
- *   2+2+3 or 3+2+2 is a property of the music that the Song Contract has no
- *   field for, so the safe notated-beat grouping is used and nothing pretends
- *   to know more (spec 5.5).
+ * - **Beat grouping** comes from the bar's own feel (2V-D.2 §12). 6/8 groups
+ *   in two dotted beats; 7/8 groups the way the bar says it is felt, and a bar
+ *   that says nothing gets the metre's ordinary feel — `2+2+3` in 7/8 — which
+ *   the reader can see and change. That is a change of stance: before the
+ *   Song Contract had a field for it, 7/8 beamed in seven equal eighths
+ *   because inventing a feel was worse than declining to guess. There is a
+ *   field now, so declining would mean ignoring what the bar said.
+ *
+ *   The beats are **not evenly spaced any more**, so grouping is decided by
+ *   which beat a slot falls in rather than by dividing the slot number, and a
+ *   beam still cannot cross from one beat into the next.
  */
-import { hasFeltBeat } from "@/lib/music/rhythm-language";
+import { meterBeats, type MeterBeat } from "@/lib/music/meter-beats";
+import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
   isTripletGrid,
-  slotsPerFeltBeat,
-  slotsPerNotatedBeat,
   ticksPerSlot,
   type Resolution,
   type TimeSignature,
@@ -61,8 +65,12 @@ export type BeamGroup = {
 
 export type RhythmGuide = {
   readonly groups: readonly BeamGroup[];
-  /** Slots per group, for anything that wants to draw the beat divisions. */
-  readonly beatSlots: number;
+  /**
+   * The beats the groups were grouped by, so a view draws the same divisions
+   * the beams were built from. A list rather than a slot count: 7/8 felt
+   * `2+2+3` has three beats and no single length that describes them.
+   */
+  readonly beats: readonly MeterBeat[];
 };
 
 /** A quarter note, in ticks. Everything shorter than this can be beamed. */
@@ -96,10 +104,17 @@ export function buildRhythmGuide(
   states: readonly SlotState[],
   timeSignature: TimeSignature,
   resolution: Resolution,
+  grouping?: BeatGrouping,
 ): RhythmGuide {
-  const beatSlots = hasFeltBeat(timeSignature)
-    ? slotsPerFeltBeat(timeSignature, resolution)
-    : slotsPerNotatedBeat(timeSignature, resolution);
+  const beats = meterBeats({ meter: timeSignature, resolution, grouping });
+  /* Which beat a slot belongs to. A linear walk rather than a division,
+     because the beats of an asymmetric metre are not the same length. */
+  const beatOf = (slot: number): number => {
+    for (let index = beats.length - 1; index >= 0; index -= 1) {
+      if (slot >= beats[index]!.slot) return index;
+    }
+    return 0;
+  };
   const step = ticksPerSlot(resolution);
   const triplet = isTripletGrid(resolution);
 
@@ -138,8 +153,7 @@ export function buildRhythmGuide(
   for (const onset of onsets) {
     const previous = run[run.length - 1];
     const sameBeat =
-      previous !== undefined &&
-      Math.floor(previous.slot / beatSlots) === Math.floor(onset.slot / beatSlots);
+      previous !== undefined && beatOf(previous.slot) === beatOf(onset.slot);
     /*
      * A gap ends the run as surely as a beat line does. `previous.slot +
      * previous slots` is where the previous note stopped sounding; anything
@@ -154,7 +168,7 @@ export function buildRhythmGuide(
   }
   flush();
 
-  return { groups, beatSlots };
+  return { groups, beats };
 }
 
 /** What a screen reader is told about one group (spec 13.20 §7). */

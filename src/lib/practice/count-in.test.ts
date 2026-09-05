@@ -83,10 +83,18 @@ describe("252. it counts the loop's own meter", () => {
   });
 
   it("counts 7/8 the way the metronome clicks it", () => {
-    const beats = feltBeatsIn(SEVEN_EIGHT);
-    expect(beats).toBe(7);
+    /*
+     * Three, not seven (2V-D.2 §12). The bar is felt `2+2+3`, so a reader
+     * counts one-two-three with the last beat held longer — and the count-in
+     * has to be the thing they can come in on, which seven even clicks is
+     * not. The lengths are uneven for the same reason.
+     */
+    expect(feltBeatsIn(SEVEN_EIGHT)).toBe(3);
+    const lengths = feltBeatTicks(SEVEN_EIGHT);
+    expect(lengths).toEqual([PPQ, PPQ, PPQ * 1.5]);
     // And the whole bar still adds up to seven eighths.
-    expect(beats * feltBeatTicks(SEVEN_EIGHT)).toBe(7 * (PPQ / 2));
+    const total = lengths.reduce((sum, ticks) => sum + ticks, 0);
+    expect(total).toBe(7 * (PPQ / 2));
   });
 
   it("gives one bar of 4/4 four clicks and two bars eight", () => {

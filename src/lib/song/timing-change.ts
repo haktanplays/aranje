@@ -54,6 +54,8 @@
  * So a 4/4 bar becoming 3/4 moves everything after it by one beat without a
  * single one of those needing to know this command exists.
  */
+import { groupingRefusal } from "@/lib/music/meter-beats";
+import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
   isRepresentableGrid,
   slotCount,
@@ -62,6 +64,7 @@ import {
   type TimeSignature,
 } from "@/lib/music/timing";
 import { regridDrumsDetailed, regridMelodicDetailed } from "@/lib/song/bar-regrid";
+import { extentsOf, remapRange, type BarExtent } from "@/lib/song/timeline-transform";
 import { settle } from "@/lib/song/edit";
 import {
   isDrumSlotArray,
@@ -83,11 +86,25 @@ export type TimingChange = {
   readonly scope: TimingScope;
   readonly timeSignature: TimeSignature;
   readonly resolution: Resolution;
+  /**
+   * How the new bar is felt (2V-D.2 §12, §14).
+   *
+   * Part of the same command because it is part of the same decision: a
+   * reader choosing 7/8 chooses `2+2+3` or `3+2+2` in the same breath, and
+   * two commands would let a bar exist for one undo step in a metre with a
+   * feel from the metre before it.
+   *
+   * Omitted leaves the metre's ordinary feel, which is what `meterBeats`
+   * fills in — so an unchanged 4/4 bar stores nothing new.
+   */
+  readonly grouping?: BeatGrouping;
 };
 
 export type TimingChangeErrorCode =
   /** The pair itself is not writable: 1/4 in 6/8, a triplet grid in 7/8. */
   | "unsupported_meter_resolution"
+  /** The accent grouping does not add up to the metre's numerator. */
+  | "grouping_does_not_fit"
   /** A moment or a duration falls between two slots of the target grid. */
   | "target_grid_incompatible"
   /** Sound would run past the end of the shorter bar. */
@@ -164,6 +181,13 @@ export function changeTiming(song: Song, change: TimingChange): TimingChangeResu
     );
   }
 
+  /* Checked before anything is rewritten, so a grouping typed wrong costs
+     the reader a sentence rather than a half-converted section. */
+  if (change.grouping) {
+    const refusal = groupingRefusal(change.grouping, timeSignature);
+    if (refusal) return fail("grouping_does_not_fit", refusal);
+  }
+
   const sectionIndex = song.sections.findIndex((entry) => entry.id === change.sectionId);
   const section = song.sections[sectionIndex];
   if (!section) return fail("section_not_found", "Bu bölüm artık şarkıda yok.");
@@ -181,13 +205,21 @@ export function changeTiming(song: Song, change: TimingChange): TimingChangeResu
    * Nothing to do is not a failure to report loudly, but it must not become a
    * write either: an undo step that undoes nothing is worse than no step.
    */
+  const sameGrouping = (bar: Bar): boolean => {
+    const wanted = change.grouping;
+    if (!wanted) return bar.grouping === undefined;
+    const written = bar.grouping;
+    if (!written || written.length !== wanted.length) return false;
+    return written.every((group, index) => group === wanted[index]);
+  };
   const alreadyThere = targets.every((index) => {
     const bar = section.bars[index];
     return (
       bar !== undefined &&
       bar.resolution === resolution &&
       bar.timeSignature[0] === timeSignature[0] &&
-      bar.timeSignature[1] === timeSignature[1]
+      bar.timeSignature[1] === timeSignature[1] &&
+      sameGrouping(bar)
     );
   });
   if (alreadyThere) {
@@ -258,17 +290,54 @@ export function changeTiming(song: Song, change: TimingChange): TimingChangeResu
     rewritten.set(index, {
       timeSignature: [timeSignature[0], timeSignature[1]] as Bar["timeSignature"],
       resolution,
+      /* A fresh array for the same reason the tuple is fresh: one shared
+         grouping across a section would make an edit to one bar an edit to
+         all of them. Absent when the metre is felt its ordinary way. */
+      ...(change.grouping ? { grouping: [...change.grouping] } : {}),
       slots,
     });
+  }
+
+  const nextBars = section.bars.map((bar, index) =>
+    targetSet.has(index) ? (rewritten.get(index) ?? bar) : bar,
+  );
+
+  /*
+   * The two things written *over* the bars rather than inside them.
+   *
+   * Notes ride their bar and need no help; a phrase and a technique span are
+   * section-relative tick ranges, so a moved bar line leaves them pointing at
+   * different music unless they move too. This is the same transaction: if a
+   * range cannot be remapped exactly, the whole change is refused and the
+   * reader's song is the one they had (§14, §15).
+   */
+  const before = extentsOf(section.bars.map(lengthOf));
+  const after = extentsOf(nextBars.map(lengthOf));
+
+  const phrases = section.phrases ? remapAll(section.phrases, before, after) : null;
+  if (phrases === "refused") {
+    return fail(
+      "content_exceeds_new_measure",
+      "Bir cümle yeni ölçüye sığmıyor; hiçbir şey kesilmedi.",
+    );
+  }
+  const spans = section.techniqueSpans
+    ? remapAll(section.techniqueSpans, before, after)
+    : null;
+  if (spans === "refused") {
+    return fail(
+      "content_exceeds_new_measure",
+      "Bir teknik alanı yeni ölçüye sığmıyor; hiçbir şey kesilmedi.",
+    );
   }
 
   const nextSection: Section = {
     ...section,
     // `bpmOverride` and every other section field travel untouched: how fast a
     // section is played is a different question from how its bars are counted.
-    bars: section.bars.map((bar, index) =>
-      targetSet.has(index) ? (rewritten.get(index) ?? bar) : bar,
-    ),
+    bars: nextBars,
+    ...(phrases ? { phrases } : {}),
+    ...(spans ? { techniqueSpans: spans } : {}),
   };
 
   const next: Song = {
@@ -305,6 +374,32 @@ function refusalOf(
         "content_exceeds_new_measure",
         `${where} yeni ölçüye sığmıyor; hiçbir şey kesilmedi.`,
       );
+}
+
+/** One bar's length, for the extent list the remapper walks. */
+const lengthOf = (bar: Bar) => ({
+  lengthTicks: slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution),
+});
+
+/**
+ * Every range remapped, or `"refused"` the moment one of them cannot be.
+ *
+ * All-or-nothing on purpose: a section with three phrases moved and one left
+ * behind is a worse outcome than a section that refused the edit, because the
+ * reader cannot see which one is wrong.
+ */
+function remapAll<T extends { readonly startTicks: number; readonly endTicks: number }>(
+  ranges: readonly T[],
+  before: readonly BarExtent[],
+  after: readonly BarExtent[],
+): T[] | "refused" {
+  const moved: T[] = [];
+  for (const range of ranges) {
+    const result = remapRange(range, before, after);
+    if (!result.ok) return "refused";
+    moved.push(result.range);
+  }
+  return moved;
 }
 
 /** How long a bar of this meter and grid lasts, for a caller sizing a preview. */

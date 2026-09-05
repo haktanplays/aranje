@@ -6,7 +6,12 @@
  * timeline. There is no separate clock for the interface.
  */
 import { type BarMarker, type SongPlan } from "@/lib/audio/schedule";
-import { slotsPerFeltBeat, ticksPerSlot } from "@/lib/music/timing";
+import {
+  ticksPerSlot,
+  type Resolution,
+  type TimeSignature,
+} from "@/lib/music/timing";
+import { meterBeats, type MeterBeat } from "@/lib/music/meter-beats";
 
 export type PlayPosition = {
   ticks: number;
@@ -109,25 +114,42 @@ export function sectionLoopBounds(
 }
 
 /**
- * Slots per felt beat, for one bar of a plan.
+ * Where the beats of one planned bar fall, from the feel it carries.
  *
- * The rule itself lives in the timing module with the rest of the grid
- * arithmetic (spec 5.5, K-34); this is only the plan-shaped way in.
+ * This replaced a `slotsPerBeat(bar)` that returned one number (2V-D.2 §12).
+ * The number was right for every metre the app had at the time and wrong for
+ * the ones it gained: 7/8 has three beats of two, two and three eighths, and
+ * no single length describes them. Nothing outside this module read it, so it
+ * went rather than staying as a second answer.
  */
-export function slotsPerBeat(bar: BarMarker): number {
-  return slotsPerFeltBeat(bar.timeSignature, bar.resolution);
+export function barBeats(bar: BarMarker): readonly MeterBeat[] {
+  return meterBeats({
+    meter: bar.timeSignature as TimeSignature,
+    resolution: bar.resolution as Resolution,
+    grouping: bar.grouping,
+  });
 }
 
 export type BeatClick = { time: number; downbeat: boolean };
 
-/** Every metronome click of the song, on the same tick timeline as the music. */
+/**
+ * Every metronome click of the song, on the same tick timeline as the music.
+ *
+ * One click per *main beat*, not per notated note value: 6/8 clicks twice and
+ * 7/8 felt 2+2+3 clicks three times, at the second and fourth eighths. The
+ * pattern is read off the bar's grouping rather than derived from a rule
+ * restated here, so the click a player hears and the beat line they see are
+ * the same list (2V-D.2 §12).
+ */
 export function metronomeClicks(plan: SongPlan): BeatClick[] {
   const clicks: BeatClick[] = [];
   for (const bar of plan.bars) {
     const step = ticksPerSlot(bar.resolution);
-    const perBeat = slotsPerBeat(bar);
-    for (let slot = 0; slot < bar.slotCount; slot += perBeat) {
-      clicks.push({ time: bar.time + slot * step, downbeat: slot === 0 });
+    for (const beat of barBeats(bar)) {
+      clicks.push({
+        time: bar.time + beat.slot * step,
+        downbeat: beat.strength === "downbeat",
+      });
     }
   }
   return clicks;

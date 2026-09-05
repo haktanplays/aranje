@@ -26,6 +26,18 @@ export const timeSignatureSchema = z.union([
   z.tuple([z.literal(3), z.literal(4)]),
   z.tuple([z.literal(6), z.literal(8)]),
   z.tuple([z.literal(7), z.literal(8)]),
+  /*
+   * 2V-D.2 §12. Four Pro metres, each exact on grids the format already has.
+   *
+   * Additive: no song is rewritten and no existing metre changes meaning. A
+   * metre earns a place here by being writable in whole ticks — `5/8` is
+   * `5 * 96 = 480`, `5/4` is `960` — which is why 11/16 is absent rather than
+   * approximated.
+   */
+  z.tuple([z.literal(5), z.literal(8)]),
+  z.tuple([z.literal(9), z.literal(8)]),
+  z.tuple([z.literal(12), z.literal(8)]),
+  z.tuple([z.literal(5), z.literal(4)]),
 ]);
 
 /**
@@ -352,6 +364,20 @@ export const barSchema = z
      * read on a grid nobody counts.
      */
     notation: offeredResolutionSchema.optional(),
+    /**
+     * Where the weight of the bar is felt (2V-D.2 §12).
+     *
+     * A list of beats per group, summing to the numerator: 7/8 felt `2+2+3`
+     * is `[2, 2, 3]`. Optional, and absent in every song written before now,
+     * which means "the ordinary feel for this metre" — `defaultGrouping`
+     * supplies it and nothing is migrated.
+     *
+     * It has to be stored because **nothing else can say it.** A 5/8 felt
+     * `2+3` and one felt `3+2` are the same five eighth notes; the metre
+     * cannot distinguish them and neither can the notes. Guessing it from the
+     * note pattern would be the app deciding where a reader's accents are.
+     */
+    grouping: z.array(z.number().int().min(1)).min(1).optional(),
     slots: z.record(
       z.string(),
       z.union([z.array(melodicSlotSchema), z.array(drumSlotSchema)]),
@@ -364,14 +390,33 @@ export const barSchema = z
    * nothing that reads a parsed Song ever has to wonder.
    */
   .superRefine((bar, ctx) => {
-    if (isRepresentableGrid(bar.timeSignature, bar.resolution)) return;
-    ctx.addIssue({
-      code: "custom",
-      path: ["resolution"],
-      message:
-        `${bar.timeSignature[0]}/${bar.timeSignature[1]} olcusu ` +
-        `1/${bar.resolution} gridinde yazilamaz`,
-    });
+    if (!isRepresentableGrid(bar.timeSignature, bar.resolution)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["resolution"],
+        message:
+          `${bar.timeSignature[0]}/${bar.timeSignature[1]} olcusu ` +
+          `1/${bar.resolution} gridinde yazilamaz`,
+      });
+    }
+    /*
+     * A grouping that does not add up is not a feel, it is a typo (§12).
+     * Refused at the schema so nothing downstream has to wonder whether the
+     * accents it was handed cover the bar.
+     */
+    if (bar.grouping !== undefined) {
+      const total = bar.grouping.reduce((sum, group) => sum + group, 0);
+      if (total !== bar.timeSignature[0]) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["grouping"],
+          message:
+            `vurgu gruplamasi ${total} ediyor, ` +
+            `${bar.timeSignature[0]}/${bar.timeSignature[1]} olcusu ` +
+            `${bar.timeSignature[0]} bekliyor`,
+        });
+      }
+    }
   });
 
 export const sectionStatusSchema = z.enum(["fixed", "pending", "accepted"]);

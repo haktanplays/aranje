@@ -77,6 +77,14 @@ export type BarMarker = {
   slotCount: number;
   timeSignature: readonly [number, number];
   resolution: number;
+  /**
+   * How the bar is felt, when it says so (2V-D.2 §12).
+   *
+   * Carried onto the marker rather than looked up again downstream, because
+   * the metronome walks markers and a second lookup would be a second place
+   * for 7/8 to be felt differently from how it is written.
+   */
+  grouping?: readonly number[];
 };
 
 export type SongPlan = {
@@ -106,6 +114,7 @@ export function barTimeline(song: Song): BarMarker[] {
         slotCount: count,
         timeSignature: bar.timeSignature,
         resolution: bar.resolution,
+        ...(bar.grouping ? { grouping: bar.grouping } : {}),
       });
       time += durationTicks;
     });

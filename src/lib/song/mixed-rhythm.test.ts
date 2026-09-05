@@ -41,7 +41,7 @@ import { RESOLUTIONS } from "@/lib/music/timing";
 import { RHYTHM_PROFILES } from "@/lib/music/rhythm-profile";
 import { gridChoices } from "@/lib/music/rhythm-language";
 import { gridLabelFor } from "@/components/workspace/grid-label";
-import { MAX_SLOTS_PER_BAR } from "@/lib/music/timing";
+import { MAX_SLOTS_PER_BAR, slotCount } from "@/lib/music/timing";
 import { songSchema, type MelodicSlot, type Song } from "@/lib/song/schema";
 import { SAMPLE_SONG } from "@/lib/song/sample-song";
 
@@ -370,9 +370,20 @@ describe("68. the lattice is a format detail, not a vocabulary word", () => {
       48 as never,
     );
     expect(RHYTHM_PROFILES.map((profile) => profile.resolution)).not.toContain(48 as never);
-    /* The Copilot's slot cap is derived from the offered grids, so a model
-       cannot be handed — or asked for — a 48-column bar. */
-    expect(MAX_SLOTS_PER_BAR).toBe(32);
+    /*
+     * The Copilot's slot cap is derived from the offered grids and the metre
+     * list, so it moved when 2V-D.2 added 12/8: twelve eighths at 1/32 is 48
+     * columns, and that is now the widest bar the contract can hold.
+     *
+     * The coincidence is worth naming so nobody reads it as the lattice
+     * leaking into the vocabulary: 48 here is a *slot count* of a long bar on
+     * an offered grid, and 48 as a resolution is the lattice, which the three
+     * assertions above keep out of every picker. They are different numbers
+     * that happen to be equal, and the assertions distinguish them.
+     */
+    expect(MAX_SLOTS_PER_BAR).toBe(48);
+    expect(slotCount([12, 8], 32)).toBe(48);
+    expect(slotCount([4, 4], 32)).toBe(32);
   });
 
   it("announces no grid change when only the lattice underneath changed", () => {

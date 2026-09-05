@@ -55,9 +55,17 @@ const drumBar = (barIndex: number, slots: number) => ({
 
 describe("the answer schema shows the grids that exist", () => {
   it("bounds a bar by the widest one the contract allows", () => {
-    expect(MAX_SLOTS_PER_BAR).toBe(32);
+    /*
+     * This bound is derived, not chosen: it is the widest bar any meter in
+     * TIME_SIGNATURES can have on any grid in RESOLUTIONS. It moved from 32
+     * to 48 at 2V-D.2 §12, when 12/8 joined the contract — twelve eighths at
+     * a 1/32 grid is 48 slots. Writing the number by hand here is the point:
+     * the Copilot's answer schema must widen with the contract, and a silent
+     * disagreement between the two would refuse a bar the editor accepts.
+     */
+    expect(MAX_SLOTS_PER_BAR).toBe(48);
     const text = JSON.stringify(MODEL_PATCH_JSON_SCHEMA);
-    expect(text).toContain('"maxItems":32');
+    expect(text).toContain('"maxItems":48');
   });
 
   it("refuses a bar wider than any bar can be", () => {

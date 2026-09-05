@@ -145,7 +145,7 @@ export function DrumBarBlock({
             eighths is exactly the rhythm this is for (spec 13.20 §7). */}
         <div className="absolute inset-x-0" style={{ top: RHYTHM_STRIP_HEIGHT }}>
           <RhythmGuideLayer
-            guide={buildRhythmGuide(states, bar.timeSignature, bar.resolution)}
+            guide={buildRhythmGuide(states, bar.timeSignature, bar.resolution, bar.grouping)}
           />
         </div>
       </div>

@@ -220,6 +220,7 @@ export function FrettedBarBlock({
     timeSignature: bar.timeSignature,
     resolution: bar.resolution,
     slotCount: bar.slotCount,
+    grouping: bar.grouping,
   });
   /*
    * Reading rows are compact; writing rows are the finger's (2S-A §4). One

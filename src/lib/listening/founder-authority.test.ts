@@ -37,14 +37,46 @@ const round = listeningClips(
   gestureTakes(fixture),
 );
 
-describe("101. the twenty-six recorded results, exactly as they were given", () => {
+describe("101. the twenty-nine recorded results, exactly as they were given", () => {
   it("holds every card the founder has judged, in order", () => {
     expect(FOUNDER_AUTHORITY.map((card) => card.id)).toEqual([
       "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8",
       "L9", "L10", "L11", "L12", "L13", "L14", "L15", "L16",
       "L17", "L18", "L19", "L20", "L21", "L22", "L23", "L24",
-      "L25", "L26",
+      "L25", "L26", "L27", "L28", "L29",
     ]);
+  });
+
+  it("records the three cards that closed the multi-axis phase", () => {
+    /*
+     * L27 was the pack's only parity card, and the founder answered it in one
+     * word. It is stored verbatim: a note rewritten into fuller prose would be
+     * this file speaking in their voice.
+     */
+    expect(archivedCard("L27")?.verdict).toBe("pass");
+    expect(archivedCard("L27")?.note).toBe("Aynı");
+    /* Passed with nothing said. A decided card with no comment is not the
+       same fact as a card nobody played, which is what L12 and L13 are. */
+    expect(archivedCard("L28")?.verdict).toBe("pass");
+    expect(archivedCard("L28")?.note).toBeUndefined();
+    expect(archivedCard("L29")?.verdict).toBe("pass");
+    expect(archivedCard("L29")?.note).toBeUndefined();
+  });
+
+  it("lets no card of this round rewrite a card of an older one", () => {
+    /*
+     * The rule L25 established, now with three more cards standing on it: a
+     * later pass is a later pass. L19's and L23's polish debts and L7's stay
+     * exactly where the founder left them, and the two cards that were never
+     * played stay unmeasured rather than being swept up by a tidy round.
+     */
+    expect(archivedCard("L19")?.verdict).toBe("conditional_pass");
+    expect(archivedCard("L23")?.verdict).toBe("conditional_pass");
+    expect(archivedCard("L7")?.verdict).toBe("conditional_pass");
+    expect(archivedCard("L21")?.verdict).toBe("inconclusive");
+    expect(archivedCard("L24")?.verdict).toBe("inconclusive");
+    expect(archivedCard("L12")?.verdict).toBe("unmeasured");
+    expect(archivedCard("L13")?.verdict).toBe("unmeasured");
   });
 
   it("records the two cards that closed the slide phase", () => {
@@ -192,7 +224,7 @@ describe("101. the twenty-six recorded results, exactly as they were given", () 
 });
 
 describe("102. the round that is open, and what it may not re-ask", () => {
-  it("asks the three cards this round built, and no others", () => {
+  it("asks nothing, because every card has an answer", () => {
     /*
      * L25 and L26 closed the slide phase and the round stood empty while
      * 2V-D.1 built the multi-axis model underneath the cards that come next.
@@ -201,7 +233,7 @@ describe("102. the round that is open, and what it may not re-ask", () => {
      * the two strokes are identical in the speakers, so asking would be the
      * pack inviting an answer to a difference that is not there.
      */
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L27", "L28", "L29"]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual([]);
   });
 
   it("never asks a card whose answer is already recorded", () => {
@@ -217,8 +249,8 @@ describe("102. the round that is open, and what it may not re-ask", () => {
     }
   });
 
-  it("offers exactly the round's own cards in front of the reader", () => {
-    expect(activeClips(round).map((clip) => clip.id)).toEqual([...ACTIVE_CLIP_IDS]);
+  it("offers nothing in front of the reader between rounds", () => {
+    expect(activeClips(round)).toEqual([]);
   });
 
   it("keeps the older clips reachable but out of the count", () => {
@@ -227,7 +259,7 @@ describe("102. the round that is open, and what it may not re-ask", () => {
     for (const id of archived) expect(isActive(id)).toBe(false);
   });
 
-  it("counts this round's cards, never the archive", () => {
+  it("counts a closed round as nothing to answer, never as the archive", () => {
     const block = formatListeningResult({
       buildSha: "abc1234",
       fingerprint: "x",
@@ -236,7 +268,7 @@ describe("102. the round that is open, and what it may not re-ask", () => {
       notes: {},
       note: "",
     });
-    expect(block).toContain("Cevaplanmamış: 3/3");
+    expect(block).toContain("Cevaplanmamış: 0/0");
     /*
      * The defect this replaces: a summary that counted this browser
      * session's answers against every card ever built and reported the

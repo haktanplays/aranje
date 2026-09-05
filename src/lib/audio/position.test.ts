@@ -6,7 +6,7 @@ import {
   nearestBarKey,
   positionAtTicks,
   sectionLoopBounds,
-  slotsPerBeat,
+  barBeats,
 } from "@/lib/audio/position";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { PPQ, ticksPerSlot } from "@/lib/music/timing";
@@ -112,7 +112,7 @@ describe("section loop bounds", () => {
 describe("metronome", () => {
   it("counts four beats in a 4/4 bar", () => {
     const bar = PLAN.bars[0];
-    expect(bar && slotsPerBeat(bar)).toBe(2);
+    expect(bar && barBeats(bar).map((beat) => beat.slots)).toEqual([2, 2, 2, 2]);
     const clicks = metronomeClicks(PLAN).filter(
       (click) => click.time < BAR,
     );
@@ -145,13 +145,51 @@ describe("metronome", () => {
       resolution: 8,
     };
     // 6/8 is felt in two, not in six.
-    expect(slotsPerBeat(compound)).toBe(3);
+    expect(barBeats(compound).map((beat) => beat.slots)).toEqual([3, 3]);
     expect(
       metronomeClicks({ events: [], bars: [compound], totalTicks: PPQ * 3 }),
     ).toEqual([
       { time: 0, downbeat: true },
       { time: PPQ * 1.5, downbeat: false },
     ]);
+  });
+
+  it("clicks a 7/8 three times, unevenly, on the beats it is felt in", () => {
+    /*
+     * The 2V-D.2 §12 fix, heard rather than described: this bar used to
+     * produce seven identical eighth clicks with only the first accented,
+     * which is a 7/8 nobody counts. Felt `2+2+3` it is three clicks at the
+     * first, third and fifth eighths — and the gap before the last one is
+     * longer, which is the whole character of the metre.
+     */
+    const bar = {
+      barKey: "x:0",
+      sectionId: "x",
+      barNumber: 1,
+      time: 0,
+      durationTicks: (PPQ * 7) / 2,
+      slotCount: 7,
+      timeSignature: [7, 8] as const,
+      resolution: 8,
+      grouping: [2, 2, 3] as const,
+    };
+    expect(
+      metronomeClicks({ events: [], bars: [bar], totalTicks: bar.durationTicks }),
+    ).toEqual([
+      { time: 0, downbeat: true },
+      { time: PPQ, downbeat: false },
+      { time: PPQ * 2, downbeat: false },
+    ]);
+
+    /* The other feel of the same bar moves the long beat, and the clicks
+       move with it. If they did not, the bar's own field would be decoration. */
+    expect(
+      metronomeClicks({
+        events: [],
+        bars: [{ ...bar, grouping: [3, 2, 2] as const }],
+        totalTicks: bar.durationTicks,
+      }).map((click) => click.time),
+    ).toEqual([0, PPQ * 1.5, PPQ * 2.5]);
   });
 });
 

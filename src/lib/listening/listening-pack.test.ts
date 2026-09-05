@@ -321,8 +321,8 @@ describe("the block the founder pastes back", () => {
 
   it("counts this round's cards, not every card that ever existed", () => {
     const block = formatListeningResult({ ...base, answers: {} });
-    expect(block).toContain("Cevaplanmamış: 3/3");
-    expect(block).toContain("Bu tur: 3 kart");
+    expect(block).toContain("Cevaplanmamış: 0/0");
+    expect(block).toContain("Bu tur: 0 kart");
     /* The old summary counted the browser session's own answers against
        every card in the pack and reported the founder's decided results as
        unmeasured. Nothing here counts an archived card. */
@@ -355,33 +355,30 @@ describe("the block the founder pastes back", () => {
       notes: { L27: "biraz mekanik" },
     });
     /* A note on an archived card is a session's scribble, not a verdict: the
-       record keeps saying what the founder said. */
-    expect(block).toContain("L25 Tek telli vurarak slide: Olmuş");
-    /* The comment does not count as an answer for this round's own card. */
-    expect(block).toContain("Cevaplanmamış: 3/3");
+       record keeps saying what the founder said, in their own word. */
+    expect(block).toContain("L27 Avuç susturma: iki yazım: Olmuş — Aynı");
+    expect(block).not.toContain("biraz mekanik");
     /* This round only. The archive below legitimately says "Olmuş" about
        cards the founder passed, and that is a record, not an answer. */
     expect(block.slice(0, block.indexOf("Önceki turlar"))).not.toContain("Olmuş");
   });
 
-  it("carries the answers and per-clip notes it was given", () => {
+  it("lets no session answer overwrite a card the founder decided", () => {
     const block = formatListeningResult({
       ...base,
-      answers: { L27: "Kısmen", L28: "Olmamış", L25: "Olmuş" },
+      answers: { L27: "Kısmen", L28: "Olmamış", L29: "Emin değilim" },
       notes: { L28: "kulaklıkta daha net" },
     });
-    /* This round's own answers reach the block, with their notes. */
-    expect(block).toContain("L27 Avuç susturma: iki yazım: Kısmen");
-    expect(block).toContain("L28 Armonik ve perde hareketi: Olmamış");
-    expect(block).toContain("kulaklıkta daha net");
-    /* One card left blank, and the count says so rather than rounding up. */
-    expect(block).toContain("Cevaplanmamış: 1/3");
     /*
-     * The strongest form of "the record is the founder's": a session that
-     * answers a closed card cannot change what it says. The archived row
-     * still reads the way the founder left it.
+     * The strongest form of "the record is the founder's": with the round
+     * closed, every card is archived, and a session that answers one cannot
+     * change what it says. All three rows still read the way they were given.
      */
-    expect(block).toContain("L26 İki telli şekil slide'ı: Olmuş");
+    expect(block).toContain("L27 Avuç susturma: iki yazım: Olmuş — Aynı");
+    expect(block).toContain("L28 Armonik ve perde hareketi: Olmuş");
+    expect(block).toContain("L29 Tek elde iki tel: biri susturulmuş: Olmuş");
+    expect(block).not.toContain("Olmamış");
+    expect(block).toContain("Cevaplanmamış: 0/0");
   });
 
   it("uses each card's own title, never its id twice", () => {

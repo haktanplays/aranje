@@ -236,8 +236,15 @@ describe("where tempo lives, and only there (spec 5.1, 8.3, K-25)", () => {
      * `notation` joined the bar at 2V-B.4 Completion §5 and is not a second
      * tempo: it says which grid the *reader* is reading when the stored one
      * is a lattice, and it carries no time of its own.
+     *
+     * `grouping` joined at 2V-D.2 §12 and is not one either. It says where
+     * the weight falls inside the bar — 7/8 as 2+2+3 rather than 3+2+2 —
+     * which is a different question from how fast the bar goes past. Both
+     * spellings of a 7/8 bar last exactly the same number of ticks at the
+     * same bpm; only the accents move.
      */
     expect(Object.keys(barSchema.shape).sort()).toEqual([
+      "grouping",
       "notation",
       "resolution",
       "slots",

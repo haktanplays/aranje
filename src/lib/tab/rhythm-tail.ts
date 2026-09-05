@@ -43,10 +43,9 @@ import {
   splitIntoValues,
   type NoteValue,
 } from "@/lib/music/note-value";
-import { hasFeltBeat } from "@/lib/music/rhythm-language";
+import { meterBeats } from "@/lib/music/meter-beats";
+import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
-  slotsPerFeltBeat,
-  slotsPerNotatedBeat,
   ticksPerSlot,
   type Resolution,
   type TimeSignature,
@@ -104,20 +103,30 @@ export type TailInput = {
   readonly timeSignature: TimeSignature;
   readonly resolution: Resolution;
   readonly slotCount: number;
+  /** The feel the bar carries, when it carries one (2V-D.2 §12). */
+  readonly grouping?: BeatGrouping;
 };
 
-/** Where each beat of this bar starts, in slots. */
+/**
+ * Where each beat of this bar starts, in slots.
+ *
+ * Read off the bar's grouping (2V-D.2 §12), so the lines a reader sees are
+ * the beats the metronome clicks. In 7/8 felt `2+2+3` that is three lines at
+ * the first, third and fifth eighths — not seven identical ticks, which is
+ * what a single beat length produced and is not how anybody counts a 7/8.
+ *
+ * `slotCount` is still honoured over the grouping's own total: a caller
+ * drawing a bar draws the bar it has.
+ */
 export function beatSlots(
   timeSignature: TimeSignature,
   resolution: Resolution,
   slotCount: number,
+  grouping?: BeatGrouping,
 ): readonly number[] {
-  const step = hasFeltBeat(timeSignature)
-    ? slotsPerFeltBeat(timeSignature, resolution)
-    : slotsPerNotatedBeat(timeSignature, resolution);
-  if (step <= 0) return [0];
-  const beats: number[] = [];
-  for (let slot = 0; slot < slotCount; slot += step) beats.push(slot);
+  const beats = meterBeats({ meter: timeSignature, resolution, grouping })
+    .map((beat) => beat.slot)
+    .filter((slot) => slot < slotCount);
   return beats.length > 0 ? beats : [0];
 }
 
@@ -342,7 +351,12 @@ function tupletsOf(notes: readonly TailNote[]): readonly TupletBracket[] {
 }
 
 export function buildRhythmTail(input: TailInput): RhythmTail {
-  const beats = beatSlots(input.timeSignature, input.resolution, input.slotCount);
+  const beats = beatSlots(
+    input.timeSignature,
+    input.resolution,
+    input.slotCount,
+    input.grouping,
+  );
   const onsets = onsetsOf(input.spans);
   const rests = restsOf(input, beats);
 

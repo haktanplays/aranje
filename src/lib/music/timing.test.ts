@@ -121,7 +121,18 @@ describe("slot count (spec 5.5)", () => {
      * rather than a list someone maintains: 6/8 and 7/8 count an eighth, and a
      * grid of quarters cannot write one.
      */
-    expect(rejected).toEqual(["6/8@4", "6/8@12", "7/8@4", "7/8@12"]);
+    expect(rejected).toEqual([
+      "6/8@4",
+      "6/8@12",
+      "7/8@4",
+      "7/8@12",
+      "5/8@4",
+      "5/8@12",
+      "9/8@4",
+      "9/8@12",
+      "12/8@4",
+      "12/8@12",
+    ]);
   });
 });
 
@@ -205,7 +216,7 @@ describe("meters", () => {
    * least one grid, and the pairs it cannot state are named.
    */
   it("gives every contract meter at least one grid it can be written on", () => {
-    expect(TIME_SIGNATURES).toHaveLength(4);
+    expect(TIME_SIGNATURES).toHaveLength(8);
     for (const meter of TIME_SIGNATURES) {
       const grids = RESOLUTIONS.filter((resolution) =>
         isRepresentableGrid(meter, resolution),
@@ -220,9 +231,27 @@ describe("meters", () => {
         (resolution) => !isRepresentableGrid(meter, resolution),
       ).map((resolution) => `${formatTimeSignature(meter)}@${resolution}`),
     );
-    // A triplet grid cannot write an eighth-note meter's own note value, and
-    // nor can a quarter grid (spec 13.20 §5).
-    expect(refused).toEqual(["6/8@4", "6/8@12", "7/8@4", "7/8@12"]);
+    /*
+     * A triplet grid cannot write an eighth-note meter's own note value, and
+     * nor can a quarter grid (spec 13.20 §5). The rule is `resolution %
+     * denominator === 0` — the grid has to be a multiple of the metre's own
+     * note value — so *every* x/8 metre is refused at 1/4 and 1/12, and every
+     * x/4 metre is accepted everywhere. 12/8 is refused at 1/4 even though
+     * twelve eighths are six whole quarters, because a quarter grid cannot
+     * place an eighth; that is the rule deciding, not a list someone keeps.
+     */
+    expect(refused).toEqual([
+      "6/8@4",
+      "6/8@12",
+      "7/8@4",
+      "7/8@12",
+      "5/8@4",
+      "5/8@12",
+      "9/8@4",
+      "9/8@12",
+      "12/8@4",
+      "12/8@12",
+    ]);
   });
 
   it("formats a meter for display", () => {

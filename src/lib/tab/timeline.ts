@@ -37,6 +37,7 @@ import {
 import { trackPlacementInput } from "@/lib/tab/placement-input";
 import { sliceSpan } from "@/lib/tab/span-extent";
 import { indexSpans } from "@/lib/music/technique-span";
+import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
   barOffsets,
   sectionTicks,
@@ -109,6 +110,14 @@ export type BarMeta = {
    * left them (2V-B.4 Completion §5, §7).
    */
   notation: Resolution;
+  /**
+   * How the bar is felt, when it says so (2V-D.2 §12).
+   *
+   * Optional because most bars are felt the ordinary way for their metre and
+   * say nothing; `meterBeats` fills that in. It is carried here so the beat
+   * lines, the beams and the metronome read one answer.
+   */
+  grouping?: BeatGrouping;
   slotCount: number;
   /** Lattice slots per reading cell. One in every ordinary bar. */
   slotsPerCell: number;
@@ -231,6 +240,7 @@ function barMeta(song: Song): MetaEntry[] {
           timeSignature: bar.timeSignature,
           resolution: bar.resolution,
           notation: readingResolution(bar),
+          ...(bar.grouping ? { grouping: bar.grouping } : {}),
           slotCount: slotCount(bar.timeSignature, bar.resolution),
           slotsPerCell: slotsPerReadingSlot(bar),
         },

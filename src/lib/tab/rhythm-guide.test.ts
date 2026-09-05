@@ -161,26 +161,47 @@ describe("111. triplets say so, and 7/8 is not given a grouping", () => {
   it("groups 6/8 in the beat a foot taps", () => {
     // Two dotted beats of three eighths, not six groups of one.
     const result = buildRhythmGuide(read("oooooo"), [6, 8], 8);
-    expect(result.beatSlots).toBe(3);
+    expect(result.beats.map((beat) => beat.slot)).toEqual([0, 3]);
     expect(result.groups.map((group) => group.slots)).toEqual([
       [0, 1, 2],
       [3, 4, 5],
     ]);
   });
 
-  it("uses the safe notated beat in 7/8 and invents no 2+2+3", () => {
+  it("beams 7/8 the way the bar says it is felt (2V-D.2 §12)", () => {
     /*
-     * Whether 7/8 is felt 2+2+3, 3+2+2 or 2+3+2 is a property of the music,
-     * and the contract has no field for it. At 1/16 the notated beat is an
-     * eighth — two slots — so the groups are even pairs. What they are *not*
-     * is 2+2+3 in some unit this code decided on.
+     * The contract has a field for this now, so the answer comes from the
+     * bar rather than from a rule here. At 1/16 an eighth is two slots, so
+     * `2+2+3` is beats of four, four and six slots — and the beams follow
+     * them. Seven even pairs, which is what this used to draw, is a bar
+     * nobody counts that way.
      */
+    const twoTwoThree = buildRhythmGuide(
+      read("oooooooooooooo"),
+      [7, 8],
+      16,
+      [2, 2, 3],
+    );
+    expect(twoTwoThree.beats.map((beat) => beat.slot)).toEqual([0, 4, 8]);
+    expect(twoTwoThree.groups.map((group) => group.slots.length)).toEqual([4, 4, 6]);
+
+    /* The same fourteen notes, felt the other way, beam differently. If they
+       did not, the field would not be being read. */
+    const threeTwoTwo = buildRhythmGuide(
+      read("oooooooooooooo"),
+      [7, 8],
+      16,
+      [3, 2, 2],
+    );
+    expect(threeTwoTwo.beats.map((beat) => beat.slot)).toEqual([0, 6, 10]);
+    expect(threeTwoTwo.groups.map((group) => group.slots.length)).toEqual([6, 4, 4]);
+  });
+
+  it("falls back to the metre's ordinary feel when the bar says nothing", () => {
+    /* Not an invention: it is the default the picker offers first and the
+       reader can see, and it is the same list the metronome clicks. */
     const result = buildRhythmGuide(read("oooooooooooooo"), [7, 8], 16);
-    expect(result.beatSlots).toBe(2);
-    expect(result.groups.map((group) => group.slots.length)).toEqual([
-      2, 2, 2, 2, 2, 2, 2,
-    ]);
-    expect(new Set(result.groups.map((group) => group.slots.length)).size).toBe(1);
+    expect(result.beats.map((beat) => beat.units)).toEqual([2, 2, 3]);
   });
 
   it("gives 1/4 nothing to beam at all", () => {
