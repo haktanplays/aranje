@@ -11,6 +11,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  AXIS_CAPABILITY,
   CONFLICT_MESSAGE,
   endingCents,
   movesPitchAway,
@@ -18,6 +19,7 @@ import {
   restrikesTarget,
   transitionOf,
 } from "@/lib/music/expression-resolver";
+import type { TechniqueSpan } from "@/lib/song/schema";
 import {
   articulationSchema,
   noteConnectionSchema,
@@ -57,10 +59,16 @@ describe("78. the note is read once, on three axes", () => {
   });
 
   it("reads a plain note as nothing at all", () => {
+    /* Every axis, so a new one cannot arrive with a default in it. An axis
+       that quietly answers something about a note nobody wrote anything on
+       is exactly how a field becomes a behaviour nobody asked for. */
     expect(resolveExpression({})).toEqual({
       attack: undefined,
+      attackAxis: null,
+      picking: null,
       pitch: null,
       connection: null,
+      techniques: [],
       conflict: null,
     });
   });
@@ -246,5 +254,132 @@ describe("81. the contract is additive, and an old song stays an old song", () =
     for (const word of ["shift_slide", "legato_slide", "prebend", "bend_release"]) {
       expect(articulationSchema.safeParse(word).success).toBe(false);
     }
+  });
+});
+
+describe("137. five axes, and a note that answers one of them twice", () => {
+  const spanOf = (over: Partial<TechniqueSpan> = {}): TechniqueSpan => ({
+    id: "pm1",
+    kind: "palm_mute",
+    trackId: "gtr",
+    startTicks: 0,
+    endTicks: 768,
+    stringIndices: [4, 5],
+    ...over,
+  });
+  const where = (spans: readonly TechniqueSpan[]) => ({
+    trackId: "gtr",
+    timeTicks: 96,
+    stringIndex: 5,
+    spans,
+  });
+
+  it("reads an accent and a bend as one note doing two things", () => {
+    /* Different axes are ordinary music. This is the composition the single
+       enum could not hold: it had one slot and this note needs two. */
+    const read = resolveExpression({
+      attack: "accent",
+      pitchGesture: { kind: "bend", targetCents: 200 },
+    });
+    expect(read.conflict).toBeNull();
+    expect(read.attackAxis).toEqual({ source: "attack", attack: "accent" });
+    expect(read.pitch?.source).toBe("gesture");
+  });
+
+  it("refuses a new attack beside the legacy one that means the same thing", () => {
+    const read = resolveExpression({ articulation: "accent", attack: "accent" });
+    expect(read.conflict).toBe("attack_axis_conflict");
+    expect(read.attackAxis).toBeNull();
+    /* Every axis dropped, not only the offending one: half a reading is how
+       the file says one thing and the speakers say another. */
+    expect(read.pitch).toBeNull();
+    expect(read.techniques).toEqual([]);
+  });
+
+  it("refuses a harmonic written twice, on either field", () => {
+    expect(
+      resolveExpression({ articulation: "pinch_harmonic", attack: "pinch_harmonic" })
+        .conflict,
+    ).toBe("attack_axis_conflict");
+    expect(
+      resolveExpression({ articulation: "natural_harmonic", attack: "accent" }).conflict,
+    ).toBe("attack_axis_conflict");
+  });
+
+  it("does not call a legacy slide an attack, so a slide plus an attack is fine", () => {
+    /* `slide` answers the connection question. Counting it on the attack axis
+       too would refuse a perfectly ordinary accented slide. */
+    const read = resolveExpression({ articulation: "slide", attack: "accent" });
+    expect(read.conflict).toBeNull();
+    expect(read.connection?.source).toBe("legacy");
+    expect(read.attackAxis).toEqual({ source: "attack", attack: "accent" });
+  });
+
+  it("reports a span holding over the note, with the span that said so", () => {
+    const read = resolveExpression({}, where([spanOf()]));
+    expect(read.conflict).toBeNull();
+    expect(read.techniques).toEqual([
+      { kind: "palm_mute", source: "span", spanId: "pm1" },
+    ]);
+  });
+
+  it("reports a legacy palm mute on the same axis as a span", () => {
+    /* One question — is this note muted — with one answer, however the song
+       happened to say it. */
+    const read = resolveExpression({ articulation: "palm_mute" });
+    expect(read.techniques).toEqual([{ kind: "palm_mute", source: "legacy" }]);
+    expect(read.attack).toBe("palm_mute");
+  });
+
+  it("refuses a legacy palm mute under a palm-mute span", () => {
+    const read = resolveExpression({ articulation: "palm_mute" }, where([spanOf()]));
+    expect(read.conflict).toBe("technique_axis_conflict");
+  });
+
+  it("refuses a legacy let ring under a let-ring span", () => {
+    const read = resolveExpression(
+      { letRing: true },
+      where([spanOf({ kind: "let_ring" })]),
+    );
+    expect(read.conflict).toBe("technique_axis_conflict");
+  });
+
+  it("refuses a mute and a ring reaching the same note", () => {
+    const read = resolveExpression(
+      { letRing: true },
+      where([spanOf({ kind: "palm_mute" })]),
+    );
+    expect(read.conflict).toBe("technique_axis_conflict");
+  });
+
+  it("lets a span on another string pass this note by", () => {
+    const read = resolveExpression({}, where([spanOf({ stringIndices: [0, 1] })]));
+    expect(read.conflict).toBeNull();
+    expect(read.techniques).toEqual([]);
+  });
+
+  it("composes a palm-mute span with an accent and a picking direction", () => {
+    const read = resolveExpression(
+      { attack: "accent", picking: "down" },
+      where([spanOf()]),
+    );
+    expect(read.conflict).toBeNull();
+    expect(read.attackAxis).toEqual({ source: "attack", attack: "accent" });
+    expect(read.picking).toBe("down");
+    expect(read.techniques.map((held) => held.kind)).toEqual(["palm_mute"]);
+  });
+
+  it("considers no spans when it was given none to consider", () => {
+    /* Absence of context is a caller with nothing to hand, not a song with
+       no spans. The two must not be confused into "definitely unmuted". */
+    expect(resolveExpression({ attack: "accent" }).techniques).toEqual([]);
+  });
+
+  it("says which axes reach the speakers and which only the page", () => {
+    expect(AXIS_CAPABILITY.attack).toBe("played");
+    expect(AXIS_CAPABILITY.technique).toBe("played");
+    /* The shipped bank has one recording per pitch. Saying otherwise would
+       be offering a preview of two identical sounds. */
+    expect(AXIS_CAPABILITY.picking).toBe("notation_only");
   });
 });

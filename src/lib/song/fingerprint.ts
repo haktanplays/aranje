@@ -40,6 +40,13 @@ function slotDigest(slot: MelodicSlot | undefined): string {
         note.articulation ?? "",
         note.letRing === true ? "L" : "",
         note.strum ?? "",
+        /* The four expression axes. Without them two songs differing only by
+           a bend or a palm mute fingerprint the same, and every "did this
+           edit change the music" question built on it answers no. */
+        note.attack ?? "",
+        note.picking ?? "",
+        note.pitchGesture === undefined ? "" : JSON.stringify(note.pitchGesture),
+        note.connection?.kind ?? "",
       ].join(","),
     )
     .join("+");
@@ -55,6 +62,21 @@ export function musicalFingerprint(song: Song): string {
   const lines: string[] = [`bpm=${song.bpm}`];
 
   song.sections.forEach((section, sectionIndex) => {
+    /*
+     * Spans before the bars, because a span is music the bars do not carry.
+     * Sorted rather than taken in written order: two songs that hold the same
+     * spans in a different order are the same music, and a fingerprint that
+     * said otherwise would report every reordering as an edit.
+     */
+    const spans = [...(section.techniqueSpans ?? [])]
+      .map(
+        (span) =>
+          `${span.kind}@${span.startTicks}-${span.endTicks}` +
+          `:${span.trackId}:${[...span.stringIndices].sort((a, b) => a - b).join("/")}`,
+      )
+      .sort();
+    if (spans.length > 0) lines.push(`${sectionIndex}:spans ${spans.join(" ")}`);
+
     section.bars.forEach((bar, barIndex) => {
       const shape = `${bar.timeSignature[0]}/${bar.timeSignature[1]}@${bar.resolution}`;
       song.tracks.forEach((track, trackIndex) => {

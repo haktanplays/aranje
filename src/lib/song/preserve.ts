@@ -95,6 +95,16 @@ function describeMelodic(slot: unknown): string {
         `d=${note.durationTicks ?? ""}`,
         `r=${note.letRing === true ? 1 : 0}`,
         `t=${String(note.strum ?? "")}`,
+        /*
+         * The expression axes, which this was claiming to cover and did not.
+         * A snapshot that omits them says a transposition preserved the music
+         * when it dropped every bend in the bar — the one failure the whole
+         * module exists to catch, passing silently.
+         */
+        `k=${String(note.attack ?? "")}`,
+        `i=${String(note.picking ?? "")}`,
+        `g=${note.pitchGesture === undefined ? "" : JSON.stringify(note.pitchGesture)}`,
+        `c=${note.connection === undefined ? "" : String((note.connection as { kind?: string }).kind ?? "")}`,
       ].join(",");
     })
     .sort()

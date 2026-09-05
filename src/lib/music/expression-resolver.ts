@@ -41,12 +41,33 @@
  *
  * Pure. A note goes in; a reading comes out. No song, no clock, no engine.
  */
+import { spanCovers } from "@/lib/music/technique-span";
 import type {
   Articulation,
+  NoteAttack,
   NoteConnection,
   NoteEvent,
+  PickingDirection,
   PitchGesture,
+  TechniqueSpan,
 } from "@/lib/song/schema";
+
+/**
+ * Legacy enum members that answer "how was the string struck".
+ *
+ * `palm_mute` is not among them and `sustain`/`staccato` are not either. The
+ * first became a span in 2V-D.1 and has its own axis below; the other two say
+ * how long the note is held, which `articulationHold` has always answered and
+ * still does.
+ */
+const LEGACY_ATTACK: readonly Articulation[] = [
+  "accent",
+  "ghost",
+  "dead",
+  "tapping",
+  "natural_harmonic",
+  "pinch_harmonic",
+];
 
 /** Legacy enum members that answer the "what does the pitch do" question. */
 const LEGACY_PITCH: readonly Articulation[] = ["vibrato", "bend_half", "bend_full"];
@@ -64,11 +85,46 @@ export type ResolvedConnection =
   | { readonly source: "explicit"; readonly connection: NoteConnection }
   | { readonly source: "legacy"; readonly articulation: Articulation };
 
+export type ResolvedAttack =
+  /** An explicit `attack` field. */
+  | { readonly source: "attack"; readonly attack: NoteAttack }
+  /** A song written before the field. Played the way it always was. */
+  | { readonly source: "legacy"; readonly articulation: Articulation };
+
+/**
+ * A technique holding over this onset, and where it was written.
+ *
+ * `legacy` is a `palm_mute` articulation or a `letRing` flag on the note
+ * itself. It is reported on the same axis as a span so that a caller sees one
+ * answer to "is this note muted" however the song said it — and so that a
+ * song saying it twice is a refusal rather than a coin toss.
+ */
+export type ActiveTechnique = {
+  readonly kind: TechniqueSpan["kind"];
+  readonly source: "span" | "legacy";
+  /** The span's id, when a span is what said so. */
+  readonly spanId?: string;
+};
+
+/**
+ * Whether this axis reaches the speakers on the shipped sample bank.
+ *
+ * Not a quality judgement and not a promise about a future pack: it is what
+ * the audio layer does today. Picking direction is `notation_only` because
+ * the bank has one recording per pitch, and the app says that in those words
+ * rather than offering a preview of two identical sounds.
+ */
+export type PlaybackCapability = "played" | "notation_only";
+
 export type ExpressionConflict =
   /** `pitchGesture` and a legacy pitch articulation on one note. */
   | "pitch_axis_conflict"
   /** `connection` and a legacy connection articulation on one note. */
-  | "connection_axis_conflict";
+  | "connection_axis_conflict"
+  /** `attack` and a legacy attack articulation on one note. */
+  | "attack_axis_conflict"
+  /** A span and a legacy palm mute or let ring over the same onset. */
+  | "technique_axis_conflict";
 
 export const CONFLICT_MESSAGE: Readonly<Record<ExpressionConflict, string>> = {
   pitch_axis_conflict:
@@ -76,16 +132,57 @@ export const CONFLICT_MESSAGE: Readonly<Record<ExpressionConflict, string>> = {
     "şekilde bükülemez; birini kaldır.",
   connection_axis_conflict:
     "Bu nota önceki notaya iki ayrı şekilde bağlanmış. Bir bağlantı seç.",
+  attack_axis_conflict:
+    "Bu notaya iki ayrı vuruş yazılmış. Bir nota bir kez vurulur; birini kaldır.",
+  technique_axis_conflict:
+    "Bu nota hem kendi üzerinde hem de bir aralık boyunca aynı tekniği " +
+    "taşıyor. Birini kaldır.",
 };
 
 export type ResolvedExpression = {
-  /** How the string was struck, when the note says something about it. */
+  /**
+   * How the string was struck, when the note says something about it.
+   *
+   * The bare `Articulation` this used to be, kept so every caller written
+   * before the axis split goes on compiling and behaving. `attackAxis` below
+   * is the same answer with its source attached.
+   */
   readonly attack: Articulation | undefined;
+  readonly attackAxis: ResolvedAttack | null;
+  /** Which way the pick crossed. Drawn and spoken; not played (§9). */
+  readonly picking: PickingDirection | null;
   readonly pitch: ResolvedPitch | null;
   readonly connection: ResolvedConnection | null;
+  /** Techniques holding over this onset, from spans or from legacy fields. */
+  readonly techniques: readonly ActiveTechnique[];
   /** Present when two sources answered one axis. Nothing is chosen. */
   readonly conflict: ExpressionConflict | null;
 };
+
+/**
+ * Where the note sits, so span membership can be asked (2V-D.1 §5).
+ *
+ * Optional, and its absence is not "no spans": it is a caller that has not
+ * been given any to consider — a pure notation test, say. The playback path
+ * passes it, and the boundary test requires that it does.
+ */
+export type SpanContext = {
+  readonly trackId: string;
+  readonly timeTicks: number;
+  readonly stringIndex: number | null;
+  readonly spans: readonly TechniqueSpan[];
+};
+
+const NO_TECHNIQUES: readonly ActiveTechnique[] = [];
+
+/** What the audio layer can actually do with each axis today (§9). */
+export const AXIS_CAPABILITY = {
+  attack: "played",
+  picking: "notation_only",
+  pitch: "played",
+  connection: "played",
+  technique: "played",
+} as const satisfies Readonly<Record<string, PlaybackCapability>>;
 
 /**
  * Read one note.
@@ -94,11 +191,17 @@ export type ResolvedExpression = {
  * sides of the offending axis dropped and the conflict named, so a caller
  * that forgets to check cannot accidentally play the wrong one.
  */
-export function resolveExpression(note: {
-  readonly articulation?: Articulation;
-  readonly pitchGesture?: PitchGesture;
-  readonly connection?: NoteConnection;
-}): ResolvedExpression {
+export function resolveExpression(
+  note: {
+    readonly articulation?: Articulation;
+    readonly attack?: NoteAttack;
+    readonly picking?: PickingDirection;
+    readonly letRing?: boolean;
+    readonly pitchGesture?: PitchGesture;
+    readonly connection?: NoteConnection;
+  },
+  context?: SpanContext,
+): ResolvedExpression {
   const articulation = note.articulation;
   const legacyPitch =
     articulation !== undefined && LEGACY_PITCH.includes(articulation)
@@ -110,20 +213,10 @@ export function resolveExpression(note: {
       : undefined;
 
   if (note.pitchGesture !== undefined && legacyPitch !== undefined) {
-    return {
-      attack: undefined,
-      pitch: null,
-      connection: null,
-      conflict: "pitch_axis_conflict",
-    };
+    return refusal("pitch_axis_conflict");
   }
   if (note.connection !== undefined && legacyConnection !== undefined) {
-    return {
-      attack: undefined,
-      pitch: null,
-      connection: null,
-      conflict: "connection_axis_conflict",
-    };
+    return refusal("connection_axis_conflict");
   }
 
   /*
@@ -137,6 +230,46 @@ export function resolveExpression(note: {
     legacyConnection !== undefined
       ? undefined
       : articulation;
+
+  const legacyAttack =
+    attack !== undefined && LEGACY_ATTACK.includes(attack) ? attack : undefined;
+  if (note.attack !== undefined && legacyAttack !== undefined) {
+    return refusal("attack_axis_conflict");
+  }
+  const attackAxis: ResolvedAttack | null =
+    note.attack !== undefined
+      ? { source: "attack", attack: note.attack }
+      : legacyAttack !== undefined
+        ? { source: "legacy", articulation: legacyAttack }
+        : null;
+
+  /*
+   * The technique axis: spans covering this onset, plus whatever the note
+   * itself said before spans existed.
+   *
+   * Both at once is a refusal rather than a merge. A note carrying
+   * `palm_mute` *and* sitting inside a palm-mute span is a song that says
+   * the same thing twice, and the two could be edited apart later — at which
+   * point a merge would have silently decided which one the reader meant.
+   */
+  const techniques: ActiveTechnique[] = [];
+  if (attack === "palm_mute") techniques.push({ kind: "palm_mute", source: "legacy" });
+  if (note.letRing === true) techniques.push({ kind: "let_ring", source: "legacy" });
+  if (context) {
+    for (const span of context.spans) {
+      if (!spanCovers(span, context)) continue;
+      if (techniques.some((held) => held.kind === span.kind)) {
+        return refusal("technique_axis_conflict");
+      }
+      techniques.push({ kind: span.kind, source: "span", spanId: span.id });
+    }
+  }
+  if (
+    techniques.some((held) => held.kind === "palm_mute") &&
+    techniques.some((held) => held.kind === "let_ring")
+  ) {
+    return refusal("technique_axis_conflict");
+  }
 
   const pitch: ResolvedPitch | null =
     note.pitchGesture !== undefined
@@ -152,7 +285,35 @@ export function resolveExpression(note: {
         ? { source: "legacy", articulation: legacyConnection }
         : null;
 
-  return { attack, pitch, connection, conflict: null };
+  return {
+    attack,
+    attackAxis,
+    picking: note.picking ?? null,
+    pitch,
+    connection,
+    techniques: techniques.length === 0 ? NO_TECHNIQUES : techniques,
+    conflict: null,
+  };
+}
+
+/**
+ * A note that said two things on one axis.
+ *
+ * Every axis is dropped, not only the offending one. A caller that forgets to
+ * check the conflict then gets a plain note rather than half a reading — and
+ * half a reading is how the file comes to say one thing and the speakers
+ * another, which is the failure this whole module exists to prevent.
+ */
+function refusal(conflict: ExpressionConflict): ResolvedExpression {
+  return {
+    attack: undefined,
+    attackAxis: null,
+    picking: null,
+    pitch: null,
+    connection: null,
+    techniques: NO_TECHNIQUES,
+    conflict,
+  };
 }
 
 /**

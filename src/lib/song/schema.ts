@@ -174,6 +174,28 @@ export const noteConnectionSchema = z.discriminatedUnion("kind", [
   z.strictObject({ kind: z.literal("shift_slide") }),
 ]);
 
+/**
+ * The attack axis (2V-D.1 §3).
+ *
+ * Exactly the members of `articulation` that answer "how was the string
+ * struck", and no others: this is a second name for a question already
+ * asked, not a place to invent techniques. `normal`, `sustain` and
+ * `staccato` are absent for different reasons — the first is the absence of
+ * the field, and the other two say how long the note is held rather than how
+ * it was hit, which is `articulationHold`'s question and stays there.
+ */
+export const noteAttackSchema = z.enum([
+  "accent",
+  "ghost",
+  "dead",
+  "tapping",
+  "natural_harmonic",
+  "pinch_harmonic",
+]);
+
+/** Down or up. See `NoteEvent.picking` for why there is no third value. */
+export const pickingDirectionSchema = z.enum(["down", "up"]);
+
 export const noteEventSchema = z.strictObject({
   pitch: pitchSchema,
   velocity: z.number().int().min(velocityRange.min).max(velocityRange.max).optional(),
@@ -256,6 +278,42 @@ export const noteEventSchema = z.strictObject({
    * winner — see `expression-resolver`.
    */
   connection: noteConnectionSchema.optional(),
+  /**
+   * How the string was struck, on an axis of its own (2V-D.1 §3).
+   *
+   * `articulation` already answers this — and three other questions besides,
+   * one value at a time. That is the whole defect: a note could say `accent`
+   * or `bend_full`, never both, so an accented bend was unwritable and the
+   * planner returned at the first branch that matched.
+   *
+   * Every value here is a striking the app already plays; nothing new is
+   * claimed. `normal` is the field's *absence*, so an ordinary note stays
+   * ordinary and no song grows a field for saying nothing.
+   *
+   * `palm_mute` is deliberately **not** here. It is not a way of striking a
+   * string, it is something the hand keeps doing over a stretch of them, and
+   * it moved to `TechniqueSpan` where a range and a set of strings can be
+   * said. A legacy `palm_mute` articulation keeps working exactly as it did;
+   * see `expression-resolver`.
+   *
+   * Absent means "read `articulation`". Both present and answering the same
+   * question is a typed refusal, never a silent winner.
+   */
+  attack: noteAttackSchema.optional(),
+  /**
+   * Which way the pick crossed the string (2V-D.1 §3, §9).
+   *
+   * Distinct from `strum`, which says how one hand crossed a *chord* and
+   * really does move each voice in time. This is one note and one direction,
+   * and the shipped sample bank has one recording per pitch: it is written
+   * down, drawn, spoken, carried through every edit and export — and it does
+   * not change what comes out of the speakers. The app says so in those
+   * words rather than implying a difference it cannot produce.
+   *
+   * Rake, sweep and alternate-picking patterns are not here. They are
+   * patterns over several notes, not a property of one.
+   */
+  picking: pickingDirectionSchema.optional(),
 });
 
 /** null is a rest, "-" ties the previous event (spec 5.4). */
@@ -337,6 +395,37 @@ export const phraseSchema = z
     message: "phrase ends before it starts",
   });
 
+/**
+ * One technique held over a range of time and a set of strings.
+ *
+ * Ticks from the start of its section, `endTicks` exclusive — the same
+ * addressing as a phrase, and for the same reason: bars stopped sharing a
+ * grid in 2H-A, so anything named by slots would mean different music in
+ * different bars.
+ *
+ * `stringIndices` is required and may not be empty. A track-wide span would
+ * be smaller than the model already is: the per-note flag it replaces could
+ * put palm mute on one string and not another, and a span without strings
+ * would lose that. It is also simply not what the technique is — the heel of
+ * the hand covers the strings nearest it, and the ones above go on ringing.
+ */
+export const techniqueSpanSchema = z
+  .strictObject({
+    id: z.string().min(1),
+    kind: z.enum(["palm_mute", "let_ring"]),
+    trackId: z.string().min(1),
+    startTicks: z.number().int().min(0),
+    endTicks: z.number().int().min(1),
+    stringIndices: z.array(z.number().int().min(0)).min(1),
+  })
+  .refine((span) => span.endTicks > span.startTicks, {
+    message: "span ends before it starts",
+  })
+  .refine(
+    (span) => new Set(span.stringIndices).size === span.stringIndices.length,
+    { message: "span names one string twice" },
+  );
+
 export const sectionSchema = z.strictObject({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -371,6 +460,21 @@ export const sectionSchema = z.strictObject({
    * anything about its phrases, and nothing may invent one.
    */
   phrases: z.array(phraseSchema).max(songLimits.barsPerSection).optional(),
+  /**
+   * Techniques that last over a stretch of strings and time (2V-D.1 §3, §6).
+   *
+   * Palm mute and let ring were per-note flags, and a per-note flag cannot
+   * say the thing a guitarist actually does: mute the low strings with the
+   * heel of the hand while the top one rings over them. It is one hand
+   * position held across a range, and it belongs to some strings and not
+   * others.
+   *
+   * Optional, and absent in every song written before now. Absence is not an
+   * empty default that anything may fill in: it means this song has not said
+   * anything about spans, and a legacy `palm_mute` articulation or `letRing`
+   * flag keeps meaning exactly what it always meant.
+   */
+  techniqueSpans: z.array(techniqueSpanSchema).max(songLimits.barsPerSection).optional(),
 });
 
 export const fretboardSchema = z.strictObject({
@@ -412,6 +516,9 @@ export const songSchema = z.strictObject({
 });
 
 export type Articulation = z.infer<typeof articulationSchema>;
+export type NoteAttack = z.infer<typeof noteAttackSchema>;
+export type PickingDirection = z.infer<typeof pickingDirectionSchema>;
+export type TechniqueSpan = z.infer<typeof techniqueSpanSchema>;
 export type Position = z.infer<typeof positionSchema>;
 export type NoteEvent = z.infer<typeof noteEventSchema>;
 export type PitchGesture = z.infer<typeof pitchGestureSchema>;
