@@ -99,6 +99,20 @@ export type ResolvedAttack =
  * answer to "is this note muted" however the song said it — and so that a
  * song saying it twice is a refusal rather than a coin toss.
  */
+/**
+ * The striking itself, whichever field said it.
+ *
+ * Callers that need to *play* an attack want the value; callers that need to
+ * explain one want the source too. Keeping both behind one reading is what
+ * stops the audio layer from growing its own opinion about which field wins.
+ */
+export function attackValue(
+  axis: ResolvedAttack | null,
+): NoteAttack | Articulation | undefined {
+  if (axis === null) return undefined;
+  return axis.source === "attack" ? axis.attack : axis.articulation;
+}
+
 export type ActiveTechnique = {
   readonly kind: TechniqueSpan["kind"];
   readonly source: "span" | "legacy";

@@ -53,7 +53,9 @@ import type {
   DrumPiece,
   DrumSlot,
   MelodicSlot,
+  NoteAttack,
   NoteConnection,
+  PickingDirection,
   PitchGesture,
   Resolution,
   SectionStatus,
@@ -133,6 +135,18 @@ export type TabSpan = {
    */
   pitchGesture?: PitchGesture;
   connection?: NoteConnection;
+  /**
+   * How the string was struck and which way the pick crossed it (2V-D.1 §3).
+   *
+   * Carried rather than interpreted, exactly like the two above: everything
+   * downstream — the drawing, the plan, the reader's summary — asks the
+   * resolver what they mean, and a span that dropped them would be a note
+   * whose expression stops at the edge of the model.
+   */
+  attack?: NoteAttack;
+  picking?: PickingDirection;
+  /** Whether this note rings past the next attack on its own string. */
+  letRing?: boolean;
   /** The picking hand's direction across a chord, when the reader wrote one. */
   strum?: "down" | "up";
   startSlot: number;
@@ -276,6 +290,9 @@ function buildFretted(
         articulation: span.note.articulation,
         pitchGesture: span.note.pitchGesture,
         connection: span.note.connection,
+        attack: span.note.attack,
+        picking: span.note.picking,
+        letRing: span.note.letRing,
         strum: span.note.strum,
         writtenTicks: span.writtenTicks,
         startSlot: slice.startSlot,

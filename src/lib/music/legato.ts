@@ -17,7 +17,9 @@ import { ticksPerSlot } from "@/lib/music/timing";
 import { pitchToMidi } from "@/lib/music/pitch";
 import type {
   Articulation,
+  NoteAttack,
   NoteConnection,
+  PickingDirection,
   PitchGesture,
   Song,
 } from "@/lib/song/schema";
@@ -40,6 +42,17 @@ export type LegatoOnset = {
   /** The two explicit expression axes, carried verbatim (2V-C.1 §2). */
   pitchGesture?: PitchGesture;
   connection?: NoteConnection;
+  /**
+   * The attack and picking axes (2V-D.1 §3).
+   *
+   * Carried for the same reason as the two above: the planner reads the
+   * onset, not the note, so a field the onset does not carry is a field the
+   * speakers never hear about however carefully it was written down.
+   */
+  attack?: NoteAttack;
+  picking?: PickingDirection;
+  /** Whether this note was written to ring past the next attack on its string. */
+  letRing?: boolean;
   /** The hand's direction across a strummed chord, when one was written. */
   strum?: "down" | "up";
   /** Ticks from the start of the song, as `buildSongPlan` counts them. */
@@ -106,6 +119,9 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
         ...(span.articulation === undefined ? {} : { articulation: span.articulation }),
         ...(span.pitchGesture === undefined ? {} : { pitchGesture: span.pitchGesture }),
         ...(span.connection === undefined ? {} : { connection: span.connection }),
+        ...(span.attack === undefined ? {} : { attack: span.attack }),
+        ...(span.picking === undefined ? {} : { picking: span.picking }),
+        ...(span.letRing === undefined ? {} : { letRing: span.letRing }),
         ...(span.strum === undefined ? {} : { strum: span.strum }),
         timeTicks: start + span.startSlot * step,
         durationTicks: Math.max(

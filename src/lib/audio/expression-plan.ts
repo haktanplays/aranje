@@ -32,6 +32,7 @@ import {
   bendTargetCents,
   expressionPresets,
   isExpressive,
+  movesPitch,
 } from "@/lib/audio/expression";
 import {
   buildLegatoChains,
@@ -54,12 +55,13 @@ import {
   openSlideTravelSeconds,
   pitchGestureAutomation,
 } from "@/lib/audio/pitch-gesture";
+import { attackLayerFor, composeAttack } from "@/lib/audio/attack-layer";
 import { slideOutGain } from "@/lib/audio/gesture-shape";
 import { pitchToMidi } from "@/lib/music/pitch";
 import { samplePackFor } from "@/lib/audio/packs";
 import { attackSecondsFor, DEFAULT_ATTACK_SECONDS } from "@/lib/audio/sample-onset";
 import { applyShiftSlides, type ShiftSlideLink } from "@/lib/audio/shift-slide";
-import { resolveExpression, restrikesTarget } from "@/lib/music/expression-resolver";
+import { attackValue, resolveExpression, restrikesTarget } from "@/lib/music/expression-resolver";
 import type { Articulation, Song } from "@/lib/song/schema";
 
 
@@ -469,12 +471,36 @@ function planFor(
       return { ...base, fallbackReason: "not_fretted" };
     }
     const gesture = resolved.pitch.gesture;
+    /*
+     * The attack, if the note has one, on top of the gesture (2V-D.1 §8).
+     *
+     * This branch used to be the whole answer, which is why an accented bend
+     * played as a bend with no accent in it and a pinch harmonic with a bend
+     * on it never moved. The gesture writes the pitch; the attack scales the
+     * level, shortens the note and adds its cents to every point of the
+     * curve the gesture just produced.
+     */
+    const layer = attackLayerFor(attackValue(resolved.attackAxis));
+    const travel = pitchGestureAutomation(gesture, durationSeconds, {
+      timeScale: options.timeScale,
+    });
+    const composed =
+      layer === null
+        ? null
+        : composeAttack(layer, { gain, durationSeconds, pitchAutomation: travel });
     return {
       ...base,
       expressive: true,
-      pitchAutomation: pitchGestureAutomation(gesture, durationSeconds, {
-        timeScale: options.timeScale,
-      }),
+      ...(composed === null
+        ? {}
+        : {
+            durationSeconds: composed.durationSeconds,
+            gainEnvelope: [...composed.gainEnvelope],
+            ...(composed.filterPreset === undefined
+              ? {}
+              : { filterPreset: composed.filterPreset }),
+          }),
+      pitchAutomation: [...(composed?.pitchAutomation ?? travel)],
       /*
        * A slide-out is the sound going away (2V-C.2 §11).
        *
@@ -484,10 +510,16 @@ function planFor(
        * entry gets no such envelope: it lands *into* a note that then carries
        * on, and fading that would be fading the note itself.
        */
+      /*
+       * A slide-out keeps its own fade. Scaled by the attack when there is
+       * one, rather than replaced by it: the level going with the pitch is
+       * what leaving a string sounds like, and an accent on the way out is
+       * louder, not flat.
+       */
       ...(gesture.kind === "slide_out"
         ? {
             gainEnvelope: slideOutGain(
-              gain,
+              gain * (layer?.gainScale ?? 1),
               durationSeconds,
               durationSeconds - openSlideTravelSeconds(gesture, durationSeconds),
             ),
@@ -563,7 +595,21 @@ function planFor(
     return { ...base, expressive: true };
   }
 
-  if (!isExpressive(articulation)) return base;
+  /*
+   * Every attack, as a layer rather than as an exit (2V-D.1 §8).
+   *
+   * The six strikings each used to return a finished plan below, so whichever
+   * matched first was the only thing the note did. They now contribute a
+   * level, a length, a filter and — for a harmonic — an offset in cents.
+   *
+   * Asked *before* the `isExpressive` gate, because that gate reads the
+   * legacy enum and a note carrying only the new `attack` field has nothing
+   * in it — which is how the field was written down, drawn, exported and
+   * completely inaudible.
+   */
+  const attackLayer = attackLayerFor(attackValue(resolved.attackAxis));
+
+  if (attackLayer === null && !isExpressive(articulation)) return base;
 
   // Anything expressive on a note with no string under it is not something to
   // guess at; it falls back and says so.
@@ -571,11 +617,21 @@ function planFor(
     return { ...base, fallbackReason: "not_fretted" };
   }
 
-  if (articulation === "accent") {
+  if (attackLayer !== null && !movesPitch(articulation)) {
+    const composed = composeAttack(attackLayer, {
+      gain,
+      durationSeconds,
+      pitchAutomation: base.pitchAutomation,
+    });
     return {
       ...base,
       expressive: true,
-      gainEnvelope: [{ timeSeconds: 0, value: accentGain(gain) }],
+      durationSeconds: composed.durationSeconds,
+      gainEnvelope: [...composed.gainEnvelope],
+      pitchAutomation: [...composed.pitchAutomation],
+      ...(composed.filterPreset === undefined
+        ? {}
+        : { filterPreset: composed.filterPreset }),
     };
   }
 
