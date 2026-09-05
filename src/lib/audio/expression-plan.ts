@@ -652,18 +652,15 @@ function planFor(
      * inaudible from two decisions that each looked reasonable.
      */
     /*
-     * The shipped palm mute is shortened twice, in two modules, and a span
-     * has to reproduce both or it is a different technique wearing the same
-     * name. `articulationHold` chokes the note upstream in the timeline,
-     * where it reads the legacy enum — which a span-muted note has nothing
-     * in — and `palmMuteSeconds` shapes what is left. The first is applied
-     * here so the two ways of writing a mute come out the same length.
+     * The note arrives already gated (2V-D.1-C §2).
+     *
+     * `articulationHold` chokes it in ticks up in the timeline, which now
+     * asks the resolved technique rather than the legacy enum — so a span
+     * and an articulation reach here the same length. What is left to do is
+     * the absolute ceiling, which is a different job: a mute is never longer
+     * than 180 ms however long the note was written.
      */
-    const asWritten =
-      durationSeconds *
-      articulationHold("palm_mute") *
-      (attackLayer?.holdFraction ?? 1);
-    const held = palmMuteSeconds(asWritten);
+    const held = palmMuteSeconds(durationSeconds * (attackLayer?.holdFraction ?? 1));
     const level = round(gain * (attackLayer?.gainScale ?? 1));
     return {
       ...base,

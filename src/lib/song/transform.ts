@@ -67,6 +67,18 @@ import {
   type DetachEdit,
 } from "@/lib/song/chain-preflight";
 import {
+  allStrings,
+  moveRegion,
+  readSpans,
+  remapRegion,
+  removeRegion,
+  trackSpans,
+  withTrackSpans,
+  writeSpans,
+  type SpanRegion,
+  type SpanTransformFault,
+} from "@/lib/song/span-transform";
+import {
   EMPTY_CLIPBOARD,
   selectionWidth,
   type Clipboard,
@@ -78,6 +90,7 @@ import type {
   NoteEvent,
   Section,
   Song,
+  TechniqueSpan,
   Track,
 } from "@/lib/song/schema";
 import type { HistoryAction } from "@/lib/song/edit-history";
@@ -134,6 +147,15 @@ export type TransformErrorCode =
    * the whole note or nothing; nothing is repaired quietly.
    */
   | "selection_starts_inside_tie"
+  /**
+   * A technique span would have to leave its section, or cover a string the
+   * track does not have.
+   *
+   * Its own code rather than `out_of_range`, because the thing that cannot be
+   * placed is a hand position over a region and not a note — and a reader who
+   * sees "perde dışında" for a palm mute has been told the wrong thing.
+   */
+  | "span_scope_lost"
   | "validation_failed";
 
 export type TransformFailure = {
@@ -495,6 +517,21 @@ function applyCanvas(song: Song, sectionIndex: number, trackId: string, canvas: 
   return { ...song, sections };
 }
 
+/** The same song with this track's technique spans replaced in one section. */
+function applySpans(
+  song: Song,
+  sectionIndex: number,
+  trackId: string,
+  spans: readonly TechniqueSpan[],
+): Song {
+  return {
+    ...song,
+    sections: song.sections.map((section, index) =>
+      index === sectionIndex ? withTrackSpans(section, trackId, spans) : section,
+    ),
+  };
+}
+
 /** Clear every slot of a range, leaving rests. */
 function clearRegion(
   canvas: Canvas,
@@ -685,7 +722,24 @@ export function copySelection(
 
   const clipboard = readRegion(stream, scope.selection);
   if (!isClipboard(clipboard)) return clipboard;
-  return { ok: true, clipboard, selection: scope.selection };
+
+  /*
+   * Spans are read from the original section, not the detached working copy:
+   * detaching cuts note-to-note bonds and never touches a technique region,
+   * so reading them from the copy would only be a longer way to the same
+   * answer. The field is left off entirely when the region crossed none.
+   */
+  const spans = readSpans(trackSpans(resolved.section, resolved.track.id), {
+    trackId: resolved.track.id,
+    startTicks: scope.selection.startTicks,
+    endTicks: scope.selection.endTicks,
+    stringIndices: allStrings(resolved.fretboard.tuning.length),
+  });
+  return {
+    ok: true,
+    clipboard: spans.length === 0 ? clipboard : { ...clipboard, spans },
+    selection: scope.selection,
+  };
 }
 
 export function applyTransform(
@@ -747,8 +801,47 @@ export function applyTransform(
     return fail("track_silent_here", `"${track.name}" bu bölümde yazılı değil.`);
   }
 
-  const finish = (next: Canvas, resultSelection: TimeSelection): TransformResult => {
-    const settled = settle(applyCanvas(base, sectionIndex, track.id, next));
+  /*
+   * The strings a time selection covers: all of them.
+   *
+   * A tick range in this editor is the whole track, so a span the range
+   * touches is touched on every string it lies on. Keeping the string axis
+   * explicit rather than implied means the same span layer serves a future
+   * string-scoped selection without any of its arithmetic changing.
+   */
+  const stringCount = fretboard.tuning.length;
+  const spansNow = trackSpans(section, track.id);
+  const regionOver = (from: number, to: number): SpanRegion => ({
+    trackId: track.id,
+    startTicks: from,
+    endTicks: to,
+    stringIndices: allStrings(stringCount),
+  });
+
+  /*
+   * A span that cannot be placed refuses the whole command.
+   *
+   * Nothing is applied first and repaired after: the span layer is pure, so
+   * its answer arrives before the canvas is written and a refusal leaves the
+   * song exactly as it was.
+   */
+  const spanFail = (fault: SpanTransformFault) =>
+    fail(
+      "span_scope_lost",
+      fault === "span_out_of_section"
+        ? "Bir çalım bölgesi bölümün dışına taşıyor; işlem uygulanmadı."
+        : "Bir çalım bölgesi bu track'te olmayan bir tele düşüyor; işlem uygulanmadı.",
+    );
+
+  const finish = (
+    next: Canvas,
+    resultSelection: TimeSelection,
+    spans?: readonly TechniqueSpan[],
+  ): TransformResult => {
+    const written = applyCanvas(base, sectionIndex, track.id, next);
+    const settled = settle(
+      spans === undefined ? written : applySpans(written, sectionIndex, track.id, spans),
+    );
     if (!settled.ok) {
       return fail("validation_failed", "Düzenleme kontrollerden geçmedi ve uygulanmadı.");
     }
@@ -790,7 +883,15 @@ export function applyTransform(
     case "delete_selection":
     case "cut_selection": {
       clearRegion(canvas, stream, grown);
-      return finish(canvas, { ...grown, endTicks: grown.startTicks });
+      /*
+       * The region is taken out of the spans, not the spans out of the
+       * section. A palm mute that ran from bar one to bar four and lost bar
+       * two is still a palm mute over bars one, three and four — deleting all
+       * of it because part of it was selected would remove music nobody
+       * pointed at.
+       */
+      const spans = removeRegion(spansNow, regionOver(grown.startTicks, grown.endTicks));
+      return finish(canvas, { ...grown, endTicks: grown.startTicks }, spans);
     }
 
     case "paste_selection": {
@@ -799,15 +900,28 @@ export function applyTransform(
       }
       const written = writeEvents(canvas, stream, command.clipboard.events, command.atTicks, totalTicks);
       if (!written.ok) return written;
+      const spans = writeSpans(spansNow, {
+        trackId: track.id,
+        atTicks: command.atTicks,
+        clipboard: command.clipboard.spans ?? [],
+        sectionTicks: totalTicks,
+        stringCount,
+        seed: `paste@${command.atTicks}`,
+      });
+      if (!spans.ok) return spanFail(spans.fault);
       for (const write of written.writes) {
         const bar = canvas[write.barIndex];
         if (bar) bar[write.slotIndex] = write.slot;
       }
-      return finish(canvas, {
-        ...grown,
-        startTicks: command.atTicks,
-        endTicks: command.atTicks + command.clipboard.widthTicks,
-      });
+      return finish(
+        canvas,
+        {
+          ...grown,
+          startTicks: command.atTicks,
+          endTicks: command.atTicks + command.clipboard.widthTicks,
+        },
+        spans.spans,
+      );
     }
 
     case "duplicate_selection": {
@@ -816,17 +930,42 @@ export function applyTransform(
       const at = grown.endTicks;
       const written = writeEvents(canvas, stream, clipboard.events, at, totalTicks);
       if (!written.ok) return written;
+      const spans = writeSpans(spansNow, {
+        trackId: track.id,
+        atTicks: at,
+        clipboard: readSpans(spansNow, regionOver(grown.startTicks, grown.endTicks)),
+        sectionTicks: totalTicks,
+        stringCount,
+        seed: `duplicate@${at}`,
+      });
+      if (!spans.ok) return spanFail(spans.fault);
       for (const write of written.writes) {
         const bar = canvas[write.barIndex];
         if (bar) bar[write.slotIndex] = write.slot;
       }
-      return finish(canvas, { ...grown, startTicks: at, endTicks: at + clipboard.widthTicks });
+      return finish(
+        canvas,
+        { ...grown, startTicks: at, endTicks: at + clipboard.widthTicks },
+        spans.spans,
+      );
     }
 
     case "move_selection_time": {
       const clipboard = readRegion(stream, grown);
       if (!isClipboard(clipboard)) return clipboard;
       const at = grown.startTicks + command.deltaTicks;
+
+      /*
+       * The spans move in the same call that moves the notes, and a span that
+       * cannot follow refuses before a single slot is cleared. There is no
+       * half-moved state to recover from because there is no state at all
+       * until `finish` builds the one song this returns.
+       */
+      const spans = moveRegion(spansNow, regionOver(grown.startTicks, grown.endTicks), {
+        deltaTicks: command.deltaTicks,
+        sectionTicks: totalTicks,
+      });
+      if (!spans.ok) return spanFail(spans.fault);
 
       // Lift first, so a move by less than the selection's own width does not
       // collide with the music it is made of.
@@ -837,7 +976,11 @@ export function applyTransform(
         const bar = canvas[write.barIndex];
         if (bar) bar[write.slotIndex] = write.slot;
       }
-      return finish(canvas, { ...grown, startTicks: at, endTicks: at + clipboard.widthTicks });
+      return finish(
+        canvas,
+        { ...grown, startTicks: at, endTicks: at + clipboard.widthTicks },
+        spans.spans,
+      );
     }
 
     case "repeat_selection": {
@@ -857,16 +1000,30 @@ export function applyTransform(
         return fail("section_overflow", "Tekrarlar bölümün dışına taşıyor.");
       }
 
+      const pattern = readSpans(spansNow, regionOver(grown.startTicks, grown.endTicks));
+      let spans: readonly TechniqueSpan[] = spansNow;
+
       const all: { barIndex: number; slotIndex: number; slot: MelodicSlot }[] = [];
       for (let index = 1; index <= wanted; index += 1) {
-        const written = writeEvents(
-          canvas,
-          stream,
-          clipboard.events,
-          grown.startTicks + index * width,
-          totalTicks,
-        );
+        const at = grown.startTicks + index * width;
+        const written = writeEvents(canvas, stream, clipboard.events, at, totalTicks);
         if (!written.ok) return written;
+        /*
+         * Each repetition is a fresh copy of the spans as well as the notes,
+         * and it is threaded rather than accumulated separately so the ids
+         * stay unique against everything written so far — including the
+         * earlier repeats of this same run.
+         */
+        const copied = writeSpans(spans, {
+          trackId: track.id,
+          atTicks: at,
+          clipboard: pattern,
+          sectionTicks: totalTicks,
+          stringCount,
+          seed: `repeat@${at}`,
+        });
+        if (!copied.ok) return spanFail(copied.fault);
+        spans = copied.spans;
         // Staged so the whole run is atomic: a later repeat that does not fit
         // must not leave the earlier ones behind.
         for (const write of written.writes) {
@@ -875,10 +1032,11 @@ export function applyTransform(
         }
         all.push(...written.writes);
       }
-      return finish(canvas, {
-        ...grown,
-        endTicks: grown.startTicks + width * (wanted + 1),
-      });
+      return finish(
+        canvas,
+        { ...grown, endTicks: grown.startTicks + width * (wanted + 1) },
+        spans,
+      );
     }
 
     case "transpose_pitch": {
@@ -902,6 +1060,12 @@ export function applyTransform(
         return { ...note, pitch, position: { string: note.position.string, fret } };
       });
       if (!mapped.ok) return mapped;
+      /*
+       * No span argument, deliberately. Transposing moves the pitch and keeps
+       * the hand where it was, so the strings a technique covers are exactly
+       * the strings it covered before — rewriting them would be inventing a
+       * change the reader did not ask for.
+       */
       return finish(canvas, grown);
     }
 
@@ -932,7 +1096,12 @@ export function applyTransform(
         return { ...note, position: { string: to, fret } };
       });
       if (!mapped.ok) return mapped;
-      return finish(canvas, grown);
+      const spans = remapRegion(spansNow, regionOver(grown.startTicks, grown.endTicks), {
+        stringDelta: command.stringDelta,
+        stringCount,
+      });
+      if (!spans.ok) return spanFail(spans.fault);
+      return finish(canvas, grown, spans.spans);
     }
 
     case "translate_fret_shape": {
@@ -960,7 +1129,12 @@ export function applyTransform(
         return { ...note, pitch: midiToPitch(midi), position: { string, fret } };
       });
       if (!mapped.ok) return mapped;
-      return finish(canvas, grown);
+      const spans = remapRegion(spansNow, regionOver(grown.startTicks, grown.endTicks), {
+        stringDelta: command.stringDelta,
+        stringCount,
+      });
+      if (!spans.ok) return spanFail(spans.fault);
+      return finish(canvas, grown, spans.spans);
     }
   }
 }

@@ -36,6 +36,8 @@ const MESSAGES: Readonly<Record<TransformErrorCode, string>> = {
     "Bu bağlantı bir sonraki bölüme uzanıyor; bu sürümde buradan düzenlenemiyor.",
   selection_starts_inside_tie:
     "Seçim uzayan bir sesin ortasından başlıyor. Sesin tamamını seç.",
+  span_scope_lost:
+    "Bu işlem bir çalım bölgesini bölümün dışına ya da olmayan bir tele taşıyor.",
   validation_failed: "Bu düzenleme müzik kurallarına takıldı ve uygulanmadı.",
 };
 

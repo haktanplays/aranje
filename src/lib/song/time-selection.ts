@@ -17,6 +17,7 @@
  * V1 is one track inside one section. Cross-track and cross-section selection
  * are out of scope, so nothing here takes a list of tracks.
  */
+import type { ClipboardSpan } from "@/lib/song/span-transform";
 import type { NoteEvent } from "@/lib/song/schema";
 
 export type TimeSelection = {
@@ -55,6 +56,15 @@ export type ClipboardEvent = {
 export type Clipboard = {
   readonly widthTicks: number;
   readonly events: readonly ClipboardEvent[];
+  /**
+   * Technique spans that lay over the region, positioned like the events.
+   *
+   * Optional so every clipboard written before spans existed still reads, and
+   * so a copy that crossed no span carries no empty array. A span is clipped
+   * to the region rather than carried whole: what was copied is what was
+   * selected, and a palm mute that ran on past the selection did not.
+   */
+  readonly spans?: readonly ClipboardSpan[];
 };
 
 export const EMPTY_CLIPBOARD: Clipboard = { widthTicks: 0, events: [] };

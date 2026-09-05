@@ -149,6 +149,17 @@ export type TabSpan = {
   picking?: PickingDirection;
   /** Whether this note rings past the next attack on its own string. */
   letRing?: boolean;
+  /**
+   * The techniques a span holds over this onset (2V-D.1-C §2).
+   *
+   * Resolved here, once, from the section's spans — so everything downstream
+   * asks one question and gets one answer whether the song wrote the
+   * technique on the note or over a range. It matters most for the length: a
+   * palm mute is gated in ticks by `articulationHold`, which reads the legacy
+   * enum, and a span-muted note that arrived without this would be gated
+   * again later and come out shorter than the same mute written the old way.
+   */
+  techniques?: readonly ("palm_mute" | "let_ring")[];
   /** The picking hand's direction across a chord, when the reader wrote one. */
   strum?: "down" | "up";
   startSlot: number;
@@ -291,21 +302,28 @@ function buildFretted(
     song.sections.map((section) => [section.id, indexSpans(section.techniqueSpans)]),
   );
 
+  /** Which techniques hold over one written onset, from the section's spans. */
+  const techniquesOver = (
+    span: WrittenSpan,
+    stringIndex: number | null,
+  ): readonly ("palm_mute" | "let_ring")[] => {
+    const meta = metas[span.barIndex]?.meta;
+    if (!meta) return [];
+    const index = spansBySection.get(meta.sectionId);
+    if (!index) return [];
+    const at = span.startTicks - (sectionStart.get(meta.sectionId) ?? 0);
+    return index
+      .at({ trackId: track.id, timeTicks: at, stringIndex })
+      .map((held) => held.kind);
+  };
+
   const heard = soundingSpans(
     writtenSpans(flatBars, track.id),
     (span) => placedNotes(span)?.stringIndex ?? null,
     sectionTicks(flatBars),
-    (span, stringIndex) => {
-      if (span.note.letRing === true) return true;
-      const meta = metas[span.barIndex]?.meta;
-      if (!meta) return false;
-      const index = spansBySection.get(meta.sectionId);
-      if (!index) return false;
-      const at = span.startTicks - (sectionStart.get(meta.sectionId) ?? 0);
-      return index
-        .at({ trackId: track.id, timeTicks: at, stringIndex })
-        .some((held) => held.kind === "let_ring");
-    },
+    (span, stringIndex) =>
+      span.note.letRing === true ||
+      techniquesOver(span, stringIndex).includes("let_ring"),
   );
 
   const perBar: TabSpan[][] = metas.map(() => []);
@@ -326,6 +344,10 @@ function buildFretted(
         attack: span.note.attack,
         picking: span.note.picking,
         letRing: span.note.letRing,
+        ...(() => {
+          const held = techniquesOver(span, position?.stringIndex ?? null);
+          return held.length === 0 ? {} : { techniques: held };
+        })(),
         strum: span.note.strum,
         writtenTicks: span.writtenTicks,
         startSlot: slice.startSlot,

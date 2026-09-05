@@ -23,7 +23,23 @@ import type {
   PitchGesture,
   Song,
 } from "@/lib/song/schema";
-import { buildTrackTimeline } from "@/lib/tab/timeline";
+import { buildTrackTimeline, type TabSpan } from "@/lib/tab/timeline";
+
+/**
+ * How much of its written length this note actually sounds.
+ *
+ * One question, one answer, whether the mute was written on the note or over
+ * a range (2V-D.1-C §2). Before this the gate read the legacy enum only, so a
+ * span-muted note arrived at the planner ungated and was shortened there
+ * instead — 0.92 × 0.45 rather than 0.45, which is where the eight
+ * milliseconds came from.
+ */
+function holdOf(span: TabSpan): number {
+  if (span.techniques?.includes("palm_mute") === true) {
+    return articulationHold("palm_mute");
+  }
+  return articulationHold(span.articulation);
+}
 
 /** One struck note of one fretted track, with the context it needs. */
 export type LegatoOnset = {
@@ -124,10 +140,7 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
         ...(span.letRing === undefined ? {} : { letRing: span.letRing }),
         ...(span.strum === undefined ? {} : { strum: span.strum }),
         timeTicks: start + span.startSlot * step,
-        durationTicks: Math.max(
-          1,
-          Math.round(full * articulationHold(span.articulation)),
-        ),
+        durationTicks: Math.max(1, Math.round(full * holdOf(span))),
         startSlot: base + span.startSlot,
         endSlot: base + span.endSlot,
       });
@@ -160,7 +173,7 @@ export function trackLegatoOnsets(song: Song, trackId: string): LegatoOnset[] {
       owner.durationTicks = Math.max(
         1,
         owner.durationTicks +
-          Math.round(carried * articulationHold(span.articulation)),
+          Math.round(carried * holdOf(span)),
       );
     }
   }

@@ -129,28 +129,31 @@ describe("144. a palm-mute span reaches the speakers", () => {
     expect(accented.durationSeconds).toBe(plain.durationSeconds);
   });
 
-  it("plays a span the way the legacy articulation does, to within a rounding", () => {
+  it("plays a span exactly as the legacy articulation does", () => {
     /*
-     * The span moved where a mute is written, not what it does: same
-     * roll-off, same envelope shape, same choke.
-     *
-     * The lengths agree to about eight milliseconds rather than exactly, and
-     * the reason is worth writing down. The shipped mute is shortened twice —
-     * `articulationHold` chokes the tie run **in ticks**, upstream in the
-     * timeline where the legacy enum is read, and `palmMuteSeconds` shapes
-     * what is left in seconds. A span-muted note has nothing in the enum, so
-     * the first shortening is applied here, in seconds, and rounds
-     * differently. Closing it means teaching the timeline about spans, which
-     * is a wider change than this round can verify; it is recorded as debt
-     * rather than hidden behind a looser assertion elsewhere.
+     * Byte-equal, not close. The eight-millisecond gap the previous round
+     * left was never a rounding: the timeline gated a legacy mute in ticks
+     * and could not see a span, so the span was gated a second time in the
+     * planner — 0.92 x 0.45 against 0.45. The timeline resolves the
+     * technique now, so both reach the planner the same length and there is
+     * nothing left to be close about.
      */
     const bySpan = planAt(song([span()]), 0, 5);
     const byLegacy = planAt(song(undefined, { articulation: "palm_mute" }), 0, 5);
     expect(bySpan.filterPreset).toBe(byLegacy.filterPreset);
-    expect(bySpan.gainEnvelope).toHaveLength(byLegacy.gainEnvelope.length);
-    /* Measured at 8 ms on this fixture. Bounded so the gap cannot widen
-       unnoticed while the debt is open. */
-    expect(Math.abs(bySpan.durationSeconds - byLegacy.durationSeconds)).toBeLessThan(0.01);
+    expect(bySpan.durationSeconds).toBe(byLegacy.durationSeconds);
+    expect(bySpan.gainEnvelope).toEqual(byLegacy.gainEnvelope);
+    expect(bySpan.durationTicks).toBe(byLegacy.durationTicks);
+  });
+
+  it("is not comparing two notes that were never muted", () => {
+    /* Non-vacuity for the parity above: a plain note has to differ from both
+       of them, or "identical" would be a fact about the fixture. */
+    const plain = planAt(song(), 0, 5);
+    const muted = planAt(song([span()]), 0, 5);
+    expect(plain.filterPreset).toBeUndefined();
+    expect(plain.durationSeconds).toBeGreaterThan(muted.durationSeconds);
+    expect(plain.gainEnvelope).toEqual([]);
   });
 
   it("changes nothing at all when the song has no spans", () => {
