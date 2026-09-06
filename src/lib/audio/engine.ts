@@ -772,9 +772,20 @@ export function scheduleSong(
   // The metronome sits on the same transport and the same context as the
   // music, so it cannot drift away from it.
   const { click } = engine.metronome;
-  for (const beat of metronomeClicks(engine.plan, {
-    subdivisions: options.metronomeSubdivisions?.(),
-  })) {
+  /*
+   * Every pulse is scheduled, and *whether a subdivision sounds* is decided
+   * when it fires (2V-D.2 completion §8).
+   *
+   * The alternative — scheduling only the pulses the reader currently wants —
+   * would mean rescheduling the transport every time they change their mind,
+   * and a reader who changes it mid-bar would either hear the old plan until
+   * the next start or leave a set of already-scheduled clicks behind. Reading
+   * the preference at click time is what `metronomeEnabled` already does, and
+   * it gives the same three guarantees for free: the change lands on the next
+   * pulse, nothing stale can sound, and the main beats keep their ticks and
+   * their strengths whichever way the switch is set.
+   */
+  for (const beat of metronomeClicks(engine.plan, { subdivisions: true })) {
     /*
      * The metronome belongs to the session, not to a track, so it is bounded
      * by time alone. Whether it clicks at all is still the reader's standing
@@ -785,6 +796,7 @@ export function scheduleSong(
     }
     transport.schedule((time) => {
       if (!options.metronomeEnabled?.()) return;
+      if (beat.strength === "subdivision" && !options.metronomeSubdivisions?.()) return;
       click.triggerAttackRelease(0.02, time, CLICK_GAIN[beat.strength]);
     }, ticks(beat.time));
   }

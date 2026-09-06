@@ -21,6 +21,7 @@ const SERVER_STATE: PlaybackState = {
   countInBars: DEFAULT_COUNT_IN,
   countingIn: false,
   metronome: false,
+  metronomeSubdivisions: false,
   progress: null,
   error: null,
   silentTrackNotice: null,

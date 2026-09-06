@@ -35,6 +35,12 @@ import {
   ShelfSecondary,
 } from "@/components/workspace/shelf/ShelfControls";
 import { groupingLabel } from "@/lib/music/meter-beats";
+import {
+  DETAIL_LABEL,
+  METRONOME_DETAILS,
+  detailNote,
+  type MetronomeDetail,
+} from "@/lib/music/metronome-detail";
 import { readRhythm } from "@/lib/music/rhythm-language";
 import {
   SIMPLE_INTENTS,
@@ -56,6 +62,7 @@ export type MeterDraft = {
 
 export function MeterPanel({
   bpm,
+  click,
   current,
   draft,
   preview,
@@ -64,6 +71,17 @@ export function MeterPanel({
 }: {
   /** The tempo in force here, so the reading can name the felt beat. */
   bpm: number;
+  /**
+   * How closely the click counts, and how to change it (§8).
+   *
+   * Session state that belongs to the *listener*, not to the song: choosing
+   * it writes no bar, makes no history step and saves no project. It is here
+   * because this is the panel about how a bar is counted.
+   */
+  click: {
+    readonly detail: MetronomeDetail;
+    readonly onDetail: (next: MetronomeDetail) => void;
+  };
   /** What the bar is written in now. */
   current: MeterDraft;
   /** What the reader has picked but not applied, or null. */
@@ -84,6 +102,12 @@ export function MeterPanel({
     grouping: shown.grouping,
   });
   const proMeters = pro ? openProMeters() : [];
+  /* Said only when it is true: in 4/4 the main beats already are the units. */
+  const clickNote = detailNote({
+    meter: shown.meter,
+    resolution: shown.resolution,
+    grouping: shown.grouping,
+  });
 
   return (
     <div className="flex flex-col gap-2" data-panel="meter">
@@ -165,6 +189,27 @@ export function MeterPanel({
               />
             ))}
           </ShelfRow>
+
+          {/*
+            The click's own row, in Pro because it is a rehearsal decision
+            rather than a musical one. Nothing here reaches the Song: the
+            handler sets a session preference and every scheduled pulse asks
+            for it again at the moment it fires (§8).
+          */}
+          <ShelfRow label="Metronom" testId="meter-click">
+            {METRONOME_DETAILS.map((detail) => (
+              <ShelfChoice
+                key={detail}
+                testId={`meter-click-${detail}`}
+                label={DETAIL_LABEL[detail]}
+                active={click.detail === detail}
+                onPress={() => click.onDetail(detail)}
+              />
+            ))}
+          </ShelfRow>
+          {clickNote ? (
+            <ShelfNote testId="meter-click-note">{clickNote}</ShelfNote>
+          ) : null}
 
           <ShelfRow label={conceptLabel("feel")} testId="meter-feel">
             {(

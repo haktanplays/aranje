@@ -60,6 +60,36 @@ for (const id of ["L30a", "L31a", "L31b", "L32a", "L33a", "L33b"]) {
   );
 }
 
+/* -------------------------------------------------- the sample's own onset */
+
+process.stdout.write("  sample onset profile ... ");
+const profile = await page.evaluate(() =>
+  window.AranjeRhythmRender.renderSampleProfile(),
+);
+process.stdout.write(
+  profile
+    ? `threshold at +${profile.toThresholdMs} ms, peak at +${profile.toPeakMs} ms, detector +${profile.detectedMs} ms\n`
+    : "NOT BUILT\n",
+);
+
+/* --------------------------------------------------- the metronome events */
+
+const clickNames = await page.evaluate(() =>
+  window.AranjeRhythmRender.metronomeCaseNames(),
+);
+const metronome = {};
+for (const name of clickNames) {
+  const table = await page.evaluate(
+    (id) => window.AranjeRhythmRender.metronomeTable(id),
+    name,
+  );
+  metronome[name] = table;
+  console.log(
+    `  click ${name}: ${table.beats.length} beats, ${table.units.length} units,` +
+      ` one-per-tick ${table.onePulseOneClick}, main beats unmoved ${table.mainBeatsUnmoved}`,
+  );
+}
+
 /* ------------------------------------------------- the accent A/B control */
 
 const contrastModes = await page.evaluate(() => window.AranjeRhythmRender.accentModes());
@@ -108,6 +138,8 @@ const artefact = {
   sha: process.env.SHA ?? "unset",
   pageErrors: errors,
   takes,
+  sampleProfile: profile,
+  metronome,
   accentContrast: contrast,
   boundaries,
 };

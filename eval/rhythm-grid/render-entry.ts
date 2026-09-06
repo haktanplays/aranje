@@ -29,7 +29,8 @@
  * decide anything about it.
  */
 import { buildTempoMap, secondsAtTicks } from "@/lib/audio/tempo";
-import { barTimeline } from "@/lib/audio/schedule";
+import { CLICK_GAIN, metronomeClicks } from "@/lib/audio/position";
+import { barTimeline, buildSongPlan } from "@/lib/audio/schedule";
 import { buildExpressionPlan } from "@/lib/audio/expression-plan";
 import { encodeWav } from "@/lib/export/wav-encoder";
 import { renderDuration } from "@/lib/export/export-plan";
@@ -443,6 +444,143 @@ export async function renderTake(id: RhythmTakeId): Promise<TakeAnalysis | null>
 
 /** The string every fixture in this file is written on. */
 const STRING = 1;
+
+/* ------------------------------------------------- the sample's own onset */
+
+export type SampleProfile = {
+  readonly sampleRate: number;
+  readonly startSeconds: number;
+  /** How long after the scheduled start the energy first passes the floor. */
+  readonly toThresholdMs: number;
+  /** How long after it the sample reaches its own peak. */
+  readonly toPeakMs: number;
+  /** What the detector says about the same note, given only the buffer. */
+  readonly detectedMs: number | null;
+  readonly threshold: number;
+  readonly peak: number;
+};
+
+/**
+ * How long a struck note takes to arrive, measured on a note with nothing
+ * around it (§11).
+ *
+ * This is the number a bar-boundary tolerance has to be built from. A
+ * sampled guitar does not reach full level at its scheduled instant — the
+ * pick has a ramp — so an onset detector reports a note *later* than the
+ * scheduler placed it, by an amount that belongs to the sample rather than
+ * to any drift. Measuring it here, on a single note in an otherwise empty
+ * bar, keeps the tolerance from being either a guess or a circular reading
+ * of the very errors it is meant to bound.
+ */
+export async function renderSampleProfile(): Promise<SampleProfile | null> {
+  const built = songOf([
+    { meter: [4, 4], resolution: 8, hits: [{ slot: 2, fret: 5, hold: 5 }] },
+  ]);
+  if (!built) return null;
+  const tempo = buildTempoMap(built.song);
+  const planned = plannedNotes(built.song, built.trackId, 0, 768);
+  const note = planned[0];
+  if (!note) return null;
+  const rendered = await renderSongToBuffer(built.song, {
+    audibleTrackIds: [built.trackId],
+  });
+  const samples = mono(rendered.channels);
+  const detected = detectOnsets(samples, rendered.sampleRate);
+  const startSeconds = secondsAtTicks(tempo, note.timeTicks);
+  const at = Math.round(startSeconds * rendered.sampleRate);
+
+  let crossed: number | null = null;
+  let peakAt = at;
+  let peak = 0;
+  for (let index = at; index < Math.min(samples.length, at + rendered.sampleRate); index += 1) {
+    const value = Math.abs(samples[index] ?? 0);
+    if (crossed === null && value > detected.threshold) crossed = index;
+    if (value > peak) {
+      peak = value;
+      peakAt = index;
+    }
+  }
+  const near = detected.onsets.find((onset) => Math.abs(onset.seconds - startSeconds) < 0.2);
+
+  return {
+    sampleRate: rendered.sampleRate,
+    startSeconds: round(startSeconds),
+    toThresholdMs:
+      crossed === null ? -1 : round(((crossed - at) / rendered.sampleRate) * 1000, 3),
+    toPeakMs: round(((peakAt - at) / rendered.sampleRate) * 1000, 3),
+    detectedMs: near ? round((near.seconds - startSeconds) * 1000, 3) : null,
+    threshold: detected.threshold,
+    peak: round(peak),
+  };
+}
+
+/* ------------------------------------------------ the metronome's own events */
+
+export type ClickRow = {
+  readonly tick: number;
+  readonly role: string;
+  readonly velocity: number;
+};
+
+export type MetronomeCase = {
+  readonly name: string;
+  readonly meter: string;
+  readonly grouping: string;
+  readonly barTicks: number;
+  readonly beats: readonly ClickRow[];
+  readonly units: readonly ClickRow[];
+  /** True when no tick carries two clicks in either setting. */
+  readonly onePulseOneClick: boolean;
+  /** True when every main beat keeps its tick and its role under `units`. */
+  readonly mainBeatsUnmoved: boolean;
+};
+
+const CLICK_CASES: Readonly<Record<string, BarSpec>> = {
+  "4-4": { meter: [4, 4], resolution: 8, hits: [] },
+  "6-8-33": { meter: [6, 8], resolution: 8, grouping: [3, 3], hits: [] },
+  "7-8-223": { meter: [7, 8], resolution: 8, grouping: [2, 2, 3], hits: [] },
+  "7-8-322": { meter: [7, 8], resolution: 8, grouping: [3, 2, 2], hits: [] },
+  "9-8": { meter: [9, 8], resolution: 8, grouping: [3, 3, 3], hits: [] },
+  "12-8": { meter: [12, 8], resolution: 8, grouping: [3, 3, 3, 3], hits: [] },
+};
+
+export const metronomeCaseNames = (): string[] => Object.keys(CLICK_CASES);
+
+/**
+ * Every click the production metronome would schedule for one bar.
+ *
+ * The same `metronomeClicks` the engine calls, on a plan built by the same
+ * `buildSongPlan`; nothing here is a second implementation of the click.
+ */
+export function metronomeTable(name: string): MetronomeCase | null {
+  const spec = CLICK_CASES[name];
+  if (!spec) return null;
+  const built = songOf([spec]);
+  if (!built) return null;
+  const plan = buildSongPlan(built.song);
+  const rows = (subdivisions: boolean): ClickRow[] =>
+    metronomeClicks(plan, { subdivisions }).map((beat) => ({
+      tick: beat.time,
+      role: beat.strength,
+      velocity: CLICK_GAIN[beat.strength],
+    }));
+  const beats = rows(false);
+  const units = rows(true);
+  const unique = (list: readonly ClickRow[]) =>
+    new Set(list.map((row) => row.tick)).size === list.length;
+  return {
+    name,
+    meter: `${spec.meter[0]}/${spec.meter[1]}`,
+    grouping: (spec.grouping ?? []).join("+") || "-",
+    barTicks: barTicks({ timeSignature: spec.meter, resolution: spec.resolution }),
+    beats,
+    units,
+    onePulseOneClick: unique(beats) && unique(units),
+    mainBeatsUnmoved: beats.every((beat) =>
+      units.some((unit) => unit.tick === beat.tick && unit.role === beat.role),
+    ),
+  };
+}
 
 /* ------------------------------------------------- the accent A/B control */
 

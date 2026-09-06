@@ -70,6 +70,7 @@ export function ShelfPanels({
   onApply,
   onOpenPanel,
   meterChange,
+  click,
 }: {
   panel: ShelfPanelId;
   song: Song;
@@ -92,6 +93,8 @@ export function ShelfPanels({
    * mapping is how a mapping becomes a workspace.
    */
   meterChange: MeterChangeHandle;
+  /** The listener's own click setting, which no panel may write to the Song. */
+  click: React.ComponentProps<typeof MeterPanel>["click"];
 }) {
   const stringIndex = noteEditing.cell?.stringIndex ?? 0;
 
@@ -151,6 +154,7 @@ export function ShelfPanels({
     return (
       <MeterPanel
         bpm={song.bpm}
+        click={click}
         current={meterChange.current}
         draft={meterChange.draft}
         preview={meterChange.preview}

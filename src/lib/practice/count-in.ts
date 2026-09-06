@@ -31,7 +31,12 @@
  * it teaches the wrong pulse in the last second before playing.
  */
 import { effectiveBpm } from "@/lib/audio/practice-rate";
-import { meterBeats, type MeterBeat } from "@/lib/music/meter-beats";
+import {
+  meterBeats,
+  meterPulses,
+  type MeterBeat,
+  type PulseStrength,
+} from "@/lib/music/meter-beats";
 import { PPQ, ticksPerBar, ticksPerSlot } from "@/lib/music/timing";
 import type { Bar } from "@/lib/song/schema";
 
@@ -60,6 +65,14 @@ export type CountInClick = {
   readonly downbeat: boolean;
   /** 1-based, the number a reader would say out loud. */
   readonly beat: number;
+  /**
+   * Which layer this click belongs to (2V-D.2 completion §8, §9).
+   *
+   * The same three the metronome uses during playback, so the count-in and
+   * the bars after it are one sound rather than two that resemble each
+   * other. A `subdivision` is only produced when the reader asked for them.
+   */
+  readonly strength: PulseStrength;
 };
 
 /** The beats of this bar, in order, from the feel it carries. */
@@ -102,6 +115,13 @@ export type CountInInput = {
   readonly bpm: number;
   /** The practice rate as a percentage, already including any automation. */
   readonly practicePercent: number;
+  /**
+   * Count every notated unit rather than only the main beats.
+   *
+   * The reader's own choice, read from the same place playback reads it, so
+   * a count-in cannot teach a different pulse from the bar it counts in.
+   */
+  readonly subdivisions?: boolean;
 };
 
 /**
@@ -128,14 +148,27 @@ export function countInClicks(input: CountInInput): readonly CountInClick[] {
    * click still lands exactly one beat before the loop's first tick, and the
    * first is exactly `bars` bars before it.
    */
+  const pulses = input.subdivisions
+    ? meterPulses({
+        meter: bar.timeSignature,
+        resolution: bar.resolution,
+        grouping: bar.grouping,
+      })
+    : beats.map((beat) => ({ slot: beat.slot, strength: beat.strength }));
+
   const clicks: CountInClick[] = [];
   for (let barIndex = 0; barIndex < input.bars; barIndex += 1) {
-    beats.forEach((beat, index) => {
+    let counted = 0;
+    pulses.forEach((beat) => {
+      /* The spoken number is the *main beat* number: a reader counting a 7/8
+         in with every eighth still says one, two, three. */
+      if (beat.strength !== "subdivision") counted += 1;
       const offset = barIndex * barTicks + beat.slot * step;
       clicks.push({
         beforeSeconds: (totalTicks - offset) * secondsPerTick,
         downbeat: beat.strength === "downbeat",
-        beat: index + 1,
+        beat: Math.max(1, counted),
+        strength: beat.strength,
       });
     });
   }

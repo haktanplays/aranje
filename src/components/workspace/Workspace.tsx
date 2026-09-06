@@ -312,6 +312,10 @@ export function Workspace() {
         composer={composer}
         noteEditing={noteEditing}
         meterChange={meterChange}
+        click={{
+          detail: state.metronomeSubdivisions ? "units" : "beats",
+          onDetail: (next) => controller.setMetronomeSubdivisions(next === "units"),
+        }}
         onOpenChordBuilder={doors.catalogue}
         onOpenRhythm={doors.rhythm}
         intent={tab.intent}

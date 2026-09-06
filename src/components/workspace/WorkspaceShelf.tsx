@@ -52,6 +52,8 @@ export function WorkspaceShelf(props: {
   composer: IntentComposer;
   noteEditing: NoteEditing;
   meterChange: MeterChangeHandle;
+  /** How closely the metronome counts. Session state; never the Song (§8). */
+  click: React.ComponentProps<typeof EditArea>["click"];
   onOpenChordBuilder: ((power: boolean) => void) | null;
   onOpenRhythm: (() => void) | null;
   toolbar: React.ComponentProps<typeof EditToolbar>;
@@ -79,6 +81,7 @@ export function WorkspaceShelf(props: {
         composer={props.composer}
         noteEditing={props.noteEditing}
         meterChange={props.meterChange}
+        click={props.click}
         song={props.song}
         track={props.track}
         selection={session.time.handle.selection}

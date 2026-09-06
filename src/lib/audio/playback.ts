@@ -35,6 +35,7 @@ import {
   type TempoMap,
 } from "@/lib/audio/tempo";
 import {
+  CLICK_GAIN,
   barStartTicks,
   nearestBarKey,
   positionAtTicks,
@@ -115,6 +116,15 @@ export type PlaybackState = {
    */
   countingIn: boolean;
   metronome: boolean;
+  /**
+   * Count every notated unit rather than only the main beats (§8).
+   *
+   * Session state, like `metronome` itself: it is how the reader is
+   * *listening* right now, not something about the song, so it never reaches
+   * the Song, the history or a project file. A reload starts on main beats,
+   * which is the beginner default.
+   */
+  metronomeSubdivisions: boolean;
   progress: LoadProgress | null;
   error: string | null;
   /**
@@ -241,6 +251,7 @@ export class PlaybackController {
       countInBars: DEFAULT_COUNT_IN,
       countingIn: false,
       metronome: false,
+      metronomeSubdivisions: false,
       progress: null,
       error: null,
       silentTrackNotice: null,
@@ -346,6 +357,7 @@ export class PlaybackController {
 
     scheduleSong(engine, this.tempoMap(), {
       metronomeEnabled: () => this.state.metronome,
+      metronomeSubdivisions: () => this.state.metronomeSubdivisions,
       onEnded: () => this.handleEnded(),
     });
 
@@ -515,6 +527,7 @@ export class PlaybackController {
               firstBar,
               bpm: this.state.songBpm,
               practicePercent: this.state.practicePercent,
+              subdivisions: this.state.metronomeSubdivisions,
             };
       const wait = input === null ? 0 : countInSeconds(input);
 
@@ -530,10 +543,13 @@ export class PlaybackController {
          * a scheduled attack does not consult anything when it fires.
          */
         for (const beat of countInClicks(input)) {
+          /* The same three levels the bars after it use, from the same
+             table: a count-in that counted flat would teach a pulse the
+             music does not have (§8, §9). */
           click.triggerAttackRelease(
             0.02,
             now + (wait - beat.beforeSeconds),
-            beat.downbeat ? 1 : 0.55,
+            CLICK_GAIN[beat.strength],
           );
         }
         transport.start(now + wait);
@@ -922,6 +938,7 @@ export class PlaybackController {
   private rescheduleForSelection(engine: Engine, plan: SelectionPlaybackPlan) {
     scheduleSong(engine, this.tempoMap(), {
       metronomeEnabled: () => this.state.metronome,
+      metronomeSubdivisions: () => this.state.metronomeSubdivisions,
       onEnded: () => this.handleSelectionEnded(),
       window: {
         startTicks: plan.startTicks,
@@ -934,6 +951,7 @@ export class PlaybackController {
   private scheduleWholeSong(engine: Engine) {
     scheduleSong(engine, this.tempoMap(), {
       metronomeEnabled: () => this.state.metronome,
+      metronomeSubdivisions: () => this.state.metronomeSubdivisions,
       onEnded: () => this.handleEnded(),
     });
   }
@@ -1037,6 +1055,18 @@ export class PlaybackController {
 
   setMetronome(on: boolean): void {
     this.set({ metronome: on });
+  }
+
+  /**
+   * Count every notated unit, or only the main beats (§8).
+   *
+   * Nothing is rescheduled and nothing is torn down: every pulse is already
+   * on the transport and each one asks this at the moment it fires, so a
+   * change made while the music is running lands on the next pulse and
+   * leaves nothing behind.
+   */
+  setMetronomeSubdivisions(on: boolean): void {
+    this.set({ metronomeSubdivisions: on });
   }
 
   /**

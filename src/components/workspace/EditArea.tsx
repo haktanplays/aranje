@@ -53,6 +53,7 @@ export function EditArea({
   composer,
   noteEditing,
   meterChange,
+  click,
   song,
   track,
   selection,
@@ -72,6 +73,8 @@ export function EditArea({
   composer: IntentComposer;
   noteEditing: NoteEditing;
   meterChange: MeterChangeHandle;
+  /** How closely the metronome counts, passed to the panel that offers it. */
+  click: React.ComponentProps<typeof ShelfPanels>["click"];
   song: Song;
   track: Track | undefined;
   selection: TimeSelection | null;
@@ -198,6 +201,7 @@ export function EditArea({
                   onApply={onApply}
                   onOpenPanel={setPanel}
                   meterChange={meterChange}
+                  click={click}
                 />
               )
             }
