@@ -75,7 +75,11 @@ export function dedupeName(existing: Iterable<string>, base: string): string {
  */
 export function numberedName(existing: Iterable<string>, role: string): string {
   let highest = 0;
-  const pattern = new RegExp(`^${role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?: (\\d+))?$`);
+  /* Two lines rather than one so each half can be broken on its own: the
+     escaping and the anchoring are separate rules, and a probe that can
+     only break both at once cannot say which is holding. */
+  const literal = role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`^${literal}(?: (\\d+))?$`);
   for (const name of existing) {
     const match = pattern.exec(name.trim());
     if (!match) continue;

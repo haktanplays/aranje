@@ -505,7 +505,15 @@ export function WorkspaceOverlays({
         onOpenProjectFile={() => overlays.open("project")}
         onNewSong={() => overlays.open("newSong")}
         onSongInfo={() => overlays.open("songInfo")}
-        onProjects={library.open}
+        /*
+         * Close before opening (2V-E.1 §18). The library is its own sheet;
+         * leaving this one up meant the reader saw the list appear behind a
+         * backdrop that then ate every tap meant for it.
+         */
+        onProjects={() => {
+          overlays.close();
+          library.open();
+        }}
       />
     </>
   );

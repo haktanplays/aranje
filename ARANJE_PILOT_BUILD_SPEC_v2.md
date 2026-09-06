@@ -4919,6 +4919,77 @@ sessiz yüzde onundan ölçer, eşiği ondan türetir ve hiçbir onset bulamazsa
 koşumu düşürür. Bar sınırı toleransı da ölçülür — tek bir notanın kendi
 atağı: eşiği **+6,1 ms**, tepesi **+66,6 ms** sonra geçer.
 
+### §13.43 İlk parça döngüsü (2V-E.1)
+
+#### §13.43.1 Uygulamanın ön kapısı vardır
+
+Uygulama bir **Home** ekranıyla açılır. Cihazda hiçbir şey yoksa Home boştur ve
+tek bir baskın CTA taşır: `Yeni parça`. Demo şarkı, eval fixture'ı veya
+`project-1` **kendiliğinden açılmaz**; boş bir cihazda migration hiçbir şey
+yazmaz. İlk proje okuyucu dokunana kadar yaratılmaz ve id'si taranarak
+tahsis edilir, sabit değildir.
+
+Kartlarda yalnız müzik görünür: ad, ton, tempo, ölçü işareti, enstrüman ve
+bölüm sayısı, son düzenleme. **Raw id, revision, hash veya storage anahtarı
+hiçbir yüzeyde görünmez.**
+
+#### §13.43.2 Bir şarkı, müziğin yazıldığı yüzeyde açılır
+
+`openingView(song)` tek otoritedir: içinde hiçbir nota olmayan şarkı **Tab**'da
+açılır, müziği olan şarkı 13.10'un dediği gibi **Düzen**'de. Kural müzik
+hakkındadır, an hakkında değil — "bu proje az önce mi yaratıldı" bayrağı
+yoktur, çünkü hâlâ boş olan bir şarkıya ikinci gelişte de aynı cevap doğrudur.
+
+Gerekçe ölçülmüştür: Düzen, bölüm gezgini ile track kontrolünü bilerek
+taşımaz (her bölümü zaten çizer). Yeni yaratılmış şarkı Düzen'de açıldığında
+okuyucu, uygulamanın müzik yazmaya açılan hiçbir kapısı olmayan tek odasında
+duruyordu.
+
+#### §13.43.3 Bölümün uzunluğu yaratıldıktan sonra da değişir
+
+`set_section_bar_count` bir bölümün ölçü sayısını **tam sayı olarak** söyler;
+"bir ekle"/"bir çıkar" değil, çünkü okuyucunun sorusu budur. Büyütme, bölümün
+**son ölçüsünün** şeklini alan sessiz ölçüler ekler (şarkının varsayılanını
+değil). Küçültme sondan atar ve **atmadan önce kaç ölçülük müziğin sileneceğini
+söyler**.
+
+`songLimits.totalBars` 32'den **64**'e çıkmıştır. `barsPerSection` **8'de
+kalmıştır** ve gerekçesi ölçülmüştür, ihtiyat değildir: Copilot prompt'unun en
+kötü hâli yoğun yazılmış tek bir bölümdür ve 64 ölçülük bir bölümde **8412
+token** eder — K-32'den beri 8000'e sabitlenmiş tavanın üstünde.
+
+#### §13.43.4 Bir track'in adı rolüdür, enstrümanı değil
+
+Okuyucunun eklediği track, şablonun verdiği "Gitar 1"in yanında **"Gitar 2"**
+olur. `trackRoleName` rolü adlandırır; `numberedName` şablonun başlattığı
+seriyi sürdürür — `dedupeName` bunu yapamaz, çünkü "Gitar 1"in yanında çıplak
+"Gitar" döndürür ve şarkı iki farklı adlandırma şemasıyla kalır.
+
+#### §13.43.5 Bir sheet diğerinin altında açılmaz
+
+Bir yüzey ikinci bir tam ekran sheet açıyorsa **önce kendisi kapanır**.
+Uygulamanın elle yazılmış tek sheet'i (şarkı menüsü) paylaşılan `Sheet`
+kabuğuna taşınmıştır; Escape'i kapatmayan tek sheet oydu ve "Projeler"e
+dokunan okuyucu kütüphaneyi, her dokunuşu yutan bir backdrop'un **altında**
+açılmış buluyordu.
+
+Başlıktaki ⓘ artık **"Şarkı menüsü: dışa aktar, yedekle, şarkı bilgileri"**
+der. Eskiden "Ses kaynakları ve lisans" diyordu — arkasındaki son şeyi
+adlandırıp ilkini saklıyordu, ve `Dışa aktar` arayan kimse ses kaynakları
+hakkında bir sheet açmaz.
+
+#### §13.43.6 Probe sayısı bir sayı değil, bir iddiadır
+
+`vitest -t` hiçbir teste uymadığında **0 ile çıkar**. Adı yanlış yazılmış bir
+teste nişan alan probe, bu yüzden *tutan bir guard* gibi raporlanır — bu
+probe'ların yakalamak için var olduğu kusurun ta kendisi, probe üniformasıyla.
+`eval/first-song/probes.sh` bunu ayrı bir sonuç olarak sayar
+(`NO-TEST-MATCHED`) ve paketin ilk çalıştırmasında yirmi dört tanesi vardı.
+
+İki guard'ın birden yakaladığı bir mutasyon hangisinin tuttuğunu söyleyemez;
+öyle probe'lar pakete alınmaz ve **adlarıyla birlikte** neden çıkarıldıkları
+yazılır. Sayıyı dolduran probe, hiç probe olmamasından kötüdür.
+
 ### §13.42 Bir notanın hangi kayıttan çaldığı (2V-D.2 gain parity)
 
 #### §13.42.1 İki seçici, tek kural
@@ -5340,6 +5411,7 @@ maliyettir** (§11.2/7).
 | **K-73** | **On sayının eşit olması bir otorite değildir; ve üç click ölçünün tamamı değildir (2V-D.2).** İki düzeltme bu turun ritim işini taşıdı. **Birincisi:** on modül bar uzunluğunu kendi çarpıyordu ve bir test hepsinin eşit olduğunu söylüyordu — eşitlik, on birinci çağıranın uymak zorunda olduğu bir otorite değildir. `ticksPerBar` metre+grid alıyordu, on çağıranın hepsi elinde *bar* tutuyordu; `barTicks(bar)` istedikleri şekildi, hepsi ona geçti ve grep artık eski ifadenin **yokluğunu** tutuyor. **İkincisi:** «7/8 üç eşit olmayan click» ana vuruş katmanı için doğru, ölçünün içeriği için yanlıştır — 7/8'de yedi sekizlik vardır. `meterBeats` ana vuruşları, `meterPulses` bütün nota değerlerini rolleriyle verir; ikisi birbirinden türer, `readRhythm` ana vuruş sayısını ve alt bölünme satırını birlikte taşır, Pro alt bölünmeyi açtığında ana vuruşlar aynı tick'te kalır. **Üçüncü karar: ölçülen şey yazılmaz.** 6/8 + 1/16 üçleme mevcut 48 lattice'inde zaten tamdı (576 tick, `gcd(48,32)=16`) ve saklanan BPM zaten dörtlüktü — ikisi de **inşa edilmedi**, yalnız okundu ve söylendi. **Dördüncü: MIDI'de gruplama kaybolur ve bu açıkça yazılır**; `2+2+3` ile `3+2+2` birebir aynı meta event'leri üretir, bunu bağımsız bir parser doğrular, özel marker yazılmaz. **Beşinci: bir flake'in belirtisi süre değildi.** `crypto.subtle.digest` libuv'da başlatılma sırasında çözülmüyor (boşta %3,3, yük altında %7,7); test *hangi* çağıranın kazandığını varsayıyordu. `Promise.race` ile iddia gerçek haline döndü, timeout yükseltilmedi, iki assertion eklendi, 30 ardışık yeşil (p50 2150 ms / p95 2300 ms). **Ölçülen sınır:** WAV'ın PCM onset'leri bu ortamda ölçülemedi; bar sınırı tablosu üretim planlayıcılarından çıkarıldı ve PCM doğrulaması **açık borç** olarak yazıldı. | **L30 6/8 içinde hızlı üçleme · L31 aynı riff iki gruplama (metronomsuz) · L32 farklı ölçüler arasında riff devamı** |
 | **K-74** | **Bir kartın reddi, ölçülmemiş bir kusurun adıdır (2V-D.2 completion, gain parity turunda düzeltildi).** Founder L31'e «İkisi arasında belirgin bir fark yok» dedi ve haklıydı — iki ayrı sebeple. **Birincisi ürün:** aynı yazılı nota, yalnız accent taşıyıp taşımamasına göre **farklı kayıttan** çalıyordu. Articulation'sız nota paylaşılan `Tone.Sampler`'ın seçtiği kaydı, articulation'lı nota `nearestSample`'ın seçtiğini alıyor; iki seçicinin beraberlik kuralı zıttı (`nearestSample` aşağı, sampler yukarı). Gitar pack'inde tam ortada kalan iki perde vardır — **D3 ve D4** — ve L31 tel 1 perde 5, yani **D3** üzerine yazılmıştır. **c1'in «sabit 9,92 dB routing farkı» sonucu yanlıştı ve ölçümle çürütüldü:** grafiğin beş aşamasının hepsinde iki yol **×1,000 — 0,000 dB**; o sayı, onset'ten 25 ms'lik bir pencerenin (pack tepesine 66 ms'de çıkar) hızlandırılmış kaydı fazla okumasıydı — D3'te tepe farkı 0,655 dB, ilk 25 ms farkı 13,804 dB. **İkincisi fixture:** 5-6-7-5-6-7-5 konturu her üç notada tekrar ediyor ve kendi gruplamasını dayatıyor. **Düzeltme merkezîdir ve telafi değildir:** `nearestSample` artık sampler'ın seçimini bildirir (beraberlikte yukarıdaki kayıt), çünkü düz yol founder'ın L1'de kulakla geçirdiği yoldur. Sonrasında 25 yarım sesin 0'ı ayrışır. Ölçülen kontrat: `accent > plain > ghost`, `accent ÷ ghost = ×2,6222 = +8,373 dB` — preset'lerin ilan ettiği oranın kendisi. **Ve gerçek PCM ölçülüyor:** `renderSongToBuffer` tarayıcıda koşuyor, detector yalnız buffer'ı görüyor, tolerans tek notanın kendi atağından (+6,1 ms eşik, +66,6 ms tepe) türetiliyor. | **L33 aynı riff iki gruplama, L34 düz/vurgulu/hayalet, L35 ifade dengesi** |
 | **K-75** | **Bir kayıt seçici, iki yol (2V-D.2 gain parity).** Paylaşılan `Tone.Sampler` kaydını kendisi seçer ve dışarıdan yönlendirilemez; expressive voice `nearestSample`'a sorar. İkisi ayrı karar verdiği sürece aynı yazılı nota, yalnız articulation taşıyıp taşımamasına göre başka bir kayıttan çalar. **Karar: `nearestSample` sampler'ın seçimini bildirir** — beraberlikte yukarıdaki kayıt kazanır — çünkü düz yol founder'ın L1'de kulakla geçirdiği yoldur ve onu kaydırmak kayıtlı bir kararı olan sesi yeniden seviyelendirmek olurdu. Telafi sabiti, per-kart gain, preset yeniden kalibrasyonu ve sample asset düzenlemesi yasaktır. Ölçülen kontrat: iki yol grafiğin beş aşamasında da ×1,000 — 0,000 dB, `accent > plain > ghost`, `accent ÷ ghost = ×2,6222 = +8,373 dB`. **Ve bir SETUP-FAIL red değildir:** aradığı satır kaynakta olmayan probe hiçbir istatistikte kırmızı sayılmaz. | **L34 düz/vurgulu/hayalet sırası, L35 ifade eklenince seviye** |
+| **K-76** | **Uygulamanın ön kapısı ve ilk parça döngüsü (2V-E.1).** Uygulama tek ekranlı olduğu için *bir şeyle* açılmak zorundaydı ve demo şarkıyı okuyucunun kendi kütüphanesine `project-1` olarak taşıyordu — ilk projesinin alacağı id. **Karar: Home eklendi**, boş cihazda migration hiçbir şey yazmaz, ilk projenin id'si taranarak tahsis edilir. **İkinci karar: içinde nota olmayan şarkı Tab'da açılır** — Düzen bölüm gezgini ile track kontrolünü taşımaz, ve yeni şarkı orada açıldığında okuyucu müzik yazmaya açılan hiçbir kapısı olmayan odada duruyordu. **Üçüncü karar: `totalBars` 32→64, `barsPerSection` 8'de kalır** — 64 ölçülük bölümde Copilot prompt'unun en kötü hâli 8412 token, K-32 tavanı 8000. Daha uzun bir bölüm satın almak founder kararıdır ve rapora adıyla yazılmıştır. | **Fiziksel kabul istenmiyor: yeni audible engine davranışı yok** |
 
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler

@@ -1,7 +1,7 @@
 "use client";
 
+import { Sheet } from "@/components/workspace/Sheet";
 import { SAMPLE_LICENSE, totalSampleBytes } from "@/lib/audio/packs";
-import { BRAND_NAME } from "@/lib/brand";
 
 /**
  * Where the sample attribution lives in the running app. CC BY requires the
@@ -35,23 +35,35 @@ export function InfoSheet({
   /** The project library — the second door onto it, beside the header title. */
   onProjects: () => void;
 }) {
-  if (!open) return null;
-
   const kib = Math.round(totalSampleBytes() / 1024);
 
+  /*
+   * The shared `Sheet`, since 2V-E.1 §18.
+   *
+   * It was the one hand-rolled sheet in the app, and it was the only one
+   * Escape did not close — which the first journey walk found the hard way:
+   * a reader who taps "Projeler" gets the library opened *underneath* this
+   * one, and this one's backdrop then swallows every tap meant for it. The
+   * handoff below closes this sheet first; using the shared shell is what
+   * stops the next hand-rolled overlay from repeating the rest of it.
+   */
   return (
-    <div className="fixed inset-0 z-30 flex flex-col justify-end">
-      <button
-        type="button"
-        aria-label="Kapat"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/60"
-      />
-      <section className="bg-panel relative max-h-[80dvh] overflow-y-auto rounded-t-2xl border-t border-line px-4 pt-3 pb-6">
-        <div className="bg-line mx-auto mb-3 h-1 w-10 rounded-full" />
-        <h2 className="font-display mb-1 text-lg">{BRAND_NAME}</h2>
-        <p className="text-muted mb-4 text-xs">Şarkı menüsü</p>
-
+    <Sheet
+      open={open}
+      title="Şarkı menüsü"
+      onClose={onClose}
+      labelledBy="song-menu-sheet-title"
+      footer={
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-muted min-h-11 w-full rounded-lg border border-line text-sm"
+        >
+          Kapat
+        </button>
+      }
+    >
+      <div className="px-4">
         {/* The project file lives behind the info control on purpose: it is
             something done a few times a project, not something worth a
             permanent slice of a phone screen (spec 13.15). */}
@@ -177,15 +189,7 @@ export function InfoSheet({
             </dd>
           </div>
         </dl>
-
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-muted mt-4 min-h-11 w-full rounded-lg border border-line text-sm"
-        >
-          Kapat
-        </button>
-      </section>
-    </div>
+      </div>
+    </Sheet>
   );
 }

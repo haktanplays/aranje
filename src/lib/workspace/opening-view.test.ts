@@ -6,6 +6,8 @@
  * track and section step reaching nothing, because the freshly created song
  * opened on the arrangement and the arrangement carries neither door.
  */
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { isUntouched, openingView } from "@/lib/workspace/opening-view";
@@ -111,5 +113,27 @@ describe("404. a song with music in it", () => {
     const later: Song = { ...song, sections: [first, written.sections[0]!] };
     expect(isUntouched(later)).toBe(false);
     expect(openingView(later)).toBe("arrange");
+  });
+});
+
+describe("410. the workspace asks rather than deciding for itself", () => {
+  /*
+   * Read off the source, because the rule is only worth anything if the
+   * navigation hook actually calls it. A pure function nobody asks is a
+   * pure function that opens the wrong surface.
+   */
+  const source = readFileSync("src/lib/workspace/use-workspace-navigation.ts", "utf8");
+
+  it("imports the opening view rather than naming a surface", () => {
+    expect(source).toContain('from "@/lib/workspace/opening-view"');
+  });
+
+  it("initialises the view from the song it was given", () => {
+    expect(source).toContain("useState<WorkspaceView>(() => openingView(song))");
+  });
+
+  it("does not open on a hard-coded surface at mount", () => {
+    expect(source).not.toContain('useState<WorkspaceView>("arrange")');
+    expect(source).not.toContain('useState<WorkspaceView>("tab")');
   });
 });

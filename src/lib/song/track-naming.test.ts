@@ -74,6 +74,16 @@ describe("409. the number after it", () => {
     expect(numberedName(["Gitar solosu"], "Gitar")).toBe("Gitar 1");
   });
 
+  /*
+   * The other anchor, and it needs its own case: "Solo Gitar 2" *ends* the
+   * way a numbered guitar does. Without the leading anchor it would be read
+   * as the second guitar and the next one would come out "Gitar 3", beside
+   * a song that has no Gitar 1 or 2 in it at all.
+   */
+  it("ignores a name that only ends like the role", () => {
+    expect(numberedName(["Solo Gitar 2"], "Gitar")).toBe("Gitar 1");
+  });
+
   it("treats a role with regex characters as text", () => {
     expect(numberedName(["Gitar (sol) 2"], "Gitar (sol)")).toBe("Gitar (sol) 3");
   });
