@@ -629,6 +629,163 @@ export async function techniqueOrdering(
   return out;
 }
 
+/* ------------------------------------------------ headroom and repeatability */
+
+export type HeadroomCase = {
+  readonly name: string;
+  readonly voices: number;
+  readonly peak: number;
+  readonly peakDb: number;
+  readonly clipped: number;
+  readonly nonFinite: number;
+};
+
+/**
+ * The loudest thing the fix can be asked to render, and a plain control.
+ *
+ * Six expressive voices struck together is the worst case the expressive path
+ * has: every voice is its own gain into the same bus, so they sum. The plain
+ * chord beside it says whether the two are still each other's neighbours.
+ */
+export async function headroom(): Promise<readonly HeadroomCase[] | null> {
+  const track = SAMPLE_SONG.tracks.find((entry) => entry.fretboard !== undefined);
+  const fretboard = track?.fretboard;
+  const section = SAMPLE_SONG.sections[0];
+  if (!track || !fretboard || !section) return null;
+
+  const strings = [0, 1, 2, 3, 4, 5];
+  const cases: { name: string; attack: NoteEvent["attack"] | null }[] = [
+    { name: "six plain", attack: null },
+    { name: "six accented", attack: "accent" },
+    { name: "six ghosted", attack: "ghost" },
+  ];
+
+  const out: HeadroomCase[] = [];
+  for (const entry of cases) {
+    const notes: NoteEvent[] = [];
+    for (const stringIndex of strings) {
+      const pitch = pitchAt(fretboard, stringIndex, 5);
+      if (pitch === null) continue;
+      notes.push({
+        pitch,
+        position: { string: stringIndex, fret: 5 },
+        ...(entry.attack === null ? {} : { attack: entry.attack }),
+      } as NoteEvent);
+    }
+    const lane: MelodicSlot[] = Array.from({ length: 8 }, () => null);
+    lane[0] = { notes };
+    const slots: Record<string, MelodicSlot[] | DrumSlot[]> = {};
+    for (const other of SAMPLE_SONG.tracks) {
+      const existing = section.bars[0]?.slots[other.id];
+      slots[other.id] =
+        existing && isDrumSlotArray(existing)
+          ? Array.from({ length: 8 }, () => [] as DrumSlot)
+          : Array.from({ length: 8 }, () => null as MelodicSlot);
+    }
+    slots[track.id] = lane;
+    const staged = settle({
+      ...SAMPLE_SONG,
+      sections: [
+        { ...section, bars: [{ timeSignature: [4, 4], resolution: 8, slots } as Bar] },
+      ],
+    });
+    if (!staged.ok) return null;
+    const rendered = await renderSongToBuffer(staged.song, {
+      audibleTrackIds: [track.id],
+    });
+    const peak = peakOf(rendered.channels);
+    out.push({
+      name: entry.name,
+      voices: notes.length,
+      peak: round(peak),
+      peakDb: dbfs(peak),
+      clipped: rendered.channels.reduce(
+        (total, channel) =>
+          total + channel.reduce((count, value) => count + (Math.abs(value) > 1 ? 1 : 0), 0),
+        0,
+      ),
+      nonFinite: rendered.channels.reduce(
+        (total, channel) =>
+          total + channel.reduce((count, value) => count + (Number.isFinite(value) ? 0 : 1), 0),
+        0,
+      ),
+    });
+  }
+  return out;
+}
+
+export type RepeatStability = {
+  readonly runs: readonly { readonly peak: number; readonly rms: number }[];
+  readonly peakSpreadDb: number;
+  readonly rmsSpreadDb: number;
+  readonly activeAfterDispose: readonly number[];
+};
+
+/**
+ * The same music, rendered three times.
+ *
+ * A graph that gained a connection on each play, or a pool that kept a voice,
+ * would show up here as a rising peak rather than as a flat one.
+ */
+export async function repeatStability(): Promise<RepeatStability | null> {
+  const track = SAMPLE_SONG.tracks.find((entry) => entry.fretboard !== undefined);
+  const fretboard = track?.fretboard;
+  const section = SAMPLE_SONG.sections[0];
+  if (!track || !fretboard || !section) return null;
+  const pitch = pitchAt(fretboard, ORDERING_STRING, 5);
+  if (pitch === null) return null;
+
+  const lane: MelodicSlot[] = Array.from({ length: 8 }, (_unused, index) => ({
+    notes: [
+      {
+        pitch,
+        position: { string: ORDERING_STRING, fret: 5 },
+        ...(index % 2 === 0 ? { attack: "accent" as const } : {}),
+      } as NoteEvent,
+    ],
+  }));
+  const slots: Record<string, MelodicSlot[] | DrumSlot[]> = {};
+  for (const other of SAMPLE_SONG.tracks) {
+    const existing = section.bars[0]?.slots[other.id];
+    slots[other.id] =
+      existing && isDrumSlotArray(existing)
+        ? Array.from({ length: 8 }, () => [] as DrumSlot)
+        : Array.from({ length: 8 }, () => null as MelodicSlot);
+  }
+  slots[track.id] = lane;
+  const staged = settle({
+    ...SAMPLE_SONG,
+    sections: [
+      { ...section, bars: [{ timeSignature: [4, 4], resolution: 8, slots } as Bar] },
+    ],
+  });
+  if (!staged.ok) return null;
+
+  const runs: { peak: number; rms: number }[] = [];
+  const activeAfterDispose: number[] = [];
+  for (let run = 0; run < 3; run += 1) {
+    const rendered = await renderSongToBuffer(staged.song, {
+      audibleTrackIds: [track.id],
+    });
+    runs.push({
+      peak: round(peakOf(rendered.channels)),
+      rms: round(rmsOf(rendered.channels, 0, rendered.frames)),
+    });
+    activeAfterDispose.push(rendered.activeAfterDispose);
+  }
+  const spread = (values: readonly number[]): number => {
+    const low = Math.min(...values);
+    const high = Math.max(...values);
+    return low <= 0 ? Number.NaN : round(20 * Math.log10(high / low), 4);
+  };
+  return {
+    runs,
+    peakSpreadDb: spread(runs.map((run) => run.peak)),
+    rmsSpreadDb: spread(runs.map((run) => run.rms)),
+    activeAfterDispose,
+  };
+}
+
 declare global {
   interface Window {
     AranjeParityRender: {
@@ -636,10 +793,19 @@ declare global {
       sampleChoices: typeof sampleChoices;
       pitchSweep: typeof pitchSweep;
       techniqueOrdering: typeof techniqueOrdering;
+      headroom: typeof headroom;
+      repeatStability: typeof repeatStability;
     };
   }
 }
 
 if (typeof window !== "undefined") {
-  window.AranjeParityRender = { neutralParity, sampleChoices, pitchSweep, techniqueOrdering };
+  window.AranjeParityRender = {
+    neutralParity,
+    sampleChoices,
+    pitchSweep,
+    techniqueOrdering,
+    headroom,
+    repeatStability,
+  };
 }

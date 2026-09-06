@@ -21,11 +21,31 @@ export function sampleEntries(noteNames: readonly string[]): SampleEntry[] {
 }
 
 /**
- * The closest recording to a wanted pitch.
+ * The recording a note sounds from — the shared sampler's choice, reported.
  *
- * A tie goes to the **lower** sample, so a note between two recordings is
- * played up rather than down: stretching a sample upwards keeps more of its
- * attack than slowing it down does.
+ * ## Why the tie goes up
+ *
+ * This is not a free decision. A note without an articulation is played by
+ * the track's shared `Tone.Sampler`, which picks its own recording and cannot
+ * be told which one to use; a note that carries one is played by an
+ * expressive voice, which reads this function. So whatever this returns for a
+ * pitch **must** be what the sampler would have played for it, or the same
+ * written note comes from a different recording — a different attack, a
+ * different stretch and a different timbre — depending on whether it happens
+ * to carry an accent.
+ *
+ * The sampler searches outwards from the wanted pitch and looks *above* it
+ * first, so on a tie it plays the higher recording slowed down. This does the
+ * same. The earlier rule here preferred the lower one — a defensible
+ * preference in isolation, and one that made the two paths disagree on every
+ * pitch exactly between two recordings. On this app's guitar pack that is D3
+ * and D4, and D3 is the pitch the L31 listening card was written on
+ * (2V-D.2 gain parity §4).
+ *
+ * The sampler is the authority rather than the other way round because the
+ * plain path is the one the founder has already passed by ear (L1), and a
+ * fix that moved *it* would be re-levelling audio that has a recorded
+ * verdict.
  */
 export function nearestSample(
   entries: readonly SampleEntry[],
@@ -36,7 +56,11 @@ export function nearestSample(
 
   for (const entry of entries) {
     const distance = Math.abs(entry.midi - midi);
-    if (distance < bestDistance) {
+    // Stated rather than left to the order the entries arrive in: an equally
+    // close recording only wins if it is the higher one.
+    const closer = distance < bestDistance;
+    const higherOnATie = distance === bestDistance && entry.midi > (best?.midi ?? -Infinity);
+    if (closer || higherOnATie) {
       best = entry;
       bestDistance = distance;
     }

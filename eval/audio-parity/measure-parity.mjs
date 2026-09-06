@@ -79,9 +79,25 @@ for (const fret of [5, 3]) {
   }
 }
 
+const head = await page.evaluate(() => window.AranjeParityRender.headroom());
+console.log("\n  headroom, six voices struck together:");
+for (const row of head ?? []) {
+  console.log(
+    `  ${row.name.padEnd(13)} voices ${row.voices}  peak ${row.peak} (${row.peakDb} dBFS)` +
+      `  clipped ${row.clipped}  non-finite ${row.nonFinite}`,
+  );
+}
+
+const repeat = await page.evaluate(() => window.AranjeParityRender.repeatStability());
+console.log("\n  the same music three times:");
+console.log(
+  `  peaks ${(repeat?.runs ?? []).map((r) => r.peak).join(", ")}  spread ${repeat?.peakSpreadDb} dB` +
+    `  | rms spread ${repeat?.rmsSpreadDb} dB  | active after dispose ${(repeat?.activeAfterDispose ?? []).join(", ")}`,
+);
+
 await browser.close();
 writeFileSync(
   `${OUT}/PARITY.json`,
-  `${JSON.stringify({ generatedAt: new Date().toISOString(), pageErrors: errors, report, choices, sweep, ordering }, null, 2)}\n`,
+  `${JSON.stringify({ generatedAt: new Date().toISOString(), pageErrors: errors, report, choices, sweep, ordering, head, repeat }, null, 2)}\n`,
 );
 console.log(`\npage errors: ${errors.length}`);
