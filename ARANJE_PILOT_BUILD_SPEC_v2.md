@@ -4820,6 +4820,87 @@ iki take'in perdeleri, süreleri, bar uzunluğu ve tempoları aynıdır. Otomati
 hiçbir test veremez.
 
 
+### §13.41 D.2 kapanışı: L31'in reddi ve ne öğrettiği (2V-D.2 completion)
+
+#### §13.41.1 Founder kararı, değişmez
+
+L30 **PASS**. L32 **PASS**. L31 **FAIL** — «İkisi arasında belirgin bir fark
+yok». Bu üçü bir daha sorulmaz; L31 satırı yumuşatılmaz, silinmez ve daha
+sonraki hiçbir kartın sonucuyla üzerine yazılmaz. Arşiv bu turda ilk kez bir
+`fail` verdict'i taşır ve etiketinin adı **Olmamış**'tır.
+
+#### §13.41.2 L31'in kök nedeni: plan ile render aynı şeyi söylemiyor
+
+Fixture suçsuzdu — vurgular doğru tick'lerde, iki take yalnız yerlerinde
+farklı, plan `1.18`'i birebir uyguluyor. Kusur render'da:
+
+| | plan gain | plan zarfı | PCM tepe | dBFS |
+|---|---|---|---|---|
+| vurgusuz | 0,755906 | *(yok)* | 0,0353 | −29,0 |
+| vurgulu | 0,755906 | 0,891969 | 0,1307 | −17,7 |
+
+Preset **+1,44 dB** diyor, render **+11,4 dB** veriyor. Fark **×3,133**. Aynı
+ölçüm `ghost` ile (preset ×0,45) **×1,410** veriyor ve `1,410 / 0,45 = 3,133`
+— üç ondalığa kadar aynı sabit. Herhangi bir attack taşıyan nota kendi
+sesiyle (`expressive`) çalınır, taşımayan paylaşılan sampler'a gider ve iki
+yol aynı nominal gain için **9,92 dB** ayrıdır.
+
+L31'in sonucu bu yüzden: vurgusuz sekizlikler vurguluların o kadar altına
+düşüyor ki **nabız olmaktan çıkıyorlar**, ve nabız yoksa `2+2+3` ile `3+2+2`
+arasında duyulacak bir fark da yoktur.
+
+#### §13.41.3 İkinci kusur fixture'daydı
+
+L31'in riffi 5-6-7-5-6-7-5 perdeleriyle gidiyordu. Bu kontur her üç notada
+bir tekrar eder ve kendi gruplamasını önerir — üstelik iki hisle de
+uyuşmayan bir gruplama. Perde deseni, seviye farkından çok daha güçlü bir
+gruplama ipucudur.
+
+#### §13.41.4 Yol farkı bu turda düzeltilmedi ve bu açıkça yazıldı
+
+İki yolu eşitlemek tek sabitlik bir değişikliktir ve blast radius'u çok
+geniştir: uygulamadaki her tekniği, aralarında founder'ın zaten karar verdiği
+L25, L26, L27, L28 ve L29'u da kaydırır. Onaylanmış sesi bir kapanış turunda
+sessizce yeniden yazmak düzeltme değildir. Sayı, onu üreten kontrol ve
+yeniden üretim komutu `eval/rhythm-grid/L31-ROOT-CAUSE.md` içinde **birinci
+açık borç** olarak durur.
+
+#### §13.41.5 L33: aynı soru, kusursuz fixture
+
+- **Tek tekrar eden perde** — konturun kendi gruplamasını önerememesi için.
+- **Her sekizlik yazılmış**: grup başları `accent`, diğerleri `ghost`. Böylece
+  iki tür de aynı render yolundan geçer ve dinleyicinin karşılaştırdığı oran
+  preset'lerin sahip olduğu orandır.
+- Her iki take'te üç vurgu, dört ghost, aynı perde, aynı onset, aynı toplam
+  gürlük; yalnız vurgu yerleri farklı. Ölçülen: **+8,33 dB** ve **+8,29 dB**.
+
+Gruplama metadata'sı hâlâ hiçbir notayı kendiliğinden vurgulamaz. L33 bunu
+**açıkça yazılmış** accent davranışının gösterimidir, metadata'nın kendisinin
+duyulduğu iddiası değil.
+
+#### §13.41.6 Pro metronom: ateşlenirken okunur
+
+Motorun `metronomeSubdivisions` yeteneği artık Pro panelinde iki cümleyle
+sunuluyor: «Yalnız ana vuruşlar» ve «Tüm sekizlikleri duy», altında yalnız
+doğru olduğunda «Grup başları daha güçlü, diğer sekizlikler daha hafif
+çalar.» 4/4'te ana vuruşlar zaten notasal birimlerdir, o yüzden cümle yoktur.
+
+Her pulse koşulsuz schedule edilir ve *ince click'in çalıp çalmayacağı*
+ateşlendiği anda sorulur — `metronomeEnabled` için zaten öyleydi. Bu üç şeyi
+birden verir: değişiklik bir sonraki pulse'ta iner, bayat click kalmaz, ve
+ana vuruşlar anahtarın iki konumunda da aynı tick ve aynı güçte kalır.
+Count-in aynı seçimi ve aynı üç gürlüğü okur; 7/8'de hâlâ bir-iki-üç sayar.
+Seçim session state'tir: Song'a, history'ye ve projeye hiç dokunmaz.
+
+#### §13.41.7 Gerçek PCM artık ölçülüyor
+
+`renderSongToBuffer` export düğmesinin kendi renderer'ıdır ve tarayıcıda
+çalışır; c3'te açık borç bırakılan «render edilmiş PCM» yarısı bu turda
+kapandı. Onset detector'ı yalnız buffer'ı görür: gürültü tabanını dosyanın en
+sessiz yüzde onundan ölçer, eşiği ondan türetir ve hiçbir onset bulamazsa
+koşumu düşürür. Bar sınırı toleransı da ölçülür — tek bir notanın kendi
+atağı: eşiği **+6,1 ms**, tepesi **+66,6 ms** sonra geçer.
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)
@@ -5177,6 +5258,7 @@ maliyettir** (§11.2/7).
 | **K-71** | **Bir notaya beş eksen, tek enuma beş anlam yerine (2V-D.1).** `articulation` tek değer tutar ve dört soruyu birden yanıtlar; bu yüzden bir nota ya `accent` ya `bend_full` diyebiliyor, planlayıcı da ilk eşleşen dalda **return** ediyordu — vurgulu bir bend vurgusuz, üzerine bend yazılmış bir pinch armonik ise hiç kımıldamadan çalıyordu. **Üç opsiyonel alan, hiçbiri göç ettirmiyor:** `attack` (enum'ın yalnız «tel nasıl vuruldu» üyeleri; `normal` alanın yokluğu, `sustain`/`staccato` burada değil çünkü onlar süreyi söyler), `picking` (tek nota, aşağı/yukarı; akoru tarayan `strum`'dan ayrı) ve **`TechniqueSpan`** (palm mute ve let ring, tick aralığı + **tel kümesi**, section'da). **Span tel taşır çünkü teknik tel taşır:** el kenarıyla alt teller susturulurken üst tel üstünde çınlar, ve track-wide bir span yerine geçtiği nota bayrağından *daha az* şey söylerdi. Üyelik onset'e göre ve yarı açıktır — span'den önce başlamış bir ses geriye dönük susturulmaz, iki span aradaki anı paylaşmadan değebilir. Aynı track'te zamanda örtüşen **ve** tel paylaşan iki span reddedilir; farklı tellerdekiler serbestçe bir arada bulunur; değenler sessizce birleştirilmez. **Resolver beş eksenin tek otoritesi oldu** ve bir eksene iki cevap yalnız suçlu ekseni değil hepsini düşüren tipli bir rettir. **Legacy tek anda dönüşür:** zaten `palm_mute` taşıyan notaların üzerine span çizmek onu **tam olarak kapsanan** onset'lerde taşır, kapsanmayan hiçbir nota değişmez, ve iki yazım biçimi bir şarkıda doğru biçimde bir arada durur. **Atak artık bir katman:** seviye, uzunluk, filtre ve armonik için cent kayması, perde ekseninin ürettiğinin üzerine uygulanıyor; **cent'ler toplanır** çünkü ikisi de tek `playbackRate` üzerinde tek sayıya iner (bükülmüş pinch armonik 1900+200) ve bükülmüş armonik telin gerçekten bulunduğu perdeden tırmanır. Preset sayıları değişmedi. **Testler üç gerçek kusur buldu:** katman `isExpressive` kapısının altındaydı, yani yalnız yeni `attack` taşıyan bir nota yazılıp çiziliyor, dışa aktarılıyor ve **tamamen duyulmuyordu**; `LegatoOnset` ile `TabSpan` yeni eksenleri hiç taşımıyordu; ve `semanticSnapshot` ile `musicalFingerprint` «duyulabilen her şeyi» tuttuğunu söylerken **hiçbir ifade eksenini** içermiyordu — ölçüdeki her bendi düşüren bir transpoze «korundu» diye parmak izi veriyordu. **Pena yönü `notation_only`'dir** ve bunu bir test doğrudan söyler: gönderilen bank'te perde başına tek kayıt var, uygulama üretemeyeceği farkı ima etmiyor. **Doğrulama:** tam süit **5.382 test / 329 dosya**, tsc/lint/build temiz. **Satır bütçeleri yükseltilmedi.** **Kapsam dışı ve açıkça eksik:** birleşik tab notasyonu, beginner-first «Çalım» UI'ı, altı viewport geometri koşusu, copy/move/repeat/delete/transpose span bütünlüğü, MIDI/WAV disclosure, performans ölçümü ve **L27–L29 dinleme kartları yapılmadı**; palm-mute span'inin uzunluğu legacy notadan ~8 ms farklıdır (biri tick'te, öteki saniyede yuvarlanıyor) ve bu borç adıyla kayıtlıdır. **Bu turda founder'a kart sorulmuyor:** L25/L26 slide fazını kapattı ve yeni tur açılmadı. | **Kart yok; bir sonraki tur D.1'in üstüne kartları kuracak** |
 | **K-72** | **Ölçmeden yön varsayma; 8 ms bir yuvarlama değildi (2V-D.1-C).** D.1 kapanırken span'li palm mute legacy notadan 8 ms kısaydı ve bu «tick ile saniye arasındaki yuvarlama» diye kaydedilip `< 0.01` sınırıyla geçildi. Tam zaman çizgisi — yazılı tick, kapılanmış tick, planlanan saniye, zarf — üç olgu için yan yana ölçüldüğünde teşhis **cinsinden** yanlış çıktı: zaman çizgisi legacy enum'ı okuyarak tick'te kapılıyor, span'i göremiyor, planlayıcı da span'i ikinci kez kapılıyordu (`0.92 × 0.45` karşı `0.45`); `palmMuteSeconds` ise mutlak 180 ms tavandır, başka bir iş yapar ve o tempoda hiç bağlamaz. Zaman çizgisi tekniği artık kendisi çözer, planlayıcı tekrar kapılamaz, iki yazım **birebir** eşittir ve gerçek offline render de aynı şeyi söyler (0.01858 RMS / 107 ms sönüm; susturulmamış nota 0.03989 / 250 ms). **İkinci karar: span bir dikdörtgendir.** Copy/paste/move/repeat/delete/restring/şekil taşıma tek bir zaman × tel aritmetiğine (`span-rect`) dayanır; notalarını takip edemeyen span komutun tamamını reddeder (`span_scope_lost`); kesilen span parçalanır ve her kimlik türetilir, yani redo aynı byte'ları yazar; **üzerinde nota olmaması orphan değildir.** **Üçüncü karar: beş eksen tek sayfada.** `expression-marks` yazım dağarcığını bir kez adlandırır; span'li mute legacy mute ile **aynı koordinatlarda** ray çizer, let ring rayını kazanır, TabCanvas bütçesi yükseltilmedi. **Dördüncü karar: «Çalım» üç soru sorar** (Vuruş / Pena / Bölge boyunca), modal değildir, her seçim uygulanmadan önce apply'ın kendi komutundan gelen cümleyi gösterir, önizleme ve red store'a yazmaz. **Beşinci: pena yönü için ayrı bir dürüstlük cümlesi** — yazılır, duyulmaz. **Ölçülen sınır:** şema bir section'ı 8 span ile sınırlıyor, yani 8× bugün yazılabilen en yoğun şarkıdır; tavan değiştirilmedi, borç olarak yazıldı. **Doğrulama:** tam süit **5.538 test / 337 dosya**, tsc/lint temiz. | **L27 avuç susturma paritesi · L28 armonik + perde hareketi · L29 tek elde iki tel; pena kartı yok, çünkü iki vuruş hoparlörde aynıdır** |
 | **K-73** | **On sayının eşit olması bir otorite değildir; ve üç click ölçünün tamamı değildir (2V-D.2).** İki düzeltme bu turun ritim işini taşıdı. **Birincisi:** on modül bar uzunluğunu kendi çarpıyordu ve bir test hepsinin eşit olduğunu söylüyordu — eşitlik, on birinci çağıranın uymak zorunda olduğu bir otorite değildir. `ticksPerBar` metre+grid alıyordu, on çağıranın hepsi elinde *bar* tutuyordu; `barTicks(bar)` istedikleri şekildi, hepsi ona geçti ve grep artık eski ifadenin **yokluğunu** tutuyor. **İkincisi:** «7/8 üç eşit olmayan click» ana vuruş katmanı için doğru, ölçünün içeriği için yanlıştır — 7/8'de yedi sekizlik vardır. `meterBeats` ana vuruşları, `meterPulses` bütün nota değerlerini rolleriyle verir; ikisi birbirinden türer, `readRhythm` ana vuruş sayısını ve alt bölünme satırını birlikte taşır, Pro alt bölünmeyi açtığında ana vuruşlar aynı tick'te kalır. **Üçüncü karar: ölçülen şey yazılmaz.** 6/8 + 1/16 üçleme mevcut 48 lattice'inde zaten tamdı (576 tick, `gcd(48,32)=16`) ve saklanan BPM zaten dörtlüktü — ikisi de **inşa edilmedi**, yalnız okundu ve söylendi. **Dördüncü: MIDI'de gruplama kaybolur ve bu açıkça yazılır**; `2+2+3` ile `3+2+2` birebir aynı meta event'leri üretir, bunu bağımsız bir parser doğrular, özel marker yazılmaz. **Beşinci: bir flake'in belirtisi süre değildi.** `crypto.subtle.digest` libuv'da başlatılma sırasında çözülmüyor (boşta %3,3, yük altında %7,7); test *hangi* çağıranın kazandığını varsayıyordu. `Promise.race` ile iddia gerçek haline döndü, timeout yükseltilmedi, iki assertion eklendi, 30 ardışık yeşil (p50 2150 ms / p95 2300 ms). **Ölçülen sınır:** WAV'ın PCM onset'leri bu ortamda ölçülemedi; bar sınırı tablosu üretim planlayıcılarından çıkarıldı ve PCM doğrulaması **açık borç** olarak yazıldı. | **L30 6/8 içinde hızlı üçleme · L31 aynı riff iki gruplama (metronomsuz) · L32 farklı ölçüler arasında riff devamı** |
+| **K-74** | **Bir kartın reddi, ölçülmemiş bir kusurun adıdır (2V-D.2 completion).** Founder L31'e «İkisi arasında belirgin bir fark yok» dedi ve haklıydı — hem de iki ayrı sebeple. **Birincisi ürün:** preset accent'i ×1,18 (+1,44 dB) ilan ediyor, render ×3,70 (+11,4 dB) veriyor; aynı ölçüm `ghost` ile ×0,45 preset'e karşı ×1,410 veriyor ve oran **3,133** olarak birebir tekrar ediyor — attack taşıyan nota kendi sesiyle, taşımayan sampler'la çalınıyor ve iki yol **9,92 dB** ayrı. Sonuç: vurgusuz notalar nabız olmaktan çıkıyor, nabız yoksa gruplama da yok. **İkincisi fixture:** 5-6-7-5-6-7-5 konturu her üç notada tekrar ediyor ve kendi gruplamasını dayatıyor. **Karar: yol farkı bu turda düzeltilmedi.** Tek sabitlik bir değişiklik, founder'ın zaten onayladığı L25-L29 dâhil her tekniği kaydırırdı; onaylanmış ses bir kapanış turunda sessizce yeniden yazılmaz. Sayı ve yeniden üretim komutu **birinci açık borç** olarak yazıldı. **L33** aynı soruyu tek perde ve her sekizliği yazılmış (accent/ghost) bir riffle sorar; ölçülen fark **+8,33 / +8,29 dB**, üç vurgu dört ghost, aynı onset ve aynı toplam gürlük. **Ve gerçek PCM artık ölçülüyor:** `renderSongToBuffer` tarayıcıda koşuyor, detector yalnız buffer'ı görüyor, tolerans tek notanın kendi atağından (+6,1 ms eşik, +66,6 ms tepe) türetiliyor. | **L33 aynı riff, iki belirgin gruplama** |
 
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler

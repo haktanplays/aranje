@@ -128,6 +128,26 @@ describe("383. the switch is read when the click fires, not when it is scheduled
   });
 });
 
+describe("385. the setting is the listener's, and touches nothing else", () => {
+  const source = readFileSync("src/lib/audio/playback.ts", "utf8");
+
+  it("sets session state and writes no song", () => {
+    /*
+     * The whole of "a rehearsal preference is not an edit": the setter's body
+     * is one `set`, so there is no path from choosing how to count to a bar,
+     * a history step or a saved project.
+     */
+    const body = source.slice(
+      source.indexOf("setMetronomeSubdivisions(on: boolean): void {"),
+      source.indexOf("Change the practice speed"),
+    );
+    expect(body).toContain("this.set({ metronomeSubdivisions: on });");
+    expect(body).not.toContain("this.song");
+    expect(body).not.toContain("commit");
+    expect(body).not.toContain("history");
+  });
+});
+
 describe("382. the count-in reads the reader's own setting", () => {
   const bar: Bar = {
     timeSignature: [7, 8],
@@ -170,13 +190,19 @@ describe("382. the count-in reads the reader's own setting", () => {
   });
 
   it("ends every count-in exactly at the first tick, either way", () => {
+    /*
+     * Absolute, not relative to itself: 672 ticks of 7/8 at 120 bpm is
+     * 672 / 192 * (60 / 120) seconds, and the first click sits exactly that
+     * far ahead of the music. A count-in compared only with another
+     * count-in would happily drift as a pair.
+     */
+    const barSeconds = (672 / 192) * (60 / 120);
     for (const subdivisions of [false, true]) {
       const clicks = countInClicks({ ...input, subdivisions });
-      expect(clicks[0]?.beforeSeconds).toBeCloseTo(
-        countInClicks(input)[0]?.beforeSeconds ?? 0,
-        6,
-      );
-      expect(clicks[clicks.length - 1]?.beforeSeconds).toBeGreaterThan(0);
+      expect(clicks[0]?.beforeSeconds).toBeCloseTo(barSeconds, 9);
+      const last = clicks[clicks.length - 1]?.beforeSeconds ?? 0;
+      expect(last).toBeGreaterThan(0);
+      expect(last).toBeLessThan(barSeconds);
     }
   });
 });

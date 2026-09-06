@@ -493,6 +493,133 @@ const FLOWS = [
     },
   },
   {
+    name: "13-pro-click-row-writes-no-music",
+    run: async (page) => {
+      if (!(await openPanel(page, "meter"))) return null;
+      const before = await musicBytes(page);
+      const historyBefore = await historyView(page);
+      await press(page, "[data-shelf-secondary='meter-more']");
+      const row = await present(page, "[data-shelf-row='meter-click']");
+      const labels = await page.evaluate(() =>
+        [...document.querySelectorAll("[data-shelf-row='meter-click'] [data-shelf-choice]")].map(
+          (node) => node.textContent?.trim() ?? "",
+        ),
+      );
+      await press(page, "[data-shelf-choice='meter-click-units']");
+      const onUnits = await musicBytes(page);
+      await press(page, "[data-shelf-choice='meter-click-beats']");
+      const after = await musicBytes(page);
+      const historyAfter = await historyView(page);
+      return {
+        witness: row,
+        checks: [
+          [
+            "both settings are offered, in the reader's words",
+            labels.join(" | ") === "Yalnız ana vuruşlar | Tüm sekizlikleri duy",
+            labels.join(" | "),
+          ],
+          ["choosing the fine click wrote nothing", onUnits === before, ""],
+          ["choosing the beats back wrote nothing", after === before, ""],
+          [
+            "no history step either way",
+            JSON.stringify(historyBefore) === JSON.stringify(historyAfter),
+            JSON.stringify(historyAfter),
+          ],
+        ],
+      };
+    },
+  },
+  {
+    name: "14-seven-eight-says-what-the-fine-click-does",
+    run: async (page) => {
+      if (!(await openPanel(page, "meter"))) return null;
+      await press(page, "[data-shelf-secondary='meter-more']");
+      const inFour = await text(page, "[data-shelf-note='meter-click-note']");
+      await press(page, "[data-shelf-choice='meter-pro-7-8']");
+      const inSeven = await text(page, "[data-shelf-note='meter-click-note']");
+      return {
+        witness: await present(page, "[data-shelf-row='meter-click']"),
+        checks: [
+          [
+            "4/4 promises nothing extra, because there is nothing extra",
+            inFour === null,
+            inFour ?? "",
+          ],
+          [
+            "7/8 says what the quiet clicks are",
+            inSeven === "Grup başları daha güçlü, diğer sekizlikler daha hafif çalar.",
+            inSeven ?? "",
+          ],
+          [
+            "neither sentence uses a word from the model",
+            !/pulse|subdivision|slot|tick|resolution/i.test(`${inFour ?? ""} ${inSeven ?? ""}`),
+            "",
+          ],
+        ],
+      };
+    },
+  },
+  {
+    name: "15-toggling-mid-playback-writes-no-music",
+    run: async (page) => {
+      if (!(await openPanel(page, "meter"))) return null;
+      await press(page, "[data-shelf-secondary='meter-more']");
+      const before = await musicBytes(page);
+      await press(page, "[aria-label='Çal']");
+      await page.waitForTimeout(700);
+      await press(page, "[data-shelf-choice='meter-click-units']");
+      await page.waitForTimeout(500);
+      const playing = await present(page, "[aria-label='Duraklat']");
+      await press(page, "[data-shelf-choice='meter-click-beats']");
+      await page.waitForTimeout(400);
+      await press(page, "[aria-label='Duraklat']");
+      await page.waitForTimeout(400);
+      const after = await musicBytes(page);
+      return {
+        witness: await present(page, "[data-shelf-row='meter-click']"),
+        checks: [
+          ["the transport really started", playing, ""],
+          ["switching mid-playback wrote nothing", after === before, ""],
+          [
+            "the panel is still there afterwards",
+            await present(page, "[data-panel='meter']"),
+            "",
+          ],
+        ],
+      };
+    },
+  },
+  {
+    name: "16-the-listening-round-asks-one-card",
+    chrome: true,
+    path: "/eval/listening-pack",
+    run: async (page) => {
+      await page.waitForTimeout(800);
+      const open = await page.evaluate(() =>
+        [...document.querySelectorAll("[data-listen-clip]")].map((node) =>
+          node.getAttribute("data-listen-clip"),
+        ),
+      );
+      const question = await text(page, "[data-listen-clip='L33'] [data-listen-note], [data-listen-clip='L33']");
+      return {
+        witness: open.includes("L33"),
+        checks: [
+          ["L33 is offered", open.includes("L33"), open.join(",")],
+          [
+            "no card the founder already answered is asked again",
+            !open.some((id) => ["L30", "L31", "L32"].includes(id ?? "")),
+            open.join(","),
+          ],
+          [
+            "the card asks about grouping, not about editing",
+            (question ?? "").includes("gruplanmış"),
+            (question ?? "").slice(0, 90),
+          ],
+        ],
+      };
+    },
+  },
+  {
     name: "12-export-says-what-midi-carries",
     /* The export door is in the header, which the edit strip replaces. This
        flow is about the chrome, so it stays out of edit mode. */
@@ -574,7 +701,7 @@ const main = async () => {
       if (message.type() === "error") consoleErrors += 1;
     });
     page.setDefaultTimeout(15000);
-    await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}${flow.path ?? "/"}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(500);
 
     if (servedSha === null) {

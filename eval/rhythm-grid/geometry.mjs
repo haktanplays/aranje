@@ -64,6 +64,23 @@ const measure = (page) =>
       };
 
       const out = {};
+      /* The music, so a state that was only supposed to change how the click
+         counts can be shown not to have touched the song (§16). */
+      out.songHash = (() => {
+        const parts = [];
+        for (let index = 0; index < window.localStorage.length; index += 1) {
+          const key = window.localStorage.key(index);
+          if (key === null) continue;
+          if (key !== "aranje.song" && !key.startsWith("aranje.project.")) continue;
+          try {
+            const parsed = JSON.parse(window.localStorage.getItem(key) ?? "");
+            parts.push(`${key}=${JSON.stringify(parsed?.current ?? parsed)}`);
+          } catch {
+            parts.push(`${key}=?`);
+          }
+        }
+        return parts.sort().join(" ");
+      })();
       out.grid = box("[data-tab-content]");
       out.shelf = box(".workspace-shelf");
       out.overflowX = document.documentElement.scrollWidth > window.innerWidth;
@@ -178,14 +195,19 @@ const enterTab = async (page) => {
 const panelMarker = (id) =>
   `[data-panel='${id}'], [data-panel='${id.replace(/_/g, "-")}']`;
 
-/** Tap a cell, which is what gives the note-shaped panels something to be about. */
-const tapCell = async (page) => {
+/** One press, with the settle every surface in this app needs after one. */
+const press = async (page, selector) => {
   await page
-    .locator("[data-cell='0:0']")
+    .locator(selector)
     .first()
     .click({ timeout: 3000 })
     .catch(() => {});
   await page.waitForTimeout(300);
+};
+
+/** Open the Pro area, which is where the click's own row lives. */
+const pressPro = async (page) => {
+  await press(page, "[data-shelf-secondary='meter-more']");
 };
 
 /** Open the rhythm group and the named panel; return true if it really opened. */
@@ -211,101 +233,132 @@ const openPanel = async (page, id) => {
  * `enter` returns true when it believes it arrived; the witness is checked
  * independently afterwards, so a hopeful `enter` cannot make a row green.
  */
+/**
+ * The eleven states of the completion round (§16).
+ *
+ * Each carries the witness that proves it is really open, and a `path` when
+ * it does not live on the workspace. `enter` returning true is a claim; the
+ * witness is what settles it.
+ */
 const STATES = [
   {
-    name: "1-resting",
-    enter: async () => true,
-    witness: "[data-tab-content]",
-  },
-  {
-    name: "2-simple-4-4",
+    name: "1-simple-metronome",
     enter: async (page) => openPanel(page, "meter"),
     witness: "[data-shelf-row='meter-intent']",
   },
   {
-    name: "3-simple-6-8",
+    name: "2-pro-closed",
     enter: async (page) => {
       if (!(await openPanel(page, "meter"))) return false;
-      await page.locator("[data-shelf-choice='meter-compound_six']").first()
-        .click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(300);
+      /* Explicitly not opened: the Simple surface is a state of its own and
+         "Pro is shut" is the one a beginner is in. */
+      return (await page.locator("[data-shelf-row='meter-pro']").count()) === 0;
+    },
+    witness: "[data-shelf-secondary='meter-more']",
+  },
+  {
+    name: "3-pro-open",
+    enter: async (page) => {
+      if (!(await openPanel(page, "meter"))) return false;
+      await pressPro(page);
       return true;
     },
-    witness: "[data-shelf-note='meter-preview']",
+    witness: "[data-shelf-row='meter-click']",
   },
   {
-    name: "4-mixed-upgrade-preview",
+    name: "4-beats-only",
     enter: async (page) => {
       if (!(await openPanel(page, "meter"))) return false;
-      await page.locator("[data-shelf-choice='meter-mixed_four']").first()
-        .click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(350);
+      await pressPro(page);
+      await press(page, "[data-shelf-choice='meter-click-beats']");
       return true;
     },
-    witness: "[data-shelf-note='meter-preview']",
+    witness: "[data-shelf-choice='meter-click-beats'][data-shelf-choice-state='active']",
   },
   {
-    name: "5-fast-sequence-preview",
-    enter: async (page) => {
-      await tapCell(page);
-      return openPanel(page, "fast_sequence");
-    },
-    witness: "[data-panel='fast-sequence']",
-  },
-  {
-    name: "6-pro-7-8",
+    name: "5-every-unit",
     enter: async (page) => {
       if (!(await openPanel(page, "meter"))) return false;
-      await page.locator("[data-shelf-secondary='meter-more']").first()
-        .click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(250);
-      await page.locator("[data-shelf-choice='meter-pro-7-8']").first()
-        .click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(300);
+      await pressPro(page);
+      await press(page, "[data-shelf-choice='meter-click-units']");
       return true;
     },
-    witness: "[data-shelf-row='meter-pro']",
+    witness: "[data-shelf-choice='meter-click-units'][data-shelf-choice-state='active']",
   },
   {
-    name: "7-pro-feel-row",
+    name: "6-seven-eight-223",
     enter: async (page) => {
       if (!(await openPanel(page, "meter"))) return false;
-      await page.locator("[data-shelf-secondary='meter-more']").first()
-        .click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(300);
+      await pressPro(page);
+      await press(page, "[data-shelf-choice='meter-pro-7-8']");
       return true;
     },
     witness: "[data-shelf-row='meter-feel']",
   },
   {
-    name: "8-meter-refusal",
+    name: "7-seven-eight-322",
     enter: async (page) => {
       if (!(await openPanel(page, "meter"))) return false;
-      await page.locator("[data-shelf-choice='meter-waltz_three']").first()
-        .click({ timeout: 3000 }).catch(() => {});
-      await page.waitForTimeout(350);
-      return true;
-    },
-    witness: "[data-shelf-note='meter-preview']",
-  },
-  {
-    name: "9-duration-panel",
-    enter: async (page) => {
-      await tapCell(page);
-      return openPanel(page, "duration");
-    },
-    witness: "[data-panel='duration']",
-  },
-  {
-    name: "10-zoom-and-panel",
-    enter: async (page) => {
-      if (!(await openPanel(page, "meter"))) return false;
-      await page.locator("[data-view-zoom] button").first()
+      await pressPro(page);
+      await press(page, "[data-shelf-choice='meter-pro-7-8']");
+      await page.locator("[data-shelf-row='meter-feel'] [data-shelf-choice]").nth(1)
         .click({ timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(300);
       return true;
     },
-    witness: "[data-shelf-row='meter-intent']",
+    witness: "[data-shelf-note='meter-subdivision']",
+  },
+  {
+    name: "8-toggle-while-playing",
+    enter: async (page) => {
+      if (!(await openPanel(page, "meter"))) return false;
+      await pressPro(page);
+      await press(page, "[aria-label='Çal']");
+      await page.waitForTimeout(500);
+      await press(page, "[data-shelf-choice='meter-click-units']");
+      return true;
+    },
+    witness: "[data-shelf-choice='meter-click-units'][data-shelf-choice-state='active']",
+  },
+  {
+    name: "9-landscape-inspector",
+    enter: async (page) => {
+      if (!(await openPanel(page, "meter"))) return false;
+      await pressPro(page);
+      await press(page, "[data-view-zoom] button");
+      return true;
+    },
+    witness: "[data-shelf-row='meter-click']",
+  },
+  {
+    name: "10-export-disclosure",
+    chrome: true,
+    /*
+     * No staff here, and that is the design rather than a finding: the
+     * export sheet is reached from the header, on a screen that is not the
+     * tab view, and a sheet covering the whole screen is what a sheet is.
+     * The grid and overlay rules belong to the nine workspace states; this
+     * one is measured for text, targets and overflow.
+     */
+    staff: false,
+    enter: async (page) => {
+      await press(page, "[aria-label='Ses kaynakları ve lisans']");
+      await press(page, "[data-info-export]");
+      return true;
+    },
+    witness: "[data-export-meter-note]",
+  },
+  {
+    name: "11-listening-card",
+    path: "/eval/listening-pack",
+    chrome: true,
+    /* A different route with no staff on it at all. */
+    staff: false,
+    enter: async (page) => {
+      await page.waitForTimeout(600);
+      return true;
+    },
+    witness: "[data-listen-clip='L33']",
   },
 ];
 
@@ -335,7 +388,7 @@ const main = async () => {
         if (message.type() === "error") consoleErrors += 1;
       });
       page.setDefaultTimeout(15000);
-      await page.goto(`${BASE}/`, { waitUntil: "networkidle" });
+      await page.goto(`${BASE}${state.path ?? "/"}`, { waitUntil: "networkidle" });
       await page.waitForTimeout(400);
 
       /* The build's own SHA, read from the page rather than trusted. */
@@ -347,13 +400,13 @@ const main = async () => {
         );
       }
 
-      await enterTab(page);
+      if (!state.chrome) await enterTab(page);
 
       await state.enter(page).catch(() => false);
       const reached = (await page.locator(state.witness).count()) > 0;
       results[viewport.name][state.name] = reached
-        ? { reached: true, ...(await measure(page)) }
-        : { reached: false };
+        ? { reached: true, staff: state.staff !== false, ...(await measure(page)) }
+        : { reached: false, staff: state.staff !== false };
 
       await page.screenshot({
         path: `${OUT}rhythm-${viewport.name}-${state.name}.png`,
@@ -362,17 +415,20 @@ const main = async () => {
     }
     const row = results[viewport.name];
     const reachedCount = Object.values(row).filter((r) => r.reached).length;
-    const bad = Object.entries(row).filter(
-      ([, r]) =>
-        r.reached &&
-        (r.gridHit !== "grid" ||
-          r.overflowX ||
-          r.overlays > 0 ||
-          r.smallTargets > 0 ||
-          r.clipped > 0 ||
-          r.duplicateNames > 0 ||
-          r.jargon.length > 0),
-    );
+    const bad = Object.entries(row).filter(([name, r]) => {
+      if (!r.reached) return false;
+      const staff = STATES.find((state) => state.name === name)?.staff !== false;
+      /* The staff rules apply where there is a staff; the rest apply to
+         every state, chrome included. */
+      if (staff && (r.gridHit !== "grid" || r.overlays > 0)) return true;
+      return (
+        r.overflowX ||
+        r.smallTargets > 0 ||
+        r.clipped > 0 ||
+        r.duplicateNames > 0 ||
+        r.jargon.length > 0
+      );
+    });
     console.log(
       `${viewport.name}: ${reachedCount}/${STATES.length} states reached, ${bad.length} with findings` +
         (bad.length ? ` -> ${bad.map(([n]) => n).join(", ")}` : ""),

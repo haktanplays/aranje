@@ -329,6 +329,13 @@ describe("379. the round asks three questions and awards none", () => {
     for (const id of ["L33a", "L33b"] as const) {
       expect(takes[id].barCount).toBe(2);
       expect(takes[id].ticks).toBe(2 * 7 * (PPQ / 2));
+      /* Counted in the song rather than in the list of specs the take was
+         asked for: a take that promised two bars and appended one would
+         otherwise report two and play one. */
+      const bars = listenedBars(id);
+      expect(bars).toHaveLength(2);
+      for (const bar of bars) expect(bar.timeSignature).toEqual([7, 8]);
+      expect(notesOf(id)).toHaveLength(14);
     }
     const clip = listeningClips(fixture, null, null, null, takes).find(
       (entry) => entry.id === "L33",

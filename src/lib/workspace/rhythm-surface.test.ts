@@ -35,6 +35,53 @@ const METER_CODE = METER_PANEL.replace(/\/\*[\s\S]*?\*\//g, "").replace(
   "",
 );
 
+describe("384. the click's own row, and the label that is spelled one way", () => {
+  it("offers the click settings in Pro and nowhere else", () => {
+    /*
+     * Behind **Daha fazla**, with the rest of Pro: how closely to count is a
+     * rehearsal decision about a bar you already know is uneven, not one of
+     * the five sentences Simple asks. The row is inside the `pro` branch, so
+     * a beginner never meets it (completion §8).
+     */
+    expect(METER_CODE).toContain('<ShelfRow label="Metronom" testId="meter-click">');
+    const proBranch = METER_CODE.slice(METER_CODE.indexOf("{pro ? ("));
+    expect(proBranch).toContain('testId="meter-click"');
+  });
+
+  it("changes only the listener's setting, never the bar", () => {
+    /*
+     * The one thing this control may not do. `onDetail` is the session
+     * preference's own setter; a press that reached `onDraft` would be a
+     * click setting writing a metre.
+     */
+    expect(METER_CODE).toContain("onPress={() => click.onDetail(detail)}");
+    const row = METER_CODE.slice(
+      METER_CODE.indexOf('testId="meter-click"'),
+      METER_CODE.indexOf("clickNote ?"),
+    );
+    expect(row).not.toContain("onDraft");
+    expect(row).not.toContain("onApply");
+  });
+
+  it("never writes the note-length label as anything but Nota süresi", () => {
+    /*
+     * A typo in a label is not a small thing: it is the app spelling a note
+     * wrong at the reader, in the one place the vocabulary is supposed to be
+     * exact. Checked across the shipped source rather than in one file,
+     * because the string lives in a table, a mark and a component (§13).
+     */
+    for (const path of [
+      "src/lib/workspace/shelf-panel.ts",
+      "src/lib/tab/rhythm-marks.ts",
+      "src/components/workspace/EditorDock.tsx",
+      "src/components/workspace/DurationControl.tsx",
+    ]) {
+      expect(readFileSync(path, "utf8"), path).not.toContain("Nato");
+    }
+    expect(SHELF_PANELS.duration.label).toBe("Nota süresi");
+  });
+});
+
 describe("370. the rhythm panels speak one language", () => {
   it("names the metre panel and the duration panel from the vocabulary", () => {
     /* "Ölçü" and "Nota süresi" are the vocabulary's own words. The duration
