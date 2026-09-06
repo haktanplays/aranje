@@ -4722,6 +4722,104 @@ kalıyor. Ölçüm sırasında görülen şey kaydedildi: **şema bir section'ı
 en yoğun şarkının kendisidir. Bu tavan bu turda değiştirilmedi; bilinen bir borç
 olarak yazıldı.
 
+### §13.40 Ritim, ölçü ve grid dili (2V-D.2)
+
+D.1 fiziksel olarak kapandı: **L27 «Aynı», L28 ve L29 yorumsuz PASS.** Yorumsuz
+bir PASS bir karardır; hiç çalınmamış L12/L13'ten farklıdır ve eski
+conditional/inconclusive satırları bu turda **hiçbir şekilde** yükseltilmedi.
+
+#### §13.40.1 Ritim tek kelime değildir: altı ayrı kavram
+
+`rhythm-vocabulary` altı soruyu bir kez adlandırır — **Ölçü, His, Grid,
+Sonraki nota, Nota süresi, Zoom**. Domain, arayüz, açıklama ve red metni tek
+kaynaktan okur; «grid», «ölçü» ve «nota süresi» hiçbir yerde eşanlamlı
+değildir. Zoom'un sahibi `view`'dur ve müzikal bir düzenleme olarak
+işaretlenemez.
+
+#### §13.40.2 Bar uzunluğunun tek otoritesi: `barTicks(bar)`
+
+On modül `slotCount(bar…) * ticksPerSlot(bar…)` çarpımını kendi yazıyordu. On
+sayının eşit olduğunu söyleyen bir test, on birinci çağıranın uymak zorunda
+olduğu bir otorite **değildir**. `ticksPerBar` metre ve grid alır; bu on
+çağıranın hepsi elinde bir *bar* tutuyordu. `barTicks(bar)` istedikleri şekil
+oldu, hepsi onu çağırıyor, çarpma tek dosyada kaldı ve `timing-authority`
+testi eski ifadenin **yokluğunu** greple tutuyor.
+
+#### §13.40.3 Ana vuruş ile alt bölünme iki katmandır
+
+`meterBeats` **ana vuruşları** verir; `meterPulses` ölçünün kendi nota
+değerlerinin hepsini verir ve her birini downbeat / vuruş başı / alt bölünme
+diye işaretler. 7/8 felt `2+2+3` üç ana vuruşa **ve** yedi sekizliğe sahiptir;
+yalnız birincisini gösteren bir yüzey acemiye ölçüsünde üç sekizlik olduğunu
+söylemiş olur. `readRhythm` bu yüzden ana vuruş sayısını ve alt bölünme
+satırını birlikte taşır. Metronom varsayılan olarak yalnız ana vuruşları
+çalar; Pro alt bölünmeyi açtığında ana vuruşlar **aynı tick'lerde** kalır ve
+yalnız aralarına daha sessiz click'ler girer — mevcut tek click sentezinin üç
+velocity seviyesiyle, yeni bir sample olmadan.
+
+#### §13.40.4 Simple/Pro sınırı
+
+Simple beş **niyet** sunar (Düz 4/4, Üçlemeli 4/4, Karışık 4/4, 3/4, 6/8) ve
+numerator, denominator, PPQ, çözünürlük, slot sayısı veya gruplama dizisi
+göstermez. Pro 2–15 numerator × {4, 8, 16} denominator uzayını **değerlendirir**
+ve yalnız proje biçiminin gerçekten saklayabildiklerini açar; kapalı olanlar
+gizlenmez, müzisyen diliyle gerekçe taşır.
+
+#### §13.40.5 6/8 zaten tamdı; BPM zaten dörtlüktü
+
+Ölçüldü, sonra yazılmadı. 6/8 her gridde 576 tick'tir, düz onaltılıklar 48
+tick'te, onaltılık üçlemeler 32 tick'te düşer ve `gcd(48, 32) = 16` — yani
+hâlihazırda gönderilmiş olan 48 lattice'i tam ortak griddir. **Yeni şema
+yazılmadı.** Aynı biçimde `secondsPerTick = 60 / (bpm × PPQ)` ile MIDI'nin
+`60.000.000 / bpm` değeri aynı cümledir: saklanan BPM **dörtlük/dakikadır** ve
+playback ile export zaten aynı fikirdeydi. Migration yok; eksik olan yalnız
+*okumaydı* — «Tempo: 132 dörtlük/dk» yanında «6/8 ana vuruşu: 88/dk». Eşit
+olmayan gruplamalı bir ölçüye tek bir felt-beat BPM uydurulmaz.
+
+#### §13.40.6 Tek ve çift olmayan ölçüler
+
+5/8, 9/8, 12/8 ve 5/4 sözleşmeye katıldı; `Bar.grouping` opsiyoneldir ve
+numerator'a eşit olmayan bir toplam şema tarafından reddedilir. 5/8 `2+3` ile
+`3+2` artık **farklı byte'lardır**. Metronom, count-in, beam, vuruş çizgileri
+ve sözlü okuma aynı listeden okur.
+
+#### §13.40.7 Zoom bir kameradır; dolu bir ölçü sessizce kırpılmaz
+
+Zoom Song'a yazamaz. Metre değişimi **önce önizlenir**: sığmayan bir bar
+«Sondaki notalar yeni ölçüye sığmıyor.» der ve hiçbir şey yazılmaz. Bar
+çizgisi kaydığında cümleler ve teknik alanları **aynı işlemde** taşınır ya da
+değişikliğin tamamı reddedilir; yarım dönüşmüş bir Song hiç görünmez.
+
+#### §13.40.8 MIDI'nin dürüstlük sınırı
+
+Standart time-signature event'i `7/8`'i taşır, `2+2+3`'ü taşıyamaz: iki his
+**birebir aynı** meta event'leri yazar ve bunu bağımsız bir parser'la okuyan
+bir test tutar. Özel bir marker yazılmaz. Kullanıcıya söylenen: «Ölçü MIDI'ye
+yazılır. 2+2+3 gibi vurgu grupları bazı uygulamalarda sadeleşebilir.» Gruplama
+proje dosyasında korunur ve WAV'da nota üzerine yazılmış gerçek accent'lerle
+duyulur.
+
+#### §13.40.9 `budget-race` flake'inin kök nedeni
+
+Belirti «97 saniyelik süitte 5 saniyeyi aştı»ydı; sebep zaman değildi.
+`withStore` rezervasyondan önce üç `crypto.subtle.digest` bekliyor ve bunlar
+libuv havuzunda **başlatılma sırasında çözülmüyor** — ölçüldü: boşta %3,3,
+yük altında %7,7 ters sıra. Ters sırada ikinci çağıran bütçeyi kazanıyor,
+testin tuttuğu adapter bariyerine varıyor ve `await second` hiç settle
+olmayacak bir promise'i bekliyordu. Testin iddiası zaten *hangi* çağıranın
+kazandığı değildi; `Promise.race` kaybedeni deterministik olarak verir çünkü
+kazanan bariyerde tutuluyor. Timeout yükseltilmedi, retry eklenmedi, hiçbir
+assertion silinmedi — iki assertion **eklendi**.
+
+#### §13.40.10 Founder yalnız dinler
+
+Bu turun kartları **L30, L31, L32**'dir ve başka hiçbir kart sorulmaz. L31'in
+farkı metronomdan değil, notaların kendi `attack: accent` değerlerinden gelir:
+iki take'in perdeleri, süreleri, bar uzunluğu ve tempoları aynıdır. Otomatik
+ölçüm yalnız farkın **render edildiğini** kanıtlar; «duyuluyor» kararını
+hiçbir test veremez.
+
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)
@@ -5078,6 +5176,7 @@ maliyettir** (§11.2/7).
 | **K-70** | **Olay bitişikliği akustik süreklilik değildir (2V-C.4).** C.3'ün devir ölçümleri — örtüşme 0 s, boşluk 0 s, varış hatası 0 cent, hedef kendi perdesinde ve kendi anında — **doğrudur ve geçerliliğini korur**; hepsi scheduler düzeyindedir. Founder aynı devirde «iki ses arasında minik bir boşluk» duydu ve ikisi birden doğrudur, çünkü **iki olayın bitişik olması enerjinin bitişik olduğunu kanıtlamaz**. Bu yüzden ilk iş yeni bir eğri değil, üretim offline renderer'ının yazdığı **gerçek PCM** üzerinde bir ölçüm oldu: kısa süreli RMS/tepe zarfı, kaynağın son enerjili karesi, hedefin ilki, aradaki sessizlik, yerel vadi oranı, örnekten örneğe en büyük sıçrama. **Tek eşiğin çalışmayacağı ilk koşuda anlaşıldı:** legato dikişi çevresinin 0,81'ini tutuyor, yazılı es 0'ını, ama arka arkaya çalınmış sıradan bir nota **0,086**'sını — birincisi sönerken ikincisinin atağı yükseliyordur. Legato'yu sürekli sayan bir eşik sıradan çalmayı bozuk sayar; dikişler artık **türlerine göre** ölçülüyor (`joined` / `connected` / `restrike` / `broken`) ve eşiklerin fixture'a uydurulmasını engelleyen kural yazılı: **bağlantısı yazılı bir dikiş, aynı iki notanın bağlantısız hâlinden ölçülebilir biçimde iyi olmak zorunda.** **İki olasılık dokunmadan önce ayrıldı:** üç paketin bütün buffer'ları üretim yükleyicisiyle çözülüp profillendi — **baştaki dijital sessizlik her dosyada 0,0 ms**, yani atlanacak bir şey ve vendored ses dosyalarına dokunmak için bir sebep yok. Olan şey **gerçek atak rampası**dır ve kayıtlar çok farklıdır: gitar E4 tepenin yarısına **3 ms**'de, A3 **31 ms**'de varır — dikişin bazı aralıklarda dört kat derin olmasının ve tek bir devir sabitinin neden doğru olamayacağının sebebi. **Kaynak artık hedefin onset'inde durmuyor:** onset'i geçen kısa bir kuyruğu **hedefin perdesinde**, hedef gürleştikçe sıfıra sönerek sürüyor — perdeye varan parmak teli susturmaz. Kuyruk **hedefin kendi ölçülmüş atağı + kaynağın release'i** kadar, iki uçtan sınırlı ve hedef notasının üçte biriyle tavanlı; onset seviyesi de atakla hareket ediyor. **«Sıfır örtüşme» testi kaldırıldı ve yerine geçen iddia daha katı:** perde tam zamanında varır, seviye o anda belirgin düşüktür, örtüşme sınırlıdır — sıfır örtüşme hiç amaç değildi, kesintisiz ses amaçtı. **L21 ve L24 aynı cümleyle geldiği için iki yama yazılmadı:** şekil, tellerinin **en uzun atağını** alır, hiçbir tel diğerinden önce bırakılmaz, tavan tellerin toplamı üzerindedir, her tel yine kendi kaydını okur. **Üretim render yolunda ölçüldü** — altı bağlantı, dört mesafe, üç tempo, iki süre, üç prova hızı ve üç register, pairwise: `shift-2st` 0,069 → **0,483**, `shift-1st` 0,070 → **0,435**, `shift-220bpm` 0,076 → **0,363**, `%50 prova` 0,093 → **0,577**, `shape2` 0,206 → **0,620**, `shape3` 0,175 → **0,430**; **her shift satırı 2,1×–7,0× iyileşti** ve hepsi bağlantısız yeniden vuruşun 0,086'sının çok üstünde. Tepe dört hanede **her yerde aynı**, clipping 0, non-finite 0, dispose sonrası aktif ses 0. **Legato, hammer-on, pull-off, tutulan nota, düz yeniden vuruş ve yazılı es bayt-eş render ediliyor** — değişiklik yalnız yeniden vurulan shift bağlantılarına ulaşıyor; **HO/PO ölçüldü ve kanıt olmadığı için değiştirilmedi**, L7'nin borcu otomatik metrik yeşil diye PASS'a yükseltilmedi. **Ölçerken iki harness kusuru çıktı ve ikisi de kaydedildi:** sustain kontrolü sessiz bir pencereyi ölçüp «bozuk dikiş» diyordu (tek notalı tarif notayı bir slot uzunluğunda bırakıyordu), ve iki prova-hızı fixture'ı iddia ettiği hızı hiç görmüyordu — `renderTake` planını yazılı tempoda kuruyordu; artık prova yüzdesi alıyor ve **gerçek hızlarında ikisi de ötekiler kadar kırmızıydı**. **Doğrulama:** tam süit **5.306 test / 325 dosya**; tsc/lint/build temiz. **Satır bütçeleri yükseltilmedi.** **Bu turun çıkış politikası spec'e yazıldı:** aynı dikiş için otomatik C.5 açılmaz, ve **hiçbir test sonucu hiçbir fiziksel sonucu kendiliğinden PASS'a çeviremez.** Founder'dan yalnız **L25 ve L26** isteniyor — her biri tek gesture, üç kez, karşılaştırmasız; L22 ve L23 yeniden sorulmuyor, L21/L24 «sonuçsuz» olarak kayıtlı kalıyor ve düzeltme indiği için yükseltilmiyor. | **Haktan L25–L26 ses onayını bekliyor** |
 | **K-71** | **Bir notaya beş eksen, tek enuma beş anlam yerine (2V-D.1).** `articulation` tek değer tutar ve dört soruyu birden yanıtlar; bu yüzden bir nota ya `accent` ya `bend_full` diyebiliyor, planlayıcı da ilk eşleşen dalda **return** ediyordu — vurgulu bir bend vurgusuz, üzerine bend yazılmış bir pinch armonik ise hiç kımıldamadan çalıyordu. **Üç opsiyonel alan, hiçbiri göç ettirmiyor:** `attack` (enum'ın yalnız «tel nasıl vuruldu» üyeleri; `normal` alanın yokluğu, `sustain`/`staccato` burada değil çünkü onlar süreyi söyler), `picking` (tek nota, aşağı/yukarı; akoru tarayan `strum`'dan ayrı) ve **`TechniqueSpan`** (palm mute ve let ring, tick aralığı + **tel kümesi**, section'da). **Span tel taşır çünkü teknik tel taşır:** el kenarıyla alt teller susturulurken üst tel üstünde çınlar, ve track-wide bir span yerine geçtiği nota bayrağından *daha az* şey söylerdi. Üyelik onset'e göre ve yarı açıktır — span'den önce başlamış bir ses geriye dönük susturulmaz, iki span aradaki anı paylaşmadan değebilir. Aynı track'te zamanda örtüşen **ve** tel paylaşan iki span reddedilir; farklı tellerdekiler serbestçe bir arada bulunur; değenler sessizce birleştirilmez. **Resolver beş eksenin tek otoritesi oldu** ve bir eksene iki cevap yalnız suçlu ekseni değil hepsini düşüren tipli bir rettir. **Legacy tek anda dönüşür:** zaten `palm_mute` taşıyan notaların üzerine span çizmek onu **tam olarak kapsanan** onset'lerde taşır, kapsanmayan hiçbir nota değişmez, ve iki yazım biçimi bir şarkıda doğru biçimde bir arada durur. **Atak artık bir katman:** seviye, uzunluk, filtre ve armonik için cent kayması, perde ekseninin ürettiğinin üzerine uygulanıyor; **cent'ler toplanır** çünkü ikisi de tek `playbackRate` üzerinde tek sayıya iner (bükülmüş pinch armonik 1900+200) ve bükülmüş armonik telin gerçekten bulunduğu perdeden tırmanır. Preset sayıları değişmedi. **Testler üç gerçek kusur buldu:** katman `isExpressive` kapısının altındaydı, yani yalnız yeni `attack` taşıyan bir nota yazılıp çiziliyor, dışa aktarılıyor ve **tamamen duyulmuyordu**; `LegatoOnset` ile `TabSpan` yeni eksenleri hiç taşımıyordu; ve `semanticSnapshot` ile `musicalFingerprint` «duyulabilen her şeyi» tuttuğunu söylerken **hiçbir ifade eksenini** içermiyordu — ölçüdeki her bendi düşüren bir transpoze «korundu» diye parmak izi veriyordu. **Pena yönü `notation_only`'dir** ve bunu bir test doğrudan söyler: gönderilen bank'te perde başına tek kayıt var, uygulama üretemeyeceği farkı ima etmiyor. **Doğrulama:** tam süit **5.382 test / 329 dosya**, tsc/lint/build temiz. **Satır bütçeleri yükseltilmedi.** **Kapsam dışı ve açıkça eksik:** birleşik tab notasyonu, beginner-first «Çalım» UI'ı, altı viewport geometri koşusu, copy/move/repeat/delete/transpose span bütünlüğü, MIDI/WAV disclosure, performans ölçümü ve **L27–L29 dinleme kartları yapılmadı**; palm-mute span'inin uzunluğu legacy notadan ~8 ms farklıdır (biri tick'te, öteki saniyede yuvarlanıyor) ve bu borç adıyla kayıtlıdır. **Bu turda founder'a kart sorulmuyor:** L25/L26 slide fazını kapattı ve yeni tur açılmadı. | **Kart yok; bir sonraki tur D.1'in üstüne kartları kuracak** |
 | **K-72** | **Ölçmeden yön varsayma; 8 ms bir yuvarlama değildi (2V-D.1-C).** D.1 kapanırken span'li palm mute legacy notadan 8 ms kısaydı ve bu «tick ile saniye arasındaki yuvarlama» diye kaydedilip `< 0.01` sınırıyla geçildi. Tam zaman çizgisi — yazılı tick, kapılanmış tick, planlanan saniye, zarf — üç olgu için yan yana ölçüldüğünde teşhis **cinsinden** yanlış çıktı: zaman çizgisi legacy enum'ı okuyarak tick'te kapılıyor, span'i göremiyor, planlayıcı da span'i ikinci kez kapılıyordu (`0.92 × 0.45` karşı `0.45`); `palmMuteSeconds` ise mutlak 180 ms tavandır, başka bir iş yapar ve o tempoda hiç bağlamaz. Zaman çizgisi tekniği artık kendisi çözer, planlayıcı tekrar kapılamaz, iki yazım **birebir** eşittir ve gerçek offline render de aynı şeyi söyler (0.01858 RMS / 107 ms sönüm; susturulmamış nota 0.03989 / 250 ms). **İkinci karar: span bir dikdörtgendir.** Copy/paste/move/repeat/delete/restring/şekil taşıma tek bir zaman × tel aritmetiğine (`span-rect`) dayanır; notalarını takip edemeyen span komutun tamamını reddeder (`span_scope_lost`); kesilen span parçalanır ve her kimlik türetilir, yani redo aynı byte'ları yazar; **üzerinde nota olmaması orphan değildir.** **Üçüncü karar: beş eksen tek sayfada.** `expression-marks` yazım dağarcığını bir kez adlandırır; span'li mute legacy mute ile **aynı koordinatlarda** ray çizer, let ring rayını kazanır, TabCanvas bütçesi yükseltilmedi. **Dördüncü karar: «Çalım» üç soru sorar** (Vuruş / Pena / Bölge boyunca), modal değildir, her seçim uygulanmadan önce apply'ın kendi komutundan gelen cümleyi gösterir, önizleme ve red store'a yazmaz. **Beşinci: pena yönü için ayrı bir dürüstlük cümlesi** — yazılır, duyulmaz. **Ölçülen sınır:** şema bir section'ı 8 span ile sınırlıyor, yani 8× bugün yazılabilen en yoğun şarkıdır; tavan değiştirilmedi, borç olarak yazıldı. **Doğrulama:** tam süit **5.538 test / 337 dosya**, tsc/lint temiz. | **L27 avuç susturma paritesi · L28 armonik + perde hareketi · L29 tek elde iki tel; pena kartı yok, çünkü iki vuruş hoparlörde aynıdır** |
+| **K-73** | **On sayının eşit olması bir otorite değildir; ve üç click ölçünün tamamı değildir (2V-D.2).** İki düzeltme bu turun ritim işini taşıdı. **Birincisi:** on modül bar uzunluğunu kendi çarpıyordu ve bir test hepsinin eşit olduğunu söylüyordu — eşitlik, on birinci çağıranın uymak zorunda olduğu bir otorite değildir. `ticksPerBar` metre+grid alıyordu, on çağıranın hepsi elinde *bar* tutuyordu; `barTicks(bar)` istedikleri şekildi, hepsi ona geçti ve grep artık eski ifadenin **yokluğunu** tutuyor. **İkincisi:** «7/8 üç eşit olmayan click» ana vuruş katmanı için doğru, ölçünün içeriği için yanlıştır — 7/8'de yedi sekizlik vardır. `meterBeats` ana vuruşları, `meterPulses` bütün nota değerlerini rolleriyle verir; ikisi birbirinden türer, `readRhythm` ana vuruş sayısını ve alt bölünme satırını birlikte taşır, Pro alt bölünmeyi açtığında ana vuruşlar aynı tick'te kalır. **Üçüncü karar: ölçülen şey yazılmaz.** 6/8 + 1/16 üçleme mevcut 48 lattice'inde zaten tamdı (576 tick, `gcd(48,32)=16`) ve saklanan BPM zaten dörtlüktü — ikisi de **inşa edilmedi**, yalnız okundu ve söylendi. **Dördüncü: MIDI'de gruplama kaybolur ve bu açıkça yazılır**; `2+2+3` ile `3+2+2` birebir aynı meta event'leri üretir, bunu bağımsız bir parser doğrular, özel marker yazılmaz. **Beşinci: bir flake'in belirtisi süre değildi.** `crypto.subtle.digest` libuv'da başlatılma sırasında çözülmüyor (boşta %3,3, yük altında %7,7); test *hangi* çağıranın kazandığını varsayıyordu. `Promise.race` ile iddia gerçek haline döndü, timeout yükseltilmedi, iki assertion eklendi, 30 ardışık yeşil (p50 2150 ms / p95 2300 ms). **Ölçülen sınır:** WAV'ın PCM onset'leri bu ortamda ölçülemedi; bar sınırı tablosu üretim planlayıcılarından çıkarıldı ve PCM doğrulaması **açık borç** olarak yazıldı. | **L30 6/8 içinde hızlı üçleme · L31 aynı riff iki gruplama (metronomsuz) · L32 farklı ölçüler arasında riff devamı** |
 
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler

@@ -4,15 +4,15 @@
  * A listening round is a question with a scope, and the scope is not "every
  * card that has ever existed". Everything with a recorded answer is history.
  *
- * **Empty between rounds, and that is a state rather than an oversight.**
- * L27, L28 and L29 all came back `pass` — the parity card with the founder's
- * own word, "Aynı" — so the multi-axis phase is closed and its cards moved
- * into the archive. The rhythm round builds its own cards; until they exist,
- * an empty list says exactly what is true: every card has an answer and the
- * founder is not being asked anything.
+ * **The rhythm round asks three questions and no others (2V-D.2 c3 §15).**
+ * L30 is 6/8 with a fast run inside it, L31 is the same seven-eighth riff
+ * grouped two ways, and L32 is one riff carried across a metre change. Every
+ * card before them has a recorded answer and is not re-asked — including
+ * L27, L28 and L29, which came back `pass` and closed the multi-axis phase.
  *
- * That is not the same as a round whose cards nobody answered, and the paste
- * block distinguishes the two.
+ * A card in this list is one the founder is being asked *now*. A card with an
+ * answer is history, and the paste block keeps the two apart: "Bu tur"
+ * counts only these three.
  *
  * Keeping this as a list rather than as a flag on the clip is deliberate. A
  * clip does not know which round it is in; a round knows which clips it is
@@ -22,7 +22,7 @@ import { isArchived } from "@/lib/listening/founder-authority";
 import type { ListeningClip } from "@/lib/listening/clip-plan";
 
 /** The cards the founder is being asked to judge now. */
-export const ACTIVE_CLIP_IDS = [] as const;
+export const ACTIVE_CLIP_IDS = ["L30", "L31", "L32"] as const;
 
 export type ActiveClipId = (typeof ACTIVE_CLIP_IDS)[number];
 

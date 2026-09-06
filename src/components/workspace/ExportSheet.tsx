@@ -20,6 +20,7 @@ import {
   EXPORT_PLAYBACK_NOTE,
   EXPORT_READ_ONLY_NOTE,
   MIDI_ARTICULATION_NOTE,
+  MIDI_METER_NOTE,
   MIDI_LICENSE_NOTE,
   PICKING_NOTATION_NOTE,
   WAV_LICENSE_NOTE,
@@ -205,6 +206,12 @@ export function ExportSheet({
         <FormatBlock label={EXPORT_FORMAT_TEXT.midi.label} hint={EXPORT_FORMAT_TEXT.midi.hint}>
           <p data-export-midi-note className="text-muted mb-2 text-xs leading-relaxed">
             {MIDI_ARTICULATION_NOTE}
+          </p>
+          {/* The metre travels; the feel inside it may not (2V-D.2 §10). Said
+              beside the articulation note because they are the same kind of
+              fact: what this file carries, and what it cannot. */}
+          <p data-export-meter-note className="text-muted mb-2 text-xs leading-relaxed">
+            {MIDI_METER_NOTE}
           </p>
           {/* Said here as well as in the editor: a reader deciding what to
               hand to someone else needs to know which of the marks on their

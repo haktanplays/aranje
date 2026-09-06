@@ -1,4 +1,6 @@
 import type { Metadata, Viewport } from "next";
+
+import { BUILD_SHA } from "@/lib/acceptance/build-id";
 import { Fraunces, Inter } from "next/font/google";
 
 import { BRAND_NAME } from "@/lib/brand";
@@ -35,7 +37,25 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="tr" className={`${fraunces.variable} ${inter.variable}`}>
-      <body className="min-h-dvh bg-app text-text antialiased">{children}</body>
+      {/*
+        Which commit this build was made from (2V-D.2 c3 §16).
+
+        The geometry runner reads it off the page rather than being told it,
+        so a stale build cannot pass by being pointed at with the right
+        argument on the command line. Absent in a dev server, which is
+        correct: there is no commit behind a dev server, and `BUILD_SHA`
+        says "unknown" rather than pretending.
+
+        Read through `BUILD_SHA`, which the acceptance route already refuses
+        to run on the wrong value of — one build identity, not a second one
+        beside it, and one place that reads the environment.
+      */}
+      <body
+        className="min-h-dvh bg-app text-text antialiased"
+        data-build-sha={BUILD_SHA}
+      >
+        {children}
+      </body>
     </html>
   );
 }

@@ -93,6 +93,22 @@ export const MIDI_ARTICULATION_NOTE =
   "duyulmayabilir.";
 
 /**
+ * What a metre survives on the way to another program (2V-D.2 c3 §10).
+ *
+ * A standard MIDI time-signature event carries `7/8` perfectly well. What it
+ * has nowhere to put is *which* 7/8 — `2+2+3` and `3+2+2` write byte-identical
+ * meta events, which `meter-export-audit.test.ts` asserts rather than hopes.
+ *
+ * So the sentence says exactly that and no more. It does not promise additive
+ * grouping, and the app does not smuggle one in as a private marker: the feel
+ * lives in the project file, and it is audible in the WAV because the accents
+ * are written onto the notes themselves.
+ */
+export const MIDI_METER_NOTE =
+  "Ölçü MIDI'ye yazılır. 2+2+3 gibi vurgu grupları bazı uygulamalarda " +
+  "sadeleşebilir.";
+
+/**
  * What a pena yönü actually does, said where the reader can act on it.
  *
  * The sample bank holds one recording per pitch, so a down-stroke and an

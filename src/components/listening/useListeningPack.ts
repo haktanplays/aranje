@@ -28,6 +28,10 @@ import { songSupport } from "@/lib/acceptance/song-support";
 import { clipFault, type ClipAudit } from "@/lib/listening/clip-audit";
 import { chordTake } from "@/lib/listening/chord-take";
 import { activeClips } from "@/lib/listening/listening-scope";
+import {
+  buildRhythmTakes,
+  type RhythmTakeId,
+} from "@/lib/listening/rhythm-take";
 import { sequenceTake } from "@/lib/listening/sequence-take";
 import {
   gestureTakes,
@@ -104,7 +108,10 @@ export function useListeningPack(): ListeningPack {
     /* Ten more takes, each written by the production gesture command on its
        own copy of the fixture (2V-C.1 §19). */
     const gestures = gestureTakes(fixture);
-    const built = listeningClips(fixture, chord, sequence, gestures);
+    /* And the three rhythm bars this round asks about, each in its own metre
+       on its own copy of the fixture (2V-D.2 c3 §12–§14). */
+    const rhythms = buildRhythmTakes(fixture);
+    const built = listeningClips(fixture, chord, sequence, gestures, rhythms);
     const byTake: Record<string, Song> = {};
     for (const clip of built) {
       for (const take of clip.takes) {
@@ -114,6 +121,8 @@ export function useListeningPack(): ListeningPack {
         else if (take.id === "L10" && sequence) byTake[take.id] = sequence.song;
         else if (gestures && take.id in gestures) {
           byTake[take.id] = gestures[take.id as GestureTakeId].song;
+        } else if (rhythms && take.id in rhythms) {
+          byTake[take.id] = rhythms[take.id as RhythmTakeId].song;
         } else byTake[take.id] = fixture;
       }
     }

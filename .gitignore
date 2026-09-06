@@ -40,3 +40,8 @@ eval/editor-2va/artifacts/failed-*.png
 # per-run copies of the ten-run sweeps are summarised in RUNS.json instead
 eval/editor-2va1/artifacts/*-run*.json
 eval/editor-2va1/artifacts/failed-*.png
+
+# Rhythm-round browser evidence: every file in here names the very commit it
+# was produced from, so it cannot live inside that commit. Regenerate with the
+# command in eval/rhythm-grid/REPORT-2V-D2.md.
+eval/rhythm-grid/artifacts/

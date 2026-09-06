@@ -41,6 +41,7 @@ import { barTimeline } from "@/lib/audio/schedule";
 import { secondsAtTicks, type TempoMap } from "@/lib/audio/tempo";
 import type { PlaybackWindow } from "@/lib/playback/selection-playback";
 import type { GestureTakeId, GestureTakes } from "@/lib/listening/gesture-take";
+import type { RhythmTakes } from "@/lib/listening/rhythm-take";
 import type { Song } from "@/lib/song/schema";
 
 /** How the founder may answer. Three words, and never a technical one. */
@@ -117,7 +118,10 @@ export type ListeningClipId =
   | "L26"
   | "L27"
   | "L28"
-  | "L29";
+  | "L29"
+  | "L30"
+  | "L31"
+  | "L32";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -191,6 +195,7 @@ export function listeningClips(
   chord: ChordSide | null,
   sequence: SequenceSide | null = null,
   gestures: GestureTakes | null = null,
+  rhythms: RhythmTakes | null = null,
 ): ListeningClip[] {
   const support: SongSupport = songSupport(song);
   const guitar = support.slide?.trackId ?? song.tracks[0]?.id ?? "gtr";
@@ -731,6 +736,74 @@ export function listeningClips(
           { id: "L29b", name: "B · Kalın tel susturulmuş" },
         ],
       ),
+    );
+  }
+
+  /*
+   * L30–L32 · the rhythm round (2V-D.2 c3 §12–§14).
+   *
+   * These are the only cards this round asks about, and each listens to a bar
+   * the acceptance song did not have: a 6/8, a 7/8 grouped two ways, and a
+   * metre change with a phrase over it. The takes are built in
+   * `rhythm-take.ts` and the windows here only say which bars to play.
+   */
+  if (rhythms) {
+    const rhythmWindow = (id: keyof RhythmTakes) =>
+      bars(
+        rhythms[id].song,
+        rhythms[id].barNumber,
+        rhythms[id].barNumber + rhythms[id].barCount,
+        [rhythms[id].trackId],
+      );
+
+    clips.push(
+      {
+        id: "L30",
+        label: "6/8'de hızlı dizi",
+        instruction:
+          "İki ana vuruşlu bir ölçü. İkinci vuruşun içinde hızlı bir dizi var. İki tur çalıyor.",
+        question:
+          "6/8'in iki ana vuruş hissi korunurken hızlı dizi doğal biçimde araya yerleşiyor mu?",
+        answers: LISTENING_ANSWERS,
+        takes: [
+          {
+            id: "L30a",
+            name: "Dinle · 2 tur",
+            /* The same bar twice, joined: a drift at the bar line arrives as
+               the second loop starting early or late, which is audible in a
+               way one pass never is. */
+            segments: [plain(rhythmWindow("L30a"), 0.8), plain(rhythmWindow("L30a"), 1.5)],
+          },
+        ],
+        expects: { trackIds: [rhythms.L30a.trackId], minSeconds: 2, maxSeconds: 14 },
+      },
+      {
+        id: "L31",
+        label: "Aynı riff, iki gruplama",
+        instruction:
+          "Aynı yedi nota, aynı hız, aynı ses. Değişen tek şey vurguların yeri. Metronom yok.",
+        question:
+          "İki tekrar farklı yerlerden gruplanmış gibi duyuluyor mu; ölçü sonunda takılma veya fazladan boşluk var mı?",
+        answers: LISTENING_ANSWERS,
+        takes: [
+          { id: "L31a", name: "A · 2+2+3", segments: [plain(rhythmWindow("L31a"), 1.2)] },
+          { id: "L31b", name: "B · 3+2+2", segments: [plain(rhythmWindow("L31b"), 1.2)] },
+        ],
+        expects: { trackIds: [rhythms.L31a.trackId], minSeconds: 1.5, maxSeconds: 12 },
+      },
+      {
+        id: "L32",
+        label: "Farklı ölçüler arasında riff devamı",
+        instruction:
+          "İki ölçü: önce yedi sekizlik, sonra altı sekizlik. Aradaki çizgide bir ses devam ediyor.",
+        question:
+          "Riff ölçü çizgisinde kopmadan tek bir müzikal cümle gibi devam ediyor mu?",
+        answers: LISTENING_ANSWERS,
+        takes: [
+          { id: "L32a", name: "Dinle", segments: [plain(rhythmWindow("L32a"), 1.5)] },
+        ],
+        expects: { trackIds: [rhythms.L32a.trackId], minSeconds: 2, maxSeconds: 14 },
+      },
     );
   }
 

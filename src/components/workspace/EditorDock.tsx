@@ -187,7 +187,13 @@ export function EditorDock({
                 }
                 onClick={() => onPanel(entry.id)}
                 style={{ minHeight: MIN_TOUCH_TARGET_PX, flexBasis: 88 }}
-                className={`min-w-0 shrink-0 flex-1 rounded-lg border px-2 text-sm whitespace-nowrap ${
+                /*
+                 * No `min-w-0` here: it let "Nota süresi" be laid out 3px
+                 * narrower than its own text in landscape, which is a clipped
+                 * label rather than a tight one (c3 §16). The row scrolls
+                 * sideways already, so a button keeping its own width is free.
+                 */
+                className={`shrink-0 flex-1 rounded-lg border px-2 text-sm whitespace-nowrap ${
                   entry.reason !== undefined
                     ? "border-line/50 text-muted/40"
                     : active

@@ -73,7 +73,14 @@ export function ShelfChoice({
       aria-label={disabled ? `${name} — ${reason}` : name}
       aria-pressed={active}
       onClick={onPress}
-      style={{ minHeight: MIN_TOUCH_TARGET_PX }}
+      /*
+       * Both dimensions, not only the height. A one-glyph label — the "−"
+       * and "+" of the fret steppers — is 26px wide with this padding, and
+       * measured that way at all six viewports (c3 §16). Height alone is not
+       * a touch target; the row it sits in already scrolls sideways, so a
+       * wider chip costs nothing.
+       */
+      style={{ minHeight: MIN_TOUCH_TARGET_PX, minWidth: MIN_TOUCH_TARGET_PX }}
       className={`shrink-0 rounded-lg border px-2.5 text-sm whitespace-nowrap ${
         disabled
           ? "border-line/50 text-muted/40"

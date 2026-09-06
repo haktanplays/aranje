@@ -242,6 +242,31 @@ describe("song schema (spec 5)", () => {
     ).toBe(false);
   });
 
+  it("refuses a grouping that does not add up to the metre", () => {
+    /*
+     * A 7/8 felt "2+2+2" is six eighths of accents over a seven-eighth bar:
+     * the last eighth belongs to no beat, and every reader of the grouping —
+     * the metronome, the beam guide, the count-in — would draw a hole there.
+     * The schema is where that is caught, because a bar that cannot be
+     * written cannot be stored (2V-D.2 §12).
+     */
+    const withGrouping = (grouping: readonly number[]) =>
+      barSchema.safeParse({
+        timeSignature: [7, 8],
+        resolution: 16,
+        grouping: [...grouping],
+        slots: {},
+      });
+    expect(withGrouping([2, 2, 3]).success).toBe(true);
+    expect(withGrouping([3, 2, 2]).success).toBe(true);
+    expect(withGrouping([2, 2, 2]).success).toBe(false);
+    expect(withGrouping([4, 4]).success).toBe(false);
+    /* And a bar that says nothing about its feel is still a valid bar. */
+    expect(
+      barSchema.safeParse({ timeSignature: [7, 8], resolution: 16, slots: {} }).success,
+    ).toBe(true);
+  });
+
   it("still refuses a meter that is not in the contract", () => {
     /*
      * 5/4 joined the contract in 2V-D.2 §12, so the negative case moved to a

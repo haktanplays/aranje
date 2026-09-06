@@ -224,16 +224,18 @@ describe("101. the twenty-nine recorded results, exactly as they were given", ()
 });
 
 describe("102. the round that is open, and what it may not re-ask", () => {
-  it("asks nothing, because every card has an answer", () => {
+  it("asks the three rhythm cards and no others", () => {
     /*
-     * L25 and L26 closed the slide phase and the round stood empty while
-     * 2V-D.1 built the multi-axis model underneath the cards that come next.
-     * These are those cards: a palm-mute parity question, a harmonic under a
-     * bend, and a region over one string of two. There is no picking card —
-     * the two strokes are identical in the speakers, so asking would be the
-     * pack inviting an answer to a difference that is not there.
+     * L27, L28 and L29 closed the multi-axis phase, and the round stood
+     * empty while 2V-D.2 built the rhythm model underneath the cards that
+     * come next. These are those cards: a 6/8 with a fast run inside it, one
+     * riff grouped two ways, and one riff carried across a metre change.
+     *
+     * There is no card for the metre picker, the duration language or the
+     * Pro subdivision click. Those are things to look at and press, and the
+     * founder's job here is only to listen (2V-D.2 c3 §15).
      */
-    expect([...ACTIVE_CLIP_IDS]).toEqual([]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L30", "L31", "L32"]);
   });
 
   it("never asks a card whose answer is already recorded", () => {

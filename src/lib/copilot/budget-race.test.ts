@@ -127,6 +127,36 @@ function overlappingKv(inner: MemoryKv, shape: number): KvStore {
   };
 }
 
+/**
+ * Is this promise still unsettled?
+ *
+ * Asserted rather than assumed (2V-D.2 c3 §2). "The winner is still in
+ * flight" is half of what these tests claim, and until now it was only
+ * implied by the fact that the test had not hung.
+ */
+async function stillPending(promise: Promise<unknown>): Promise<boolean> {
+  let settled = false;
+  void promise.then(
+    () => {
+      settled = true;
+    },
+    () => {
+      settled = true;
+    },
+  );
+  /*
+   * A macrotask, not a count of microtask turns. Any promise that is already
+   * resolved has its reaction queued as a microtask, and the whole microtask
+   * queue is guaranteed to drain before a timer callback runs — so this is an
+   * ordering guarantee from the language, not a guess about how long
+   * something takes. `setTimeout(0)` never has to *wait* for anything here.
+   */
+  await new Promise((resolve) => {
+    setTimeout(resolve, 0);
+  });
+  return !settled;
+}
+
 /** A promise the test resolves by hand, which is the whole barrier. */
 function gate(): { wait: Promise<void>; open: () => void } {
   let open = (): void => undefined;
@@ -195,22 +225,51 @@ describe("one budget finances exactly one provider call", () => {
     if (!refused.ok) expect(refused.body.code).toBe("budget_exhausted");
   });
 
-  it("holds the first call open and refuses the second before it is made", async () => {
+  it("holds one call open and refuses the other before it is made", async () => {
+    /*
+     * ## Why the loser is raced for and not named
+     *
+     * This test used to `await second` and assert that *that* caller was the
+     * one refused. It is the caller started second, so the assumption looks
+     * safe and is not: `withStore` awaits three `crypto.subtle.digest` calls
+     * before it reserves, and those resolve on libuv's threadpool in an order
+     * that is **not** the order they were started. Measured on this machine,
+     * two callers each awaiting three digests finish in the opposite order on
+     * about 3% of runs idle and 8% under load.
+     *
+     * When the inversion happened, the caller started second won the budget,
+     * reached the adapter, and stopped at the barrier this test is holding —
+     * so `await second` waited for a promise nothing was ever going to
+     * settle, and the run died on vitest's five-second limit. The symptom
+     * looked like slowness; the cause was an unordered async boundary being
+     * read as an ordered one.
+     *
+     * The claim was never about *which* caller wins. It is that one of them
+     * is refused, before any provider call, while the other is still in
+     * flight — and `Promise.race` states exactly that: the winner is held by
+     * construction and cannot settle, so the race can only yield the loser,
+     * whichever caller it turned out to be.
+     */
     const barrier = gate();
     const { deps, adapter } = oneBudget(rounds(2), () => barrier.wait);
 
-    const [first, second] = pair(deps);
-    // The loser is decided by the reservation, so it can be answered while the
-    // winner is still waiting on the provider. That is the point.
-    const loser = await second;
+    const [a, b] = pair(deps);
+    const loser = await Promise.race([a, b]);
     expect(loser.ok).toBe(false);
     if (!loser.ok) expect(loser.body.code).toBe("budget_exhausted");
     expect(adapter.calls).toHaveLength(1);
 
+    /* The other half of the claim, now asserted instead of implied: the
+       winner really is still waiting on the provider at this moment. */
+    const winnerFirst = await stillPending(a);
+    expect([winnerFirst, await stillPending(b)].filter(Boolean)).toHaveLength(1);
+
     barrier.open();
-    const winner = await first;
-    expect(winner.ok).toBe(true);
+    const [resultA, resultB] = await Promise.all([a, b]);
+    expect([resultA.ok, resultB.ok].filter(Boolean)).toHaveLength(1);
     expect(adapter.calls).toHaveLength(1);
+    /* And the one that was still pending is the one that succeeded. */
+    expect(winnerFirst ? resultA.ok : resultB.ok).toBe(true);
   });
 
   it("lets ten callers in and still pays for one", async () => {
