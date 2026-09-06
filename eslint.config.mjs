@@ -21,6 +21,7 @@ const config = [
       "eval/guitar-performance/.render/**",
       "eval/expression-fidelity/.render/**",
       "eval/technique-spans/.render/**",
+      "eval/audio-parity/.render/**",
       "node_modules/**",
       "design/**",
       "public/**",

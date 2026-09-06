@@ -1,5 +1,21 @@
 # 2V-D.2 · kapanış turu raporu
 
+> **SONRADAN DÜZELTİLDİ — 2V-D.2 gain parity turu.** Bu rapordaki iki cümle
+> yanlıştı ve düzeltildi:
+>
+> 1. **«expressive yol sampler'ın sabit ~9,92 dB üstünde»** — doğru değil.
+>    Doğrudan ölçüm (`eval/audio-parity/measure-parity.mjs`) iki yolu grafiğin
+>    beş aşamasında da **×1,000 — 0,000 dB** buluyor. Gerçek mekanik neden
+>    *kayıt seçimidir*: `nearestSample` ile `Tone.Sampler` beraberliği ters
+>    yönde bozuyordu ve L31'in perdesi (D3) tam o iki beraberlikten biriydi.
+>    Ölçülen tablo `eval/rhythm-grid/L31-ROOT-CAUSE.md` içinde.
+> 2. **«c3 probe paketi: 59 kırmızı, 0 yeşil kalan»** — o ölçüm üç satırlık
+>    bir düzeltme uygulanmışken alınmıştı; commit'lenen ağaçta paket
+>    **56 kırmızı / 3 SETUP-FAIL** veriyordu. Üç probe gain parity turunun
+>    ilk commit'inde onarıldı ve paket şimdi gerçekten 59/59.
+>
+> Aşağıdaki metin, o iki satır dışında, yazıldığı hâliyle bırakılmıştır.
+
 Bu tur yeni faz değildir. D.2'nin açık kalan üç maddesini kapatır: L31'in
 kök nedeni, WAV'ın gerçek rendered-PCM kanıtı, ve motorda duran Pro metronom
 seçeneğinin üretim UI'ına bağlanması. Rapor c3'ün 24 maddesini sırayla
@@ -316,7 +332,7 @@ Founder'dan bu akışı elle yapması istenmedi.
 | Hedefli L31/PCM/metronom paketi | beş ardışık yeşil |
 | Probe sonrası hedefli paket | on ardışık yeşil |
 | **Kapanış probe'ları** | **36 kırmızı, 0 yeşil kalan, 0 restore hatası** |
-| c3 probe paketi (regresyon) | 59 kırmızı, 0 yeşil kalan |
+| c3 probe paketi (regresyon) | ~~59 kırmızı, 0 yeşil kalan~~ → commit'lenen ağaçta **56 kırmızı / 3 SETUP-FAIL**; gain parity c1'de onarıldı, şimdi **59 kırmızı / 0 SETUP-FAIL / 0 restore hatası** |
 | `budget-race` tek başına ×30 | 30/30, timeout değişmedi, retry/skip yok |
 | Altı viewport geometry | 66/66 durum, 0 bulgu |
 | Üretim akışları | 16/16, 0 bulgu |
@@ -385,6 +401,16 @@ L30 ve L32 tekrar sorulmuyor. L31 arşivde **Olmamış** olarak duruyor ve
 L33'ün sonucu onu değiştirmiyor. Hiçbir otomatik ölçüm bu kartı geçirmez:
 +8,33 dB'lik fark yalnız farkın **render edildiğini** kanıtlar.
 
-**Durum: Faz 2V-D.2 teknik olarak hazır — Haktan yalnız L33 gruplama
+~~**Durum: Faz 2V-D.2 teknik olarak hazır — Haktan yalnız L33 gruplama
 farkını dinliyor.** L33 founder PASS'ı gelmeden D.2 fiziksel olarak
 kapanmış sayılmaz.
+~~
+
+**Bu durum satırı geri alındı (gain parity turu).** O sırada L33 henüz
+ölçülmemişti, üç probe SETUP-FAIL veriyordu ve kök neden yanlış
+adlandırılmıştı. Yerine geçen durum:
+
+> **Faz 2V-D.2 açık — expressive/plain gain parity ve üç geçersiz probe
+> kapanmadı.**
+
+Bu turun sonucu için `eval/audio-parity/REPORT-2V-D2-GAIN-PARITY.md`.

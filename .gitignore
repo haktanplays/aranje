@@ -49,3 +49,5 @@ eval/editor-2va1/artifacts/failed-*.png
 # was produced from, so it cannot live inside that commit. Regenerate with the
 # command in eval/rhythm-grid/REPORT-2V-D2.md.
 eval/rhythm-grid/artifacts/
+eval/audio-parity/.render/
+eval/audio-parity/artifacts/

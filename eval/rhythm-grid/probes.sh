@@ -297,7 +297,8 @@ probe "the tail is counted as notated music" \
 # ------------------------------------------------------- the listening cards
 
 probe "L31's two takes become byte-identical" \
-  src/lib/listening/rhythm-take.ts "        ...(hit.accent ? { attack: \"accent\" as const } : {})," "" \
+  src/lib/listening/rhythm-take.ts '    ...(starts.has(index) ? { attack: "accent" as const } : {}),' \
+  '    ...{ attack: "accent" as const },' \
   src/lib/listening/rhythm-take.test.ts "accents the group starts"
 
 probe "L31 leans on a metronome instead of the notes" \
@@ -309,8 +310,8 @@ probe "L32 uses two bars in the same metre" \
   src/lib/listening/rhythm-take.test.ts "listens to two bars in different metres"
 
 probe "L32 loses the sound that crosses the line" \
-  src/lib/listening/rhythm-take.ts "        { slot: 4, fret: 9, accent: true, hold: 2 }," \
-  "        { slot: 4, fret: 9, accent: true }," \
+  src/lib/listening/rhythm-take.ts '        { slot: 4, fret: 9, attack: "accent", hold: 2 },' \
+  '        { slot: 4, fret: 9, attack: "accent" },' \
   src/lib/listening/rhythm-take.test.ts "carries a sounding note up to the bar line"
 
 probe "L30's triplet run stops landing on exact ticks" \
@@ -324,8 +325,8 @@ probe "L30 plays its bar only once" \
   src/lib/listening/rhythm-take.test.ts "plays the same bar twice"
 
 probe "the round re-asks a card the founder already decided" \
-  src/lib/listening/listening-scope.ts 'export const ACTIVE_CLIP_IDS = ["L30", "L31", "L32"] as const;' \
-  'export const ACTIVE_CLIP_IDS = ["L27", "L30", "L31", "L32"] as const;' \
+  src/lib/listening/listening-scope.ts 'export const ACTIVE_CLIP_IDS = ["L33"] as const;' \
+  'export const ACTIVE_CLIP_IDS = ["L27", "L33"] as const;' \
   src/lib/listening/founder-authority.test.ts "never asks a card whose answer is already recorded"
 
 probe "an older card is rewritten to a pass" \
