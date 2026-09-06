@@ -1,6 +1,8 @@
 /**
  * One note, one recording, whichever path plays it (2V-D.2 gain parity §5–§9).
  */
+import { readFileSync } from "node:fs";
+
 import { describe, expect, it } from "vitest";
 
 import { buildExpressionPlan, type ExpressiveNotePlan } from "@/lib/audio/expression-plan";
@@ -433,7 +435,11 @@ describe("388. accent above plain above ghost, in the plan", () => {
 
   it("leaves the plain note's own gain alone on all three", () => {
     /* The presets scale the envelope; none of them may quietly move the note's
-       nominal gain, or "x1.18 of what" stops having an answer. */
+       nominal gain, or "x1.18 of what" stops having an answer. Pinned to the
+       written velocity rather than to each other, so a change that moved all
+       three together would still be caught. */
+    expect(planned?.notes[0]?.velocity).toBe(96);
+    expect(planned?.notes[0]?.gain).toBeCloseTo(96 / 127, 9);
     expect(accented?.notes[0]?.gain).toBe(planned?.notes[0]?.gain);
     expect(ghosted?.notes[0]?.gain).toBe(planned?.notes[0]?.gain);
   });
@@ -452,6 +458,10 @@ describe("388. accent above plain above ghost, in the plan", () => {
   });
 
   it("keeps the declared ratios rather than a taste", () => {
+    /* The numbers themselves, not just "whatever the preset says": a preset
+       compared only with itself agrees with any value it is given. */
+    expect(expressionPresets.accent.gainMultiplier).toBe(1.18);
+    expect(expressionPresets.ghost.gainMultiplier).toBe(0.45);
     const base = planned?.notes[0]?.gain ?? 0;
     const accentPeak = Math.max(
       ...(accented?.notes[0]?.gainEnvelope ?? []).map((point) => point.value),
@@ -483,6 +493,7 @@ type Edge = { readonly from: string; readonly to: unknown };
 function wiringTone() {
   const edges: Edge[] = [];
   const disposals: string[] = [];
+  const built: { name: string; gain: number }[] = [];
   const param = () => ({
     setValueAtTime() {},
     linearRampToValueAtTime() {},
@@ -492,6 +503,9 @@ function wiringTone() {
     class {
       readonly name = `${kind}#${(serial += 1)}`;
       gain = param();
+      constructor(options?: { gain?: number }) {
+        if (kind === "gain") built.push({ name: this.name, gain: options?.gain ?? 0 });
+      }
       playbackRate = param();
       started = false;
       onended: () => void = () => {};
@@ -510,11 +524,12 @@ function wiringTone() {
     tone: { Gain: make("gain"), Filter: make("filter"), ToneBufferSource: make("src") },
     edges,
     disposals,
+    built,
   };
 }
 
-function wiringHarness() {
-  const { tone, edges, disposals } = wiringTone();
+function wiringHarness(trimGain = 1) {
+  const { tone, edges, disposals, built } = wiringTone();
   const destination = { bus: "track" };
   const host: VoiceHost = {
     buffers: {
@@ -523,14 +538,14 @@ function wiringHarness() {
     } as unknown as VoiceHost["buffers"],
     entries: sampleEntries(["E2", "A2", "C3", "E3", "A3", "C4", "E4"]),
     destination: destination as unknown as VoiceHost["destination"],
-    trimGain: 1,
+    trimGain,
   };
   const pool = new ExpressiveVoicePool(
     tone as never,
     { isOffline: false } as never,
     new Map([["gtr", host]]),
   );
-  return { pool, edges, disposals, destination };
+  return { pool, edges, disposals, destination, built };
 }
 
 function onePlan(over: Partial<ExpressiveNotePlan> = {}): ExpressiveNotePlan {
@@ -611,5 +626,93 @@ describe("389. one voice, one edge into the track bus", () => {
     expect(pool.play("gtr", onePlan(), 0)).toBe(false);
     expect(edges).toHaveLength(0);
     expect(pool.counts.active).toBe(0);
+  });
+});
+
+describe("392. the level is the plan's, times the pack's trim, and nothing else", () => {
+  it("builds the voice's gain at exactly that", () => {
+    const { pool, built } = wiringHarness(5.011872);
+    pool.play("gtr", onePlan({ gain: 0.75 }), 0);
+    expect(built).toHaveLength(1);
+    expect(built[0]?.gain).toBeCloseTo(0.75 * 5.011872, 9);
+  });
+
+  it("reads a shaped note's level off its envelope, still times the trim", () => {
+    const { pool, built } = wiringHarness(2);
+    pool.play(
+      "gtr",
+      onePlan({ gain: 0.75, gainEnvelope: [{ timeSeconds: 0, value: 0.885 }] }),
+      0,
+    );
+    expect(built[0]?.gain).toBeCloseTo(0.885 * 2, 9);
+  });
+
+  it("has no compensation constant anywhere in the voice", () => {
+    /* A number that is not the plan's, the trim's or a preset's would be a
+       fudge somebody put there to make one path match the other. */
+    const source = readFileSync("src/lib/audio/expressive-voice.ts", "utf8");
+    expect(source).toContain("const level = host.trimGain;");
+    expect(source).not.toMatch(/3\.13|9\.92|\* 10 \*\*|dbToGain/);
+  });
+});
+
+describe("393. both paths, stated where the graph is built", () => {
+  const engine = readFileSync("src/lib/audio/engine.ts", "utf8");
+
+  it("gives the sampler the pack's trim as its volume", () => {
+    expect(engine).toContain("volume: pack.trimDb,");
+  });
+
+  it("gives the expressive voice the same trim, as a linear factor", () => {
+    expect(engine).toContain("trimGain: Math.pow(10, pack.trimDb / 20),");
+  });
+
+  it("sends both to the track's own channel and nowhere else", () => {
+    expect(engine).toContain("sampler.connect(channel);");
+    expect(engine).toContain("destination: voice.channel,");
+    /* Exactly one edge from the track to the master, and no node reaching the
+       output on its own. */
+    expect(engine.match(/channel\.connect\(master\)/g)).toHaveLength(1);
+    expect(engine).not.toContain("toDestination()");
+  });
+
+  it("keeps the track's own volume on the shared channel", () => {
+    expect(engine).toContain(
+      "const channel = new tone.Channel({ context, volume: track.volumeDb });",
+    );
+  });
+
+  it("strikes a plain note at the plan's gain, once", () => {
+    expect(engine).toContain(
+      "sampler.triggerAttackRelease(current.pitch, duration, struck, current.gain);",
+    );
+    expect(engine.match(/sampler\.triggerAttackRelease/g)).toHaveLength(1);
+  });
+
+  it("carries the trim through a chain and through a resumed voice too", () => {
+    const voice = readFileSync("src/lib/audio/expressive-voice.ts", "utf8");
+    expect(voice).toContain("gain: chain.gain * level,");
+    expect(voice).toContain("gain.gain.linearRampToValueAtTime(continuation.currentGain * level,");
+  });
+});
+
+describe("394. palm mute and an accent are one multiplication, not two", () => {
+  it("scales the muted level by the attack exactly once", () => {
+    const muted = planFor({
+      span: { kind: "palm_mute", startTicks: 0, endTicks: 192 },
+    });
+    const both = planFor({
+      note: { attack: "accent" },
+      span: { kind: "palm_mute", startTicks: 0, endTicks: 192 },
+    });
+    const peak = (
+      plan: ReturnType<typeof planFor>,
+    ): number =>
+      Math.max(...(plan?.notes[0]?.gainEnvelope ?? []).map((point) => point.value));
+    expect(peak(muted)).toBeGreaterThan(0);
+    expect(peak(both) / peak(muted)).toBeCloseTo(
+      expressionPresets.accent.gainMultiplier,
+      3,
+    );
   });
 });

@@ -135,14 +135,14 @@ probe "L31 is written over by the new card" \
   "$AUTH_SPEC" "keeps L31 refuted whatever the next card scores"
 
 probe "L30 and L32 are asked again" \
-  "$SCOPE" 'export const ACTIVE_CLIP_IDS = ["L33"] as const;' \
-  'export const ACTIVE_CLIP_IDS = ["L30", "L31", "L32", "L33"] as const;' \
+  "$SCOPE" 'export const ACTIVE_CLIP_IDS = ["L33", "L34", "L35"] as const;' \
+  'export const ACTIVE_CLIP_IDS = ["L30", "L31", "L32", "L33", "L34", "L35"] as const;' \
   "$AUTH_SPEC" "never asks a card whose answer is already recorded"
 
 probe "the round asks nothing at all" \
-  "$SCOPE" 'export const ACTIVE_CLIP_IDS = ["L33"] as const;' \
+  "$SCOPE" 'export const ACTIVE_CLIP_IDS = ["L33", "L34", "L35"] as const;' \
   'export const ACTIVE_CLIP_IDS = ["L30"] as const;' \
-  "$AUTH_SPEC" "asks the one completion card and no others"
+  "$AUTH_SPEC" "asks the three cards of the gain parity round and no others"
 
 probe "an archived card is quietly dropped from the record" \
   "$AUTH" '  { id: "L30", title: "6/8 içinde hızlı üçleme", verdict: "pass" },' "" \

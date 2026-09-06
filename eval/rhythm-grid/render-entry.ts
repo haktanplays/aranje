@@ -602,9 +602,10 @@ export type AccentContrast = {
     readonly peakDb: number;
   }[];
   /** Mean accented ÷ mean plain, in the PCM. */
-  readonly measuredPeakRatio: number;
-  readonly measuredRmsRatio: number;
-  readonly measuredDb: number;
+  /** Null when one side of the comparison is empty; never a bare zero. */
+  readonly measuredPeakRatio: number | null;
+  readonly measuredRmsRatio: number | null;
+  readonly measuredDb: number | null;
   readonly health: ReturnType<typeof healthOf>;
   readonly wavBase64: string;
 };
@@ -722,9 +723,15 @@ export async function renderAccentContrast(
     values.length === 0 ? 0 : values.reduce((sum, value) => sum + value, 0) / values.length;
   const accented = notes.filter((note) => note.accented);
   const plain = notes.filter((note) => !note.accented);
-  const peakRatio = mean(plain.map((n) => n.peak)) === 0
-    ? 0
-    : mean(accented.map((n) => n.peak)) / mean(plain.map((n) => n.peak));
+  /* Null rather than zero when one side of the comparison is empty: an
+     all-accent render has no plain note to be a ratio *of*, and reporting
+     "0x" for it would read as a measured silence rather than as a question
+     that was never asked. */
+  const comparable = accented.length > 0 && plain.length > 0;
+  const peakRatio =
+    !comparable || mean(plain.map((n) => n.peak)) === 0
+      ? null
+      : mean(accented.map((n) => n.peak)) / mean(plain.map((n) => n.peak));
 
   const wav = encodeWav({ channels: rendered.channels, sampleRate: rendered.sampleRate });
 
@@ -737,14 +744,15 @@ export async function renderAccentContrast(
       4,
     ),
     notes,
-    measuredPeakRatio: round(peakRatio, 4),
-    measuredRmsRatio: round(
-      mean(plain.map((n) => n.rms25)) === 0
-        ? 0
-        : mean(accented.map((n) => n.rms25)) / mean(plain.map((n) => n.rms25)),
-      4,
-    ),
-    measuredDb: dbfs(peakRatio),
+    measuredPeakRatio: peakRatio === null ? null : round(peakRatio, 4),
+    measuredRmsRatio:
+      !comparable || mean(plain.map((n) => n.rms25)) === 0
+        ? null
+        : round(
+            mean(accented.map((n) => n.rms25)) / mean(plain.map((n) => n.rms25)),
+            4,
+          ),
+    measuredDb: peakRatio === null ? null : dbfs(peakRatio),
     health: healthOf(rendered.channels),
     wavBase64: wav.ok ? base64(wav.bytes) : "",
   };

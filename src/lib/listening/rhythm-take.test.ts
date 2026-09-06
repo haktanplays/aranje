@@ -263,20 +263,147 @@ describe("378. L32 — one riff across a metre change", () => {
   });
 });
 
+describe("390. L34 — the same note struck three ways", () => {
+  it("changes nothing but the striking", () => {
+    /* One pitch, one register, one duration: if any of these moved, the card
+       would be asking about two things and the founder could not answer it. */
+    const written = notesOf("L34a");
+    expect(written).toHaveLength(6);
+    expect(new Set(written.map((note) => note.pitch)).size).toBe(1);
+    expect(new Set(written.map((note) => note.durationTicks)).size).toBe(1);
+  });
+
+  it("writes plain, accent and ghost in that order, twice", () => {
+    const written = notesOf("L34a");
+    expect(written.map((note) => note.attack ?? "plain")).toEqual([
+      "plain",
+      "accent",
+      "ghost",
+      "plain",
+      "accent",
+      "ghost",
+    ]);
+  });
+
+  it("leaves a real gap between the two groups", () => {
+    /* Three notes running into each other are a phrase; three with a rest
+       after them are a comparison. An eighth is 96 ticks, so the gap between
+       the ghost and the next plain note has to be twice that. */
+    const times = onsets("L34a").map((note) => note.timeTicks);
+    expect(times).toHaveLength(6);
+    const gaps = times.slice(1).map((time, index) => time - times[index]!);
+    expect(gaps).toEqual([96, 96, 192, 96, 96]);
+  });
+
+  it("makes the ordering a fact about the plan, not about the card", () => {
+    /* The card cannot boost itself: what it plays is what the presets say,
+       and this reads the three levels off the production planner. */
+    const [firstPlain, accent, ghost] = onsets("L34a");
+    const peak = (note: (typeof onsets extends never ? never : ReturnType<typeof onsets>)[number]) =>
+      note.gainEnvelope.length === 0
+        ? note.gain
+        : Math.max(...note.gainEnvelope.map((point) => point.value));
+    expect(firstPlain && accent && ghost).toBeTruthy();
+    if (!firstPlain || !accent || !ghost) return;
+    expect(peak(accent)).toBeGreaterThan(peak(firstPlain));
+    expect(peak(firstPlain)).toBeGreaterThan(peak(ghost));
+    /* And the same gain underneath all three — no per-card level. */
+    expect(new Set(onsets("L34a").map((note) => note.gain)).size).toBe(1);
+  });
+
+  it("asks the founder about loudness in words, and shows no number", () => {
+    const clip = listeningClips(fixture, null, null, null, takes).find(
+      (entry) => entry.id === "L34",
+    );
+    expect(clip?.question).toBe(
+      "Vurgulu nota düz notadan daha belirgin, hayalet nota ise daha geride ve doğal duyuluyor mu?",
+    );
+    expect(`${clip?.instruction} ${clip?.question}`).not.toMatch(
+      /dB|tick|gain|accent|ghost|velocity/i,
+    );
+  });
+});
+
+describe("391. L35 — one phrase that picks expression up and puts it down", () => {
+  it("keeps the plain notes as a control on both sides of the expression", () => {
+    const notes = onsets("L35a");
+    expect(notes.length).toBeGreaterThanOrEqual(6);
+    const plain = notes.filter((note) => !note.expressive);
+    expect(plain.length).toBeGreaterThanOrEqual(3);
+    /* The first and the last note of the phrase are both plain: whatever
+       happens in the middle has to come back to them. */
+    expect(notes[0]?.expressive).toBe(false);
+    expect(notes[notes.length - 1]?.expressive).toBe(false);
+  });
+
+  it("really contains a vibrato, a bend and its release, and a slide", () => {
+    /* Non-vacuous: a card whose techniques quietly fell out on the way to the
+       plan would be a phrase of plain notes asking about expression. */
+    const notes = onsets("L35a");
+    const vibrato = notes.find((note) => note.pitchAutomation.length > 20);
+    expect(vibrato, "no vibrato reached the plan").toBeDefined();
+    const bend = notes.find(
+      (note) =>
+        note.pitchAutomation.some((point) => point.cents >= 199) &&
+        (note.pitchAutomation[note.pitchAutomation.length - 1]?.cents ?? 0) < 1,
+    );
+    expect(bend, "no bend release reached the plan").toBeDefined();
+    const slide = notes.find(
+      (note) =>
+        note.pitchAutomation.some((point) => point.cents >= 199) && note !== bend,
+    );
+    expect(slide, "no slide reached the plan").toBeDefined();
+  });
+
+  it("writes no attack anywhere, so nothing in it is a level change", () => {
+    /* The card is about whether expression stays level. An accent inside it
+       would be a level change the founder was not asked about. */
+    for (const note of notesOf("L35a")) expect(note.attack).toBeUndefined();
+  });
+
+  it("stays on one string and in one register", () => {
+    const strings = new Set(
+      onsets("L35a").map((note) => note.position?.stringIndex),
+    );
+    expect(strings.size).toBe(1);
+    const frets = onsets("L35a").map((note) => note.position?.fret ?? 0);
+    expect(Math.max(...frets) - Math.min(...frets)).toBeLessThanOrEqual(2);
+  });
+
+  it("asks about level and character together, without a number", () => {
+    const clip = listeningClips(fixture, null, null, null, takes).find(
+      (entry) => entry.id === "L35",
+    );
+    expect(clip?.question).toBe(
+      "Bend, vibrato ve kaydırma geldiğinde karakter değişiyor ama ses seviyesi aniden zıplamadan aynı cümlenin içinde kalıyor mu?",
+    );
+    expect(`${clip?.instruction} ${clip?.question}`).not.toMatch(
+      /dB|tick|gain|cents|expressive/i,
+    );
+  });
+});
+
 describe("379. the round asks three questions and awards none", () => {
-  it("offers the four rhythm cards and asks only the last", () => {
+  it("offers every rhythm card and asks only the three still open", () => {
     /*
      * The three from the rhythm round still exist as clips — they are the
-     * music the archive's rows are about — but the round in progress is one
-     * card wide. Which cards exist and which are being asked are different
-     * questions and this holds them apart.
+     * music the archive's rows are about — but they are not being asked.
+     * Which cards exist and which are being asked are different questions
+     * and this holds them apart.
      */
     const clips = listeningClips(fixture, null, null, null, takes);
     const rhythm = clips.filter((clip) =>
-      ["L30", "L31", "L32", "L33"].includes(clip.id),
+      ["L30", "L31", "L32", "L33", "L34", "L35"].includes(clip.id),
     );
-    expect(rhythm.map((clip) => clip.id)).toEqual(["L30", "L31", "L32", "L33"]);
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33"]);
+    expect(rhythm.map((clip) => clip.id)).toEqual([
+      "L30",
+      "L31",
+      "L32",
+      "L33",
+      "L34",
+      "L35",
+    ]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33", "L34", "L35"]);
   });
 
   it("gives L33 one pitch, so nothing but the striking can group it", () => {

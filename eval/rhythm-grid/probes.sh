@@ -325,8 +325,8 @@ probe "L30 plays its bar only once" \
   src/lib/listening/rhythm-take.test.ts "plays the same bar twice"
 
 probe "the round re-asks a card the founder already decided" \
-  src/lib/listening/listening-scope.ts 'export const ACTIVE_CLIP_IDS = ["L33"] as const;' \
-  'export const ACTIVE_CLIP_IDS = ["L27", "L33"] as const;' \
+  src/lib/listening/listening-scope.ts 'export const ACTIVE_CLIP_IDS = ["L33", "L34", "L35"] as const;' \
+  'export const ACTIVE_CLIP_IDS = ["L27", "L33", "L34", "L35"] as const;' \
   src/lib/listening/founder-authority.test.ts "never asks a card whose answer is already recorded"
 
 probe "an older card is rewritten to a pass" \

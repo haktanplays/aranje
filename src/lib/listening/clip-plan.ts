@@ -122,7 +122,9 @@ export type ListeningClipId =
   | "L30"
   | "L31"
   | "L32"
-  | "L33";
+  | "L33"
+  | "L34"
+  | "L35";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -834,6 +836,54 @@ export function listeningClips(
           { id: "L33b", name: "B · 3+2+2", segments: [plain(rhythmWindow("L33b"), 1.2)] },
         ],
         expects: { trackIds: [rhythms.L33a.trackId], minSeconds: 2, maxSeconds: 14 },
+      },
+      /*
+       * L34 · the ordering, on one note (gain parity §13).
+       *
+       * The round changed which recording an articulated note comes from, so
+       * the first thing to put in front of ears is the simplest question the
+       * change can be wrong about: is an accent still more than a plain note,
+       * and a ghost still less? One pitch, one register, one duration — only
+       * the striking changes, twice, with a rest between the groups so the
+       * three are a comparison rather than a phrase.
+       */
+      {
+        id: "L34",
+        label: "Düz, vurgulu ve hayalet vuruş",
+        instruction:
+          "Aynı nota, üç farklı vuruş: düz, vurgulu, hayalet. Kısa bir boşluktan sonra aynısı bir daha. Metronom yok.",
+        question:
+          "Vurgulu nota düz notadan daha belirgin, hayalet nota ise daha geride ve doğal duyuluyor mu?",
+        answers: LISTENING_ANSWERS,
+        takes: [
+          { id: "L34a", name: "Dinle", segments: [plain(rhythmWindow("L34a"), 1.2)] },
+        ],
+        expects: { trackIds: [rhythms.L34a.trackId], minSeconds: 1.5, maxSeconds: 12 },
+      },
+      /*
+       * L35 · the same question across a phrase (gain parity §14).
+       *
+       * L34 asks about three strikes side by side; this asks whether the
+       * answer survives being played as music. Plain, vibrato, bend and
+       * release, plain, a shift slide, and a plain close — one string, one
+       * register, no attack anywhere, so the plain notes are the control the
+       * expressive ones have to stay level with.
+       *
+       * No harmonic: a harmonic is a different spectrum rather than a
+       * different level, and it would ask the founder two questions at once.
+       */
+      {
+        id: "L35",
+        label: "İfade eklenince ses dengesi",
+        instruction:
+          "Tek bir cümle. Ortasında titretme, büküp bırakma ve kaydırma var; başı ve sonu düz. Metronom yok.",
+        question:
+          "Bend, vibrato ve kaydırma geldiğinde karakter değişiyor ama ses seviyesi aniden zıplamadan aynı cümlenin içinde kalıyor mu?",
+        answers: LISTENING_ANSWERS,
+        takes: [
+          { id: "L35a", name: "Dinle", segments: [plain(rhythmWindow("L35a"), 1.5)] },
+        ],
+        expects: { trackIds: [rhythms.L35a.trackId], minSeconds: 2, maxSeconds: 16 },
       },
     );
   }

@@ -4919,6 +4919,68 @@ sessiz yüzde onundan ölçer, eşiği ondan türetir ve hiçbir onset bulamazsa
 koşumu düşürür. Bar sınırı toleransı da ölçülür — tek bir notanın kendi
 atağı: eşiği **+6,1 ms**, tepesi **+66,6 ms** sonra geçer.
 
+### §13.42 Bir notanın hangi kayıttan çaldığı (2V-D.2 gain parity)
+
+#### §13.42.1 İki seçici, tek kural
+
+Articulation taşımayan nota track'in paylaşılan `Tone.Sampler`'ı tarafından
+çalınır; sampler kaydını **kendisi** seçer ve dışarıdan söylenemez.
+Articulation taşıyan nota kendi expressive voice'una düşer ve `nearestSample`'a
+sorar. Bu yüzden `nearestSample`, sampler'ın seçeceğinden **başka** bir şey
+döndüremez: aksi hâlde aynı yazılı nota, yalnız üstünde accent olup olmamasına
+göre farklı kayıttan, farklı gerdirmeden ve farklı ataktan çalar.
+
+Kural: **eşit uzaklıktaki iki kayıttan yukarıdaki kazanır.** Bu bir tercih
+değil, sampler'ın kendi davranışıdır (dışa doğru arar, önce yukarı bakar).
+Otorite düz yoldur, çünkü founder'ın kulakla PASS verdiği yol odur (L1).
+
+#### §13.42.2 Ölçülen gain kontratı
+
+Lineer/temiz yolda, notanın kendi çalma penceresinde ölçülen tepe:
+
+| | ölçülen | ilan edilen |
+|---|---|---|
+| accent ÷ plain | ×1,1800 — +1,438 dB | ×1,18 — +1,438 dB |
+| ghost ÷ plain | ×0,4425 — −7,082 dB | ×0,45 — −6,936 dB |
+| accent ÷ ghost | ×2,6222 — +8,373 dB | ×2,6222 — +8,373 dB |
+
+Yön her koşulda zorunludur: **`accent > plain > ghost`**. Sabit bir yol farkı
+bulunmamalıdır; iki yol grafiğin beş aşamasında da (kaynak, pack trim, track
+channel, master headroom, ceiling) **×1,000 — 0,000 dB** olmalıdır.
+
+Ölçüm tek başına tepeye dayanmaz: tepe, kısa transient RMS ve sustain RMS ayrı
+raporlanır. `ghost`'un sustain'i oranından daha aşağıdadır ve bu bir artık
+değil, preset'in kendi `holdFraction`'ıdır — hayalet nota kısadır.
+
+#### §13.42.3 Headroom
+
+Altı ses birlikte vurulduğunda tepe: düz **−6,49 dBFS**, vurgulu **−5,06 dBFS**,
+hayalet **−15,87 dBFS**; üçünde de **0 clip, 0 non-finite**. Aynı müzik üç kez
+render edildiğinde tepe ve RMS yayılımı **0 dB**, dispose sonrası aktif ses
+**0**.
+
+#### §13.42.4 Grafiğin sahipliği
+
+Bir expressive ses track bus'ına **tam bir kez** bağlanır, yanında kuru kopya
+bulunmaz, filtre zincire girer ama ikinci yol açmaz, yirmi çalmadan sonra
+bağlantı sayısı yirmidir, `stopAll` sonrası aktif ses sıfırdır ve her ses kendi
+kaynağını ve gain'ini birer kez serbest bırakır. Yeni bir havuz eskisinin
+seslerini devralmaz.
+
+#### §13.42.5 Bu turun aktif fiziksel kapsamı
+
+Yalnız **L33**, **L34**, **L35**. L30 PASS, L31 FAIL — «İkisi arasında belirgin
+bir fark yok» — ve L32 PASS arşivde durur; hiçbiri tekrar sorulmaz, hiçbiri bu
+turun sonucuyla yeniden yazılmaz. Gruplama metadata'sı hâlâ hiçbir notayı
+kendiliğinden vurgulamaz.
+
+#### §13.42.6 SETUP-FAIL bir red değildir
+
+Bir mutation probe'un aradığı satır kaynakta yoksa sonuç **SETUP-FAIL**'dir ve
+hiçbir istatistikte kırmızı sayılmaz. Uygulanıp da testi kırmızı yapmayan
+probe, testin boş olduğunun kanıtıdır ve testi güçlendirmek gerekir — probe'u
+değil.
+
 ## §14 Stack, mimari ve fazlar
 
 ### §14.1 Stack (sabit — değiştirme, öneri varsa sor)
@@ -5277,6 +5339,7 @@ maliyettir** (§11.2/7).
 | **K-72** | **Ölçmeden yön varsayma; 8 ms bir yuvarlama değildi (2V-D.1-C).** D.1 kapanırken span'li palm mute legacy notadan 8 ms kısaydı ve bu «tick ile saniye arasındaki yuvarlama» diye kaydedilip `< 0.01` sınırıyla geçildi. Tam zaman çizgisi — yazılı tick, kapılanmış tick, planlanan saniye, zarf — üç olgu için yan yana ölçüldüğünde teşhis **cinsinden** yanlış çıktı: zaman çizgisi legacy enum'ı okuyarak tick'te kapılıyor, span'i göremiyor, planlayıcı da span'i ikinci kez kapılıyordu (`0.92 × 0.45` karşı `0.45`); `palmMuteSeconds` ise mutlak 180 ms tavandır, başka bir iş yapar ve o tempoda hiç bağlamaz. Zaman çizgisi tekniği artık kendisi çözer, planlayıcı tekrar kapılamaz, iki yazım **birebir** eşittir ve gerçek offline render de aynı şeyi söyler (0.01858 RMS / 107 ms sönüm; susturulmamış nota 0.03989 / 250 ms). **İkinci karar: span bir dikdörtgendir.** Copy/paste/move/repeat/delete/restring/şekil taşıma tek bir zaman × tel aritmetiğine (`span-rect`) dayanır; notalarını takip edemeyen span komutun tamamını reddeder (`span_scope_lost`); kesilen span parçalanır ve her kimlik türetilir, yani redo aynı byte'ları yazar; **üzerinde nota olmaması orphan değildir.** **Üçüncü karar: beş eksen tek sayfada.** `expression-marks` yazım dağarcığını bir kez adlandırır; span'li mute legacy mute ile **aynı koordinatlarda** ray çizer, let ring rayını kazanır, TabCanvas bütçesi yükseltilmedi. **Dördüncü karar: «Çalım» üç soru sorar** (Vuruş / Pena / Bölge boyunca), modal değildir, her seçim uygulanmadan önce apply'ın kendi komutundan gelen cümleyi gösterir, önizleme ve red store'a yazmaz. **Beşinci: pena yönü için ayrı bir dürüstlük cümlesi** — yazılır, duyulmaz. **Ölçülen sınır:** şema bir section'ı 8 span ile sınırlıyor, yani 8× bugün yazılabilen en yoğun şarkıdır; tavan değiştirilmedi, borç olarak yazıldı. **Doğrulama:** tam süit **5.538 test / 337 dosya**, tsc/lint temiz. | **L27 avuç susturma paritesi · L28 armonik + perde hareketi · L29 tek elde iki tel; pena kartı yok, çünkü iki vuruş hoparlörde aynıdır** |
 | **K-73** | **On sayının eşit olması bir otorite değildir; ve üç click ölçünün tamamı değildir (2V-D.2).** İki düzeltme bu turun ritim işini taşıdı. **Birincisi:** on modül bar uzunluğunu kendi çarpıyordu ve bir test hepsinin eşit olduğunu söylüyordu — eşitlik, on birinci çağıranın uymak zorunda olduğu bir otorite değildir. `ticksPerBar` metre+grid alıyordu, on çağıranın hepsi elinde *bar* tutuyordu; `barTicks(bar)` istedikleri şekildi, hepsi ona geçti ve grep artık eski ifadenin **yokluğunu** tutuyor. **İkincisi:** «7/8 üç eşit olmayan click» ana vuruş katmanı için doğru, ölçünün içeriği için yanlıştır — 7/8'de yedi sekizlik vardır. `meterBeats` ana vuruşları, `meterPulses` bütün nota değerlerini rolleriyle verir; ikisi birbirinden türer, `readRhythm` ana vuruş sayısını ve alt bölünme satırını birlikte taşır, Pro alt bölünmeyi açtığında ana vuruşlar aynı tick'te kalır. **Üçüncü karar: ölçülen şey yazılmaz.** 6/8 + 1/16 üçleme mevcut 48 lattice'inde zaten tamdı (576 tick, `gcd(48,32)=16`) ve saklanan BPM zaten dörtlüktü — ikisi de **inşa edilmedi**, yalnız okundu ve söylendi. **Dördüncü: MIDI'de gruplama kaybolur ve bu açıkça yazılır**; `2+2+3` ile `3+2+2` birebir aynı meta event'leri üretir, bunu bağımsız bir parser doğrular, özel marker yazılmaz. **Beşinci: bir flake'in belirtisi süre değildi.** `crypto.subtle.digest` libuv'da başlatılma sırasında çözülmüyor (boşta %3,3, yük altında %7,7); test *hangi* çağıranın kazandığını varsayıyordu. `Promise.race` ile iddia gerçek haline döndü, timeout yükseltilmedi, iki assertion eklendi, 30 ardışık yeşil (p50 2150 ms / p95 2300 ms). **Ölçülen sınır:** WAV'ın PCM onset'leri bu ortamda ölçülemedi; bar sınırı tablosu üretim planlayıcılarından çıkarıldı ve PCM doğrulaması **açık borç** olarak yazıldı. | **L30 6/8 içinde hızlı üçleme · L31 aynı riff iki gruplama (metronomsuz) · L32 farklı ölçüler arasında riff devamı** |
 | **K-74** | **Bir kartın reddi, ölçülmemiş bir kusurun adıdır (2V-D.2 completion, gain parity turunda düzeltildi).** Founder L31'e «İkisi arasında belirgin bir fark yok» dedi ve haklıydı — iki ayrı sebeple. **Birincisi ürün:** aynı yazılı nota, yalnız accent taşıyıp taşımamasına göre **farklı kayıttan** çalıyordu. Articulation'sız nota paylaşılan `Tone.Sampler`'ın seçtiği kaydı, articulation'lı nota `nearestSample`'ın seçtiğini alıyor; iki seçicinin beraberlik kuralı zıttı (`nearestSample` aşağı, sampler yukarı). Gitar pack'inde tam ortada kalan iki perde vardır — **D3 ve D4** — ve L31 tel 1 perde 5, yani **D3** üzerine yazılmıştır. **c1'in «sabit 9,92 dB routing farkı» sonucu yanlıştı ve ölçümle çürütüldü:** grafiğin beş aşamasının hepsinde iki yol **×1,000 — 0,000 dB**; o sayı, onset'ten 25 ms'lik bir pencerenin (pack tepesine 66 ms'de çıkar) hızlandırılmış kaydı fazla okumasıydı — D3'te tepe farkı 0,655 dB, ilk 25 ms farkı 13,804 dB. **İkincisi fixture:** 5-6-7-5-6-7-5 konturu her üç notada tekrar ediyor ve kendi gruplamasını dayatıyor. **Düzeltme merkezîdir ve telafi değildir:** `nearestSample` artık sampler'ın seçimini bildirir (beraberlikte yukarıdaki kayıt), çünkü düz yol founder'ın L1'de kulakla geçirdiği yoldur. Sonrasında 25 yarım sesin 0'ı ayrışır. Ölçülen kontrat: `accent > plain > ghost`, `accent ÷ ghost = ×2,6222 = +8,373 dB` — preset'lerin ilan ettiği oranın kendisi. **Ve gerçek PCM ölçülüyor:** `renderSongToBuffer` tarayıcıda koşuyor, detector yalnız buffer'ı görüyor, tolerans tek notanın kendi atağından (+6,1 ms eşik, +66,6 ms tepe) türetiliyor. | **L33 aynı riff iki gruplama, L34 düz/vurgulu/hayalet, L35 ifade dengesi** |
+| **K-75** | **Bir kayıt seçici, iki yol (2V-D.2 gain parity).** Paylaşılan `Tone.Sampler` kaydını kendisi seçer ve dışarıdan yönlendirilemez; expressive voice `nearestSample`'a sorar. İkisi ayrı karar verdiği sürece aynı yazılı nota, yalnız articulation taşıyıp taşımamasına göre başka bir kayıttan çalar. **Karar: `nearestSample` sampler'ın seçimini bildirir** — beraberlikte yukarıdaki kayıt kazanır — çünkü düz yol founder'ın L1'de kulakla geçirdiği yoldur ve onu kaydırmak kayıtlı bir kararı olan sesi yeniden seviyelendirmek olurdu. Telafi sabiti, per-kart gain, preset yeniden kalibrasyonu ve sample asset düzenlemesi yasaktır. Ölçülen kontrat: iki yol grafiğin beş aşamasında da ×1,000 — 0,000 dB, `accent > plain > ghost`, `accent ÷ ghost = ×2,6222 = +8,373 dB`. **Ve bir SETUP-FAIL red değildir:** aradığı satır kaynakta olmayan probe hiçbir istatistikte kırmızı sayılmaz. | **L34 düz/vurgulu/hayalet sırası, L35 ifade eklenince seviye** |
 
 
 ### §19.1 v1.5'in v1.2'yi geçersiz kıldığı yerler

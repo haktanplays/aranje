@@ -250,7 +250,7 @@ describe("101. the thirty-two recorded results, exactly as they were given", () 
 });
 
 describe("102. the round that is open, and what it may not re-ask", () => {
-  it("asks the one completion card and no others", () => {
+  it("asks the three cards of the gain parity round and no others", () => {
     /*
      * L27, L28 and L29 closed the multi-axis phase, and the round stood
      * empty while 2V-D.2 built the rhythm model underneath the cards that
@@ -261,11 +261,14 @@ describe("102. the round that is open, and what it may not re-ask", () => {
      * Pro subdivision click. Those are things to look at and press, and the
      * founder's job here is only to listen (2V-D.2 c3 §15).
      *
-     * The completion round narrows this to one. L30 and L32 passed, L31 was
-     * refuted, and none of them is asked twice; L33 is the round's whole
-     * physical gate (completion §15).
+     * The completion round narrowed this to one. L30 and L32 passed, L31 was
+     * refuted, and none of them is asked twice. The gain parity round adds
+     * two more, because it changed which recording an articulated note comes
+     * from: L34 asks whether accent, plain and ghost still sit in that order
+     * on one note, and L35 whether the answer survives a phrase (gain parity
+     * §13, §14, §15).
      */
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33"]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33", "L34", "L35"]);
   });
 
   it("never asks a card whose answer is already recorded", () => {

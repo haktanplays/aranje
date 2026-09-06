@@ -590,7 +590,7 @@ const FLOWS = [
     },
   },
   {
-    name: "16-the-listening-round-asks-one-card",
+    name: "16-the-listening-round-asks-its-three-cards",
     chrome: true,
     path: "/eval/listening-pack",
     run: async (page) => {
@@ -600,20 +600,43 @@ const FLOWS = [
           node.getAttribute("data-listen-clip"),
         ),
       );
-      const question = await text(page, "[data-listen-clip='L33'] [data-listen-note], [data-listen-clip='L33']");
+      const asked = (id) =>
+        text(page, `[data-listen-clip='${id}']`).then((value) => value ?? "");
+      const l33 = await asked("L33");
+      const l34 = await asked("L34");
+      const l35 = await asked("L35");
       return {
-        witness: open.includes("L33"),
+        witness: open.includes("L35"),
         checks: [
-          ["L33 is offered", open.includes("L33"), open.join(",")],
+          [
+            "the three open cards are offered and nothing else",
+            open.join(",") === "L33,L34,L35",
+            open.join(","),
+          ],
           [
             "no card the founder already answered is asked again",
             !open.some((id) => ["L30", "L31", "L32"].includes(id ?? "")),
             open.join(","),
           ],
           [
-            "the card asks about grouping, not about editing",
-            (question ?? "").includes("gruplanmış"),
-            (question ?? "").slice(0, 90),
+            "L33 asks about grouping",
+            l33.includes("gruplanmış"),
+            l33.slice(0, 80),
+          ],
+          [
+            "L34 asks about a plain, an accented and a ghost note",
+            l34.includes("hayalet") && l34.includes("vurgulu"),
+            l34.slice(0, 80),
+          ],
+          [
+            "L35 asks whether the level stays put when expression arrives",
+            l35.includes("seviyesi") && l35.includes("zıplamadan"),
+            l35.slice(0, 80),
+          ],
+          [
+            "no card shows the founder a number",
+            !/\d+\s*dB|tick|gain/i.test(`${l33} ${l34} ${l35}`),
+            "",
           ],
         ],
       };

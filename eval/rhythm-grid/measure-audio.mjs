@@ -43,7 +43,7 @@ const save = (name, render) => {
 /* ------------------------------------------------------------ the takes */
 
 const takes = {};
-for (const id of ["L30a", "L31a", "L31b", "L32a", "L33a", "L33b"]) {
+for (const id of ["L30a", "L31a", "L31b", "L32a", "L33a", "L33b", "L34a", "L35a"]) {
   process.stdout.write(`  take ${id} ... `);
   const render = save(
     `take-${id}`,

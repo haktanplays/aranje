@@ -51,6 +51,8 @@ export const RHYTHM_TAKE_IDS = [
   "L32a",
   "L33a",
   "L33b",
+  "L34a",
+  "L35a",
 ] as const;
 
 export type RhythmTakeId = (typeof RHYTHM_TAKE_IDS)[number];
@@ -79,12 +81,19 @@ type Hit = {
   readonly attack?: NoteAttack;
   /** Slots of tie after it, so a note can be held over a bar line. */
   readonly hold?: number;
+  /** How the string was struck, for the one card that asks about vibrato. */
+  readonly articulation?: NoteEvent["articulation"];
+  /** What the pitch does while the note sounds (bend, release, slide). */
+  readonly gesture?: NoteEvent["pitchGesture"];
+  /** The bond with the note immediately before it on this string. */
+  readonly connection?: NoteEvent["connection"];
 };
 
 type BarSpec = {
   readonly meter: TimeSignature;
   readonly resolution: Resolution;
-  readonly grouping: readonly number[];
+  /** Absent in 4/4, where the main beats are the notated units. */
+  readonly grouping?: readonly number[];
   readonly hits: readonly Hit[];
 };
 
@@ -120,6 +129,9 @@ function appendBars(
         pitch,
         position: { string: STRING, fret: hit.fret },
         ...(hit.attack === undefined ? {} : { attack: hit.attack }),
+        ...(hit.articulation === undefined ? {} : { articulation: hit.articulation }),
+        ...(hit.gesture === undefined ? {} : { pitchGesture: hit.gesture }),
+        ...(hit.connection === undefined ? {} : { connection: hit.connection }),
       };
       lane[hit.slot] = { notes: [note] };
       for (let step = 1; step <= (hit.hold ?? 0); step += 1) {
@@ -140,7 +152,7 @@ function appendBars(
     return {
       timeSignature: [spec.meter[0], spec.meter[1]] as Bar["timeSignature"],
       resolution: spec.resolution,
-      grouping: [...spec.grouping],
+      ...(spec.grouping === undefined ? {} : { grouping: [...spec.grouping] }),
       slots,
     } satisfies Bar;
   });
@@ -230,6 +242,76 @@ function accentedRiffBar(grouping: readonly number[]): BarSpec {
 /** The one fret L33 is played on, low enough to read as a riff rather than a line. */
 const L33_FRET = 3;
 
+/**
+ * L34's bar: the same note struck three ways, twice (gain parity §13).
+ *
+ * One pitch, one register, one duration, one tempo. The only thing that
+ * changes between the three notes of a group is how the string was struck,
+ * so what a listener compares is the striking and nothing else. A rest ends
+ * each group, because three notes running into each other is a phrase and
+ * three notes with a gap after them is a comparison.
+ *
+ * `L34_FRET` is 3 rather than 5 on purpose: fret 3 is a pitch the pack
+ * records exactly, so the card asks about level rather than about how a
+ * recording sounds stretched.
+ */
+function plainAccentGhostBar(): BarSpec {
+  const hits: Hit[] = [];
+  for (const start of [0, 4]) {
+    hits.push({ slot: start, fret: L34_FRET });
+    hits.push({ slot: start + 1, fret: L34_FRET, attack: "accent" });
+    hits.push({ slot: start + 2, fret: L34_FRET, attack: "ghost" });
+  }
+  return { meter: [4, 4], resolution: 8, hits };
+}
+
+const L34_FRET = 3;
+
+/**
+ * L35's two bars: one phrase that picks up expression and puts it down.
+ *
+ * Plain, vibrato, bend-and-release, plain, a shift slide, and a plain close —
+ * on one string, in one register, at one tempo, with no attack anywhere. The
+ * plain notes are the control: they are what the expressive ones have to
+ * stay level with, and a listener who can hear a jump between them is
+ * hearing the defect this round set out to remove.
+ *
+ * Harmonics are deliberately absent. A natural harmonic is a different
+ * *spectrum*, not a different level, and putting one in a card about balance
+ * would ask the founder to judge two things at once.
+ */
+function expressionBalanceBars(): readonly BarSpec[] {
+  return [
+    {
+      meter: [4, 4],
+      resolution: 8,
+      hits: [
+        { slot: 0, fret: L35_LOW, hold: 1 },
+        { slot: 2, fret: L35_LOW, articulation: "vibrato", hold: 1 },
+        {
+          slot: 4,
+          fret: L35_LOW,
+          gesture: { kind: "bend_release", targetCents: 200 },
+          hold: 1,
+        },
+        { slot: 6, fret: L35_LOW, hold: 1 },
+      ],
+    },
+    {
+      meter: [4, 4],
+      resolution: 8,
+      hits: [
+        { slot: 0, fret: L35_LOW },
+        { slot: 1, fret: L35_HIGH, connection: { kind: "shift_slide" }, hold: 2 },
+        { slot: 4, fret: L35_LOW, hold: 3 },
+      ],
+    },
+  ];
+}
+
+const L35_LOW = 5;
+const L35_HIGH = 7;
+
 export function buildRhythmTakes(song: Song): RhythmTakes | null {
   const trackId = songSupport(song).heldPowerChord?.trackId ?? song.tracks[0]?.id;
   if (!trackId) return null;
@@ -274,7 +356,21 @@ export function buildRhythmTakes(song: Song): RhythmTakes | null {
     accentedRiffBar([3, 2, 2]),
     accentedRiffBar([3, 2, 2]),
   ]);
-  if (!six || !grouped || !regrouped || !crossing || !evened || !uneven) return null;
+  /* L34 and L35: the two cards the gain parity round adds (§13, §14). */
+  const struckThreeWays = appendBars(song, trackId, [plainAccentGhostBar()]);
+  const balance = appendBars(song, trackId, expressionBalanceBars());
+  if (
+    !six ||
+    !grouped ||
+    !regrouped ||
+    !crossing ||
+    !evened ||
+    !uneven ||
+    !struckThreeWays ||
+    !balance
+  ) {
+    return null;
+  }
 
   const take = (
     built: { song: Song; barNumber: number },
@@ -299,6 +395,8 @@ export function buildRhythmTakes(song: Song): RhythmTakes | null {
       { meter: [7, 8], resolution: 8, grouping: [2, 2, 3], hits: [] },
       { meter: [6, 8], resolution: 8, grouping: [3, 3], hits: [] },
     ]),
+    L34a: take(struckThreeWays, [plainAccentGhostBar()]),
+    L35a: take(balance, expressionBalanceBars()),
     L33a: take(evened, [accentedRiffBar([2, 2, 3]), accentedRiffBar([2, 2, 3])]),
     L33b: take(uneven, [accentedRiffBar([3, 2, 2]), accentedRiffBar([3, 2, 2])]),
   };

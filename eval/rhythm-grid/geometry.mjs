@@ -360,6 +360,39 @@ const STATES = [
     },
     witness: "[data-listen-clip='L33']",
   },
+  {
+    /*
+     * The gain parity round asks three cards rather than one, and the last
+     * of them is the one that scrolls furthest down a 360-wide phone. The
+     * witness is L35 rather than the list, so a round that quietly dropped a
+     * card would not be reached rather than passing on the two it kept.
+     */
+    name: "12-listening-three-cards",
+    path: "/eval/listening-pack",
+    chrome: true,
+    staff: false,
+    enter: async (page) => {
+      await page.waitForTimeout(600);
+      await page
+        .locator("[data-listen-clip='L35']")
+        .scrollIntoViewIfNeeded({ timeout: 3000 })
+        .catch(() => {});
+      return (await page.locator("[data-listen-clip]").count()) === 3;
+    },
+    witness: "[data-listen-clip='L35']",
+  },
+  {
+    /*
+     * Nothing open. The state a reader is in before they touch anything, and
+     * the one every other state has to return to.
+     */
+    name: "13-resting",
+    enter: async (page) => {
+      await page.waitForTimeout(300);
+      return (await page.locator("[data-shelf-row]").count()) === 0;
+    },
+    witness: "[data-tab-content]",
+  },
 ];
 
 const main = async () => {
