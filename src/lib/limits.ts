@@ -10,7 +10,27 @@
  */
 export const songLimits = {
   maxTracks: 8,
-  totalBars: 32, // phase 2.5: 64
+  /*
+   * Raised from 32 to 64 for the first-song loop (2V-E.1 §15) — the number
+   * the note that used to stand here already planned for.
+   *
+   * `barsPerSection` deliberately did **not** go to 64 with it, and the
+   * reason is measured rather than cautious. The Copilot prompt's worst case
+   * is one section written as densely as the contract allows, and its
+   * ceiling has been pinned at 8000 tokens since K-32. At a 64-bar section
+   * that worst case measures **8412** — over the ceiling, so a 64-bar
+   * section would ship a request the provider contract refuses rather than a
+   * longer verse. Eight bars a section and sixty-four in a song is eight
+   * sections of eight, which is a whole piece.
+   *
+   * Whether to buy a longer section by re-measuring or narrowing the prompt
+   * is a decision for the founder, and it is written down in this round's
+   * report rather than taken here.
+   *
+   * `barsPerPatch` stays at 8 for its own reason: it bounds what one Copilot
+   * answer may rewrite at a time, which is not a question about song length.
+   */
+  totalBars: 64,
   barsPerSection: 8,
   barsPerPatch: 8,
   maxVoicesPerSlot: 32,

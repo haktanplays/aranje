@@ -45,6 +45,8 @@ type Mode =
   | { kind: "create" }
   | { kind: "rename" }
   | { kind: "tempo" }
+  /** How long this section is, after it exists (2V-E.1 §15). */
+  | { kind: "length" }
   | { kind: "confirmDelete" };
 
 export function SectionManagerSheet({
@@ -138,6 +140,22 @@ export function SectionManagerSheet({
         timeSignature: meter,
         resolution: grid,
         ...(tempo ? { bpmOverride: Number(tempo) } : {}),
+      }),
+    );
+  };
+
+  const openLength = () => {
+    setBarCount(String(selected.bars.length));
+    setError(null);
+    setMode({ kind: "length" });
+  };
+
+  const submitLength = () => {
+    handle(
+      lifecycle.runSection({
+        kind: "set_section_bar_count",
+        sectionId: selected.id,
+        barCount: Number(barCount),
       }),
     );
   };
@@ -303,6 +321,31 @@ export function SectionManagerSheet({
           </button>
         ) : null}
       </div>
+    ) : mode.kind === "length" ? (
+      <div className="flex flex-col gap-2">
+        <label className="block">
+          <span className="text-muted mb-1 block text-xs">
+            Ölçü sayısı (1–{songLimits.barsPerSection})
+          </span>
+          <input
+            type="number"
+            data-section-length
+            inputMode="numeric"
+            min={1}
+            max={songLimits.barsPerSection}
+            value={barCount}
+            onChange={(event) => setBarCount(event.target.value)}
+            className={FIELD}
+          />
+        </label>
+        {/* Said before it happens, not apologised for afterwards: shortening
+            a section takes the music in the bars it drops with it. */}
+        {Number(barCount) < selected.bars.length ? (
+          <p data-section-length-warning className="text-reject text-xs">
+            Son {selected.bars.length - Number(barCount)} ölçüdeki müzik silinir.
+          </p>
+        ) : null}
+      </div>
     ) : mode.kind === "confirmDelete" ? (
       <p className="text-sm">{sectionDeleteConfirmation(selected)}</p>
     ) : (
@@ -370,6 +413,12 @@ export function SectionManagerSheet({
             grid does not touch `bpmOverride`, and a reader looking for one
             should not find the other.
           */}
+          <SheetButton
+            data-section-action="length"
+            onClick={openLength}
+          >
+            Uzunluk
+          </SheetButton>
           <SheetButton
             data-section-action="timing"
             onClick={() =>
@@ -486,6 +535,18 @@ export function SectionManagerSheet({
               }),
             )
           }
+          disabled={!lifecycle.canApply}
+        >
+          Uygula
+        </SheetButton>
+      </div>
+    ) : mode.kind === "length" ? (
+      <div className="flex gap-2">
+        <SheetButton onClick={back}>Vazgeç</SheetButton>
+        <SheetButton
+          data-section-apply
+          tone="primary"
+          onClick={submitLength}
           disabled={!lifecycle.canApply}
         >
           Uygula

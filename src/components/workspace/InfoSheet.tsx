@@ -50,7 +50,7 @@ export function InfoSheet({
       <section className="bg-panel relative max-h-[80dvh] overflow-y-auto rounded-t-2xl border-t border-line px-4 pt-3 pb-6">
         <div className="bg-line mx-auto mb-3 h-1 w-10 rounded-full" />
         <h2 className="font-display mb-1 text-lg">{BRAND_NAME}</h2>
-        <p className="text-muted mb-4 text-xs">Ses kaynakları ve lisans</p>
+        <p className="text-muted mb-4 text-xs">Şarkı menüsü</p>
 
         {/* The project file lives behind the info control on purpose: it is
             something done a few times a project, not something worth a

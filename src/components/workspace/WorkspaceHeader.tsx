@@ -80,10 +80,19 @@ export function WorkspaceHeader({
         </p>
       </button>
 
+      {/*
+        The one door onto everything a song is *done to* rather than written
+        in: exported, backed up, renamed, or replaced by a new one — and the
+        sample licence, which has to be reachable from the running app.
+        It used to be called "Ses kaynakları ve lisans", which named the last
+        of those and hid the first. Nobody looking for "Dışa aktar" opens a
+        sheet about sound sources (2V-E.1 §21).
+      */}
       <button
         type="button"
+        data-open-song-menu
         onClick={onInfo}
-        aria-label="Ses kaynakları ve lisans"
+        aria-label="Şarkı menüsü: dışa aktar, yedekle, şarkı bilgileri"
         className="text-muted border-line justify-self-end rounded-lg border text-sm"
         style={{ width: MIN_TOUCH_TARGET_PX, height: MIN_TOUCH_TARGET_PX }}
       >

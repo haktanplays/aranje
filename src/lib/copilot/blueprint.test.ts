@@ -165,15 +165,20 @@ describe("materialising the skeleton", () => {
 
 describe("what the materialiser refuses", () => {
   it("a piece longer than the pilot allows", () => {
+    /* One section past the song's own limit, whatever that limit is: the
+       fixture used to name five sections and stopped being over the line the
+       moment 2V-E.1 §15 raised the song to 64 bars. */
+    const perSection = songLimits.barsPerSection;
+    const count = Math.floor(songLimits.totalBars / perSection) + 1;
+    const shapes = [blueprint().sections[0]!, blueprint().sections[1]!];
     const long = blueprint({
-      sections: [
-        { ...blueprint().sections[0]!, bars: 8 },
-        { ...blueprint().sections[1]!, bars: 8, key: "b" },
-        { ...blueprint().sections[0]!, bars: 8, key: "c" },
-        { ...blueprint().sections[1]!, bars: 8, key: "d" },
-        { ...blueprint().sections[0]!, bars: 8, key: "e" },
-      ],
+      sections: Array.from({ length: count }, (_, index) => ({
+        ...shapes[index % 2]!,
+        bars: perSection,
+        key: `k${index}`,
+      })),
     });
+    expect(count * perSection).toBeGreaterThan(songLimits.totalBars);
     const result = materializeSongSkeleton(long, { title: "T" });
     expect(result.ok).toBe(false);
     if (result.ok) return;

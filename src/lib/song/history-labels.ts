@@ -68,7 +68,7 @@ const FULL_BAR_LABELS: Readonly<Record<BarCommandKind, string>> = {
 /**
  * The lifecycle commands, named for a reader (spec 13.17 §9).
  *
- * Sixteen commands, fifteen sentences: setting and clearing a section's
+ * Seventeen commands, sixteen sentences: setting and clearing a section's
  * tempo are the same story to the person undoing it — the section's tempo
  * changes back — so both wear the same words.
  */
@@ -79,6 +79,7 @@ const LIFECYCLE_LABELS: Readonly<Record<LifecycleCommandKind, string>> = {
   duplicate_section: "Bölüm çoğaltma",
   move_section: "Bölüm taşıma",
   delete_section: "Bölüm silme",
+  set_section_bar_count: "Bölüm uzunluğunu değiştirme",
   set_section_tempo_override: "Bölüm temposunu değiştirme",
   clear_section_tempo_override: "Bölüm temposunu değiştirme",
   create_track: "Track ekleme",

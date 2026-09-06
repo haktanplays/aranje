@@ -72,9 +72,13 @@ describe("songLimits validator (spec 10.1, values 6)", () => {
     expect(issues.some((issue) => issue.message.includes(String(songLimits.totalBars + 1)))).toBe(true);
   });
 
-  it("is the limit phase 2G raised it to", () => {
+  it("is the limit 2V-E.1 raised it to", () => {
     // Pinned so a change to the pilot's length is a deliberate edit here.
-    expect(songLimits.totalBars).toBe(32);
+    // 32 → 64 in 2V-E.1 §15, so a section can be made longer after it
+    // exists. `barsPerSection` deliberately did not move with it: the
+    // Copilot prompt's worst case measures 8412 tokens at a 64-bar section
+    // against a ceiling pinned at 8000 since K-32.
+    expect(songLimits.totalBars).toBe(64);
     expect(songLimits.barsPerSection).toBe(8);
     expect(songLimits.barsPerPatch).toBe(8);
   });

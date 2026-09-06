@@ -16,6 +16,7 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from "react";
 
 import type { WorkspaceView } from "@/components/workspace/ViewSwitch";
+import { openingView } from "@/lib/workspace/opening-view";
 import { useViewZoom, type ViewZoom } from "@/lib/ui/use-view-zoom";
 import type { Song, Track } from "@/lib/song/schema";
 import {
@@ -105,16 +106,18 @@ export function useWorkspaceNavigation(options: {
   const [activeBarKey, setActiveBarKey] = useState<string | null>(null);
 
   /*
-   * Which surface is on screen (spec 13.10, K-39).
+   * Which surface is on screen (spec 13.10, K-39; 2V-E.1 §8).
    *
    * "Düzen" opens first, because the first question about a song someone has
    * not seen before is what shape it is, not what the third bar of the first
-   * guitar looks like. This is a view preference and lives only here: it is
-   * never written to the Song, never reaches the fingerprint, and never
-   * enters a Copilot request — none of those are about what the reader is
-   * looking at.
+   * guitar looks like — unless there is no shape yet, in which case the
+   * arrangement is a grid of empty bars with no door to writing in it and the
+   * tab opens instead. `openingView` owns that choice; this is a view
+   * preference and lives only here: it is never written to the Song, never
+   * reaches the fingerprint, and never enters a Copilot request — none of
+   * those are about what the reader is looking at.
    */
-  const [view, setView] = useState<WorkspaceView>("arrange");
+  const [view, setView] = useState<WorkspaceView>(() => openingView(song));
   /** A bar a reading surface has to bring into view once it is mounted. */
   const [pendingTabBar, setPendingTabBar] = useState<
     { barKey: string; follows: boolean } | null

@@ -59,6 +59,31 @@ export function dedupeName(existing: Iterable<string>, base: string): string {
   }
 }
 
+/**
+ * The next numbered name in a series: "Gitar 1", "Gitar 2", … (2V-E.1 §11).
+ *
+ * Not `dedupeName`, and the difference matters. `dedupeName("Gitar")` beside
+ * an existing "Gitar 1" returns "Gitar", because nothing is called exactly
+ * that — so a song's tracks read "Gitar 1" and "Gitar", which is two naming
+ * schemes rather than a series. This reads the numbers that are already
+ * there and takes the one after the highest, so the second guitar is "Gitar
+ * 2" whatever order the tracks were made or deleted in.
+ *
+ * A name with no number ("Gitar") counts as the first, so adding beside one
+ * gives "Gitar 2" rather than "Gitar 1" — a name that would sort *before* a
+ * track that already exists.
+ */
+export function numberedName(existing: Iterable<string>, role: string): string {
+  let highest = 0;
+  const pattern = new RegExp(`^${role.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?: (\\d+))?$`);
+  for (const name of existing) {
+    const match = pattern.exec(name.trim());
+    if (!match) continue;
+    highest = Math.max(highest, match[1] ? Number(match[1]) : 1);
+  }
+  return `${role} ${highest + 1}`;
+}
+
 /** What a duplicate is called: "Nakarat kopyası", then "Nakarat kopyası 2". */
 export function copyName(existing: Iterable<string>, source: string): string {
   return dedupeName(existing, `${source} kopyası`);

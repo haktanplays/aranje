@@ -31,6 +31,7 @@ export type LifecycleCommandKind =
   | "duplicate_section"
   | "move_section"
   | "delete_section"
+  | "set_section_bar_count"
   | "set_section_tempo_override"
   | "clear_section_tempo_override"
   | "create_track"

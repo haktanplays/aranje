@@ -62,6 +62,25 @@ export type SectionCommand =
   | {
       readonly kind: "clear_section_tempo_override";
       readonly sectionId: string;
+    }
+  /**
+   * How many bars this section is (2V-E.1 §15).
+   *
+   * A whole number rather than "add one" or "remove one", because that is
+   * the question a reader actually has — a verse is eight bars long, it is
+   * not "four bars plus four more". The two directions are one command for
+   * the same reason: undo gives back the length they started from once.
+   *
+   * Growing appends bars shaped like the section's last one, which is the
+   * only honest guess: a section written in 7/8 at 1/16 does not suddenly
+   * continue in 4/4 because the app has a default. Shrinking drops bars from
+   * the end, and the music in them goes with them — which is why the surface
+   * asks first and this command does not.
+   */
+  | {
+      readonly kind: "set_section_bar_count";
+      readonly sectionId: string;
+      readonly barCount: number;
     };
 
 const totalBars = (song: Song): number =>
@@ -201,6 +220,47 @@ export function applySectionCommand(
         return { ok: false, error: { code: "last_section_undeletable" } };
       }
       const sections = song.sections.filter((_, at) => at !== index);
+      return guardCandidate(withSections(song, sections));
+    }
+
+    case "set_section_bar_count": {
+      const index = sectionIndex(song, command.sectionId);
+      if (index < 0) return { ok: false, error: { code: "section_not_found" } };
+      const section = song.sections[index]!;
+      if (
+        !Number.isInteger(command.barCount) ||
+        command.barCount < 1 ||
+        command.barCount > songLimits.barsPerSection
+      ) {
+        return { ok: false, error: { code: "bar_count_out_of_range" } };
+      }
+      const delta = command.barCount - section.bars.length;
+      if (delta === 0) return guardCandidate(song);
+      if (totalBars(song) + delta > songLimits.totalBars) {
+        return { ok: false, error: { code: "song_bar_limit_reached" } };
+      }
+      /*
+       * The shape of the last bar, not the song's defaults: a section that
+       * has been in 7/8 at 1/12 for six bars goes on being that. Its slots
+       * are deliberately not copied — a new bar is silence (spec 5.5), and
+       * repeating the last bar's music would be the app writing.
+       */
+      const model = section.bars[section.bars.length - 1]!;
+      const bars =
+        delta > 0
+          ? [
+              ...section.bars,
+              ...Array.from({ length: delta }, (): Bar => ({
+                timeSignature: model.timeSignature,
+                resolution: model.resolution,
+                ...(model.grouping ? { grouping: [...model.grouping] } : {}),
+                slots: {},
+              })),
+            ]
+          : section.bars.slice(0, command.barCount);
+      const sections = song.sections.map((entry, at) =>
+        at === index ? { ...entry, bars } : entry,
+      );
       return guardCandidate(withSections(song, sections));
     }
 

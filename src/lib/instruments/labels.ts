@@ -44,6 +44,42 @@ const INSTRUMENT_NAMES: Readonly<Record<string, string>> = {
 };
 
 /**
+ * The short word a track goes by in a song, keyed by instrument id (2V-E.1 §11).
+ *
+ * A different question from `INSTRUMENT_NAMES`, which answers "what is this
+ * instrument called". A track's name is what it is called *in this song*, and
+ * the two diverge as soon as there are two of them: the second electric
+ * guitar in a band is "Gitar 2", not a second row also reading "Elektro
+ * gitar". The walk that found this recorded the row as `Elektro gitarElektro
+ * gitar` — the name and the instrument label side by side, saying the same
+ * word twice and identifying nothing.
+ *
+ * These are the same words the starting templates use, which is the point:
+ * the guitar a reader is given on their first song is "Gitar 1", so the one
+ * they add next has to be "Gitar 2" rather than a different naming scheme
+ * arriving with it.
+ */
+const TRACK_ROLE_NAMES: Readonly<Record<string, string>> = {
+  electric_guitar: "Gitar",
+  steel_acoustic: "Akustik Gitar",
+  nylon_guitar: "Klasik Gitar",
+  electric_bass: "Bas",
+  drum_kit: "Davul",
+  piano: "Piyano",
+};
+
+/**
+ * What a track of this instrument is called before it is numbered.
+ *
+ * Falls back to the instrument's own name rather than to its id: an
+ * instrument nobody has given a role word to still gets something a reader
+ * recognises, and never `steel_acoustic`.
+ */
+export function trackRoleName(instrumentId: string): string {
+  return TRACK_ROLE_NAMES[instrumentId] ?? instrumentName(instrumentId) ?? instrumentId;
+}
+
+/**
  * Reader-facing preset names, keyed `instrumentId.presetId`.
  *
  * Keyed by both because a preset id is only unique inside its instrument:

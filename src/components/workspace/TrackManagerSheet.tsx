@@ -27,8 +27,9 @@ import {
   instrumentLabel,
   presetLabel,
 } from "@/lib/instruments/registry";
+import { trackRoleName } from "@/lib/instruments/labels";
 import { MAX_CAPO, TUNING_PRESETS } from "@/lib/music/fretboard";
-import { dedupeName } from "@/lib/song/lifecycle-ids";
+import { numberedName } from "@/lib/song/lifecycle-ids";
 import {
   destructiveSetupConfirmation,
   trackDeleteConfirmation,
@@ -144,14 +145,20 @@ export function TrackManagerSheet({
   const setDraftField = (patch: Partial<SetupDraft>) =>
     setDraft((current) => (current ? { ...current, ...patch } : current));
 
+  /** The name this sheet would suggest for a track of that instrument. */
+  const autoName = (instrumentId: string) =>
+    numberedName(
+      song.tracks.map((entry) => entry.name),
+      trackRoleName(instrumentId),
+    );
+
   const openCreate = () => {
     const first = coreInstruments()[0];
     if (!first) return;
     setDraft({
-      name: dedupeName(
-        song.tracks.map((entry) => entry.name),
-        instrumentLabel(first.id),
-      ),
+      /* "Gitar 2" beside the "Gitar 1" the template gave them, not a second
+         row that also reads "Elektro gitar" (2V-E.1 §11). */
+      name: autoName(first.id),
       instrumentId: first.id,
       presetId: playableCorePresets(first.id)[0]?.id ?? "",
       tuningPresetId: tuningOptionsFor(first.id)[0]?.id ?? "",
@@ -166,6 +173,16 @@ export function TrackManagerSheet({
       current
         ? {
             ...current,
+            /*
+             * The name follows the instrument while it is still the one this
+             * sheet suggested. A reader who picked "Bas" and then typed
+             * "Riff bası" keeps their own words; one who only changed the
+             * instrument does not end up with a bass called "Gitar 2".
+             */
+            name:
+              current.name === autoName(current.instrumentId)
+                ? autoName(instrumentId)
+                : current.name,
             instrumentId,
             presetId: playableCorePresets(instrumentId)[0]?.id ?? "",
             tuningPresetId: tuningOptionsFor(instrumentId)[0]?.id ?? "",
