@@ -121,7 +121,8 @@ export type ListeningClipId =
   | "L29"
   | "L30"
   | "L31"
-  | "L32";
+  | "L32"
+  | "L33";
 
 export type ListeningClip = {
   readonly id: ListeningClipId;
@@ -803,6 +804,36 @@ export function listeningClips(
           { id: "L32a", name: "Dinle", segments: [plain(rhythmWindow("L32a"), 1.5)] },
         ],
         expects: { trackIds: [rhythms.L32a.trackId], minSeconds: 2, maxSeconds: 14 },
+      },
+      /*
+       * L33 · the one question of the completion round.
+       *
+       * L31 asked this and came back `fail`: "İkisi arasında belirgin bir
+       * fark yok". Two things are different here and both are in the fixture
+       * rather than in a level. The riff is **one repeated note**, so its
+       * contour cannot propose a grouping of its own — L31's 5-6-7-5-6-7-5
+       * repeated every three notes and drowned out any accent. And every
+       * eighth is authored: the group starts are accents, the rest are
+       * ghosts, so the quiet notes are still a pulse and the two kinds of
+       * striking travel the same rendering path.
+       *
+       * Both takes carry three accents and four ghosts, the same pitch, the
+       * same onsets and the same total loudness. Only where the accents fall
+       * is different, and each plays its bar twice.
+       */
+      {
+        id: "L33",
+        label: "Aynı riff, iki belirgin gruplama",
+        instruction:
+          "Tek nota, yedi sekizlik, iki tur. Vurgular dışında hiçbir şey değişmiyor. Metronom yok.",
+        question:
+          "Bu kez iki tekrar belirgin biçimde farklı yerlerden gruplanmış gibi duyuluyor mu?",
+        answers: LISTENING_ANSWERS,
+        takes: [
+          { id: "L33a", name: "A · 2+2+3", segments: [plain(rhythmWindow("L33a"), 1.2)] },
+          { id: "L33b", name: "B · 3+2+2", segments: [plain(rhythmWindow("L33b"), 1.2)] },
+        ],
+        expects: { trackIds: [rhythms.L33a.trackId], minSeconds: 2, maxSeconds: 14 },
       },
     );
   }

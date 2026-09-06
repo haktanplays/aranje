@@ -37,14 +37,40 @@ const round = listeningClips(
   gestureTakes(fixture),
 );
 
-describe("101. the twenty-nine recorded results, exactly as they were given", () => {
+describe("101. the thirty-two recorded results, exactly as they were given", () => {
   it("holds every card the founder has judged, in order", () => {
     expect(FOUNDER_AUTHORITY.map((card) => card.id)).toEqual([
       "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8",
       "L9", "L10", "L11", "L12", "L13", "L14", "L15", "L16",
       "L17", "L18", "L19", "L20", "L21", "L22", "L23", "L24",
       "L25", "L26", "L27", "L28", "L29",
+      "L30", "L31", "L32",
     ]);
+  });
+
+  it("records the rhythm round, including its one refutation", () => {
+    /*
+     * L31 is the archive's first `fail`, and the sentence is the founder's
+     * own. It is not softened into `inconclusive`: "no obvious difference"
+     * is a statement that the card's claim was not true of the audio, not a
+     * statement that the listener could not tell.
+     */
+    expect(archivedCard("L30")?.verdict).toBe("pass");
+    expect(archivedCard("L31")?.verdict).toBe("fail");
+    expect(archivedCard("L31")?.note).toBe("İkisi arasında belirgin bir fark yok");
+    expect(archivedCard("L32")?.verdict).toBe("pass");
+  });
+
+  it("keeps L31 refuted whatever the next card scores", () => {
+    /*
+     * L33 asks the same musical question with a different fixture. A pass
+     * there would be a fact about L33 and about nothing else — the archive
+     * has no path from one row to another, and this is the assertion that
+     * says so rather than a comment hoping for it.
+     */
+    expect(archivedCard("L31")?.verdict).toBe("fail");
+    expect(isArchived("L33")).toBe(false);
+    expect(archivedCard("L33")).toBeNull();
   });
 
   it("records the three cards that closed the multi-axis phase", () => {
@@ -224,7 +250,7 @@ describe("101. the twenty-nine recorded results, exactly as they were given", ()
 });
 
 describe("102. the round that is open, and what it may not re-ask", () => {
-  it("asks the three rhythm cards and no others", () => {
+  it("asks the one completion card and no others", () => {
     /*
      * L27, L28 and L29 closed the multi-axis phase, and the round stood
      * empty while 2V-D.2 built the rhythm model underneath the cards that
@@ -234,8 +260,12 @@ describe("102. the round that is open, and what it may not re-ask", () => {
      * There is no card for the metre picker, the duration language or the
      * Pro subdivision click. Those are things to look at and press, and the
      * founder's job here is only to listen (2V-D.2 c3 §15).
+     *
+     * The completion round narrows this to one. L30 and L32 passed, L31 was
+     * refuted, and none of them is asked twice; L33 is the round's whole
+     * physical gate (completion §15).
      */
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L30", "L31", "L32"]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33"]);
   });
 
   it("never asks a card whose answer is already recorded", () => {

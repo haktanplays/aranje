@@ -16,6 +16,10 @@ eval/export/artifacts/
 eval/chord/.render/
 # 2O-B.1 launch audio + headroom render bundle
 eval/chord-audio/.render/
+# 2V-D.2 completion rhythm render bundle and its WAVs
+eval/rhythm-grid/.render/
+eval/rhythm-grid/wav/
+
 eval/expression-benchmark/.render/
 # 2T-C §10 guitar-performance render bundle
 eval/guitar-performance/.render/

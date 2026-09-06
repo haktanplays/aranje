@@ -377,7 +377,14 @@ describe("the block the founder pastes back", () => {
     expect(block).toContain("L27 Avuç susturma: iki yazım: Olmuş — Aynı");
     expect(block).toContain("L28 Armonik ve perde hareketi: Olmuş");
     expect(block).toContain("L29 Tek elde iki tel: biri susturulmuş: Olmuş");
-    expect(block).not.toContain("Olmamış");
+    /*
+     * "Olmamış" does appear in this block, and it must: L31's own recorded
+     * result is a refutation. What may not happen is a *session* answer
+     * putting it on a row the founder passed, so the assertion is about
+     * where the word is rather than whether it exists.
+     */
+    expect(block).toContain("L31 Aynı riff, iki gruplama: Olmamış");
+    expect(block).not.toContain("L28 Armonik ve perde hareketi: Olmamış");
     expect(block).toContain("Cevaplanmamış: 0/0");
   });
 

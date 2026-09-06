@@ -49,6 +49,17 @@
 
 export type FounderVerdict =
   | "pass"
+  /**
+   * The card was played and the thing it claimed was not there (2V-D.2
+   * completion §1).
+   *
+   * Distinct from `inconclusive`, which is "I could not tell", and from
+   * `needs_polish`, which is "it is there and it is not good enough". L31 is
+   * the first: the founder heard both takes and reported no difference at
+   * all, which is a refutation of the card's claim rather than a reservation
+   * about its quality. Nothing automatic may move this row.
+   */
+  | "fail"
   | "conditional_pass"
   | "inconclusive"
   | "needs_polish"
@@ -57,6 +68,7 @@ export type FounderVerdict =
 /** What each verdict is called on the page. Never an enum id. */
 export const VERDICT_LABEL: Readonly<Record<FounderVerdict, string>> = {
   pass: "Olmuş",
+  fail: "Olmamış",
   conditional_pass: "Şartlı geçti",
   inconclusive: "Sonuçsuz",
   needs_polish: "Cila gerekiyor",
@@ -205,6 +217,31 @@ export const FOUNDER_AUTHORITY: readonly ArchivedCard[] = [
   { id: "L27", title: "Avuç susturma: iki yazım", verdict: "pass", note: "Aynı" },
   { id: "L28", title: "Armonik ve perde hareketi", verdict: "pass" },
   { id: "L29", title: "Tek elde iki tel: biri susturulmuş", verdict: "pass" },
+
+  /*
+   * 2V-D.2's rhythm round. Two of the three came back `pass`; the third is
+   * this file's first `fail`, and it is the most useful row in the round.
+   *
+   * L31 asked whether the same seven-eighth riff, accented `2+2+3` and
+   * `3+2+2`, is heard as two different groupings. The answer was that it is
+   * not, and the founder's own sentence says why it matters: there was no
+   * difference at all, not a small one. The measurements this round then made
+   * agree with the ear rather than argue with it — the accented notes are
+   * delivered about eleven decibels above the unaccented ones instead of the
+   * one and a half the preset declares, so the unaccented notes stop being a
+   * pulse and there is nothing left for a grouping to be heard against.
+   *
+   * The row stays `fail` whatever a later card scores. L33 is a new question,
+   * not an appeal.
+   */
+  { id: "L30", title: "6/8 içinde hızlı üçleme", verdict: "pass" },
+  {
+    id: "L31",
+    title: "Aynı riff, iki gruplama",
+    verdict: "fail",
+    note: "İkisi arasında belirgin bir fark yok",
+  },
+  { id: "L32", title: "Farklı ölçüler arasında riff devamı", verdict: "pass" },
 ];
 
 const BY_ID = new Map(FOUNDER_AUTHORITY.map((card) => [card.id, card]));

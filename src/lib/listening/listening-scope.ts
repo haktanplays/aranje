@@ -4,15 +4,15 @@
  * A listening round is a question with a scope, and the scope is not "every
  * card that has ever existed". Everything with a recorded answer is history.
  *
- * **The rhythm round asks three questions and no others (2V-D.2 c3 §15).**
- * L30 is 6/8 with a fast run inside it, L31 is the same seven-eighth riff
- * grouped two ways, and L32 is one riff carried across a metre change. Every
- * card before them has a recorded answer and is not re-asked — including
- * L27, L28 and L29, which came back `pass` and closed the multi-axis phase.
+ * **The completion round asks one question (2V-D.2 completion §15).** L30 and
+ * L32 came back `pass` and L31 came back `fail` — "İkisi arasında belirgin
+ * bir fark yok" — and none of the three is asked again. L33 is a new card
+ * built for the same musical question with the fixture defect L31 exposed
+ * taken out of it; whatever L33 scores, it cannot move L31's row.
  *
  * A card in this list is one the founder is being asked *now*. A card with an
  * answer is history, and the paste block keeps the two apart: "Bu tur"
- * counts only these three.
+ * counts only this one.
  *
  * Keeping this as a list rather than as a flag on the clip is deliberate. A
  * clip does not know which round it is in; a round knows which clips it is
@@ -22,7 +22,7 @@ import { isArchived } from "@/lib/listening/founder-authority";
 import type { ListeningClip } from "@/lib/listening/clip-plan";
 
 /** The cards the founder is being asked to judge now. */
-export const ACTIVE_CLIP_IDS = ["L30", "L31", "L32"] as const;
+export const ACTIVE_CLIP_IDS = ["L33"] as const;
 
 export type ActiveClipId = (typeof ACTIVE_CLIP_IDS)[number];
 

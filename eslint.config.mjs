@@ -14,6 +14,8 @@ const config = [
       "eval/export/.render/**",
       "eval/chord/.render/**",
       "eval/chord-audio/.render/**",
+      "eval/rhythm-grid/.render/**",
+
       "eval/expression-benchmark/.render/**",
       "eval/intent-composer/.render/**",
       "eval/guitar-performance/.render/**",

@@ -39,11 +39,19 @@ import {
   type Bar,
   type DrumSlot,
   type MelodicSlot,
+  type NoteAttack,
   type NoteEvent,
   type Song,
 } from "@/lib/song/schema";
 
-export const RHYTHM_TAKE_IDS = ["L30a", "L31a", "L31b", "L32a"] as const;
+export const RHYTHM_TAKE_IDS = [
+  "L30a",
+  "L31a",
+  "L31b",
+  "L32a",
+  "L33a",
+  "L33b",
+] as const;
 
 export type RhythmTakeId = (typeof RHYTHM_TAKE_IDS)[number];
 
@@ -63,11 +71,12 @@ export type RhythmTakes = Readonly<Record<RhythmTakeId, RhythmTake>>;
 /** The string these cards are written on, as everywhere else in the pack. */
 const STRING = 1;
 
-/** One bar's worth of instructions: which slot, which fret, accented or not. */
+/** One bar's worth of instructions: which slot, which fret, struck how. */
 type Hit = {
   readonly slot: number;
   readonly fret: number;
-  readonly accent?: boolean;
+  /** What the picking hand does. Absent means an ordinary struck note. */
+  readonly attack?: NoteAttack;
   /** Slots of tie after it, so a note can be held over a bar line. */
   readonly hold?: number;
 };
@@ -110,7 +119,7 @@ function appendBars(
       const note: NoteEvent = {
         pitch,
         position: { string: STRING, fret: hit.fret },
-        ...(hit.accent ? { attack: "accent" as const } : {}),
+        ...(hit.attack === undefined ? {} : { attack: hit.attack }),
       };
       lane[hit.slot] = { notes: [note] };
       for (let step = 1; step <= (hit.hold ?? 0); step += 1) {
@@ -176,10 +185,50 @@ function sevenEightBar(grouping: readonly number[]): BarSpec {
   const hits: Hit[] = Array.from({ length: 7 }, (_unused, index) => ({
     slot: index,
     fret: 5 + (index % 3),
-    accent: starts.has(index),
+    ...(starts.has(index) ? { attack: "accent" as const } : {}),
   }));
   return { meter: [7, 8], resolution: 8, grouping, hits };
 }
+
+/**
+ * L33's bar: one pitch, seven eighths, every note struck on purpose.
+ *
+ * Two things L31 got wrong are fixed here, and both are visible in this
+ * function rather than hidden in a level somewhere.
+ *
+ * **One pitch.** L31 ran frets 5-6-7-5-6-7-5, whose contour repeats every
+ * three notes and so proposes its own grouping — one that agrees with neither
+ * `2+2+3` nor `3+2+2` and is far louder to the ear than any accent. With a
+ * single repeated note there is nothing to group by except the striking.
+ *
+ * **Every note is authored.** The unaccented eighths carry `ghost`, so they
+ * are quiet-but-present the way a palm-muted eighth is under an accent — and,
+ * measured, both kinds then travel the same rendering path, so the difference
+ * a listener hears is the one the presets declare (`1.18` against `0.45`)
+ * rather than the eleven decibels the round measured between an attacked note
+ * and a bare one. That gap is a real defect and it is written down as one; it
+ * is not fixed by this fixture and this fixture does not pretend it is.
+ *
+ * Both variants carry three accents and four ghosts. Only where the accents
+ * fall is different.
+ */
+function accentedRiffBar(grouping: readonly number[]): BarSpec {
+  const starts = new Set<number>();
+  let at = 0;
+  for (const group of grouping) {
+    starts.add(at);
+    at += group;
+  }
+  const hits: Hit[] = Array.from({ length: 7 }, (_unused, index) => ({
+    slot: index,
+    fret: L33_FRET,
+    attack: starts.has(index) ? ("accent" as const) : ("ghost" as const),
+  }));
+  return { meter: [7, 8], resolution: 8, grouping, hits };
+}
+
+/** The one fret L33 is played on, low enough to read as a riff rather than a line. */
+const L33_FRET = 3;
 
 export function buildRhythmTakes(song: Song): RhythmTakes | null {
   const trackId = songSupport(song).heldPowerChord?.trackId ?? song.tracks[0]?.id;
@@ -200,9 +249,9 @@ export function buildRhythmTakes(song: Song): RhythmTakes | null {
       resolution: 8,
       grouping: [2, 2, 3],
       hits: [
-        { slot: 0, fret: 5, accent: true },
-        { slot: 2, fret: 7, accent: true },
-        { slot: 4, fret: 9, accent: true, hold: 2 },
+        { slot: 0, fret: 5, attack: "accent" },
+        { slot: 2, fret: 7, attack: "accent" },
+        { slot: 4, fret: 9, attack: "accent", hold: 2 },
       ],
     },
     {
@@ -215,7 +264,17 @@ export function buildRhythmTakes(song: Song): RhythmTakes | null {
       ],
     },
   ]);
-  if (!six || !grouped || !regrouped || !crossing) return null;
+  /* L33's two takes: the same bar twice, so a listener hears the pattern
+     rather than a single pass of it (completion §14). */
+  const evened = appendBars(song, trackId, [
+    accentedRiffBar([2, 2, 3]),
+    accentedRiffBar([2, 2, 3]),
+  ]);
+  const uneven = appendBars(song, trackId, [
+    accentedRiffBar([3, 2, 2]),
+    accentedRiffBar([3, 2, 2]),
+  ]);
+  if (!six || !grouped || !regrouped || !crossing || !evened || !uneven) return null;
 
   const take = (
     built: { song: Song; barNumber: number },
@@ -240,5 +299,7 @@ export function buildRhythmTakes(song: Song): RhythmTakes | null {
       { meter: [7, 8], resolution: 8, grouping: [2, 2, 3], hits: [] },
       { meter: [6, 8], resolution: 8, grouping: [3, 3], hits: [] },
     ]),
+    L33a: take(evened, [accentedRiffBar([2, 2, 3]), accentedRiffBar([2, 2, 3])]),
+    L33b: take(uneven, [accentedRiffBar([3, 2, 2]), accentedRiffBar([3, 2, 2])]),
   };
 }

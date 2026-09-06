@@ -45,6 +45,46 @@ const onsets = (id: (typeof RHYTHM_TAKE_IDS)[number]) => {
     .sort((left, right) => left.timeTicks - right.timeTicks);
 };
 
+/**
+ * What the *song* says about the listened bars, read from the notes.
+ *
+ * The plan is where the levels are; this is where the writing is, and the
+ * L33 assertions are about the writing — one pitch, one duration, and an
+ * authored striking on every eighth.
+ */
+const notesOf = (id: (typeof RHYTHM_TAKE_IDS)[number]) => {
+  const take = takes[id];
+  const bars = listenedBars(id);
+  const out: {
+    slot: number;
+    pitch: string;
+    durationTicks: number;
+    attack?: string;
+  }[] = [];
+  let index = 0;
+  for (const marker of bars) {
+    const [sectionId, barIndex] = marker.barKey.split(":");
+    const bar = take.song.sections
+      .find((section) => section.id === sectionId)
+      ?.bars[Number(barIndex)];
+    const lane = bar?.slots[take.trackId];
+    if (!lane) continue;
+    lane.forEach((slot, position) => {
+      if (!slot || slot === "-" || Array.isArray(slot)) return;
+      const note = slot.notes[0];
+      if (!note) return;
+      out.push({
+        slot: index * 7 + position,
+        pitch: note.pitch,
+        durationTicks: PPQ / 2,
+        ...(note.attack === undefined ? {} : { attack: note.attack }),
+      });
+    });
+    index += 1;
+  }
+  return out;
+};
+
 describe("376. L30 — a real 6/8 with a fast run inside it", () => {
   it("is a 6/8 bar felt in two, on a lattice that writes both divisions", () => {
     const [bar] = listenedBars("L30a");
@@ -224,11 +264,80 @@ describe("378. L32 — one riff across a metre change", () => {
 });
 
 describe("379. the round asks three questions and awards none", () => {
-  it("offers exactly the three cards in scope", () => {
+  it("offers the four rhythm cards and asks only the last", () => {
+    /*
+     * The three from the rhythm round still exist as clips — they are the
+     * music the archive's rows are about — but the round in progress is one
+     * card wide. Which cards exist and which are being asked are different
+     * questions and this holds them apart.
+     */
     const clips = listeningClips(fixture, null, null, null, takes);
-    const rhythm = clips.filter((clip) => ["L30", "L31", "L32"].includes(clip.id));
-    expect(rhythm.map((clip) => clip.id)).toEqual(["L30", "L31", "L32"]);
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L30", "L31", "L32"]);
+    const rhythm = clips.filter((clip) =>
+      ["L30", "L31", "L32", "L33"].includes(clip.id),
+    );
+    expect(rhythm.map((clip) => clip.id)).toEqual(["L30", "L31", "L32", "L33"]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33"]);
+  });
+
+  it("gives L33 one pitch, so nothing but the striking can group it", () => {
+    /*
+     * L31's riff ran 5-6-7-5-6-7-5, a contour that repeats every three notes
+     * and proposes a grouping of its own — one that agrees with neither
+     * `2+2+3` nor `3+2+2`. With a single repeated note there is nothing left
+     * to group by except where the accents fall.
+     */
+    for (const id of ["L33a", "L33b"] as const) {
+      const notes = notesOf(id);
+      expect(notes).toHaveLength(14);
+      expect(new Set(notes.map((note) => note.pitch)).size).toBe(1);
+      expect(new Set(notes.map((note) => note.durationTicks)).size).toBe(1);
+    }
+  });
+
+  it("authors every L33 eighth, so the quiet ones are still a pulse", () => {
+    /*
+     * The measured defect L31 exposed is that an attacked note and a bare one
+     * are not delivered at the levels the presets declare. Writing `ghost` on
+     * the unaccented eighths keeps every note on one side of that difference,
+     * so what a listener compares is `accent` against `ghost` — a ratio the
+     * presets own — rather than "attacked" against "bare".
+     */
+    for (const id of ["L33a", "L33b"] as const) {
+      const attacks = notesOf(id).map((note) => note.attack);
+      expect(attacks.filter((attack) => attack === "accent")).toHaveLength(6);
+      expect(attacks.filter((attack) => attack === "ghost")).toHaveLength(8);
+      expect(attacks.filter((attack) => attack === undefined)).toHaveLength(0);
+    }
+  });
+
+  it("moves only the accents between the two L33 takes", () => {
+    const a = notesOf("L33a");
+    const b = notesOf("L33b");
+    expect(a.map((note) => note.pitch)).toEqual(b.map((note) => note.pitch));
+    expect(a.map((note) => note.slot)).toEqual(b.map((note) => note.slot));
+    expect(a.map((note) => note.durationTicks)).toEqual(
+      b.map((note) => note.durationTicks),
+    );
+    /* Eighths 0, 2, 4 against 0, 3, 5 — the two feels, in one bar each. */
+    const accentsIn = (notes: readonly { slot: number; attack?: string }[]) =>
+      notes.filter((note) => note.attack === "accent").map((note) => note.slot % 7);
+    expect(accentsIn(a)).toEqual([0, 2, 4, 0, 2, 4]);
+    expect(accentsIn(b)).toEqual([0, 3, 5, 0, 3, 5]);
+  });
+
+  it("plays each L33 bar twice and schedules no click", () => {
+    for (const id of ["L33a", "L33b"] as const) {
+      expect(takes[id].barCount).toBe(2);
+      expect(takes[id].ticks).toBe(2 * 7 * (PPQ / 2));
+    }
+    const clip = listeningClips(fixture, null, null, null, takes).find(
+      (entry) => entry.id === "L33",
+    );
+    expect(clip?.takes.map((take) => take.id)).toEqual(["L33a", "L33b"]);
+    expect(clip?.instruction).toContain("Metronom yok");
+    expect(clip?.question).toBe(
+      "Bu kez iki tekrar belirgin biçimde farklı yerlerden gruplanmış gibi duyuluyor mu?",
+    );
   });
 
   it("builds no card when the takes could not be built", () => {
@@ -238,11 +347,12 @@ describe("379. the round asks three questions and awards none", () => {
     expect(without).not.toContain("L30");
     expect(without).not.toContain("L31");
     expect(without).not.toContain("L32");
+    expect(without).not.toContain("L33");
   });
 
   it("asks the founder to listen and never to edit", () => {
     const clips = listeningClips(fixture, null, null, null, takes).filter((clip) =>
-      ["L30", "L31", "L32"].includes(clip.id),
+      ["L30", "L31", "L32", "L33"].includes(clip.id),
     );
     for (const clip of clips) {
       for (const text of [clip.instruction, clip.question]) {
