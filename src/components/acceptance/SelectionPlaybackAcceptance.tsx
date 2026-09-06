@@ -13,6 +13,7 @@
  * store moved, and whether the app wrote to the console. Everything else is a
  * question only ears can answer, and the block at the end says which is which.
  */
+import { NO_HOME } from "@/lib/acceptance/no-home";
 import {
   useCallback,
   useEffect,
@@ -219,7 +220,7 @@ export function SelectionPlaybackAcceptance() {
         press on the guide's controls lands on a toolbar button underneath.
       */}
       <div className="min-h-0 flex-1 overflow-hidden [&>div]:h-full">
-        {session?.ok ? <Workspace /> : null}
+        {session?.ok ? <Workspace onHome={NO_HOME} /> : null}
       </div>
 
       {/*

@@ -1,18 +1,18 @@
 /**
- * Which cards this round is actually asking about (2V-C.2 §2, §4; 2V-D.2 §1).
+ * Which cards this round is actually asking about (2V-C.2 §2, §4; 2V-E.1 §1).
  *
  * A listening round is a question with a scope, and the scope is not "every
  * card that has ever existed". Everything with a recorded answer is history.
  *
- * **The completion round asks one question (2V-D.2 completion §15).** L30 and
- * L32 came back `pass` and L31 came back `fail` — "İkisi arasında belirgin
- * bir fark yok" — and none of the three is asked again. L33 is a new card
- * built for the same musical question with the fixture defect L31 exposed
- * taken out of it; whatever L33 scores, it cannot move L31's row.
+ * **This round asks nothing.** L33, L34 and L35 came back `pass` and D.2 is
+ * closed; 2V-E.1 turns the engine work into a product loop and adds no new
+ * audible behaviour, so there is no card to ask and the pack is empty. An
+ * empty round is a statement, not an oversight: a round that invented a card
+ * to have something to show would be asking the founder to listen again to
+ * audio they have already judged.
  *
  * A card in this list is one the founder is being asked *now*. A card with an
- * answer is history, and the paste block keeps the two apart: "Bu tur"
- * counts only this one.
+ * answer is history, and the paste block keeps the two apart.
  *
  * Keeping this as a list rather than as a flag on the clip is deliberate. A
  * clip does not know which round it is in; a round knows which clips it is
@@ -22,7 +22,7 @@ import { isArchived } from "@/lib/listening/founder-authority";
 import type { ListeningClip } from "@/lib/listening/clip-plan";
 
 /** The cards the founder is being asked to judge now. */
-export const ACTIVE_CLIP_IDS = ["L33", "L34", "L35"] as const;
+export const ACTIVE_CLIP_IDS: readonly string[] = [];
 
 export type ActiveClipId = (typeof ACTIVE_CLIP_IDS)[number];
 

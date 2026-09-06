@@ -319,6 +319,32 @@ function migrateSingleSong(
   const legacy = loadSong(storage, now);
   step(steps, `legacy_${legacy.outcome}`);
 
+  /*
+   * A device with nothing on it has nothing to migrate (2V-E.1 §4).
+   *
+   * `loadSong` answers "empty" with the sample song, because a workspace that
+   * had to open on *something* was the only shape this app had. Writing that
+   * answer into `project-1` made the demo the reader's first project: it took
+   * the first id, it appeared in their library, and the app opened on music
+   * they had not written. None of that is a migration — there was no song to
+   * migrate.
+   *
+   * So an empty device settles with no catalog and no song, which is the
+   * state the Home screen is for. A device that really does hold a song from
+   * before the library existed still migrates, exactly as it did.
+   */
+  if (legacy.outcome === "empty") {
+    step(steps, "nothing_to_migrate");
+    return {
+      catalog: null,
+      song: null,
+      canPersist: writable,
+      notice: null,
+      recovery: null,
+      steps,
+    };
+  }
+
   if (!legacy.canPersist || !writable) {
     /*
      * A newer version's file, or a device that cannot write. The song is

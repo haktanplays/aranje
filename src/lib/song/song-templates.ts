@@ -63,12 +63,18 @@ import type { Resolution } from "@/lib/music/timing";
 
 /** The defaults every template shares (spec 2L-B §4). */
 export const TEMPLATE_DEFAULTS = {
-  title: "Yeni Şarkı",
+  title: "Yeni parça",
   key: "E minor",
   bpm: 120,
   timeSignature: [4, 4] as TimeSignature,
   resolution: 16 as Resolution,
-  sectionName: "Bölüm 1",
+  /*
+   * "Giriş", not "Bölüm 1" (2V-E.1 §5). A first section named after its
+   * number teaches a reader that sections are slots; named after its job it
+   * teaches them that a song has parts, which is the thing they are about to
+   * add a second of.
+   */
+  sectionName: "Giriş",
   barCount: 4,
 } as const;
 
@@ -101,23 +107,23 @@ export const SONG_TEMPLATES: readonly SongTemplate[] = [
     id: "empty",
     label: "Boş başlangıç",
     description: "Tek ritim gitarıyla sessiz bir başlangıç.",
-    trackPlans: [{ instrumentId: "electric_guitar", name: "Ritim Gitar" }],
+    trackPlans: [{ instrumentId: "electric_guitar", name: "Gitar 1" }],
   },
   {
     id: "rock_band",
     label: "Rock grubu",
     description: "Ritim gitarı, bas ve davulla klasik üçlü.",
     trackPlans: [
-      { instrumentId: "electric_guitar", name: "Ritim Gitar" },
-      { instrumentId: "electric_bass", name: "Bas" },
-      { instrumentId: "drum_kit", name: "Davul" },
+      { instrumentId: "electric_guitar", name: "Gitar 1" },
+      { instrumentId: "electric_bass", name: "Bas 1" },
+      { instrumentId: "drum_kit", name: "Davul 1" },
     ],
   },
   {
     id: "acoustic",
     label: "Akustik",
     description: "Tek çelik telli akustik gitar.",
-    trackPlans: [{ instrumentId: "steel_acoustic", name: "Akustik Gitar" }],
+    trackPlans: [{ instrumentId: "steel_acoustic", name: "Akustik Gitar 1" }],
   },
 ];
 

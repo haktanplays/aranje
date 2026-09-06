@@ -34,7 +34,8 @@ export type ProjectSession = {
   catalog: ProjectCatalogV1 | null;
   /** One safe sentence's worth of news from the load, or nothing. */
   readonly notice: ProjectErrorCode | null;
-  readonly canPersist: boolean;
+  /** Mutable: false until a project is open, true once one is (2V-E.1 §6). */
+  canPersist: boolean;
   /**
    * Point the store and the port at another project.
    *
@@ -113,9 +114,20 @@ export function createProjectSession(
         })()
       : 0;
 
+  /*
+   * The port exists whenever the device can be written to, even before there
+   * is a project to write into (2V-E.1 §6). A device with an empty library is
+   * not a read-only device — it is a device whose reader has not started yet,
+   * and building the port only for a library that already exists is what left
+   * the first project unable to save itself.
+   *
+   * With no project the port carries an id nothing answers to and the store
+   * is read-only, so it cannot write anywhere. `openProject` aims it and says
+   * so in the same call.
+   */
   const port =
-    storage !== null && activeId !== null && settled.canPersist
-      ? createActiveProjectPort({ storage, id: activeId, revision, now })
+    storage !== null && settled.canPersist
+      ? createActiveProjectPort({ storage, id: activeId ?? "", revision, now })
       : null;
 
   const store = createSongStore(
@@ -139,7 +151,8 @@ export function createProjectSession(
     openProject(id, song, catalog) {
       port?.retarget(id, readRevision(storage, id));
       session.catalog = catalog;
-      store.replaceBaseline(song);
+      session.canPersist = port !== null;
+      store.replaceBaseline(song, { canPersist: port !== null });
     },
   };
   return session;

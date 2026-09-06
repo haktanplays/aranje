@@ -242,6 +242,25 @@ export const FOUNDER_AUTHORITY: readonly ArchivedCard[] = [
     note: "İkisi arasında belirgin bir fark yok",
   },
   { id: "L32", title: "Farklı ölçüler arasında riff devamı", verdict: "pass" },
+
+  /*
+   * The gain parity round, and the end of D.2 (2V-E.1 §1).
+   *
+   * L33 asked L31's question again on a fixture with both of L31's defects
+   * taken out; L34 and L35 asked whether the round's one source change — the
+   * shared sampler, not `nearestSample`, decides which recording a note comes
+   * from — left `accent > plain > ghost` where it belongs, on one note and
+   * then across a phrase. All three came back `pass`.
+   *
+   * What that settles and what it does not: the D3/D4 tie-break is now
+   * *physically* accepted, and D.2 is closed. **L31's row does not move.**
+   * L33 is a different fixture answering a different question, and a later
+   * pass is not an appeal against an earlier refusal — the refusal is the
+   * record of what the reader heard on the music they were given.
+   */
+  { id: "L33", title: "Aynı riff, iki belirgin gruplama", verdict: "pass" },
+  { id: "L34", title: "Düz, vurgulu ve hayalet vuruş", verdict: "pass" },
+  { id: "L35", title: "İfade eklenince ses dengesi", verdict: "pass" },
 ];
 
 const BY_ID = new Map(FOUNDER_AUTHORITY.map((card) => [card.id, card]));

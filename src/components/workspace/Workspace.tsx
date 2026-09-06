@@ -59,7 +59,7 @@ import { useTabView } from "@/lib/workspace/use-tab-view";
 import { useWorkspaceNavigation } from "@/lib/workspace/use-workspace-navigation";
 import { useWorkspaceOverlays } from "@/lib/workspace/use-workspace-overlays";
 
-export function Workspace() {
+export function Workspace({ onHome }: { onHome: () => void }) {
   const {
     song,
     canUndo,
@@ -271,7 +271,8 @@ export function Workspace() {
         recoveryMessage={recoveryMessage}
         onDismissRecovery={dismissRecovery}
         onInfo={() => overlays.open("info")}
-        onProjects={library.open}
+        /* The title is the way home, and home is where the projects are. */
+        onProjects={onHome}
         onOpenSectionList={() => overlays.open("section")}
         onJumpSection={focusSection}
         editing={noteEditing.editing}

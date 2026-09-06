@@ -16,6 +16,7 @@
 import { EditHeader } from "@/components/workspace/EditHeader";
 import type { SelectionHeader } from "@/lib/workspace/selection-verbs";
 import { RecoveryBanner } from "@/components/workspace/RecoveryBanner";
+import { SaveStatusLine } from "@/components/workspace/SaveStatusLine";
 import { SectionNavigator } from "@/components/workspace/SectionNavigator";
 import { ViewSwitch } from "@/components/workspace/ViewSwitch";
 import { WorkspaceHeader } from "@/components/workspace/WorkspaceHeader";
@@ -80,6 +81,7 @@ export function WorkspaceChrome({
   if (editing) {
     return (
       <>
+        <SaveStatusLine />
         <EditHeader
           model={editHeaderModel(runs, navigation.viewedSectionId, navigation.activeBarKey)}
           selection={editSelection}
@@ -108,6 +110,8 @@ export function WorkspaceChrome({
         onInfo={onInfo}
         onProjects={onProjects}
       />
+
+      <SaveStatusLine />
 
       {/* One strip, and the recovery state owns it: four states, four
           sentences, and no path from a diagnostic to a musician. */}

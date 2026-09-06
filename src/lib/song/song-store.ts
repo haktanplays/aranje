@@ -100,6 +100,8 @@ export type SongStore = {
    * from "that was already the song".
    */
   commit(next: Song, action: HistoryAction): boolean;
+  /** Try the last write again, recording nothing. Returns whether it landed. */
+  retrySave(): boolean;
   /** Step back one edit. */
   undo(): void;
   /** Step forward one edit. */
@@ -112,7 +114,7 @@ export type SongStore = {
    * Hydration, the sample-song fallback, and any later "open another project".
    * There is nothing behind these to go back to.
    */
-  replaceBaseline(song: Song): void;
+  replaceBaseline(song: Song, options?: { readonly canPersist?: boolean }): void;
 };
 
 /**
@@ -245,6 +247,20 @@ export function createSongStore(
       return write(recordEdit(history, next, action));
     },
 
+    /**
+     * Write the song again, unchanged (2V-E.1 §7).
+     *
+     * `commit` refuses a song identical to the current one — correctly, since
+     * that is not an edit — which leaves a reader whose save failed with no
+     * way to ask for it again. This is that way, and it is deliberately not a
+     * commit: nothing is recorded, no step is added, and undo is exactly
+     * where it was. It is one more attempt at the write that did not land.
+     */
+    retrySave() {
+      if (!canPersist) return false;
+      return write(history);
+    },
+
     undo() {
       if (!canPersist || !historyCanUndo(history)) return;
       write(historyUndo(history));
@@ -255,7 +271,19 @@ export function createSongStore(
       write(historyRedo(history));
     },
 
-    replaceBaseline(song) {
+    replaceBaseline(song, options) {
+      /*
+       * A store made before there was a project to write to starts read-only
+       * — correctly, because there was nowhere to save (2V-E.1 §6). Opening
+       * the first project is the moment that stops being true, and the caller
+       * that just wrote and verified the record is the only thing that knows
+       * it. Nothing here decides it; it is told.
+       */
+      if (options?.canPersist === true) {
+        canPersist = true;
+        persisted = true;
+        if (recovery === "storage_write_failed") recovery = null;
+      }
       history = resetEditHistory(song);
       publish();
     },

@@ -155,7 +155,9 @@ describe("the listening route reaches for nothing of the reader's", () => {
   it("runs the production workspace rather than a stand-in", () => {
     const page = read("src/components/acceptance/SelectionPlaybackAcceptance.tsx");
     expect(page).toContain('from "@/components/workspace/Workspace"');
-    expect(page).toContain("<Workspace />");
+    /* The production editor itself, with the one prop the product's own shell
+       gives it — an acceptance route has no Home to go back to (2V-E.1 §8). */
+    expect(page).toContain("<Workspace onHome={NO_HOME} />");
   });
 
   it("refuses to start on a build the link did not ask for", () => {
@@ -279,7 +281,9 @@ describe("the batched action route reaches for nothing of the reader's", () => {
   it("runs the production workspace rather than a stand-in", () => {
     const page = read("src/components/acceptance/EditorActionBatch.tsx");
     expect(page).toContain('from "@/components/workspace/Workspace"');
-    expect(page).toContain("<Workspace />");
+    /* The production editor itself, with the one prop the product's own shell
+       gives it — an acceptance route has no Home to go back to (2V-E.1 §8). */
+    expect(page).toContain("<Workspace onHome={NO_HOME} />");
   });
 
   it("refuses to start on a build the link did not ask for", () => {

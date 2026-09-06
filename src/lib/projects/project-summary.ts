@@ -27,6 +27,18 @@ export type ProjectSummary = {
   readonly sectionCount: number | null;
   readonly barCount: number | null;
   readonly trackCount: number | null;
+  /**
+   * The three facts a reader recognises a piece by (2V-E.1 §4).
+   *
+   * Derived like everything else here, and null on a project whose song
+   * could not be read — a card that showed "E minor · 120 BPM" for a record
+   * that will not open would be inventing the only part of it a reader
+   * would trust.
+   */
+  readonly key: string | null;
+  readonly bpm: number | null;
+  /** The first bar's time signature, as "4/4". Songs may change it later. */
+  readonly meter: string | null;
   /** Milliseconds, from an injected clock. Null when nothing recorded one. */
   readonly updatedAt: number | null;
   readonly isActive: boolean;
@@ -39,6 +51,7 @@ export function summarizeSong(
 ): ProjectSummary {
   let barCount = 0;
   for (const section of song.sections) barCount += section.bars.length;
+  const first = song.sections[0]?.bars[0];
   return {
     id,
     health: "ok",
@@ -46,6 +59,9 @@ export function summarizeSong(
     sectionCount: song.sections.length,
     barCount,
     trackCount: song.tracks.length,
+    key: song.key,
+    bpm: song.bpm,
+    meter: first ? `${first.timeSignature[0]}/${first.timeSignature[1]}` : null,
     updatedAt: options.updatedAt,
     isActive: options.isActive,
   };
@@ -64,6 +80,9 @@ export function unreadableSummary(
     sectionCount: null,
     barCount: null,
     trackCount: null,
+    key: null,
+    bpm: null,
+    meter: null,
     updatedAt: null,
     isActive,
   };

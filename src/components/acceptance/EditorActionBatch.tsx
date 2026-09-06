@@ -36,6 +36,7 @@
  * event has arrived and the question has been answered, and the screen says
  * which of the two is missing (§13).
  */
+import { NO_HOME } from "@/lib/acceptance/no-home";
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { useAcceptanceReading } from "@/components/acceptance/useAcceptanceReading";
@@ -320,7 +321,7 @@ export function EditorActionBatch() {
         hidden={!onSong}
         className="min-h-0 flex-1 overflow-hidden [&>div]:h-full"
       >
-        {session?.ok ? <Workspace /> : null}
+        {session?.ok ? <Workspace onHome={NO_HOME} /> : null}
       </div>
 
       {onSong ? (

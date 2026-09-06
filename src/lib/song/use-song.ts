@@ -38,6 +38,8 @@ const SERVER_SNAPSHOT: SongStoreSnapshot = {
 export type SongHandle = SongStoreSnapshot & {
   /** The one way to change the song. Says what the edit was. */
   commit(next: Song, action: HistoryAction): boolean;
+  /** Ask for the failed write again. Adds no history step. */
+  retrySave(): boolean;
   undo(): void;
   redo(): void;
   dismissRecovery(): void;
@@ -63,6 +65,8 @@ export function useSong(): SongHandle {
     [store],
   );
 
+  const retrySave = useCallback(() => store?.retrySave() ?? false, [store]);
+
   const undo = useCallback(() => {
     store?.undo();
   }, [store]);
@@ -75,5 +79,5 @@ export function useSong(): SongHandle {
     store?.dismissRecovery();
   }, [store]);
 
-  return { ...snapshot, commit, undo, redo, dismissRecovery };
+  return { ...snapshot, commit, retrySave, undo, redo, dismissRecovery };
 }

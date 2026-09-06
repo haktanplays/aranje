@@ -37,7 +37,7 @@ const round = listeningClips(
   gestureTakes(fixture),
 );
 
-describe("101. the thirty-two recorded results, exactly as they were given", () => {
+describe("101. the thirty-five recorded results, exactly as they were given", () => {
   it("holds every card the founder has judged, in order", () => {
     expect(FOUNDER_AUTHORITY.map((card) => card.id)).toEqual([
       "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8",
@@ -45,6 +45,7 @@ describe("101. the thirty-two recorded results, exactly as they were given", () 
       "L17", "L18", "L19", "L20", "L21", "L22", "L23", "L24",
       "L25", "L26", "L27", "L28", "L29",
       "L30", "L31", "L32",
+      "L33", "L34", "L35",
     ]);
   });
 
@@ -61,16 +62,18 @@ describe("101. the thirty-two recorded results, exactly as they were given", () 
     expect(archivedCard("L32")?.verdict).toBe("pass");
   });
 
-  it("keeps L31 refuted whatever the next card scores", () => {
+  it("keeps L31 refuted although the next card passed", () => {
     /*
-     * L33 asks the same musical question with a different fixture. A pass
-     * there would be a fact about L33 and about nothing else — the archive
-     * has no path from one row to another, and this is the assertion that
-     * says so rather than a comment hoping for it.
+     * L33 asked the same musical question with a different fixture and came
+     * back `pass`. That is a fact about L33 and about nothing else: the
+     * archive has no path from one row to another, and this is the assertion
+     * that says so rather than a comment hoping for it. Now that both rows
+     * exist, the test is stronger than it was — the pass is on the device
+     * beside the refusal, and the refusal has not moved.
      */
+    expect(archivedCard("L33")?.verdict).toBe("pass");
     expect(archivedCard("L31")?.verdict).toBe("fail");
-    expect(isArchived("L33")).toBe(false);
-    expect(archivedCard("L33")).toBeNull();
+    expect(archivedCard("L31")?.note).toBe("İkisi arasında belirgin bir fark yok");
   });
 
   it("records the three cards that closed the multi-axis phase", () => {
@@ -250,7 +253,7 @@ describe("101. the thirty-two recorded results, exactly as they were given", () 
 });
 
 describe("102. the round that is open, and what it may not re-ask", () => {
-  it("asks the three cards of the gain parity round and no others", () => {
+  it("asks nothing, because the round it closed was the last audible one", () => {
     /*
      * L27, L28 and L29 closed the multi-axis phase, and the round stood
      * empty while 2V-D.2 built the rhythm model underneath the cards that
@@ -268,7 +271,9 @@ describe("102. the round that is open, and what it may not re-ask", () => {
      * on one note, and L35 whether the answer survives a phrase (gain parity
      * §13, §14, §15).
      */
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33", "L34", "L35"]);
+    /* Nothing. L33, L34 and L35 came back `pass`, D.2 is closed, and 2V-E.1
+       adds no audible behaviour — so there is no card to ask (2V-E.1 §1). */
+    expect([...ACTIVE_CLIP_IDS]).toEqual([]);
   });
 
   it("never asks a card whose answer is already recorded", () => {

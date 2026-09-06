@@ -120,13 +120,13 @@ describe("128. a new project never costs the reader the one they have", () => {
   it("names new projects deterministically and without colliding", () => {
     const { env, data } = world_({ "project-1": legacySong() }, "project-1");
     const first = createProject(env, "empty");
-    expect(first.ok && first.song.title).toBe("Yeni Şarkı");
+    expect(first.ok && first.song.title).toBe("Yeni parça");
 
     const second = createProject(
       { ...env, catalog: first.ok ? first.catalog : env.catalog },
       "empty",
     );
-    expect(second.ok && second.song.title).toBe("Yeni Şarkı 2");
+    expect(second.ok && second.song.title).toBe("Yeni parça 2");
     expect(data.size).toBeGreaterThan(2);
   });
 

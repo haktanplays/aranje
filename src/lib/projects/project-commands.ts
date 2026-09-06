@@ -24,16 +24,19 @@
  */
 import {
   allocateProjectId,
+  initialCatalog,
   serializeCatalog,
   type ProjectCatalogV1,
 } from "@/lib/projects/project-catalog";
 import { projectFail, type ProjectFailure } from "@/lib/projects/project-errors";
+import { highestProjectNumber, projectId } from "@/lib/projects/project-id";
 import { duplicateTitle, newProjectTitle } from "@/lib/projects/project-names";
 import {
   readCatalog,
   readRecord,
   removeRecord,
   clearPending,
+  scanProjectIds,
   writeCatalog,
   writePending,
   writeRecord,
@@ -169,6 +172,51 @@ function addProject(env: ProjectEnv, song: Song): ProjectCommandResult {
 }
 
 /* -------------------------------------------------------------- commands */
+
+/**
+ * The very first project on a device with no library at all (2V-E.1 §6).
+ *
+ * Every other command is handed a catalog. This one cannot be: a device that
+ * has never held a project has no catalog to hand over, and until 2V-E.1 the
+ * app filled that hole by migrating the demo song into `project-1` — which
+ * gave the reader's first project away before they had made one.
+ *
+ * The id is **allocated, not assumed**. `project-1` is what an empty device
+ * lands on, but only because nothing else is there: the number is taken from
+ * the highest payload actually on disk, so a leftover record from a crashed
+ * create, or a fixture that wrote one, is stepped over rather than written
+ * on top of.
+ *
+ * The order is the order every other add uses: payload, read back, catalog,
+ * read back. A failure at any point leaves either nothing or an orphan the
+ * next settle adopts — never a catalog pointing at a project that is not
+ * there.
+ */
+export function createFirstProject(
+  env: { readonly storage: EnumerableStorage; readonly now: number },
+  song: Song,
+): ProjectCommandResult {
+  const settled = settle(song);
+  if (!settled.ok) return projectFail("project_validation_failed");
+
+  const id = projectId(highestProjectNumber(scanProjectIds(env.storage)) + 1);
+  const catalog = initialCatalog(id);
+  const withCatalog: ProjectEnv = { storage: env.storage, catalog, now: env.now };
+
+  const written = persist(withCatalog, id, settled.song);
+  if (!written.ok) return written;
+
+  const committed = commitCatalog(withCatalog, catalog);
+  if (!committed.ok) return committed;
+
+  return {
+    ok: true,
+    catalog,
+    activeProjectId: id,
+    song: settled.song,
+    warnings: settled.warnings,
+  };
+}
 
 /** A new project from one of the three templates. The open one is untouched. */
 export function createProject(env: ProjectEnv, templateId: string): ProjectCommandResult {

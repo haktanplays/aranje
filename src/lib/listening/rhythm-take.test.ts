@@ -384,7 +384,7 @@ describe("391. L35 — one phrase that picks expression up and puts it down", ()
 });
 
 describe("379. the round asks three questions and awards none", () => {
-  it("offers every rhythm card and asks only the three still open", () => {
+  it("offers every rhythm card and asks none of them", () => {
     /*
      * The three from the rhythm round still exist as clips — they are the
      * music the archive's rows are about — but they are not being asked.
@@ -403,7 +403,7 @@ describe("379. the round asks three questions and awards none", () => {
       "L34",
       "L35",
     ]);
-    expect([...ACTIVE_CLIP_IDS]).toEqual(["L33", "L34", "L35"]);
+    expect([...ACTIVE_CLIP_IDS]).toEqual([]);
   });
 
   it("gives L33 one pitch, so nothing but the striking can group it", () => {

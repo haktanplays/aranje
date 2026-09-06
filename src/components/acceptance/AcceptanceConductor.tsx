@@ -12,6 +12,7 @@
  * page owns — so the test can be run on a phone that already has the reader's
  * own music on it without touching a byte of it.
  */
+import { NO_HOME } from "@/lib/acceptance/no-home";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { Workspace } from "@/components/workspace/Workspace";
@@ -417,7 +418,7 @@ export function AcceptanceConductor() {
       <div
         className={`min-h-0 flex-1 overflow-hidden [&>div]:h-full ${overlay ? "hidden" : ""}`}
       >
-        <Workspace />
+        <Workspace onHome={NO_HOME} />
       </div>
     </div>
   );

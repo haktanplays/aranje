@@ -6,7 +6,7 @@
  * and the only thing this module adds is that the choice is *deterministic*:
  * the same library and the same command produce the same name, every run.
  *
- * `Yeni Şarkı`, then `Yeni Şarkı 2`, `Yeni Şarkı 3` — the first free number,
+ * `Yeni parça`, then `Yeni parça 2`, `Yeni parça 3` — the first free number,
  * so a library that has had projects deleted does not skip. Duplicates get
  * `<name> kopyası`, then `<name> kopyası 2`.
  *
@@ -14,6 +14,15 @@
  * ids are, and an import that happens to bring in a song called the same thing
  * as an open one is not a reason to refuse the import or to rewrite its music.
  */
+
+/**
+ * What a project is called before anyone renames it.
+ *
+ * "parça" rather than "şarkı" (2V-E.1 §5): what a reader makes here starts as
+ * a riff and may never become a song, and a default name that overstates it
+ * is a small lie on every screen that shows the name.
+ */
+export const NEW_PROJECT_TITLE = "Yeni parça";
 
 /** The first name in the series that nothing in `taken` already uses. */
 function firstFree(base: string, taken: readonly string[]): string {
@@ -28,7 +37,7 @@ function firstFree(base: string, taken: readonly string[]): string {
 }
 
 export function newProjectTitle(existingTitles: readonly string[]): string {
-  return firstFree("Yeni Şarkı", existingTitles);
+  return firstFree(NEW_PROJECT_TITLE, existingTitles);
 }
 
 export function duplicateTitle(

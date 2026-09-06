@@ -98,12 +98,25 @@ const storedProject = (id: string, song: Song, revision = 1) =>
   );
 
 describe("124. every start state settles into a library or leaves everything alone", () => {
-  it("makes a first project out of nothing", () => {
+  it("makes nothing out of nothing, and writes nothing either", () => {
+    /*
+     * A device that has never held a song has nothing to migrate (2V-E.1 §4).
+     * It used to leave here with the demo song written into `project-1` — the
+     * reader's first project given away before they had made one. Now it
+     * settles empty, which is the state the Home screen is for, and the
+     * device is untouched.
+     */
     const { storage, data } = fakeStorage();
+    const before = data.size;
     const outcome = settleProjects(storage, clock);
-    expect(outcome.catalog?.projectIds).toEqual([FIRST_PROJECT_ID]);
+    expect(outcome.catalog).toBeNull();
+    expect(outcome.song).toBeNull();
     expect(outcome.canPersist).toBe(true);
+    expect(outcome.recovery).toBeNull();
+    expect(outcome.notice).toBeNull();
     expect(data.has(SONG_KEY)).toBe(false);
+    expect(data.has(`aranje.project.${FIRST_PROJECT_ID}`)).toBe(false);
+    expect(data.size).toBe(before);
   });
 
   it("carries a legacy raw song into project-1 and only then drops the key", () => {

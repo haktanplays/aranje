@@ -16,6 +16,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import {
+  createFirstProject,
   createProject,
   deleteProject,
   duplicateProject,
@@ -58,6 +59,10 @@ export type ProjectLibraryHandle = {
    */
   readonly openedAt: number;
   createFrom(templateId: string): boolean;
+  /** True when a first project could be made — even with no library yet. */
+  readonly canStart: boolean;
+  /** Make the first project on a device that has none. */
+  startFirst(song: Song): boolean;
   openProject(id: string): boolean;
   duplicate(id: string): boolean;
   askDelete(id: string): void;
@@ -95,7 +100,20 @@ export function useProjectLibrary(options: {
 
   const catalog: ProjectCatalogV1 | null = session?.catalog ?? null;
   const storage = session?.storage ?? null;
+  /*
+   * Two different questions (2V-E.1 §6).
+   *
+   * `canModify` is about changing a library that exists, and it needs one:
+   * every command but the first is handed a catalog. `canStart` is about
+   * making the first project on a device that has none, and asking it for a
+   * catalog would refuse the one create that has to work on a new device.
+   *
+   * `session.canPersist` is false with no catalog — it means "there is an
+   * active project this tab can write to" — so the first create asks storage
+   * directly instead.
+   */
   const canModify = canPersist && session?.canPersist === true && catalog !== null;
+  const canStart = storage !== null && (catalog === null || canModify);
 
   /**
    * The list, read from the projects themselves.
@@ -159,6 +177,34 @@ export function useProjectLibrary(options: {
     [canModify, catalog, onBeforeSwitch, refuse, session, storage],
   );
 
+  /**
+   * The first project on a device with no library.
+   *
+   * Deliberately not folded into `run`: `run` needs a catalog and this is the
+   * one command that runs without one. Keeping them apart means the ordinary
+   * path cannot accidentally start working with a missing catalog.
+   */
+  const startFirst = useCallback(
+    (song: Song): boolean => {
+      if (!session || !storage) return false;
+      if (!canStart) {
+        refuse("project_storage_unavailable");
+        return false;
+      }
+      const result = createFirstProject({ storage, now: Date.now() }, song);
+      if (!result.ok) {
+        refuse(result.error.code);
+        return false;
+      }
+      setError(null);
+      onBeforeSwitch();
+      session.openProject(result.activeProjectId, result.song, result.catalog);
+      setRevision((value) => value + 1);
+      return true;
+    },
+    [canStart, onBeforeSwitch, refuse, session, storage],
+  );
+
   const songOf = useCallback(
     (id: string): Song | null => {
       if (!storage) return null;
@@ -194,6 +240,8 @@ export function useProjectLibrary(options: {
       setError(null);
     },
     createFrom: (templateId) => run((env) => createProject(env, templateId), true),
+    canStart,
+    startFirst,
     openProject: (id) => run((env) => openProject(env, id), true),
     duplicate: (id) => run((env) => duplicateProject(env, id), true),
     askDelete: (id) => setPendingDeleteId(id),

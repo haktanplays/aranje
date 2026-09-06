@@ -13,6 +13,7 @@
  * compares. A route that pressed the buttons for them would be a route that
  * tested itself.
  */
+import { NO_HOME } from "@/lib/acceptance/no-home";
 import {
   useCallback,
   useEffect,
@@ -318,7 +319,7 @@ export function EditorAcceptance() {
         one-viewport check would have shipped it.
       */}
       <div className="min-h-0 flex-1 overflow-hidden [&>div]:h-full">
-        {session?.ok ? <Workspace /> : null}
+        {session?.ok ? <Workspace onHome={NO_HOME} /> : null}
       </div>
 
       {/*
