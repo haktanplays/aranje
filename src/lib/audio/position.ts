@@ -11,7 +11,12 @@ import {
   type Resolution,
   type TimeSignature,
 } from "@/lib/music/timing";
-import { meterBeats, type MeterBeat } from "@/lib/music/meter-beats";
+import {
+  meterBeats,
+  meterPulses,
+  type MeterBeat,
+  type PulseStrength,
+} from "@/lib/music/meter-beats";
 
 export type PlayPosition = {
   ticks: number;
@@ -130,27 +135,68 @@ export function barBeats(bar: BarMarker): readonly MeterBeat[] {
   });
 }
 
-export type BeatClick = { time: number; downbeat: boolean };
+export type BeatClick = {
+  time: number;
+  /** Kept because the accent is what a caller usually wants to know. */
+  downbeat: boolean;
+  /** The full answer: bar start, main beat, or a subdivision inside one. */
+  strength: PulseStrength;
+};
+
+export type MetronomeOptions = {
+  /**
+   * Click the metre's own note values as well as the main beats.
+   *
+   * Off by default, which is Simple: a 7/8 clicks three times, in the rhythm
+   * a player counts. On, it clicks all seven with the three accented — the
+   * Pro reading, for someone learning where the long beat falls (2V-D.2 c2,
+   * guardrail 2). The existing metronome is one click at a chosen velocity,
+   * so a third level costs nothing but the option.
+   */
+  readonly subdivisions?: boolean;
+};
 
 /**
  * Every metronome click of the song, on the same tick timeline as the music.
  *
- * One click per *main beat*, not per notated note value: 6/8 clicks twice and
- * 7/8 felt 2+2+3 clicks three times, at the second and fourth eighths. The
- * pattern is read off the bar's grouping rather than derived from a rule
- * restated here, so the click a player hears and the beat line they see are
- * the same list (2V-D.2 §12).
+ * By default one click per *main beat*, not per notated note value: 6/8
+ * clicks twice and 7/8 felt 2+2+3 clicks three times, at the first, third and
+ * fifth eighths. The pattern is read off the bar's grouping rather than
+ * derived from a rule restated here, so the click a player hears and the beat
+ * line they see are the same list (2V-D.2 §12).
+ *
+ * With `subdivisions`, every note value of the metre is clicked and the main
+ * beats keep their accent. That is a **different view of the same bar**, not
+ * a different bar: the main beats are at the same ticks either way.
  */
-export function metronomeClicks(plan: SongPlan): BeatClick[] {
+export function metronomeClicks(
+  plan: SongPlan,
+  options: MetronomeOptions = {},
+): BeatClick[] {
   const clicks: BeatClick[] = [];
   for (const bar of plan.bars) {
     const step = ticksPerSlot(bar.resolution);
-    for (const beat of barBeats(bar)) {
+    const positions = options.subdivisions
+      ? meterPulses({
+          meter: bar.timeSignature as TimeSignature,
+          resolution: bar.resolution as Resolution,
+          grouping: bar.grouping,
+        })
+      : barBeats(bar);
+    for (const position of positions) {
       clicks.push({
-        time: bar.time + beat.slot * step,
-        downbeat: beat.strength === "downbeat",
+        time: bar.time + position.slot * step,
+        downbeat: position.strength === "downbeat",
+        strength: position.strength,
       });
     }
   }
   return clicks;
 }
+
+/** How loud each level is, so the engine does not invent a scale. */
+export const CLICK_GAIN: Readonly<Record<PulseStrength, number>> = {
+  downbeat: 1,
+  secondary: 0.55,
+  subdivision: 0.28,
+};

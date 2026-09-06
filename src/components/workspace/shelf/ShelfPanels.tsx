@@ -15,6 +15,7 @@
 import { ChordPanel } from "@/components/workspace/shelf/ChordPanel";
 import { DurationPanel } from "@/components/workspace/shelf/DurationPanel";
 import { FastSequencePanel } from "@/components/workspace/shelf/FastSequencePanel";
+import { MeterPanel } from "@/components/workspace/shelf/MeterPanel";
 import { NotePanel } from "@/components/workspace/shelf/NotePanel";
 import { PhrasePanel } from "@/components/workspace/shelf/PhrasePanel";
 import { PlayingPanel } from "@/components/workspace/shelf/PlayingPanel";
@@ -24,6 +25,7 @@ import type { EditDraft } from "@/lib/workspace/edit-draft";
 import type { EditTarget } from "@/lib/workspace/edit-target";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { ShelfPanelId } from "@/lib/workspace/shelf-panel";
+import type { MeterChangeHandle } from "@/lib/workspace/use-meter-change";
 import { isMelodicSlotArray, type Song, type Track } from "@/lib/song/schema";
 import type { TimeSelection } from "@/lib/song/time-selection";
 
@@ -67,6 +69,7 @@ export function ShelfPanels({
   onPreview,
   onApply,
   onOpenPanel,
+  meterChange,
 }: {
   panel: ShelfPanelId;
   song: Song;
@@ -81,6 +84,14 @@ export function ShelfPanels({
   onPreview: (candidate: Song) => void;
   onApply: (proposal: EditDraft) => void;
   onOpenPanel: (id: ShelfPanelId) => void;
+  /**
+   * The metre panel's draft and its one apply (2V-D.2 §14).
+   *
+   * Passed in rather than owned here, for the same reason every other panel's
+   * command is: this file is a mapping, and a controller living inside a
+   * mapping is how a mapping becomes a workspace.
+   */
+  meterChange: MeterChangeHandle;
 }) {
   const stringIndex = noteEditing.cell?.stringIndex ?? 0;
 
@@ -127,6 +138,24 @@ export function ShelfPanels({
         }
         barNumber={target?.barNumber ?? 1}
         onApply={onApply}
+      />
+    );
+  }
+
+  /*
+   * The metre belongs to a bar, not to a note, so — like Taşı — it opens
+   * without anything selected. A reader looking at a bar can always ask what
+   * it is written in.
+   */
+  if (panel === "meter") {
+    return (
+      <MeterPanel
+        bpm={song.bpm}
+        current={meterChange.current}
+        draft={meterChange.draft}
+        preview={meterChange.preview}
+        onDraft={meterChange.choose}
+        onApply={meterChange.apply}
       />
     );
   }

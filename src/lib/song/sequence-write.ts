@@ -32,6 +32,7 @@
 import { rhythmAvailability } from "@/lib/music/rhythm-availability";
 import type { SequencePlan } from "@/lib/music/note-sequence";
 import {
+  barTicks,
   isLatticeResolution,
   readingResolution,
   slotCount,
@@ -149,8 +150,8 @@ export function applySequenceWrite(
   const fretboard = track.fretboard;
   if (!fretboard) return { ok: false, error: "not_fretted" };
 
-  const barTicks = slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
-  if (plan.startTicks < 0 || plan.startTicks + plan.spanTicks > barTicks) {
+  const barLength = barTicks(bar);
+  if (plan.startTicks < 0 || plan.startTicks + plan.spanTicks > barLength) {
     return { ok: false, error: "outside_bar" };
   }
 

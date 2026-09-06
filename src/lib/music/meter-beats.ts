@@ -23,6 +23,20 @@
  * therefore carries its own `strength`, and the click and the beat line both
  * read it instead of each deciding for themselves.
  *
+ * ## The main beat is not the whole bar
+ *
+ * `meterBeats` answers **where the main beats are** and nothing else. A 7/8
+ * felt `2+2+3` has three of them, and that is the honest answer to "what does
+ * a player count out loud". It is *not* an answer to "what is in the bar":
+ * there are still seven eighths in it, and a surface that showed three and
+ * said nothing else would have replaced one wrong claim with another.
+ *
+ * `meterPulses` is the other layer — every position of the metre's own note
+ * value, each marked as the downbeat, the start of a main beat, or a
+ * subdivision inside one. Simple counts the beats; Pro may draw or click the
+ * subdivisions. Two layers, one derivation, so they cannot disagree about
+ * where a main beat begins.
+ *
  * Everything here is in **slots** of the bar's own grid, because that is what
  * the caller has: the tab draws in slots, the metronome walks slots, and a
  * tick answer would make every caller convert back.
@@ -97,6 +111,61 @@ export function meterBeats(input: {
     slot += span;
   }
   return beats;
+}
+
+/** Three levels, because a bar has three, not two. */
+export type PulseStrength = BeatStrength | "subdivision";
+
+export type MeterPulse = {
+  /** Slot index within the bar. */
+  readonly slot: number;
+  /** How many slots until the next pulse, or the bar line. */
+  readonly slots: number;
+  readonly strength: PulseStrength;
+  /** 1-based, within the bar: the seventh eighth of a 7/8 is 7. */
+  readonly unitIndex: number;
+  /** 1-based, within its main beat: the last eighth of a 2+2+3 is 3. */
+  readonly indexInBeat: number;
+};
+
+/**
+ * Every note value of the metre, in order, with what it is.
+ *
+ * The eighths of a 7/8; the quarters of a 4/4. `strength` says whether each
+ * one starts the bar, starts a main beat, or falls inside one — which is the
+ * whole of the difference between "three main beats" and "only three eighths".
+ *
+ * Derived from `meterBeats` rather than beside it, so a grouping change moves
+ * both layers at once and a pulse can never claim to start a beat that the
+ * beat list does not have.
+ */
+export function meterPulses(input: {
+  readonly meter: TimeSignature;
+  readonly resolution: Resolution;
+  readonly grouping?: BeatGrouping;
+}): readonly MeterPulse[] {
+  const { meter, resolution } = input;
+  const perUnit = slotsPerNotatedBeat(meter, resolution);
+  const total = slotCount(meter, resolution);
+  const beats = meterBeats(input);
+  const beatStart = new Map(beats.map((beat) => [beat.slot, beat.strength]));
+
+  const pulses: MeterPulse[] = [];
+  let unitIndex = 0;
+  let indexInBeat = 0;
+  for (let slot = 0; slot < total; slot += perUnit) {
+    const start = beatStart.get(slot);
+    unitIndex += 1;
+    indexInBeat = start ? 1 : indexInBeat + 1;
+    pulses.push({
+      slot,
+      slots: Math.min(perUnit, total - slot),
+      strength: start ?? "subdivision",
+      unitIndex,
+      indexInBeat,
+    });
+  }
+  return pulses;
 }
 
 /**

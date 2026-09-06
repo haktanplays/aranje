@@ -236,6 +236,25 @@ export function ticksPerBar(
 }
 
 /**
+ * The same answer, asked of a bar (2V-D.2 c2 guardrail 1).
+ *
+ * `ticksPerBar` takes a metre and a grid; almost every caller holds a *bar*
+ * and so wrote `slotCount(bar.timeSignature, bar.resolution) *
+ * ticksPerSlot(bar.resolution)` instead — ten times, across ten modules. They
+ * agreed because it is the same product, and nothing made them keep agreeing.
+ *
+ * This is the shape they wanted. The parameter is structural rather than the
+ * `Bar` type so the timing core stays below the schema and nothing has to
+ * import downwards to ask how long a bar is.
+ */
+export function barTicks(bar: {
+  readonly timeSignature: TimeSignature;
+  readonly resolution: Resolution;
+}): number {
+  return ticksPerBar(bar.timeSignature, bar.resolution);
+}
+
+/**
  * Slots per *notated* beat — the note value in the meter's denominator.
  *
  * 4/4 at 16 is four; 4/4 at 12 is three, because the beat is three triplets.

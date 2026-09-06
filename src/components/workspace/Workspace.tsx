@@ -50,6 +50,8 @@ import { useSelectTrack } from "@/lib/workspace/use-select-track";
 import { useMixer } from "@/lib/workspace/use-mixer";
 import { useComposerDoors } from "@/lib/workspace/use-composer-doors";
 import { useIntentComposer, withPen } from "@/lib/workspace/use-intent-composer";
+import { editorToolbarProps } from "@/lib/workspace/editor-toolbar-props";
+import { useMeterChange } from "@/lib/workspace/use-meter-change";
 import { useNoteEditing } from "@/lib/workspace/use-note-editing";
 import { useWorkspaceFiles } from "@/lib/workspace/use-workspace-files";
 import { useSelectionSession } from "@/lib/workspace/use-selection-session";
@@ -93,6 +95,8 @@ export function Workspace() {
   const { chords, timeline, runs } = tab;
 
   const noteEditing = useNoteEditing({ song, track, timeline, commit, pause });
+
+  const meterChange = useMeterChange({ song, commit, sectionId: navigation.viewedSectionId });
 
   /*
    * The intent layer (2S-A §6). It holds one tool, and the surface asks it
@@ -307,25 +311,16 @@ export function Workspace() {
         onOpenTrack={() => overlays.open("track")}
         composer={composer}
         noteEditing={noteEditing}
+        meterChange={meterChange}
         onOpenChordBuilder={doors.catalogue}
         onOpenRhythm={doors.rhythm}
         intent={tab.intent}
-        toolbar={{
-          editing: noteEditing.editing,
-          canEdit,
-          editDisabledReason,
-          onToggleEdit: noteEditing.toggleEdit,
-          onArrange: ground.enterCopilot,
-          arrangeDisabled: skills.length === 0 || previewOpen || !canPersist,
-          canUndo,
-          canRedo,
-          undoLabel,
-          redoLabel,
-          onUndo: undoEdit,
-          onRedo: redoEdit,
-          // Both notation surfaces; the arrangement has no staff (2Q-A §8).
-          canToggleEdit: navigation.view !== "arrange",
-        }}
+        toolbar={editorToolbarProps(noteEditing, navigation.view, {
+          canEdit, editDisabledReason, canPersist, previewOpen,
+          skillCount: skills.length, onArrange: ground.enterCopilot,
+          canUndo, canRedo, undoLabel, redoLabel,
+          onUndo: undoEdit, onRedo: redoEdit,
+        })}
       />
       </div>
 

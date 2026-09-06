@@ -13,7 +13,11 @@
  * not writable, because that is a hole a block may not be dropped into (spec
  * 5.5) — not a gap to be silently skipped over.
  */
-import { slotCount, ticksPerSlot } from "@/lib/music/timing";
+import {
+  barTicks,
+  slotCount,
+  ticksPerSlot,
+} from "@/lib/music/timing";
 import { isDrumSlotArray, type MelodicSlot, type Section, type Song } from "@/lib/song/schema";
 
 /** One slot of one track inside a section. */
@@ -102,7 +106,7 @@ export function sectionBarStartTicks(section: Section): number[] {
   let ticks = 0;
   for (const bar of section.bars) {
     starts.push(ticks);
-    ticks += slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
+    ticks += barTicks(bar);
   }
   return starts;
 }

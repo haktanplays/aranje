@@ -7,6 +7,7 @@ import {
   positionAtTicks,
   sectionLoopBounds,
   barBeats,
+  CLICK_GAIN,
 } from "@/lib/audio/position";
 import { buildSongPlan } from "@/lib/audio/schedule";
 import { PPQ, ticksPerSlot } from "@/lib/music/timing";
@@ -149,8 +150,8 @@ describe("metronome", () => {
     expect(
       metronomeClicks({ events: [], bars: [compound], totalTicks: PPQ * 3 }),
     ).toEqual([
-      { time: 0, downbeat: true },
-      { time: PPQ * 1.5, downbeat: false },
+      { time: 0, downbeat: true, strength: "downbeat" },
+      { time: PPQ * 1.5, downbeat: false, strength: "secondary" },
     ]);
   });
 
@@ -176,9 +177,9 @@ describe("metronome", () => {
     expect(
       metronomeClicks({ events: [], bars: [bar], totalTicks: bar.durationTicks }),
     ).toEqual([
-      { time: 0, downbeat: true },
-      { time: PPQ, downbeat: false },
-      { time: PPQ * 2, downbeat: false },
+      { time: 0, downbeat: true, strength: "downbeat" },
+      { time: PPQ, downbeat: false, strength: "secondary" },
+      { time: PPQ * 2, downbeat: false, strength: "secondary" },
     ]);
 
     /* The other feel of the same bar moves the long beat, and the clicks
@@ -190,6 +191,69 @@ describe("metronome", () => {
         totalTicks: bar.durationTicks,
       }).map((click) => click.time),
     ).toEqual([0, PPQ * 1.5, PPQ * 2.5]);
+  });
+
+  it("clicks all seven eighths of a 7/8 when asked, without moving a beat", () => {
+    /*
+     * Guardrail 2, as an assertion. "Three unevenly spaced clicks" is the
+     * right answer to *where the main beats are* and the wrong answer to
+     * *what is in the bar* — there are seven eighths in a 7/8, and a reader
+     * learning the metre may want to hear all of them with the three
+     * accented.
+     *
+     * The thing that must not change is the main beats. Turning the
+     * subdivisions on is a second reading of one bar, not a second bar: the
+     * accented clicks land on exactly the ticks they landed on before.
+     */
+    const bar = {
+      barKey: "x:0",
+      sectionId: "x",
+      barNumber: 1,
+      time: 0,
+      durationTicks: (PPQ * 7) / 2,
+      slotCount: 7,
+      timeSignature: [7, 8] as const,
+      resolution: 8,
+      grouping: [2, 2, 3] as const,
+    };
+    const plan = { events: [], bars: [bar], totalTicks: bar.durationTicks };
+
+    const detailed = metronomeClicks(plan, { subdivisions: true });
+    expect(detailed).toHaveLength(7);
+    expect(detailed.map((click) => click.time)).toEqual([
+      0,
+      PPQ / 2,
+      PPQ,
+      PPQ * 1.5,
+      PPQ * 2,
+      PPQ * 2.5,
+      PPQ * 3,
+    ]);
+    expect(detailed.map((click) => click.strength)).toEqual([
+      "downbeat",
+      "subdivision",
+      "secondary",
+      "subdivision",
+      "secondary",
+      "subdivision",
+      "subdivision",
+    ]);
+
+    /* The accents are the plain reading's clicks, at the same ticks. */
+    const accented = detailed
+      .filter((click) => click.strength !== "subdivision")
+      .map((click) => click.time);
+    expect(accented).toEqual(metronomeClicks(plan).map((click) => click.time));
+  });
+
+  it("gives each level its own loudness, and the quietest to subdivisions", () => {
+    /* One click synth at three velocities — the capability the metronome
+       already had, which is why this option costs an option and not an
+       engine. A subdivision as loud as a main beat would erase the feel it
+       is meant to illustrate. */
+    expect(CLICK_GAIN.downbeat).toBeGreaterThan(CLICK_GAIN.secondary);
+    expect(CLICK_GAIN.secondary).toBeGreaterThan(CLICK_GAIN.subdivision);
+    expect(CLICK_GAIN.subdivision).toBeGreaterThan(0);
   });
 });
 

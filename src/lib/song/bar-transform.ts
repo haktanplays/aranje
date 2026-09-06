@@ -48,7 +48,10 @@
  * not to the bars inside it.
  */
 import { songLimits } from "@/lib/limits";
-import { slotCount, ticksPerSlot } from "@/lib/music/timing";
+import {
+  barTicks,
+  slotCount,
+} from "@/lib/music/timing";
 import { regridDrums, regridMelodic } from "@/lib/song/bar-regrid";
 import {
   barSelectionLength,
@@ -271,7 +274,7 @@ const fail = (
 
 /** How long one bar lasts, in ticks. Resolution cancels out; metre does not. */
 function barWidthTicks(bar: Bar): number {
-  return slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
+  return barTicks(bar);
 }
 
 function sectionOf(song: Song, sectionId: string): Section | undefined {

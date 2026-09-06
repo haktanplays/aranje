@@ -42,7 +42,7 @@ import {
   type VoiceHost,
   type VoicePoolCounts,
 } from "@/lib/audio/expressive-voice";
-import { metronomeClicks } from "@/lib/audio/position";
+import { CLICK_GAIN, metronomeClicks } from "@/lib/audio/position";
 import { sampleEntries, type SampleEntry } from "@/lib/audio/sample-map";
 import {
   clipToWindow,
@@ -605,6 +605,14 @@ export type ScheduleOptions = {
    * without rescheduling the music.
    */
   metronomeEnabled?: () => boolean;
+  /**
+   * Click the metre's own note values as well as the main beats.
+   *
+   * A reading of the same bar, not a different one (2V-D.2 c2, guardrail 2):
+   * the main beats keep their ticks and their accent, and the subdivisions
+   * are quieter clicks between them. Absent means off, which is Simple.
+   */
+  metronomeSubdivisions?: () => boolean;
   /** Fired on the drawing clock when the transport reaches the last bar line. */
   onEnded?: () => void;
   /**
@@ -764,7 +772,9 @@ export function scheduleSong(
   // The metronome sits on the same transport and the same context as the
   // music, so it cannot drift away from it.
   const { click } = engine.metronome;
-  for (const beat of metronomeClicks(engine.plan)) {
+  for (const beat of metronomeClicks(engine.plan, {
+    subdivisions: options.metronomeSubdivisions?.(),
+  })) {
     /*
      * The metronome belongs to the session, not to a track, so it is bounded
      * by time alone. Whether it clicks at all is still the reader's standing
@@ -775,7 +785,7 @@ export function scheduleSong(
     }
     transport.schedule((time) => {
       if (!options.metronomeEnabled?.()) return;
-      click.triggerAttackRelease(0.02, time, beat.downbeat ? 1 : 0.55);
+      click.triggerAttackRelease(0.02, time, CLICK_GAIN[beat.strength]);
     }, ticks(beat.time));
   }
 

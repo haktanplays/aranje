@@ -14,6 +14,7 @@ import {
   groupingPresets,
   groupingRefusal,
   meterBeats,
+  meterPulses,
 } from "@/lib/music/meter-beats";
 import { defaultGrouping } from "@/lib/music/rhythm-profile";
 import {
@@ -115,6 +116,62 @@ describe("360. a grouping is exact or it is refused", () => {
        of it. */
     expect(groupingOf({ meter: [7, 8], grouping: [2, 2] })).toEqual([2, 2, 3]);
     expect(groupingOf({ meter: [7, 8] })).toEqual([2, 2, 3]);
+  });
+});
+
+describe("361b. the main beat and the subdivision are two layers", () => {
+  it("keeps every note value of the metre, marked for what it is", () => {
+    /*
+     * Guardrail 2 in the model. `meterBeats` answers where the main beats
+     * are; `meterPulses` answers what is in the bar. A 7/8 felt `2+2+3` has
+     * three of the first and seven of the second, and collapsing them into
+     * one list is how "three main beats" turns into "three eighths".
+     */
+    const pulses = meterPulses({ meter: [7, 8], resolution: 8, grouping: [2, 2, 3] });
+    expect(pulses).toHaveLength(7);
+    expect(pulses.map((pulse) => pulse.strength)).toEqual([
+      "downbeat",
+      "subdivision",
+      "secondary",
+      "subdivision",
+      "secondary",
+      "subdivision",
+      "subdivision",
+    ]);
+    expect(pulses.map((pulse) => pulse.unitIndex)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    /* And each one knows where it sits inside its own beat, which is what a
+       "1 · 2 · 1 · 2 · 1 · 2 · 3" count-out needs. */
+    expect(pulses.map((pulse) => pulse.indexInBeat)).toEqual([1, 2, 1, 2, 1, 2, 3]);
+  });
+
+  it("starts a main beat exactly where the beat list does", () => {
+    /* Derived from one another, so they cannot come apart: a pulse claiming
+       to start a beat the beat list does not have would put an accent in a
+       place the metronome never clicks. */
+    for (const meter of TIME_SIGNATURES) {
+      for (const grouping of groupingPresets(meter as TimeSignature)) {
+        const where = `${meter[0]}/${meter[1]} ${groupingLabel(grouping)}`;
+        const beats = meterBeats({ meter: meter as TimeSignature, resolution: 16, grouping });
+        const pulses = meterPulses({ meter: meter as TimeSignature, resolution: 16, grouping });
+        const beatSlots = beats.map((beat) => beat.slot);
+        const accented = pulses
+          .filter((pulse) => pulse.strength !== "subdivision")
+          .map((pulse) => pulse.slot);
+        expect(accented, where).toEqual(beatSlots);
+        /* And the pulse count is the numerator, always: that is the fact
+           the beat count must never be mistaken for. */
+        expect(pulses, where).toHaveLength(meter[0]);
+      }
+    }
+  });
+
+  it("gives an evenly felt metre the same two layers, which coincide", () => {
+    /* In 4/4 every quarter starts a main beat, so the two layers are the
+       same list. That is not a special case in the code and is asserted so
+       it does not become one. */
+    const pulses = meterPulses({ meter: [4, 4], resolution: 16 });
+    expect(pulses.every((pulse) => pulse.strength !== "subdivision")).toBe(true);
+    expect(pulses).toHaveLength(4);
   });
 });
 

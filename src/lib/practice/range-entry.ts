@@ -24,7 +24,9 @@
  * a practice range, and the message says so.
  */
 import { sectionBarStartTicks } from "@/lib/song/onset-block";
-import { slotCount, ticksPerSlot } from "@/lib/music/timing";
+import {
+  barTicks,
+} from "@/lib/music/timing";
 import type { BarSelection } from "@/lib/song/bar-selection";
 import type { TimeSelection } from "@/lib/song/time-selection";
 import type { Song } from "@/lib/song/schema";
@@ -132,7 +134,7 @@ function boundariesOf(song: Song, sectionId: string): number[] | null {
   if (!last) return null;
   const end =
     (starts[starts.length - 1] ?? 0) +
-    slotCount(last.timeSignature, last.resolution) * ticksPerSlot(last.resolution);
+    barTicks(last);
   return [...starts, end];
 }
 

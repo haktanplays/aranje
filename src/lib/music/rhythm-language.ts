@@ -35,7 +35,7 @@
  * that does not carry one gets the metre's ordinary feel, which the reader
  * can see and change rather than a number this file invented.
  */
-import { meterBeats } from "@/lib/music/meter-beats";
+import { groupingLabel, groupingOf, meterBeats } from "@/lib/music/meter-beats";
 import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
   formatTimeSignature,
@@ -56,10 +56,38 @@ export type RhythmReading = {
   readonly steps: number;
   /** True when the beats are all the same length. False in 5/8, 7/8, 9/8. */
   readonly evenBeats: boolean;
+  /** How many of the metre's own note value are in the bar: 7 for 7/8. */
+  readonly unitCount: number;
+  /** What that note value is called: "sekizlik" for 7/8. */
+  readonly unitName: string;
+  /**
+   * The subdivision line, for a metre whose beats are not all the same.
+   *
+   * "7 sekizlik · 2+2+3". Present exactly when a reader could otherwise take
+   * `plain`'s beat count for the whole content of the bar — three main beats
+   * in a 7/8 does **not** mean three eighths, and a surface showing the first
+   * without the second is telling a beginner something false about their
+   * music. Null where the two readings cannot be confused.
+   */
+  readonly subdivision: string | null;
   /** "4 ana vuruş · 16 adım" */
   readonly plain: string;
   /** "4/4 · 1/16" */
   readonly technical: string;
+};
+
+/**
+ * The name of the note value a meter counts in.
+ *
+ * Only the denominators the contract allows are named. An unnamed one would
+ * mean the meter table grew without this being looked at, and inventing a word
+ * for it is worse than saying the number.
+ */
+const NOTE_VALUE_NAMES: Readonly<Record<number, string>> = {
+  2: "ikilik",
+  4: "dörtlük",
+  8: "sekizlik",
+  16: "onaltılık",
 };
 
 /** True when every beat of this metre is the same length. */
@@ -86,12 +114,29 @@ export function readRhythm(
    */
   const beats = meterBeats({ meter: timeSignature, resolution, grouping });
   const count = Math.max(1, beats.length);
+  const evenBeats = new Set(beats.map((beat) => beat.slots)).size <= 1;
+
+  const unitCount = timeSignature[0];
+  const unitName = NOTE_VALUE_NAMES[timeSignature[1]] ?? `1/${timeSignature[1]}`;
+  /*
+   * Shown when the beat count and the note-value count are different numbers
+   * — which is every compound and every asymmetric metre. In 4/4 they are
+   * both four and a second line would be the same fact twice.
+   */
+  const feel = groupingOf({ meter: timeSignature, grouping });
+  const subdivision =
+    unitCount === count
+      ? null
+      : `${unitCount} ${unitName} · ${groupingLabel(feel)}`;
 
   return {
     count,
     unit: "ana vuruş",
     steps,
-    evenBeats: new Set(beats.map((beat) => beat.slots)).size <= 1,
+    evenBeats,
+    unitCount,
+    unitName,
+    subdivision,
     plain: `${count} ana vuruş · ${steps} adım`,
     technical: `${formatTimeSignature(timeSignature)} · ${resolutionLabel(resolution)}`,
   };

@@ -45,7 +45,10 @@
  * quietly rewrite every duration in the bar.
  */
 import { isMelodicSlotArray, type Bar, type NoteEvent, type Song } from "@/lib/song/schema";
-import { slotCount, ticksPerSlot } from "@/lib/music/timing";
+import {
+  barTicks,
+  ticksPerSlot,
+} from "@/lib/music/timing";
 
 export type WrittenSpan = {
   readonly barIndex: number;
@@ -78,7 +81,7 @@ export function barOffsets(bars: readonly Bar[]): readonly number[] {
   let at = 0;
   for (const bar of bars) {
     offsets.push(at);
-    at += slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
+    at += barTicks(bar);
   }
   return offsets;
 }
@@ -87,7 +90,7 @@ export function barOffsets(bars: readonly Bar[]): readonly number[] {
 export function sectionTicks(bars: readonly Bar[]): number {
   return bars.reduce(
     (total, bar) =>
-      total + slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution),
+      total + barTicks(bar),
     0,
   );
 }

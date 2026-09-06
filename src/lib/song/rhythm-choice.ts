@@ -22,7 +22,11 @@
  * to do arithmetic, which is not the reader.
  */
 import { NOTE_VALUES, valueLabel, type NoteValue } from "@/lib/music/note-value";
-import { isTripletGrid, slotCount, ticksPerSlot } from "@/lib/music/timing";
+import {
+  barTicks,
+  isTripletGrid,
+  ticksPerSlot,
+} from "@/lib/music/timing";
 import { maxDurationTicks, type DurationTarget } from "@/lib/song/note-duration";
 import type { Song } from "@/lib/song/schema";
 
@@ -75,11 +79,10 @@ export function rhythmChoices(
    * at the top of the list every time teaches nothing. Not fitting *here* is
    * worth saying; not fitting anywhere is worth leaving out.
    */
-  const barTicks =
-    slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution);
+  const barLength = barTicks(bar);
 
   return NOTE_VALUES.filter(
-    (value) => value.ticks <= barTicks && gridCanWrite(value, bar.resolution),
+    (value) => value.ticks <= barLength && gridCanWrite(value, bar.resolution),
   ).map(
     (value) => ({
       value,

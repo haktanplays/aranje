@@ -31,7 +31,11 @@
  * duration — not "the rest of the bar", and not a pixel count rounded into a
  * tick count with a remainder.
  */
-import { ticksPerSlot, slotCount } from "@/lib/music/timing";
+import {
+  barTicks,
+  ticksPerSlot,
+  slotCount,
+} from "@/lib/music/timing";
 import { writtenSpans } from "@/lib/song/sounding";
 import {
   isMelodicSlotArray,
@@ -81,7 +85,7 @@ export function maxDurationTicks(song: Song, target: DurationTarget): number {
   let ticks = (slots - target.slotIndex) * slotTicks;
 
   for (const later of section.bars.slice(target.barIndex + 1)) {
-    ticks += slotCount(later.timeSignature, later.resolution) * ticksPerSlot(later.resolution);
+    ticks += barTicks(later);
   }
   return ticks;
 }

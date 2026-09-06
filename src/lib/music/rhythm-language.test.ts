@@ -113,6 +113,34 @@ describe("99. 7/8 is counted the way the bar says it is felt", () => {
   it("still calls 6/8 two beats, because that one always was", () => {
     expect(readRhythm([6, 8], 16).count).toBe(2);
   });
+
+  it("never lets three main beats stand for the whole bar", () => {
+    /*
+     * Guardrail 2. "3 ana vuruş" is the right answer to *what a player
+     * counts* and would be a lie as an answer to *what is in the bar*: a 7/8
+     * has seven eighths in it. The reading therefore always carries the note
+     * value count as well, and the subdivision line spells it out with the
+     * feel — so a surface cannot show the beat count alone and leave a
+     * beginner believing their bar holds three eighths.
+     */
+    const reading = readRhythm([7, 8], 16, [2, 2, 3]);
+    expect(reading.count).toBe(3);
+    expect(reading.unitCount).toBe(7);
+    expect(reading.unitName).toBe("sekizlik");
+    expect(reading.subdivision).toBe("7 sekizlik · 2+2+3");
+
+    /* And the other feel of the same bar says seven too, differently felt. */
+    expect(readRhythm([7, 8], 16, [3, 2, 2]).subdivision).toBe("7 sekizlik · 3+2+2");
+  });
+
+  it("adds no subdivision line where the two numbers are the same", () => {
+    /* 4/4 has four beats and four quarters. A second line saying so is the
+       same fact twice, which is how a reader learns to stop reading. */
+    expect(readRhythm([4, 4], 16).subdivision).toBeNull();
+    expect(readRhythm([3, 4], 16).subdivision).toBeNull();
+    /* 6/8 has two beats and six eighths, so it does get one. */
+    expect(readRhythm([6, 8], 16).subdivision).toBe("6 sekizlik · 3+3");
+  });
 });
 
 describe("100. one formatter, both lines", () => {

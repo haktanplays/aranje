@@ -32,6 +32,7 @@ import type { ViewZoom } from "@/lib/ui/use-view-zoom";
 import type { CoveredRun } from "@/lib/workspace/selection-verbs";
 import type { EditIntent } from "@/lib/workspace/use-edit-intent";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
+import type { MeterChangeHandle } from "@/lib/workspace/use-meter-change";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { SelectionSession } from "@/lib/workspace/use-selection-session";
 import type { Song, Track } from "@/lib/song/schema";
@@ -50,6 +51,7 @@ export function WorkspaceShelf(props: {
   onOpenTrack: () => void;
   composer: IntentComposer;
   noteEditing: NoteEditing;
+  meterChange: MeterChangeHandle;
   onOpenChordBuilder: ((power: boolean) => void) | null;
   onOpenRhythm: (() => void) | null;
   toolbar: React.ComponentProps<typeof EditToolbar>;
@@ -76,6 +78,7 @@ export function WorkspaceShelf(props: {
       <EditArea
         composer={props.composer}
         noteEditing={props.noteEditing}
+        meterChange={props.meterChange}
         song={props.song}
         track={props.track}
         selection={session.time.handle.selection}

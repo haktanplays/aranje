@@ -54,20 +54,22 @@ describe("343. the tick unit, and what it counts", () => {
   });
 });
 
-describe("344. bar length: one formula, ten spellings", () => {
+describe("344. bar length: one formula, and now one spelling", () => {
   const METERS: readonly TimeSignature[] = [
     [4, 4],
     [3, 4],
     [6, 8],
     [7, 8],
+    [5, 8],
+    [12, 8],
   ];
 
   it("computes the same answer inline as it does through the authority", () => {
     /*
-     * The conflict, stated rather than repaired. Nine modules open-code
-     * `slotCount() * ticksPerSlot()` instead of calling `ticksPerBar`. They
-     * agree today because it is the same product; nothing enforces that, and
-     * the next meter has to be right in ten places or wrong in one.
+     * The arithmetic the ten spellings all agreed on, kept as the definition
+     * of correct. It is what makes the migration below *safe* rather than
+     * merely tidy: every call that changed was replaced by an expression this
+     * test says is equal, on every metre and grid in the contract.
      */
     for (const meter of METERS) {
       for (const resolution of [8, 16, 24, 32] as const) {
@@ -80,13 +82,21 @@ describe("344. bar length: one formula, ten spellings", () => {
     }
   });
 
-  it("names every module that recomputes it, so the count cannot drift unseen", () => {
+  it("asks the authority in every module that used to recompute it", () => {
     /*
-     * A grep, held as a number. This is not a style rule: it is the size of
-     * the surface that has to be revisited whenever bar length changes, and
-     * a round that adds a tenth spelling should have to say so here.
+     * The conflict, closed rather than described (2V-D.2 c2, guardrail 1).
+     *
+     * Ten modules open-coded `slotCount(bar.timeSignature, bar.resolution) *
+     * ticksPerSlot(bar.resolution)`. The test above proved they agreed;
+     * agreeing is not the same as being one answer, and a test that ten
+     * numbers match is not an authority the eleventh caller has to obey.
+     *
+     * `barTicks(bar)` is the shape they all wanted — `ticksPerBar` takes a
+     * metre and a grid, and every one of these callers held a bar. They call
+     * it now, and this greps for the absence of the old expression so a
+     * future round cannot quietly add the eleventh.
      */
-    const OPEN_CODED = [
+    const MIGRATED = [
       "src/lib/song/sounding.ts",
       "src/lib/song/note-duration.ts",
       "src/lib/song/timing-change.ts",
@@ -94,13 +104,34 @@ describe("344. bar length: one formula, ten spellings", () => {
       "src/lib/song/rhythm-choice.ts",
       "src/lib/song/bar-transform.ts",
       "src/lib/song/onset-block.ts",
+      "src/lib/practice/range-entry.ts",
     ];
-    for (const path of OPEN_CODED) {
+    for (const path of MIGRATED) {
       const source = readFileSync(path, "utf8");
-      expect(source, `${path} no longer open-codes bar length`).toMatch(
+      expect(source, `${path} still open-codes bar length`).not.toMatch(
         /slotCount\([\s\S]{0,120}?\)\s*\*\s*ticksPerSlot\(/u,
       );
+      expect(source, `${path} does not ask the authority`).toMatch(
+        /\bbarTicks\(|\bticksPerBar\(/u,
+      );
     }
+  });
+
+  it("leaves exactly one module doing the multiplication", () => {
+    /*
+     * The authority itself, and nowhere else. A second module computing it
+     * would be the conflict returning under a different name.
+     *
+     * Span lengths are deliberately not caught by this: `count *
+     * ticksPerSlot(...)` for a run of slots is a different question with a
+     * different answer, and forcing it through a *bar* length helper would be
+     * the opposite mistake.
+     */
+    const owner = readFileSync("src/lib/music/timing.ts", "utf8");
+    expect(owner).toMatch(
+      /slotCount\(timeSignature, resolution\) \* ticksPerSlot\(resolution\)/u,
+    );
+    expect(owner).toMatch(/export function barTicks\(/u);
   });
 });
 

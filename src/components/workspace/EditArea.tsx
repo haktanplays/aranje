@@ -34,8 +34,7 @@ import { ShelfPanels } from "@/components/workspace/shelf/ShelfPanels";
 import { editorDock } from "@/lib/workspace/editor-dock";
 import {
   SHELF_PANELS,
-  SHELF_PANEL_IDS,
-  panelAvailability,
+  panelEntries,
   type ShelfPanelId,
 } from "@/lib/workspace/shelf-panel";
 import { targetFromCell, targetFromRange } from "@/lib/workspace/edit-target";
@@ -44,6 +43,7 @@ import type { SelectionActions } from "@/lib/workspace/selection-verbs";
 import type { SelectionActionId } from "@/lib/song/selection-action-canon";
 import type { ComposerDoor } from "@/lib/workspace/composer-tool";
 import type { IntentComposer } from "@/lib/workspace/use-intent-composer";
+import type { MeterChangeHandle } from "@/lib/workspace/use-meter-change";
 import type { NoteEditing } from "@/lib/workspace/use-note-editing";
 import type { ViewZoom } from "@/lib/ui/use-view-zoom";
 import type { Song, Track } from "@/lib/song/schema";
@@ -52,6 +52,7 @@ import type { TimeSelection } from "@/lib/song/time-selection";
 export function EditArea({
   composer,
   noteEditing,
+  meterChange,
   song,
   track,
   selection,
@@ -70,6 +71,7 @@ export function EditArea({
 }: {
   composer: IntentComposer;
   noteEditing: NoteEditing;
+  meterChange: MeterChangeHandle;
   song: Song;
   track: Track | undefined;
   selection: TimeSelection | null;
@@ -128,22 +130,11 @@ export function EditArea({
     if (cellKey !== null) setPanel(PANEL_FOR_CELL);
   }
 
-  const availabilityContext = {
+  const entries = panelEntries({
     hasCell: noteEditing.cell !== null,
     hasSelection: selection !== null,
     fretted: track?.fretboard !== undefined,
     canEdit: noteEditing.editing,
-  };
-
-  const panelEntries = SHELF_PANEL_IDS.map((id) => {
-    const meta = SHELF_PANELS[id];
-    const state = panelAvailability(id, availabilityContext);
-    return {
-      id,
-      group: meta.group,
-      label: meta.label,
-      ...(state.state === "disabled" && state.reason ? { reason: state.reason } : {}),
-    };
   });
 
   const runDockItem = (itemId: string) => {
@@ -190,7 +181,7 @@ export function EditArea({
             notice={selectionActions?.notice ?? null}
             error={selectionActions?.error ?? null}
             onRun={runDockItem}
-            panels={panelEntries}
+            panels={entries}
             panel={
               panel === null ? null : (
                 <ShelfPanels
@@ -206,6 +197,7 @@ export function EditArea({
                   onPreview={onPreview}
                   onApply={onApply}
                   onOpenPanel={setPanel}
+                  meterChange={meterChange}
                 />
               )
             }

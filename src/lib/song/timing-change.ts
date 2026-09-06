@@ -57,9 +57,10 @@
 import { groupingRefusal } from "@/lib/music/meter-beats";
 import type { BeatGrouping } from "@/lib/music/rhythm-profile";
 import {
+  ticksPerBar,
+  barTicks,
   isRepresentableGrid,
   slotCount,
-  ticksPerSlot,
   type Resolution,
   type TimeSignature,
 } from "@/lib/music/timing";
@@ -377,9 +378,7 @@ function refusalOf(
 }
 
 /** One bar's length, for the extent list the remapper walks. */
-const lengthOf = (bar: Bar) => ({
-  lengthTicks: slotCount(bar.timeSignature, bar.resolution) * ticksPerSlot(bar.resolution),
-});
+const lengthOf = (bar: Bar) => ({ lengthTicks: barTicks(bar) });
 
 /**
  * Every range remapped, or `"refused"` the moment one of them cannot be.
@@ -407,5 +406,5 @@ export function barTicksOf(
   timeSignature: TimeSignature,
   resolution: Resolution,
 ): number {
-  return slotCount(timeSignature, resolution) * ticksPerSlot(resolution);
+  return ticksPerBar(timeSignature, resolution);
 }

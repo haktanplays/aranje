@@ -28,6 +28,7 @@ export const SHELF_PANEL_IDS = [
   "note",
   "chord",
   "fast_sequence",
+  "meter",
   "duration",
   "playing",
   "transpose",
@@ -64,11 +65,23 @@ export const SHELF_PANELS: Readonly<Record<ShelfPanelId, ShelfPanelMeta>> = {
     group: "ritim",
     hint: "Aynı süreye birkaç nota sığdır.",
   },
+  meter: {
+    id: "meter",
+    label: "Ölçü",
+    group: "ritim",
+    /*
+     * Three questions in one panel because they are one decision: a reader
+     * choosing 6/8 chooses its feel and its grid in the same breath. Their
+     * names are the vocabulary's own (2V-D.2 §3, §17) and appear nowhere
+     * else under a different word.
+     */
+    hint: "Ölçü, his ve grid ayrıntısı.",
+  },
   duration: {
     id: "duration",
-    label: "Süre",
+    label: "Nota süresi",
     group: "ritim",
-    hint: "Ne kadar sürsün?",
+    hint: "Ne kadar çınlasın?",
   },
   playing: {
     id: "playing",
@@ -148,6 +161,15 @@ export function panelAvailability(
       return context.fretted
         ? { state: "available" }
         : { state: "disabled", reason: "Bu enstrümana akor yazılamıyor." };
+    /*
+     * The metre is a property of the bar, not of a note — so unlike every
+     * other panel it needs a *place* rather than a selection, and a reader
+     * looking at a bar always has one. Refusing it until they tap a note
+     * would be asking them to select something to answer a question that is
+     * not about it.
+     */
+    case "meter":
+      return { state: "available" };
     case "fast_sequence":
       return context.hasCell || context.hasSelection
         ? { state: "available" }
@@ -177,4 +199,44 @@ export function panelAvailability(
         ? { state: "available" }
         : { state: "disabled", reason: "Önce adlandıracağın alanı seç." };
   }
+}
+
+/** One panel as the dock draws it: what it is called and why it is grey. */
+export type PanelEntry = {
+  readonly id: ShelfPanelId;
+  readonly group: DockGroup;
+  readonly label: string;
+  /** Present only when the panel is disabled, so the dock can say why. */
+  readonly reason?: string;
+};
+
+/**
+ * Every panel, with its availability already resolved.
+ *
+ * Assembled here rather than in the view because it is two of this module's
+ * own tables joined by this module's own rule — a view doing it would be a
+ * fourth place that knows what a panel is called, and the first one to fall
+ * out of step with `SHELF_PANELS` would do it silently.
+ *
+ * The list is always complete and always in the same order: a dock whose
+ * buttons appear and disappear teaches a reader that the app is
+ * unpredictable, while a grey one that explains itself teaches them the
+ * music (§17).
+ */
+export function panelEntries(context: {
+  readonly hasCell: boolean;
+  readonly hasSelection: boolean;
+  readonly fretted: boolean;
+  readonly canEdit: boolean;
+}): readonly PanelEntry[] {
+  return SHELF_PANEL_IDS.map((id) => {
+    const meta = SHELF_PANELS[id];
+    const state = panelAvailability(id, context);
+    return {
+      id,
+      group: meta.group,
+      label: meta.label,
+      ...(state.state === "disabled" && state.reason ? { reason: state.reason } : {}),
+    };
+  });
 }
